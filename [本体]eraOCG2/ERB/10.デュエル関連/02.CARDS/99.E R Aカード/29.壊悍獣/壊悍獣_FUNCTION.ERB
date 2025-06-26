@@ -10,12 +10,10 @@ CALL FULLRESET
 효과範囲마함 = 1
 효과範囲상대필드 = 1
 효과範囲상대마함 = 1
-효과条件カテゴリ:0 = 괴한수
-효과条件カテゴリ:1 = 괴수플랜트
 효과条件CNT = 1
 CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-IF RESULT:9 < 要求個数
-	PRINTFORMW 壊悍카운터の総数が必要な個数に足りなくなりました
+IF RESULT:10 < 要求個数
+	PRINTFORMW 악성 카운터의 총 수가 필요한 개수에 부족해졌습니다
 	RETURN 0
 ENDIF
 
@@ -25,13 +23,11 @@ DO
 	효과範囲마함 = 1
 	효과範囲상대필드 = 1
 	효과範囲상대마함 = 1
-	효과条件カテゴリ = 괴수플랜트
-	효과条件カテゴリ:1 = 괴한수
 	효과条件個Ｃ所持 = 999
 	IF 듀얼리스트 == "상대"
 		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
 	ELSE
-		PRINTFORML 壊悍카운터を取り除くカードを選択（あと{要求個数}個）
+		PRINTFORML 악성 카운터를 제거할 카드를 선택（나머지 {要求個数}개）
 		CALL CARD_CHOOSE_USE_COUNTER_PLESUREBEAST(듀얼리스트,ゾーン,場所)
 	ENDIF
 	IF RESULT != 9999
@@ -43,28 +39,28 @@ LOOP 要求個数 > 0
 RETURN 1
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 덱上級괴한수의 각성時の戦闘破壊괴수플랜트化共通処理
-; (ジャアイズは除く)
-@SEEDBED_PLEASUREBEAST(듀얼리스트,종류,ゾーン,場所,조교獣 = -1)
+; 덱上級괴한수의 각성時の戦闘破壊괴한플랜트化共通処理
+; (저아이즈は除く)
+@SEEDBED_PLEASUREBEAST(듀얼리스트,종류,ゾーン,場所,조교수 = -1)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-#DIM DYNAMIC 조교獣
+#DIM DYNAMIC 조교수
 #DIMS DYNAMIC 보존ヒロインネーム
 #DIM DYNAMIC 보존変身元ID
-#DIM DYNAMIC 괴수플랜트위치
-#DIMS DYNAMIC 괴수플랜트名前
+#DIM DYNAMIC 괴한플랜트위치
+#DIMS DYNAMIC 괴한플랜트名前
 #DIM DYNAMIC 조교カードID
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 CALL FULLRESET
-괴수플랜트위치 = 現마함(対面者)
+괴한플랜트위치 = 現마함(対面者)
 CALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트,1)}("名前")
-괴수플랜트名前 = %RESULTS%
+괴한플랜트名前 = %RESULTS%
 CALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트,1)}("カテゴリ")
 IF MATCH(RESULTS, "계한전희")
 	보존ヒロインネーム = %GETVARS(@"%対面者%_MZ_戒悍ネーム:{戦姫戦闘場所}")%
@@ -73,8 +69,8 @@ IF MATCH(RESULTS, "계한전희")
 	SETVAR @"%対面者%_MZ_戒悍変身元ID:{戦姫戦闘場所}",0
 ENDIF
 CALL FULLRESET
-효과条件名前 = %괴수플랜트이름%
-IF 괴수플랜트元オーナー == 1
+효과条件名前 = %괴한플랜트名前%
+IF 괴한플랜트元オーナー == 1
 	효과範囲묘지 = 1
 	CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",2)
 ELSE
@@ -83,28 +79,28 @@ ELSE
 ENDIF
 조교カードID = RESULT:1
 IF 보존ヒロインネーム != ""
-	CALL CARD_SET_RENAME(対面者,"마함",괴수플랜트위치,보존ヒロインネーム)
-	CALL CARD_SET_CATEGORY(対面者,"마함",괴수플랜트위치,"계한전희")
-	CALL CARD_SET_CATEGORY(対面者,"마함",괴수플랜트위치,"괴수플랜트",1)
-	SETVAR @"%対面者%_魔_戒悍ネーム:{괴수플랜트위치}",보존ヒロインネーム
+	CALL CARD_SET_RENAME(対面者,"마함",괴한플랜트위치,보존ヒロインネーム)
+	CALL CARD_SET_CATEGORY(対面者,"마함",괴한플랜트위치,"계한전희")
+	CALL CARD_SET_CATEGORY(対面者,"마함",괴한플랜트위치,"괴한플랜트",1)
+	SETVAR @"%対面者%_魔_戒悍ネーム:{괴한플랜트위치}",보존ヒロインネーム
 ELSE
-	CALL CARD_SET_CATEGORY(対面者,"마함",괴수플랜트위치,"괴수플랜트")
+	CALL CARD_SET_CATEGORY(対面者,"마함",괴한플랜트위치,"괴한플랜트")
 ENDIF
 IF 보존変身元ID != 0
-	SETVAR @"%対面者%_魔_戒悍変身元ID:{괴수플랜트위치}",보존変身元ID
+	SETVAR @"%対面者%_魔_戒悍変身元ID:{괴한플랜트위치}",보존変身元ID
 ENDIF
 SIF 보존変身元ID != 0
 	조교カードID = 보존変身元ID
-; CALL STATCHANGE_OTHER(対面者,"마함",괴수플랜트위치,"性",1)
-CALL KOJO_PLEASUREBEAST_MANAGER(조교カードID,"戦闘破壊",조교獣,보존ヒロインネーム)
+; CALL STATCHANGE_OTHER(対面者,"마함",괴한플랜트위치,"性",1)
+CALL KOJO_PLEASUREBEAST_MANAGER(조교カードID,"戦闘破壊",조교수,보존ヒロインネーム)
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ; エンドフェイズの괴한수維持コスト
-@MAINTAIN_PLEASUREBEAST(듀얼리스트,종류,ゾーン,場所,조교獣 = -1)
+@MAINTAIN_PLEASUREBEAST(듀얼리스트,종류,ゾーン,場所,조교수 = -1)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIMS DYNAMIC 対面者
-#DIM DYNAMIC 조교獣
+#DIM DYNAMIC 조교수
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
@@ -121,7 +117,7 @@ CALL FULLRESET
 효과範囲마함 = 1
 효과範囲상대필드 = 1
 효과範囲상대마함 = 1
-효과条件カテゴリ = 괴수플랜트
+효과条件カテゴリ = 괴한플랜트
 CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 IF RESULT != 1
 	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
@@ -164,22 +160,22 @@ ELSE
 			조교カードID = GETVAR(@"%대상者（CS）%_%選択カードゾーン%_戒悍変身元ID:選択カード（CS）")
 		SIF 조교カードID < 1
 			조교カードID = 選択カードID
-		CALL KOJO_PLEASUREBEAST_MANAGER(조교カードID,"プラント使用",조교獣,カード名前,,戦姫플래그)
-		PRINTFORM %カード名前% に카운터が
+		CALL KOJO_PLEASUREBEAST_MANAGER(조교カードID,"プラント使用",조교수,カード名前,,戦姫플래그)
+		PRINTFORM %カード名前%『{選択カード}』에 악성 카운터가
 		TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")}("カテゴリ")
 		IF !GROUPMATCH(RESULTS, "계한전희")
-			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",1)
+			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"悪Ｃ",1)
 			PRINTFORM １
 		ELSE
-			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",2)
+			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"悪Ｃ",2)
 			PRINTFORM ２
 		ENDIF
-		PRINTFORMW 個乗りました。
+		PRINTFORMW 개 놓였습니다。
 	ENDIF
 ENDIF
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; プレセリア특수소환用関数
+; 프레세리아특수소환用関数
 ; (CARD_EX_SUMMONを改造したもの)
 @CARD_EX_SUMMON_PLEASUREHEROIN(듀얼리스트,選択カード,変身カードID)
 #DIMS DYNAMIC 듀얼리스트
@@ -234,8 +230,8 @@ CALLFORM CARDNAME_{カードID}, "名前"
 ARRAYREMOVE 자신_EX덱, 選択カード, 1
 자신_EX덱:(VARSIZE("자신_EX덱")-1) = -1
 
-; プレセリアの独自処理
-ヒロインネーム = プレセリア 
+; 프레세리아の独自処理
+ヒロインネーム = 프레세리아 
 CALL CARD_EROTICS(変身カードID)
 IF RESULT != -1
 	ヒロインネーム = %ヒロインネーム% %CALLNAME:RESULT%
@@ -258,13 +254,13 @@ IF 듀얼리스트 == "상대"
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,2,カードID,소환出処)
 ENDIF
 
-PRINTFORML %듀얼리스트%は%出処%から %이동カード名%を특수소환しました。
+PRINTFORML %듀얼리스트%는 %出処%에서 『{選択カード}』%이동カード名%를 특수 소환했습니다。
 CALL PRINT_STATE_DUEL(カードID)
 PRINTFORMW
 
 CALL CARD_ADDITIONAL_EFFECT(듀얼리스트)
 
-;0から4のまでのフィールドを確認し、ステータス変動を確認する
+;0から4のまでのフィールドを확인하고、ステータス変動を確認する
 CALL CARD_LOADUP
 
 IF カードID
@@ -360,30 +356,30 @@ CALLFORM CARDNAME_{カードID}, "名前"
 SETVAR @"%対面者%_필드:選択カード", -1
 
 IF カード추가先 >= 99
-	PRINTFORML %이동カード名%は消滅しました。
+	PRINTFORML %이동カード名%는 소멸했습니다。
 ELSEIF 추가場所 == "묘지" 
-	PRINTFORML %듀얼리스트%は필드から %이동カード名%を묘지に落としました。	
+	PRINTFORML %듀얼리스트%는 필드에서 %이동カード名%를 묘지에 떨어뜨렸습니다。	
 ELSE
-	PRINTFORML %듀얼리스트%は필드から %이동カード名%を마법 トラップゾーンにセットしました。
+	PRINTFORML %듀얼리스트%는 필드에서 %이동カード名%를 마법 / 함정존에 세트했습니다。
 ENDIF
 
-;カードが最召場所から이동している場合は、リセットされるように。
+;카드가 最召場所から이동している場合は、リセットされるように。
 IF GETVAR(@"%듀얼리스트%_最召場所") == 選択カード
 	SETVAR @"%듀얼리스트%_最召場所", -1
 ENDIF
 
 PRINTFORMW
-;0から4のまでのフィールドを確認し、ステータス変動を確認する
+;0から4のまでのフィールドを확인하고、ステータス変動を確認する
 CALL CARD_LOADUP
 
 RESULT = LRESULT
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 괴수플랜트조교処理
+; 괴한플랜트조교処理
 ; 直前にプラントをSELECTしているのが前提
-@TRAIN_PLEASUREBEAST(듀얼리스트,選択カード,選択カードID,조교獣 = -1,複数플래그 = 0,횟수플래그 = 0,Ｃ報告不要 = 0)
+@TRAIN_PLEASUREBEAST(듀얼리스트,選択カード,選択カードID,조교수 = -1,複数플래그 = 0,횟수플래그 = 0,Ｃ報告不要 = 0)
 #DIMS DYNAMIC 듀얼리스트
-#DIM DYNAMIC 조교獣
+#DIM DYNAMIC 조교수
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択カードID
@@ -428,25 +424,25 @@ SIF 조교カードID < 1
 	조교カードID = GETVAR(@"%대상者（CS）%_%選択カードゾーン%_戒悍変身元ID:選択カード（CS）")
 SIF 조교カードID < 1
 	조교カードID = 選択カードID
-CALL KOJO_PLEASUREBEAST_MANAGER(조교カードID,"プラント使用",조교獣,カード名前,,戦姫플래그,複数플래그,횟수플래그)
+CALL KOJO_PLEASUREBEAST_MANAGER(조교カードID,"プラント使用",조교수,カード名前,,戦姫플래그,複数플래그,횟수플래그)
 IF !Ｃ報告不要
-	PRINTFORM %カード名前% に카운터が
+	PRINTFORM %カード名前% 에 카운터가
 	TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")}("カテゴリ")
 	IF !GROUPMATCH(RESULTS, "계한전희")
-		CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",1)
+		CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"悪Ｃ",1)
 		PRINTFORM １
 	ELSE
-		CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",2)
+		CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"悪Ｃ",2)
 		PRINTFORM ２
 	ENDIF
-	PRINTFORMW つ置かれました。
+	PRINTFORMW 개 놓였습니다。
 ENDIF
 
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ; 任意결정に確定を추가したもの
-; 상대が使うのは考慮してません
-;(CARD_CHOOSE_ADVにCARD_ADD_GY_ADVの確定まわりの分岐を足したもの)
+; 상대가 使うのは考慮してません
+;(CARD_CHOOSE_ADVにCARD_ADD_GY_ADVの確定まわりの분기を足したもの)
 @CARD_CHOOSE_PLEASUREPLANT(듀얼리스트,ゾーン,場所,カードID)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者
@@ -477,7 +473,7 @@ $CHOICE_LOOP
 カードID = 処理中_효과ID
 IF 듀얼리스트 == "자신"
 	CUSTOMDRAWLINE —
-PRINTL 【카드를 선택해 주세요】
+	PRINTL 【카드를 선택해주세요】
 	CUSTOMDRAWLINE —
 	PRINTL 
 ELSEIF 듀얼리스트 == "상대"
@@ -497,29 +493,29 @@ CALL CARD_FILTER_BASIC(듀얼리스트,"上級",ゾーン,場所)
 IF 듀얼리스트 == "자신"
 	IF 条件달성 != 0 && 효과条件任意 != 1
 		SETCOLOR C_GRAY
-PRINTL 　(9999) - 돌아가기 (선택 가능한 카드가 있습니다)
+		PRINTL 　(9999) - 돌아간다(선택할 수 있는 카드가 없습니다)
 		RESETCOLOR
 	ELSEIF 条件달성 == 0
 		選択カード:複数カウンタ = -1
 		GOTO INPUT_SKIP
 	ELSE
 		IF 효과条件複数 == 任意の数 && 複数カウンタ >= 1
-PRINTL 　[8888] - 결정
+			PRINTL 　[8888] - 결정
 		ENDIF
-PRINTL 　[9999] - 돌아가기
+		PRINTL 　[9999] - 돌아간다
 	ENDIF
 	PRINTL
 	BINPUT
 	選択カード:複数カウンタ = RESULT
 	IF 選択カード:複数カウンタ == 8888
-PRINTL 더 이상 선택하지 않겠습니다.
+		PRINTL 이 이상 고를 수 없습니다。
 	ENDIF
 ELSEIF 듀얼리스트 == "상대"
 	選択カード:複数カウンタ = RESULT
 	IF 選択カード:複数カウンタ != 9999
 		SETCOLOR C_W_RED
 		CUSTOMDRAWLINE —
-PRINTL 【선택 가능한 카드가 없습니다】
+		PRINTL 【선택할 수 있는 카드가 없습니다】
 		CUSTOMDRAWLINE —
 		RESETCOLOR
 		WAIT
@@ -527,7 +523,7 @@ PRINTL 【선택 가능한 카드가 없습니다】
 ENDIF
 
 IF 選択カード:複数カウンタ == 9999
-	PRINTFORMW 戻ります。
+	PRINTFORMW 돌아갑니다。
 	RETURN 9999
 ELSEIF 選択カード:複数カウンタ == 8888
 	選択カード:複数カウンタ = -1
@@ -578,7 +574,7 @@ RESULT:99 = 選択カード_ID
 RETURN 選択カード
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 壊悍카운터使用用選択画面(後々のKANPRINTを専用関数に置き換えるためだけなのでここは丸々引用)
+; 악성 카운터使用用選択画面(後々のKANPRINTを専用関数に置き換えるためだけなのでここは丸々引用)
 @CARD_CHOOSE_USE_COUNTER_PLESUREBEAST(듀얼리스트,ゾーン,場所,カードID)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者
@@ -610,7 +606,7 @@ $CHOICE_LOOP
 カードID = 処理中_효과ID
 IF 듀얼리스트 == "자신"
 	CUSTOMDRAWLINE —
-PRINTL 【카드를 선택해 주세요】
+	PRINTL 【카드를 선택해주세요】
 	CUSTOMDRAWLINE —
 	PRINTL 
 ELSEIF 듀얼리스트 == "상대"
@@ -630,10 +626,10 @@ CALL CARD_FILTER_USE_COUNTER_PLESUREBEAST(듀얼리스트,"上級",ゾーン,場
 IF 듀얼리스트 == "자신"
 	IF 条件달성 != 0 && 효과条件任意 != 1
 		SETCOLOR C_GRAY
-PRINTL 　(9999) - 돌아가기 (선택 가능한 카드가 있습니다)
+		PRINTL 　(9999) - 돌아간다(선택할 수 있는 카드가 없습니다)
 		RESETCOLOR
 	ELSE
-PRINTL 　[9999] - 돌아가기
+		PRINTL 　[9999] - 돌아간다
 	ENDIF
 	PRINTL
 	BINPUT
@@ -643,7 +639,7 @@ ELSEIF 듀얼리스트 == "상대"
 	IF 選択カード:複数カウンタ != 9999
 		SETCOLOR C_W_RED
 		CUSTOMDRAWLINE —
-PRINTL 【선택 가능한 카드가 없습니다】
+		PRINTL 【선택할 수 있는 카드가 없습니다】
 		CUSTOMDRAWLINE —
 		RESETCOLOR
 		WAIT
@@ -651,7 +647,7 @@ PRINTL 【선택 가능한 카드가 없습니다】
 ENDIF
 
 IF 選択カード:複数カウンタ == 9999
-	PRINTFORMW 戻ります。
+	PRINTFORMW 돌아갑니다。
 	RETURN 9999
 ELSEIF 選択カード:複数カウンタ != 9999
 	CALL CARD_SELECT(듀얼리스트,選択カード:複数カウンタ)
@@ -699,7 +695,7 @@ RESULT:99 = 選択カード_ID
 RETURN 選択カード
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 壊悍카운터使用필터(後々のKANPRINTを専用関数に置き換えるためだけなのでここは丸々引用)
+; 악성 카운터使用필터(後々のKANPRINTを専用関数に置き換えるためだけなのでここは丸々引用)
 @CARD_FILTER_USE_COUNTER_PLESUREBEAST(듀얼리스트,元参照先,ゾーン,場所,めくり数,チェック플래그,カードID)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者
@@ -929,7 +925,7 @@ FOR カウンタ,0,サーチ範囲
 		ENDIF
 	ENDIF
 	IF 듀얼리스트 != "編集"
-		IF GETVAR(@"%듀얼리스트%_아자미나呪") >= 1 && ゾーン != "특수"
+		IF GETVAR(@"%듀얼리스트%_アザミナ呪") >= 1 && ゾーン != "특수"
 			IF 元参照先 == "묘지" || 元参照先 == "제외" || 元参照先 == "필드"
 				CONTINUE
 			ENDIF
@@ -962,7 +958,7 @@ FOR カウンタ,0,サーチ範囲
 					PRINTFORML 　%参照先%[{カウンタ + 上級値,4}] == ？？？？
 				ELSE
 					CALL CARD_SETCOLOR(実行者,参照先,カウンタ)
-					CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_MZ_個Ｃ:カウンタ"))
+					CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_MZ_悪Ｃ:カウンタ"))
 
 				ENDIF
 			ELSEIF 参照先 == "마함"		
@@ -970,16 +966,16 @@ FOR カウンタ,0,サーチ範囲
 					PRINTFORML 　%参照先%[{カウンタ + 上級値,4}] == ？？？？
 				ELSE
 					CALL CARD_SETCOLOR(実行者,参照先,カウンタ)
-					CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_魔_個Ｃ:カウンタ"))
+					CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_魔_悪Ｃ:カウンタ"))
 				ENDIF
 			ENDIF
 			RESETCOLOR
 		ELSE
 			CALL CARD_SETCOLOR(実行者,参照先,カウンタ)
 			IF 参照先 == "필드"
-				CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_MZ_個Ｃ:カウンタ"))
+				CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_MZ_悪Ｃ:カウンタ"))
 			ELSEIF 参照先 == "마함"
-				CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_魔_個Ｃ:カウンタ"))
+				CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"),,,GETVAR(@"%実行者%_魔_悪Ｃ:カウンタ"))
 			ELSE
 				CALLFORM CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"))
 			ENDIF
@@ -987,7 +983,7 @@ FOR カウンタ,0,サーチ範囲
 		ENDIF
 
 	ELSEIF 듀얼리스트 == "상대"
-		;ゾーン특수：上級소환のリリース、モンスター묘지送りのためのやつ
+		;ゾーン특수：上級소환の릴리스、モンスター묘지送りのためのやつ
 		IF ゾーン == "특수"
 			IF 参照先 == "필드"
 				IF GETVAR(@"%実行者%_MZ_攻:カウンタ") < 現在最小攻撃力
@@ -1079,7 +1075,7 @@ ELSEIF 듀얼리스트 == "상대"
 ENDIF
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 壊悍카운터使用KANPRINT(ここが변경点)
+; 악성 카운터使用KANPRINT(ここが변경点)
 @CARD_KANPRINT_USE_COUNTER_PLESUREBEAST(参照先,場所,カードID,설정플래그,裏側플래그,個Ｃ数)
 #DIMS DYNAMIC 参照先
 #DIM DYNAMIC 場所
@@ -1143,13 +1139,13 @@ IF オプション_略표시 == 1
 		CASE "묘지"
 			PRINTFORM %"묘지",6,RIGHT%	
 		CASE "덱"
-			PRINTFORM %"山札",6,RIGHT%
+			PRINTFORM %"덱",7,RIGHT%
 		CASE "EX덱"
 			PRINTFORM %"ＥＸ",6,RIGHT%
 		CASE "제외"
 			PRINTFORM %"제외",6,RIGHT%	
 		CASE "戦闘"
-			PRINTFORM %"戦闘",6,RIGHT%
+			PRINTFORM %"전투",6,RIGHT%
 
 	ENDSELECT
 	IF INRANGE(설정플래그,1,30)
@@ -1173,13 +1169,13 @@ ELSE
 		CASE "묘지"
 			PRINTFORM %"묘지",6,RIGHT%	
 		CASE "덱"
-			PRINTFORM %"山札",6,RIGHT%
+			PRINTFORM %"덱",7,RIGHT%
 		CASE "EX덱"
 			PRINTFORM %"ＥＸ",6,RIGHT%
 		CASE "제외"
 			PRINTFORM %"제외",6,RIGHT%
 		CASE "戦闘"
-			PRINTFORM %"戦闘",6,RIGHT%
+			PRINTFORM %"전투",6,RIGHT%
 	ENDSELECT
 	IF INRANGE(설정플래그,1,30)
 		PRINTFORM ({場所,4}) 
@@ -1201,23 +1197,23 @@ ENDIF
 
 IF 표시可否 == 1
 	IF 裏側플래그 >= 1 && 参照先 == "필드"
-		PRINTFORM /（★ ?）/（？）/？？？？？族/　（攻:     ?/守:     ?）
+		PRINTFORM /（★ ?）/（？）/？？？？？족/　（공:     ?/수:     ?）
 	ELSEIF 裏側플래그 == 0 
 		SIF 표시星 >= 1
 			PRINTFORM /（★{표시星,2}）
 		IF 표시属 >= 1
 			IF 표시属 == 1
-				PRINTFORM /（%"光",2%）
+				PRINTFORM /（%"빛",2%）
 			ELSEIF 표시属 == 2
-				PRINTFORM /（%"어둠",2%）
+				PRINTFORM /（%"어둠",1%）
 			ELSEIF 표시属 == 3
 				PRINTFORM /（%"땅",2%）
 			ELSEIF 표시属 == 4
 				PRINTFORM /（%"물",2%）
 			ELSEIF 표시属 == 5
-				PRINTFORM /（%"화염",2%）
+				PRINTFORM /（%"화염",1%）
 			ELSEIF 표시属 == 6
-				PRINTFORM /（%"바람",2%）
+				PRINTFORM /（%"바람",1%）
 			ELSEIF 표시属 == 7
 				PRINTFORM /（%"신",2%）
 			ENDIF
@@ -1225,9 +1221,9 @@ IF 표시可否 == 1
 		IF 표시種 >= 1
 			PRINTFORM /%GET_TALENTNAME(191,표시種),12,RIGHT%
 		ENDIF
-		PRINTFORM /　（攻:{표시攻,6}/守:{표시守,6}）
+		PRINTFORM /　（공:{표시攻,6}/수:{표시守,6}）
 		IF 표시CT >= 1
-			PRINTFORM /　（コスト:{표시CT,6}）		
+			PRINTFORM /　（코스트:{표시CT,6}）		
 		ENDIF
 	ENDIF
 ELSE
@@ -1235,71 +1231,71 @@ ELSE
 ENDIF
 
 IF 설정플래그 == 1
-	PRINTFORM /（破壊耐性）
+	PRINTFORM /（파괴내성）
 ELSEIF 설정플래그 == 2
-	PRINTFORM /（대상耐性）
+	PRINTFORM /（대상내성）
 ELSEIF 설정플래그 == 3
-	PRINTFORM /（モンスター효과耐性）
+	PRINTFORM /（몬스터 효과내성）
 ELSEIF 설정플래그 == 4
-	PRINTFORM /（마법효과耐性）
+	PRINTFORM /（마법효과내성）
 ELSEIF 설정플래그 == 5
-	PRINTFORM /（함정효과耐性）
+	PRINTFORM /（함정효과내성）
 ELSEIF 설정플래그 == 6
-	PRINTFORM /（攻撃불가）
+	PRINTFORM /（공격불가）
 ELSEIF 설정플래그 == 31
-	PRINTFORM /(身代わり破壊装備)
+	PRINTFORM /(대신 파괴 장착)
 ELSEIF 설정플래그 == 35
-	PRINTFORM /(フリーチェーン)
+	PRINTFORM /(프리 체인)
 ELSEIF 설정플래그 == 36
-	PRINTFORM /(효과後誘発)
+	PRINTFORM /(효과후 유발)
 ELSEIF 설정플래그 == 37
-	PRINTFORM /(발동誘発)
+	PRINTFORM /(발동유발)
 
 
 ELSEIF INRANGE(설정플래그,100,300)
 	IF 설정플래그 == 101
-		PRINTFORM /(소환時효과)
+		PRINTFORM /(소환시효과)
 	ELSEIF 설정플래그 == 102
-		PRINTFORM /(특수소환時효과)
+		PRINTFORM /(특수소환시효과)
 	ELSEIF 설정플래그 == 103
-		PRINTFORM /(EX특수소환時효과)
+		PRINTFORM /(EX특수소환시효과)
 	ELSEIF 설정플래그 == 110
-		PRINTFORM /(ﾌｨｰﾙﾄﾞ→묘지효과)
+		PRINTFORM /(필드→묘지효과)
 	ELSEIF 설정플래그 == 111
 		PRINTFORM /(손패→묘지효과)
 	ELSEIF 설정플래그 == 112
 		PRINTFORM /(덱→묘지효과)
 	ELSEIF 설정플래그 == 113
-		PRINTFORM /(破壊→묘지효과)
+		PRINTFORM /(파괴→묘지효과)
 	ELSEIF 설정플래그 == 114
-		PRINTFORM /(戦闘→묘지효과)
+		PRINTFORM /(전투→묘지효과)
 	ELSEIF 설정플래그 == 115 || 설정플래그 == 117
-		PRINTFORM /(ﾌｨｰﾙﾄﾞを離れた효과)
+		PRINTFORM /(필드를벗어난효과)
 	ELSEIF 설정플래그 == 116
-		PRINTFORM /(제외された時효과)
+		PRINTFORM /(제외되었을시효과)
 	ELSEIF 설정플래그 == 100 + ターン開始時
-		PRINTFORM /(ターン開始時誘発)
+		PRINTFORM /(턴개시시유발)
 	ELSEIF 설정플래그 == 100 + バトル開始時
-		PRINTFORM /(バトル開始時誘発)
+		PRINTFORM /(배틀개시시유발)
 	ELSEIF 설정플래그 == 100 + ターン終了時
-		PRINTFORM /(ターン終了時誘発)
+		PRINTFORM /(턴종료시유발)
 	ELSEIF 설정플래그 == 100 + バトル終了時
-		PRINTFORM /(バトル終了時誘発)
+		PRINTFORM /(배틀종료시유발)
 
 	ELSEIF 설정플래그 == 100 + 攻撃時誘発
-		PRINTFORM /(攻撃時誘発誘発)
+		PRINTFORM /(공격시유발유발)
 	ELSEIF 설정플래그 == 100 + 攻撃後誘発
-		PRINTFORM /(攻撃後誘発誘発)
+		PRINTFORM /(공격후유발유발)
 	ELSEIF 설정플래그 == 100 + 표시변경誘発
-		PRINTFORM /(표시변경誘発)
+		PRINTFORM /(표시변경유발)
 	ELSEIF 설정플래그 == 100 + リバース誘発
-		PRINTFORM /(リバース誘発)
+		PRINTFORM /(리버스유발)
 
 	ELSE
-		PRINTFORM /(その他の효과)
+		PRINTFORM /(그외의효과)
 	ENDIF
 ENDIF
 
-PRINTFORM /壊悍카운터数：{個Ｃ数}
+PRINTFORM /악성 카운터 수：{悪Ｃ数}
 
 PRINTL

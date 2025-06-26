@@ -1,5 +1,5 @@
 @CARDNAME_79805,参照先
-;ココで지정カードの名前、略称を返す予定
+;ココで지정카드의 名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마계 극장 「파시오네 스튜디오」
+RESULTS = 음마계극장 「파시오네 스튜디오」
 	CASE "略称"
 RESULTS = 음마계 스튜디오
 	CASE "カテゴリ"
-RESULTS:0 = 음마계 극단
+RESULTS:0 = 음마계극단
 RESULTS:1 = E.R.A
 ENDSELECT
 
@@ -37,18 +37,18 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL 자신 필드는 「음마계 스튜디오」가 된다.
 PRINTL 이 카드명의 ②③의 효과는 각각 1턴에 1번만 사용할 수 있다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ①: 자신 필드의 암컷 몬스터는 「음마계 극단」 몬스터로도 취급한다.
+PRINTL ①: 자신 필드의 암컷 몬스터는 「음마계극단」 몬스터로도 취급한다.
 CALLFORM CARD_ABLE(2,발동誘発)
-PRINTL ②: 「음마계 극단」 몬스터가 자신 필드에 존재할 경우에,
+PRINTL ②: 「음마계극단」 몬스터가 자신 필드에 존재할 경우에,
 PRINTL 상대가 몬스터의 효과를 발동했을 때에 발동할 수 있다.
-PRINTL 그 효과는 「상대 필드에 세트된 마법/함정 카드 1장을 선택하여 파괴한다」가 된다.
+PRINTL 그 효과는 「상대 필드에 세트된 마법 / 함정 카드 1장을 선택하여 파괴한다」가 된다.
 CALLFORM CARD_ABLE(3,효과後誘発)
-PRINTL ③: 자신의 「음마계 극단」 몬스터의 효과가 발동했을 경우에 발동할 수 있다.
-PRINTL 덱에서, 「음마계 대본」 마법/함정 카드 1장을 자신 필드에 세트한다.
+PRINTL ③: 자신의 「음마계극단」 몬스터의 효과가 발동했을 경우에 발동할 수 있다.
+PRINTL 덱에서, 「음마계대본」 마법 / 함정 카드 1장을 자신 필드에 세트한다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ④: 「음마계 대본」 마법/함정 카드의 효과를 자신이 발동했을 경우,
+PRINTL ④: 「음마계대본」 마법 / 함정 카드의 효과를 자신이 발동했을 경우,
 PRINTL 그 효과에 다음 효과를 추가한다.
-PRINTL ● 「음마계 필름」 1장을 생성하고 상대의 마법 & 함정 존에 놓는다.
+PRINTL ● 「음마계필름」 1장을 생성하고 상대의 마법 & 함정 존에 놓는다.
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDCAN_79805(듀얼리스트,종류,ゾーン,場所)
@@ -89,7 +89,7 @@ ELSEIF 종류 == 발동誘発
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-	효과条件カテゴリ = 음마계 극단 
+	효과条件カテゴリ = 음마계극단 
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -102,14 +102,14 @@ ELSEIF 종류 == 효과後誘発
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
 		RETURN 0
 	CALL FULLRESET
-	효과条件カテゴリ = 음마계 극단
+	효과条件カテゴリ = 음마계극단
 	효과条件종류 = モン全般
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",2)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
-	효과条件カテゴリ = 음마계 극단
+	효과条件カテゴリ = 음마계극단
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -158,27 +158,27 @@ ELSEIF 종류 == 효과後誘発
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲덱 = 1
-		효과条件カテゴリ = 음마계 극단
+		효과条件カテゴリ = 음마계극단
 		효과条件종류 = 마함全般
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
 	ENDIF
 ELSEIF 종류 == 지속효과
-	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "음마界スタジオ")
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "음마계 스튜디오")
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
 			CONTINUE
 		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}, "カテゴリ"	
-		SIF MATCH(RESULTS, "음마계 극단")
+		SIF MATCH(RESULTS, "음마계극단")
 			CONTINUE
 		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}, "성별"	
 		SIF !MATCH(RESULT, 牝性)
 			CONTINUE	
-		CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カウンタ,"음마계 극단")
+		CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カウンタ,"음마계극단")
 	NEXT
 ENDIF
 
 @CARDNAME_179805,参照先
-;ココで지정カードの名前、略称を返す予定
+;ココで지정카드의 名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -186,9 +186,9 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마계 필름
+RESULTS = 음마계필름
 	CASE "略称"
-RESULTS = 음마계 필름
+RESULTS = 음마계필름
 	CASE "カテゴリ"
 RESULTS:0 = 없음
 RESULTS:1 = E.R.A
@@ -214,7 +214,7 @@ RETURN 0
 CALL TEXT_DECORATION("ROGUE")
 CALLFORM CARD_ABLE(0,소환強制誘発)
 PRINTL ①: 이 카드의 【】 안에 이름이 적힌 몬스터 카드가 상대 필드에 존재하는 한,
-PRINTL 자신은 몬스터를 소환/특수 소환할 때마다 300 데미지를 받고, 상대는 300 LP 회복한다.
+PRINTL 자신은 몬스터를 소환 / 특수 소환할 때마다 300 데미지를 받고, 상대는 300 LP 회복한다.
 CALLFORM CARD_ABLE(0,ターン終了時強制)
 PRINTL ②: 상대의 엔드 페이즈에 발동한다.
 PRINTL 이 카드의 【】 안에 이름이 적힌 몬스터 카드가 상대 필드에 존재하지 않는다면, 이 카드는 파괴된다.
@@ -227,7 +227,7 @@ CALL TEXT_DECORATION("ROGUE")
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIMS DYNAMIC 選択カード名前
-#DIM DYNAMIC 女優ID ;대상の牝モンスターのカードID
+#DIM DYNAMIC 女優ID ;대상の牝몬스터의 カードID
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,179805)
 SIF RESULT == 1
@@ -291,7 +291,7 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == 소환強制誘発
 	IF GETVARS(@"%듀얼리스트%_魔_改名:場所") != ""
 		フィルム名称 = %GETVARS(@"%듀얼리스트%_魔_改名:場所")%
-		PRINTFORML %フィルム名称% の효과
+		PRINTFORML %フィルム名称% 의 효과
 	ENDIF
 	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",300)
 	CALL LIFE_CHANGE(듀얼리스트,"増加","효과",300,1)
@@ -299,16 +299,16 @@ ELSEIF 종류 == ターン終了時強制
 	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
 ENDIF
 
-;상대フィールドにフィルムを生成する処理
+;상대 필드에 フィルムを生成する処理
 @INMAKAIFILM_GENERATE(듀얼리스트,台本ID,효과番号,女優ID:0,女優ID:1,女優ID:2,女優ID:3,女優ID:4)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC フィルム설치先
-#DIM DYNAMIC 台本ID ;음마계 극단のID
-#DIM DYNAMIC 女優ID, 5 ;대상の牝モンスターのカードID
+#DIM DYNAMIC 台本ID ;음마계극단のID
+#DIM DYNAMIC 女優ID, 5 ;대상の牝몬스터의 カードID
 #DIM DYNAMIC 女優대상, 5 ;えっち用のID：csv無しなら-1
 #DIMS DYNAMIC 女優名前, 5
-#DIM DYNAMIC 효과番号 ;①の효과なら1,②の효과なら2
+#DIM DYNAMIC 효과番号 ;①의 효과なら1,②의 효과なら2
 #DIMS DYNAMIC フィルム名称 ;【%女優名前%】「%タイトル%」
 #DIMS DYNAMIC タイトル ;AVのタイトル 煽り文等
 #DIM DYNAMIC シチュ종류
@@ -348,24 +348,24 @@ FOR カウンタ,0,5
 	CALL INMAKAIFILM_PICTURE(女優대상:カウンタ,シチュ종류)
 	IF RESULT == 1
 		SETCOLOR C_PINK
-		PRINTFORMW %女優名前:カウンタ%のえっちなフィルムが촬영された
+		PRINTFORMW %女優名前:カウンタ%의 야한 필름이 촬영되었다
 		RESETCOLOR
 	ENDIF
 NEXT
 
 SETCOLOR C_YELLOW
-PRINTFORMW %フィルム名称%が発売された！
+PRINTFORMW %フィルム名称%이 발매되었다！
 RESETCOLOR
 CALL CARD_SET_RENAME(対面者,"마함",フィルム설치先,フィルム名称)
 CALL SET_FIELD_INFO(対面者,"마함",フィルム설치先,"汎数",女優ID)
 
 
 
-;モンスターの名前やcsvを취득する処理
+;몬스터의 名前やcsvを취득する処理
 @INMAKAIFILM_GETNAME(女優ID)
-#DIM DYNAMIC 女優ID ;대상の牝モンスターのカードID
+#DIM DYNAMIC 女優ID ;대상の牝몬스터의 カードID
 #DIM DYNAMIC 女優대상 ;えっち用のID：csv無しなら-1
-#DIMS DYNAMIC 女優名前 ;대상の牝モンスターの名前
+#DIMS DYNAMIC 女優名前 ;대상の牝몬스터의 名前
 
 CALL CARD_EROTICS(女優ID)
 女優대상 = RESULT
@@ -382,7 +382,7 @@ RESULT = 女優대상
 RESULTS = %여배우 이름%
 
 
-;画像표시 参考:E.R.ANSOM トロイコ-ド1
+;画像표시 参考:E.R.ANSOM トロイ코드1
 @INMAKAIFILM_PICTURE(シチュ종류,女優대상)
 #DIM DYNAMIC 女優대상 ;えっち用のID：csv無しなら-1
 #DIM DYNAMIC シチュ종류

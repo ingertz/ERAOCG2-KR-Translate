@@ -33,15 +33,12 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL 자신 필드는 「퓨어리 스트리트」가 된다.
-PRINTL 이 카드명의  ②③의 효과는 1턴에 1번밖에 사용할 수 없다.
+PRINTL 이 카드명의  ②의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(0,지속효과)
 PRINTL ① : 자신 필드의 특수 소환된 "퓨어리" 몬스터는 대상 내성을 얻는다.
 CALL CARD_ABLE(2,효과後誘発)
-PRINTL ② : 자신 필드의 앞면 표시의 「퓨어리」X 몬스터가 상대에 의해 필드로부터 떨어진 경우에 발동할 수 있다.
+PRINTL ② : 자신 필드의 앞면 표시의 "퓨어리」X 몬스터가 상대에 의해 필드로부터 떨어진 경우에 발동할 수 있다.
 PRINTL 자신의 덱·묘지에서 레벨 1의 '퓨어리' 몬스터 1장을 골라 특수 소환한다.
-CALL CARD_ABLE(3,ターン終了時)
-PRINTL ③：자신과 상대 엔드 페이즈에 발동할 수 있다.
-PRINTL 자신 필드의 앞면 표시의 「퓨어리」X 몬스터의 X 소재를 1개 늘린다.
 
 @CARDCAN_72226(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -84,19 +81,6 @@ ELSEIF 종류 == 효과後誘発
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == ターン終了時
-	SIF 발동済_3(듀얼리스트,72226)
-		RETURN 0
-	SIF ゾーン != "마함"
-		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件종류 = 엑시즈
-	효과条件カテゴリ = 퓨어리
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
 ELSEIF 종류 == 지속효과
 	SIF ゾーン != "마함"
 		RETURN 0	
@@ -134,20 +118,5 @@ ELSEIF 종류 == 지속효과
 	효과条件カテゴリ = 퓨어리
 	효과条件召種 = 召種全특수
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
-ELSEIF 종류 == ターン終了時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72226)
-	IF RESULT == 0
-		CALL FULLRESET
-		효과範囲필드 = 1
-		효과条件종류 = 엑시즈
-		효과条件カテゴリ = 퓨어리
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		選択カード = RESULT
-		IF 選択カード != 9999
-			CALL CARD_SELECT(듀얼리스트,選択カード)
-			選択カード = RESULT
-			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード（CS）,"Ｘ",1)
-		ENDIF
-	ENDIF
 ENDIF
 

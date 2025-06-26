@@ -1,5 +1,5 @@
 @CARDNAME_79807,参照先
-;ココで지정カードの名前、略称を返す予定
+;ココで지정카드의 名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마계 대본 「히로인 위기!?」
+RESULTS = 음마계대본 「히로인 위기!?」
 	CASE "略称"
 RESULTS = 「히로위!?」
 	CASE "カテゴリ"
-RESULTS:0 = 마계 대본
-RESULTS:1 = 음마계 대본
+RESULTS:0 = 마계대본
+RESULTS:1 = 음마계대본
 RESULTS:2 = E.R.A
 ENDSELECT
 
@@ -41,9 +41,9 @@ CALLFORM CARD_ABLE(1,효과後誘発)
 PRINTL ①: 상대 필드의 빈성 몬스터가 전투로 파괴되었을 때에 발동할 수 있다.
 PRINTL 그 몬스터를 자신 필드에 특수 소환하고, 그 원래의 공격력만큼의 데미지를 상대에게 준다.
 CALLFORM CARD_ABLE(2,破壊→묘지)
-PRINTL ②: 필드에 「음마계 극단」 카드가 존재하고,
+PRINTL ②: 필드에 「음마계극단」 카드가 존재하고,
 PRINTL 이 카드가 상대의 효과로 파괴되었을 경우에 발동할 수 있다.
-PRINTL 상대의 손패를 보고, 그 중에서 1장을 골라 자신의 손패에 넣는다.
+PRINTL 상대의 손패를 보고, 그 중에서 1장을 골라 자신의 패에 넣는다.
 PRINTL 그것이 빈성 몬스터라면, 자신 필드에 특수 소환한다.
 CALL TEXT_DECORATION("ROGUE")
 
@@ -88,7 +88,7 @@ ELSEIF 종류 == 破壊→묘지
 	효과範囲상대필드 = 1
 	효과範囲마함 = 1
 	효과範囲상대마함 = 1
-	효과条件カテゴリ = 음마계 극단
+	효과条件カテゴリ = 음마계극단
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -135,16 +135,16 @@ IF 종류 == 효과後誘発
 		IF RESULT == 1
 			選択カード = RESULT:1
 			CALL CARD_EROTICS(選択カード)
-			IF RESULT != -1 && 듀얼리스트 == "自分"
+			IF RESULT != -1 && 듀얼리스트 == "자신"
 				조교대상 = RESULT
 				SETCOLOR C_YELLOW
-				PRINTFORMW 戦闘に敗れた %CALLNAME:조교대상%はヒロイン패배モノ作品を촬영されてしまう…
+				PRINTFORMW 전투에 패배한 %CALLNAME:조교대상%는 히로인 패배물 작품을 촬영당했다…
 				PRINTL
 				RESETCOLOR
 				CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
 				CALL EROTIC_MOVE("前穴凌辱",조교대상,MASTER,500)
 			ENDIF
-			SIF GETVARS(@"%듀얼리스트%_フィールド名") == "음마界スタジオ"
+			SIF GETVARS(@"%듀얼리스트%_フィールド名") == "음마계 스튜디오"
 				CALL INMAKAIFILM_GENERATE(듀얼리스트,79807,1,選択カード)
 			TRYCALLFORM CARD_{選択カード}, "攻撃力"
 			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",RESULT,1)
@@ -162,11 +162,11 @@ ELSEIF 종류 == 破壊→묘지
 			TRYCALLFORM CARD_{選択カード_ID},"성별"
 			IF RESULT == 牝性
 				CALL CARD_EROTICS(選択カード_ID)
-				IF RESULT != -1 && 듀얼리스트 == "自分"
+				IF RESULT != -1 && 듀얼리스트 == "자신"
 					조교대상 = RESULT
 					CALL CARD_SELECT(듀얼리스트,選択カード)
 					SETCOLOR C_YELLOW
-					PRINTFORMW 囚われた %CALLNAME:조교대상%はヒロイン패배モノ作品を촬영されてしまう…
+					PRINTFORMW 붙잡힌 %CALLNAME:조교대상%는 히로인 패배물 작품을 촬영당했다…
 					PRINTL
 					RESETCOLOR
 					CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
@@ -174,7 +174,7 @@ ELSEIF 종류 == 破壊→묘지
 				ENDIF
 				CALL FULLRESET
 				CALL CARD_SP_SUMMON(대상者（CS）,参照先（CS）,選択カード（CS）,,1)
-				SIF GETVARS(@"%듀얼리스트%_フィールド名") == "음마界スタジオ"
+				SIF GETVARS(@"%듀얼리스트%_フィールド名") == "음마계 스튜디오"
 					CALL INMAKAIFILM_GENERATE(듀얼리스트,79807,2,選択カード_ID)
 			ELSE
 				CALL CARD_SELECT(듀얼리스트,選択カード)
@@ -185,9 +185,9 @@ ELSEIF 종류 == 破壊→묘지
 	ENDIF
 ENDIF
 
-;台本の①の효과で生成されるフィルムの설정
+;台本の①의 효과で生成されるフィルムの설정
 @INMAKAIFILM_79807_1(女優ID:0,女優ID:1,女優ID:2,女優ID:3,女優ID:4)
-#DIM DYNAMIC 女優ID, 5 ;대상の牝モンスターのカードID
+#DIM DYNAMIC 女優ID, 5 ;대상の牝몬스터의 カードID
 #DIM DYNAMIC 女優대상, 5 ;えっち用のID：csv無しなら-1
 #DIMS DYNAMIC 女優名前, 5
 #DIM DYNAMIC 女優人数 ;女優IDが存在する総人数
@@ -211,25 +211,25 @@ NEXT
 SELECTCASE RAND:3
 	CASE 0
 		TRYCALLFORM CARDNAME_{女優ID},"名前"
-		タイトル = %RESULTS%、恥辱の패배절정
+		タイトル = %RESULTS%、치욕의 패배절정
 		シチュ종류 = シチュ_ハメ取り
 	CASE 1
-		タイトル = わたしはおちんぽに負けちゃいました %女優名前%
+		タイトル = 저는 자지에게 져버렸습니다 %女優名前%
 		シチュ종류 = シチュ_ハメ取り
 	CASE 2
-		タイトル = 굴복アクメ堕ちヒロイン %女優名前%
+		タイトル = 굴복 절정 타락 히로인 %女優名前%
 		シチュ종류 = シチュ_ハメ取り
 	CASE 3
-		タイトル =  %女優名前% 악몽の쾌락尋問
+		タイトル =  %女優名前% 악몽의 쾌락심문
 		シチュ종류 = シチュ_ハメ取り
 ENDSELECT
 
 RESULT = シチュ종류
 RESULTS = %제목%
 
-;台本の②の효과で生成されるフィルムの설정
+;台本の②의 효과で生成されるフィルムの설정
 @INMAKAIFILM_79807_2(女優ID:0,女優ID:1,女優ID:2,女優ID:3,女優ID:4)
-#DIM DYNAMIC 女優ID, 5 ;대상の牝モンスターのカードID
+#DIM DYNAMIC 女優ID, 5 ;대상の牝몬스터의 カードID
 #DIM DYNAMIC 女優대상, 5 ;えっち用のID：csv無しなら-1
 #DIMS DYNAMIC 女優名前, 5
 #DIM DYNAMIC 女優人数 ;女優IDが存在する総人数
@@ -253,16 +253,16 @@ NEXT
 SELECTCASE RAND:3
 	CASE 0
 		TRYCALLFORM CARDNAME_{女優ID},"名前"
-		タイトル = %RESULTS%、恥辱の패배절정
+		タイトル = %RESULTS%、치욕의 패배절정
 		シチュ종류 = シチュ_ハメ取り
 	CASE 1
-		タイトル = わたしはおちんぽに負けちゃいました %女優名前%
+		タイトル = 저는 자지에게 져버렸습니다 %女優名前%
 		シチュ종류 = シチュ_ハメ取り
 	CASE 2
-		タイトル = 굴복アクメ堕ちヒロイン %女優名前%
+		タイトル = 굴복 절정 타락 히로인 %女優名前%
 		シチュ종류 = シチュ_ハメ取り
 	CASE 3
-		タイトル =  %女優名前% 악몽の쾌락尋問
+		タイトル =  %女優名前% 악몽의 쾌락심문
 		シチュ종류 = シチュ_ハメ取り
 ENDSELECT
 

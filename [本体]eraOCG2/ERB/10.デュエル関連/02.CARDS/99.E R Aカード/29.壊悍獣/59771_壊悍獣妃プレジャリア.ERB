@@ -172,7 +172,7 @@ ELSEIF 종류 == 발동誘発
 	효과範囲상대필드 = 1
 	효과範囲상대마함 = 1
 	효과条件カテゴリ:0 = 괴한수
-	효과条件カテゴリ:1 = 괴수플랜트
+	효과条件カテゴリ:1 = 괴한플랜트
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT:10 < 5
@@ -192,8 +192,8 @@ ENDIF
 #DIM DYNAMIC 戦闘カード
 #DIM DYNAMIC 変身カードID
 #DIM DYNAMIC 修正値
-#DIM DYNAMIC 元괴수플랜트위치
-#DIMS DYNAMIC 괴수플랜트名前
+#DIM DYNAMIC 元괴한플랜트위치
+#DIMS DYNAMIC 괴한플랜트名前
 #DIMS DYNAMIC ヒロインネーム
 #DIMS DYNAMIC 元ヒロインネーム
 #DIM DYNAMIC 選択カード
@@ -218,7 +218,7 @@ IF 종류 == EX덱起動
 		효과条件個Ｃ所持 = 3
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			元괴수플랜트위치 = 選択カード（CS）
+			元괴한플랜트위치 = 選択カード（CS）
 			変身カードID = GETVAR(@"%対面者%_魔_戒悍変身元ID:選択カード（CS）")
 			CALL FULLRESET
 			효과추가종류:1 = 1000000 + 変身カードID
@@ -232,13 +232,13 @@ IF 종류 == EX덱起動
 				ヒロインネーム = %ヒロインネーム%%RESULTS%
 			ENDIF
 			CALL CARD_SET_RENAME(듀얼리스트,"필드",カード소환先,ヒロインネーム)
-			元ヒロインネーム = %GETVARS(@"%対面者%_魔_戒悍ネーム:{元괴수플랜트위치}")%
-			SETVAR @"%対面者%_魔_戒悍ネーム:{元괴수플랜트위치}", ""
-			SETVAR @"%対面者%_魔_戒悍変身元ID:{元괴수플랜트위치}", 0
+			元ヒロインネーム = %GETVARS(@"%対面者%_魔_戒悍ネーム:{元괴한플랜트위치}")%
+			SETVAR @"%対面者%_魔_戒悍ネーム:{元괴한플랜트위치}", ""
+			SETVAR @"%対面者%_魔_戒悍変身元ID:{元괴한플랜트위치}", 0
 			SETVAR @"%듀얼리스트%_MZ_戒悍ネーム:{カード소환先}", ヒロインネーム
 			SETVAR @"%듀얼리스트%_MZ_戒悍変身元ID:{カード소환先}", 変身カードID
 			CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カード소환先,"괴한수")
-			CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カード소환先,"괴수플랜트",1)
+			CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カード소환先,"괴한플랜트",1)
 			CALL KOJO_PLEASUREBEAST_MANAGER(変身カードID,"悪堕ち",,ヒロインネーム, 元ヒロインネーム)
 		ENDIF
 	ENDIF
@@ -298,10 +298,10 @@ ELSEIF 종류 == 발동誘発
 				성별플래그 = RESULT:3
 				破壊대상ヒロインネーム = %RESULTS:1%
 				IF 戦姫플래그
-					괴수플랜트元オーナー = GETVAR(@"%対面者%_MZ_所有:{選択カード（CS）}")
-					元괴수플랜트위치 = 現마함(対面者)
+					괴한플랜트元オーナー = GETVAR(@"%対面者%_MZ_所有:{選択カード（CS）}")
+					元괴한플랜트위치 = 現마함(対面者)
 					CALLFORM CARDNAME_{選択カードID}("名前")
-					괴수플랜트名前 = %RESULTS%
+					괴한플랜트名前 = %RESULTS%
 				ENDIF
 				CALL CARD_SELECT(対面者,選択カード)
 				CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード,破壊行き)
@@ -310,19 +310,19 @@ ELSEIF 종류 == 발동誘発
 						SETVAR @"%対面者%_MZ_戒悍ネーム:選択カード",""
 						SETVAR @"%対面者%_MZ_戒悍変身元ID:選択カード",0
 						CALL FULLRESET
-						효과条件名前 = %괴수플랜트名前%
-						IF 괴수플랜트元オーナー == 1
+						효과条件名前 = %괴한플랜트名前%
+						IF 괴한플랜트元オーナー == 1
 							효과範囲묘지 = 1
 							CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",2)
 						ELSE
 							효과範囲상대묘지 = 1
 							CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",1)
 						ENDIF
-						CALL CARD_SET_RENAME(対面者,"마함",元괴수플랜트위치,破壊대상ヒロインネーム)
-						CALL CARD_SET_CATEGORY(対面者,"마함",元괴수플랜트위치,"계한전희")
-						CALL CARD_SET_CATEGORY(対面者,"마함",元괴수플랜트위치,"괴수플랜트",1)
-						SETVAR @"%対面者%_魔_戒悍ネーム:{元괴수플랜트위치}",破壊대상ヒロインネーム
-						SETVAR @"%対面者%_魔_戒悍変身元ID:{元괴수플랜트위치}",選択カードID
+						CALL CARD_SET_RENAME(対面者,"마함",元괴한플랜트위치,破壊대상ヒロインネーム)
+						CALL CARD_SET_CATEGORY(対面者,"마함",元괴한플랜트위치,"계한전희")
+						CALL CARD_SET_CATEGORY(対面者,"마함",元괴한플랜트위치,"괴한플랜트",1)
+						SETVAR @"%対面者%_魔_戒悍ネーム:{元괴한플랜트위치}",破壊대상ヒロインネーム
+						SETVAR @"%対面者%_魔_戒悍変身元ID:{元괴한플랜트위치}",選択カードID
 					ENDIF
 					CALL KOJO_PLEASUREBEAST_EFFECT_BEASTQUEEN(変化元カードID,"破壊時",変身カードID,破壊대상ヒロインネーム,ヒロインネーム,성별플래그,戦姫플래그)
 					IF 성별플래그 != 無性

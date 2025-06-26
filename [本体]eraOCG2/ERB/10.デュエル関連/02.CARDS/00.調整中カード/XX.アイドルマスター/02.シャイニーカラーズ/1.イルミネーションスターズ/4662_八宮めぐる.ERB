@@ -1,5 +1,5 @@
 @CARDNAME_4662,参照先
-;ココで지정カードの名前、略称を返す予定
+;ココで지정카드의 名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -47,10 +47,10 @@ RETURN 0
 
 PRINTL 이 카드명의 효과는 1턴에 1번만 사용할 수 있다.
 CALL CARD_ABLE(1,소환時,특수소환時)
-PRINTL ①: 이 카드가 소환/특수 소환했을 경우에 발동할 수 있다.
+PRINTL ①: 이 카드가 소환 / 특수 소환했을 경우에 발동할 수 있다.
 PRINTL 자신 필드의 「일루미네이션 스타즈」 몬스터 전부를 패로 되돌리고,
-PRINTL 묘지에서 「사쿠라기 마노」 또는 「카제노 히오리」 몬스터 1장을 패에 넣는다.
-PRINTL 그 후, 패를 1장 버리는 것으로, 덱에서 「사쿠라기 마노」 몬스터/「카제노 히오리」 몬스터 중,
+PRINTL 묘지에서 「사쿠라기 마노」 또는 「카자노 히오리」 몬스터 1장을 패에 넣는다.
+PRINTL 그 후, 패를 1장 버리는 것으로, 덱에서 「사쿠라기 마노」 몬스터 /「카자노 히오리」 몬스터 중,
 PRINTL 이 효과로 패에 넣지 않은 쪽의 몬스터 1장을 패에 넣을 수 있다.
 PRINTL 이 효과 발동 후, 자신은 「일루미네이션 스타즈」 몬스터밖에 특수 소환할 수 없다.
 
@@ -70,7 +70,7 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 	CALL FULLRESET
 	효과範囲묘지 = 1
 	효과条件カテゴリ:0 = 사쿠라기 마노
-	효과条件カテゴリ:1 = 카제노 히오리
+	효과条件カテゴリ:1 = 카자노 히오리
 	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -99,7 +99,7 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 			SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
 				CONTINUE
 			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
-			SIF !MATCH(RESULTS,"イルミネーションスターズ")
+			SIF !MATCH(RESULTS,"일루미네이션 스타즈")
 				CONTINUE
 			CALL FULLRESET
 			CALL CARD_DISPOSE(듀얼리스트,"필드",カウンタ,손패行き)
@@ -107,7 +107,7 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 		CALL FULLRESET
 		효과範囲묘지 = 1
 		효과条件カテゴリ:0 = 사쿠라기 마노
-		효과条件カテゴリ:1 = 카제노 히오리
+		효과条件カテゴリ:1 = 카자노 히오리
 		효과条件종류 = モン全般
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		選択カードID = RESULT:1
@@ -117,8 +117,8 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 			효과条件종류 = モン全般
 			TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
 			IF MATCH(RESULTS,"사쿠라기 마노")
-효과条件カテゴリ = 카제노 히오리
-			ELSEIF MATCH(RESULTS,"카제노 히오리")
+효과条件カテゴリ = 카자노 히오리
+			ELSEIF MATCH(RESULTS,"카자노 히오리")
 효과条件カテゴリ = 사쿠라기 마노
 			ELSE
 효과条件カテゴリ = -1
@@ -136,8 +136,8 @@ PRINTL 패를 1장 버리고, 묘지에서 패에 넣지 않은 쪽의 몬스터
 					효과条件종류 = モン全般
 					TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
 					IF MATCH(RESULTS,"사쿠라기 마노")
-효과条件カテゴリ = 카제노 히오리
-					ELSEIF MATCH(RESULTS,"카제노 히오리")
+효과条件カテゴリ = 카자노 히오리
+					ELSEIF MATCH(RESULTS,"카자노 히오리")
 효과条件カテゴリ = 사쿠라기 마노
 					ELSE
 효과条件カテゴリ = -1
@@ -146,6 +146,6 @@ PRINTL 패를 1장 버리고, 묘지에서 패에 넣지 않은 쪽의 몬스터
 				ENDIF
 			ENDIF
 		ENDIF
-		CALL CARD_SS_RESTRICTION(듀얼리스트,"イルミネーションスターズ")
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"일루미네이션 스타즈")
 	ENDIF
 ENDIF

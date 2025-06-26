@@ -1,5 +1,5 @@
 ﻿@CARDNAME_72205,参照先
-;ココで지정カードの名前、略称を返す予定
+;ココで지정카드의 名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 와이트 마스터
+RESULTS = 저주받은 하인 마스터
 	CASE "略称"
-RESULTS = 와이트 마스터
+RESULTS = 저주받하인마스터
 	CASE "カテゴリ"
-RESULTS:0 = 와이트
+RESULTS:0 = 저주받은 하인
 ENDSELECT
 
 
@@ -32,10 +32,10 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ①: 자신의 「와이트 킹」의 공격은 관통한다.
+PRINTL ①: 자신의 「저주받은 하인 킹」의 공격은 관통한다.
 CALLFORM CARD_ABLE(10,마함起動)
-PRINTL ②: 1턴에 1번, 자신의 묘지의 「와이트」 몬스터 1체를 대상으로 하여 발동할 수 있다.
-PRINTL 덱에서 「와이트」 몬스터 1체를 묘지로 보내고, 대상으로 한 몬스터와 동명의 몬스터 1체를 묘지에서 특수 소환한다.
+PRINTL ②: 1턴에 1번, 자신의 묘지의 「저주받은 하인」 몬스터 1장을 대상으로 하여 발동할 수 있다.
+PRINTL 덱에서 「저주받은 하인」 몬스터 1장을 묘지로 보내고, 대상으로 한 몬스터와 동명의 몬스터 1장을 묘지에서 특수 소환한다.
 PRINTL 이 효과의 발동 후, 턴 종료시까지 자신은 언데드족 몬스터밖에 특수 소환할 수 없다.
 
 
@@ -59,14 +59,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
-	효과条件カテゴリ = 와이트
+	효과条件カテゴリ = 저주받은 하인
 	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
-	효과条件カテゴリ = 와이트
+	효과条件カテゴリ = 저주받은 하인
 	효과条件종류 = モン全般
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -110,7 +110,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72205,10)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과条件カテゴリ = 와이트
+		효과条件カテゴリ = 저주받은 하인
 		효과条件종류 = モン全般
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
 		IF RESULT != 9999
@@ -119,7 +119,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 
 			CALL FULLRESET
 			효과範囲덱 = 1
-			효과条件カテゴリ = 와이트
+			효과条件カテゴリ = 저주받은 하인
 			효과条件종류 = モン全般
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 			IF RESULT == 1
@@ -142,6 +142,6 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
-효과条件名前 = 와이트 킹
+효과条件名前 = 저주받은 하인 킹
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"貫通")
 ENDIF

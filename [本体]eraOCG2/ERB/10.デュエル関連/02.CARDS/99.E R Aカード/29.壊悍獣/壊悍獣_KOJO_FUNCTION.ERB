@@ -1,11 +1,11 @@
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 서술문分岐
-@KOJO_PLEASUREBEAST_MANAGER(조교대상カードID,シチュ,조교獣 = -1,ヒロインネーム = "",元ヒロインネーム = "",戦姫플래그 = -1,複数플래그 = 0,횟수플래그 = 0)
+; 서술문분기
+@KOJO_PLEASUREBEAST_MANAGER(조교대상カードID,シチュ,조교수 = -1,ヒロインネーム = "",元ヒロインネーム = "",戦姫플래그 = -1,複数플래그 = 0,횟수플래그 = 0)
 #DIM DYNAMIC 조교대상カードID
 #DIM DYNAMIC 조교대상캐릭터ID
 #DIMS DYNAMIC シチュ
 #DIMS DYNAMIC ヒロインネーム
-#DIM DYNAMIC 조교獣
+#DIM DYNAMIC 조교수
 #DIM DYNAMIC 戦姫플래그
 #DIM DYNAMIC 複数플래그
 #DIM DYNAMIC 횟수플래그 ;初回が０、途中が１、ラストが２
@@ -37,11 +37,11 @@ SELECTCASE シチュ
     CASE "悪堕ち"
         CALL KOJO_PLEASUREBEAST_CORRUPTION(조교대상캐릭터ID,ヒロインネーム,元ヒロインネーム,횟수플래그)
     CASE "戦闘破壊"
-        CALL KOJO_PLEASUREBEAST_BATTLE(조교대상캐릭터ID,조교獣,ヒロインネーム,조교대상캐릭터名,元성별플래그)
+        CALL KOJO_PLEASUREBEAST_BATTLE(조교대상캐릭터ID,조교수,ヒロインネーム,조교대상캐릭터名,元성별플래그)
     CASE "プラント使用"
-        CALL KOJO_PLEASUREBEAST_USEPLANT(조교대상캐릭터ID,조교獣,ヒロインネーム,조교대상캐릭터名,戦姫플래그,複数플래그,횟수플래그)
+        CALL KOJO_PLEASUREBEAST_USEPLANT(조교대상캐릭터ID,조교수,ヒロインネーム,조교대상캐릭터名,戦姫플래그,複数플래그,횟수플래그)
     CASE "能力１", "能力２"
-        CALL KOJO_PLEASUREBEAST_EFFECT(조교대상캐릭터ID,シチュ,조교獣,ヒロインネーム)
+        CALL KOJO_PLEASUREBEAST_EFFECT(조교대상캐릭터ID,シチュ,조교수,ヒロインネーム)
     CASE "즉시타락"
         CALL KOJO_PLEASUREBEAST_MARRIGE(조교대상캐릭터ID,ヒロインネーム,횟수플래그)
     CASEELSE
@@ -103,12 +103,12 @@ RESULT:1 = カードID
 RESULT:2 = 戦姫플래그
 RESULT:3 = 성별플래그
 
-RESULTS:1 = %카드이름%
+RESULTS:1 = %カード名前%
 
 RETURN 1
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; プレセリア変身
+; 프레세리아変身
 @KOJO_PLEASUREBEAST_METAMORPHOSE(조교대상캐릭터ID,ヒロインネーム,조교대상캐릭터名,元성별플래그)
 #DIM DYNAMIC 조교대상
 #DIMS DYNAMIC ヒロインネーム
@@ -116,52 +116,52 @@ RETURN 1
 #DIMS DYNAMIC 조교대상캐릭터名
 #DIM DYNAMIC 元성별플래그
 
-PRINTFORML 変身バンクを省略しますか？
+PRINTFORML 변신 뱅크를 생략하시겠습니까？
 CALL YN_CHOICE()
 SIF RESULT == 0
     RETURN 1
 
 ; SETCOLOR C_PINK
-PRINTFORML <<プレジャ-トランス セリベイトフォ-ム>>！
+PRINTFORML <<플레저 트랜스 셀리베이트 폼>>！
 PRINTW
 CALL FLASH(1)
-PRINTFORML 精喚獣が%조교대상캐릭터名%の周囲を周りながら光の粒子になって
+PRINTFORML 정환수가 %조교대상캐릭터名%의 주위를 돌면서 빛의 입자가 되어
 
 IF 元성별플래그
-    PRINTFORMW %조교대상캐릭터名%の体全体を強く締め付けてゆく……！
+    PRINTFORMW %조교대상캐릭터名%의 몸 전체를 강하게 조여간다……！
     PRINTL
-    PRINTFORML %조교대상캐릭터名%が저항しても拘束は全く解かれる様子もなく、
-    PRINTFORMW そのシルエットは段々と丸みを帯びていき、少女のそれになっていく……！
+    PRINTFORML %조교대상캐릭터名%가 저항해도 구속은 전혀 풀릴 모습은 없이、
+    PRINTFORMW 그 실루엣은 점점 동그람을 띄어가며、소녀의 그것이 되어간다……！
     PRINTFORML 
-    PRINTFORMW 完全に少女然とした輪郭になると、光の粒子が突然弾け、
+    PRINTFORMW 완전히 소녀모습의 윤곽이 되니、빛의 입자가 갑자기 터져、
 ELSE
-    PRINTFORMW %조교대상캐릭터名%の身体を包んでゆく……
+    PRINTFORMW %조교대상캐릭터名%의 몸을 감싸간다……
     PRINTL
-    PRINTFORMW すると突然、%조교대상캐릭터名%の服も粒子になって身を包む光と一体化してしまう！
+    PRINTFORMW 그러니 갑자기、%조교대상캐릭터名%의 옷도 입자가 되어 몸을 감싸는 빛과 일체화해버린다！
     PRINTL
-    PRINTFORMW %조교대상캐릭터名%が身を隠す間もなく光の粒子がボディラインに沿った형태になっていき、
+    PRINTFORMW %조교대상캐릭터名%가 몸을 숨일 새도 없이 빛의 입자가 바디라인에 맞은 형태가 되어가며、
 ENDIF
 PRINTL
-PRINTFORMW 腕をぴったりと覆うロンググロ-ブが、
+PRINTFORMW 팔에 딱 맞게 덮는 롱 글러브가、
 PRINTL
-PRINTFORMW 同じく太腿までを隙間なく覆うロングブ-ツが、
+PRINTFORMW 똑같이 허벅지까지 틈없이 덮는 롱 부츠가、
 PRINTL
-PRINTFORMW 鼠径部が露になるような鋭角ハイレグボディス-ツが、
-PRINTFORMW 次々と形成されていく……！
+PRINTFORMW 사타구니가 보일것같은 예각 하이레그 바디슈트가、
+PRINTFORMW 계속해서 형성되어간다……！
 PRINTL
-PRINTFORML 마지막으로날개を模したような煌めくヘッドパ-ツが光と共に生成されると、
-PRINTFORMW %조교대상캐릭터名%は意志に관계なく決めポ-ズを取ってしまう！
+PRINTFORML 마지막으로 날개처럼 빛나는 헤드파츠가 빛과 함께 생성되니、
+PRINTFORMW %조교대상캐릭터名%는 의지에 관계없이 결정포즈를 취해버렸다！
 PRINTL
 
 CALL CHARA_CUTIN("계한전희",SUBSTRINGU(ヒロインネーム),"",,,,1)
 PRINTL
 PRINTL
 
-PRINTFORML 光が落ち着きようやく解放された%조교대상캐릭터名%は
+PRINTFORML 빛이 잠잠해지니 드디어 해방된 %조교대상캐릭터名%는
 IF 元성별플래그
-    PRINTFORMW 少女の姿になった자신に驚いている……
+    PRINTFORMW 소녀의 모습이 된 자신에게 놀라고있다……
 ELSE
-    PRINTFORMW 我に返って思わず자신の身体を隠そうとした……
+    PRINTFORMW 정신을 차리고 자신도 모르게 자신의 몸을 감추려하고있다……
 ENDIF
 SIF 조교대상캐릭터ID != -1
 	 CALL EROTIC_MOVE("催眠晒しもの",조교대상캐릭터ID,-1,100)
@@ -170,7 +170,7 @@ PRINTFORML
 RESETCOLOR
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; プレジャリアに悪堕ち
+; 플레저리아に悪堕ち
 @KOJO_PLEASUREBEAST_CORRUPTION(조교대상캐릭터ID,ヒロインネーム,元ヒロインネーム,횟수플래그)
 #DIM DYNAMIC 조교대상
 #DIMS DYNAMIC ヒロインネーム
@@ -179,7 +179,7 @@ RESETCOLOR
 #DIM DYNAMIC 횟수플래그
 
 IF 횟수플래그 != 2
-    PRINTFORML 悪堕ち変身バンクを省略しますか？
+    PRINTFORML 타락 변신 뱅크를 생략하시겠습니까？
     CALL YN_CHOICE()
     SIF RESULT == 0
         RETURN 1
@@ -188,16 +188,16 @@ ENDIF
 IF !횟수플래그
     SETCOLOR C_PINK
     PRINTFORML
-    PRINTFORMW 괴한수の手に落ち、その凌辱に心が折れてしまった%元ヒロインネーム%……
+    PRINTFORMW 괴한수의 손에 떨어져、그 능욕에 마음이 꺾여버린%元ヒロインネーム%……
     PRINTL
 ENDIF
 
-PRINTFORML 下腹部に刻まれた、改造エナジ-プラントの証である淫紋の光が強まったかと思うと、
-PRINTFORMW 突然%元ヒロインネーム%の身体中に紫色の電流が流れ出した！
+PRINTFORML 하복부에 새겨진、개조 에너지 플랜트의 증거인 음문의 빛이 강해진다고 생각했더니、
+PRINTFORMW 갑자기 %元ヒロインネーム%의 몸에서 보라색 전류가 흘러나왔다！
 PRINTL
-PRINTFORML 強烈な壊悍エナジ-の奔流であるそのスパ-クが与える性感は、常人であれば気絶するレベルだが
-PRINTFORML 조교で変わり果てた%元ヒロインネーム%の心身は、
-PRINTFORMW 文字通り身を焦がすような쾌락と脳を焼くような悦楽を甘受し、媚びるように痙攣している……
+PRINTFORML 각렬한 괴한 에너지의 격류인 그 스파크가 주는 성감은、일반인이라면 기절할 레벨이지만
+PRINTFORML 조교로 바뀌어버린 %元ヒロインネーム%의 심신은、
+PRINTFORMW 문자 그대로 몸을 태울것같은 쾌락과 뇌를 태우는듯한 열락을 달게 받아들여、알랑거리듯이 경련하고있다……
 
 RESETCOLOR
 IF 조교대상캐릭터ID != -1
@@ -208,17 +208,17 @@ ENDIF
 
 SETCOLOR C_PINK
 PRINTL
-PRINTFORML やがて%元ヒロインネーム%の肢体に、黒光りする粘液のように実体化した壊悍エナジ-が
-PRINTFORMW 애무するように各所の牝肉を捏ね繰り回しながら纏わりついていったかと思うと、
+PRINTFORML 이윽고 %元ヒロインネーム%의 지체에、검은 빛이 나는 점액같은 실체화한 괴한 에너지가
+PRINTFORMW 애무하듯이 각부분의 암컷고기를 반죽하듯이 돌리면서 휘감겨간다고 생각했더니、
 PRINTL
 SETCOLOR C_D_PINK
-PRINTFORMW 腕をぴったりと覆うロンググロ-ブが、
+PRINTFORMW 팔에 딱 맞게 덮는 롱 글러브가、
 PRINTL
-PRINTFORMW 同じく太腿までを隙間なく覆うロングブ-ツが、
+PRINTFORMW 똑같이 허벅지까지 틈없이 덮는 롱 부츠가、
 PRINTL
-PRINTFORMW 辛うじて局所を隠すようなハイレグボンデ-ジが、
+PRINTFORMW 겨우 국소를 숨길만한 하이레그 바디슈트가、
 SETCOLOR C_PINK
-PRINTFORMW 下品な艶めきを纏いながら次々と形成されていく……！
+PRINTFORMW 천방한 요염함을 휘두르며 계속해서 형성되어간다……！
 
 RESETCOLOR
 IF 조교대상캐릭터ID != -1
@@ -229,26 +229,26 @@ ENDIF
 
 SETCOLOR C_PINK
 PRINTL
-PRINTFORML 마지막으로、角のようなパ-ツが蠢きながら形成されれば、
+PRINTFORML 마지막으로、뿔같은 파츠가 꿈틀거리며 형성되니、
 SETCOLOR C_D_PINK
-PRINTFORML %元ヒロインネーム%は、괴한수に忠実なエナジ-プラント肉便器として
-PRINTFORMW ふさわしい人格 能力へ完全に書き換えられてしまっていた……
+PRINTFORML %元ヒロインネーム%는、괴한수에게 충실한 에너지 플랜트 육변기로서
+PRINTFORMW 걸맞는 인격 능력으로 완전히 덮어씌워져버렸다……
 PRINTL
 PRINTL
 
-CALL CHARA_CUTIN("괴한수妃",SUBSTRINGU(ヒロインネーム),"",,,,1)
+CALL CHARA_CUTIN("괴한수비",SUBSTRINGU(ヒロインネーム),"",,,,1)
 PRINTL
-PRINTFORMW 괴한수姫として生まれ変わった%ヒロインネーム%は、恍惚とした妖艶な表情を浮かべた……
+PRINTFORMW 괴한수비로 다시 태어난 %ヒロインネーム%는、황홀하고 요염한 표정을 띄웠다……
 
 PRINTFORML
 RESETCOLOR
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ; 基本的に戦闘破壊によるプラント生成時
-@KOJO_PLEASUREBEAST_BATTLE(조교대상캐릭터ID,조교獣,ヒロインネーム,조교대상캐릭터名,元성별플래그)
+@KOJO_PLEASUREBEAST_BATTLE(조교대상캐릭터ID,조교수,ヒロインネーム,조교대상캐릭터名,元성별플래그)
 #DIM DYNAMIC 조교대상
 #DIMS DYNAMIC ヒロインネーム
-#DIM DYNAMIC 조교獣
+#DIM DYNAMIC 조교수
 #DIM DYNAMIC 조교대상캐릭터ID
 #DIMS DYNAMIC 조교대상캐릭터名
 #DIM DYNAMIC 元성별플래그
@@ -256,17 +256,17 @@ RESETCOLOR
 SETCOLOR C_PINK
 PRINTFORML
 
-SELECTCASE 조교獣
-    ; ジャオ-ク
+SELECTCASE 조교수
+    ; 저오크
     CASE 39891
-        PRINTFORML ジャオ-クの強烈な一撃によって戦闘不能に陥った%ヒロインネーム%は
+        PRINTFORML 저오크의 강렬한 일격에 의해 전투불능에 빠진 %ヒロインネーム%는
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW そのまま上から組み伏せられ、暴力的なバックで犯されてしまう……
+                PRINTFORMW 그대로 위에서 짓뭉개져、폭력적인 뒷치기로 범해진다……
             CASE 1
-                PRINTFORMW 抱えられるように持ち上げられ、フルネルソンの자세で犯されてしまう……
+                PRINTFORMW 껴안기듯이 들어올려져、풀 넬슨의 자세로 범해진다……
             CASE 2
-                PRINTFORMW そのまま覆いかぶさられ、いわゆる種付けプレスの자세で犯されてしまう……
+                PRINTFORMW 그대로 덮어 씌워져、흔히말하는 씨뿌리기 프레스 자세로 범해진다……
         ENDSELECT
         RESETCOLOR
         IF 조교대상캐릭터ID != -1
@@ -274,12 +274,12 @@ SELECTCASE 조교獣
 		    CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,100)
 		    CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,300)
         ENDIF
-    ; ジャブロブ
+    ; 저로브
     CASE 39892
-        PRINTFORML 必死の저항虚しくジャブロブに取り込まれてしまった%ヒロインネーム%は
+        PRINTFORML 필사의 저항이 허무하게 저로브에게 붙잡혀버린 %ヒロインネーム%는
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW 괴한수に包まれた全身を揉まれるように嬲られてしまう……
+                PRINTFORMW 괴한수에게 안겨져 전신을 만져지는것처럼 희롱당한다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("丸飲み",조교대상캐릭터ID,-1,100)
@@ -287,7 +287,7 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,300)
                 ENDIF
             CASE 1
-                PRINTFORMW 両手両足を固定され、執拗に粘体ピストンを繰り返されてしまう……
+                PRINTFORMW 양팔 양다리를 고정당해、악착같이 점체 피스톤을 반복당한다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("全身애무",조교대상캐릭터ID,-1,100)
@@ -295,7 +295,7 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("묘상捕縛",조교대상캐릭터ID,-1,300)
                 ENDIF
             CASE 2
-                PRINTFORMW 穴という穴に粘体を出し入れされ、全身を犯し尽くされてしまう……
+                PRINTFORMW 구멍이란 구멍에 점체를 넣었다빼져、전신을 범해져버린다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("丸飲み",조교대상캐릭터ID,-1,100)
@@ -303,12 +303,12 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("묘상捕縛",조교대상캐릭터ID,-1,300)
                 ENDIF
         ENDSELECT
-    ; ジャロ-パ
+    ; 저로파
     CASE 39893
-        PRINTFORML ジャロ-パの촉수に絡め取られ完全に拘束された%ヒロインネーム%は
+        PRINTFORML 저로파의 촉수에 묶여 완전히 구속당한 %ヒロインネーム%느
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW 全身を촉수という촉수で嬲られてしまう……
+                PRINTFORMW 전신을 촉수란 촉수로 농락당한다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("全身애무",조교대상캐릭터ID,-1,100)
@@ -316,7 +316,7 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,300)
                 ENDIF
             CASE 1
-                PRINTFORMW 身体中に粘液をマ-キングされ、ねちっこく犯されてしまう……
+                PRINTFORMW 몸안에 점액으로 마킹되어、끈적하게 범해진다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("ぶっかけ",조교대상캐릭터ID,-1,100)
@@ -324,7 +324,7 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("両穴凌辱",조교대상캐릭터ID,-1,300)
                 ENDIF
             CASE 2
-                PRINTFORMW 牝穴全てに촉수をねじ込まれ、全身を犯し尽くされてしまう……
+                PRINTFORMW 암컷구멍 전부에 촉수를 쑤셔넣어져、전신이 범해진다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("丸飲み",조교대상캐릭터ID,-1,100)
@@ -332,12 +332,12 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("묘상捕縛",조교대상캐릭터ID,-1,300)
                 ENDIF
         ENDSELECT
-    ; ジャアイズ
+    ; 저아이즈
     CASE 39894
-        PRINTFORML ジャアイズの魔眼に魅入られてしまった%ヒロインネーム%は
+        PRINTFORML 저아이즈의 마안에 홀려버린 %ヒロインネーム%는
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW 虚ろな目でジャアイズの촉수たちに甲斐甲斐しく봉사をしてしまう……
+                PRINTFORMW 공허한 눈으로 저아이즈의 촉수들에게 충실하게 봉사를 해버린다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("催眠フェラ",조교대상캐릭터ID,-1,100)
@@ -345,7 +345,7 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("催眠自発騎乗位",조교대상캐릭터ID,-1,300)
                 ENDIF
             CASE 1
-                PRINTFORMW ジャアイズの舐めるような視線を浴びながら자위を始めてしまう……
+                PRINTFORMW 저아이즈의 핥는듯한 시선을 받으면서 자위를 시작해버린다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("催眠晒しもの",조교대상캐릭터ID,-1,300)
@@ -353,7 +353,7 @@ SELECTCASE 조교獣
 		            CALL EROTIC_MOVE("催眠自発騎乗位",조교대상캐릭터ID,-1,300)
                 ENDIF
             CASE 2
-                PRINTFORMW ジャアイズの촉수を自ら迎え入れ、ひたすら허리を振ってしまう……
+                PRINTFORMW 저아이즈의 촉수를 직접 맞이해、오로지 허리를 흔든다……
                 RESETCOLOR
                 IF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("催眠自発騎乗位",조교대상캐릭터ID,-1,100)
@@ -367,15 +367,15 @@ ENDSELECT
 
 SETCOLOR C_PINK
 IF 元성별플래그
-    PRINTFORML %ヒロインネーム%は경험したことのない雌としての쾌락に、尊厳も屈辱も困惑も塗りつぶされてゆく……！
+    PRINTFORML %ヒロインネーム%는 경험한적 없는 암컷으로서의 쾌락에、존엄도 굴욕도 곤란도 칠해져간다……！
 ENDIF
 PRINTFORML
 PRINTFORML ……
 PRINTFORMW
 
-PRINTFORML 容赦ない凌辱のトドメに子宮へ特濃の改造정액を大量に注ぎ込まれ、
+PRINTFORML 용서없는 능욕의 끝에 자궁에 특농의 개조정액을 대량으로 주입당해、
 SETCOLOR C_D_PINK
-PRINTFORMW %ヒロインネーム%は性衝動からエナジ-を生産するプラントに作り変えられてしまった……
+PRINTFORMW %ヒロインネーム%는 성충동에서 에너지를 생산하는 플랜트로 바뀌어버렸다……
 
 PRINTFORML
 RESETCOLOR
@@ -384,10 +384,10 @@ RETURN 1
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ; ターン終了時の維持コスト
-@KOJO_PLEASUREBEAST_USEPLANT(조교대상캐릭터ID,조교獣,ヒロインネーム,조교대상캐릭터名,戦姫플래그,複数플래그 = 0,횟수플래그 = 0)
+@KOJO_PLEASUREBEAST_USEPLANT(조교대상캐릭터ID,조교수,ヒロインネーム,조교대상캐릭터名,戦姫플래그,複数플래그 = 0,횟수플래그 = 0)
 #DIM DYNAMIC 조교대상
 #DIMS DYNAMIC ヒロインネーム
-#DIM DYNAMIC 조교獣
+#DIM DYNAMIC 조교수
 #DIM DYNAMIC 戦姫플래그
 #DIM DYNAMIC 횟수플래그
 #DIM DYNAMIC 複数플래그
@@ -397,123 +397,123 @@ RETURN 1
 
 SETCOLOR C_PINK
 
-; 獣妃
+; 수妃
 IF 戦姫플래그 == 2 && !(複数플래그 && 횟수플래그 > 0)
-    PRINTFORM %ヒロインネーム%は
+    PRINTFORM %ヒロインネーム%는 
     SELECTCASE RAND:3
         CASE 0
-            PRINTFORML 甘い声音で媚びながら、
+            PRINTFORML 달콤한 목소리를 내면서、
         CASE 1
-            PRINTFORML 目にハ-トを浮かべながら、
+            PRINTFORML 눈에 하트를 띄우면서、
         CASE 2
-            PRINTFORML 熱っぽい吐息混じりに、
+            PRINTFORML 뜨거운 숨결이 섞으며、
     ENDSELECT
     SELECTCASE RAND:3
         CASE 0
-            PRINTFORMW 괴한수にお尻を向けてふりふりと振っている……
+            PRINTFORMW 괴한수에게 엉덩이를 대고 흔들고있다……
             RESETCOLOR
             SIF 조교대상캐릭터ID != -1
 	            CALL EROTIC_MOVE("晒しもの",조교대상캐릭터ID,-1,300)
         CASE 1
-            PRINTFORMW 괴한수に見せつけるように秘部を弄っている……
+            PRINTFORMW 괴한수에게 보이도록 비부를 갖고놀고있다……
             RESETCOLOR
             SIF 조교대상캐릭터ID != -1
 	            CALL EROTIC_MOVE("자위",조교대상캐릭터ID,-1,300)
         CASE 2
-            PRINTFORMW 괴한수にしなだれかかりボディタッチとライト키스を繰り返している……
+            PRINTFORMW 괴한수에게 아양떨며 기대 바디터치와 라이트키스를 반복하고있다……
             RESETCOLOR
             SIF 조교대상캐릭터ID != -1
 	            CALL EROTIC_MOVE("全身애무",조교대상캐릭터ID,-1,300)
     ENDSELECT
     PRINTL
     SETCOLOR C_PINK
-    PRINTFORM 淫らな도발にその気になった괴한수
+    PRINTFORM 음란한 도발에 그럴 생각이 된 괴한수
     SIF 複数플래그
-        PRINTFORM たち
-    PRINTFORML は%ヒロインネーム%を『生産』に使ってやることにした……
+        PRINTFORM 들
+    PRINTFORML 은 %ヒロインネーム%를『생산』에 사용하기로 했다……
     PRINTFORML 
 ELSEIF 戦姫플래그 != 3
     PRINTFORML
 ENDIF
 
 SETCOLOR C_PINK
-SELECTCASE 조교獣
-    ; ジャオ-ク
+SELECTCASE 조교수
+    ; 저오크
     CASE 39891
-        PRINTFORM ジャオ-クは괴수플랜트である%ヒロインネーム%
+        PRINTFORM 저오크는 괴한플랜트인 %ヒロインネーム%
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW の口に性器を捻じ込み、乱暴に허리を打ち付けている……
+                PRINTFORMW 의 입에 성기를 쑤셔넣어、난폭하게 허리를 쳐박고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
-		            CALL EROTIC_MOVE("フェラチオ",조교대상캐릭터ID,-1,300)
+		            CALL EROTIC_MOVE("펠라치오",조교대상캐릭터ID,-1,300)
             CASE 1
-                PRINTFORMW の奥底を叩き潰すように怒張をねじ込んでいる……
+                PRINTFORMW 의 안쪽을 때려박듯이 화난물건을 쑤셔넣고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,300)
             CASE 2
-                PRINTFORMW にのしかかり、圧し潰すように허리を振っている……
+                PRINTFORMW 위에 덮쳐、짓누르는듯이 허리를 흔들고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,300)
         ENDSELECT
-    ; ジャブロブ
+    ; 저로브
     CASE 39892
-        PRINTFORM ジャブロブは괴수플랜트である%ヒロインネーム%
+        PRINTFORM 저로브는 괴한플랜트인 %ヒロインネーム%
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW の全身を包み込み、その粘体で捏ね繰り回ししている……
+                PRINTFORMW 의 전신을 감싸안아、그 점체로 반죽하듯이 돌리고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("全身애무",조교대상캐릭터ID,-1,300)
             CASE 1
-                PRINTFORMW の両の穴にゆっくりと出入りしている……
+                PRINTFORMW 의 양쪽 구멍에 천천히 넣었다 뺐다 하고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("両穴凌辱",조교대상캐릭터ID,-1,300)
             CASE 2
-                PRINTFORMW の穴という穴全てに粘体を抽送している……
+                PRINTFORMW 의 구멍이란 구멍 전부에 점체를 피스톤질하고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("全身凌辱",조교대상캐릭터ID,-1,300)
         ENDSELECT
-    ; ジャロ-パ
+    ; 저로파
     CASE 39893
-        PRINTFORM ジャロ-パは괴수플랜트である%ヒロインネーム%
+        PRINTFORM 저로파는 괴한플랜트인 %ヒロインネーム%
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW の全身を촉수という촉수で嬲っている……
+                PRINTFORMW 의 전신을 촉수란 촉수로 농락하고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("全身애무",조교대상캐릭터ID,-1,300)
             CASE 1
-                PRINTFORMW の両穴を執拗に촉수で犯している……
+                PRINTFORMW 의 양구멍을 집요하게 촉수로 범하고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("両穴凌辱",조교대상캐릭터ID,-1,300)
             CASE 2
-                PRINTFORMW の牝穴全てに촉수をねじ込み、全身を犯している……
+                PRINTFORMW 의 암컷구멍 전부에 촉수를 쑤셔넣어、전신을 범하고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("묘상捕縛",조교대상캐릭터ID,-1,300)
         ENDSELECT
-    ; ジャアイズ
+    ; 저아이즈
     CASE 39894
-        PRINTFORM ジャアイズは괴수플랜트である%ヒロインネーム%
+        PRINTFORM 저아이즈는 괴한플랜트인 %ヒロインネーム%
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW に자신의 촉수への봉사をさせている……
+                PRINTFORMW 에게 자신의 촉수로의 봉사를 시키고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("催眠フェラ",조교대상캐릭터ID,-1,300)
             CASE 1
-                PRINTFORMW に何度も何度も자위をさせている……
+                PRINTFORMW 에게 몇번이나 몇번이나 자위를 시키고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("催眠자위",조교대상캐릭터ID,-1,300)
             CASE 2
-                PRINTFORMW に自ら촉수を삽입して허리を振るよう命令している……
+                PRINTFORMW 에게 직접 촉수를 삽입해서 허리를 흔들라고 명령하고있다……
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("催眠自発騎乗位",조교대상캐릭터ID,-1,300)
@@ -526,16 +526,16 @@ ENDSELECT
 IF !(複数플래그 && 횟수플래그 != 2)
     PRINTFORML
     SETCOLOR C_D_PINK
-    ; 獣妃
+    ; 수妃
     IF 戦姫플래그 >= 2
-        PRINTFORML 괴한수妃として完全に作り変えられた%ヒロインネーム%のエナジ-プラント子宮は、
-        PRINTFORMW その「褒美」に歓喜の脈動を起こしながら莫大な量のエナジ-を生み出している……！
+        PRINTFORML 괴한수비로서 완전히 바뀐 %ヒロインネーム%의 에너지 플랜트 자궁、
+        PRINTFORMW 그「포상」에 환희의 맥동을 일으키며 막대한 양의 에너지를 낳고있다……！
     ELSEIF 戦姫플래그 == 1
-        PRINTFORML 계한전희である%ヒロインネーム%の改造子宮は元より괴한수の淫気に敏感なため、
-        PRINTFORMW 心に反して패배宣言のように膨大なエナジ-を生み出して続けている……！
+        PRINTFORML 계한전희인 %ヒロインネーム%의 개조자궁은 원래부터 괴한수의 음기에 민감하기 때문에、
+        PRINTFORMW 마음에 반하는 패배선언처럼 막대한 에너지를 계속 낳고있다……！
     ELSE
-        PRINTFORML プラントとして改造されてしまっている%ヒロインネーム%の子宮は
-        PRINTFORMW そんな容赦のない責め苦からもエナジ-を生み出している……！
+        PRINTFORML 플랜트로 개조당해버린 %ヒロインネーム%의 자궁은
+        PRINTFORMW 그런 용서없는 고통에서도 에너지를 낳고있다……！
     ENDIF
 ENDIF
 
@@ -545,53 +545,53 @@ RESETCOLOR
 RETURN 1
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 誘発、起動효과とか(獣妃は除く)
-@KOJO_PLEASUREBEAST_EFFECT(조교대상캐릭터ID,シチュ,조교獣,ヒロインネーム)
+; 誘発、起動효과とか(수妃は除く)
+@KOJO_PLEASUREBEAST_EFFECT(조교대상캐릭터ID,シチュ,조교수,ヒロインネーム)
 #DIM DYNAMIC 조교대상
 #DIMS DYNAMIC シチュ
 #DIMS DYNAMIC ヒロインネーム
-#DIM DYNAMIC 조교獣
+#DIM DYNAMIC 조교수
 #DIM DYNAMIC 조교대상캐릭터ID
 
 SETCOLOR C_PINK
 PRINTFORML
 
-SELECTCASE 조교獣
-    ; ジャオ-ク
+SELECTCASE 조교수
+    ; 저오크
     CASE 39891
-        PRINTFORML 周囲の壊悍エナジ-で強化されたジャオ-クは%ヒロインネーム%を乱暴に抑え込み、凌辱する……！
-        PRINTFORMW プラントにできないほど再起不能になった%ヒロインネーム%を尻目にジャオ-クはよりその力が強大になったようだ……
+        PRINTFORML 주위의 괴한 에너지로 강화된 저오크는 %ヒロインネーム%를 난폭하게 누르고、능욕한다……！
+        PRINTFORMW 플랜트로 만들지 못할정도로 재기불능이 된 %ヒロインネーム%를 곁눈으로 저오크는 보다 그 힘이 강대해진듯 하다……
         RESETCOLOR
         SIF 조교대상캐릭터ID != -1
 		    CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,200)
-    ; ジャブロブ
+    ; 저로브
     CASE 39892
-        PRINTFORML 周囲の壊悍エナジ-で強化されたジャブロブは%ヒロインネーム%めがけて大量の粘体を散布する……！
-        PRINTFORMW %ヒロインネーム%は粘体に振りほどくのに気を取られて上手く動けなくなっている……！
+        PRINTFORML 주위의 괴한 에너지로 강화된 저로브는 %ヒロインネーム% 목표에게 대량의 점체를 산포한다……！
+        PRINTFORMW %ヒロインネーム%는 점체를 떨치는데 정신이 팔려 제대로 움직이지 못하게 되었다……！
         RESETCOLOR
         SIF 조교대상캐릭터ID != -1
 		    CALL EROTIC_MOVE("ぶっかけ",조교대상캐릭터ID,-1,200)
-    ; ジャロ-パ
+    ; 저로파
     CASE 39893
-        PRINTFORM 周囲の壊悍エナジ-で強化されたジャロ-パは%ヒロインネーム%を
+        PRINTFORM 주위의 괴한 에너지로 강화된 저로파는 %ヒロインネーム%를
         SELECTCASE シチュ
             CASE "能力１"
-                PRINTFORML 素早く촉수で拘束してゆく……！
-                PRINTFORMW 全身をまさぐりつつ辱めるような자세を取らせようとする촉수に%ヒロインネーム%は思わず怯んでしまう……！
+                PRINTFORML 재빠른 촉수로 구속해간다……！
+                PRINTFORMW 전신을 만지작거리며 능욕하는 자세를 잡으려 하는 촉수에게 %ヒロインネーム%는 자신도모르게 겁먹어버렸다……！
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("拘束晒し",조교대상캐릭터ID,-1,200)
             CASE "能力２"
-                PRINTFORML その体内へ取り込んでしまった……！
-                PRINTFORMW 脱出は可能だろうがしばらく%ヒロインネーム%は動けそうにない……！
+                PRINTFORML 그 몸에 들어가버렸다……！
+                PRINTFORMW 탈출은 가능하겠지만 잠시동안 %ヒロインネーム%는 움직일수 있을것 같지 않다……！
                 RESETCOLOR
                 SIF 조교대상캐릭터ID != -1
 		            CALL EROTIC_MOVE("丸飲み",조교대상캐릭터ID,-1,200)
         ENDSELECT
-    ; ジャアイズ
+    ; 저아이즈
     CASE 39894
-        PRINTFORML 周囲の壊悍エナジ-で強化されたジャアイズは%ヒロインネーム%に強力な催眠光線を浴びせる……！
-        PRINTFORMW ジャアイズの瞳をまともに見てしまった%ヒロインネーム%は虚ろな目で괴한수のテリトリ-へ足を運んでゆく……
+        PRINTFORML 주위의 괴한 에너지로 강화된 저아이즈는 %ヒロインネーム%에게 강력한 최면광선을 쬔다……！
+        PRINTFORMW 저아이즈의 눈동자를 제대로 봐버린 %ヒロインネーム%는 공허한 눈으로 괴한수의 영역으로 발을 옮겨간다……
         RESETCOLOR
         SIF 조교대상캐릭터ID != -1
 		    CALL EROTIC_MOVE("淫紋の疼き",조교대상캐릭터ID,-1,200)
@@ -604,24 +604,24 @@ RESETCOLOR
 RETURN 1
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; 獣妃の효과
-@KOJO_PLEASUREBEAST_EFFECT_BEASTQUEEN(조교대상カードID = -1,シチュ,조교獣妃ID = -1,ヒロインネーム = "",獣妃ヒロインネーム = "",성별플래그 = -1,戦姫플래그 = -1)
+; 수妃의 효과
+@KOJO_PLEASUREBEAST_EFFECT_BEASTQUEEN(조교대상カードID = -1,シチュ,조교수妃ID = -1,ヒロインネーム = "",수妃ヒロインネーム = "",성별플래그 = -1,戦姫플래그 = -1)
 #DIM DYNAMIC 조교대상カードID
 #DIM DYNAMIC 조교대상캐릭터ID
 #DIMS DYNAMIC シチュ
 #DIMS DYNAMIC ヒロインネーム
-#DIM DYNAMIC 조교獣妃ID
+#DIM DYNAMIC 조교수妃ID
 #DIM DYNAMIC 성별플래그
 #DIM DYNAMIC 戦姫플래그
-#DIM DYNAMIC 獣妃플래그
-#DIMS DYNAMIC 獣妃ヒロインネーム
+#DIM DYNAMIC 수妃플래그
+#DIMS DYNAMIC 수妃ヒロインネーム
 
 #DIMS DYNAMIC 조교대상캐릭터名
 
 CALL CARD_EROTICS(조교대상カードID)
 조교대상캐릭터ID = RESULT
-CALL CARD_EROTICS(조교獣妃ID)
-조교獣妃ID = RESULT
+CALL CARD_EROTICS(조교수妃ID)
+조교수妃ID = RESULT
 IF 조교대상캐릭터ID != -1
     조교대상캐릭터名 = %NAME:조교대상캐릭터ID%
 ELSE
@@ -635,87 +635,87 @@ SIF ヒロインネーム == ""
 PRINTFORML
 SELECTCASE シチュ
     CASE "특수소환時"
-        PRINTFORML %獣妃ヒロインネーム%が周囲から壊悍エナジ-を集めて操作すると、斃れたはずの괴한수が再び起き上がる……！
+        PRINTFORML %수妃ヒロインネーム%가 주위에서 괴한 에너지를 모아서 조작하니、쓰러졌을터인 괴한수가 다시 일어났다……！
         SETCOLOR C_PINK
-        PRINTFORM 괴한수が完全に復活したのを確認した%獣妃ヒロインネーム%は
+        PRINTFORM 괴한수가 완전히 부활한것을 확인한 %수妃ヒロインネーム%는
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORML 甘い声音で媚びながら、
-            CASE 1
-                PRINTFORML 目にハ-トを浮かべながら、
-            CASE 2
-                PRINTFORML 熱っぽい吐息混じりに、
+                PRINTFORML 달콤한 목소리를 내면서、
+        CASE 1
+            PRINTFORML 눈에 하트를 띄우면서、
+        CASE 2
+            PRINTFORML 뜨거운 숨결이 섞으며、
         ENDSELECT
         SELECTCASE RAND:3
             CASE 0
-                PRINTFORMW 괴한수にお尻を向けてふりふりと振りはじめた……
+                PRINTFORMW 괴한수에게 엉덩이를 대고 흔들고있다……
                 RESETCOLOR
-                SIF 조교獣妃ID != -1
-	                CALL EROTIC_MOVE("晒しもの",조교獣妃ID,-1,300)
+                SIF 조교대상캐릭터ID != -1
+	            CALL EROTIC_MOVE("晒しもの",조교대상캐릭터ID,-1,300)
             CASE 1
-                PRINTFORMW 괴한수に見せつけるように音を立てて秘部を弄りはじめた……
+                PRINTFORMW 괴한수에게 보이도록 비부를 갖고놀고있다……
                 RESETCOLOR
-                SIF 조교獣妃ID != -1
-	                CALL EROTIC_MOVE("자위",조교獣妃ID,-1,300)
+                SIF 조교대상캐릭터ID != -1
+	            CALL EROTIC_MOVE("자위",조교대상캐릭터ID,-1,300)
             CASE 2
-                PRINTFORMW 괴한수にしなだれかかりボディタッチとライト키스をしはじめた……
+                PRINTFORMW 괴한수에게 아양떨며 기대 바디터치와 라이트키스를 반복하고있다……
                 RESETCOLOR
-                SIF 조교獣妃ID != -1
-	                CALL EROTIC_MOVE("全身애무",조교獣妃ID,-1,300)
+                SIF 조교수妃ID != -1
+	                CALL EROTIC_MOVE("全身애무",조교수妃ID,-1,300)
         ENDSELECT
         PRINTL
         SETCOLOR C_PINK
-        PRINTFORM 淫らな도발にその気になった
+        PRINTFORM 음란한 도발에 그럴 생각이 된 
     CASE "無効時"
-        PRINTFORMW 상대の場で発生しはじめた力を、%獣妃ヒロインネーム%は周囲に溢れる壊悍エナジ-で事も無げにかき決してみせた……！
+        PRINTFORMW 상대의 필드에서 발생하기 시작한 힘을、%수妃ヒロインネーム%는 주위에 넘치는 괴한 에너지로 아무렇지 않듯이 지워보였다……！
     CASE "破壊時"
         IF 성별플래그 == 無性
-            PRINTFORML さらに%獣妃ヒロインネーム%は膨大な壊悍エナジ-の余波を%ヒロインネーム%に向けて放ち、あっけなく破壊してしまった！
+            PRINTFORML 더욱이 %수妃ヒロインネーム%는 막대항 괴한 에너지의 여파를 %ヒロインネーム%를 향해 쏘아、어이없이 파괴해버렸다！
         ELSE
             SETCOLOR C_PINK
-            PRINTFORML さらに膨大な壊悍エナジ-の余波を利用して、%獣妃ヒロインネーム%は%ヒロインネーム%に襲い掛かる……！
-            PRINTFORM 一瞬で%ヒロインネーム%を制圧した%獣妃ヒロインネーム%は、
+            PRINTFORML 더욱이 막대한 괴한 에너지의 여파를 이용해서、%수妃ヒロインネーム%는 %ヒロインネーム%를 덮친다……！
+            PRINTFORM 한순간에 %ヒロインネーム%를 제압한 %수妃ヒロインネーム%는、
             IF 성별플래그 == 雄性
-                PRINTFORML 無理矢理壊悍エナジ-を注入し%ヒロインネーム%を발기させると、
-                PRINTFORMW 涎のように愛液を垂らす蜜항아리でその男性器を呑み込み、容赦なく杭打ちピストンを始めた……！
+                PRINTFORML 무리하게 괴한 에너지를 주입하여 %ヒロインネーム%를 발기시키고、
+                PRINTFORMW 침같은 애액을 흘리는 꿀단지로 그 남성기를 삼켜、용서없이 말뚝박기 피스톤을 시작했다……！
                 RESETCOLOR
-                IF 조교獣妃ID != -1
+                IF 조교수妃ID != -1
                     IF 조교대상캐릭터ID != -1
-                        CALL EROTIC_MOVE("催眠自発騎乗位",조교獣妃ID,조교대상캐릭터ID,300)
-                        CALL EROTIC_MOVE("催眠自発騎乗位",조교獣妃ID,조교대상캐릭터ID,300)
-                        CALL EROTIC_MOVE("催眠自発騎乗位",조교獣妃ID,조교대상캐릭터ID,1000)
+                        CALL EROTIC_MOVE("催眠自発騎乗位",조교수妃ID,조교대상캐릭터ID,300)
+                        CALL EROTIC_MOVE("催眠自発騎乗位",조교수妃ID,조교대상캐릭터ID,300)
+                        CALL EROTIC_MOVE("催眠自発騎乗位",조교수妃ID,조교대상캐릭터ID,1000)
                     ELSE
-                        CALL EROTIC_MOVE("催眠自発騎乗位",조교獣妃ID,-1,200)
-                        CALL EROTIC_MOVE("催眠自発騎乗位",조교獣妃ID,-1,200)
-                        CALL EROTIC_MOVE("催眠自発騎乗位",조교獣妃ID,-1,500)
+                        CALL EROTIC_MOVE("催眠自発騎乗位",조교수妃ID,-1,200)
+                        CALL EROTIC_MOVE("催眠自発騎乗位",조교수妃ID,-1,200)
+                        CALL EROTIC_MOVE("催眠自発騎乗位",조교수妃ID,-1,500)
                     ENDIF
                 ENDIF
                 PRINTL
-                PRINTFORML ……やがて壊悍エナジ-をもってしても硬さを取り戻せなくなった男根を名残惜しげに吸いつく秘唇から引き抜くと、
-                PRINTFORMW %獣妃ヒロインネーム%は煌々と光る자신의 下腹部の淫紋を撫でながら、%ヒロインネーム%を解放した……
+                PRINTFORML ……이윽고 괴한 에너지를 가지고도 딱딱함을 유지할수 없게 된 남근을 아쉬운듯이 빨아들여 비순에서 떼어내니、
+                PRINTFORMW %수妃ヒロインネーム%는 번쩍번쩍 빛나는 자신의 하복부의 음문을 쓰다듬으며、%ヒロインネーム%를 해방했다……
             ELSE
-                PRINTFORML 壊悍エナジ-によって黒く脈打つ凶悪な疑似男性器を作り上げると、
-                PRINTFORMW %ヒロインネーム%の肢体を貪るように凌辱し始めた……！
+                PRINTFORML 괴한 에너지에 의해 검게 맥동하는 흉악한 유사 남성기를 만들어내니、
+                PRINTFORMW %ヒロインネーム%의 지체를 탐하는듯이 능욕하기 시작했다……！
                 RESETCOLOR
-                IF 조교獣妃ID != -1
+                IF 조교수妃ID != -1
                     IF 조교대상캐릭터ID != -1
-                        CALL EROTIC_MOVE("全身凌辱",조교대상캐릭터ID,조교獣妃ID,500)
-                        CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,조교獣妃ID,500)
-                        CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,조교獣妃ID,1000)
+                        CALL EROTIC_MOVE("全身凌辱",조교대상캐릭터ID,조교수妃ID,500)
+                        CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,조교수妃ID,500)
+                        CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,조교수妃ID,1000)
                     ELSE
-                        CALL EROTIC_MOVE("Ｃ単発",조교獣妃ID,-1,200)
-                        CALL EROTIC_MOVE("Ｃ単発",조교獣妃ID,-1,200)
-                        CALL EROTIC_MOVE("Ｃ単発",조교獣妃ID,-1,500)
+                        CALL EROTIC_MOVE("Ｃ単発",조교수妃ID,-1,200)
+                        CALL EROTIC_MOVE("Ｃ単発",조교수妃ID,-1,200)
+                        CALL EROTIC_MOVE("Ｃ単発",조교수妃ID,-1,500)
                     ENDIF
                 ENDIF
                 PRINTL
                 SETCOLOR C_PINK
                 IF 戦姫플래그 > 0
-                    PRINTFORML そしてトドメに%獣妃ヒロインネーム%は%ヒロインネーム%の最奥に疑似男性器を叩き込んでそのまま特濃の改造정액を流し込み、
-                    PRINTFORMW %ヒロインネーム%を性衝動からエナジ-を生産するプラントに作り変えてしまった……
+                    PRINTFORML 그리고 마무리로 %수妃ヒロインネーム%는 %ヒロインネーム%의 가장 안쪽에 유사남성근을 때려박아 그대로 특농의 개조정액을 흘려넣어、
+                    PRINTFORMW %ヒロインネーム%를 성충동으로 에너지를 생산하는 플랜트로 바꾸어버렸다……
                 ELSE
-                    PRINTFORML ……やがて生成時の壊悍エナジ-を使い切り、跳ねさせながら引き抜いた疑似男性器が崩れると、
-                    PRINTFORMW %獣妃ヒロインネーム%は煌々と光る자신의 下腹部の淫紋を撫でながら、%ヒロインネーム%を解放した……
+                    PRINTFORML ……이윽고 생성시의 괴한 에너지를 전부 써、튕기면서 빼버린 유사 남성근이 무너지니、
+                    PRINTFORMW %수妃ヒロインネーム%는 번쩍번쩍 빛나는 자신의 하복부에 음문을 쓰다듬으며、%ヒロインネーム%를 해방했다……
                 ENDIF
             ENDIF
         ENDIF
@@ -730,14 +730,14 @@ ENDIF
 RETURN 1
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-; プレジャリアに悪堕ち(마법)
+; 플레저리아に悪堕ち(마법)
 @KOJO_PLEASUREBEAST_MARRIGE(조교대상캐릭터ID,ヒロインネーム,횟수플래그)
 #DIM DYNAMIC 조교대상
 #DIMS DYNAMIC ヒロインネーム
 #DIM DYNAMIC 조교대상캐릭터ID
 #DIM DYNAMIC 횟수플래그
 
-PRINTFORML 조교シ-ンを省略しますか？
+PRINTFORML 조교씬을 생략하시겠습니까？
 CALL YN_CHOICE()
 SIF RESULT == 0
     RETURN 1
@@ -745,49 +745,49 @@ SIF RESULT == 0
 SETCOLOR C_PINK
 PRINTFORML
 
-PRINTFORML 괴한수に凌辱され、エナジ-を生み出すプラントとして改造されてしまった%ヒロインネーム%……
-PRINTFORM しかし、괴한수
+PRINTFORML 괴한수에게 능욕당해、에너지를 낳는 플랜트로 개조되어버린 %ヒロインネーム%……
+PRINTFORM 하지만、괴한수
 SIF 횟수플래그
-    PRINTFORM たち
-PRINTFORML は%ヒロインネーム%を「それ以上」に仕上げるべく、
-PRINTFORM 屹立した逸物
+    PRINTFORM 들
+PRINTFORML 은 %ヒロインネーム%를「그 이상」으로 끝내기 위해、
+PRINTFORM 우뚝 솟은 훌륭한 물건
 SIF 횟수플래그
-    PRINTFORM や蠢く촉수
-PRINTFORM を見せつけるように%ヒロインネーム%
+    PRINTFORM 과 꿈틀거리는 촉수
+PRINTFORM 를 보여주듯이 %ヒロインネーム%
 IF 횟수플래그
-    PRINTFORMW を取り囲む……
+    PRINTFORMW 를 둘러싸……
 ELSE
-    PRINTFORMW に近づいてゆく……
+    PRINTFORMW 에게 가까이 다가가……
 ENDIF
 PRINTL
 PRINTFORM 괴한수
 SIF 횟수플래그
-    PRINTFORM たち
-PRINTFORMW は%ヒロインネーム%の穴という穴を徹底的に凌辱する……！
+    PRINTFORM 들
+PRINTFORMW 은 %ヒロインネーム%의 구멍이란 구멍을 철저하게 능욕한다……！
 PRINTL
 SETCOLOR C_D_PINK
-PRINTFORMW "自らの肢体は괴한수たちの욕망を充足させ、その「寵愛」からエナジ-を生産するためだけに存在するのであり、"
+PRINTFORMW "자신의 지체는 괴한수들의 욕망을 충족시켜、그「총애」로 에너지를 생산하기 위할뿐인 존재이며、"
 IF 조교대상캐릭터ID != -1
     RESETCOLOR
 	 CALL EROTIC_MOVE("前穴凌辱",조교대상캐릭터ID,-1,300)
     SETCOLOR C_D_PINK
 ENDIF
 PRINTL
-PRINTFORMW "괴한수たちは、そんな牝プラントたちの主にして所有者にして消費者であり、"
+PRINTFORMW "괴한수들은、그런 암컷플랜트들의 주인이자 소유자이자 소비자이며、"
 IF 조교대상캐릭터ID != -1
     RESETCOLOR
 	 CALL EROTIC_MOVE("両穴凌辱",조교대상캐릭터ID,-1,300)
     SETCOLOR C_D_PINK
 ENDIF
 PRINTL
-PRINTFORMW "彼女たちは従い、尽くし、愛し、その為に力を振るう従僕にして娼婦にして『獣妃』。"
+PRINTFORMW "그녀들은 따르고、전력을다하고、사랑하고、그걸 위해 힘을 휘두루는 종복이자 창부이자『수비』。"
 IF 조교대상캐릭터ID != -1
     RESETCOLOR
 	 CALL EROTIC_MOVE("全身凌辱",조교대상캐릭터ID,-1,300)
     SETCOLOR C_PINK
 ENDIF
 PRINTL
-PRINTFORMW そのような「礼儀」を肉欲と共に叩き込まれ、%ヒロインネーム%は思考の隅から隅まで念入りに「調整」されてゆく……！
+PRINTFORMW 그러한「의례」를 육욕과 같이 때려박아진、%ヒロインネーム%는 사고 구석구석까지 꼼꼼하게「조정」당해간다……！
 
 RESETCOLOR
 IF 조교대상캐릭터ID != -1
@@ -796,22 +796,22 @@ ENDIF
 
 PRINTL
 SETCOLOR C_PINK
-PRINTFORML やがて、%ヒロインネーム%が声も上げなくなった頃、
+PRINTFORML 이윽고、%ヒロインネーム%가 목소리를 내지 않게 되었을 즈음、
 PRINTFORM 괴한수
 SIF 횟수플래그
-    PRINTFORM の一体
-PRINTFORMW が男性器を%ヒロインネーム%の顔の前に差し出すと、
+    PRINTFORM 중 하나
+PRINTFORMW 가 남성기를 %ヒロインネーム%의 얼굴 앞에 꺼내니、
 PRINTL
-PRINTFORMW %ヒロインネーム%はふらふらと四つ足で自身と獣の体液に塗れたそれに近づいていき、
+PRINTFORMW %ヒロインネーム%는 비틀비틀 네발로 자신과 짐승의 체액으로 덧칠된 그것에 가까이가、
 SETCOLOR C_D_PINK
-PRINTFORMW 前脚を揃え、わざとらしくリップ音を立ててその先端に、宣誓のように口付けを捧げた……
+PRINTFORMW 앞다리를 갖춰、일부러인듯 입술소리를 내며 그 끝부분에、선서하듯이 입맞춤을 바쳤다……
 PRINTL
 
-PRINTFORML ……<<プレジャ-トランス マリッジフォ-ム>>……
+PRINTFORML ……<<플레저 트랜스 마릿지폼>>……
 PRINTL
 PRINTW
 CALL FLASH(2,C_D_PINK)
 SETCOLOR C_PINK
-PRINTFORM その誓いを認めたかのように、%ヒロインネーム%の
+PRINTFORM 그 맹새를 확인하듯이、%ヒロインネーム%의
 
 RETURN 2

@@ -88,7 +88,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		효과範囲마함 = 1
 		효과範囲상대필드 = 1
 		효과範囲상대마함 = 1
-		효과条件カテゴリ = 괴수플랜트
+		효과条件カテゴリ = 괴한플랜트
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT == 1
 			RETURN 0
@@ -160,7 +160,7 @@ ELSEIF 종류 == 묘지起動
 	효과範囲마함 = 1
 	효과範囲상대필드 = 1
 	효과範囲상대마함 = 1
-	효과条件カテゴリ = 괴수플랜트
+	효과条件カテゴリ = 괴한플랜트
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -181,8 +181,8 @@ ENDIF
 
 #DIMS DYNAMIC 보존ヒロインネーム
 #DIM DYNAMIC 보존変身元ID
-#DIM DYNAMIC 괴수플랜트위치
-#DIMS DYNAMIC 괴수플랜트名前
+#DIM DYNAMIC 괴한플랜트위치
+#DIMS DYNAMIC 괴한플랜트名前
 #DIM DYNAMIC 조교カードID
 #DIM DYNAMIC 戦姫플래그
 #DIM DYNAMIC 조교수
@@ -222,13 +222,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 				SIF MATCH(RESULTS, "계한전희")
 					戦姫플래그 = 1
 				戦姫戦闘場所 = 選択カード牝
-				괴수플랜트元オーナー = GETVAR(@"%対面者%_MZ_所有:戦姫戦闘場所")
+				괴한플랜트元オーナー = GETVAR(@"%対面者%_MZ_所有:戦姫戦闘場所")
 				CALL CARD_DISPOSE(対面者,"필드",選択カード牝,破壊行き)
 				IF RESULT == 1 && 수성별 == 雄性 && 마함数(対面者) != 5
 					CALL FULLRESET
-					괴수플랜트위치 = 現마함(対面者)
+					괴한플랜트위치 = 現마함(対面者)
 					CALLFORM CARDNAME_{選択カード牝ID}("名前")
-					괴수플랜트名前 = %RESULTS%
+					괴한플랜트名前 = %RESULTS%
 					IF 戦姫플래그
 						보존ヒロインネーム = %GETVARS(@"%対面者%_MZ_戒悍ネーム:戦姫戦闘場所")%
 						보존変身元ID = GETVAR(@"%対面者%_MZ_戒悍変身元ID:戦姫戦闘場所")
@@ -236,8 +236,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 						SETVAR @"%対面者%_MZ_戒悍変身元ID:戦姫戦闘場所",0
 					ENDIF
 					CALL FULLRESET
-					효과条件名前 = %괴수플랜트名前%
-					IF 괴수플랜트元オーナー == 1
+					효과条件名前 = %괴한플랜트名前%
+					IF 괴한플랜트元オーナー == 1
 						효과範囲묘지 = 1
 						CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",2)
 					ELSE
@@ -246,15 +246,15 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 					ENDIF
 					조교カードID = RESULT:1
 					IF 보존ヒロインネーム != ""
-						CALL CARD_SET_RENAME(対面者,"마함",괴수플랜트위치,보존ヒロインネーム)
-						CALL CARD_SET_CATEGORY(対面者,"마함",괴수플랜트위치,"계한전희")
-						CALL CARD_SET_CATEGORY(対面者,"마함",괴수플랜트위치,"괴수플랜트",1)
-						SETVAR @"%対面者%_魔_戒悍ネーム:괴수플랜트위치",보존ヒロインネーム
+						CALL CARD_SET_RENAME(対面者,"마함",괴한플랜트위치,보존ヒロインネーム)
+						CALL CARD_SET_CATEGORY(対面者,"마함",괴한플랜트위치,"계한전희")
+						CALL CARD_SET_CATEGORY(対面者,"마함",괴한플랜트위치,"괴한플랜트",1)
+						SETVAR @"%対面者%_魔_戒悍ネーム:괴한플랜트위치",보존ヒロインネーム
 					ELSE
-						CALL CARD_SET_CATEGORY(対面者,"마함",괴수플랜트위치,"괴수플랜트")
+						CALL CARD_SET_CATEGORY(対面者,"마함",괴한플랜트위치,"괴한플랜트")
 					ENDIF
 					IF 보존変身元ID != 0
-						SETVAR @"%対面者%_魔_戒悍変身元ID:괴수플랜트위치",보존変身元ID
+						SETVAR @"%対面者%_魔_戒悍変身元ID:괴한플랜트위치",보존変身元ID
 					ENDIF
 					SIF 보존変身元ID != 0
 						조교カードID = 보존変身元ID
@@ -281,7 +281,7 @@ ELSEIF 종류 == 묘지起動
 	        효과範囲마함 = 1
 	        효과範囲상대필드 = 1
 	        효과範囲상대마함 = 1
-	        효과条件カテゴリ = 괴수플랜트
+	        효과条件カテゴリ = 괴한플랜트
 			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場単体",場所,"選択")
 		    IF RESULT == 1
 				選択カード牝 = RESULT:1
