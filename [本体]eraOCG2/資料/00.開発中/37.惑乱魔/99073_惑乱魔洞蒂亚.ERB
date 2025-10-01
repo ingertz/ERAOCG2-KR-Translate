@@ -51,11 +51,11 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
 PRINTL このカードは手札から「惑乱魔」モンスタ或通常罠カード１枚を捨て、セットしたターンに発動する事もできる。
 CALLFORM CARD_ABLE(1,魔罠起動,フリー誘発)
-PRINTL ①：このカードは発動後、モンスターンに守備表示で特殊召喚する。
+PRINTL ①：このカードは発動後、モンスターンに守備表示で特殊소환する。
 PRINTL 那之后可以用自分フィールドのモンスタ为素材,从EXデッキ把1只「惑乱魔」モンスタエクシーズ召唤或リンク召唤。
 CALLFORM CARD_ABLE(1,墓地起動,フリー誘発)
 PRINTL ②：自分フィールド有「惑乱魔」エクシーズモンスタ或link2以上的「惑乱魔」リンクモンスタ,墓地のこのカードを除外して発動できる。
-PRINTL 相手は墓地から持有性別のモンスター１体を特殊召喚する,この効果で特殊召喚したモンスター视为「蜜罐」。
+PRINTL 相手は墓地から持有性別のモンスター１体を特殊소환する,この効果で特殊소환したモンスター视为「蜜罐」。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -107,7 +107,7 @@ ELSEIF 種類 == 墓地起動 || (種類 == フリー誘発 && ゾーン == "墓
 	効果範囲相手墓地 = 1
 	効果条件性別 = 性別在
 	効果条件種類 = モン全般
-	効果条件召喚可 = 1
+	効果条件소환可 = 1
 	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -136,8 +136,8 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC 選択カード
 #DIMS DYNAMIC 対面者
-#DIM DYNAMIC 召喚カード
-#DIM DYNAMIC 召喚カードID
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC 소환カードID
 
 CALL 対面者判定(決闘者)
 対面者 = %RESULTS%
@@ -165,18 +165,18 @@ IF (種類 == 魔罠起動 || (種類 == フリー誘発 && ゾーン == "魔罠
 				効果条件カテゴリ = 惑乱魔
 				効果条件種類:0 = エクシーズ
 				効果条件種類:1 = リンク
-				効果条件召喚可 = 1
+				効果条件소환可 = 1
 				CALL CARD_CHOOSE_BASIC(決闘者, "",ゾーン,場所)
-				召喚カード = RESULT
-				IF 召喚カード != 9999
-					召喚カードID = RESULT:99
-					CALLFORM CARD_{召喚カードID}, "種類"
+				소환カード = RESULT
+				IF 소환カード != 9999
+					소환カードID = RESULT:99
+					CALLFORM CARD_{소환カードID}, "種類"
 					IF RESULT == エクシーズ
-						TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
-						CALL XYZSUMMON(決闘者, 召喚カード)
+						TRYCALLFORM CARDSUMMON_{소환カードID}(決闘者,소환カード)
+						CALL XYZSUMMON(決闘者, 소환カード)
 					ELSEIF RESULT == リンク
-						TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
-						CALL LINSUMMON(決闘者, 召喚カード)
+						TRYCALLFORM CARDSUMMON_{소환カードID}(決闘者,소환カード)
+						CALL LINSUMMON(決闘者, 소환カード)
 					ENDIF
 				ENDIF
 			ENDIF
@@ -199,18 +199,18 @@ ELSEIF 種類 == 魔罠起動 || (種類 == フリー誘発 && GROUPMATCH(ゾー
 			効果条件カテゴリ = 惑乱魔
 			効果条件種類:0 = エクシーズ
 			効果条件種類:1 = リンク
-			効果条件召喚可 = 1
+			効果条件소환可 = 1
 			CALL CARD_CHOOSE_BASIC(決闘者, "EXデッキ",ゾーン,場所)
-			召喚カード = RESULT
-			IF 召喚カード != 9999
-				召喚カードID = RESULT:99
-				CALLFORM CARD_{召喚カードID}, "種類"
+			소환カード = RESULT
+			IF 소환カード != 9999
+				소환カードID = RESULT:99
+				CALLFORM CARD_{소환カードID}, "種類"
 				IF RESULT == エクシーズ
-					TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
-					CALL XYZSUMMON(決闘者, 召喚カード)
+					TRYCALLFORM CARDSUMMON_{소환カードID}(決闘者,소환カード)
+					CALL XYZSUMMON(決闘者, 소환カード)
 				ELSEIF RESULT == リンク
-					TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
-					CALL LINSUMMON(決闘者, 召喚カード)
+					TRYCALLFORM CARDSUMMON_{소환カードID}(決闘者,소환カード)
+					CALL LINSUMMON(決闘者, 소환カード)
 				ENDIF
 			ENDIF
 		ENDIF

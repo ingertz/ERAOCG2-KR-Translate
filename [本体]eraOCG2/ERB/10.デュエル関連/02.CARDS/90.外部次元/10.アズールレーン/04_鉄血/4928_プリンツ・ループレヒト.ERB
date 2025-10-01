@@ -117,7 +117,7 @@ ELSEIF 종류 == 효과後誘発
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
-효과条件名前 = 특별계획 순양전함 프린츠 루프레히트
+	효과条件名前 = 특별계획 순양전함 프린츠 루프레히트
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般")
 	IF RESULT == 1
 		SIF カード소환先 == 場所
@@ -163,14 +163,18 @@ ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4928,2)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き,1)
-		PRINTFORML 레벨을 ３つ上げる몬스터를 選択してください。
+		PRINTFORML 레벨을 ３개 올릴 몬스터를 선택해주세요。
+
 		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
 		CALLFORM 효과条件レベル_ADV(7, "以下")
 		효과条件종류 = EX以外全般
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드単体",場所,"選択")
-		대상者 = %대상者（CS）%
-		選択カード = 選択カード（CS）
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			대상者 = %대상者（CS）%
+			選択カード = 選択カード（CS）
 			CALL SET_FIELD_INFO(대상者,"필드",選択カード,"永星",3)
 			CALL CARD_GENERATE(듀얼리스트,104928)
 		ENDIF

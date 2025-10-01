@@ -35,9 +35,9 @@ RETURN 0
 
 CALL TEXT_DECORATION("ROGUE")
 CALL CARD_ABLE(1,마함起動,손패起動)
-PRINTL ①：자신/ 상대 필드에 「프린세스   고블린」 이외에 암컷 몬스터 1장을 대상으로 하여 발동할 수 있다。
-PRINTL 대상 몬스터를 소재로, "프린세스   고블린" 1장을 엑시즈 소환한다。
-PRINTL 이 효과로 엑시즈 소환한"프린세스  고블린"은, 소재로 한 암컷 몬스터와 동명의 카드로 취급한다。
+PRINTL ①：자신/ 상대 필드에 「고블린 프린세스」 이외에 암컷 몬스터 1장을 대상으로 하여 발동할 수 있다。
+PRINTL 대상 몬스터를 소재로, "고블린 프린세스" 1장을 엑시즈 소환한다。
+PRINTL 이 효과로 엑시즈 소환한"고블린 프린세스"은, 소재로 한 암컷 몬스터와 동명의 카드로 취급한다。
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDCAN_79652(듀얼리스트,종류,ゾーン,場所)
@@ -106,31 +106,28 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		효과範囲상대필드 = 1
 		효과条件성별 = 牝性
 		효과条件固名前 = 고블린 프린세스
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드単体",場所,"選択",79652)
-;		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		選択カード = RESULT:1
-		SIF 選択カード == 9999
-			RETURN 0
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			取込カードID = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{選択カード（CS）}")
 
-		CALL CARD_SELECT(듀얼리스트,選択カード)
-		取込カードID = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{選択カード（CS）}")
+			CALL FULLRESET
+			CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）,제외行き)
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件名前 = 고블린 프린세스
+			효과추가종류:0 = 40000
+			효과추가종류:1 = 1000000 + 取込カードID
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			SIF RESULT != 1
+				RETURN 0
 
-		CALL FULLRESET
-		CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）,제외行き)
-		CALL FULLRESET
-		효과範囲EX덱 = 1
-		효과条件名前 = 고블린 프린세스
-		효과추가종류:0 = 40000
-		효과추가종류:1 = 1000000 + 取込カードID
-		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-		SIF RESULT != 1
-			RETURN 0
+			CALL CARD_EROTICS(取込カードID)
+			IF RESULT != -1
+				PRINTFORMW 고블린에게 범해지고, 마음이부서진 %NAME:RESULT%은 고블린의 임신 주머니가 되는 운명을 받아들였다。
+				CALL EROTIC_MOVE("全身凌辱", RESULT, -1, 800)
+			ENDIF
 
-		CALL CARD_EROTICS(取込カードID)
-		IF RESULT != -1
-			PRINTFORMW 고블린에게 범해지고, 마음이부서진 %NAME:RESULT%은 고블린의 임신 주머니가 되는 운명을 받아들였다。
-			CALL EROTIC_MOVE("全身凌辱", RESULT, -1, 800)
 		ENDIF
-
 	ENDIF
 ENDIF

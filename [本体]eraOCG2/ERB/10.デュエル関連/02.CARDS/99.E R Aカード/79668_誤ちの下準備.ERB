@@ -36,7 +36,7 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드명의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：필드 위의 암컷 몬스터 1장을 대상으로 발동할 수 있다.
-PRINTL 자신의 덱에서 'E.R.A' 카테고리의 카드 1장을 패에 넣는다.
+PRINTL 자신의 덱에서 "E.R.A" 카테고리의 카드 1장을 패에 넣는다.
 PRINTL 그 후, 대상 몬스터에 미약 카운터를 1개 놓고 발정시킨다.
 CALL TEXT_DECORATION("ROGUE")
 
@@ -96,9 +96,12 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	IF RESULT == 0
 		;通常마법汎用処理
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
 		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
 		효과条件성별 = 牝性
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드単体",場所,"選択")
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 		IF RESULT == 1
 			選択カード = RESULT:1
 			TRYCALLFORM CARDNAME_{他参照選択カードID},"名前"

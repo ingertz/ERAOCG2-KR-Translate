@@ -128,21 +128,24 @@ ELSEIF 종류 == 필드起動
 	IF RESULT == 0
 		CALL FULLRESET
 		효과条件표시 = 表側표시
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
-		IF RESULT != 9999
-			選択カード = RESULT:1
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = RESULT
 			CALL SET_FIELD_INFO(対面者,"필드",選択カード,"一攻",-500)
 			CALL SET_FIELD_INFO(対面者,"필드",選択カード,"一守",-500)
 
 			CALL FULLRESET
+			효과範囲상대필드 = 1
 			효과条件표시 = 表側표시
 			효과条件任意 = 1
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
-			IF RESULT:1 != 9999
-				選択カード = RESULT:1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+			IF RESULT == 1
+				CALL CARD_SELECT(듀얼리스트,RESULT:1)
+				選択カード = RESULT
 				CALL FULLRESET
 				CALL SET_FIELD_INFO(対面者,"필드",選択カード,"悪Ｃ",1)
-				;CALL STATCHANGE_OTHER(듀얼리스트,"상대필드",選択カード,"種",곤충족,2392)
 			ENDIF
 		ENDIF
 	ENDIF

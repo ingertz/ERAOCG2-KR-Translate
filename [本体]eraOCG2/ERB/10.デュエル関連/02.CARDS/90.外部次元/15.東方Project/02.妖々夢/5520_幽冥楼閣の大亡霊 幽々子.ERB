@@ -39,6 +39,7 @@ SELECTCASE 参照先
 		RETURN 1800
 	CASE "성별"
 		RETURN 牝性
+
 	CASE "추가日"
 		RETURN 250808
 ENDSELECT
@@ -261,7 +262,8 @@ PRINTL ①：서로의 턴에 발동할 수 있다。상대 필드의 카드 １
 PRINTL 이렇게 파괴한 카드가 몬스터인 경우、상대의 묘지에서 같은 이름의 몬스터를 골라、
 PRINTL 언데드족 몬스터로서 자신 필드에 특수 소환한다。
 CALLFORM CARD_ABLE(0,효과後強制誘発)
-PRINTL ②：상대가 카드의 효과를 발동할 때마다、상대는 덱의 위에서 ２장을 묘지로 보낸다。
+PRINTL ②：이 카드가 필드 / 묘지에 존재하는 한
+PRINTL 상대가 카드의 효과를 발동할 때마다、상대는 덱의 위에서 3장을 묘지로 보낸다。
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ③：이 카드가 필드 / 묘지에 존재하는 한、상대는 묘지의 카드의 효과를 발동할 수 없으며、
 PRINTL 상대의 덱이 ０장인 경우、상대는 게임에 패배한다。
@@ -280,7 +282,6 @@ CALL RESETCONDITION_MAT
 ;1体目の条件
 IF EX参照 == 0 || EX参照 == 1
 	素材条件튜너 = 1
-	素材条件종족 = 언데드족
 ELSEIF EX参照 >= 10
 	素材条件튜너 = 0
 ENDIF
@@ -313,7 +314,7 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 효과後強制誘発
-	SIF ゾーン != "필드"
+	SIF !GROUPMATCH(ゾーン,"필드","묘지")
 		RETURN 0
 	CALL FULLRESET
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",1)
@@ -367,7 +368,7 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 ELSEIF 종류 == 효과後強制誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,105520)
 	IF RESULT == 0
-		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",2,0,1)
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",3,0,1)
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL SET_PLAYER_INFO(듀얼리스트,"묘지_モン無効",3,1)

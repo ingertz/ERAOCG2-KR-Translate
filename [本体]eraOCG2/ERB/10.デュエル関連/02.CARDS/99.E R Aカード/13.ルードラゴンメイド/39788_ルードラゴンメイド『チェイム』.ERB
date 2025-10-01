@@ -102,6 +102,7 @@ IF 종류 == EX덱起動
 	효과条件종족 = 드래곤족
 	효과条件속성 = 어둠속성
 	효과条件固名前 = 루 드래곤메이드『체임』
+	효과条件除去種 = 素材
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -173,6 +174,7 @@ IF 종류 == EX덱起動
 		효과条件종족 = 드래곤족
 		효과条件속성 = 어둠속성
 		효과条件固名前 = 루 드래곤메이드『체임』
+		효과条件除去種 = 素材
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			소환素材 = RESULT:1
@@ -228,8 +230,7 @@ ELSEIF 종류 == EX소환時
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲손패 = 1
-                        효과範囲묘지 = 1
-		;효과条件カテゴリ = 드래곤메이드
+        효과範囲묘지 = 1
 		효과条件종류:0 = 지속마법
 		효과条件종류:1 = 지속함정
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
@@ -251,7 +252,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 			IF 소환素材 == -1
 				PRINTFORML
 				SETCOLOR C_XYZ_BLACK
-				PRINTFORMW 체임은%NAME:MASTER%으로 부터 정기를 받았다!
+				PRINTFORMW 체임은 %NAME:MASTER%으로 부터 정기를 받았다!
 				RESETCOLOR
 				PRINTFORML
 				CALL EROTIC_MOVE("펠라치오",NO_TO_CHARANUM(2058),MASTER,100)
@@ -261,7 +262,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 				IF 조교대상 != -1
 					PRINTFORML
 					SETCOLOR C_XYZ_BLACK
-					PRINTFORMW 루 드래곤메이드  %CALLNAME:조교대상%는 %NAME:MASTER%으로 부터 정기를 받았다!
+					PRINTFORMW 루 드래곤메이드 %CALLNAME:조교대상%는 %NAME:MASTER%으로 부터 정기를 받았다!
 					RESETCOLOR
 					PRINTFORML
 					CALL EROTIC_MOVE("펠라치오",조교대상,MASTER,100)
@@ -283,7 +284,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			選択カード_ID = RESULT:1
-			CALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,마함起動,"효과処理",選択カード)
+			TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,마함起動,"효과処理",選択カード)
 		ENDIF
 	ENDIF
 ENDIF

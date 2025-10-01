@@ -160,6 +160,7 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
+#DIM DYNAMIC 상대選択カード
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -199,8 +200,10 @@ ELSEIF 종류 == ターン開始時
 		CALL FULLRESET
 		효과範囲상대필드 = 1
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
-		選択カード = RESULT:1
 		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			상대選択カード = 選択カード（CS）
+			
 			CALL FULLRESET
 			효과範囲필드 = 1
 			효과条件속성 = 어둠속성

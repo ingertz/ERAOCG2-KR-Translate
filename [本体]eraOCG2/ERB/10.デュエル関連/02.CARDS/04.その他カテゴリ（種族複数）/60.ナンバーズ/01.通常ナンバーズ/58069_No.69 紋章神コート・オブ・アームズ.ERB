@@ -146,15 +146,14 @@ ELSEIF 종류 == 필드起動
 		효과条件표시 = 表側표시
 		효과条件他所 = 1
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
-		選択カード = RESULT:1
 		IF RESULT == 1
-			CALL CARD_SELECT(듀얼리스트,選択カード)
-			選択カード = 選択カード（CS）
 			選択カード_ID = RESULT:99
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = 選択カード（CS）
 			TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
 			選択カード名前 = %RESULTS%
 
-			CALLFORM CARDEFFECT_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")}(듀얼리스트,필드起動,"효과処理")
+			TRYCALLFORM CARDEFFECT_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")}(듀얼리스트,필드起動,"효과処理")
 			
 			CALL FULLRESET
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"変化元ID",選択カード_ID,上書きモード)

@@ -11,6 +11,8 @@
 #DIM カウンタB
 #DIM 選択덱
 #DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 衣服購入先
+#DIM DYNAMIC 選択衣装
 TARGET = 0
 ASSI = 0
 
@@ -49,19 +51,12 @@ ELSEIF RESULT == 1
 	FLAG:게임모드 = 0
 	CALL UPDATES(1)
 ENDIF
-CALL CUSTOM_CHARAMAKE(MASTER)
-SIF TALENT:MASTER:성별 & 2
-	MAXBASE:MASTER:5 = 1500
 
 
 SAVESTR:10 = /
 
 FOR 캐릭터_ID,0,CHARANUM
 	CALL SET_BODYSIZE(캐릭터_ID,0,2)
-	; ;バスト
-	; CALL SHOP_BUST_RESET(캐릭터_ID)
-	; ;ヒップ
-	; CALL SHOP_BUTT_RESET(캐릭터_ID)
 	;服装
 	CALL CLOTHES_SETTING(캐릭터_ID)
 	;시작위치
@@ -79,6 +74,53 @@ FOR 캐릭터_ID,0,CHARANUM
 	;Anonym추가
 	SIF TALENT:캐릭터_ID:듀얼리스트 >= 1 && TALENT:캐릭터_ID:외부자 == 0
 		CFLAG:캐릭터_ID:오프라인레이트 = 4000
+NEXT
+
+
+
+CALL CUSTOM_CHARAMAKE(MASTER)
+SIF TALENT:MASTER:성별 & 2
+	MAXBASE:MASTER:5 = 1500
+
+FOR カウンタ,1,19
+	選択衣装 = EQUIP:MASTER:カウンタ
+	SIF EQUIP:MASTER:カウンタ <= 0
+		CONTINUE
+	SELECTCASE カウンタ
+		;帽子
+		CASE 1,2
+			衣服購入先 = 1000
+		;靴下
+		CASE 3
+			衣服購入先 = 3000
+		;靴
+		CASE 4
+			衣服購入先 = 4000
+		;下半身下着１
+		CASE 5
+			衣服購入先 = 6000
+		;ズボン
+		CASE 7
+			衣服購入先 = 7000
+		;スカート
+		CASE 9
+			衣服購入先 = 9000
+		;上半身下着１
+		CASE 10
+			衣服購入先 = 10000
+		;アウター
+		CASE 12
+			衣服購入先 = 12000
+		;インナー
+		CASE 13
+			衣服購入先 = 13000
+		;ワンピース
+		CASE 14
+			衣服購入先 = 15000
+		CASE 16,17,18
+			衣服購入先 = 16000
+	ENDSELECT
+	衣服購入:(衣服購入先 + 選択衣装) = 1
 NEXT
 
 ;용사ちゃん能力コピー
@@ -515,12 +557,12 @@ CALL VERSION_UP
 @GAME_OVER
 VARSET RESULT
 
-CUSTOMDRAWLINE -
+CUSTOMDRAWLINE —
 PRINTL [0] - 다시 시도한다
 PRINTL [1] - 데이터를 불러와 이어서 한다
 PRINTL [2] - 게임을 종료한다
 PRINTL
-CUSTOMDRAWLINE -
+CUSTOMDRAWLINE —
 BINPUT
 SELECTCASE RESULT
 	CASE 0

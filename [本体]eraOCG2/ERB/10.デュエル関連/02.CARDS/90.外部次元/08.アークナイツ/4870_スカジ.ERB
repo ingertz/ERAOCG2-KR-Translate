@@ -166,10 +166,13 @@ ELSEIF 종류 == 소환時強制 || 종류 == 특수소환時強制
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4870)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과条件표시 = 表側표시
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 		IF RESULT == 1
-			攻撃力修正 = GETVAR(@"%対面者%_MZ_攻:(RESULT:1)") / 2
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = 選択カード（CS）
+
+			攻撃力修正 = GETVAR(@"%対面者%_MZ_攻:選択カード") / 2
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",攻撃力修正)
 		ELSE
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",500)

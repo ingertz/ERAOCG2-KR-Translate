@@ -121,10 +121,12 @@ IF 종류 == 특수소환時 || 종류 == 필드→묘지 || 종류 == 戦闘→
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27152,1)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲상대필드 = 1
 		효과条件표시 = 表側표시
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
-		IF RESULT != 9999
-			選択カード = RESULT:1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = 選択カード（CS）
 			CALL FULLRESET
 			효과範囲상대묘지 = 1
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"",,1)

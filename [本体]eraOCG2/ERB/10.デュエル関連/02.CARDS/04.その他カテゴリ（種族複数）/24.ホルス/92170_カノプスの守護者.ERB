@@ -60,21 +60,22 @@ IF 종류 == 효과後誘発
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲묘지 = 1
+	효과条件名前:0 = 더미
 	SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),0) != 1
-		효과条件名前:0 = 호루스의 흑염신
+		효과条件名前:1 = 호루스의 흑염신
 	SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),1) != 1
-		효과条件名前:1 = 호루스의 영광-임세티
+		효과条件名前:2 = 호루스의 영광－임세티
 	SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),2) != 1
-		효과条件名前:2 = 호루스의 선도-하피
+		효과条件名前:3 = 호루스의 선도－하피
 	SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),3) != 1
-		효과条件名前:3 = 호루스의 축복-두아무테프
+		효과条件名前:4 = 호루스의 축복－두아무테프
 	SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),4) != 1
-		효과条件名前:4 = 호루스의 가호-케벤세누프
+		효과条件名前:5 = 호루스의 가호－케벤세누프
 	IF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),5) != 1
-		효과条件名前:5 = 호루스의 흑염룡ＬＶ.X
-		효과条件名前:6 = 호루스의 흑염룡ＬＶ.４
-		효과条件名前:7 = 호루스의 흑염룡ＬＶ.６
-		효과条件名前:8 = 호루스의 흑염룡ＬＶ.８
+		효과条件名前:6 = 호루스의 흑염룡ＬＶ.X
+		효과条件名前:7 = 호루스의 흑염룡ＬＶ.４
+		효과条件名前:8 = 호루스의 흑염룡ＬＶ.６
+		효과条件名前:9 = 호루스의 흑염룡ＬＶ.８
 	ENDIF	
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -111,6 +112,7 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIMS DYNAMIC 対面者
 #DIMS DYNAMIC 選択カード名前
+#DIM DYNAMIC 選択セットビット
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -121,43 +123,40 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		CALL FULLRESET
 		효과範囲손패 = 1
 		효과範囲묘지 = 1
+		효과条件名前:0 = 더미
 		SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),0) != 1
-			효과条件名前:0 = 호루스의 흑염신
+			효과条件名前:1 = 호루스의 흑염신
 		SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),1) != 1
-			효과条件名前:1 = 호루스의 영광-임세티
+			효과条件名前:2 = 호루스의 영광－임세티
 		SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),2) != 1
-			효과条件名前:2 = 호루스의 선도-하피
+			효과条件名前:3 = 호루스의 선도－하피
 		SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),3) != 1
-			효과条件名前:3 = 호루스의 축복-두아무테프
+			효과条件名前:4 = 호루스의 축복－두아무테프
 		SIF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),4) != 1
-			효과条件名前:4 = 호루스의 가호-케벤세누프
+			효과条件名前:5 = 호루스의 가호－케벤세누프
 		IF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),5) != 1
-			효과条件名前:5 = 호루스의 흑염룡ＬＶ.X
-			효과条件名前:6 = 호루스의 흑염룡ＬＶ.４
-			효과条件名前:7 = 호루스의 흑염룡ＬＶ.６
-			효과条件名前:8 = 호루스의 흑염룡ＬＶ.８
+			효과条件名前:6 = 호루스의 흑염룡ＬＶ.X
+			효과条件名前:7 = 호루스의 흑염룡ＬＶ.４
+			효과条件名前:8 = 호루스의 흑염룡ＬＶ.６
+			효과条件名前:9 = 호루스의 흑염룡ＬＶ.８
 		ENDIF
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT != 9999
-			選択カード = RESULT
-			TRYCALLFORM CARDNAME_{RESULT:99},"名前"
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			TRYCALLFORM CARDNAME_{RESULT:1},"名前"
 			IF RESULTS == "호루스의 흑염신"
-				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",0)
-			ELSEIF RESULTS == "호루스의 영광-임세티"
-				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",1)
-			ELSEIF RESULTS == "호루스의 선도-하피"
-				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",2)
-			ELSEIF RESULTS == "호루스의 축복-두아무테프"
-				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",3)
-			ELSEIF RESULTS == "호루스의 가호-케벤세누프"
-				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",4)
+				SETBIT 選択セットビット,0
+			ELSEIF RESULTS == "호루스의 영광－임세티"
+				SETBIT 選択セットビット,1
+			ELSEIF RESULTS == "호루스의 선도－하피"
+				SETBIT 選択セットビット,2
+			ELSEIF RESULTS == "호루스의 축복－두아무테프"
+				SETBIT 選択セットビット,3
+			ELSEIF RESULTS == "호루스의 가호－케벤세누프"
+				SETBIT 選択セットビット,4
 			ELSEIF RESULTS == "호루스의 흑염룡ＬＶ.X" || RESULTS == "호루스의 흑염룡ＬＶ.４" || RESULTS == "호루스의 흑염룡ＬＶ.６" || RESULTS == "호루스의 흑염룡ＬＶ.８"
-				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",5)
+				SETBIT 選択セットビット,5
 			ENDIF
-
-			CALL CARD_SELECT(듀얼리스트,選択カード)
-			CALL FULLRESET
-			CALL CARD_SP_SUMMON(듀얼리스트,参照先（CS）,選択カード（CS）)
+			CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",選択セットビット)
 		ENDIF
 	ENDIF
 
@@ -171,7 +170,7 @@ ELSEIF 종류 == 필드→묘지 || 종류 == 破壊→묘지 || 종류 == 손�
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92170,1)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = 카노푸스의 수호자
+		효과条件名前 = 카노푸스의 수호자
 		CALL CARD_SET_BASIC(듀얼리스트,"묘지",ゾーン,場所,"裏側표시")
 	ENDIF
 ENDIF

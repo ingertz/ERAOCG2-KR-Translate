@@ -1,5 +1,5 @@
 ﻿@CARDNAME_58067,参照先
-;ココで指定カードの名前、略称を返す予定
+;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -23,19 +23,19 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "種類"
-		RETURN エクシーズ
-	CASE "属性"
-		RETURN 光属性
-	CASE "種族"
-		RETURN 天使族
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
 	CASE "レベル"
 		RETURN 5
 	CASE "攻撃力"
 		RETURN 2100
 	CASE "守備力"
 		RETURN 2100
-	CASE "性別"
+	CASE "성별"
 		RETURN 雄性
 	CASE "制限"
 		RETURN 制限
@@ -43,9 +43,9 @@ ENDSELECT
 
 RETURN 0
 
-@CARDSUMMON_58067(決闘者,召喚カード,EX参照)
-#DIMS DYNAMIC 決闘者
-#DIM DYNAMIC 召喚カード
+@CARDSUMMON_58067(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
 #DIM DYNAMIC EX参照
 #DIM DYNAMIC カウンタ
 
@@ -53,23 +53,23 @@ CALL RESETCONDITION_MAT
 必要素材数 = 5
 素材条件レベル = 5
 素材条件数自由 = 1
-;追加効果用
+;추가효과用
 
 IF EX参照 == 1
-	CALL XYZCAN(決闘者,召喚カード,58067) 
+	CALL XYZCAN(듀얼리스트,소환カード,58067) 
 	RETURN RESULT
 ENDIF
 
 
-@CARD_EXPLANATION_58067(種類)
-#DIM DYNAMIC 種類
+@CARD_EXPLANATION_58067(종류)
+#DIM DYNAMIC 종류
 
 PRINTL レベル５モンスター×２体以上
-CALLFORM CARD_ABLE(10,戦場起動)
-PRINTL ①：１ターンに１度、自分メインフェイズ１にこのカードのＸ素材を２つ取り除いて発動できる。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ①：１ターンに１度、자신メインフェイズ１にこのカードのＸ素材を２つ取り除いて발동できる。
 PRINTL お互いにサイコロを２回ずつ振る。
-PRINTL 出た目の合計が大きいプレイヤーは、次のターンの終了時までモンスターの効果を発動できず、攻撃宣言できない。
-PRINTL ②：このカードの効果でサイコロを振った後に、このカードがＸ素材を持っている場合、
+PRINTL 出た目の合計が大きいプレイヤーは、次のターンの終了時までモンスターの효과を발동できず、攻撃宣言できない。
+PRINTL ②：このカードの효과でサイコロを振った後に、このカードがＸ素材を持っている場合、
 PRINTL １ターンに１度だけその目を７として適用できる。
 
 @CARDSUMMON_AA_58067
@@ -111,61 +111,61 @@ RESETCOLOR
 WAIT
 
 
-@CARDCAN_58067(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDCAN_58067(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIMS DYNAMIC 対面者
 
-CALL 対面者判定(決闘者)
+CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,58067)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58067)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 戦場起動
-	SIF 効果発動済(決闘者,場所,ゾーン)
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
-	SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") <= -1
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF メインフェイズ２ == 1
 		RETURN 0
-	SIF ターンプレイヤー != 決闘者
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	RETURN 1
 ENDIF
 
-@CARDEFFECT_58067(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDEFFECT_58067(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIMS DYNAMIC 対面者
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC ダイス目
-#DIM DYNAMIC 条件達成
+#DIM DYNAMIC 条件달성
 #DIM DYNAMIC ダイス合計,2
 
-CALL 対面者判定(決闘者)
+CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 種類 == 戦場起動
-	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,58067,10,X消費2)
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58067,10,X消費2)
 	IF RESULT == 0
-		SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") >= 0
-			条件達成 = 1
+		SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") >= 0
+			条件달성 = 1
 		REPEAT 2
-			CALL DICE_ROLL(決闘者,1)
+			CALL DICE_ROLL(듀얼리스트,1)
 			ダイス目 = RESULT
-			IF 条件達成 == 1
-				IF 決闘者 == "自分"
+			IF 条件달성 == 1
+				IF 듀얼리스트 == "자신"
 					PRINTL 出目を７にしますか？
-					CALL YN_CHOICE(決闘者)
+					CALL YN_CHOICE(듀얼리스트)
 					IF RESULT == 0
 						CALL DICE_ROLL_7(ダイス目)
 						ダイス目 = 7
@@ -178,32 +178,32 @@ IF 種類 == 戦場起動
 		REPEAT 2
 			CALL DICE_ROLL(対面者,1)
 			ダイス目 = RESULT
-			IF 条件達成 == 1
-				IF 決闘者 == "自分"
+			IF 条件달성 == 1
+				IF 듀얼리스트 == "자신"
 					PRINTL 出目を７にしますか？
-					CALL YN_CHOICE(決闘者)
+					CALL YN_CHOICE(듀얼리스트)
 					IF RESULT == 0
 						CALL DICE_ROLL_7(ダイス目)
 						ダイス目 = 7
 					ENDIF
 
-				ELSEIF 決闘者 != "自分" && RESULT < 5
+				ELSEIF 듀얼리스트 != "자신" && RESULT < 5
 					ダイス目 = 7
 				ENDIF
 			ENDIF
 			ダイス合計:1 += ダイス目
 		REND
 
-		PRINTFORMW %決闘者%：{ダイス合計:0}　　ＶＳ　　%対面者%：{:ダイス合計:1}
+		PRINTFORMW %듀얼리스트%：{ダイス合計:0}　　ＶＳ　　%対面者%：{:ダイス合計:1}
 
 		IF ダイス合計:0 > ダイス合計:1
 			PRINTFORMW %対面者%の勝ち！
-			CALL SET_PLAYER_INFO(決闘者,"モン効果無効",4)
-			CALL SET_PLAYER_INFO(決闘者,"バトルスキップ",1)
+			CALL SET_PLAYER_INFO(듀얼리스트,"モン효과無効",4)
+			CALL SET_PLAYER_INFO(듀얼리스트,"バトルスキップ",1)
 		ELSEIF ダイス合計:0 < ダイス合計:1
-			PRINTFORMW %決闘者%の勝ち！
-			CALL SET_PLAYER_INFO(決闘者,"モン効果無効",4,1)
-			CALL SET_PLAYER_INFO(決闘者,"バトルスキップ",1,1)
+			PRINTFORMW %듀얼리스트%の勝ち！
+			CALL SET_PLAYER_INFO(듀얼리스트,"モン효과無効",4,1)
+			CALL SET_PLAYER_INFO(듀얼리스트,"バトルスキップ",1,1)
 		ELSE
 			PRINTW 引き分け！
 		ENDIF

@@ -7,7 +7,7 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = No.33 오파츠－초병기 마추 마크
+		RESULTS = No.33 오파츠 마추 마크
 	CASE "略称"
 		RESULTS = #33 마추 마크
 	CASE "カテゴリ"
@@ -122,11 +122,14 @@ IF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58033,10,X消費1)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲상대필드 = 1
 		효과条件표시 = 表側표시
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 		IF RESULT == 1
-			選択カード = RESULT:1
 			選択カード_ID = RESULT:99
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = 選択カード（CS）
+			
 			TRYCALLFORM CARD_{選択カード_ID},"攻撃力"
 			攻撃力修正 = RESULT
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",攻撃力修正 / 2)

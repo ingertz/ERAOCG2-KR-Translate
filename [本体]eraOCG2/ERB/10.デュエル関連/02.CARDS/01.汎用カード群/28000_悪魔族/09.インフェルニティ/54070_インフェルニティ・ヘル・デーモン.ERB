@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 인페르니티 헬 데몬
+		RESULTS = 인페르니티 헬 데몬
 	CASE "略称"
-RESULTS = 만족H 데몬
+		RESULTS = 만족H 데몬
 	CASE "カテゴリ"
-RESULTS:0 = 인페르니티
-RESULTS:1 = 데몬
+		RESULTS:0 = 인페르니티
+		RESULTS:1 = 데몬
 ENDSELECT
 
 
@@ -43,7 +43,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL 튜너＋튜너 이외의 몬스터 1장 이상
-CALLFORM CARD_ABLE(10,필드起動)
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
 PRINTL ①: 1턴에 1번, 필드의 앞면 표시의 카드 1장을 대상으로 하여 발동할 수 있다.
 PRINTL 그 카드의 효과를 턴 종료시까지 무효로 한다.
 PRINTL 자신 패가 0장일 경우, 추가로 그 카드를 파괴할 수 있다.
@@ -90,7 +90,9 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54070)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 필드起動
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
 	CALL FULLRESET
@@ -143,8 +145,12 @@ IF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54070,10)
 	IF RESULT == 0
 		CALL FULLRESET
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場単体",場所,"選択")
-		IF RESULT:1 != 9999
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과範囲마함 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
 			CALL CARD_SELECT(듀얼리스트,RESULT:1)
 			選択カード = RESULT
 			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード,"無効",1)
@@ -152,7 +158,7 @@ IF 종류 == 필드起動
 			SIF 손패数(듀얼리스트) != 0
 				RETURN 0
 			SIF 듀얼리스트 == "자신"
-PRINTL 카드를 파괴하시겠습니까?
+			PRINTL 카드를 파괴하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 			SIF RESULT == はい
 				CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード,破壊行き)

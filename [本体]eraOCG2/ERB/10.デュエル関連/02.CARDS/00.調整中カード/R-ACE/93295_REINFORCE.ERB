@@ -1,0 +1,200 @@
+﻿@CARDNAME_93295,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = REINFORCE!
+	CASE "略称"
+		RESULTS = REINFORCE!
+	CASE "カテゴリ"
+		RESULTS:0 = 레스큐 에이스
+ENDSELECT
+
+
+@CARD_93295(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93295(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名はルール上「레스큐 에이스」カードとしても扱う。このカード名の②の효과は１ターンに１度しか使用できない。
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALLFORM CARD_ABLE(0,마함起動)
+PRINTL ①：자신フィールドの「레스큐 에이스」モンスター１体を대상として발동できる。
+PRINTL その자신のモンスターはこのターン、攻撃力・守備力が１５００アップし、상대モンスターの효과を受けず、１度だけ戦闘では破壊されない。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：묘지のこのカードを제외し、자신の묘지の「레스큐 에이스」마법カード１枚を대상として발동できる。
+PRINTL そのカードを자신フィールドにセットする。
+
+
+;레스큐 에이스の함정カードの１枚。자신フィールドのテーマモンスターを強化しつつ、様々な耐性をつける事ができる。
+;直接的な妨害にならず상대の動きに依存しがちな欠点はあるが、使えればなかなか頼もしい효과をしている。
+;また、묘지효과で마법カードのセットも可能というのが地味ながらアド差を生み出す原動力になる事があり、馬鹿にできないスペックがある。
+
+
+@CARDCAN_93295(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 추가条件플래그 = 0
+#DIM DYNAMIC 하이드런트存在플래그
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93295)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;SIF 발동済_1(듀얼리스트,93295)
+	;	RETURN 0
+	;先に하이드런트の存在有無を確認しておいたほうが良さそうなのでここでチェック
+	CALL FULLRESET
+	효과範囲필드 = 1
+	;효과範囲마함 = 1
+	효과条件名前 = R-ACE 하이드런트
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		하이드런트存在플래그 = 1
+	
+	IF ゾーン == "마함"
+		;「R-ACE 하이드런트」の②による、使用可能でない状態でセットされているカードの발동を판정する특수な処理
+		IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			;そのターンの하이드런트(ID:24295)の②が발동済みである場合はもう발동できない。
+			SIF 발동済_2(듀얼리스트,24295)
+				RETURN 0
+			;자신のフィールドに하이드런트が存在していない場合は발동できない。
+			SIF 하이드런트存在플래그 != 1
+				RETURN 0
+			;このカードが「레스큐 에이스」カードの효과でセットされているかをT1汎数で確認
+			;T1汎数に128(bit:7)がセットされていない状態では발동できない（터뷸런스、인트루더、EMERGENCY!、REINFORCE!でのセット時に설정する）
+			IF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),7) != 1
+				RETURN 0
+			ELSE
+				;발동可能状態でのＣＰＵ側のための판정部分。基本的に使う상황は想定できないため、このカードは②효과を消費しての발동はしない。
+				IF 듀얼리스트 == "상대"
+					RETURN 0
+				ENDIF
+			ENDIF
+		ENDIF
+	ELSE
+		RETURN 0
+	ENDIF
+	
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件종류 = モン全般
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,93295)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	
+	;この효과、발동できるフェイズの条件とかないのかよ！
+	;SIF メインフェイズ != 1
+	;	RETURN 0
+	;SIF ターンプレイヤー != 듀얼리스트
+	;	RETURN 0 
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_93295(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カード추가先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;하이드런트(ID:24295)の②の효과を用いてセットしたターンに발동したのかを確認。
+	;마함起動で、表==3のカードがここを通過していたら、하이드런트の②を使用した扱いに。
+	IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		SETCOLOR C_YELLOW
+		PRINTFORML 「R-ACE 하이드런트」の能力によってセットカード발동！！
+		RESETCOLOR
+		CALL CARD_EFFECT_USE(듀얼리스트,24295,2)
+	ENDIF
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93295,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件종류 = モン全般
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一攻",1500)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一守",1500)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"モ耐",1,上書きモード)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一破",1,上書きモード)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93295,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+		;마함に直接セットする処理。T1汎数に128(bit:7)も설정する。
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件종류 = 마법全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		IF RESULT == 1
+			;RESULT:2にカード추가先の情報がある。
+			カード추가先 = RESULT:2
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",カード추가先,"T1汎数",128)
+			;フィールド마법にもT1汎数がセットされるが、実害はないと思うので処理そのまま
+		ENDIF
+	ENDIF
+ENDIF
+
+

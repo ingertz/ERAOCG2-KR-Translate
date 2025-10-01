@@ -12,6 +12,7 @@ SELECTCASE 参照先
 		RESULTS = 볼발자크 시덴
 	CASE "カテゴリ"
 		RESULTS:0 = 사무라이
+		RESULTS:1 = 아머드
 		RESULTS:4 = DUEL MASTERS
 ENDSELECT
 
@@ -47,6 +48,11 @@ RETURN 0
 @CARD_EXPLANATION_35610(종류)
 #DIM DYNAMIC 종류
 
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：패의 이 카드를 상대에게 보여주고 발동할 수 있다。
+PRINTL 자신의 덱 위에서 카드를 ５장 뒤집는다。그 안에서 "사무라이" 카드 １장을 골라 패에 넣을 수 있다。
+PRINTL 남은 카드는 덱으로 되돌린다。그 후、패를 １장 덱에 넣고 셔플한다。
 CALLFORM CARD_ABLE(0,소환時 ,특수소환時)
 PRINTL ①: 『사무라이류 제너레이트』
 PRINTL 이 카드가 소환 / 특수 소환에 성공했을 경우 발동할 수 있다.
@@ -66,7 +72,21 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35610)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 소환時 || 종류 == 특수소환時
+IF 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,35610)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 사무라이
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	SIF 마함数(듀얼리스트) >= 5
 		RETURN 0
 	CALL FULLRESET
@@ -76,7 +96,6 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-
 	RETURN 1
 ELSEIF 종류 == 지속효과
 	SIF ゾーン != "필드"
@@ -98,7 +117,25 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 
-IF 종류 == 소환時 || 종류 == 특수소환時
+IF 종류 == 손패起動
+	PRINTL
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35610,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 사무라이
+		효과条件任意 = 1
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所,5)
+		IF RESULT == 1
+			CALL FULLRESET
+			
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)	
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALL CARD_DISPOSE(듀얼리스트,"손패",選択カード,덱行き)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35610,10)
 	IF RESULT == 0
 			CALL FULLRESET
@@ -112,10 +149,10 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 				CALL CARD_SELECT(듀얼리스트,選択カード)
 				CALL FULLRESET
 				효과範囲필드 = 1
-효과条件名前 = 보루바루자
+				효과条件名前 = 볼발자크 시덴 드래곤
 				CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード（CS）,参照先（CS）)
 
-				CALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,손패起動,"효과処理")
+				TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,손패起動,"효과処理")
 			ENDIF
 		ENDIF
 ELSEIF 종류 == 지속효과

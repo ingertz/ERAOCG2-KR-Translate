@@ -25,7 +25,7 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-		RETURN 融合
+		RETURN 융합
 	CASE "属性"
 		RETURN 光属性
 	CASE "種族"
@@ -59,17 +59,17 @@ PRINTL ・10枚以上の場合、自分フィールドの表側表示の魔法�
 PRINTL ③：自分エンドフェイズ時に発動できる。  
 CALLFORM CARD_ABLE(0,ターン終了時強制)  
 PRINTL ウィッチクラフト通常魔法カードをランダムに2枚生成し、自分墓地に加えてシャッフルする。自分はデッキから1枚ドローする。  
-PRINTL ④：このカードが融合召喚された場合に発動できる。  
-CALLFORM CARD_ABLE(0,EX召喚時)  
+PRINTL ④：このカードが융합소환された場合に発動できる。  
+CALLFORM CARD_ABLE(0,EX소환時)  
 PRINTL 自分手札に「ウィッチクラフトの結界」が存在しない場合、ゲーム外から手札に「ウィッチクラフトの結界」1枚を加える。  
 PRINTL ⑤：このカードがフィールドに存在する限り、自分モンスターの攻撃力・守備力は自分墓地のカードの数×200ポイントアップする。  
 CALLFORM CARD_ABLE(0,攻守変動)  
 
 
 
-@CARDSUMMON_42040(決闘者,召喚カード,EX参照)
+@CARDSUMMON_42040(決闘者,소환カード,EX参照)
 #DIMS DYNAMIC 決闘者
-#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC 소환カード
 #DIM DYNAMIC EX参照
 ;素材条件
 
@@ -84,7 +84,7 @@ ENDIF
 
 IF EX参照 == 1
 	;PRINTL サモンまでは言ってるよ
-	CALL FUSCAN(決闘者,召喚カード,42040) 
+	CALL FUSCAN(決闘者,소환カード,42040) 
 	RETURN RESULT
 ENDIF
 
@@ -140,7 +140,7 @@ ELSEIF 種類 == ターン終了時強制
 	SIF ターンプレイヤー != 決闘者
 		RETURN 0
 	RETURN 1
-ELSEIF 種類 == EX召喚時
+ELSEIF 種類 == EX소환時
 	SIF ターンプレイヤー != 決闘者
 		RETURN 0
 	SIF ゾーン != "戦場"
@@ -244,7 +244,7 @@ ELSEIF 種類 == 永続効果
 	ELSE
 	    RETURN 0
 	ENDIF
-ELSEIF 種類 == EX召喚時
+ELSEIF 種類 == EX소환時
     CALL CARD_GENERATE_HAND(決闘者,242040)
 	
 ELSEIF 種類 == ターン終了時強制

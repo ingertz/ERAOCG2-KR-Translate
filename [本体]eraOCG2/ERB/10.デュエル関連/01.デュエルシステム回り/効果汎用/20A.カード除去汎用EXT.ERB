@@ -170,7 +170,11 @@ IF 마법함정플래그 == 0
 			攻撃力手渡 = ダメージ量
 		ENDIF
 	CASE "덱"
+		IF 효과추가종류除去보존 == 1
+			CALL CARD_ADD_DECK_SPC(대상者,"필드",場所)
+		ELSE
 		CALL CARD_DISPOSE(대상者,"필드",場所,덱行き)
+		ENDIF
 	CASE "제외"
 		IF 효과추가종류除去보존 == 1
 			CALL CARD_DISPOSE(대상者,"필드",場所,제외行き,1)
@@ -443,7 +447,11 @@ ELSEIF 마법함정플래그 == 1
 	IF 除去種 == "손패"
 		CALL CARD_DISPOSE(대상者,"마함",場所,3)
 	ELSEIF 除去種 == "덱"
-		CALL CARD_DISPOSE(대상者,"마함",場所,2)
+		IF 효과추가종류除去보존 == 1
+			CALL CARD_ADD_DECK_SPC(대상者,"필드",場所)
+		ELSE
+			CALL CARD_DISPOSE(대상者,"마함",場所,2)
+		ENDIF
 	ELSEIF 除去種 == "제외"
 		CALL CARD_DISPOSE(대상者,"마함",場所,1)
 	ELSEIF 除去種 == "묘지"

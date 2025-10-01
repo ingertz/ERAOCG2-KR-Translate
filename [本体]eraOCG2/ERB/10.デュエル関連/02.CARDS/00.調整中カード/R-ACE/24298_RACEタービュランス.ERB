@@ -1,0 +1,214 @@
+﻿@CARDNAME_24298,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = R-ACE 터뷸런스
+	CASE "略称"
+		RESULTS = RA터뷸런스
+	CASE "カテゴリ"
+		RESULTS:0 = 레스큐 에이스
+ENDSELECT
+
+
+@CARD_24298(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 炎속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 3000
+	CASE "성별"
+		RETURN 無性
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_24298(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신の묘지から「레스큐 에이스」カード２枚を제외して발동できる。このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL 덱から「레스큐 에이스」速攻마법・通常함정カードを３枚まで자신フィールドにセットする（同名カードは１枚まで）。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：자신フィールドの他のカードが상대の효과でフィールドから離れた場合、
+PRINTL 상대フィールドのカード１枚を대상として발동できる。そのカードを破壊する。
+
+;レスキューエースのフィニッシャーであり最大戦力となる、超ド級の巨大ロボット型の消防車。もはや動く要塞といった次元の機動消火兵器。
+;自己SS条件持ち、攻守3000、起動효과でテーマの妨害用の마함を덱から直接セットと、メイン덱のモンスターとしてはどれも最高レベルのパワーを持つ。
+;OCGと比べてセット可能枚数を１枚減らして３종류セットの효과となっている。そのためOCGと比べて基本展開で築ける盤面の堅さは若干弱まっている。
+;それでも、CPUが使うとこれといったデメリット효과のない青眼打点の最上級モンスターがドンッと出て마함を構えてくるので、かなりの脅威を感じられると思われる。
+
+
+@CARDSUMMON_AA_24298
+
+
+@CARDCAN_24298(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24298)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,24298)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,24298,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,24298)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件종류:0 = 速攻마법
+	효과条件종류:1 = 通常함정
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,24298)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊以外")
+	SIF RESULT == 1
+		RETURN 1
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과破壊")
+	SIF RESULT == 1
+		RETURN 1
+	RETURN 0
+ENDIF
+
+@CARDEFFECT_24298(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB = 0
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID,5
+#DIM DYNAMIC カード추가先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24298,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件複数 = 2
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24298,2)
+	IF RESULT == 0
+		;フィールドにセットする数は３つまで。２枚目以降は任意で終了できる。
+		;하이드런트の②の条件판정で用いるT1汎数をセット先に설정するためにFORループ処理を組んでいる。通常のカード효과なら複数選択を利用すればＯＫ
+		FOR カウンタ,0,3
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 레스큐 에이스
+			효과条件종류:0 = 速攻마법
+			효과条件종류:1 = 通常함정
+			효과条件固ID:0 = 選択カードID:0
+			효과条件固ID:1 = 選択カードID:1
+			효과条件固ID:2 = 選択カードID:2
+			SIF カウンタ >= 1
+				효과条件任意 = 1
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+			IF RESULT == 1
+				;RESULT:2にカード추가先の情報がある。
+				カード추가先 = RESULT:2
+				選択カードID:カウンタB = RESULT:1
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",カード추가先,"T1汎数",128)
+				カウンタB ++
+			ELSE
+				;セットを任意終了した場合、そこでループ処理は終了
+				BREAK
+			ENDIF
+			;마함数が上限に達したら、そこでループ処理は終了
+			SIF 마함数(듀얼리스트) >= 5
+				BREAK
+		NEXT
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24298,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ENDIF

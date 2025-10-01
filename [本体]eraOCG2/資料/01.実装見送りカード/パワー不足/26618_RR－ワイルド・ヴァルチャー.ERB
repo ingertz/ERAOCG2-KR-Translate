@@ -43,11 +43,11 @@ RETURN 0
 #DIM DYNAMIC 種類
 
 PRINTL このカード名の②の効果は１ターンに１度しか使用できない。
-CALLFORM CARD_ABLE(0,効果召喚)
-PRINTL ①：自分フィールドにモンスターが存在しない場合、このカードはリリースなしで召喚できる。
+CALLFORM CARD_ABLE(0,効果소환)
+PRINTL ①：自分フィールドにモンスターが存在しない場合、このカードはリリースなしで소환できる。
 CALLFORM CARD_ABLE(2,戦場起動)
 PRINTL ②：このカードをリリースして発動できる。レベルの合計が６以下になるように、
-PRINTL 自分の手札・デッキ・墓地から「RR」モンスターを２体まで特殊召喚する。
+PRINTL 自分の手札・デッキ・墓地から「RR」モンスターを２体まで特殊소환する。
 
 @CARDCAN_26618(決闘者,種類,ゾーン,場所)
 #DIMS DYNAMIC 決闘者
@@ -59,7 +59,7 @@ CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,26618)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 効果召喚
+IF 種類 == 効果소환
 	SIF モンスター数(決闘者) != 0
 		RETURN 0
 	RETURN 1
@@ -84,7 +84,7 @@ ENDIF
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 残りレベル
 
-IF 種類 == 効果召喚
+IF 種類 == 効果소환
 	RETURN 1
 ELSEIF 種類 == 戦場起動
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,26618,2)
@@ -99,7 +99,7 @@ ELSEIF 種類 == 戦場起動
 			効果条件種類 = レベル持ち
 			CALLFORM 効果条件レベル_ADV(6, "以下")
 			CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
-			TRYCALLFORM CARD_{GETVAR(@"%決闘者%_戦場:カード召喚先")}, "レベル"
+			TRYCALLFORM CARD_{GETVAR(@"%決闘者%_戦場:カード소환先")}, "レベル"
 			残りレベル = 6 - RESULT
 			IF 残りレベル >= 1 && モンスター数(決闘者) < 5
 				CALL FULLRESET

@@ -1,0 +1,198 @@
+﻿@CARDNAME_58230,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = No.39 유토피아 루츠
+	CASE "略称"
+		RESULTS = #39 루츠
+	CASE "カテゴリ"
+		RESULTS:0 = 넘버즈
+		RESULTS:1 = 유토피아
+ENDSELECT
+
+
+@CARD_58230(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 전사족 
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 500
+	CASE "守備力"
+		RETURN 100
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+
+RETURN 0
+@CARDSUMMON_58230(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 99
+
+素材条件レベル = 1
+素材条件数自由 = 1
+
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,58230) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_58230(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨１ 몬스터×２장 이상
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ①：자신이나 상대 몬스터의 공격 선언시에 발동한다。
+PRINTL 이 카드의 엑시즈 소재 １개를 제거하고、그 공격을 무효로 한다。
+PRINTL 그 후 이 카드의 공격력은、필드의 모든 몬스터의 코스트 ×１００포인트에、
+PRINTL 필드의 엑시즈 소재의 수를 곱한 수치만큼 오른다。
+PRINTL （코스트는 레벨 / 랭크 / 링크를 말한다）
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ②：이 카드의 공격이 무효가 되었을 경우에 발동한다。
+PRINTL 이 카드는 한번 더 공격할 수 있다。
+
+
+
+@CARDSUMMON_AA_58230
+
+SETCOLOR C_L_BLUE
+PRINT 　　　　　　　　　　　　　　　　　　　　　
+PRINTL 　　　　　　　　　　　　　　　
+PRINT 　　　　　　 ／￣￣￣￣￣￣￣￣￣￣￣＼　 
+PRINTL 　　　　 ／￣￣￣￣￣￣＼　　 
+PRINT 　　　　　　(　　　　　　　　　　　　　)　
+PRINTL 　　　 ／　　　　　　　　＼　 
+PRINT 　　　　　　 ＼＿＿＿＿　　　　　　 ／　　
+PRINTL 　　 ／　　　 ／￣＼　　　 ＼ 
+PRINT 　　　　　　　　　　　／　　　　　／　　　
+PRINTL 　　│　　 ／ ／￣＼＼　　　│
+PRINT 　　　　　　　　　　（　　　　　／　　　　
+PRINTL 　　│　　│（　　　）│　　│
+PRINT 　　　　　　　　　　　＼＿＿＿／　　　　　
+PRINTL 　　 ＼＿／　 ＼＿／　 ＼＿／ 
+PRINT 　　　　　　　　　　　　　　　　　　　　　
+PRINTL 　　　　　　　　　　　　　　　
+PRINT 　　　　　　 ／￣￣＼　 ／￣＼　 ／￣￣＼ 
+PRINTL 　　　　　　　　／￣＼　　　　
+PRINT 　　　　　　│　　　│（　　　）│　　　│
+PRINTL 　　　　　　　／　　 │　　　 
+PRINT 　　　　　　│　　　│　＼＿／　│　　　│
+PRINTL 　　　　　　／　　　／　　　　
+PRINT 　　　　　　│　　　 ＼＿＿＿＿／　　　 │
+PRINTL 　　　　　／　　　／　　　　　
+PRINT 　　　　　　 ＼　　　　　　　　　　　　／ 
+PRINTL 　　　　（　　　／　　　　　　
+PRINT 　　　　　　　 ＼＿＿＿＿＿＿＿＿＿＿／　 
+PRINTL 　　　　　＼＿／　　　　　　　
+PRINT 　　　　　　　　　　　　　　　　　　　　　
+PRINTL 　　　　　　　　　　　　　　　
+PRINT 　　　　　　　　　　　　　　　　　　　　　
+PRINTL 　　　　　　　　　　　　　　　
+RESETCOLOR
+WAIT
+
+@CARDCAN_58230(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58230)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_攻撃無効") == 1
+		条件달성 = 1
+	SIF GETVAR(@"%対面者%_攻撃無効") == 1
+		条件달성 = 1
+	SIF 条件달성 != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_58230(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58230,0,X消費1)
+	IF RESULT == 0
+		CALL EVADE_ATTACK(듀얼리스트)
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件표시 = 1
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		攻撃力修正 = RESULT:2 * 100
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		攻撃力修正 = 攻撃力修正 * RESULT:11
+
+		CALL FULLRESET
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",攻撃力修正)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58230)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦",1,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦無",0,1)
+	ENDIF
+ENDIF

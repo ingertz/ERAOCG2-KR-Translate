@@ -43,12 +43,12 @@ RETURN 0
 #DIM DYNAMIC 種類
 
 PRINTL このカード名の②の効果は１ターンに１度しか使用できない。
-CALLFORM CARD_ABLE(0,召喚時 ,特殊召喚時)
-PRINTL ①：このカードが手札から召喚・特殊召喚した場合に発動できる。
+CALLFORM CARD_ABLE(0,소환時 ,特殊소환時)
+PRINTL ①：このカードが手札から소환・特殊소환した場合に発動できる。
 PRINTL 相手に６００ダメージを与える。
 CALLFORM CARD_ABLE(2,攻撃時誘発)
 PRINTL ②：このカードが攻撃対象にされた時に発動できる。
-PRINTL 手札から「RR」モンスターを２体まで特殊召喚し、そのモンスターはこのターン戦闘耐性を得る。
+PRINTL 手札から「RR」モンスターを２体まで特殊소환し、そのモンスターはこのターン戦闘耐性を得る。
 
 @CARDCAN_26617(決闘者,種類,ゾーン,場所)
 #DIMS DYNAMIC 決闘者
@@ -60,7 +60,7 @@ CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,26617)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 召喚時 || 種類 == 特殊召喚時
+IF 種類 == 소환時 || 種類 == 特殊소환時
 	SIF GETVAR(@"%決闘者%_MZ_召種:場所") == 召種手札
 		RETURN 0
 	RETURN 1
@@ -93,7 +93,7 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 
-IF 種類 == 召喚時 || 種類 == 特殊召喚時
+IF 種類 == 소환時 || 種類 == 特殊소환時
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,26617)
 	IF RESULT == 0
 		CALL LIFE_CHANGE(決闘者,"減少","効果",600,1)

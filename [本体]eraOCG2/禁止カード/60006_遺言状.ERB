@@ -1,5 +1,5 @@
 ﻿@CARDNAME_60006,参照先
-;ココで指定カードの名前、略称を返す予定
+;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -22,8 +22,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "種類"
-		RETURN 通常魔法
+	CASE "종류"
+		RETURN 通常마법
 	CASE "制限"
 		RETURN 制限
 	CASE "レア度"
@@ -32,81 +32,81 @@ ENDSELECT
 
 RETURN 0
 
-@CARD_EXPLANATION_60006(種類)
-#DIM DYNAMIC 種類
+@CARD_EXPLANATION_60006(종류)
+#DIM DYNAMIC 종류
 
 PRINTL このカード名のカードは１ターンに１度しか使用できない。
-CALLFORM CARD_ABLE(1,魔罠起動 ,手札起動)
-PRINTL ①：このターンに自分フィールドのモンスターが墓地へ送られた場合、
-PRINTL デッキから攻撃力１５００以下のモンスター１体を特殊召喚できる。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：このターンに자신フィールドのモンスターが묘지へ送られた場合、
+PRINTL 덱から攻撃力１５００以下のモンスター１体を특수소환できる。
 PRINTL 
 PRINTL 
 PRINTL 
 
-@CARDCAN_60006(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDCAN_60006(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
-#DIM DYNAMIC 条件達成
+#DIM DYNAMIC 条件달성
 
-CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,60006)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,60006)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 魔罠起動 || 種類 == 手札起動
-	SIF 発動済_1(60006)
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(60006)
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
-	SIF ターンプレイヤー != 決闘者
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	RETURN 1
 
-ELSEIF 種類 == 効後紋章起動
-	SIF 発動済_1(60006) == 0
+ELSEIF 종류 == 効後紋章起動
+	SIF 발동済_1(60006) == 0
 		RETURN 0
 	CALL FULLRESET
-	効果条件種類 = モン全般
-	CALL CARD_CHECK_FIN_DATA(決闘者,"リリース")
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース")
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
-	効果範囲デッキ = 1
-	効果条件攻撃力 = 1500
-	効果条件召喚可 = 1
-	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	효과範囲덱 = 1
+	효과条件攻撃力 = 1500
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
 
 
-@CARDEFFECT_60006(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDEFFECT_60006(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 
-IF 種類 == 魔罠起動 || 種類 == 手札起動
-	;カード発動確認
-	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,60006,1)
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,60006,1)
 	IF RESULT == 0
-		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
-		IF 発動済_D1(決闘者,60006) == 0
-			CALL CARD_EFFECT_USE(決闘者,60006,20)
-			CALL CARD_RESERV(決闘者,44402,効後紋章予約)
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF 발동済_D1(듀얼리스트,60006) == 0
+			CALL CARD_EFFECT_USE(듀얼리스트,60006,20)
+			CALL CARD_RESERV(듀얼리스트,44402,効後紋章予約)
 		ELSE
-			PRINTW 「遺言状」の効果がセットされました（ターン終了時まで継続）
+			PRINTW 「遺言状」の효과がセットされました（ターン終了時まで継続）
 		ENDIF
 	ENDIF
 
-ELSEIF 種類 == 効後紋章起動
+ELSEIF 종류 == 効後紋章起動
 	CALL FULLRESET
-	効果範囲デッキ = 1
-	効果条件攻撃力 = 1500
-	効果条件任意 = 1
-	CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	효과範囲덱 = 1
+	효과条件攻撃力 = 1500
+	효과条件任意 = 1
+	CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 ENDIF

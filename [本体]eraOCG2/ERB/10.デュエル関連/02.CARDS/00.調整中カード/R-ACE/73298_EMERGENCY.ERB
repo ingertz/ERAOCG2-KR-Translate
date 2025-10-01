@@ -1,0 +1,213 @@
+﻿@CARDNAME_73298,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = EMERGENCY!
+	CASE "略称"
+		RESULTS = EMERGENCY!
+	CASE "カテゴリ"
+		RESULTS:0 = 레스큐 에이스
+ENDSELECT
+
+
+@CARD_73298(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_73298(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名はルール上「레스큐 에이스」カードとしても扱う。このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動,마함起動,フリー誘発)
+PRINTL ①：덱から「레스큐 에이스」モンスター１体を守備표시で특수소환する。
+PRINTL その後、자신の손패・フィールドの「레스큐 에이스」モンスター１体をリリースする。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신メインフェイズに묘지のこのカードを제외し、
+PRINTL 자신の묘지の「레스큐 에이스」함정カード１枚を대상として발동できる。そのカードを자신フィールドにセットする。
+
+;레스큐 에이스の速攻마법の１枚。DBPの後から通常パックで추가されたカードで、テーマを環境の一角に押し上げた強力なカード。
+;レベルや종족の制限がなく덱からテーマモンスターを無効化せずに何でもリクルート可能で、さらに後払いのコストは손패からも選べるため、
+;레스큐 에이스モンスター＋このカードが初手にあれば、소환権を使わずにテーマの展開を開始する事が可能となる。
+;묘지효과も「それぞれターン１」で、使用したターンから묘지효과で함정を構える事もでき、１枚の마법カードのパワーとしては極めて高い。
+
+;環境の変化によって本家OCGでは緩和(2025/10)されているのだが、eraOCG2では『制限』カードに지정している。
+;３枚フルパワーだと、泡ヴェーラーは避けられない点を差し引いてもテーマ内のギミックだけで誘発を貫通して理想盤面を作りやすくなるという、
+;そのカードパワーの高さを評価している点もあるが、eraOCG2には制限カードを２枚以上덱に入れる手段があるため、という理由もある。
+
+
+@CARDCAN_73298(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 条件달성カード名,10
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 하이드런트存在플래그
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73298)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,73298)
+		RETURN 0
+	;先に하이드런트の存在有無を確認しておいたほうが良さそうなのでここでチェック
+	CALL FULLRESET
+	효과範囲필드 = 1
+	;효과範囲마함 = 1
+	효과条件名前 = R-ACE 하이드런트
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		하이드런트存在플래그 = 1
+	
+	IF ゾーン == "손패"
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		;「R-ACE 하이드런트」の②による、使用可能でない状態でセットされているカードの발동を판정する특수な処理
+		IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			;そのターンの하이드런트(ID:24295)の②が발동済みである場合はもう발동できない。
+			SIF 발동済_2(듀얼리스트,24295)
+				RETURN 0
+			;자신のフィールドに하이드런트が存在していない場合は발동できない。
+			SIF 하이드런트存在플래그 != 1
+				RETURN 0
+			;このカードが「레스큐 에이스」カードの효과でセットされているかをT1汎数で確認
+			;T1汎数に128(bit:7)がセットされていない状態では발동できない（터뷸런스、인트루더、EMERGENCY!、REINFORCE!でのセット時に설정する）
+			IF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),7) != 1
+				RETURN 0
+			ELSE
+				;발동可能状態でのＣＰＵ側のための판정部分。「ＡＬＥＲＴ！」も마함にある状態だと、このカードは②효과を消費しての발동はしない。
+				IF 듀얼리스트 == "상대"
+					CALL FULLRESET
+					효과範囲마함 = 1
+					효과条件名前 = ＡＬＥＲＴ！
+					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+					SIF RESULT == 1
+						RETURN 0
+				ENDIF
+			ENDIF
+		ENDIF
+	ELSE
+		RETURN 0
+	ENDIF
+	
+	;발동条件を満たしているかチェック
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,73298)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0 
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件종류 = 함정全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_73298(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 選択カード名前
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 条件달성カード名,10
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성数 = 0
+#DIM DYNAMIC カード추가先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;하이드런트(ID:24295)の②の효과を用いてセットしたターンに발동したのかを確認。
+	;마함起動で、表==3のカードがここを通過していたら、하이드런트の②を使用した扱いに。
+	IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		SETCOLOR C_YELLOW
+		PRINTFORML 「R-ACE 하이드런트」の能力によってセットカード발동！！
+		RESETCOLOR
+		CALL CARD_EFFECT_USE(듀얼리스트,24295,2)
+	ENDIF
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73298,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件종류 = モン全般
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲필드 = 1
+			효과条件カテゴリ = 레스큐 에이스
+			효과条件종류 = モン全般
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73298,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+		;마함に直接セットする処理。T1汎数に128(bit:7)も설정する。
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件종류 = 함정全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		IF RESULT == 1
+			;RESULT:2にカード추가先の情報がある。
+			カード추가先 = RESULT:2
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",カード추가先,"T1汎数",128)
+		ENDIF
+	ENDIF
+ENDIF
+

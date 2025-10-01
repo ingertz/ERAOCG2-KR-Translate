@@ -69,6 +69,8 @@ ELSEIF 종류 == 時限紋章起動
 	SIF スタンバイフェイズ != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 永紋章起動
+	RETURN 1
 ELSEIF 종류 == 묘지起動
 	SIF メインフェイズ != 1
 		RETURN 0
@@ -97,7 +99,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71921)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		CALL SET_PLAYER_INFO(듀얼리스트,"逆魔香효과",2)
+		CALL CARD_RESERV(듀얼리스트,71921,永紋章予約)
 		CALL CARD_RESERV(듀얼리스트,71921,時限紋章予約)
 		CALL SET_PLAYER_INFO(듀얼리스트,"ドロー倍化",2)
 		소환権 ++
@@ -105,6 +107,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	ENDIF
 ELSEIF 종류 == 時限紋章起動
 	소환権 ++
+ELSEIF 종류 == 永紋章起動
+	CALL SET_PLAYER_INFO(듀얼리스트,"逆魔香효과",3)
 ELSEIF 종류 == 묘지起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71921)
 	IF RESULT == 0

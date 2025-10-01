@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 빛의 정령 디아나
+		RESULTS = 빛의 정령 디아나
 	CASE "略称"
-RESULTS = 광정 디아나
+		RESULTS = 광정 디아나
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -48,6 +48,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL 이 카드는 통상 소환할 수 없다.
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,손패起動)
 PRINTL ①: 자신의 묘지에서 빛 속성 몬스터 1장을 제외한 경우에 특수 소환할 수 있다.
 CALLFORM CARD_ABLE(0,戦破壊→묘지)
@@ -85,11 +86,13 @@ IF 종류 == 손패起動
 	RETURN 1
 
 ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_2(듀얼리스트,1649)
+		RETURN 0
 	SIF !GROUPMATCH(묘지送り종류,"リリース","破壊","戦闘破壊")
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
-효과条件名前 = 어둠의 정령 루나
+	효과条件名前 = 어둠의 정령 루나
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -117,11 +120,11 @@ IF 종류 == 손패起動
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 戦破壊→묘지
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1649)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1649,2)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲덱 = 1
-효과条件名前 = 어둠의 정령 루나
+		효과条件名前 = 어둠의 정령 루나
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
 	ENDIF

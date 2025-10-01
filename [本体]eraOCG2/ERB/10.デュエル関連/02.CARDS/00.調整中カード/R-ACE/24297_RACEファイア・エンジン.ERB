@@ -1,0 +1,146 @@
+﻿@CARDNAME_24297,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = R-ACE 파이어 엔진
+	CASE "略称"
+		RESULTS = RA엔진
+	CASE "カテゴリ"
+		RESULTS:0 = 레스큐 에이스
+ENDSELECT
+
+
+@CARD_24297(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 炎속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 無性
+	CASE "レア度"
+		RETURN RARE
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_24297(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：자신フィールドに「R-ACE 파이어 엔진」以外の
+PRINTL 「레스큐 에이스」モンスターが소환・특수소환された場合に발동できる。このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：상대フィールドにモンスターが특수소환された場合に발동できる。
+PRINTL 자신の손패・덱・묘지からレベル４以下の「레스큐 에이스」モンスター１体を특수소환する。
+
+;レスキューエースの擬似的な誘発モンスター。インパルスの손패誘発효과でフィールドに出せば、②でさらに下級のリクルートを狙える。
+;先攻展開後の상대ターンの牽制やアド稼ぎ手段で考えると悪くないが、後攻の誘発枠としては상대の盤面への直接的な妨害にはならないのが難点。
+
+
+@CARDSUMMON_AA_24297
+
+
+@CARDCAN_24297(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24297)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	;参考：条件분기の構造は「閃刀姫－ロゼ」と同様に
+	IF ゾーン == "손패"
+		SIF 발동済_1(듀얼리스트,24297)
+			RETURN 0
+		CALL CARD_SS_CHECK(듀얼리스트,24297,"손패")
+		SIF RESULT == 1
+			RETURN 0
+		CALL FULLRESET
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件固名前 = R-ACE 파이어 엔진
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般")
+		SIF RESULT != 1
+			RETURN 0
+		RETURN 1
+	ELSEIF ゾーン == "필드"
+		SIF 발동済_2(듀얼리스트,24297)
+			RETURN 0
+		CALL FULLRESET
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件종류 = モン全般
+		CALL 효과条件レベル_ADV(4, "以下")
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		RETURN 1
+	ENDIF
+ENDIF
+
+@CARDEFFECT_24297(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	IF ゾーン == "손패"
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24297,1)
+		IF RESULT == 0
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		ENDIF
+	ELSEIF ゾーン == "필드"
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24297,2)
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 레스큐 에이스
+			효과条件종류 = モン全般
+			CALL 효과条件レベル_ADV(4, "以下")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

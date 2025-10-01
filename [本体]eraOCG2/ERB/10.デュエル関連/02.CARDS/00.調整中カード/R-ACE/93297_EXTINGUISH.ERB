@@ -1,0 +1,159 @@
+﻿@CARDNAME_93297,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = EXTINGUISH!
+	CASE "略称"
+		RESULTS = EXTINGUISH!
+	CASE "カテゴリ"
+		RESULTS:0 = 레스큐 에이스
+ENDSELECT
+
+
+@CARD_93297(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93297(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名はルール上「레스큐 에이스」カードとしても扱う。
+CALLFORM CARD_ABLE(0,마함起動)
+PRINTL ①：자신フィールドに「레스큐 에이스」モンスターが存在する場合、상대フィールドの효과モンスター１体を대상として발동できる。
+PRINTL そのモンスターを破壊する。
+PRINTL 자신フィールドに「R-ACE 하이드런트」が存在する場合、さらにこのターン、상대はこの효과で破壊したモンスターと
+PRINTL 元々のカード名が同じモンスターの효과を발동できない。
+PRINTL 
+
+
+;레스큐 에이스の함정カードの１枚。スタンダードな상대モンスターを破壊する효과。발동条件は必要だがコスト不要なのはそれなりに優秀。
+;하이드런트が存在している場合、破壊したモンスターのIDに対して효과발동を行えなくなる추가효과もつく。
+;そうそうターン中に何度も同じモンスター효과を使うことも少ないので必要性は薄いが、それでも無いよりはあったほうがいい。
+
+
+@CARDCAN_93297(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 하이드런트存在플래그
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;SIF 발동済_1(듀얼리스트,93297)
+	;	RETURN 0
+	;先に하이드런트の存在有無を確認しておいたほうが良さそうなのでここでチェック
+	CALL FULLRESET
+	효과範囲필드 = 1
+	;효과範囲마함 = 1
+	효과条件名前 = R-ACE 하이드런트
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		하이드런트存在플래그 = 1
+	
+	IF ゾーン == "마함"
+		;「R-ACE 하이드런트」の②による、使用可能でない状態でセットされているカードの발동を판정する특수な処理
+		IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			;そのターンの하이드런트(ID:24295)の②が발동済みである場合はもう발동できない。
+			SIF 발동済_2(듀얼리스트,24295)
+				RETURN 0
+			;자신のフィールドに하이드런트が存在していない場合は발동できない。
+			SIF 하이드런트存在플래그 != 1
+				RETURN 0
+			;このカードが「레스큐 에이스」カードの효과でセットされているかをT1汎数で確認
+			;T1汎数に128(bit:7)がセットされていない状態では발동できない（터뷸런스、인트루더、EMERGENCY!、REINFORCE!でのセット時に설정する）
+			IF GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),7) != 1
+				RETURN 0
+			ELSE
+				;발동可能状態でのＣＰＵ側のための판정部分。基本的に使う상황は想定できないため、このカードは②효과を消費しての발동はしない。
+				IF 듀얼리스트 == "상대"
+					RETURN 0
+				ENDIF
+			ENDIF
+		ENDIF
+	ELSE
+		RETURN 0
+	ENDIF
+	
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 = 효과全般
+	효과条件표시 = 表側표시
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_93297(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM 選択カード
+#DIMS 選択カード名
+#DIM DYNAMIC 하이드런트存在플래그
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;하이드런트(ID:24295)の②の효과を用いてセットしたターンに발동したのかを確認。
+	;마함起動で、表==3のカードがここを通過していたら、하이드런트の②を使用した扱いに。
+	IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		SETCOLOR C_YELLOW
+		PRINTFORML 「R-ACE 하이드런트」の能力によってセットカード발동！！
+		RESETCOLOR
+		CALL CARD_EFFECT_USE(듀얼리스트,24295,2)
+	ENDIF
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93297,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		
+		CALL FULLRESET
+		효과条件종류 = 효과全般
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+		IF RESULT == 1
+			;破壊したカードIDを보존して、하이드런트が存在していればそのカードIDの효과발동불가に
+			選択カード = RESULT:2
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲마함 = 1
+			효과条件名前 = R-ACE 하이드런트
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				TRYCALLFORM CARDNAME_{選択カード}("名前")
+				選択カード名 = %RESULTS%
+				PRINTFORML 상대プレイヤーはこのターン、「%選択カード名%」の효과を발동することが出来なくなった！
+				CALL CARD_EFFECT_PROHIB(듀얼리스트,選択カード,1,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

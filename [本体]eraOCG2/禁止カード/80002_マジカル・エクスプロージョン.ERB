@@ -1,5 +1,5 @@
 @CARDNAME_80002,参照先
-;ココで指定カードの名前、略称を返す予定
+;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -22,8 +22,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "種類"
-		RETURN 通常罠
+	CASE "종류"
+		RETURN 通常함정
 	CASE "制限"
 		RETURN 制限
 	CASE "レア度"
@@ -32,70 +32,70 @@ ENDSELECT
 
 RETURN 0
 
-@CARD_EXPLANATION_80002(種類)
-#DIM DYNAMIC 種類
-CALLFORM CARD_ABLE(0,魔罠起動,フリー誘発)
-PRINTL ①：自分の手札が０枚の場合に発動できる。
-PRINTL 自分の墓地の魔法カードの数×２００のダメージを相手に与える。
+@CARD_EXPLANATION_80002(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,마함起動,フリー誘発)
+PRINTL ①：자신の손패が０枚の場合に발동できる。
+PRINTL 자신の묘지の마법カードの数×２００のダメージを상대に与える。
 PRINTL 
 PRINTL 
 PRINTL 
 
-@CARDCAN_80002(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDCAN_80002(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIMS DYNAMIC 対面者
 
-CALL 対面者判定(決闘者)
+CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,80002)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,80002)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 魔罠起動 || 種類 == フリー誘発
-	SIF ゾーン != "魔罠"
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
 		RETURN 0
-	SIF 手札数(決闘者) > 0
+	SIF 손패数(듀얼리스트) > 0
 		RETURN 0
 	CALL FULLRESET
-	効果範囲墓地 = 1
-	効果条件種類 = 魔法全般
-	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	효과範囲묘지 = 1
+	효과条件종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
 
 
-@CARDEFFECT_80002(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDEFFECT_80002(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC ダメージ修正
 #DIMS DYNAMIC 対面者
 
-CALL 対面者判定(決闘者)
+CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 種類 == 魔罠起動 || 種類 == フリー誘発
-	;カード発動確認
-	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,80002)
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,80002)
 	IF RESULT == 0
-		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
-		効果範囲墓地 = 1
-		効果条件種類 = 魔法全般
-		効果条件CNT = 1
-		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		효과範囲묘지 = 1
+		효과条件종류 = 마법全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		ダメージ修正 = RESULT * 2
-		CALL LIFE_CHANGE(決闘者,"減少","効果",ダメージ修正,1)
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ修正,1)
 	ENDIF
 ENDIF

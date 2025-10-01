@@ -7,9 +7,9 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 블랙홀２
+		RESULTS = 강제전이
 	CASE "略称"
-		RESULTS = 블랙홀２
+		RESULTS = 강제전이
 	CASE "カテゴリ"
 		RESULTS:0 = 없음
 ENDSELECT
@@ -23,7 +23,10 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
+
 		RETURN 通常마법
+	CASE "추가日"
+		RETURN 250927
 ENDSELECT
 
 RETURN 0
@@ -32,8 +35,9 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALLFORM CARD_ABLE(0,마함起動,손패起動)
-PRINTL ①：자신 / 상대 필드의 몬스터를 모두 파괴한다。
-PRINTL 
+PRINTL ①：お互いにフィールドのモンスターが４体以下である場合に발동できる。
+PRINTL お互いのプレイヤーは、それぞれ自身のフィールドのモンスター１体を選ぶ。
+PRINTL そのモンスター２体のコントロールを入れ替える。
 PRINTL 
 PRINTL 
 
@@ -42,53 +46,64 @@ PRINTL
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
 
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71065)
 SIF RESULT == 1
 	RETURN 0
+
 
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
+	SIF　モンスター数(듀얼리스트) >= 4
+		RETURN 0
+	SIF　モンスター数(対面者) >= 4
+		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
-	SIF 듀얼리스트 == "자신"
-		효과範囲필드 = 1
-	효과条件除去種 = 묘지
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
 
-
-
 @CARDEFFECT_71065(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-#DIM DYNAMIC 묘지送カード,5
-
-#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 상대選択カード
 #DIMS DYNAMIC 対面者
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
-
-
 IF 종류 == 마함起動 || 종류 == 손패起動
-	;カード발동確認
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71065)
 	IF RESULT == 0
-		;通常마법汎用処理
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
 		효과範囲필드 = 1
-		CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"묘지")
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"強奪")
+		IF RESULT == 1
+			選択カード = RESULT
+			CALL FULLRESET
+			효과範囲필드 = 1
+			CALL CARD_REMOVAL_ADV(対面者,"単体除去",場所,"強奪")
+			IF RESULT == 1
+				상대選択カード = RESULT:1
+			ENDIF
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",상대選択カード,"強奪")
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(対面者,"自動処理",選択カード,"強奪")
+		ENDIF
 	ENDIF
 ENDIF

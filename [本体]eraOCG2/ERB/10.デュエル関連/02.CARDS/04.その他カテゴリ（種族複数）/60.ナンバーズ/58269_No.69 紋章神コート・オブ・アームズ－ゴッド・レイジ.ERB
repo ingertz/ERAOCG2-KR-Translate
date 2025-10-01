@@ -97,12 +97,13 @@ ELSEIF 종류 == 常在無効
 	RETURN 1
 
 ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
 		RETURN 0
-	SIF ゾーン != "필드"
-		RETURN 0
+	
 	CALL FULLRESET
 	효과範囲상대필드 = 1
 	효과条件표시 = 表側표시
@@ -142,9 +143,8 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		효과条件표시 = 表側표시
 		효과条件固名前 = 언논
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
-		選択カード = RESULT:1
 		IF RESULT == 1
-			CALL CARD_SELECT(듀얼리스트,選択カード)
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
 			選択カード = 選択カード（CS）
 			CALL CARD_SET_RENAME(対面者,"필드",選択カード,"언논")
 		ENDIF

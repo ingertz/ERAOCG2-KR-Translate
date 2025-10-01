@@ -124,17 +124,15 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		효과範囲상대필드 = 1
 		효과条件표시 = 表側표시
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
-		選択カード = RESULT:1
 		IF RESULT == 1
-			CALL CARD_SELECT(듀얼리스트,選択カード)
+			選択カード_ID = RESULT:99
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
 			選択カード = 選択カード（CS）
 			攻撃力修正 = (GETVAR(@"%対面者%_MZ_攻:選択カード"))
-			選択カード_ID = RESULT:99
+			
 			TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
 			選択カード名前 = %RESULTS%
 
-			CALLFORM CARDEFFECT_{GETVAR(@"%対面者%_필드:選択カード")}(듀얼리스트,필드起動,"효과処理")
-			
 			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード,"一攻",-999999,1)
 			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード,"無効",1)
 			CALL CARD_SET_RENAME(対面者,"필드",選択カード,"언논")
@@ -142,6 +140,10 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 			CALL FULLRESET
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"変化元ID",選択カード_ID,上書きモード)
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"攻固",攻撃力修正,上書きモード)
+
+
+			CALLFORM CARDEFFECT_{GETVAR(@"%対面者%_필드:選択カード")}(듀얼리스트,필드起動,"효과処理")
+			
 		ENDIF
 
 	ENDIF

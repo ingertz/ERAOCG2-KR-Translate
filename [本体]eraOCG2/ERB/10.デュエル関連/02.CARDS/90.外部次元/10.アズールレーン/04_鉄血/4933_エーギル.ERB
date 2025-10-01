@@ -160,7 +160,7 @@ ELSEIF 종류 == 효과後誘発
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
-효과条件名前 = 결전계획 대형순양함 에기르
+	효과条件名前 = 결전계획 대형순양함 에기르
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般")
 	IF RESULT == 1
 		SIF カード소환先 == 場所
@@ -252,7 +252,7 @@ IF 종류 == 필드起動
 			条件Ａ－２ = 1
 	ENDIF
 	IF 条件Ａ－１ == 1 && 条件Ａ－２ == 1
-		CALL YN_CHOICE(듀얼리스트,"●Ｘ素材－１、「메탈 블러드」카드를 제외하고、그 카드의 종류に対する내성을 얻는다。","●耐性１つ을 잃고、상대モンスターゾーン 마법＆함정ゾーンいずれか모든 カード破壊")
+		CALL YN_CHOICE(듀얼리스트,"●Ｘ소재－１、「메탈 블러드」카드를 제외하고、그 카드의 종류에 대한 내성을 얻는다。","●내성 １개를 잃고、상대 몬스터 존 / 마법＆함정 존에 어느인가의 모든 카드 파괴")
 		選択효과Ａ = RESULT
 	ELSEIF 条件Ａ－２ == 1
 		選択효과Ａ = いいえ
@@ -311,26 +311,26 @@ IF 종류 == 필드起動
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4933,1)
 		IF RESULT == 0
 			IF GROUPMATCH(1,モ耐所持,魔耐所持,함정耐所持) > 1
-				PRINTFORML 失う내성을 選択してください。
+				PRINTFORML 잃을 내성을 선택해주세요。
 				IF モ耐所持 == 1
-PRINTL [0] - 몬스터 내성
+					PRINTL [0] - 몬스터 내성
 				ELSE
 					SETCOLOR C_GRAY
-PRINTL (0) - (몬스터 내성은 획득하지 않았습니다)
+					PRINTL (0) - (몬스터 내성은 획득하지 않았습니다)
 					RESETCOLOR
 				ENDIF
 				IF 魔耐所持 == 1
-PRINTL [1] - 마법 내성
+					PRINTL [1] - 마법 내성
 				ELSE
 					SETCOLOR C_GRAY
-PRINTL ① - (마법 내성은 획득하지 않았습니다)
+					PRINTL ① - (마법 내성은 획득하지 않았습니다)
 					RESETCOLOR
 				ENDIF
 				IF 함정耐所持 == 1
-PRINTL [2] - 함정 내성
+					PRINTL [2] - 함정 내성
 				ELSE
 					SETCOLOR C_GRAY
-PRINTL ② - (함정 내성은 획득하지 않았습니다)
+					PRINTL ② - (함정 내성은 획득하지 않았습니다)
 					RESETCOLOR
 				ENDIF
 				PRINTL
@@ -362,7 +362,7 @@ PRINTL ② - (함정 내성은 획득하지 않았습니다)
 			SIF RESULT == 1
 				条件Ｂ－２ = 1
 			IF 条件Ｂ－１ == 1 && 条件Ｂ－２ == 1
-				CALL YN_CHOICE(듀얼리스트,"상대몬스터 존의 カード全てを파괴한다。","상대의 마법＆함정존의 カード全てを파괴한다。")
+				CALL YN_CHOICE(듀얼리스트,"상대 몬스터 존의 카드를 전부 파괴한다。","상대의 마법＆함정존의 카드를 전부 파괴한다。")
 				選択효과Ｂ = RESULT
 			ELSEIF 条件Ｂ－２ == 1
 				選択효과Ｂ = いいえ
@@ -379,9 +379,10 @@ ELSEIF 종류 == 효과後誘発
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲손패 = 1
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
-		選択カード = RESULT:1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = 選択カード（CS）
 			CALL SET_FIELD_INFO(対面者,"필드",選択カード,"永攻",-999999)
 			CALL SET_FIELD_INFO(対面者,"필드",選択カード,"永守",-999999)
 			CALL SET_FIELD_INFO(対面者,"필드",選択カード,"不材",2,上書きモード)

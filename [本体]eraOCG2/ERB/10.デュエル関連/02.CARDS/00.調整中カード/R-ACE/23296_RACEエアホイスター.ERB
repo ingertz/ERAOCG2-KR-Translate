@@ -1,0 +1,146 @@
+﻿@CARDNAME_23296,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = R-ACE 에어호이스터
+	CASE "略称"
+		RESULTS = RA에어호이스터
+	CASE "カテゴリ"
+		RESULTS:0 = 레스큐 에이스
+ENDSELECT
+
+
+@CARD_23296(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 炎속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1700
+	CASE "守備力"
+		RETURN 1700
+	CASE "성별"
+		RETURN 雄性
+	CASE "レア度"
+		RETURN SPR
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_23296(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「레스큐 에이스」마법カード１枚を손패に加える。
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ②：상대がモンスターの효과をフィールドで발동した時、손패・フィールドのこのカードをリリースして발동できる。
+PRINTL 자신の손패から「R-ACE 에어호이스터」以外の「레스큐 에이스」モンスター１体を특수소환する。
+
+;レスキューエースの初動となる전사족モンスター。손패誘発的な효과は弱めだが、마법カードをサーチすることができるのが初動として偉い。
+;攻守もなかなか高めなうえテーマのフィールド마법で強化もできるため、膠着状態でこいつの殴りに助けられたという場面も案外あったかと思われる。
+
+
+@CARDSUMMON_AA_23296
+
+
+@CARDCAN_23296(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23296)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,23296)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_2(듀얼리스트,23296)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"필드","손패")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 레스큐 에이스
+	효과条件종류 = モン全般
+	효과条件固名前 = R-ACE 에어호이스터
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_23296(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23296,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件종류 = 마법全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23296,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+	
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ = 레스큐 에이스
+		효과条件종류 = モン全般
+		효과条件固名前 = R-ACE 에어호이스터
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

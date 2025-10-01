@@ -39,8 +39,9 @@ RETURN 0
 PRINTL 이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①：자신 필드는 "천공의 성역"이 된다。
-PRINTL ②：이 카드가 필드에 존재하는 한、필드의 천사족 몬스터의 공격력 / 수비력은 ３００ 오른다、
-PRINTL 필드의 악마족 몬스터의 공격력 / 수비력은 ３００내리고 효과가 무효화된다。	
+PRINTL ②：자신 필드의 천사족 몬스터의 공격력 / 수비력은 ３００ 오른다、
+PRINTL 악마족 몬스터의 공격력 / 수비력은 ３００내리고 효과가 무효화된다。	
+PRINTL 상대 필드에 필드명칭이 존재하지 않는 경우、이 효과는 상대 필드에도 적용된다。
 CALLFORM CARD_ABLE(3,ターン終了時)
 PRINTL ③：자신 / 상대 턴 종료시에 발동할 수 있다。
 PRINTL 자신의 묘지 / 제외 상태인 천사족 몬스터 １장 또는 일반 함정 카드 １장을 골라 자신의 덱 가장 위에 놓는다。
@@ -52,12 +53,14 @@ PRINTL 자신의 묘지 / 제외 상태인 천사족 몬스터 １장 또는 일
 ;元々のカード同様、初動となる효과は持たないが、【エンジェル・パーミッション】としてはより扱いやすいリソース回収효과に변경している。
 ;セット状態の마함を保護する효과をオミットした代わりに、악마족専用スキドレという強烈なメタ효과を추가。덱の相性関係をより鮮明にする狙い。
 ;昔ながらのフィールド마법の趣を出すため、強化・弱体효과はどちらも両プレイヤーに효과が及ぶ。자신の악마족モンスターも弱体化する点は注意。
+;상대フィールドに효과を及ぼす部分を、상대フィールドにフィールド마법による名称が存在しない場合という条件に설정。
+;もともと【ラビュリンス】を意識した악마족メタだったが、상대側も「白銀の迷宮城」を貼ることで「천공의 성역」の影響を押し返せるような処理に。
 
 
 @CARDCAN_71181(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
-#DIMS DYNAMIC ゾーン
 #DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
@@ -109,6 +112,7 @@ ENDIF
 
 @CARDEFFECT_71181(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
@@ -118,6 +122,9 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC 条件달성数 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
 
 IF 종류 == 마함起動 || 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71181)
@@ -131,8 +138,9 @@ ELSEIF 종류 == ターン終了時
 		CALL FULLRESET
 		효과範囲묘지 = 1
 		효과範囲제외 = 1
-		효과条件종류 = モン全般
 		효과条件종족 = 천사족
+		효과条件종류:0 = 효과モン
+		효과条件종류:1 = 通常モン
 		효과条件スーパー종류 = 通常함정
 		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT != 9999
@@ -145,21 +153,25 @@ ELSEIF 종류 == 攻守変動
 	효과条件종족 = 천사족
 	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300,300)
 	CALL FULLRESET
-	효과条件종족 = 천사족
-	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,300,300)
-	CALL FULLRESET
-	효과条件종족 = 악마족
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,-300,-300)
-	CALL FULLRESET
 	효과条件종족 = 악마족
 	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-300,-300)
+	IF GETVARS(@"%対面者%_フィールド名") == ""
+		CALL FULLRESET
+		효과条件종족 = 천사족
+		CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300,300)
+		CALL FULLRESET
+		효과条件종족 = 악마족
+		CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-300,-300)
+	ENDIF
 ELSEIF 종류 == 常在無効
 	CALL FULLRESET
 	효과条件종족 = 악마족
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"無効")
-	CALL FULLRESET
-	효과条件종족 = 악마족
-	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"無効")
+	IF GETVARS(@"%対面者%_フィールド名") == ""
+		CALL FULLRESET
+		효과条件종족 = 악마족
+		CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"無効")
+	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "천공의 성역")
 ENDIF

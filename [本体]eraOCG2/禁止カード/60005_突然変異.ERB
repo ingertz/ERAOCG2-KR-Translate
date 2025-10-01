@@ -1,5 +1,5 @@
 ﻿@CARDNAME_60005,参照先
-;ココで指定カードの名前、略称を返す予定
+;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -22,8 +22,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "種類"
-		RETURN 通常魔法
+	CASE "종류"
+		RETURN 通常마법
 	CASE "制限"
 		RETURN 制限
 	CASE "レア度"
@@ -32,104 +32,104 @@ ENDSELECT
 
 RETURN 0
 
-@CARD_EXPLANATION_60005(種類)
-#DIM DYNAMIC 種類
+@CARD_EXPLANATION_60005(종류)
+#DIM DYNAMIC 종류
 
-CALLFORM CARD_ABLE(0,魔罠起動 ,手札起動)
-PRINTL ①：自分フィールドのモンスター１体をリリースし、
-PRINTL リリースしたモンスターと同じレベルの融合モンスター１体をＥＸデッキから特殊召喚する。
+CALLFORM CARD_ABLE(0,마함起動 ,손패起動)
+PRINTL ①：자신フィールドのモンスター１体をリリースし、
+PRINTL リリースしたモンスターと同じレベルの융합モンスター１体をＥＸ덱から특수소환する。
 PRINTL 
 PRINTL 
 PRINTL 
 
-@CARDCAN_60005(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDCAN_60005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
-#DIM DYNAMIC 条件達成
+#DIM DYNAMIC 条件달성
 
-CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,60005)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,60005)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 魔罠起動 || 種類 == 手札起動
+IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF メインフェイズ != 1
 		RETURN 0
-	SIF ターンプレイヤー != 決闘者
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	FOR カウンタ,1,13
 		CALL FULLRESET
-		効果範囲戦場 = 1
-		効果条件レベル = カウンタ
-		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		효과範囲필드 = 1
+		효과条件レベル = カウンタ
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT != 1
 			CONTINUE
 		CALL FULLRESET
-		効果範囲EXデッキ = 1
-		効果条件レベル = カウンタ
-		効果条件種類 = 融合
-		効果条件特不無視 = 1
-		効果条件召喚可 = 2
-		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		효과範囲EX덱 = 1
+		효과条件レベル = カウンタ
+		효과条件종류 = 융합
+		효과条件特不無視 = 1
+		효과条件소환可 = 2
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT == 1
-			条件達成 = 1
+			条件달성 = 1
 	NEXT
-	SIF 条件達成 != 1
+	SIF 条件달성 != 1
 		RETURN 0
 	RETURN 1
 ENDIF
 
 
-@CARDEFFECT_60005(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDEFFECT_60005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
-#DIM DYNAMIC 条件達成,13
+#DIM DYNAMIC 条件달성,13
 #DIM DYNAMIC 選択カードレベル
 
-IF 種類 == 魔罠起動 || 種類 == 手札起動
-	;カード発動確認
-	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,60005)
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,60005)
 	IF RESULT == 0
-		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		FOR カウンタ,1,13
 			CALL FULLRESET
-			効果範囲戦場 = 1
-			効果条件レベル = カウンタ
-			CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+			효과範囲필드 = 1
+			효과条件レベル = カウンタ
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			SIF RESULT != 1
 				CONTINUE
 			CALL FULLRESET
-			効果範囲EXデッキ = 1
-			効果条件レベル = カウンタ
-			効果条件種類 = 融合
-			効果条件特不無視 = 1
-			効果条件召喚可 = 2
-			CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+			효과範囲EX덱 = 1
+			효과条件レベル = カウンタ
+			효과条件종류 = 융합
+			효과条件特不無視 = 1
+			효과条件소환可 = 2
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			SIF RESULT == 1
-				条件達成:カウンタ = 1
+				条件달성:カウンタ = 1
 		NEXT
 
 		CALL FULLRESET
-		効果範囲戦場 = 1
-		効果条件レベル:0 = 0
+		효과範囲필드 = 1
+		효과条件レベル:0 = 0
 		FOR カウンタ,1,13
-			効果条件レベル:カウンタ = カウンタ
+			효과条件レベル:カウンタ = カウンタ
 		NEXT
-		CALL CARD_CHOOSE_BASIC(決闘者,"戦場",ゾーン,場所)
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
 		IF RESULT != 9999
-			選択カードレベル = GETVAR(@"%決闘者%_MZ_星:RESULT")
-			CALL CARD_DISPOSE(決闘者,"戦場",RESULT)
+			選択カードレベル = GETVAR(@"%듀얼리스트%_MZ_星:RESULT")
+			CALL CARD_DISPOSE(듀얼리스트,"필드",RESULT)
 
 			CALL FULLRESET
-			効果範囲EXデッキ = 1
-			効果条件レベル = 選択カードレベル
-			効果条件種類 = 融合
-			CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+			효과範囲EX덱 = 1
+			효과条件レベル = 選択カードレベル
+			효과条件종류 = 융합
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
 ENDIF

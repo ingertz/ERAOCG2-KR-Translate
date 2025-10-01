@@ -130,15 +130,16 @@ ELSEIF 종류 == 필드→묘지 || 종류 == 戦闘→묘지 || 종류 == 손�
 		CALL FULLRESET
 		효과範囲필드 = 1
 		효과範囲상대필드 = 1
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT != 9999
-			CALL CARD_SELECT(듀얼리스트,RESULT)
+		효과条件표시 = 10
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
 			選択カード = RESULT
 			;表側守備
 			IF GETVAR(@"%대상者（CS）%_MZ_表:選択カード") == 2
 				SIF 듀얼리스트 == "자신"
-PRINTL 표시 형식을 선택해 주세요
-				CALL YN_CHOICE(대상者（CS）,"●表側攻撃표시","●裏側守備표시")
+					PRINTL 표시 형식을 선택해 주세요
+				CALL YN_CHOICE(대상者（CS）,"●앞면 공격 표시","●뒷면 수비 표시")
 				IF RESULT == 0
 					CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード,"表",1,上書きモード)
 				ELSEIF RESULT == 1

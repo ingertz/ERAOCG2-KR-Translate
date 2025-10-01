@@ -140,10 +140,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 			;대상に取った 카드의 "위치"はRESULT:1に入るので、選択カードに = で格納することを忘れないこと
 			;대상不全の時はRESULTに0、成立している場合は1が入るよ
 			CALL FULLRESET
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
+			효과範囲상대필드 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 			IF RESULT == 1
-				選択カード = RESULT:1
-				CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",選択カード,1)
+				CALL CARD_SELECT(듀얼리스트,RESULT:1)
+
+				選択カード = 選択カード（CS）
+				CALL CARD_EROTICS_FIELD(대상者（CS）,"필드",選択カード,1)
 				IF RESULT != -1
 					조교대상 = RESULT
 					PRINTFORML %CALLNAME:조교대상%는 과자가 가져다주는 고양에 저항하지 못하고、자위를 시작해버렸다。

@@ -38,6 +38,8 @@ SELECTCASE 参照先
 		RETURN 雄性
 	CASE "특수불가"
 		RETURN 1
+	CASE "連動ID"
+		RETURN 6949
 ENDSELECT
 RETURN 0
 
@@ -175,9 +177,11 @@ ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,46949)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
 		효과条件除去種 = 묘지
 		효과条件他所 = 1
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드単体",場所,"選択")
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 		IF RESULT == 1
 			選択カード_ID = RESULT:99
 			CALL CARD_SELECT(듀얼리스트,RESULT:1)

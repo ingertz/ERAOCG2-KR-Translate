@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 트릭스터 릴리벨
+		RESULTS = 트릭스터 릴리벨
 	CASE "略称"
-RESULTS = 릴리벨
+		RESULTS = 릴리벨
 	CASE "カテゴリ"
-RESULTS:0 = 트릭스터
+		RESULTS:0 = 트릭스터
 ENDSELECT
 
 
@@ -72,7 +72,7 @@ IF 종류 == 효과後誘発
 	SIF RESULT == 1
 		RETURN 0
 	CALL FULLRESET
-효과条件名前 = 트릭스터 릴리벨
+	효과条件名前 = 트릭스터 릴리벨
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득")
 	SIF RESULT != 1
 		RETURN 0
@@ -82,6 +82,8 @@ ELSEIF 종류 == 지속효과
 		RETURN 0	
 	RETURN 1
 ELSEIF 종류 == ライフ変強制誘発
+	SIF 발동済_2(듀얼리스트,1229)
+		RETURN 0
 	SIF ゾーン != "필드"
 		RETURN 0
 	SIF ダメージ受者 == 듀얼리스트

@@ -1,0 +1,129 @@
+﻿@CARDNAME_34009,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 템플릿 스킵퍼
+	CASE "略称"
+		RESULTS = Tpl 스킵퍼
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_34009(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_34009(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の、①の方法による특수소환は１ターンに１度しかできず、②の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1, 손패起動)
+PRINTL ①：자신フィールドに사이버스족Lモンスターが存在する場合、このカードは손패から특수소환できる。
+CALL CARD_ABLE(2, 필드起動)
+PRINTL ②：자신メインフェイズに발동できる。자신の손패・묘지から사이버스족モンスター１体を제외する。
+PRINTL このカードは제외したモンスターと同名カードとしても扱う。
+
+
+@CARDCAN_34009(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 34009)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트, 34009)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(듀얼리스트, 34009, "손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 사이버스족
+	효과条件종류 = 링크
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트, 34009)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34009(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 34009, 1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 34009, 2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件종족 = 사이버스족
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+		IF RESULT == 1
+			CALL SET_FIELD_INFO(듀얼리스트, "필드", 場所, "変化元ID", RESULT:1, 1)
+		ENDIF
+	ENDIF
+ENDIF
+
+

@@ -204,7 +204,7 @@ IF 종류 == 攻撃時誘発
 			발동불가:1 = 1
 		
 		IF 발동불가:0 != 1 && 발동불가:1 != 1
-			CALL YN_CHOICE(듀얼리스트,"●毒を打ち込む","●幻覚を見せる")
+			CALL YN_CHOICE(듀얼리스트,"●독을 쏜다","●환각을 보여준다")
 			SIF 듀얼리스트 != "자신"
 				RESULT = 1
 		ELSEIF 발동불가:0 != 1
@@ -216,8 +216,9 @@ IF 종류 == 攻撃時誘発
 		IF RESULT == 0
 			CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"Ｘ",-1)
 			CALL FULLRESET
+			효과範囲상대필드 = 1
 			효과条件표시 = 表側표시
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 			IF RESULT == 1
 				CALL CARD_SELECT(듀얼리스트,RESULT:1)
 				選択カード = RESULT
@@ -227,12 +228,14 @@ IF 종류 == 攻撃時誘発
 
 		ELSEIF RESULT == 1
 			CALL FULLRESET
+			효과範囲상대필드 = 1
 			효과条件표시 = 表側표시
 			효과条件悪Ｃ所持 = 999
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 			IF RESULT == 1
 				CALL CARD_SELECT(듀얼리스트,RESULT:1)
-				攻撃力修正 = GETVAR(@"%대상者（CS）%_MZ_攻:RESULT")
+				選択カード = RESULT
+				攻撃力修正 = GETVAR(@"%대상者（CS）%_MZ_攻:選択カード")
 				CALL LIFE_CHANGE(듀얼리스트,"減少","효과",攻撃力修正,1)
 			ENDIF
 		ENDIF

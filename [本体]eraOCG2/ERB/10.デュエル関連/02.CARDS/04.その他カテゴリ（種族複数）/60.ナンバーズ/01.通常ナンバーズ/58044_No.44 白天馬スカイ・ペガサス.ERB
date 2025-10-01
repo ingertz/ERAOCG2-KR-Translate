@@ -205,7 +205,7 @@ IF 종류 == 필드起動
 		발동불가:1 = 1
 
 	IF 발동불가:0 != 1 && 발동불가:1 != 1
-		CALL YN_CHOICE(듀얼리스트,"●상대몬스터 １장을 파괴한다。","●넘버즈の装備カードになる。")
+		CALL YN_CHOICE(듀얼리스트,"●상대 몬스터 １장을 파괴한다。","●넘버즈의 장착 카드가 된다。")
 	ELSEIF 발동불가:0 != 1
 		RESULT = 0
 	ELSEIF 발동불가:1 != 1
@@ -216,11 +216,13 @@ IF 종류 == 필드起動
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58044,0,X消費1)
 		IF RESULT == 0
 			CALL FULLRESET
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
+			효과範囲상대필드 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 			IF RESULT == 1
-				選択カード = RESULT:1
+				CALL CARD_SELECT(듀얼리스트,RESULT:1)
+				選択カード = RESULT
 				IF 듀얼리스트 != "자신"
-					PRINTL ライフを払いますか？
+					PRINTL 라이프를 지불하시겠습니까？
 					CALL YN_CHOICE(対面者)
 				ELSE
 					RESULT = 0
@@ -243,6 +245,7 @@ IF 종류 == 필드起動
 			효과範囲필드 = 1
 			효과条件カテゴリ = 넘버즈
 			효과条件표시 = 表側표시
+			효과条件他所 = 1
 			CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
 		ENDIF
 	ENDIF

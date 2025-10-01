@@ -41,10 +41,10 @@ ENDSELECT
 
 RETURN 0
 
-@CARDSUMMON_40080(決闘者,召喚カード,EX参照)
+@CARDSUMMON_40080(決闘者,소환カード,EX参照)
 #DIMS DYNAMIC 決闘者
 #DIM DYNAMIC カウンタ
-#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC 소환カード
 #DIM DYNAMIC EX参照
 ;素材条件
 
@@ -55,7 +55,7 @@ CALL RESETCONDITION_MAT
 	素材条件カテゴリ:2 = 蜜罐
 
 IF EX参照 == 1
-	CALL LINCAN(決闘者,召喚カード,40080) 
+	CALL LINCAN(決闘者,소환カード,40080) 
 	RETURN RESULT
 ENDIF
 
@@ -67,8 +67,8 @@ PRINTL 「蟲惑魔」モンスターまたは「惑乱魔」モンスタx2
 PRINTL このカード名の②③の効果はそれぞれ１ターンに１度しか使用できない。
 CALLFORM CARD_ABLE(0,永続効果)
 PRINTL ①：このカードは罠耐性を持つ,相手フィールド攻撃力为0的怪兽或「蜜罐」効果を発動できない。
-CALLFORM CARD_ABLE(1,特殊召喚時,EX召喚時)
-PRINTL ②：このカードが特殊召喚·EX召喚時に成功した場合に発動できる。
+CALLFORM CARD_ABLE(1,特殊소환時,EX소환時)
+PRINTL ②：このカードが特殊소환·EX소환時に成功した場合に発動できる。
 PRINTL 自分从墓地把1只「惑乱魔」モンスタ特殊召唤,相手从墓地把1只持有性別のモンスタ视为「蜜罐」攻撃表示特殊召唤。
 CALLFORM CARD_ABLE(2,戦場起動,フリー誘発)
 PRINTL ③：相手戦闘阶段,以自分フィールドこのカード以外的1只「惑乱魔」モンスタ和相手フィールド1只モンスタ为对象才能发动。
@@ -94,7 +94,7 @@ CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,40080)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 特殊召喚時 || 種類 == EX召喚時
+IF 種類 == 特殊소환時 || 種類 == EX소환時
 	SIF 発動済_1(決闘者,40080)
 		RETURN 0
     SIF ゾーン != "戦場"
@@ -189,7 +189,7 @@ ENDIF
 CALL 対面者判定(決闘者)
 対面者 = %RESULTS%
 
-IF 種類 == 特殊召喚時 || 種類 == EX召喚時
+IF 種類 == 特殊소환時 || 種類 == EX소환時
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40080,1)
     IF RESULT == 0
 		CALL FULLRESET

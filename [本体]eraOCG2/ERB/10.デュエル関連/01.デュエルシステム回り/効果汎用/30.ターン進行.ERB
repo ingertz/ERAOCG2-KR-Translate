@@ -554,7 +554,14 @@ IF ターン数 != 1
 	ELSEIF ターンプレイヤー == "상대"
 		PRINTL 드로우！
 		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,7)
+
+		IF GETVAR(@"%ターンプレイヤー%_ドロー倍化") >= 1
+			CALL CARDDRAW_BASIC( "상대",2,1)
+			SIF GETVAR(@"%ターンプレイヤー%_ドロー倍化") == 1
+				SETVAR @"%ターンプレイヤー%_ドロー倍化", 0
+		ELSE 
 		CALL CARDDRAW_BASIC( "상대",1,1)
+		ENDIF
 	ENDIF
 ENDIF
 CALL CARD_FINAL(ターンプレイヤー);ドローフェイズのフリーチェック
@@ -1004,6 +1011,14 @@ IF 설정数値 == 6
 		TRYCALLFORM CARDCAN_{GETVAR(@"%実行者%_필드:カウンタ")}(実行者,상황確認,"필드",カウンタ)
 		SIF RESULT == 1
 			TRYCALLFORM CARDEFFECT_{GETVAR(@"%実行者%_필드:カウンタ")}(実行者,상황確認,"필드",カウンタ)
+	NEXT
+	FOR カウンタ,0,5
+		VARSET RESULT
+		SIF GETVAR(@"%実行者%_마함:カウンタ") == -1
+			CONTINUE
+		TRYCALLFORM CARDCAN_{GETVAR(@"%実行者%_마함:カウンタ")}(実行者,상황確認,"마함",カウンタ)
+		SIF RESULT == 1
+			TRYCALLFORM CARDEFFECT_{GETVAR(@"%実行者%_마함:カウンタ")}(実行者,상황確認,"마함",カウンタ)
 	NEXT
 ENDIF
 
