@@ -1,0 +1,931 @@
+﻿;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;XON_GRADATION
+;「ぉんフォント」が使用できるグラデーション色표시
+;
+;仕様：
+;初期色：変化する前の色、この色から変化色に徐々に変わっていく。未지정の場合、初期値は白色
+;変化色：
+;START文字列：初期色で표시する文字列。グラデ文字列が省略されている場合、グラデ文字列として扱われる。
+;グラデ文字列：文字色が初期色→変化色に変わっていく。
+;END文字列：変化色で표시する文字列
+;,出力方式
+;０：PRINTFORML
+;１：PRINTFORMW
+;２：PRINTFORM
+;
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;PRINTFORMLを使用
+@XON_GRADATIONL(初期色 = C_WHITE, 変化色 = C_WHITE, START文字列, グラデ文字列, END文字列)
+#DIM DYNAMIC 初期色
+#DIM DYNAMIC 変化色
+#DIMS DYNAMIC START文字列
+#DIMS DYNAMIC グラデ文字列
+#DIMS DYNAMIC END文字列
+
+CALL XON_GRADATION(初期色, 変化色, START文字列, グラデ文字列, END文字列,0)
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;PRINTFORMWを使用
+@XON_GRADATIONW(初期色 = C_WHITE, 変化色 = C_WHITE, START文字列, グラデ文字列, END文字列)
+#DIM DYNAMIC 初期色
+#DIM DYNAMIC 変化色
+#DIMS DYNAMIC START文字列
+#DIMS DYNAMIC グラデ文字列
+#DIMS DYNAMIC END文字列
+
+CALL XON_GRADATION(初期色, 変化色, START文字列, グラデ文字列, END文字列,1)
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@XON_GRADATION(初期色 = C_WHITE, 変化色 = C_WHITE, START文字列, グラデ文字列, END文字列,出力方式 = 2)
+#DIMS DYNAMIC START文字列
+#DIMS DYNAMIC グラデ文字列
+#DIMS DYNAMIC グラデ文字列_分割 ,50
+#DIMS DYNAMIC グラデ文字
+#DIMS DYNAMIC END文字列
+#DIM DYNAMIC 初期色
+#DIM DYNAMIC 変化色
+#DIM DYNAMIC 赤色 ,3 ;初期色、変化色、グラデ色
+#DIM DYNAMIC 緑色 ,3
+#DIM DYNAMIC 青色 ,3
+#DIM DYNAMIC 文字長
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
+#DIM DYNAMIC 出力方式 = 0 ;0は改行、1は改行(+クリック)、2は無改行
+
+; --- 初期色の RGB を取り出す ---
+赤色:0 = (初期色 / 0x10000) % 0x100		;// 上位2桁
+緑色:0 = (初期色 / 0x100)   % 0x100		;// 真ん中2桁
+青色:0 = 初期色 % 0x100					;// 下位2桁
+
+; --- 変化色の RGB を取り出す ---
+赤色:1 = (変化色 / 0x10000) % 0x100		;// 上位2桁
+緑色:1 = (変化色 / 0x100)   % 0x100		;// 真ん中2桁
+青色:1 = 変化色 % 0x100					;// 下位2桁
+
+;「STARTのみ」or「ENDのみ」or「グラデだけ未入力」なら、全部グラデに詰める
+IF (START文字列 != "" && グラデ文字列 == "" && END文字列 == "") ||(START文字列 == "" && グラデ文字列 == "" && END文字列 != "") || (START文字列 != "" && グラデ文字列 == "" && END文字列 != "")
+	グラデ文字列 = %START文字列%%END文字列%
+	START文字列 =
+	END文字列 =
+ENDIF
+
+; --- 長さ취득 ---
+CALL XON_FONT(グラデ文字列,,3)
+文字長 = RESULT
+
+;初期色のみ文字を出力
+SETCOLOR 初期色
+;PRINTFORM %START文字列%
+CALL XON_FONT(START文字列)
+
+SPLIT グラデ文字列, ",", グラデ文字列_分割
+
+; グラデーション
+FOR カウンタ,0,VARSIZE("グラデ文字列_分割")-1
+	
+	;通常モード
+	IF 文字長 == 1
+		;1文字だけ지정された場合の、0除算対策(文字を出力し、色を変える)
+		文字長 = 2
+		カウンタC = 1
+	ENDIF
+	SIF グラデ文字列_分割:カウンタ == ""
+		BREAK
+	
+	グラデ文字 '= グラデ文字列_分割:カウンタ
+	
+	;カンマ区切りのブロックごとに판정
+	赤色:2 = 赤色:0 + (( 赤色:1 - 赤色:0 ) * (カウンタ + カウンタB + カウンタC)) / ( 文字長 - 1 )
+	緑色:2 = 緑色:0 + (( 緑色:1 - 緑色:0 ) * (カウンタ + カウンタB + カウンタC)) / ( 文字長 - 1 )
+	青色:2 = 青色:0 + (( 青色:1 - 青色:0 ) * (カウンタ + カウンタB + カウンタC)) / ( 文字長 - 1 )
+	COLOR_FROMRGB 赤色:2, 緑色:2, 青色:2
+	SETCOLOR RESULT
+	;フォント内に存在するかチェック
+	CALL XON_FONT(グラデ文字,,4)
+	IF RESULT == -1
+		;出力されなければ、一文字ずつ取り出して出力
+		FOR カウンタB, 0 ,STRLENSU(グラデ文字)
+			赤色:2 = 赤色:0 + (( 赤色:1 - 赤色:0 ) * (カウンタ + カウンタB + カウンタC)) / ( 文字長 - 1 )
+			緑色:2 = 緑色:0 + (( 緑色:1 - 緑色:0 ) * (カウンタ + カウンタB + カウンタC)) / ( 文字長 - 1 )
+			青色:2 = 青色:0 + (( 青色:1 - 青色:0 ) * (カウンタ + カウンタB + カウンタC)) / ( 文字長 - 1 )
+			COLOR_FROMRGB 赤色:2, 緑色:2, 青色:2
+			SETCOLOR RESULT
+			SUBSTRINGU グラデ文字, (カウンタB ), 1
+			PRINTFORM %RESULTS%
+		NEXT
+		カウンタC += STRLENSU(グラデ文字)-1
+	ENDIF
+	カウンタB = 0
+NEXT
+
+SETCOLOR 変化色
+IF 出力方式 == 0
+	CALL XON_FONTL(END文字列)
+ELSEIF 出力方式 == 1
+	CALL XON_FONTW(END文字列)
+ELSE
+	CALL XON_FONT(END文字列)
+	;PRINTFORM %END文字列%
+ENDIF
+
+RESETCOLOR 
+
+RETURN 0
+
+@XON_CUSTOMDRAWLINE(初期色 = C_WHITE, 変化色 = C_WHITE, グラデ文字列)
+#DIM DYNAMIC 初期色
+#DIM DYNAMIC 変化色
+#DIMS DYNAMIC グラデ文字
+
+#DIMS DYNAMIC グラデ文字列
+#DIMS DYNAMIC グラデ文字列_分割 ,160
+#DIM DYNAMIC グラデ文字列_分割文字長 ,160
+#DIMS DYNAMIC グラデ文字列_分割B ,50
+#DIM DYNAMIC 文字カウンタ
+#DIM DYNAMIC グラデ文字数
+#DIM DYNAMIC 赤色 ,3 ;初期色、変化色、グラデ色
+#DIM DYNAMIC 緑色 ,3
+#DIM DYNAMIC 青色 ,3
+#DIM DYNAMIC 文字長
+#DIM DYNAMIC 最大文字長 = 154
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 出力方式 = 0 ;0は改行、1は改行(+クリック)、2は無改行
+
+; --- 初期色の RGB を取り出す ---
+赤色:0 = (初期色 / 0x10000) % 0x100		;// 上位2桁
+緑色:0 = (初期色 / 0x100)   % 0x100		;// 真ん中2桁
+青色:0 = 初期色 % 0x100					;// 下位2桁
+
+; --- 変化色の RGB を取り出す ---
+赤色:1 = (変化色 / 0x10000) % 0x100		;// 上位2桁
+緑色:1 = (変化色 / 0x100)   % 0x100		;// 真ん中2桁
+青色:1 = 変化色 % 0x100					;// 下位2桁
+
+
+;初期色を지정
+SETCOLOR 初期色
+
+SPLIT グラデ文字列, ",", グラデ文字列_分割B
+
+; --- 長さ취득 ---
+FOR カウンタ,0,VARSIZE("グラデ文字列_分割B")-1
+	;登録文字と未登録文字列で、以下のように配列を詰める
+	;「카드」「を伏せる！」→「카드」「を」「伏」「せ」「る」「！」
+
+	SIF グラデ文字列_分割B:カウンタ == ""
+		BREAK
+	グラデ文字 '= グラデ文字列_分割B:カウンタ
+	
+	;フォント内に存在するかチェック
+	CALL XON_FONT(グラデ文字,,5)
+	IF RESULT != 0
+		;存在していれば、そのまま入れる
+		グラデ文字列_分割:文字カウンタ '= グラデ文字
+		グラデ文字列_分割文字長:文字カウンタ = 2
+		文字カウンタ++
+	ELSE
+		;分割して入れる
+		FOR カウンタB, 0 ,STRLENSU(グラデ文字)
+			;1文字ずつ取り出し、半角・全角を判別して文字数をカウント
+			SUBSTRINGU グラデ文字, (カウンタB ), 1
+			グラデ文字列_分割:文字カウンタ = %RESULTS%
+			グラデ文字列 = %RESULTS%
+			STRLENS グラデ文字列
+			グラデ文字列_分割文字長:文字カウンタ = RESULT
+			文字カウンタ++
+		NEXT
+	ENDIF
+NEXT
+文字カウンタ = 0
+; グラデーション
+FOR カウンタ,0,最大文字長
+	
+	SIF 文字長 >= 最大文字長
+		BREAK
+	
+	FOR カウンタB,0,VARSIZE("グラデ文字列_分割")-1
+		
+		SIF グラデ文字列_分割:カウンタB == ""
+			BREAK
+		文字カウンタ += グラデ文字列_分割文字長:カウンタB
+		SIF 文字カウンタ >= 最大文字長
+			BREAK
+		;PRINTFORML count{グラデ文字列_分割文字長:カウンタB}
+		グラデ文字 '= グラデ文字列_分割:カウンタB
+		;カンマ区切りのブロックごとに판정
+		赤色:2 = 赤色:0 + (( 赤色:1 - 赤色:0 ) * 文字カウンタ) / ( 最大文字長 - 1 )
+		緑色:2 = 緑色:0 + (( 緑色:1 - 緑色:0 ) * 文字カウンタ) / ( 最大文字長 - 1 )
+		青色:2 = 青色:0 + (( 青色:1 - 青色:0 ) * 文字カウンタ) / ( 最大文字長 - 1 )
+		COLOR_FROMRGB 赤色:2, 緑色:2, 青色:2
+		SETCOLOR RESULT
+		
+		;フォント内に存在するかチェック
+		CALL XON_FONT(グラデ文字)
+	NEXT
+NEXT
+
+SETCOLOR 変化色
+PRINTFORML
+RESETCOLOR 
+
+RETURN 0
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;XON_FONT
+;「ぉんフォント」を표시する。
+;ぉんフォントはeraOCGでのみ利用許可
+;
+;仕様：
+;連続で記号を出したい場合、
+;以下のように、カンマ(,)で区切るとその順番に出力できます。
+;CALL XON_FONT("손패,ハート,ハート,ハート")
+;
+;,出力方式
+;０：PRINTFORML
+;１：PRINTFORMW
+;２：PRINTFORM
+;３：グラデーション機能用(文字数チェック)
+;４：グラデーション機能用(対応文字だけ出力)
+;５：ボタン機能用(1文字だけチェック。Unicodeの値を返す)
+;
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;PRINTFORMLを使用
+@XON_FONTL(文字名,色지정 = -1)
+#DIMS DYNAMIC 文字名
+#DIM DYNAMIC 色지정
+
+CALL XON_FONT(文字名,色지정,0)
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;PRINTFORMWを使用
+@XON_FONTW(文字名,色지정 = -1)
+#DIMS DYNAMIC 文字名
+#DIM DYNAMIC 色지정
+#DIM DYNAMIC 出力方式
+
+CALL XON_FONT(文字名,色지정,1)
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@XON_FONT(文字名,色지정 = -1,出力方式 = 2)
+#DIMS DYNAMIC 文字名
+#DIM DYNAMIC 色지정
+#DIM DYNAMIC 出力方式
+#DIMS DYNAMIC フォント保持
+#DIM DYNAMIC 色保持
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 文字名s , 50
+#DIMS DYNAMIC 文字名称
+#DIM DYNAMIC 該当なし
+#DIMS DYNAMIC 総文字
+#DIM DYNAMIC 総文字数
+#DIM DYNAMIC UNI文字数値
+
+;現在のフォント・色を保持
+フォント保持 = %GETFONT()%
+
+IF !CHKFONT("xonFont")
+	PRINTL フォント読み込み失敗。fontフォルダを確認してください。
+	RETURN 0
+ENDIF
+
+SETFONT "xonFont"
+
+IF 色지정 != -1
+	色保持 = GETCOLOR()
+	SETCOLOR 色지정
+ENDIF
+
+;全角・半角の空白置換
+;文字名 '= REPLACE(REPLACE(文字名, " ", ""), "　", "")
+
+SPLIT 文字名, ",", 文字名s
+
+FOR カウンタ,0,VARSIZE("文字名s")-1
+	SIF 文字名s:カウンタ == ""
+		BREAK
+	文字名称 '= 文字名s:カウンタ
+	
+	該当なし = 0
+	
+	SELECTCASE 文字名称
+		;◆デュエル系アイコン
+		CASE "덱2"
+			;使用できない番号だったのでズラす
+			;UNI文字数値 =  0x00A0
+			UNI文字数値 =  0x0021
+		CASE "손패2"
+			UNI文字数値 =  0x00A1
+		CASE "묘지2"
+			UNI文字数値 =  0x00A2
+		CASE "덱"
+			UNI文字数値 =  0x00A3
+		CASE "손패"
+			UNI文字数値 =  0x00A4
+		CASE "묘지"
+			UNI文字数値 =  0x00A5
+		CASE "攻撃표시","카드"
+			UNI文字数値 =  0x00A6
+		CASE "수비표시"
+			UNI文字数値 =  0x00A7
+		CASE "제외","소멸"
+			UNI文字数値 =  0x00A8
+		CASE "未설정"
+			UNI文字数値 =  0x00A9
+		CASE "융합"
+			UNI文字数値 =  0x00AA
+		CASE "싱크로"
+			UNI文字数値 =  0x00AB
+		CASE "엑시즈"
+			UNI文字数値 =  0x00AC
+		CASE "펜デュラム"
+			UNI文字数値 =  0x00AD
+		CASE "링크"
+			UNI文字数値 =  0x00AE
+		CASE "튜너"
+			UNI文字数値 =  0x00AF
+		
+		CASE "ERA"
+			UNI文字数値 =  0x00B0
+		CASE "UR"
+			UNI文字数値 =  0x00B1
+		CASE "SPR"
+			UNI文字数値 =  0x00B2
+		CASE "R"
+			UNI文字数値 =  0x00B3
+		CASE "NEW"
+			UNI文字数値 =  0x00B4
+		CASE "注意"
+			UNI文字数値 =  0x00B5
+		CASE "禁止"
+			UNI文字数値 =  0x00B6
+		CASE "禁止2"
+			UNI文字数値 =  0x00B7
+		CASE "制限"
+			UNI文字数値 =  0x00B8
+		CASE "準制限"
+			UNI文字数値 =  0x00B9
+		CASE "レベル","★"
+			UNI文字数値 =  0x00BA
+		CASE "レベルR","☆"
+			UNI文字数値 =  0x00BB
+		CASE "フィールド","フィールド마법"
+			UNI文字数値 =  0x00BC
+		CASE "지속"
+			UNI文字数値 =  0x00BD
+		CASE "装備"
+			UNI文字数値 =  0x00BE
+		CASE "速攻"
+			UNI文字数値 =  0x00BF
+
+		;◆汎用UI系アイコン
+		CASE "펜"
+			UNI文字数値 =  0x00D0
+		CASE ">>","→→"
+			UNI文字数値 =  0x00D1
+		CASE ">","→"
+			UNI文字数値 =  0x00D2
+		CASE "<","←"
+			UNI文字数値 =  0x00D3
+		CASE "<<","←←"
+			UNI文字数値 =  0x00D4
+		CASE "↓↓"
+			UNI文字数値 =  0x00D5
+		CASE "↓"
+			UNI文字数値 =  0x00D6
+		CASE "↑"
+			UNI文字数値 =  0x00D7
+		CASE "↑↑"
+			UNI文字数値 =  0x00D8
+		CASE "右上"
+			UNI文字数値 =  0x00D9
+		CASE "右下"
+			UNI文字数値 =  0x00DA
+		CASE "左上"
+			UNI文字数値 =  0x00DB
+		CASE "左下"
+			UNI文字数値 =  0x00DC
+;		CASE "未설정"
+;			UNI文字数値 =  0x00DD
+;		CASE "枠線"
+;			UNI文字数値 =  0x00DE
+;		CASE "未설정"
+;			UNI文字数値 =  0x00DF
+
+		;◆ハート系アイコン
+		CASE "❤？"
+			UNI文字数値 =  0x0100
+		CASE "？❤"
+			UNI文字数値 =  0x0101
+		CASE "❤！"
+			UNI文字数値 =  0x0102
+		CASE "！❤"
+			UNI文字数値 =  0x0103
+		CASE "❤"
+			UNI文字数値 =  0x0104
+		CASE "❤❤"
+			UNI文字数値 =  0x0105
+		CASE "群❤"
+			UNI文字数値 =  0x0106
+		CASE "❤❤❤"
+			UNI文字数値 =  0x0107
+		CASE "塵❤1"
+			UNI文字数値 =  0x0108
+		CASE "塵❤2"
+			UNI文字数値 =  0x0109
+		CASE "壊❤"
+			UNI文字数値 =  0x010A
+		CASE "溶❤1"
+			UNI文字数値 =  0x010B
+		CASE "溶❤2"
+			UNI文字数値 =  0x010C
+		CASE "溶❤3"
+			UNI文字数値 =  0x010D
+		CASE "溶❤4"
+			UNI文字数値 =  0x010E
+		CASE "線❤"
+			UNI文字数値 =  0x010F
+		
+		;◆感情表現系アイコン
+		;CASE "未설정"	
+		;	UNI文字数値 =  0x00F0
+		CASE "照れ"	
+			UNI文字数値 =  0x00F1
+		CASE "怒"	
+			UNI文字数値 =  0x00F2
+		CASE "怒2"	
+			UNI文字数値 =  0x00F3
+		CASE "喜"	
+			UNI文字数値 =  0x00F4
+		CASE "汗"
+			UNI文字数値 =  0x00F5
+		CASE "ぐるぐる"	
+			UNI文字数値 =  0x00F6
+		CASE "もじゃ"	
+			UNI文字数値 =  0x00F7
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00F8
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00F9
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00FA
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00FB
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00FC
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00FD
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00FE
+;		CASE "未설정"	
+;			UNI文字数値 =  0x00FF
+
+		;ゼリーはS->L->Eの順に繋がり、L同士は自由に繋がる
+		CASE "A1","AゼリーS1"
+			UNI文字数値 =  0x01A1	;普通に出るイメージ
+		CASE "A8","AゼリーS2"
+			UNI文字数値 =  0x01A8	;勢いよく出るイメージ
+		CASE "A2","AゼリーL1"
+			UNI文字数値 =  0x01A2
+		CASE "A3","AゼリーL2"
+			UNI文字数値 =  0x01A3
+		CASE "A4","AゼリーL3"
+			UNI文字数値 =  0x01A4
+		CASE "A5","AゼリーL->E"
+			UNI文字数値 =  0x01A5
+		CASE "A6","AゼリーE_Loop"
+			UNI文字数値 =  0x01A6	;まっすぐ伸びる
+		CASE "A7","AゼリーE1"
+			UNI文字数値 =  0x01A7	;E_Loopの終わり想定
+		CASE "A9","AゼリーE2"
+			UNI文字数値 =  0x01A9
+		
+		;
+		CASE "中中1"
+			UNI文字数値 =  0x0201
+		CASE "中中2"
+			UNI文字数値 =  0x0202
+		CASE "中中3"
+			UNI文字数値 =  0x0203
+		CASE "中中4"
+			UNI文字数値 =  0x0204
+		CASE "中中5"
+			UNI文字数値 =  0x0205
+		CASE "中下1"
+			UNI文字数値 =  0x0206
+		CASE "中下2"
+			UNI文字数値 =  0x0207
+		CASE "中上1"
+			UNI文字数値 =  0x0208
+		CASE "中上2"
+			UNI文字数値 =  0x0209
+		CASE "中下1"
+			UNI文字数値 =  0x020A
+		CASE "中下2"
+			UNI文字数値 =  0x020B
+		CASE "中下3"
+			UNI文字数値 =  0x020C
+		CASE "中下4"
+			UNI文字数値 =  0x020D
+		CASE "中下5"
+			UNI文字数値 =  0x020E
+		CASE "中中E"
+			UNI文字数値 =  0x020F
+
+
+		CASE "上上1"	
+			UNI文字数値 =  0x0211
+		CASE "上上2"	
+			UNI文字数値 =  0x0212
+		CASE "上上3"	
+			UNI文字数値 =  0x0213
+		CASE "上上4"	
+			UNI文字数値 =  0x0214
+		CASE "上上5"	
+			UNI文字数値 =  0x0215
+		CASE "上中1"	
+			UNI文字数値 =  0x0216
+		CASE "上中2"	
+			UNI文字数値 =  0x0217
+		CASE "上中3"	
+			UNI文字数値 =  0x0218
+		CASE "上中4"	
+			UNI文字数値 =  0x0219
+		CASE "上中5"	
+			UNI文字数値 =  0x021A
+		CASE "上中6"	
+			UNI文字数値 =  0x021B
+		CASE "上下1"	
+			UNI文字数値 =  0x021C
+		CASE "上下2"	
+			UNI文字数値 =  0x021D
+		CASE "上上6"	
+			UNI文字数値 =  0x021E
+		CASE "上上E"	
+			UNI文字数値 =  0x021F
+
+
+		CASE "下下1"
+			UNI文字数値 =  0x0221
+		CASE "下下2"
+			UNI文字数値 =  0x0222
+		CASE "下下3"
+			UNI文字数値 =  0x0223
+		CASE "下下4"
+			UNI文字数値 =  0x0224
+		CASE "下下5"
+			UNI文字数値 =  0x0225
+		CASE "下中1"
+			UNI文字数値 =  0x0226
+		CASE "下中2"
+			UNI文字数値 =  0x0227
+		CASE "下中3"
+			UNI文字数値 =  0x0228
+		CASE "下中4"
+			UNI文字数値 =  0x0229
+		CASE "下中5"
+			UNI文字数値 =  0x022A
+		CASE "下中6"
+			UNI文字数値 =  0x022B
+		CASE "下上1"
+			UNI文字数値 =  0x022C
+		CASE "下上2"
+			UNI文字数値 =  0x022D
+		CASE "下下6"
+			UNI文字数値 =  0x022E
+		CASE "下下E"
+			UNI文字数値 =  0x022F
+
+		CASEELSE
+			;グラデ機能用(未対応文字は出力しない)
+			IF 出力方式 == 4
+				SETFONT フォント保持
+				RETURN -1
+			ENDIF
+			;지정文字が存在しない場合、文字名を返す
+			RESULTS = %文字名称%
+			該当なし = 1
+	ENDSELECT
+	
+	
+	IF 出力方式 == 3
+		総文字 = %総文字%%RESULTS%
+	ELSEIF 出力方式 == 5
+		SETFONT フォント保持
+		SIF 色지정 != -1
+			SETCOLOR 色保持
+		RETURN UNI文字数値
+	ELSE
+		
+		;該当なしの場合、通常のフォントで표시したい文字のため、フォントを一時的に戻す
+		IF 該当なし == 1
+			SETFONT フォント保持
+		ELSE
+			UNICODE UNI文字数値
+		ENDIF	
+		PRINTFORM %RESULTS%
+		SIF 該当なし == 1
+			SETFONT "xonFont"
+	ENDIF
+NEXT
+
+;最後にフォントを戻す
+SETFONT フォント保持
+SIF 色지정 != -1
+	SETCOLOR 色保持
+
+IF 出力方式 == 0
+	PRINTFORML 
+ELSEIF 出力方式 == 1
+	PRINTFORMW 
+ELSEIF 出力方式 == 3
+	RETURN STRLENSU( 総文字 )
+ENDIF
+
+RETURN 0
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;XON_BUTTON
+;PRINTBUTTON を使用して、１文字だけ出力する
+;
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@XON_BUTTON(文字名,ボタン値,色지정 = -1)
+#DIMS DYNAMIC 文字名
+#DIM DYNAMIC ボタン値
+#DIM DYNAMIC 色지정
+#DIM DYNAMIC UNI文字数値
+#DIMS DYNAMIC UNI文字
+#DIMS DYNAMIC フォント保持
+#DIM DYNAMIC 色保持
+
+;現在のフォント・色を保持
+フォント保持 = %GETFONT()%
+
+IF !CHKFONT("xonFont")
+	PRINTL フォント読み込み失敗。fontフォルダを確認してください。
+	RETURN 0
+ENDIF
+
+SETFONT "xonFont"
+
+IF 色지정 != -1
+	色保持 = GETCOLOR()
+	SETCOLOR 色지정
+ENDIF
+
+;フォントの文字コードを취득
+CALL XON_FONT(文字名,,5)
+UNICODE RESULT
+UNI文字 = %RESULTS%
+PRINTBUTTON UNI文字,ボタン値
+
+;最後にフォントを戻す
+SETFONT フォント保持
+SIF 色지정 != -1
+	SETCOLOR 色保持
+	
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;XON_HTML_BUTTON
+;HTML_PRINT を使用して、アイコン付きボタンを作成する
+;
+;０：PRINTFORML
+;２：PRINTFORM
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@XON_HTML_BUTTONL(文字名,ボタン値,色지정 = -1)
+#DIMS DYNAMIC 文字名
+#DIM DYNAMIC ボタン値
+#DIM DYNAMIC 色지정
+CALL XON_HTML_BUTTON(文字名,ボタン値,色지정,0)
+
+@XON_HTML_BUTTON(文字名,ボタン値,色지정 = -1,出力方式 = 2)
+#DIMS DYNAMIC 文字名
+#DIMS DYNAMIC 文字名s ,50
+#DIMS DYNAMIC 文字名称
+#DIM DYNAMIC ボタン値
+#DIM DYNAMIC 色지정
+#DIMS DYNAMIC 色지정文字
+#DIMS DYNAMIC 出力文字
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 出力方式
+
+IF !CHKFONT("xonFont")
+	PRINTL フォント読み込み失敗。fontフォルダを確認してください。
+	RETURN 0
+ENDIF
+
+IF 色지정 == -1
+	色지정 = GETCOLOR()
+ENDIF
+
+SPLIT 文字名, ",", 文字名s
+
+FOR カウンタ,0,VARSIZE("文字名s")-1
+	SIF 文字名s:カウンタ == ""
+		BREAK
+	文字名称 '= 文字名s:カウンタ
+	
+	;フォントの文字コードを취득
+	CALL XON_FONT(文字名称,,5)
+	IF RESULT != 0
+		UNICODE RESULT
+		出力文字 = %出力文字%<font face='xonFont'>%RESULTS%</font>
+	ELSE
+		出力文字 = %出力文字%%文字名称%
+	ENDIF
+	
+NEXT
+;PRINTFORML 色지정{色지정}
+CALL XON_COLOR_HEX(色지정)
+色지정文字 = %RESULTS%
+
+;PRINTFORML 色지정文字%色지정文字%
+出力文字 = <font color='%色지정文字%'><button value='{ボタン値}'>%出力文字%</button></font>
+IF 出力方式 == 2
+	HTML_PRINT 出力文字,1
+ELSE
+	HTML_PRINT 出力文字
+ENDIF
+;-------------------------------------------------------
+; 数値カラー → "#RRGGBB" 形式の文字列へ変換
+; 例：
+;   COLOR_INT_TO_HEXSTRING( 16777215 ) → "#FFFFFF"
+;-------------------------------------------------------
+
+@XON_COLOR_HEX(値)
+#DIM DYNAMIC 値
+#DIM DYNAMIC 赤
+#DIM DYNAMIC 緑
+#DIM DYNAMIC 青
+#DIMS DYNAMIC 赤文字
+#DIMS DYNAMIC 緑文字
+#DIMS DYNAMIC 青文字
+#DIMS DYNAMIC HEXSTRING
+
+; R, G, B を分離
+赤 = (値 / 65536) % 256
+緑 = (値 / 256) % 256
+青 = 値 % 256
+
+; 10進 → 2桁16進文字列に変換
+CALL XON_HEX2(赤)
+赤文字 = %RESULTS%
+CALL XON_HEX2(緑)
+緑文字 = %RESULTS%
+CALL XON_HEX2(青)
+青文字 = %RESULTS%
+
+; "#" + R + G + B を連結
+HEXSTRING = #%赤文字%%緑文字%%青文字%
+
+RESULTS = %HEXSTRING%
+
+;-------------------------------------------------------
+; 10進数0～255 → 2桁16進文字列に変換する補助関数
+;-------------------------------------------------------
+@XON_HEX2(変換数値)
+#DIM DYNAMIC 変換数値
+#DIMS DYNAMIC TABLE
+#DIMS DYNAMIC h1
+#DIMS DYNAMIC h2
+
+; 16進文字テーブル
+TABLE = 0123456789ABCDEF
+
+SUBSTRING TABLE, 変換数値 / 16, 1
+h1 = %RESULTS%
+SUBSTRING TABLE, (変換数値 % 16), 1
+h2 = %RESULTS%
+
+RESULTS =%h1%%h2%
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;XON_FONT_DEMO
+;「ぉんフォント」を使用した作例を표시する。(표시テストを兼ねる。)
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@XON_FONT_DEMO()
+
+PRINTFORML ◆XON_FONT_DEMO
+PRINTFORML 
+PRINTFORML ――이모티콘을 표시하는 기능――
+PRINTFORML  XON_FONT  개행없음(PRINTFORM와 같은 거동)
+PRINTFORML  XON_FONTL 개행한다(PRINTFORML과 같은 거동)
+PRINTFORML  XON_FONTW 개행한다(PRINTFORMW과 같은 거동)
+PRINTFORML 
+PRINTFORML ◆선언예：문자열안을 문자로 나눠서 사용한다。(,와,의 사이의 문자열을 판정하고있다。)
+PRINTFORML 「편집」은 미등록「펜」은 등록되어있는 문자를 위해、하기와 같은 출력 결과가 된다。
+PRINTFORML  CALL XON_FONT("편집,펜")
+CALL XON_FONTL("편집,펜")
+SETCOLOR C_PINK
+CALL XON_FONT("편집,펜")
+PRINTFORML  또한、XON_FONT(L/W)은 SETCOLOR의 영향을 받는다。(인수로 직접 색지정도 가능)
+RESETCOLOR
+
+PRINTL
+CALL XON_FONT("덱,손패,묘지",C_ORANGE)
+CALL XON_FONT("덱2,손패2,묘지2")
+CALL XON_FONT("ERA",C_V_PINK)
+CALL XON_FONT("UR",C_ROYAL_BLUE)
+CALL XON_FONT("SPR",C_G_YELLOW)
+CALL XON_FONT("R")
+CALL XON_FONT("NEW",C_G_YELLOW)
+CALL XON_FONT(" ,주의, 주의 ,주의, ",C_G_YELLOW)
+CALL XON_FONTL("금지,금지2,제한,준제한",C_RED)
+
+PRINTFORML 
+CALL XON_FONTL("※이런식으로도 쓸 수 있다。,금지,금지 욕망의 항아리",C_RED)
+PRINTFORML 
+CALL XON_FONT("<<,<,>,>>")
+CALL XON_FONT("↑")
+CALL XON_FONT("↑↑")
+CALL XON_FONT("↓")
+CALL XON_FONT("↓↓")
+CALL XON_FONT("우상,우하,좌상,좌하")
+CALL XON_FONT("★")
+CALL XON_FONT("★",C_ORANGE)
+CALL XON_FONT("☆")
+CALL XON_FONTL("☆",C_ORANGE)
+CALL XON_FONT("필드,필드 ,지속,지속 ,장착,장착 ,속공,속공 ",C_MAGIC_G)
+CALL XON_FONT("지속,지속 ,장착,장착 , ",C_TRAP_PUR)
+CALL XON_FONTL("공격표시,공격표시 ,수비표시,수비표시 ,제외,제외풍？ ,",C_ORANGE)
+
+CALL XON_FONT("융합,융합 ",C_FUSE_PUR)
+CALL XON_FONT("싱크로,",C_M_GREEN)
+CALL XON_FONT("싱크로 ",C_SYN_WHITE)
+CALL XON_FONT("엑시즈,엑시즈 ",C_XYZ_BLACK)
+CALL XON_FONT("펜デュラム",C_M_GREEN)
+CALL XON_GRADATION(C_M_GREEN,C_ORANGE,"ペ","ンデュラ","ム ");先頭と末尾は変化させず、中間だけ変化させる例
+CALL XON_FONT("링크,링크 ",C_LINK_BLUE)
+CALL XON_FONTL("튜너,튜너 ",C_SYN_WHITE)
+PRINTL
+CALL XON_FONTL("❤❤,❤？,❤！,？❤,！❤,❤❤❤,려❤1,려❤2,❤,괴❤,군❤,려❤1,려❤2",C_PINK)
+CALL XON_FONTL("용❤1,용❤2,용❤3,용❤4,                    ※녹은하트는 조금 사용장소가 어떤가 하는 느낌이 있어서 바꿀지도",C_V_PINK)
+PRINTL
+CALL XON_FONT("에헤헤,쑥스",C_PINK)
+CALL XON_FONT(" 화낸다,분노",C_RED)
+CALL XON_FONT(" 엄청화낸다,분노2",C_RED)
+CALL XON_FONT(" 기분이좋다,희",C_G_YELLOW)
+CALL XON_FONT(" 에에…,땀",C_AQUA)
+CALL XON_FONT(" 어째서～,빙글빙글")
+CALL XON_FONTL(" 으ー음…,긁적")
+PRINTL
+PRINTFORML ――이모티콘과 문자열을 그라데이션으로 표시하는 기능――
+PRINTFORML  XON_GRADATION  개행없음(PRINTFORM과 같은 거동)
+PRINTFORML  XON_GRADATIONL 개행한다(PRINTFORML과 같은 거동)
+PRINTFORML  XON_GRADATIONW 개행한다(PRINTFORMW와 같은 거동)
+PRINTL
+CALL XON_GRADATION(C_M_GREEN,C_ORANGE,"이런느낌으로「펜","듈","럼」어느정도제어가 가능합니다。 ※이렇게、색을 몰게 하는것도 가능합니다。")
+PRINTL
+PRINTFORML ※색의 인수가 미지정이면 흰색이 됩니다.
+PRINTFORML 　문자의 인수는「변화전문장」「변화하는문장」「변화후문장」…문자의 인수가 하나뿐인 경우, 모두가「변화하는문장」취급이 됩니다
+PRINTL
+CALL XON_GRADATIONL(,C_ORANGE,"「변화전문장」","「변화하는문장」","「변화후문장」")
+CALL XON_GRADATIONL(C_ORANGE,,"「변화전문장」","「변화하는문장」","「변화후문장」")
+CALL XON_GRADATIONL(C_LINK_BLUE,C_M_GREEN,"「변화전문장」「변화하는문장」「변화후문장」")
+PRINTL
+PRINTFORML ,로 나누면、XON_FONT의 문자도 사용 가능합니다。
+CALL XON_GRADATIONL(C_LINK_BLUE,C_M_GREEN,"「,카드,변화전문장」「,카드,변화하는문장」「,카드,변화후문장」")
+PRINTL
+CALL XON_GRADATION(C_FUSE_PUR,C_SYN_WHITE,"융합,융합 ")
+CALL XON_GRADATION(C_SYN_WHITE,C_XYZ_BLACK,"싱크로,싱크로 ")
+CALL XON_GRADATION(C_XYZ_BLACK,C_M_GREEN,"엑시즈,엑시즈 ")
+CALL XON_GRADATION(C_M_GREEN,C_LINK_BLUE,"펜デュラム,펜デュラム ")
+CALL XON_GRADATIONL(C_LINK_BLUE,C_FUSE_PUR,"링크,링크 ")
+PRINTL
+CALL XON_GRADATIONL(C_M_GREEN,C_ORANGE,"수비표시,수비표시,수비표시,수비표시,수비표시,카드를 5장 세트！！！,수비표시,수비표시,수비표시,수비표시,수비표시")
+CALL XON_GRADATIONL(C_M_GREEN,C_ORANGE,"수비표시,수비표시,수비표시,수비표시,수비표시,카드를 5장","세트！！！,수비표시,수비표시,수비표시,수비표시,수비표시")
+CALL XON_GRADATIONL(C_M_GREEN,C_ORANGE,,"수비표시,수비표시,수비표시,수비표시,수비표시","카드를 5장 세트！！！,수비표시,수비표시,수비표시,수비표시,수비표시")
+
+;CALL XON_GRADATION(C_V_PINK,C_RED,"AゼリーS2,AゼリーL1,AゼリーL2,AゼリーL1,AゼリーL3")
+;CALL XON_GRADATIONL(C_RED,C_V_PINK,"AゼリーL3,AゼリーL3,AゼリーL->E,AゼリーE_Loop,AゼリーE_Loop,AゼリーE_Loop,AゼリーE1")
+;CALL XON_GRADATIONL(C_FUSE_PUR,C_V_PINK,"AゼリーS2,AゼリーL1,AゼリーL2,AゼリーL1,AゼリーL3,AゼリーL3,AゼリーL3,AゼリーL->E,AゼリーE_Loop,AゼリーE_Loop,AゼリーE_Loop,AゼリーE1")
+;CALL XON_GRADATIONL(C_RED,C_V_PINK,"AゼリーS2,AゼリーL1,AゼリーL2,AゼリーL1,AゼリーL3,AゼリーL3,AゼリーL3,AゼリーL->E,AゼリーE_Loop,AゼリーE_Loop,AゼリーE_Loop,AゼリーE1")
+PRINTL
+PRINTFORML ◆サンプル文章
+CALL XON_FONTL("(,照れ,・ヮ・,照れ,), <ウフフ",C_PINK)
+CALL XON_FONTL("( ・ヮ・,怒,), <なんだぁ…てめぇ…",C_RED)
+PRINTL
+CALL XON_FONTL("と、溶けちゃう,溶❤1, あっ,溶❤2, だめっ,溶❤3, ぁ…,溶❤4,",C_V_PINK)
+CALL XON_FONTL("あ―,線❤,―",C_PINK)
+CALL XON_FONTL("ああああっ,線❤,中中1,中中2,中下1,下下1,下下2,下下3,下上1,上下1,下下E,  ※線は告知無しに弄る可能アリ",C_V_PINK)
+
+CALL XON_GRADATIONL(,C_V_PINK,"そこは…ちょ、ちょっと,❤？,❤？, どこ触ってるの,❤！,？❤,！❤, んんっ,❤❤❤,塵❤1,塵❤2, や、やめっ,❤, こ、壊れちゃ,壊❤, ああっ,群❤,塵❤1,塵❤2")
+CALL XON_GRADATIONW(,C_V_PINK,"そこは…ちょ、ちょっと,❤？,❤？"," どこ触ってるの,❤！,？❤,！❤, んんっ,❤❤❤,塵❤1,塵❤2, や、やめっ,❤, こ、壊れちゃ,壊❤, ああっ,群❤,塵❤1,塵❤2")
+
+CALL XON_CUSTOMDRAWLINE(C_G_YELLOW,,"―")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"―")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"＼")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"／")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"―")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"-")
+CALL XON_CUSTOMDRAWLINE(C_H_PINK,C_G_YELLOW,"―,선❤,―")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"카드")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"주의")
+;CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"￣")
+CALL XON_CUSTOMDRAWLINE(,C_G_YELLOW,"-=")
+
+CALL XON_HTML_BUTTON("펜,편집,카드")
+CALL XON_HTML_BUTTON("펜,편집,카드",0,C_RED)
+CALL XON_HTML_BUTTON("펜,편집,카드")
+CALL XON_HTML_BUTTONL("펜,편집,카드",1,C_G_YELLOW)
+CALL XON_HTML_BUTTONL("펜,편집,카드",2,C_H_PINK)
+CALL XON_HTML_BUTTONL("펜,편집,카드",3,C_V_PINK)

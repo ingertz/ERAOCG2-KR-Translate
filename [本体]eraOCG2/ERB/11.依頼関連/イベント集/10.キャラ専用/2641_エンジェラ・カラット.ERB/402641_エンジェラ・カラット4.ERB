@@ -1,0 +1,411 @@
+@IRAI_EVENT_402641(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+    CASE "名前"
+        RESULTS = (CH2641-04)紫水晶の誓い
+    CASE "이벤트種"
+        RETURN 이벤트_通常
+    CASE "依頼先"
+        ; 即時開始（自宅）
+        RETURN 即時開始
+    CASE "詳細"
+        PRINTL 紫の小箱に秘められし「紫の試楽（しがく）」。
+        PRINTL 広間での真剣勝負、今広がる——
+        PRINTL
+        PRINTL 報酬：8000DP、お金20000
+    CASE "条件"
+        ; 前置任務クリア판정
+        SIF 依頼_完了횟수:302641 == 0
+            RETURN 0
+        RETURN 1
+    CASE "추가条件"
+        ; 호감도2000以上 または 既に연모
+        IF CFLAG:NO_TO_CHARANUM(2641):호감도 < 2000 && TALENT:NO_TO_CHARANUM(2641):연모 == 0
+            RESULTS = 호감도/条件が不足しています。
+            RETURN 1
+        ENDIF
+        IF MARK:NO_TO_CHARANUM(2641):반발각인 > 0
+            RESULTS = ご機嫌麗しからず、招きを見合わせるべきかもしれません。
+            RETURN 1
+        ENDIF
+        RETURN 0
+    CASE "回想可"
+        RETURN 1
+ENDSELECT
+
+RETURN 0
+
+;========================================================
+; 本編
+;========================================================
+@IRAI_ACT_402641(参照)
+#DIM DYNAMIC 参照
+
+; 이벤트主
+#DIM DYNAMIC 이벤트主
+이벤트主 = NO_TO_CHARANUM(2641)  ; エンジェラ・カラット
+
+; 進行보존：
+; 1 = 自宅での冒頭 選択肢플래그
+; 10 = Aルート（恋人未成立）告白可否（1=交際開始,2=保留）
+; 21 = Aルート デュエル1 結果승리済
+; 31 = 承認戦 상대選択（1=執事・帝, 2=女家庭教師・列車）
+; 41 = Bルート用 記念デュエル誘い意図（任意）
+
+IF 依頼_달성상황 == 0
+    ; 自宅（即時開始）
+    PRINTFORML 家の大広間へ向かう静寂の朝。%CALLNAME:이벤트主%は背筋を伸ばし、紫の小箱をそっと抱いている。
+    PRINTFORMW 「——祖母様の御前にて、『紫の試楽（しがく）』を」
+    PRINTFORML あなたは、彼女の視線の先に、凛として座す祖母の姿を見た。
+    PRINTFORMW 「我が心、いと澄みて、いと強し。さればこそ、듀얼にて示しましょう」
+    PRINTL
+    PRINTL [0] - 黙って手を添える
+    PRINTL [1] - 「任せて。二人で証明しよう」と目で告げる
+    PRINTL [2] - 「緊張している？」と気遣って肩に触れる
+    BINPUT
+    IF RESULT == 0
+        PRINTFORML 余計な言葉は交わさず、そっと小箱に添えた手が、二人の呼吸を揃える。
+        PRINTFORMW %CALLNAME:이벤트主%「……ありがたく存じます。ともに、まいりませう」
+        依頼_進行보존:402641 = 1
+        CALL EVENT_FAVUP(이벤트主,100)
+    ELSEIF RESULT == 1
+        PRINTFORML あなたの眼差しに、%CALLNAME:이벤트主%は柔らかな笑みを返した。
+        PRINTFORMW 「二人三脚こそ、誓いの証にて。——ええ、いざ」
+        依頼_進行보존:402641 = 2
+        CALL EVENT_FAVUP(이벤트主,120)
+    ELSE
+        PRINTFORML 肩に触れると、彼女は一瞬だけ頬を染めた。
+        PRINTFORMW 「……こ、心強う存じます。——では、礼を尽くして」
+        依頼_進行보존:402641 = 3
+        CALL EVENT_FAVUP(이벤트主,100)
+    ENDIF
+
+    ; 동행開始
+    CALL EVENT_DOUKOU(이벤트主)
+    依頼_달성상황 ++
+    依頼_場所:0 = 場所_リビング
+    CALL EVENT_TIMER(10)
+
+ELSEIF 依頼_달성상황 == 1
+    ; 大広間：분기導入
+    PRINTFORML 広間に紫の布が敷かれ、静謐なる空気が張る。祖母の目は厳しくも温かい。
+    IF TALENT:NO_TO_CHARANUM(2641):연모 == 0
+        PRINTFORMW 祖母「まずはお主ら二人、互いを見据えよ。心が真ならば、승리にて示してみせい」
+        PRINTFORML %CALLNAME:이벤트主%はあなたに向き直り、深く礼をした。
+        PRINTFORMW 「互いの理解を確かめるための真剣勝負……いざ、失礼仕る」
+        ; Aルート デュエル1：あなた vs カラット（クリフォート）
+        依頼_進行보존:402641 = 20
+        TARGET = 이벤트主
+        CALL CHOICE_DUEL_TYPE(402641)
+        IF RESULT == 1
+            PRINTFORML 「ありませんでした」
+            SETCOLOR C_PINK
+            PRINTFORMW %CALLNAME:이벤트主%は心に何か決めた気がする…
+            PRINTFORMW %CALLNAME:이벤트主%は【연모】を得た
+            TALENT:NO_TO_CHARANUM(2641):연모 = 1
+            RESETCOLOR
+            PRINTFORML %CALLNAME:이벤트主%は静かに息を吐き、膝を折って頭を垂れた。
+            PRINTFORMW 「我が胸の内、もはや隠せませぬ。——あなた様を、いと愛でたく思うております」
+            PRINTL
+            PRINTL [0] - 交際を始める
+            PRINTL [1] - 返答を保留する
+            BINPUT
+            IF RESULT == 0
+                PRINTFORML そっと頷くあなたに、彼女の瞳がきらめく。
+                PRINTFORMW 「……この先も、手を取り合いませう」
+                依頼_進行보존:402641 = 10
+                CALL EVENT_FAVUP(이벤트主,200)
+            ELSE
+                PRINTFORML あなたは慎重に時を求める。%CALLNAME:이벤트主%は微笑み、頷いた。
+                PRINTFORMW 「拙速は礼を欠きまする。時至れば、また——」
+                依頼_進行보존:402641 = 11
+            ENDIF
+            依頼_달성상황 ++
+            依頼_場所:0 = 場所_リビング
+            CALL EVENT_TIMER(30)
+        ELSE
+            ; 패배분기：再戦可の励まし
+            PRINTFORML 負けてしまった…
+            PRINTFORML %CALLNAME:이벤트主%はあなたを支え起こし、小声で囁く。
+            PRINTFORMW 「——まだ終わりではありませぬ。心を磨き、また盤上に立ちませう」
+            RETURN 3
+        ENDIF
+    ELSE
+        ; Bルート（연모済）
+        PRINTFORMW 祖母「既に心は結ばれておるか。ならば…」
+        依頼_달성상황 = 2
+        GOTO BATTLE2
+    ENDIF
+
+ELSEIF 依頼_달성상황 == 2
+    $BATTLE2
+    ; 承認戦：A/B共通。祖母の指南役ペアとの「二人三脚」の証明。
+    PRINTFORMW 祖母「二人三脚こそ、誓いの証にて。指南役ら、상대をせい」
+    PRINTFORML 執事の鴻巣と、家庭教師の帰燕が進み出る。どちらと当たるか選べるようだ。
+    PRINTFORMW %CALLNAME:이벤트主%「——選り好みは無粋。されど策も礼節のうち」
+
+    IF TALENT:NO_TO_CHARANUM(2641):연모 == 0
+        IF 依頼_進行보존:402641 == 11
+            ; 告白保留した場合の少し厳しめの空気
+            PRINTFORMW 鴻巣「お嬢様を拒んだとは、考えられない！」
+            PRINTFORML 帰燕「誤解を断つには、盤で語るほかあるまい」
+            PRINTFORMW %CALLNAME:이벤트主%「……ご無礼は承知。いずれ正しく伝えますゆえ、今は勝ちにて応えとう存じます」
+        ELSE
+            PRINTFORMW %CALLNAME:이벤트主%「礼を尽くし、ともに승리を掴みませう」
+        ENDIF
+    ELSE
+        PRINTFORMW %CALLNAME:이벤트主%「背を預け合いましょう。——いと頼もし」
+    ENDIF
+
+    PRINTL
+    PRINTL [0] - 執事・鴻巣と戦う
+    PRINTL [1] - 家庭教師・帰燕と戦う
+    BINPUT
+    IF RESULT == 0
+        依頼_進行보존:402641 = 31
+        PRINTFORML 鴻巣「承った。お상대仕る」
+        PRINTFORMW %CALLNAME:이벤트主%「見事、お見せいたしましょう」
+    ELSE
+        依頼_進行보존:402641 = 32
+        PRINTFORML 帰燕「では、礼の舞台へ」
+        PRINTFORMW %CALLNAME:이벤트主%「参りませう」
+    ENDIF
+
+    TARGET = -1
+    CALL CHOICE_DUEL_TYPE(402641)
+    IF RESULT == 1
+        PRINTFORML 指南役は渋い顔で頷いた。「二人の歩調、確かに見届けた」
+        PRINTFORMW %CALLNAME:이벤트主%「祖母様——これにて、『紫の試楽』の答えを」
+        依頼_달성상황 ++
+        依頼_場所:0 = 場所_リビング
+        CALL EVENT_TIMER(5)
+    ELSE
+        PRINTFORML %CALLNAME:이벤트主%はあなたの手を取り、軽く握る。
+        PRINTFORMW 「痛みは今だけ。勝ち筋は、必ず見える。——もう一度、挑みませう」
+        RETURN 3
+    ENDIF
+
+ELSEIF 依頼_달성상황 == 3
+    ; Bルート限定：エキシビション（任意） あなた vs カラット（これまでの歩みを確かめる）
+    IF TALENT:NO_TO_CHARANUM(2641):연모 > 0 && 依頼_進行보존:402641 != 10
+        PRINTFORML %CALLNAME:이벤트主%は一歩進み、扇を閉じる所作であなたを示す。
+        PRINTFORMW 「これまでの歩み、いと尊し——されば友も恋も、盤上で確かめませう」
+        PRINTL
+        PRINTL [0] - 記念に一戦、受けよう
+        PRINTL [1] - 今は祖母の承認を先に（スキップ）
+        BINPUT
+        IF RESULT == 0
+            依頼_進行보존:402641 = 41
+            TARGET = 이벤트主
+            CALL CHOICE_DUEL_TYPE(402641)
+            IF RESULT == 1
+                PRINTFORML %CALLNAME:이벤트主%「……やはり、あなた様は眩しい」
+                PRINTFORMW 「けれど、それが嬉しゅうて堪えませぬ」
+                CALL EVENT_FAVUP(이벤트主,500)
+            ELSE
+                PRINTFORML %CALLNAME:이벤트主%は微笑んで手を差し伸べた。
+                PRINTFORMW 「勝敗は彩り。——今宵の思い出として胸に飾りませう」
+            ENDIF
+        ELSE
+            PRINTFORML %CALLNAME:이벤트主%「承知仕りました。肝要は承認、順を違えてはなりませぬ」
+            PRINTFORMW 
+        ENDIF
+    ENDIF
+
+    ; 共通結末——祖母の承認、紫水晶の誓い
+    PRINTFORMW 祖母の視線が、静かに告げる。
+    PRINTFORML 「礼と情、両輪そろうてこそ轍（わだち）は真直ぐ」
+    PRINTFORMW 「認めよう。——二人で歩むことを」
+    PRINTFORML %CALLNAME:이벤트主%は紫の小箱を差し出す。蓋の内、淡く光る紫水晶が揺れる。
+    PRINTFORMW あなたは小箱に手を添え、%CALLNAME:이벤트主%と指先を重ねた。
+
+    PRINTFORML %CALLNAME:이벤트主%「…ありがとう存じます。必ず、幸いを紡ぎます」
+    PRINTFORMW 紫水晶のきらめきは、二人の未来を静かに照らしていた。
+
+    RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_402641
+CALL DP_GET(8000)
+CALL MONEY_GET(20000)
+
+@IRAI_DECK_402641(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+IF 듀얼리스트 == "상대"
+    ; シーンに応じて상대IDを返す。ここでは便宜上：
+    ; クリフォート使い（カラット）= 本人・強化版(422641)
+    ; 執事（帝） = 402641
+    ; 家庭教師（列車） = 412641
+    IF 依頼_進行보존:402641 == 20 || 依頼_進行보존:402641 == 41
+        RETURN 422641
+    ELSEIF 依頼_進行보존:402641 == 31
+        RETURN 402641
+    ELSEIF 依頼_進行보존:402641 == 32
+        RETURN 412641
+    ENDIF
+    RETURN 0
+ENDIF
+RETURN 0
+
+@IRAI_DUEL_INTRO_402641
+; 鴻巣戦
+IF 依頼_進行보존:402641 == 31
+    PRINTFORML 鴻巣「お嬢様の誓い——主を守るは家の矜持」
+    PRINTFORMW %CALLNAME:NO_TO_CHARANUM(2641)%「参りまする。礼をもって、勝ちを戴きます」
+; 帰燕戦
+ELSEIF 依頼_進行보존:402641 == 32
+    PRINTFORML 帰燕「情は力、礼は形。二つ備えてなお勝て」
+    PRINTFORMW %CALLNAME:NO_TO_CHARANUM(2641)%「——承って」
+; カラット戦
+ELSE
+    PRINTFORML %CALLNAME:NO_TO_CHARANUM(2641)%「互いの理解、盤上にて確かめませう」
+    PRINTFORMW 「失礼仕る」
+ENDIF
+
+@DUELDECK_422641(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 24260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24261
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24262
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24262
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24264
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24264
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24265
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24265
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24266
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70021
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70022
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71038
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71038
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72426
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72426
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 92426
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 92427
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71921
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71921
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71921
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90501
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 50530
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52000
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52000
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52300
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52650
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1131
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1335
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41131
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52160
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52160
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52160
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 57100
+
+
+
+;========================================================
+; 帝덱
+;========================================================
+@DUELDECK_402641(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 93160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20011
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20011
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20011
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 31135
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 31142
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91052
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91052
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23130
+
+;========================================================
+; 列車덱
+;========================================================
+@DUELDECK_412641(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70015
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70110
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70110
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72410
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72410
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72410
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72411
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72411
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72411
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 52000
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52000
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52050
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52100
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52100
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52100
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52101
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52101
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52300
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52300
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58081
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58081
+

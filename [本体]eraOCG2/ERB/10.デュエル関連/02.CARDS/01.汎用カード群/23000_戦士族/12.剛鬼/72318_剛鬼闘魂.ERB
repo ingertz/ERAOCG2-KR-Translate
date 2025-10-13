@@ -1,0 +1,146 @@
+﻿@CARDNAME_72318,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 강귀투혼
+	CASE "略称"
+		RESULTS = 강귀투혼
+	CASE "カテゴリ"
+		RESULTS:0 = 강귀 
+ENDSELECT
+
+
+@CARD_72318(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_72318(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できず、このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：このカードの발동時の효과処理として、
+PRINTL 손패からレベル４以下の전사족・비늘야수족・사이버스족の땅속성モンスター１体を守備표시で특수소환できる。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：자신フィールドの링크３以上の「강귀」モンスター１体をリリースして발동できる。
+PRINTL 덱・EX덱から「ダイナレスラー」モンスターか「Gゴーレム」モンスター１体を특수소환する。
+
+
+@CARDCAN_72318(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72318)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,72318)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 강귀 
+	효과条件종류 = 링크
+	효과条件표시 = 表側표시
+	CALL 효과条件レベル_ADV(3, "以上")
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ:0 = ダイナレスラー
+	효과条件カテゴリ:1 = Gゴーレム
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,72318)
+		RETURN 0
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1	
+
+ENDIF
+
+@CARDEFFECT_72318(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72318,1)
+	IF RESULT == 0
+	    CALL FULLRESET
+		효과範囲필드 = 1
+	    효과条件カテゴリ = 강귀 
+	    효과条件종류 = 링크
+	    효과条件표시 = 表側표시
+	    CALL 효과条件レベル_ADV(3, "以上")
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+		    CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲EX덱 = 1
+	        효과条件カテゴリ:0 = ダイナレスラー
+	        효과条件カテゴリ:1 = Gゴーレム
+	        효과条件종류 = モン全般
+		    CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72318,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件속성 = 땅속성
+		효과条件종족:0 = 전사족
+		효과条件종족:1 = 비늘야수족
+		효과条件종족:2 = 사이버스족
+		CALL 효과条件レベル_ADV(4, "以下")
+		효과条件任意 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

@@ -784,7 +784,7 @@ IF 효과条件종류  > 0
 		SIF RESULT != 효과条件종류 - 10
 			条件달성 ++
 	ELSEIF 효과条件종류  == 효과全般
-		SIF RESULT != 通常モン
+		SIF GROUPMATCH(RESULT, 효과モン, 융합, 의식, 싱크로, 엑시즈, 링크, 초차원)
 			条件달성 ++
 		TRYCALLFORM CARD_{설정カードID}, "分割"
 		SIF RESULT == 通常モン
@@ -939,12 +939,15 @@ IF 参照先 == "필드" || 参照先 == "마함"
 			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") == 0
 				RETURN 戻り値
 		ELSE
-			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") < 효과条件魔Ｃ所持
+			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") < 효과条件薬Ｃ所持
 				RETURN 戻り値
 		ENDIF
 	ENDIF
 	IF 효과条件悪Ｃ所持 > 0
-		IF 효과条件悪Ｃ所持 == 999
+		IF 효과条件条件達生 == 888
+			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") >= 1
+				RETURN 戻り値
+		ELSEIF 효과条件悪Ｃ所持 == 999
 			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") == 0
 				RETURN 戻り値
 		ELSEIF 효과条件悪Ｃ所持 == 777 && 実行者 != 듀얼리스트
@@ -1101,6 +1104,14 @@ IF 参照先 == "필드"
 		SIF 条件달성 == 0		
 			RETURN 戻り値
 	ENDIF
+	IF 효과条件固レベル > 0
+		VARSET 条件달성
+		SIF !MATCH(효과条件固レベル, GETVAR(@"%実行者%_MZ_星:カウンタ"))
+			条件달성 ++
+		SIF 条件달성 == 0
+			RETURN 戻り値
+	ENDIF
+
 	;ザポルグ追記20250102
 	IF 효과条件変レベル > 0
 		TRYCALLFORM CARD_{설정カードID}, "レベル"
@@ -1280,6 +1291,18 @@ ELSE
 		SIF MATCH(효과条件レベル, RESULT)
 			条件달성 ++
 		SIF 条件달성 == 0		
+			RETURN 戻り値
+	ENDIF
+	;	PRINTFORML 효과条件固レベル = {효과条件固レベル}/효과条件固レベル:1 = {효과条件固レベル:1}
+	IF 효과条件固レベル > 0
+		VARSET 条件달성
+		TRYCALLFORM CARD_{설정カードID}, "レベル"
+		SIF MATCH(효과条件固レベル, RESULT)
+			条件달성 ++
+		TRYCALLFORM CARD_{설정カードID}, "コスト"
+		SIF MATCH(효과条件固レベル, RESULT)
+			条件달성 ++
+		SIF 条件달성 != 0		
 			RETURN 戻り値
 	ENDIF
 
@@ -1603,7 +1626,7 @@ IF 효과条件スーパー종류 > 0
 			条件달성 ++
 
 	ELSEIF 효과条件スーパー종류 == 효과全般
-		SIF RESULT != 通常モン
+		SIF GROUPMATCH(RESULT, 효과モン, 융합, 의식, 싱크로, 엑시즈, 링크, 초차원)
 			条件달성 ++
 		TRYCALLFORM CARD_{설정カードID}, "分割"
 		SIF RESULT != 通常モン

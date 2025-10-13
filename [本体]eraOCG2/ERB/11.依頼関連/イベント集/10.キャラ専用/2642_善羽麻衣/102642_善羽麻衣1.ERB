@@ -1,0 +1,264 @@
+@IRAI_EVENT_102642(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2642-01)幕前スマイル、幕裏ブラック
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL 麻衣の握手会を参加しよう！
+		PRINTL 
+		PRINTL 报酬：1500DP、お金5000
+	CASE "条件"
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2642):호감도 < 100
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+        IF MARK:NO_TO_CHARANUM(2642):반발각인 > 0
+            RESULTS = 怒っている腹黒アイドルはちょっと会いにくい…분노が収まるまで待ちましょう。
+            RETURN 1
+        ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_102642(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2642)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 今日は%CALLNAME:이벤트主%の握手会の日だ。
+	PRINTFORML あなたは運営スタッフの応援を頼まれ、会場へ向かった。
+	PRINTFORMW 小型ショッピングモールでの握手会、列整理を担当することになった。
+
+	依頼_달성상황++
+	依頼_場所 = 場所_モール
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML 握手会の準備も順調に進み、ファンたちが列を作り始めている。
+	PRINTFORML %CALLNAME:이벤트主%も控室で最終準備を整えているようだ。
+	PRINTFORMW そんな中、一人の男性がカメラを構えて現れた。
+
+	PRINTFORML 「おーい、みんな！今日は善羽麻衣の握手会に来てるよ！」
+	PRINTFORML 男性は大声でスマートフォンに向かって話している。
+	PRINTFORMW どうやらブロガーのようだ。
+
+	PRINTFORML 「実は最近、麻衣ちゃんの枕営業の噂があるって知ってる？」
+	PRINTFORML 「今日はその真相に迫ってみようと思うんだ！」
+	PRINTFORMW ブロガーの発言に、周りのファンたちがざわつき始めた。
+
+	PRINTFORML 「えっ、そんな噂があるの？」
+	PRINTFORML 「嘘でしょ？麻衣ちゃんがそんなことするわけない！」
+	PRINTFORMW ファンたちの間に動揺が広がっている。
+
+	PRINTFORML その時、控室から%CALLNAME:이벤트主%が顔を出した。
+	PRINTL
+	PRINTL [0] - 枕営業って…
+	BINPUT
+	PRINTFORML 「するわけないでしょうバーカ」
+	PRINTFORML 「話題性を利用して噂をあえて拡散しているだけよ」
+	PRINTFORMW 彼女は涼しい表情でそう呟いた。
+
+	PRINTFORML %CALLNAME:이벤트主%があなたに近づいてくる。
+	PRINTFORML 「でもこれはさすがにダメかな。場を温め直す時間を稼いで」
+	PRINTFORMW 彼女は小声でそう合図した。
+
+	PRINTL
+	PRINTL [0] - サイン抽選の前座として即興ミニライブを
+	PRINTL [1] - ブロガーに直接抗議する
+	PRINTL [2] - とりあえず様子を見る
+	BINPUT
+
+	IF RESULT == 0
+        PRINTFORML あなたは咄嗟にマイクを取り、会場に向かって声をかけた。
+        PRINTFORMW 「皆さん、お待たせしました！握手会の前に特別企画があります！」
+		PRINTFORML 「サイン抽選の前座として、麻衣ちゃんの即興ミニライブをお楽しみください！」
+		PRINTFORMW 会場が一気に盛り上がり、ブロガーの声は歓声にかき消された。
+        PRINTFORML 何いってんの？と一瞬不思議な表情をした麻衣だが、
+		PRINTFORML 次の瞬間で完全に理解し、笑顔で舞台を上げ、
+        PRINTFORMW ファンたちに向かって「皆さん、お待たせしました！」と声をかけた。
+        PRINTFORMW さすがプロアイドルだ。
+		CALL EVENT_FAVUP(이벤트主,200)
+		依頼_進行보존:102642 = 1
+	ELSEIF RESULT == 1
+		PRINTFORML あなたはブロガーに向かって歩いていった。
+		PRINTFORML 「すみません、根拠のない噂を流すのはやめてもらえませんか？」
+		PRINTFORMW ブロガーは不敵な笑みを浮かべている。
+		依頼_進行보존:102642 = 2
+	ELSE
+		PRINTFORML あなたは慎重に상황を見守ることにした。
+		PRINTFORML しかし、ブロガーの煽りは続き、会場の雰囲気は悪化していく。
+		PRINTFORMW このままでは握手会が台無しになってしまいそうだ。
+		依頼_進行보존:102642 = 3
+	ENDIF
+
+	依頼_달성상황++
+ELSEIF 依頼_달성상황 == 2
+	IF 依頼_進行보존:102642 == 1
+		PRINTFORML %CALLNAME:이벤트主%が舞台で短い歌を披露した。
+		PRINTFORML 歌声が会場を包み、ファンたちは完全に魅了されている。
+		PRINTFORMW ブロガーも思わずカメラを向けているが、もはや悪意のある撮影ではない。
+	ELSEIF 依頼_進行보존:102642 == 2
+		PRINTFORML 「根拠？ネットで話題になってるじゃないか！」
+		PRINTFORML ブロガーは반발し、さらに煽り立てようとしている。
+		PRINTFORMW 「それに、君は誰だ？関係者か？」
+	ELSE
+		PRINTFORML ブロガーの取り巻きらしき一般客が現れた。
+		PRINTFORML 「そうだそうだ！真実を隠そうとするな！」
+		PRINTFORMW 상황はさらに悪化している。
+		CALL EVENT_FAVUP(이벤트主,-50)
+	ENDIF
+
+	PRINTFORML その時、ブロガーの取り巻きが前に出てきた。
+	PRINTFORML 「おい、そこの運営！俺たちと晒し対決をしろ！」
+	PRINTFORML 「お前が勝てばMC権は麻衣側へ、負けたら真実を語らせてもらうからな！」
+	PRINTFORMW 取り巻きがデュエルディスクを構えた。
+
+	PRINTFORML %CALLNAME:이벤트主%があなたを見つめている。
+	PRINTFORMW 「お願い」と小さく口の形を作った。
+
+	PRINTL
+	PRINTL [0] - 「受けて立つ！」
+	BINPUT
+
+	PRINTFORML あなたはデュエルディスクを起動させた。
+	PRINTFORML 「デュエル開始だ！」
+	PRINTFORMW 会場が一瞬静まり返る。
+
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(102642)
+
+	;승리
+	IF RESULT == 1
+		PRINTFORML 「くそっ！こんなはずじゃ…」
+		PRINTFORML 取り巻きは悔しそうに退散していく。
+		PRINTFORMW ブロガーも興味を失ったのか、カメラを片付け始めた。
+
+		PRINTFORML %CALLNAME:이벤트主%がマイクを取り、会場に向かって話し始めた。
+		PRINTFORML 「みんなー！盛り上がってる？」
+		PRINTFORML 彼女の一言が会場に響く。
+		PRINTFORMW ファンたちは大きな拍手で応えた。
+
+		PRINTFORML 握手会は無事に終わり、ファンたちは만족そうに帰っていく。
+		PRINTFORML %CALLNAME:이벤트主%があなたに近づいてくる。
+		PRINTFORMW 「弱くも強くもない、伸びる手だね」
+
+		PRINTFORML 「これ、ファン向け掲示板の관리者アカウント」
+		PRINTFORML %CALLNAME:이벤트主%があなたに小さなメモ用紙を渡した。
+		PRINTFORMW 「今後もよろしくね」
+
+		SIF 依頼_見返し中 == 0
+		    PRINTFORML 運営からの報酬として5000円を受け取った。
+
+		PRINTFORMW 今日は良い一日だった。
+
+	ELSE
+		PRINTFORMW 負けてしまった…
+
+		PRINTFORML 「ざまあみろ！これで真実が明らかになる！」
+		PRINTFORML 取り巻きが勝ち誇っている。
+		PRINTFORMW ブロガーも再びカメラを回し始めた。
+
+		PRINTFORML 会場は大混乱に陥り、握手会は中止せざるを得なくなった。
+		PRINTFORML %CALLNAME:이벤트主%は冷静を装っているが、明らかに困惑している。
+		PRINTFORMW 「生放送じゃないのは唯一の救い…かな」と小さく呟いた。
+
+		PRINTFORML 運営スタッフが慌ただしく片付けを始める。
+		PRINTFORML 「握手会は別の日に再度行うことになりまーす」
+		PRINTFORMW アナウンスが流れた。
+		
+		CALL EVENT_FAVUP(이벤트主,-100)
+		PRINTFORML %CALLNAME:이벤트主%があなたに近づいてくる。
+		PRINTFORML 「今日はお疲れ様。あとは何とかするから…気にしないで」
+		PRINTFORMW 彼女は複雑な表情を浮かべていた。
+
+	ENDIF
+
+	CALL EVENT_TIMER(180)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_102642
+CALL DP_GET(1500)
+CALL MONEY_GET(5000)
+
+@IRAI_DECK_102642(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 102642
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_102642
+
+PRINTFORML 
+PRINTFORML 取り巻き「バカ運営め！痛い目にしてやるぞ！」
+PRINTFORMW 
+
+;オルフェゴール　手抜き版
+@DUELDECK_102642(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 11873
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24220
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24220
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24220
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24221
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24222
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24222
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 24222
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33507
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33507
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33507
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72422
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72422
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72422
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72423
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72423
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72423
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72970
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1731
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1731
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1731
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 92422
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70018
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70018
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70018
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 74257
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 74257
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 74257
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 11870
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1873
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1873
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1873
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 11877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 11877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41873
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41873
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41873
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52220
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52220
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52220
+

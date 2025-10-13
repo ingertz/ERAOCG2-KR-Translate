@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 가디언 에아토스
+		RESULTS = 가디언 에아토스
 	CASE "略称"
-RESULTS = 에아토스
+		RESULTS = 에아토스
 	CASE "カテゴリ"
-RESULTS:0 = 가디언
+		RESULTS:0 = 가디언
 ENDSELECT
 
 
@@ -36,6 +36,9 @@ SELECTCASE 参照先
 		RETURN 2000
 	CASE "성별"
 		RETURN 牝性
+	CASE "生成カード"
+		RESULT:1 = 601060
+		RETURN 101060
 ENDSELECT
 RETURN 0
 
@@ -50,6 +53,10 @@ PRINTL ②: 자신 필드의 장착 마법 카드 1장을 묘지로 보내고,
 PRINTL 상대의 묘지의 몬스터를 3체까지 대상으로 하여 발동할 수 있다.
 PRINTL 그 몬스터를 제외한다.
 PRINTL 이 카드의 공격력은 턴 종료시까지, 이 효과로 제외한 몬스터의 수× 500 상승한다.
+CALL CARD_ABLE(0,戦破壊→묘지)
+PRINTL ③：装備カードを装備しているこのカードが상대によってフィールドを離れた場合に발동できる。
+PRINTL 덱外から「가디언 데스사이스」１体を특수소환する。
+PRINTL その後、덱外から「사신의 큰 낫－데스사이스」１枚を손패に生成し、そのモンスターに装備する。
 
 
 @CARDSUMMON_AA_1060
@@ -103,6 +110,20 @@ ELSEIF 종류 == 필드起動
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,101060,"",1)
+	SIF RESULT == 1
+		RETURN 0
+	SIF 処理中_듀얼리스트 != 対面者 && 묘지送り종류 != "戦闘破壊"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_EQUIP_CHECK(듀얼리스트,場所,ゾーン)
+	SIF RESULT == 0
+		RETURN 0
+	RETURN 1
 ENDIF
 
 
@@ -126,6 +147,7 @@ IF 종류 == 손패起動
 		CALL FULLRESET
 		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
 	ENDIF
+
 ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1060)
 	IF RESULT == 0
@@ -141,6 +163,390 @@ ELSEIF 종류 == 필드起動
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",攻撃力修正)
 		ENDIF
 	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1060)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,101060)
+		CALL CARD_GENERATE_HAND(듀얼리스트,601060)
+
+		CALL FULLRESET
+		효과条件名前 = 사신의 큰 낫－데스사이스
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件名前 = 가디언 데스사이스
+			효과条件표시 = 表側표시
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"손패")
+		ENDIF
+	ENDIF
+ENDIF
+
+;──────────────────────────────────────────────────────
+
+@CARDNAME_101060,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 가디언 데스사이스
+	CASE "略称"
+		RESULTS = 데스사이스
+	CASE "カテゴリ"
+		RESULTS:0 = 가디언
+ENDSELECT
+
+
+@CARD_101060(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1060
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_101060(종류)
+#DIM DYNAMIC 종류
+
+CALL CARD_ABLE(0,지속효과)
+PRINTL ①：お互いのプレイヤーはモンスターを특수소환できない。
+CALL CARD_ABLE(10,필드起動)
+PRINTL ②：１ターンに１度、자신フィールドの装備마법カード１枚を묘지へ送って발동できる。
+PRINTL 상대は자신の손패・フィールドのカードを３枚まで可能な限り묘지へ送る。
+CALL CARD_ABLE(0,戦破壊→묘지)
+PRINTL ③：このカードがフィールドから묘지へ送られた場合に발동できる。
+PRINTL 손패を１枚捨て、このカードを특수소환する。
+
+
+@CARDSUMMON_AA_101060
+
+
+@CARDCAN_101060(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,101060)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件종류 = 装備마법
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대손패 = 1
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+	
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 손패数(듀얼리스트) < 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,101060,"묘지",1)
+	SIF RESULT == 1
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊","リリース")
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 
+
+@CARDEFFECT_101060(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,101060,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件종류 = 装備마법
+		효과条件표시 = 表側표시
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			REPEAT 3
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲필드 = 1
+				효과範囲마함 = 1
+				CALL CARD_ADD_GY_ADV(対面者,ゾーン,場所)
+				SIF RESULT != 1
+					BREAK
+			REND
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,101060)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 가디언 데스사이스
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL SET_PLAYER_INFO(듀얼리스트,"SS阻害状態",3)
+	CALL SET_PLAYER_INFO(듀얼리스트,"SS阻害状態",3,1)
+ENDIF
+
+;──────────────────────────────────────────────────────
+
+@CARDNAME_601060,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 사신의 큰 낫－데스사이스
+	CASE "略称"
+		RESULTS = 큰낫데스사이스
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_601060(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_601060(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドの「가디언 데스사이스」にのみ装備可能。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：装備モンスターの攻撃力は、お互いの묘지・제외状態のモンスターの数×５００アップする。
+CALLFORM CARD_ABLE(0,ターン終了時強制)
+PRINTL ②：상대エンドフェイズに발동する。
+PRINTL お互いのプレイヤーは自身の덱の上から２枚を묘지へ送る。
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ③：装備されているこのカードがフィールドから묘지へ送られた場合に발동できる。
+PRINTL このターンのエンドフェイズに、묘지のこのカードを자신フィールドの「가디언 데스사이스」に装備する。
+
+
+@CARDCAN_601060(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,601060)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 가디언 데스사이스
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時予約
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	SIF 装備先 == 5
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 사신의 큰 낫－데스사이스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 가디언 데스사이스
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	SIF 装備先 == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_601060(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,601060)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 가디언 데스사이스
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,601060)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",2)
+		CALL CARD_DECK_DISPOSE(対面者,"덱",2)
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,601060)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,601060,エンド予約)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과条件名前 = 사신의 큰 낫－데스사이스
+	CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+	IF RESULT != 9999
+		選択カード = RESULT
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 가디언 데스사이스
+		효과条件표시 = 表側표시
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과範囲상대묘지 = 1
+	효과範囲상대제외 = 1
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,RESULT*500)
+ENDIF

@@ -1,0 +1,142 @@
+﻿@CARDNAME_91360,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 레드 로이드 콜
+	CASE "略称"
+		RESULTS = Ｒ Ｒ Ｃ
+	CASE "カテゴリ"
+		RESULTS:0 = 비크로이드
+ENDSELECT
+
+
+@CARD_91360(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_91360(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,발동誘発)
+PRINTL ①：자신フィールドに「비크로이드」융합モンスターが存在し、カードの효과が발동した時に발동できる。
+PRINTL その발동を無効にする。
+PRINTL その後、발동したそのプレイヤーの덱・EX덱から同名カードを全て묘지へ送る。
+CALLFORM CARD_ABLE(2,묘지起動,フリー誘発)
+PRINTL ②：묘지のこのカードを제외し、자신の묘지の「비크로이드」モンスター１体を대상として발동できる。
+PRINTL そのモンスターを손패に加える。
+
+@CARDCAN_91360(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91360)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 발동誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		RETURN 0	
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 비크로이드
+	효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF 발동済_2(듀얼리스트,91360)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 비크로이드
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_91360(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID 
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91360)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		選択カード_ID = 効後_효과ID:(処理中番号 - 1) 
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+
+		IF RESULT == 1
+			FOR カウンタ, 98, -1, -1
+				SIF GETVAR(@"%듀얼리스트%_덱:{カウンタ}") == -1
+					CONTINUE				
+				SIF GETVAR(@"%듀얼리스트%_덱:{カウンタ}") != 選択カード_ID
+					CONTINUE
+				CALL CARD_DISPOSE(듀얼리스트,"덱",カウンタ,1)
+			NEXT
+			FOR カウンタ, 98, -1, -1
+				SIF GETVAR(@"%듀얼리스트%_EX덱:{カウンタ}") == -1
+					CONTINUE
+				SIF GETVAR(@"%듀얼리스트%_EX덱:{カウンタ}") != 選択カード_ID
+					CONTINUE
+
+				CALL CARD_DISPOSE(듀얼리스트,"EX덱",カウンタ,1)
+			NEXT
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91360,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 비크로이드
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

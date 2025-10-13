@@ -1,0 +1,120 @@
+﻿@CARDNAME_4428,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 천공의 지배자 포르테
+	CASE "略称"
+		RESULTS = 포르테
+	CASE "カテゴリ"
+		RESULTS:0 = 드래곤 클래스
+		RESULTS:1 = 진화가능
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_4428(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 100
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251004
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4428(종류)
+#DIM DYNAMIC 종류
+PRINTL 「進化(覚醒)」は１ターンに１度しか行えない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードを소환する際のレベルは、現在のターンの数分下がる。
+PRINTL こうして소환する際、レベルが１以下である限り「進化」された状態で場に소환され、소환権を消費しない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：このカードは直接攻撃できる。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ③：このカードは자신メインフェイズに１度だけ「進化」できる。
+PRINTL そうした場合、このカードの攻撃力・守備力は５００アップし、攻撃回避を得る。
+
+@CARDCAN_4428(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4428)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 攻守変動
+	SIF ゾーン != "손패"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과소환
+	SIF GETVAR(@"%듀얼리스트%_手_一星:場所") < 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,覚醒발동)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4428(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 守備力修正
+
+IF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_HAND(듀얼리스트,"지정",場所,"一星",ターン数)
+ELSEIF 종류 == 효과소환
+	場所 = 現필드(듀얼리스트)
+
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",500)
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",500)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻避",2)
+	RETURN 2
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",500)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",500)
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻避",2)
+		CALL CARD_RESERV(듀얼리스트,4425,永紋章予約)
+	ENDIF
+ENDIF

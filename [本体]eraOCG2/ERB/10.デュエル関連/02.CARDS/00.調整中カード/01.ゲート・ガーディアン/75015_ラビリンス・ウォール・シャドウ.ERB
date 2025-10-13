@@ -1,0 +1,157 @@
+﻿@CARDNAME_75015,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 래비린스 월 섀도우
+	CASE "略称"
+		RESULTS = 미궁벽＆그림자
+	CASE "カテゴリ"
+		RESULTS:0 = 래비린스 월
+		RESULTS:1 = 게이트 가디언
+ENDSELECT
+
+
+@CARD_75015(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_75015(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドは「래비린스 월」となる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：フィールドのレベル４以下のモンスターは攻撃できない。
+CALLFORM CARD_ABLE(10,마함起動)
+PRINTL ②：１ターンに１度、자신メインフェイズに발동できる。
+PRINTL 자신の덱・묘지・제외状態の「번개 마신－썬가」「풍 마신－휴가」「수 마신－스가」のいずれか１体を選び、
+PRINTL 자신の마법＆함정ゾーンに表側표시で置く。
+CALLFORM CARD_ABLE(10,バトル開始時)
+PRINTL ③：상대バトルフェイズ開始時に발동できる。
+PRINTL 상대フィールドの攻撃力１６００未満のモンスター１体を破壊する。
+
+@CARDCAN_75015(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,75015)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_3(듀얼리스트,75015)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件名前:0 = 번개 마신－썬가
+	효과条件名前:1 = 풍 마신－휴가
+	효과条件名前:2 = 수 마신－스가
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == バトル開始時
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 묘지
+	효과条件攻撃力 = 1599
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_75015(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75015,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件名前:0 = 번개 마신－썬가
+		효과条件名前:1 = 풍 마신－휴가
+		효과条件名前:2 = 수 마신－스가
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+	ENDIF
+ELSEIF 종류 == バトル開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75015)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件攻撃力 = 1599
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75015)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"래비린스 월")
+	CALL FULLRESET
+	효과条件종류 = レベル持ち
+	CALLFORM 효과条件レベル_ADV(4,"以下")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦無")
+	CALL FULLRESET
+	효과条件종류 = レベル持ち
+	CALLFORM 효과条件レベル_ADV(4,"以下")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"戦無")
+ENDIF

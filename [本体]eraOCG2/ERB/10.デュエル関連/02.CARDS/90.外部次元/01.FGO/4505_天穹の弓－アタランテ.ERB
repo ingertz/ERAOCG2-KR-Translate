@@ -76,7 +76,7 @@ ENDIF
 
 PRINTL 토큰 이외의 빛속성 몬스터를 포함하는 카드명이 다른 몬스터 2체 이상
 PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
-PRINTL ①: "천궁의 활－아탈란테"는 자신 필드에 1체밖에 앞면 표시로 존재할 수 없다.
+PRINTL ①: "천궁의 활－아탈란테"는 자신 필드에 1장밖에 앞면 표시로 존재할 수 없다.
 CALLFORM CARD_ABLE(1,필드起動)
 PRINTL ②: 자신 메인 페이즈에 발동할 수 있다.
 PRINTL 자신 필드의 빛속성 링크 몬스터의 수까지, 상대 필드의 카드를 고르고 파괴한다.
@@ -149,15 +149,17 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		リピート횟수 = RESULT
 		CALL FULLRESET
 		효과条件複数 = 100 - リピート횟수
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"제외")
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"破壊")
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
 	CALL 효과条件レベル_ADV(3, "以下")
+	효과条件종류 = レベル持ち
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
 
 	CALL FULLRESET
 	CALL 효과条件レベル_ADV(3, "以下")
+	효과条件종류 = レベル持ち
 	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"破耐")
 ENDIF
 

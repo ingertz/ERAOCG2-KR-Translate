@@ -23,6 +23,7 @@ VARSET 필터_임신可
 VARSET 필터_素質_ACT
 VARSET 필터_화상
 VARSET 필터_仲良し
+VARSET 필터_依頼
 
 
 
@@ -166,6 +167,14 @@ IF 필터_임신可
 	SIF TALENT:캐릭터_ID:임신가능 <= 0
 		RETURN 0
 ENDIF
+
+IF 필터_依頼 > 0
+  VARSET RESULT
+  SIF EXISTFUNCTION(@"IRAI_EVENT_{NO:캐릭터_ID + 100000}") == 0
+    RETURN 0
+ENDIF
+
+
 
 VARSET 条件달성
 IF 필터_消去可 == 1
@@ -816,7 +825,7 @@ SELECTCASE 使用場所
 		ELSEIF CFLAG:캐릭터_ID:방문했음 >= 1
 			PRINTFORMW 오늘은 이제 그만두자。
 		ELSE
-			PRINTFORMW %CALLNAME:캐릭터_ID%의 집을 방문하니、본인이 배웅나왔다。
+			PRINTFORMW %CALLNAME:캐릭터_ID%의 집을 방문하니、본인이 마중나왔다。
 			IF (CFLAG:캐릭터_ID:호감도 >= 3000 && RAND:3 == 0) || デバッグシステム == 1
 				PRINTFORMW …… %CALLNAME:캐릭터_ID%에게 방으로 초대받았다。
 				SIF TALENT:캐릭터_ID <= -1

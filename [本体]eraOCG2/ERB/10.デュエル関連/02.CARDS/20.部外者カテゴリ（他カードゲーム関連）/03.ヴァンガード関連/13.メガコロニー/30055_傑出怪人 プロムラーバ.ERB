@@ -1,0 +1,183 @@
+﻿@CARDNAME_30055,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 걸출괴인 프롬라바
+	CASE "略称"
+		RESULTS = 프롬라바
+	CASE "カテゴリ"
+		RESULTS:0 = 메가 콜로니
+		RESULTS:4 = 뱅가드
+ENDSELECT
+
+
+@CARD_30055(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 400
+	CASE "守備力"
+		RETURN 1200
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_30055(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,손패起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 덱からこのカード名以外の「메가 콜로니」モンスター１体を묘지に送り、손패のこのカードを특수소환する。
+PRINTL この효과を발동するターン、자신は곤충족モンスターしか특수소환できない。
+CALL CARD_ABLE(2,필드→묘지,손패→묘지,덱→묘지,破壊→묘지,戦闘→묘지)
+PRINTL ②：このカードが묘지に送られた場合に발동できる。
+PRINTL 덱から「메가 콜로니」마법・함정カード１枚を손패に加える。
+CALL CARD_ABLE(3,身代효과)
+PRINTL ③：자신フィールドの「그레도라」モンスターが戦闘・효과によって破壊される場合、
+PRINTL 代わりに묘지のこのカードを제외できる。
+
+@CARDCAN_30055(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件A
+#DIM DYNAMIC 条件B
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,30055)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,30055)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,30055,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件固名前 = 걸출괴인 프롬라바
+	효과条件종족 = 곤충족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL 효과条件종족_ADV(곤충족, "以外")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	SIF 발동済_2(듀얼리스트,30055)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 메가 콜로니
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 身代효과
+	SIF 발동済_3(듀얼리스트,30055)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"戦闘","효과")
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	TRYCALLFORM CARDNAME_{破壊대상ID}("カテゴリ")
+	SIF !MATCH(RESULTS,"그레도라")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_30055(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 最高攻撃力
+#DIM DYNAMIC ドロー枚数
+#DIM DYNAMIC 候補カード,5
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,30055,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件固名前 = 걸출괴인 프롬라바
+		효과条件종족 = 곤충족
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL FULLRESET
+		SS소환可能종족 = 곤충족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,30055,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 메가 콜로니
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78716,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		PRINTFORMW 「걸출괴인 프롬라바」が묘지から제외されることで破壊を防ぎました。
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

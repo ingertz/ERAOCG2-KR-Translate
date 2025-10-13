@@ -50,7 +50,7 @@ PRINTL ①: 이 카드가 "벽람항로" 카드의 효과로 묘지로 보내졌
 PRINTL 이 카드를 묘지에서 특수 소환한다.
 CALL CARD_ABLE(2,소환時,특수소환時)
 PRINTL ②: 이 카드가 소환 / 특수 소환했을 경우에 발동할 수 있다.
-PRINTL 덱에서 이 카드명 이외의 레벨 5 이하의 "사쿠라 엠파이어(AL)" 몬스터 1장을 특수 소환한다.
+PRINTL 패를 1장 버리고, 덱에서 이 카드명 이외의 레벨 5 이하의 "사쿠라 엠파이어(AL)" 몬스터 1장을 특수 소환한다.
 
 @CARDCAN_4941(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -85,6 +85,11 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
 	RETURN 1
 ENDIF
 
@@ -106,7 +111,7 @@ IF 종류 == 필드→묘지 || 종류 == 破壊→묘지 || 종류 == 손패→
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲묘지 = 1
-효과条件名前 = 구축함 하나즈키
+		효과条件名前 = 구축함 하나즈키
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン, 場所)
 	ENDIF
 
@@ -114,10 +119,15 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4941,2)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과範囲덱 = 1
-		효과条件カテゴリ = 사쿠라 엠파이어(AL)
-		효과条件固名前 = 구축함 하나즈키
-		CALLFORM 효과条件レベル_ADV(5,"以下")
-		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 사쿠라 엠파이어(AL)
+			효과条件固名前 = 구축함 하나즈키
+			CALLFORM 효과条件レベル_ADV(5,"以下")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
 	ENDIF
 ENDIF

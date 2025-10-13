@@ -1,0 +1,106 @@
+﻿@CARDNAME_74412,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 사슬의 부름
+	CASE "略称"
+		RESULTS = 사슬의 부름
+	CASE "カテゴリ"
+		RESULTS:0 = 위치 클래스
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_74412(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 250428
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_74412(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①: 덱에서 "위치 클래스" 몬스터 1장을 고르고 공개한다.
+PRINTL 그 몬스터가 레벨 5 이상, 또는 자신 필드에 몬스터가 가득할 경우, 그 몬스터를 패에 넣는다.
+PRINTL 그 외의 경우에는 그 몬스터를 특수 소환한다.
+
+
+@CARDCAN_74412(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,74412)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,74412)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 위치 클래스
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_74412(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,74412,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 위치 클래스
+		효과条件종류 = モン全般
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			選択カード = RESULT
+			選択カード_ID = GETVAR(@"%듀얼리스트%_덱:選択カード")
+			TRYCALLFORM CARD_{選択カード_ID},"レベル"
+			IF RESULT >= 5 || モンスター数(듀얼리스트) >= 5
+				CALL CARD_DISPOSE(듀얼리스트,"덱",選択カード,손패行き)
+			ELSE
+				CALL CARD_SP_SUMMON(듀얼리스트,"덱",選択カード)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

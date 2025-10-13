@@ -8,7 +8,13 @@
 #DIM DYNAMIC 캐릭터番号
 #DIM DYNAMIC トークン보존,10
 #DIM DYNAMIC カウンタ
-SIF 덱플래그 != 2
+#DIM DYNAMIC 選択カード_星
+;덱플래그
+;0 - 本体표시のみ、そのまま流れる説明関連
+;1 - 情報などがしっかり確認できる덱制作画面などでの確認
+;2 - ゲーム上での確認、UI情報などが보존されているため↓のリセットが行われない
+;3 - 손패にあるカード
+SIF !GROUPMATCH(덱플래그,2,3)
 	CALLFORM CARD_UI_RESET
 
 
@@ -75,31 +81,36 @@ CASE 7
 	PRINTFORM （%"신",2%）
 ENDSELECT
 RESETCOLOR
-IF RESULT:1 != 0
-	IF RESULT:1== 1
-		SETCOLOR C_LIGHT_T
-		PRINTFORM （%"빛",2%）
-	ELSEIF RESULT:1== 2
-		SETCOLOR C_DARK_T
-		PRINTFORM （%"어둠",2%）
-	ELSEIF RESULT:1== 3
-		SETCOLOR C_GROUND_T
-		PRINTFORM （%"땅",2%）
-	ELSEIF RESULT:1== 4
-		SETCOLOR C_WATER_T
-		PRINTFORM （%"물",2%）
-	ELSEIF RESULT:1== 5
-		SETCOLOR C_FIRE_T
-		PRINTFORM （%"화염",2%）
-	ELSEIF RESULT:1== 6
-		SETCOLOR C_WIND_T
-		PRINTFORM （%"바람",2%）
-	ELSEIF RESULT:1== 7
-		SETCOLOR C_LIGHT_T
-		PRINTFORM （%"신",2%）
+
+TRYCALLFORM CARD_{選択カード_ID}, "속성"
+FOR カウンタ,1,7
+	IF RESULT:カウンタ != 0
+		IF RESULT:カウンタ == 1
+			SETCOLOR C_LIGHT_T
+			PRINTFORM （%"빛",2%）
+		ELSEIF RESULT:カウンタ == 2
+			SETCOLOR C_DARK_T
+			PRINTFORM （%"어둠"%）
+		ELSEIF RESULT:カウンタ == 3
+			SETCOLOR C_GROUND_T
+			PRINTFORM （%"땅",2%）
+		ELSEIF RESULT:カウンタ == 4
+			SETCOLOR C_WATER_T
+			PRINTFORM （%"물",2%）
+		ELSEIF RESULT:カウンタ == 5
+			SETCOLOR C_FIRE_T
+			PRINTFORM （%"화염"%）
+		ELSEIF RESULT:カウンタ == 6
+			SETCOLOR C_WIND_T
+			PRINTFORM （%"바람"%）
+		ELSEIF RESULT:カウンタ == 7
+			SETCOLOR C_LIGHT_T
+			PRINTFORM （%"신",2%）
+		ENDIF
+		RESETCOLOR
 	ENDIF
-	RESETCOLOR
-ENDIF
+NEXT
+
 
 TRYCALLFORM CARDNAME_{選択カード_ID}, "武装名"
 IF RESULTS != ""
@@ -137,8 +148,22 @@ PRINTL
 TRYCALLFORM CARD_{選択カード_ID}, "종류"
 IF INRANGE (RESULT, 1, 10)
 	CALL COLOR_LINE(설정カラー)
+
+	PRINTFORM （★）× 
 	TRYCALLFORM CARD_{選択カード_ID}, "レベル"
-	PRINTFORM （★）× {RESULT,2,RIGHT}
+	選択カード_星 = RESULT
+	IF 덱플래그 == 3
+		IF 자신_手_一星:確認場所 >= 1
+			SETCOLOR C_GREEN
+		ELSEIF 자신_手_一星:確認場所 <= -1
+			SETCOLOR C_RED
+		ENDIF
+		選択カード_星 -= 자신_手_一星:確認場所
+		SIF 選択カード_星 <= 1
+			選択カード_星 = 1
+	ENDIF
+	PRINTFORM {選択カード_星,2,RIGHT}
+	RESETCOLOR
 	TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"	
 	PRINTFORM 　　　　（공）　{(RESULT),6,RIGHT}
 	TRYCALLFORM CARD_{選択カード_ID}, "守備力"	
@@ -276,7 +301,7 @@ IF 덱플래그 == 1
 		FOR カウンタ,0,5
 			IF トークン보존:カウンタ >= 1
 				$LOOP_BACK_HERE
-				TRYCALLFORM CARD_UI(トークン보존:カウンタ,2)
+				TRYCALLFORM CARD_UI(トークン보존:カウンタ)
 				PRINTFORM [0] - 다음 카드
 				PRINTL
 				BINPUT
@@ -621,14 +646,19 @@ FOR カウンタB,0,10
 				;レベル
 				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "종류"
 				IF RESULT == 엑시즈
+					PRINTFORM %"",18,RIGHT%
+					CALL XON_FONT("★",C_XYZ_LBLACK)
 					SETCOLOR C_XYZ_LBLACK
-					PRINTFORM %"（☆）",18,RIGHT%× {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
+					PRINTFORM  {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
 				ELSEIF RESULT == 링크
 					SETCOLOR C_LINK_BLUE
 					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "レベル"
 					PRINTFORM %"LINK －",21,RIGHT% {RESULT,2,RIGHT}
 				ELSE
-					PRINTFORM %"（★）",18,RIGHT%× {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
+					PRINTFORM %"",18,RIGHT%
+					CALL XON_FONT("★",C_ORANGE)
+					SETCOLOR C_ORANGE
+					PRINTFORM  {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
 				ENDIF
 				RESETCOLOR
 
@@ -725,6 +755,7 @@ FOR カウンタB,0,10
 				ENDIF
 			ELSEIF カウンタB == 6
 				IF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 1
+					CALL XON_FONT("攻撃표시",C_RED)
 					SETCOLOR C_RED
 					PRINTFORM 공격표시
 					CALL CARD_ATK_CHECK(듀얼리스트,カウンタ)
@@ -737,7 +768,8 @@ FOR カウンタB,0,10
 					ENDIF
 				ELSEIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 2
 					SETCOLOR C_AQUA
-					PRINTFORM 　수비표시　　　　　　　
+					CALL XON_FONT("守備표시",C_AQUA)
+					PRINTFORM 수비표시　　　　　　　
 				ELSEIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
 					PRINTFORM 　뒷면수비표시　　　　　
 				ENDIF
@@ -1560,8 +1592,38 @@ CASE 7
 	SETCOLOR C_LIGHT_T
 	PRINTFORM （%"신",2%）
 ENDSELECT
+
+
+TRYCALLFORM CARD_{選択カード_ID}, "속성"
+FOR カウンタ,1,7
+	IF RESULT:カウンタ != 0
+		IF RESULT:カウンタ == 1
+			SETCOLOR C_LIGHT_T
+			PRINTFORM （%"빛",2%）
+		ELSEIF RESULT:カウンタ == 2
+			SETCOLOR C_DARK_T
+			PRINTFORM （%"어둠"%）
+		ELSEIF RESULT:カウンタ == 3
+			SETCOLOR C_GROUND_T
+			PRINTFORM （%"땅",2%）
+		ELSEIF RESULT:カウンタ == 4
+			SETCOLOR C_WATER_T
+			PRINTFORM （%"물",2%）
+		ELSEIF RESULT:カウンタ == 5
+			SETCOLOR C_FIRE_T
+			PRINTFORM （%"화염"%）
+		ELSEIF RESULT:カウンタ == 6
+			SETCOLOR C_WIND_T
+			PRINTFORM （%"바람"%）
+		ELSEIF RESULT:カウンタ == 7
+			SETCOLOR C_LIGHT_T
+			PRINTFORM （%"신",2%）
+		ENDIF
+		RESETCOLOR
+	ENDIF
+NEXT
 PRINTL
-;TRYCALLFORM CARD_{選択カード_ID}, "종류"
+
 
 
 CALL COLOR_LINE(설정カラー)
@@ -1637,6 +1699,9 @@ CALL COLOR_LINE(설정カラー)
 PRINTFORM 【
 
 PRINTFORM %GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:選択カード")),18,LEFT%/　
+
+
+
 
 TRYCALLFORM CARD_{選択カード_ID}, "종류"
 IF RESULT == 1
@@ -2381,6 +2446,37 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 	ELSEIF RESULT == 7
 		PRINTFORM （%"신",2%）
 	ENDIF	
+	
+	TRYCALLFORM CARD_{選択カード_ID}, "속성"
+	FOR カウンタ,1,7
+		IF RESULT:カウンタ != 0
+			IF RESULT:カウンタ == 1
+				SETCOLOR C_LIGHT_T
+				PRINTFORM （%"빛",2%）
+			ELSEIF RESULT:カウンタ == 2
+				SETCOLOR C_DARK_T
+				PRINTFORM （%"어둠"%）
+			ELSEIF RESULT:カウンタ == 3
+				SETCOLOR C_GROUND_T
+				PRINTFORM （%"땅"%）
+			ELSEIF RESULT:カウンタ == 4
+				SETCOLOR C_WATER_T
+				PRINTFORM （%"물"%）
+			ELSEIF RESULT:カウンタ == 5
+				SETCOLOR C_FIRE_T
+				PRINTFORM （%"화염"%）
+			ELSEIF RESULT:カウンタ == 6
+				SETCOLOR C_WIND_T
+				PRINTFORM （%"바람"%）
+			ELSEIF RESULT:カウンタ == 7
+				SETCOLOR C_LIGHT_T
+				PRINTFORM （%"신",2%）
+			ENDIF
+			RESETCOLOR
+		ENDIF
+	NEXT
+
+
 
 	PRINTL
 	CALL COLOR_LINE(설정カラー)
@@ -4035,7 +4131,7 @@ ELSE
 			確認ゾーン = 손패
 			確認場所 = 選択カード
 			フリー確認 = 1
-			TRYCALLFORM CARD_UI(選択カード_ID,2); 自由確認での손패確認（受け渡し必要：듀얼리스트情報のみ）
+			TRYCALLFORM CARD_UI(選択カード_ID,3); 自由確認での손패確認（受け渡し必要：듀얼리스트情報のみ）
 			IF 설정플래그 == 0
 				SIF 설정플래그 != 2
 					TRYCALLFORM CARDCAN_{選択カード_ID}("자신",손패起動,"손패",選択カード)

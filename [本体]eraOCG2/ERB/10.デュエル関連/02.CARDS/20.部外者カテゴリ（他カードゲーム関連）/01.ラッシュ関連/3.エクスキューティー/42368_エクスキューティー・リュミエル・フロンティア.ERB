@@ -39,6 +39,8 @@ SELECTCASE 参照先
 		RETURN 500
 	CASE "성별"
 		RETURN 牝性
+	CASE "連動ID"
+		RETURN 2368
 ENDSELECT
 
 RETURN 0
@@ -98,18 +100,19 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
 	CALL CARD_EX_CHECK(듀얼리스트,42368)
 	SIF RESULT == 1
 		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
 	CALL FULLRESET
-	효과範囲필드 = 1
-효과条件名前 = 엑스큐티 류미엘
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-효과条件名前 = 엑스큐티 릴리우스
+	효과範囲EX덱 = 1
+	효과条件名前 = 엑스큐티 류미엘 프론티어
+	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

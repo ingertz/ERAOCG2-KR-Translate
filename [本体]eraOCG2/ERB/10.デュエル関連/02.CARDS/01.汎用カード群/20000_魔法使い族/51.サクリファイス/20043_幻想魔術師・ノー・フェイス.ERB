@@ -1,0 +1,137 @@
+﻿@CARDNAME_20043,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 환상마술사 노페이스
+	CASE "略称"
+		RESULTS = 환상마술사 무면
+	CASE "カテゴリ"
+		RESULTS:0 = 환술사
+	CASE "検索皇カテゴリ"
+		RESULTS = 새크리파이스
+ENDSELECT
+
+
+@CARD_20043(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 1400
+	CASE "추가日"
+		RETURN 2551006
+ENDSELECT
+
+
+@CARD_EXPLANATION_20043(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：자신フィールドの「새크리파이스」モンスターが戦闘・효과で破壊された場合に발동できる。
+PRINTL 손패・묘지のこのカードを특수소환する。
+CALLFORM CARD_ABLE(2,戦破壊→묘지)
+PRINTL ②：このカードがフィールドから묘지へ送られた場合に발동できる。
+PRINTL 자신の묘지から「새크리파이스」モンスター１体を소환条件を無視して특수소환する。
+
+
+@CARDCAN_20043(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,20043)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF !GROUPMATCH(ゾーン,"손패","묘지")
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,20043)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,20043,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 새크리파이스
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_2(듀얼리스트,20043)
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊","リリース")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 새크리파이스
+	효과条件소환可 = 1
+	효과条件特不無視 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_20043(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20043,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		IF ゾーン == "손패"
+			효과範囲손패 = 1
+		ELSEIF ゾーン == "묘지"
+			효과範囲묘지 = 1
+		ENDIF
+		효과条件名前 = 환상마술사 노페이스
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20043,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 새크리파이스
+		효과条件特不無視 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

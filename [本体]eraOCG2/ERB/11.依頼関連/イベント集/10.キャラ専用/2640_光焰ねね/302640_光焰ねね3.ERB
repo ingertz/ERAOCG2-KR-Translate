@@ -1,0 +1,338 @@
+@IRAI_EVENT_302640(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2640-03)シャドールの試練
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL
+		PRINTL ねねが新しい덱【シャドール】の使い方に悩んでいる。
+		PRINTL 彼女と特訓デュエルを行い、덱の完成度を高めてあげよう。
+		PRINTL
+		PRINTL 報酬：5000DP
+	CASE "条件"
+		SIF 依頼_完了횟수:202640 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2640):호감도 < 1000
+            RESULTS = 호감도が不足しています
+            RETURN 1
+        ENDIF
+		IF MARK:NO_TO_CHARANUM(2640):반발각인 > 0
+			RESULTS = 怒っているようです。분노が収まるまで待ちましょう。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_302640(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2640)
+
+IF 依頼_달성상황 == 0
+	; 自宅での導入（即時開始）
+	PRINTFORML 玄関のチャイムが鳴った。
+	PRINTFORMW 扉を開けると、どこか決意を宿した%CALLNAME:이벤트主%が立っている。
+	PRINTFORML 「%CALLNAME:MASTER%……少し、時間いいかな？」
+	PRINTFORMW %CALLNAME:이벤트主%は小さく頭を下げ、リビングへと通された。
+	PRINTFORML 「あなたにだけは、本当のことを話したいの」
+	PRINTFORMW 「最近、謎の人から【シャドール】の덱を託されたんだ。でも、上手く使いこなせなくて……」
+	PRINTFORML 「この덱には、なにか“秘密”がある気がする」
+	PRINTFORMW 「怖いけど……%CALLNAME:MASTER%となら、向き合えるかもしれない」
+	PRINTFORML %CALLNAME:이벤트主%は手にしたカードをぎゅっと握りしめ、あなたを真っ直ぐに見つめた。
+	PRINTFORMW 「お願い。特訓、付き合ってくれる？」
+	PRINTL
+	PRINTL [0] - 「一緒に掴もう、シャドールの真価」
+	PRINTL [1] - 「無理はしない。少しずつ慣れていこう」
+	PRINTL [2] - 黙って頷き、手を差し伸べる
+	BINPUT
+	IF RESULT == 0
+		PRINTFORML あなたは力強く頷き、%CALLNAME:이벤트主%の手元の덱ケースをそっと支えた。
+		PRINTFORMW %CALLNAME:이벤트主%の頬に安堵と高揚が混ざった笑みが灯る。
+		CALL EVENT_FAVUP(이벤트主,150)
+		依頼_進行보존:302640 = 1
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは焦らず段階を踏むべきだと伝える。
+		PRINTFORMW %CALLNAME:이벤트主%は深呼吸し、「うん、隣にいてね」と小さく頷いた。
+		CALL EVENT_FAVUP(이벤트主,50)
+		依頼_進行보존:302640 = 2
+	ELSE
+		PRINTFORML あなたは言葉より先に行動で示した。
+		PRINTFORMW 手を差し出すと、%CALLNAME:이벤트主%は迷いを振りほどくようにその手を取った。
+		CALL EVENT_FAVUP(이벤트主,100)
+		依頼_進行보존:302640 = 3
+	ENDIF
+	PRINTFORML 「……ありがとう」
+	PRINTFORMW 「それじゃ、リビングで始めよう。%CALLNAME:MASTER%がいてくれるなら、きっと大丈夫」
+	依頼_달성상황 ++
+	; 次フェーズの場所（自宅リビングで続行）
+	依頼_場所 = 場所_リビング
+ELSEIF 依頼_달성상황 == 1
+	; デュエル開始と中盤演出
+	PRINTFORML %CALLNAME:이벤트主%はデュエルディスクを起動し、静かに構えを取る。
+	PRINTFORMW 「見ててね。私も、この덱も、もう逃げないから」
+	PRINTFORML 彼女の周囲で、どこか影が揺らめいた気がした。
+	PRINTFORMW あなたは胸のうちで覚悟を固め、対峙する。
+	PRINTFORML
+	PRINTFORMW 「デュエル、開始！」
+
+	TARGET = 이벤트主
+	CALL CHOICE_DUEL_TYPE(302640)
+
+	; 勝ち負け不問
+	; デュエル後の展開
+	PRINTFORML %CALLNAME:이벤트主%の【シャドール】が、戦いの最中に真価を垣間見せた。
+	PRINTFORMW 同時に、彼女の身の回りで小さな不具合や不運が連鎖する。
+	PRINTFORML 「やっぱり……私の不運、ただの体質じゃないのかも」
+	PRINTFORMW 「この力の副作用……そんな感じがするの」
+	PRINTFORML あなたは彼女の不安を受け止め、落ち着くように合図する。
+	PRINTFORMW %CALLNAME:이벤트主%は胸に手を当て、そっと目を閉じた。
+
+	IF 依頼_進行보존:302640 == 1
+		PRINTFORML 「あなたの言葉が、背中を押してくれた」
+		PRINTFORMW 「怖いけど……あなたがいるなら進める。ね、もう少し付き合って」
+	ELSEIF 依頼_進行보존:302640 == 2
+		PRINTFORML 「焦らないって約束、守れた気がする」
+		PRINTFORMW 「このペースなら、ちゃんと자신と덱に向き合えるよ」
+	ELSE
+		PRINTFORML 「何も言わなくても、伝わってくるんだ」
+		PRINTFORMW 「あなたが隣にいるだけで、怖さが少しずつ薄れていく」
+	ENDIF
+
+	CALL EVENT_FAVUP(이벤트主,100)
+	PRINTFORML 「%CALLNAME:MASTER%……ありがとう」
+	PRINTFORMW 「あなたがいてくれるなら、この力とも向き合える。そう思えた」
+	PRINTFORML そう言って、%CALLNAME:이벤트主%ははにかみながら深く一礼した。
+	PRINTFORMW 二人の間に、確かな信頼の温度が宿る。
+
+	CALL EVENT_TIMER(30)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_302640
+CALL DP_GET(5000)
+
+@IRAI_DECK_302640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+SIF 듀얼리스트 == "상대"
+	RETURN 302640
+
+; デュエル開始時演出
+@IRAI_DUEL_INTRO_302640
+PRINTFORML
+PRINTFORML ねね「影が囁く……でも、私は私。%CALLNAME:MASTER%が教えてくれたから」
+PRINTFORML ねね「シャドールの真価、ここで見せる！」
+PRINTFORMW 
+
+@DUELDECK_302640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 11830
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 11830
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 11831
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 11831
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20351
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20351
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20352
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20352
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 11821
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 11821
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61830
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61830
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 172931
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 172931
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 172931
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61831
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61831
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70016
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81834
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81835
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 1830
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1830
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1831
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1831
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41832
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41832
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41832
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50950
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 53000
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2049
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2049
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41255
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56050
+
+
+
+@CARDNAME_172931,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 強欲なサイコロ
+	CASE "略称"
+		RESULTS = 強欲なサイコロ
+	CASE "カテゴリ"
+		RESULTS:0 = ダイス
+ENDSELECT
+
+
+@CARD_172931(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_172931(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALL CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：サイコロを１つ振り、その出目によって以下の효과を適用する。
+PRINTL ●１：묘지から「強欲なサイコロ」以外の「ダイス」カード１枚を選んで손패に加える。
+PRINTL ●２，３：덱から１枚ドローして、손패を１枚묘지に送る。
+PRINTL ●４，５：덱から１枚ドローする。
+PRINTL ●６：덱から２枚ドローする。
+PRINTL 
+
+@CARDCAN_172931(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72931)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,72931)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_172931(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC サイコロ結果
+#DIM DYNAMIC 攻撃力修正
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;EX덱から直出し
+;参考：마법族の里、フラワリング・エトワール、ハーピィ・チャネラー
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72931,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL DICE_ROLL_NENE(듀얼리스트,1)
+		サイコロ結果 = RESULT
+		PRINTFORMW 出た目は……{サイコロ結果}だ！
+
+		IF サイコロ結果 == 1
+		PRINTFORMW 回収효과だ！
+			CALL FULLRESET
+			효과条件カテゴリ = ダイス
+			효과条件固名前 = 強欲なサイコロ
+			CALL CARD_ADD_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		ELSEIF サイコロ結果 == 3 || サイコロ結果 == 2
+			PRINTFORMW １枚ルーティングだ！
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+			CALL FULLRESET
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		ELSEIF サイコロ結果 == 4 || サイコロ結果 == 5
+			PRINTFORMW １枚ドローだ！
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ELSEIF サイコロ結果 == 6
+			PRINTFORMW ２枚ドローだ！！！
+			CALL CARDDRAW_BASIC(듀얼리스트,2)
+		ENDIF 
+	ENDIF
+ENDIF
+
+@DICE_ROLL_NENE(듀얼리스트,ダイス数)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC ダイス数
+#DIM DYNAMIC ダイス結果
+#DIM DYNAMIC ダイス合計
+#DIM DYNAMIC ロール数
+
+PRINTFORML ダイスロール
+
+$RE_ROLL
+PRINTL 何かの力を感じる…
+ダイス結果 = 6
+PRINTL ┌───┐
+PRINTL │●●●│
+PRINTL │＜◎＞│
+PRINTL │●●●│
+PRINTL └───┘
+PRINTL ！？！？！？！？
+PRINTL と、とにかく結果を6で処理しようかな？
+
+SETVAR @"%듀얼리스트%_ダイス使用_保", 1
+ダイス合計 += ダイス結果
+ロール数 ++
+CALL CARD_FIN_DICE_SET(듀얼리스트,ダイス結果)
+
+PRINTW
+SIF ロール数 < ダイス数
+	GOTO RE_ROLL
+
+RESULT:1 = ダイス合計
+RETURN ダイス結果

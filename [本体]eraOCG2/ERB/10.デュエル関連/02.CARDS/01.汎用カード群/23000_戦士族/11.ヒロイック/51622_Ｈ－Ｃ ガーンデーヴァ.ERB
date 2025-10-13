@@ -1,0 +1,156 @@
+﻿@CARDNAME_51622,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Ｈ－Ｃ　간디바
+	CASE "略称"
+		RESULTS = HC간디바
+	CASE "カテゴリ"
+		RESULTS:0 = 히로익
+ENDSELECT
+
+
+@CARD_51622(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251003
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_51622(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 5
+素材条件レベル = 4
+素材条件종족 = 전사족
+素材条件数自由 = 1
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,51622) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_51622(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 전사족レベル４モンスター×２体以上
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：상대フィールドにレベル４以下のモンスターが특수소환された場合、このカードのＸ素材を１つ取り除いて발동できる。
+PRINTL そのモンスターを破壊する。
+CALLFORM CARD_ABLE(0,발동誘発)
+PRINTL ②：상대の함정カードの효과が발동した時、このカードのＸ素材を１つ取り除いて발동できる。
+PRINTL その발동を無効にして破壊する。
+PRINTL その後、このカードの攻撃力は５００アップする。
+
+@CARDCAN_51622(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 효과先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51622)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,51622)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF FINAL_SUMMON_TARGET(듀얼리스트,1) == 5 
+		RETURN 0
+	효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+	SIF GETVAR(@"%対面者%_MZ_星:효과先") > 4
+		RETURN 0
+	TRYCALLFORM CARD_{GETVAR(@"%対面者%_필드:효과先")},"종류"
+	SIF GROUPMATCH(RESULT,엑시즈,링크)
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = 함정全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_51622(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51622,1,X消費1)
+	IF RESULT == 0
+		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+	ENDIF
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51622,0,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",효과先,"묘지")
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"永攻",500)
+	ENDIF
+ENDIF

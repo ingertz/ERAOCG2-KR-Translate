@@ -1,0 +1,146 @@
+@CARDNAME_29680,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 【판티지소날레】카자노 히오리
+	CASE "略称"
+		RESULTS = ＦＳ히오리
+	CASE "カテゴリ"
+		RESULTS:0 = 일루미네이션 스타즈
+		RESULTS:1 = 카자노 히오리
+		RESULTS:2 = 샤이니 컬러즈
+	CASE "맥시멈"
+		RESULTS = 일루미네 파츠
+ENDSELECT
+
+@CARD_29680(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 4661
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_29680(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このモンスターが소환・특수소환した場合に발동できる。
+PRINTL 손패を１枚捨てて、덱からこの효과で捨てたカード名以外の「일루미네이션 스타즈」마법・함정カード１枚を손패に加える。
+CALL CARD_ABLE(11,발동誘発)
+PRINTL ②：このカードがフィールドに表側표시で存在する限り１度だけ、
+PRINTL 상대の마법・함정カードの효과が발동した場合に、このカードが맥시멈状態なら발동できる。
+PRINTL その효과を無効にする。
+
+@CARDCAN_29680(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29680)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,29680)
+		RETURN 0
+	SIF 손패数(듀얼리스트) < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 일루미네이션 스타즈
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	CALL CARDCAN_29680(듀얼리스트,맥시멈条件,ゾーン,場所)
+	SIF RESULT == 0
+		RETURN 0
+	CALL FULLRESET
+	; 효과条件종류 = モン全般
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 맥시멈条件
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL CARD_CHECK_MAXX(듀얼리스트,ゾーン,場所,"일루미네 코어")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_29680(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29680,1)
+	IF RESULT == 0
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			選択カードID = RESULT:1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 일루미네이션 스타즈
+			효과条件固ID = 選択カードID
+			효과条件종류 = 마함全般
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29680,11)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+		RETURN 1
+	ENDIF
+	RETURN 0
+ELSEIF 종류 == 맥시멈条件
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+ENDIF

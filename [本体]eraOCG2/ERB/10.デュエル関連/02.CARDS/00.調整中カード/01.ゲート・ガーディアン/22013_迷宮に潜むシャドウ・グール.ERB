@@ -1,0 +1,126 @@
+﻿@CARDNAME_22013,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미궁에 숨은 섀도우 구울
+	CASE "略称"
+		RESULTS = 섀도우 구울
+	CASE "カテゴリ"
+		RESULTS:0 = 게이트 가디언
+ENDSELECT
+
+
+@CARD_22013(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 1300
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_22013(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,손패起動)
+PRINTL ①：このカードを손패から捨てて발동できる。
+PRINTL 덱から「래비린스 월」カード１枚を손패に加える。
+CALLFORM CARD_ABLE(2,攻撃時誘発)
+PRINTL ②：상대モンスターが戦闘を行う攻撃宣言時、フィールドが「래비린스 월」の場合に발동できる。
+PRINTL 묘지のこのカードを제외し、その상대モンスターを破壊する。
+
+
+@CARDCAN_22013(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,22013)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,22013)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 래비린스 월
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF 발동済_2(듀얼리스트,22013)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF GETVARS(@"자신_フィールド名") != "래비린스 월" && GETVARS(@"상대_フィールド名") != "래비린스 월"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_22013(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성,2
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22013,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 래비린스 월
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22013,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘場所(듀얼리스트,1),"묘지")
+		ENDIF
+	ENDIF
+ENDIF
+
+

@@ -1,0 +1,780 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;DUEL用구상
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+
+;カードID == (カードの番号)　でそのカード専用の구상が流せる
+;カード番号は 10.デュエル関連/02.CARDS 内に入っているため、必要に応じて参照するように
+;例：	IF カードID == 1000
+;			PRINTFORMW 「ブラックマジシャンガールを소환！」
+;		ENDIF
+
+;==================================================
+;0,デュエルスタート！
+;==================================================
+@M_KOJO_DUEL_K2614_0(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「よーし、絶対負けないからな！」
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「ふっ……　キミに勝てるかな？」
+				RESETCOLOR
+			ENDIF
+		CASE 2
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「気を付けろ遊馬、상대は相当な手練れの様だ。」
+				RESETCOLOR
+			ENDIF
+			PRINTFORMW 「へへ、ここは俺に任せろって！」
+		CASE 3
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「成長したキミのデュエルタクティクス、見せてもらおうか。」
+				RESETCOLOR
+			ENDIF
+			PRINTFORMW 「ああ！　油断なんてしないから安心しな！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;1,モンスター소환
+;例：%カード名%を소환！
+;==================================================
+@M_KOJO_DUEL_K2614_1(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF カードID == 23550
+		PRINTFORMW 「行くぜ！　俺は손패から%カード名%を소환！」
+	ELSEIF カードID == 31550
+		PRINTFORMW 「%カード名%を소환するぜ！」
+		IF CFLAG:MASTER:듀얼레이트 >= 6000
+			SETCOLOR C_AQUA
+			PRINTFORMW 「%カード名%を攻撃표시で……？　何か考えがあるのか……？」
+			RESETCOLOR
+		ENDIF
+	ELSEIF カードID == 23554
+		PRINTFORMW 「行っけぇ！%カード名%ォ！」
+	ELSEIF カードID == 23556
+		PRINTFORMW 「来い、%カード名%！　へへ、ちっさいホープみたいだぜ！」
+	ELSEIF カードID == 51539
+		PRINTFORMW 「来い、希望皇ホープ！　……ってなんか違うぅ！？」
+		IF CFLAG:MASTER:듀얼레이트 >= 6000
+			SETCOLOR C_AQUA
+			PRINTFORMW 「これが野球というモノか……？　実に興味深い……」
+			RESETCOLOR
+		ENDIF
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「%カード名%を소환するぜ！」
+			CASE 2
+				PRINTFORMW 「行っけぇ！　%カード名%！」
+			CASE 3
+				PRINTFORMW 「来い、%カード名%を소환だ！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;2,モンスター특수소환
+;==================================================
+@M_KOJO_DUEL_K2614_2(カードID,소환出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 소환出処
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF カードID == 23550
+		PRINTFORMW 「行くぜ！　%カード名%を특수소환！」
+	ELSEIF カードID == 1110
+		PRINTFORMW 「よっしゃあ！　来い、%カード名%！」
+	ELSE
+		SELECTCASE 소환出処
+			;손패から
+			CASE 召種손패
+				PRINTFORMW 「손패から！　%カード名%を특수소환！」
+			;마법함정ゾーンから。　キリ番・シェイプシスターなどを出す場合
+			CASE 召種마함
+				PRINTFORMW 「마법함정の%カード名%を특수소환だ！」
+			;덱から
+			CASE 召種덱
+				PRINTFORMW 「덱から%カード名%を특수소환するぜ！」
+			;EX덱から
+			CASE 召種EX덱
+				PRINTFORMW 「EX덱から%カード名%を특수소환！」
+			;묘지から
+			CASE 召種묘지
+				PRINTFORMW 「蘇れ、%カード名%！」
+			;제외状態から
+			CASE 召種제외
+				PRINTFORMW 「제외されている%カード名%を특수소환！」
+			;主にトークン生成
+			CASE 10
+				PRINTFORMW 「現れろ、%カード名%！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+;==================================================
+;3,특수モンスター소환
+;==================================================
+@M_KOJO_DUEL_K2614_3(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC カード種
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+
+TRYCALLFORM CARD_{カードID}("종류")
+カード種 = RESULT
+
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE カード種
+		;의식소환
+		CASE 의식
+			PRINTFORMW 「モンスターを의식소환！　行くぜ、%カード名%！」
+		;융합소환
+		CASE 융합
+			PRINTFORMW 「%カード名%を융합소환！」
+		;싱크로소환
+		CASE 싱크로
+			PRINTFORMW 「%カード名%を싱크로소환！」
+		;엑시즈소환
+		CASE 엑시즈
+			IF カードID == 58039
+				PRINTFORMW 「よっしゃあ！　俺は２体のモンスターでオーバーレイネットワークを構築！　엑시즈소환！
+				PRINTFORMW 　俺達の戦いはここから始まる、白き翼に望みを託せ！　現れろＮｏ.３９！　光の使者、希望皇ホープ！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「ふっ、ホープを出すとは……　どうやらやる気は十分の様だな。」
+					RESETCOLOR
+				ENDIF
+			ELSEIF カードID == 58139
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「このカードは希望皇ホープとオーバーレイユニットを一体とし、自らを進化させる！　行け、遊馬！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 「かっとビングだ！　俺は希望皇ホープでオーバーレイネットワークを再構築！　カオス・엑시즈・チェンジ！
+				PRINTFORMW 　現れよ、ＣＮｏ.３９！　混沌を光に変える使者、希望皇ホープレイ！」
+			ELSEIF カードID == 58244
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「行くぞ、遊馬！　ランクアップだ！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 「ああ！　俺は希望皇ホープでオーバーレイネットワークを再構築！　カオス・엑시즈・チェンジ！
+				PRINTFORMW 　混沌の力まといて승리を目指せ！　進化した勇姿が今ここに現れる！　現れろ、ＣＮｏ.３９ 希望皇ホープレイＶ！」
+
+			ELSEIF カードID == 58247
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「行くぞ、遊馬！　ランクアップだ！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 「行くぜ！　俺は希望皇ホープでオーバーレイネットワークを再構築！　カオス・엑시즈・チェンジ！
+				PRINTFORMW 　現れろ、ＣＮｏ.３９！　未来に輝く승리をつかむ！　重なる思い、つながる心が世界を変える！　希望皇ホープレイ・ヴィクトリー！」
+
+			ELSEIF カードID == 58239
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「そのカードを使うのか、遊馬！　どうやら本気の様だな！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 「行くぜ、アストラル！　俺は希望皇ホープでオーバーレイネットワークを再構築！　ランクアップ・엑시즈・チェンジ！
+				PRINTFORMW 　限界突破だ、希望皇ホープ！　現れろ、Ｎｏ.３９！
+				PRINTFORMW 　人が希望を越え夢を抱く時、遥かなる彼方に、新たな未来が現れる！　限界を超え、その手につかめ！　希望皇ビヨンド・ザ・ホープ！」
+			ELSEIF カードID == 58245
+				PRINTFORMW 「これが進化の可能性だ！　俺は希望皇ホープでオーバーレイネットワークを再構築！　ランクダウン・엑시즈・チェンジ！
+				PRINTFORMW 　現れろ！　ランク１、Ｎｏ.３９！　希望の光、進化へと突き進む！　原初の記憶を解き放て、天衣無縫の力！　希望皇ホープルーツ！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「ホープルーツか……　ふっ、まさしくキミらしいカードだな。」
+					RESETCOLOR
+				ENDIF
+			ELSEIF カードID == 58000
+				PRINTFORMW 「行くぜ！　俺は２体のモンスターでオーバーレイネットワークを構築！　엑시즈・チェンジ！
+				PRINTFORMW 　今こそ現れろ、ＦＮｏ.０！
+				PRINTFORMW 　天馬、今ここに解き放たれ、縦横無尽に未来へ走る！　これが俺の、天地開闢！　俺の未来！　かっとビングだ、俺！　未来皇ホープ！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「未来皇……　キミが生み出した、キミにそっくりなカードだよ。」
+					RESETCOLOR
+				ENDIF
+			ELSEIF カードID == 58200
+				PRINTFORMW 「俺は未来皇ホープでオーバーレイネットワークを再構築！　엑시즈・チェンジ！　行くぜ、アストラル！
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「共に行くぞ、遊馬！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 　天馬！　熱き絆で結ばれし時、光の奇跡で希望の未来を創造する！　これがオレたちの天地開闢！
+				PRINTFORMW 　かっとビングだ！ ＦＮｏ.０！未来皇ホープ・ゼアル！」
+			ELSEIF カードID == 58240
+				PRINTFORMW 「俺は希望皇ホープでオーバーレイネットワークを再構築！　シャイニング・엑시즈・チェンジ！
+				PRINTFORMW 　一粒の希望よ！　今、電光石火の雷となって闇から飛び立て！　現れろ、ＳＮｏ.３９ 希望皇ホープ・ザ・ライトニング！」
+			ELSEIF カードID == 58242
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「遊馬、獣装合体だ！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 「俺は希望皇ホープでオーバーレイネットワークを再構築！　カオス・엑시즈・チェンジ！
+				PRINTFORMW 　闘志がまといし その衣、とどろく咆哮 大地を揺るがし！ たばしる迅雷 神をも打ち砕く！　獣装合体！　ライオ・ホープレイ」
+			ELSEIF カードID == 58243
+				PRINTFORMW 「行くぜ、ホープ！　アーマード・엑시즈・チェンジ！　現れろ、ＦＡ－ホープ・レイ・ランサー！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「後でシャークにお礼を言わねばならないようだな？」
+					RESETCOLOR
+				ENDIF
+			ELSEIF カードID == 58099
+				PRINTFORMW 「ハイパー・ランクアップ・엑시즈チェンジ！　現れろＮｏ.９９！
+				PRINTFORMW 　我が半身の記憶、今ひとつの希望となりて、限界を越える光となれ！　これが、未来を掴む新たな力！　希望皇ホープドラグナー！」
+			ELSEIF カードID == 58011
+				PRINTFORMW 「現れよＮｏ.１１！　幻惑の瞳を持つ支配者、ビッグ・アイ！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「ビッグ・アイは상대モンスターのコントロールを奪う強力なモンスターだ。　キミにうまく使いこなせるか？」
+					RESETCOLOR
+				ENDIF
+			ELSEIF カードID == 58022
+				PRINTFORMW 「現れろ、Ｎｏ.２２！　不乱健！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「非常に高い攻撃力と強力な妨害효과を持つモンスターだな。　효과の使いどころは大丈夫か？」
+					RESETCOLOR
+				ENDIF
+			ELSEIF カードID == 58024
+				PRINTFORMW 「現れろ、Ｎｏ.２４！　竜血鬼ドラギュラス！」
+			ELSEIF カードID == 58050
+				PRINTFORMW 「現れろ、Ｎｏ.５０！　ブラック・コーン号！」
+			ELSEIF カードID == 58054
+				PRINTFORMW 「現れろ、Ｎｏ.５４！
+				PRINTFORMW 　熱き闘志の雄叫びが眠れる魂すらも震わせる！　反骨の闘士ライオンハート！」
+			ELSEIF カードID == 58055
+				PRINTFORMW 「現れろ、Ｎｏ.５５！　ゴゴゴゴライアス！」
+			ELSEIF カードID == 58096
+				PRINTFORMW 「あんまり出したくはねぇんだけど……　現れろ、Ｎｏ.９６！
+				PRINTFORMW 　漆黒の闇からの使者、ブラック・ミスト！」
+			ELSEIF カードID == 58100
+				PRINTFORMW 「宇宙創造の鍵、今こそ闇の扉を開き、未来を、その咆哮とともに導け！
+				PRINTFORMW 　降臨せよ、Ｎｏ.１００ ヌメロン・ドラゴン！」
+			ELSEIF カードID == 58101
+				PRINTFORMW 「シャーク……　お前の力、借りるぜ！　現れろ、Ｎｏ.１０１！
+				PRINTFORMW 　満たされぬ魂を乗せた方舟よ、光届かぬ深淵より浮上せよ！　Ｓ・Ｈ・Ａｒｋ Ｋｎｉｇｈｔ！」
+			ELSEIF カードID == 58104
+				PRINTFORMW 「行くぜベクター！　いでよ、Ｎｏ.１０４！　そのまばゆき聖なる光で、愚かな虫けら共をひざまずかせよ！　仮面魔踏士シャイニング！」
+			ELSEIF カードID == 58105
+				PRINTFORMW 「アリト！　お前の力を借りるぜ！　現れろ、Ｎｏ.１０５！　ＢＫ 流星のセスタス！」
+			ELSE
+				PRINTFORMW 「엑시즈소환！　%カード名%！」
+			ENDIF
+		;링크소환
+		CASE 링크
+			PRINTFORMW 「링크소환！　%カード名%！」
+		;遊戯王作品以外のEXのモンスター
+		CASE 초차원
+			PRINTFORMW 「초차원展開、%カード名%だ！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;4,효과仕様宣言
+;==================================================
+@M_KOJO_DUEL_K2614_4(カードID,발동出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 발동出処
+#DIM DYNAMIC カード種
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE 발동出処
+		;손패발동
+		CASE 1
+			IF カードID == 70556
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「そのカードだ！　行け、遊馬！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 「俺は！　손패から%カード名%を발동！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「このカードは자신の場の希望皇ホープを進化させる！」
+					RESETCOLOR
+				ENDIF
+			ELSEIF カードID == 75550
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「よし、今だ遊馬！」
+					RESETCOLOR
+				ENDIF
+				PRINTFORMW 「モンスターの攻撃が無効になったこの瞬間、손패から%カード名%を발동！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「このカードはモンスターの攻撃が無効になったとき、そのモンスターの攻撃力を倍にしてもう一度攻撃ができる！」
+					RESETCOLOR
+				ENDIF
+			ELSE
+				PRINTFORMW 「손패から%カード名%の효과を발동するぜ！」
+			ENDIF
+		;필드발동
+		CASE 2
+				PRINTFORMW 「場の%カード名%の효과を발동！」
+		;마함발동
+		CASE 3
+			IF カード種 == 速攻마법
+				PRINTFORMW 「速攻마법！　%カード名%！」
+			ELSEIF カード種 == 지속마법
+				PRINTFORMW 「지속마법、%カード名%を발동！」
+			ELSEIF カード種 == フィールド
+				PRINTFORMW 「フィールド마법、%カード名%だ！」
+			ELSEIF カード種 == 通常함정
+				PRINTFORMW 「リバースカードオープン！　%カード名%！」
+			ELSE
+				PRINTFORMW 「%カード名%の효과を발동！」
+			ENDIF
+		;묘지발동
+		CASE 4
+				PRINTFORMW 「묘지の%カード名%の효과を발동！」
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;5,효과발동
+;==================================================
+@M_KOJO_DUEL_K2614_5(カードID,효과종류)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 발동出処
+#DIM DYNAMIC 효과종류
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;無効にされた場合
+	IF 효과종류 == -1
+		PRINTFORMW 「何っ！？」
+	;それ以外
+	ELSEIF カードID == 58039
+		PRINTFORMW 「モンスターの攻撃宣言時、自身の素材を一つ使用し、その攻撃を無効にする！」
+	ELSEIF カードID == 58139 && 효과종류 == 필드起動
+		PRINTFORMW 「自身の素材を一つ使い、攻撃力を５００ポイントアップさせ、更に상대の場のモンスター１体の攻撃力を１０００下げる！
+		PRINTFORMW 　オーバーレイ・チャージ！」
+	ELSEIF カードID == 58244 && 효과종류 == 필드起動
+		PRINTFORMW 「상대の場のモンスター１体を破壊し、その攻撃力分のダメージを与える！　Ｖブレードシュート！」
+
+	ELSEIF カードID == 58247
+		IF  효과종류 == EX소환時
+			PRINTFORMW 「묘지にＲＵＭが存在する상황でこのカードがＸ소환されたとき、フィールドのカード효과は無効となる！」
+		ELSEIF 효과종류 ==攻撃時誘発
+			PRINTFORMW 「このカードが戦闘を行う時、自身の素材を一つ使うことでターン終了時まで、このカードの攻撃力はその상대モンスターの攻撃分アップする！
+			PRINTFORMW 　更に！　ホープを素材としている場合は손패、덱、묘지からＺＷ１枚を装備出来る！　ヴィクトリー・チャージ！」
+		ENDIF
+
+	ELSEIF カードID == 582399 && GROUPMATCH(효과종류,필드起動,フリー誘発)
+		PRINTFORMW 「자신の場のモンスター１体を제외し、묘지のホープを특수소환！　更に、ライフを１２５０회복する！」
+	ELSEIF カードID == 58240 && 효과종류 == 攻撃時誘発
+		PRINTFORMW 「バトル終了時まで自身の攻撃力を５０００にする！　ライトニング・チャージ！」
+	ELSEIF カードID == 58000
+		PRINTFORMW 「バトルフェイズ終了時まで戦った상대のコントロールを得る！」
+	ELSEIF カードID == 58100 && 효과종류 == 攻撃時誘発
+		PRINTFORMW 「そうだ、このカードだ！」
+		IF CFLAG:MASTER:듀얼레이트 >= 6000
+			SETCOLOR C_AQUA
+			PRINTFORMW 「このカードは자신の손패とフィールドにカードがない場合、상대の攻撃時にＥＸ덱か묘지より現れる奇跡の龍！」
+			RESETCOLOR
+		ENDIF
+		PRINTFORMW 「宇宙創造の鍵、今こそ闇の扉を開き、未来を、その咆哮とともに導け！
+		PRINTFORMW 　降臨せよ、Ｎｏ.１００ ヌメロン・ドラゴン！」
+	ELSEIF カードID == 51620 && 효과종류 == 필드起動
+		PRINTFORMW 「自身の攻撃力を、상대ターン終了時まで倍にする！」
+
+	ELSE
+		SELECTCASE RAND:2 + 1
+			CASE 2			
+				PRINTFORMW 「いっけぇ！！　%カード名%！」
+			CASE 1
+				PRINTFORMW 「これでどうだぁ！！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+;==================================================
+;6,カードセット
+;==================================================
+@M_KOJO_DUEL_K2614_6(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「カードをセット！」
+		CASE 2			
+			PRINTFORMW 「俺はカードを１枚セット！」
+		CASE 3
+			PRINTFORMW 「俺は함정カードをセット！」
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「遊馬、一々宣言しなくていい。」
+				RESETCOLOR
+			ENDIF
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;7,カードドロー
+;==================================================
+@M_KOJO_DUEL_K2614_7(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「ドロー！」
+		CASE 2			
+			PRINTFORMW 「行くぜ……！　ドローッ！！！」
+		CASE 3
+			PRINTFORMW 「最強デュエリストのデュエルは全て必然！　ドローカードさえもデュエリストが創造する！」
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「遊馬、流石にその力を使うのはずるいと思うぞ。」
+				RESETCOLOR
+			ENDIF
+			PRINTFORMW 「……そうだよな、자신の力で戦うって言ったもんな！！　普通のドロー！！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;10,ダメージ反応！（ダメージ）
+;==================================================
+@M_KOJO_DUEL_K2614_10(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE ダメージ量
+		;ダメージが０の時
+		CASE 0
+			PRINTFORMW 「ぐ……っ！　ってあれ？　ダメージ受けてないじゃん！？」
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「油断するな遊馬、何か考えがあるのかもしれない。」
+				RESETCOLOR
+			ENDIF
+		;１～１９９９の時、小ダメージ
+		CASE 1 TO 1999
+			PRINTFORMW 「く……っ！　まだまだかすり傷だぜ！」
+		;２０００～３９９９の時、結構なダメージ
+		CASE 2000 TO 3999
+			PRINTFORMW 「ぐうううっ！」
+		;４０００～７９９９の時、超大ダメージ
+		CASE 4000 TO 7999
+			PRINTFORMW 「うわああ～～～っ！！」
+			IF ライフ_상대 >= 0
+				PRINTFORMW 「まだだ、まだ俺のライフは残っているぜ……！」
+			ELSE
+				PRINTFORMW 「だぁー！　ライフが無くなっちまったぁ！」
+			ENDIF
+		;８０００以上、基本即死
+		CASEELSE
+			PRINTFORMW 「うわああ～～～っ！！！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;11,ダメージ反応！(회복)
+;==================================================
+@M_KOJO_DUEL_K2614_11(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE ライフ_상대 
+		CASE 0 TO 4000
+			PRINTFORMW 「よし、ライフを회복したぜ！」
+		CASEELSE
+			PRINTFORMW 「ふぅー、危ねぇ危ねぇ！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;50,モンスターで攻撃
+;==================================================
+@M_KOJO_DUEL_K2614_50(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF カードID == 58039
+		PRINTFORMW 「行っけぇホープ！　ホープ剣・スラッシュ！」
+	ELSEIF カードID == 58139
+		PRINTFORMW 「行けホープレイ！　ホープ剣・カオス・スラッシュ！」
+	ELSEIF カードID == 58244
+		PRINTFORMW 「ホープレイVで攻撃！　ホープ剣・Vの字斬り！」
+	ELSEIF カードID == 58247
+		PRINTFORMW 「ホープレイ・ヴィクトリーで攻撃！　ホープ剣・ホープ剣・ダブル・ヴィクトリー・スラッシュ！」
+	ELSEIF カードID == 58239
+		PRINTFORMW 「輝け、希望の光！　ホープ剣・ビヨンド・スラッシュ！」
+	ELSEIF カードID == 58245
+		PRINTFORMW 「ホープ・ルーツで攻撃！　ホープ剣・ルーツ・スラッシュ！」
+	ELSEIF カードID == 58000
+		PRINTFORMW 「未来皇ホープの攻撃！　ホープ剣・フューチャー・スラッシュ」
+	ELSEIF カードID == 58200
+		PRINTFORMW 「行っけぇ、未来皇ホープ・ゼアル！　ホープ剣・フューチャーゼアル・スラッシュ」
+	ELSEIF カードID == 58240
+		PRINTFORMW 「行っけぇ、ホープ・ザ・ライトニング！　ホープ剣・ライトニング・スラッシュ！」
+	ELSEIF カードID == 58242
+		PRINTFORMW 「ライオ・ホープレイの攻撃！　ホープ剣・トリプル・カオススラッシュ！」
+	ELSEIF カードID == 58243
+		PRINTFORMW 「ホープ・レイ・ランサーの攻撃！　ホープ剣・ブラック・スラッシュ！」
+	ELSEIF カードID == 58099
+		PRINTFORMW 「ホープ・ドラグナーの攻撃！　ホープ剣・ユートピア・スラッシュ！」
+	ELSEIF カードID == 23170
+		PRINTFORMW 「行くぜ、銀河眼！　破滅のフォトン・ストリーム！」
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「%カード名%で攻撃！」
+			CASE 2
+				PRINTFORMW 「行っけぇ！　%カード名%！　攻撃だ！」
+			CASE 3
+				PRINTFORMW 「%カード名%で攻撃！」
+				IF CFLAG:MASTER:듀얼레이트 >= 6000
+					SETCOLOR C_AQUA
+					PRINTFORMW 「キミはもう少し警戒というものを覚えたほうが良い……」
+					RESETCOLOR
+				ENDIF
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;51,モンスター攻撃結果
+;==================================================
+@M_KOJO_DUEL_K2614_51(상황판정,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 상황판정
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SIF ARG:1 == 1
+		PRINTFORMW 「へへ、これでどうだ！？」
+
+	SELECTCASE 상황판정
+		;상대モンスター撃破
+		CASE 1
+			PRINTFORMW 「よっしゃあ見たか！　モンスターを破壊したぜ！」
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「あまり調子に乗っているとすぐに足元を掬われるぞ。」
+				RESETCOLOR
+			ENDIF
+		;자신にダメージ
+		CASE 2
+			PRINTFORMW 「～～～っ！　中々やるな！　こっちも負けてられないぜ！」
+		;相打ち
+		CASE 3
+			PRINTFORMW 「っ、相打ちか……！」
+		;ミラフォとかで戦闘前に除去？
+		CASE 4
+			PRINTFORMW 「なっ、何～っ！？」
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「だからあれ程警戒しろと言っただろう……」
+				RESETCOLOR
+			ENDIF
+		;ダイレクトアタック
+		CASE 5
+			PRINTFORMW 「よっしゃあ！　ダイレクトアタックだ！」
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;100,メインフェイズ移行
+;==================================================
+@M_KOJO_DUEL_K2614_100(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「メインフェイズ！」
+		CASE 2
+			PRINTFORMW 「えーと、メインフェイズに入るぜ！」
+		CASE 3
+			PRINTFORMW 「えーと、どうすっかなぁ……」
+			IF CFLAG:MASTER:듀얼레이트 >= 6000
+				SETCOLOR C_AQUA
+				PRINTFORMW 「遊馬、まずはメインフェイズに入ることを宣言するんだ。」
+				RESETCOLOR
+			ENDIF
+			PRINTFORMW 「おっとそうだった！　メインフェイズに入るぜ！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;101,ターン終了
+;==================================================
+@M_KOJO_DUEL_K2614_101(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		PRINTFORMW 「よし、これで俺はターンエンド！」
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		PRINTFORMW 「ターンエンドだ！　ライフは少ないが、まだまだ諦めてないぜ！」
+		IF CFLAG:MASTER:듀얼레이트 >= 6000
+			SETCOLOR C_AQUA
+			PRINTFORMW 「ふっ……　その意気だ、遊馬。」
+			RESETCOLOR
+		ENDIF
+	;それ以外
+	ELSE
+		PRINTFORM 「ターンを終了だ！」
+
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;102,メインフェイズ２に移行
+;==================================================
+@M_KOJO_DUEL_K2614_102(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:2
+		CASE 0
+			PRINTFORMW 「よし、メインフェイズ２に入るぜ。」
+		CASE 1
+			PRINTFORMW 「これで俺はバトルを終了するぜ。」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;103,バトルフェイズに移行
+;==================================================
+@M_KOJO_DUEL_K2614_103(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「バトルフェイズ！」
+ENDIF
+
+
+;==================================================
+;104,ターン開始時
+;==================================================
+@M_KOJO_DUEL_K2614_104(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		PRINTFORMW 「へへ、ライフもまだまだ十分残ってるぜ！　俺のターン！」
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		PRINTFORMW 「ピンチの時ほど燃えてくるってもんだぜ！　俺のターン！」
+	;それ以外
+	ELSE
+		PRINTFORMW 「俺のターン！」
+	ENDIF
+ENDIF

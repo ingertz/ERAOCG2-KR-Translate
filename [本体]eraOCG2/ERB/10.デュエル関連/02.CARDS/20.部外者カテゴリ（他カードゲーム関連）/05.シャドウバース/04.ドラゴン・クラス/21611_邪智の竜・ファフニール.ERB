@@ -1,0 +1,130 @@
+﻿@CARDNAME_21611,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 사악한 지혜의 용 파프니르
+	CASE "略称"
+		RESULTS = 파프니르
+	CASE "カテゴリ"
+		RESULTS:0 = 드래곤 클래스
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_21611(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2900
+	CASE "추가日"
+		RETURN 251004
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_21611(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードを소환する際のレベルは、現在のターンの数分下がる。
+PRINTL こうして소환する際、レベルが１以下である限り「進化」された状態で場に소환され、소환権を消費しない。
+CALLFORM CARD_ABLE(2,소환時)
+PRINTL ②：このカードが소환に成功した場合に발동する。
+PRINTL 상대フィールドのモンスターをすべて破壊する。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ③：１ターンに１度、상대の묘지のモンスター１体を選んで발동できる。
+PRINTL そのモンスターを자신フィールドに어둠속성モンスターとして특수소환する。
+PRINTL こうして특수소환されたモンスターは戦闘狂となる。
+
+@CARDCAN_21611(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21611)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 攻守変動
+	SIF ゾーン != "손패"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과소환
+	SIF GETVAR(@"%듀얼리스트%_手_一星:場所") < 9
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대묘지 = 1
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_21611(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 守備力修正
+
+IF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_HAND(듀얼리스트,"지정",場所,"一星",ターン数)
+ELSEIF 종류 == 효과소환
+	RETURN 2
+ELSEIF 종류 == 소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21611)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21611,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대묘지 = 1
+		효과추가종류:0 = 120 + 어둠속성
+		효과추가종류:1 = 40
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

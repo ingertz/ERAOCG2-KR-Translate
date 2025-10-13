@@ -1,0 +1,154 @@
+﻿@CARDNAME_51630,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 강귀 더 그레이트 오우거
+	CASE "略称"
+		RESULTS = 강귀 그레이트
+	CASE "カテゴリ"
+		RESULTS:0 = 강귀 
+ENDSELECT
+
+
+@CARD_51630(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	;효과モン/通常モン/의식/융합/싱크로/엑시즈/링크/초차원
+	CASE "종류"
+		RETURN 링크
+	;어둠속성/빛속성/땅속성/물속성/화염속성/바람속성
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 2600
+	CASE "守備力"
+		RETURN 0
+	;牝性/雄性があるよ
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+RETURN 0
+
+
+@CARDSUMMON_51630(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 3
+素材条件カテゴリ = 강귀 
+
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,51630) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_51630(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「강귀」モンスター２体以上
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,지속효과)
+PRINTL ①：このカードがモンスターゾーンに存在する限り、
+PRINTL 상대フィールドのモンスターの攻撃力は、そのモンスターの元々の守備力分ダウンする。
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ②：このカードが戦闘・효과で破壊される場合、
+PRINTL 代わりに자신フィールドの「강귀」モンスター１体を破壊できる。
+
+
+@CARDCAN_51630(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51630)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件他所 = 1
+	효과条件カテゴリ = 강귀 
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"효과","戦闘")
+		RETURN 0
+	RETURN 1
+
+
+
+ENDIF
+
+@CARDEFFECT_51630(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+    FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		攻撃力修正 = GETVAR(@"%対面者%_MZ_守:カウンタ")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"対面自身",カウンタ,"永攻",-攻撃力修正)
+	NEXT
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51630)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件行先플래그 = 破壊行き
+		효과条件他所 = 1
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT == 1
+			RETURN 1
+		ENDIF
+	ENDIF
+	RETURN 0
+
+
+ENDIF	
+
+

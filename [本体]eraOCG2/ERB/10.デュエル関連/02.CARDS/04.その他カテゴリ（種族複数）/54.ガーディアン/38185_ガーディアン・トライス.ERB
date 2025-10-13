@@ -1,0 +1,196 @@
+﻿@CARDNAME_38185,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 가디언 트라이스
+	CASE "略称"
+		RESULTS = 트라이스
+	CASE "カテゴリ"
+		RESULTS:0 = 가디언
+ENDSELECT
+
+
+@CARD_38185(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1900
+	CASE "守備力"
+		RETURN 1700
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 250931
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_38185(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,손패起動,묘지起動)
+PRINTL ①：자신のフィールド・묘지に「섬광의 쌍검－트라이스」が存在する場合、자신フィールドのモンスター１体をリリースして발동できる。
+PRINTL このカードを손패・묘지から특수소환する。
+CALL CARD_ABLE(0,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱・묘지から「섬광의 쌍검－트라이스」１枚をこのカードに装備する。
+CALL CARD_ABLE(0,攻撃時誘発)
+PRINTL ③：このカードが戦闘を行う攻撃宣言時に발동できる。
+PRINTL このカードの攻撃力は５００アップする。
+PRINTL その後、자신フィールドに「가디언」モンスターが３体以上存在するか、このカードの攻撃力が２０００以上の場合、
+PRINTL 자신の손패・묘지からこのカード名以外の「가디언」モンスター１体を특수소환できる。
+
+
+@CARDSUMMON_AA_38185
+
+
+@CARDCAN_38185(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,38185)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,38185)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,38185,ゾーン,1)
+	SIF RESULT == 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件표시 = 表側표시
+	효과条件名前 = 섬광의 쌍검－트라이스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件名前 = 섬광의 쌍검－트라이스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_38185(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38185,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			IF 종류 == 손패起動
+				효과範囲손패 = 1
+			ELSEIF 종류 == 묘지起動
+				효과範囲묘지 = 1
+			ENDIF
+			효과条件名前 = 가디언 트라이스
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38185)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件名前 = 섬광의 쌍검－트라이스
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)	
+		IF RESULT != 9999
+			CALL CARD_SELECT(듀얼리스트,RESULT)
+			選択カード = RESULT
+			CALL CARD_EQUIP_MONSTER(듀얼리스트,場所,参照先（CS）,選択カード)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38185)
+	IF RESULT == 0
+		SIF GETVAR(@"%듀얼리스트%_필드:場所") == -1
+			RETURN 0
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"永攻",500)
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 가디언
+		효과条件표시 = 表側표시
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT < 3 && GETVAR(@"%듀얼리스트%_MZ_攻:場所") < 2000
+			RETURN 0
+		
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 가디언
+		효과条件固名前 = 가디언 트라이스
+		효과条件任意 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+

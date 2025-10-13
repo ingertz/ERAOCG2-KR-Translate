@@ -1,0 +1,251 @@
+﻿@CARDNAME_73883,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 파사의 대검－바오우
+	CASE "略称"
+		RESULTS = 대검 바오우
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 가디언
+ENDSELECT
+
+
+@CARD_73883(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "추가日"
+		RETURN 250931
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_73883(종류)
+#DIM DYNAMIC 종류
+
+PRINTL ①：以下の효과から１つを選択して발동できる
+PRINTL （このカード名の以下の효과はそれぞれ１ターンに１度しか選択できない）。
+CALLFORM CARD_ABLE(1,손패起動,마함起動)
+PRINTL ●フィールドのモンスター１体に装備する。
+CALLFORM CARD_ABLE(2,손패起動)
+PRINTL ●손패のこのカードを묘지へ送り、덱から「가디언」モンスター１体を묘지へ送る。
+CALLFORM CARD_ABLE(0,攻守変動,지속효과)
+PRINTL ②：装備モンスターの攻撃力は５００アップし、戦闘阻害を得る。
+PRINTL また、装備モンスターが戦闘を行う場合、戦闘を行う상대モンスターの효과はダメージステップ終了時まで無効化される。
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ③：このカードがフィールドから묘지へ送られた場合に발동できる。
+PRINTL このターンのエンドフェイズに、묘지のこのカードを자신フィールドの「가디언」モンスター１体に装備する。
+
+
+@CARDCAN_73883(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73883)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	SIF 발동済_1(듀얼리스트,73883)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,73883)
+		발동불가:1 = 1
+	
+	SIF 마함数(듀얼리스트) >= 5 && 종류 != 마함起動
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲필드 = 1
+	SIF 듀얼리스트 == "자신"
+		효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	SIF 종류 == 마함起動
+		발동불가:1 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 가디언
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊","リリース")
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 가디언
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	SIF 装備先 == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_73883(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,73883)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,73883)
+		발동불가:1 = 1
+	
+	SIF 마함数(듀얼리스트) >= 5 && 종류 != 마함起動
+		발동불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	SIF 듀얼리스트 == "자신"
+		효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	SIF 종류 == 마함起動
+		발동불가:1 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 가디언
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	
+	IF 발동불가:0 != 1 && 발동불가:1 != 1
+		CALL YN_CHOICE(듀얼리스트,"●フィールドのモンスターに装備する。","●덱から「가디언」を묘지へ送る")
+		SIF 듀얼리스트 != "자신"
+			RESULT = 1
+	ELSEIF 발동불가:0 != 1
+		RESULT = 0
+	ELSEIF 발동불가:1 != 1
+		RESULT = 1
+	ELSE
+		RETURN 0
+	ENDIF
+
+	IF RESULT == 0
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73883,1)
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲필드 = 1
+			SIF 듀얼리스트 == "자신"
+				효과範囲상대필드 = 1
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+		ENDIF
+	
+	ELSEIF RESULT == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73883,2)
+		IF RESULT == 0
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 가디언
+			효과条件종류 = モン全般
+			효과条件優先名前 = 가디언 바오우
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73883)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,73883,エンド予約)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과条件名前 = 파사의 대검－바오우
+	CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+	IF RESULT != 9999
+		選択カード = RESULT
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 가디언
+		효과条件표시 = 表側표시
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL STATCHANGE_BASIC(装備者,"装備",場所,500)
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(装備者,"装備",場所,"戦阻")
+
+	IF (装備者 == 듀얼리스트 && 戦闘場所(듀얼리스트) == 装備先) || (装備者 == 対面者 && 戦闘場所(듀얼리스트,1) == 装備先)
+		SIF 戦闘場所(듀얼리스트,1) != 5
+			CALL STATCHANGE_EFFECT(듀얼리스트,"対面自身",戦闘場所(듀얼리스트,1),"無効")
+	ENDIF
+ENDIF
+

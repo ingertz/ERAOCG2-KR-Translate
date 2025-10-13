@@ -1,0 +1,188 @@
+﻿@CARDNAME_38184,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 가디언 그랄
+	CASE "略称"
+		RESULTS = 그랄
+	CASE "カテゴリ"
+		RESULTS:0 = 가디언
+ENDSELECT
+
+
+@CARD_38184(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 250931
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_38184(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,손패起動,묘지起動)
+PRINTL ①：자신のフィールド・묘지に「중력의 도끼－그랄」が存在する場合、자신フィールドのモンスター１体をリリースして발동できる。
+PRINTL このカードを손패・묘지から특수소환する。
+CALL CARD_ABLE(0,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱・묘지から「중력의 도끼－그랄」１枚をこのカードに装備する。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ③：상대フィールドの특수소환されたモンスターは특수소환されたターンの間、守備표시になる。
+PRINTL 자신の손패が１枚以下か、자신フィールドに「가디언」モンスターが３体以上存在する場合、
+PRINTL さらに상대フィールドのモンスターの攻撃力・守備力は５００ダウンする。
+
+
+@CARDSUMMON_AA_38184
+
+
+@CARDCAN_38184(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,38184)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,38184)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,38184,ゾーン,1)
+	SIF RESULT == 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件표시 = 表側표시
+	효과条件名前 = 중력의 도끼－그랄
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件名前 = 중력의 도끼－그랄
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_38184(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38184,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			IF 종류 == 손패起動
+				효과範囲손패 = 1
+			ELSEIF 종류 == 묘지起動
+				효과範囲묘지 = 1
+			ENDIF
+			효과条件名前 = 가디언 그랄
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38184)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件名前 = 중력의 도끼－그랄
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)	
+		IF RESULT != 9999
+			CALL CARD_SELECT(듀얼리스트,RESULT)
+			選択カード = RESULT
+			CALL CARD_EQUIP_MONSTER(듀얼리스트,場所,参照先（CS）,選択カード)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_T1召種:カウンタ") == 召種通常
+			CONTINUE
+		CALL SET_FIELD_INFO(対面者,"필드",カウンタ,"表",2,1)
+	NEXT
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 가디언
+	효과条件표시 = 表側표시
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3 && 손패数(듀얼리스트) > 1
+		RETURN 0
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-500,-500,38184)
+ENDIF
+
+

@@ -577,19 +577,23 @@ IF TALENT:MASTER:수수께끼의매력
 	CFLAG:캐릭터_ID:호감도 += 500
 ENDIF
 ;Anonym추가
-IF オンラインレート >= 100 && TALENT:캐릭터_ID:듀얼리스트 == 1
+IF CFLAG:MASTER:듀얼레이트 >= 5000 && TALENT:캐릭터_ID:듀얼리스트 == 1
 	PRINTFORMW %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%의 높은 온라인 레이트에 동경을 품은 것 같다。
 	CALL COLORMESSAGE(@"호감도가 올라갔다",C_YELLOW,2,1)
-	IF INRANGE(オンラインレート,100,199)
+	IF INRANGE(CFLAG:MASTER:듀얼레이트,5000,5499)
 		CFLAG:캐릭터_ID:호감도 += 100
-	ELSEIF INRANGE(オンラインレート,200,299)
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,5500,5999)
 		CFLAG:캐릭터_ID:호감도 += 200
-	ELSEIF INRANGE(オンラインレート,300,399)
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,6000,6499)
 		CFLAG:캐릭터_ID:호감도 += 300
-	ELSEIF INRANGE(オンラインレート,400,499)
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,6500,6999)
 		CFLAG:캐릭터_ID:호감도 += 400
-	ELSEIF オンラインレート >= 500
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,7000,7499)
 		CFLAG:캐릭터_ID:호감도 += 500
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,7500,7999)
+		CFLAG:캐릭터_ID:호감도 += 600
+	ELSEIF CFLAG:MASTER:듀얼레이트 >= 8000
+		CFLAG:캐릭터_ID:호감도 += 700
 	ENDIF
 ENDIF
 
@@ -820,7 +824,7 @@ CASE 천후_曇り
 		천후설정 = 천후_雨天
 		PRINTW 비가 오기 시작했다！
 	;20%、冬で降雪に移行
-	ELSEIF INRANGE(ランダム설정,50,79) && GET_MONTH() == "冬の月"
+	ELSEIF INRANGE(ランダム설정,50,79) && GET_MONTH() == "겨울의 달"
 		천후설정 = 천후_降雪
 		PRINTW 눈이 내리기 시작했다！
 
@@ -838,7 +842,7 @@ CASE 천후_雨天
 		천후설정 = 천후_晴れ
 		PRINTW 비와 함께 구름이 사라졌다。
 	;20%、冬で降雪に移行
-	ELSEIF INRANGE(ランダム설정,55,74) && GET_MONTH() == "冬の月"
+	ELSEIF INRANGE(ランダム설정,55,74) && GET_MONTH() == "겨울의 달"
 		천후설정 = 천후_降雪
 		PRINTW 눈이 내리기 시작했다！
 	;5%で豪雨に移行

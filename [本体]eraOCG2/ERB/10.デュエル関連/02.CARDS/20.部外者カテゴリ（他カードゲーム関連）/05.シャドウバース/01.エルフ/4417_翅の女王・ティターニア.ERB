@@ -1,0 +1,175 @@
+﻿@CARDNAME_4417,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 날개들의 여왕 티타니아
+	CASE "略称"
+		RESULTS = 여왕 티타니아
+	CASE "カテゴリ"
+		RESULTS:0 = 엘프 클래스
+		RESULTS:1 = 요정
+		RESULTS:2 = 진화가능
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_4417(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1300
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 250925
+	CASE "生成カード"
+		RETURN 14417
+ENDSELECT
+
+RETURN 0
+
+
+@CARDSUMMON_4417(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 4
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+	素材条件カテゴリ:0 = 엘프 클래스
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,4417) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_4417(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "엘프 클래스" 튜너 １장＋튜너 이외의 몬스터 １장 이상
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 발동할 수 없다、"진화(각성)"는 １턴에 １번밖에 할 수 없다.
+CALLFORM CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ①：이 카드가 S소환된 경우에 발동할 수 있다.
+PRINTL 자신 필드에 "엘프 프렌드 요정" 1체를 특수소환한다.
+PRINTL 추가로、이 듀얼 중、자신은 이하의 능력을 얻는다。（중복불가）
+PRINTL ●서로의 스탠바이 페이즈 시、패가 ９장 이하라면
+PRINTL 자신의 패에 "엘프 프렌드 요정" 1체를 생성한다.
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ②：서로의 메인 페이즈에 １번만、이 카드는 "진화"할 수 있다.
+PRINTL 상대 필드의 몬스터 1장을 대상으로 하여、"엘프 프렌드 요정"으로 바꾼다.
+PRINTL 상대 필드에 공격력 ２０００ 이상의 몬스터가 존재하는 경우、
+PRINTL 이 카드의 "진화(각성)"는 １턴에 １번밖에 할 수 없는 제한을 받지 않는다.
+
+@CARDCAN_4417(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과先
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4417)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,4417)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 時限紋章起動
+	SIF スタンバイフェイズ != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件以攻撃力 = 2000
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		SIF 발동済_1(듀얼리스트,覚醒발동)
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+@CARDEFFECT_4417(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과先
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4417,1)
+	IF RESULT == 0
+		CALL CARD_GENERATE(듀얼리스트,144402)
+		IF 발동済_D1(듀얼리스트,4417) == 0
+			CALL CARD_RESERV(듀얼리스트,4417,時限紋章予約)
+
+			CALL CARD_EFFECT_D1USE(듀얼리스트,4417)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 時限紋章起動
+	SIF 손패数(듀얼리스트) < 9
+		CALL CARD_GENERATE_HAND(듀얼리스트,144402)
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件以攻撃力 = 2000
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동)
+	ELSE
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동,1)
+	ENDIF
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",800)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",800)
+
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			CALL CARD_RECONSTRUCT(대상者（CS）,"필드",選択カード（CS）,144402)
+		ENDIF
+	ENDIF
+ENDIF
+

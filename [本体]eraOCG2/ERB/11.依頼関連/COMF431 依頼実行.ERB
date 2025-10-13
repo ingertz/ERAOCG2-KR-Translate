@@ -184,7 +184,7 @@ SIF CFLAG:캐릭터_ID:소유함 == 1 && アップデート処理 == 1
 	RETURN 0
 
 IF 이벤트外 != 1
-	CALLFORM IRAI_EVENT_{依頼_受領中}("이벤트種")
+	TRYCALLFORM IRAI_EVENT_{依頼_受領中}("이벤트種")
 	IF RESULT != 이벤트_ＲＥ && 依頼플래그:依頼_受領中 == 2
 		PRINTFORMW 이 의뢰의 보수는 이미 받았습니다。
 		RETURN 0
@@ -214,16 +214,21 @@ IF 依頼_見返し中 >= 1
 ;	PRINTFORMW 이 의뢰의 보수는 이미 받았습니다。
 	RETURN 0
 ENDIF
+IF 획득枚数 == 0
+	획득枚数 = 1
+ENDIF
+
 
 PRINTL
 SETCOLOR C_YELLOW
 TRYCALLFORM CARDNAME_{カード_ID}, "名前"
-PRINTFORMW 《%RESULTS%》를 손에 넣었습니다！
-IF 획득枚数 >= 1
-	ITEM:カード_ID += 획득枚数
+PRINTFORM 《%RESULTS%》를
+IF 획득枚数 >= 2
+	PRINTFORM ×{획득枚数}손에 넣었습니다！
 ELSE
-	ITEM:カード_ID += 1
+	PRINTFORM 손에 넣었습니다！
 ENDIF
+PRINTFORMW
 RESETCOLOR
 
 @ITEM_GET(아이템_ID,이벤트外)
@@ -258,7 +263,7 @@ ENDIF
 
 PRINTL
 SETCOLOR C_YELLOW
-PRINTFORMW %CALLNAME:MASTER%은/는 『%TALENTNAME:素質_ID%』을/를 획득했습니다!
+PRINTFORMW %CALLNAME:MASTER%는 『%TALENTNAME:素質_ID%』을/를 획득했습니다!
 TALENT:MASTER:素質_ID = 1
 RESETCOLOR
 
@@ -306,10 +311,10 @@ ENDIF
 PRINTL
 IF 획득_金額 >= 1
 	SETCOLOR C_YELLOW
-	PRINTFORMW {RESULT}DP를 획득했다。
+	PRINTFORMW %CALLNAME:MASTER%는　{획득_金額}DP를 획득했다。
 ELSE
 	ABS 획득_金額
-	PRINTFORMW {RESULT}DP를 사용했다。
+	PRINTFORMW %CALLNAME:MASTER%는　{획득_金額}DP를 사용했다。
 ENDIF
 
 FLAG:듀얼포인트 += 획득_金額
@@ -384,7 +389,7 @@ ENDIF
 IF 캐릭터_ID == MASTER
 	SETCOLOR C_GREEN
 	PRINTL
-PRINTFORMW >> %CALLNAME:MASTER%은/는 %GETPLACENAME(目標위치)%까지 이동했습니다.
+PRINTFORMW >> %CALLNAME:MASTER%는 %GETPLACENAME(目標위치)%까지 이동했습니다.
 	RESETCOLOR
 ENDIF
 

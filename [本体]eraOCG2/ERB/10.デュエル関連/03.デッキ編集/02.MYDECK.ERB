@@ -145,6 +145,7 @@ RETURN 選択덱
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
 #DIM DYNAMIC カウンタC
+#DIM DYNAMIC カウンタD
 #DIMS DYNAMIC 덱名
 #DIM DYNAMIC 選択덱
 #DIM DYNAMIC 덱リスト2,2000
@@ -155,7 +156,7 @@ RETURN 選択덱
 #DIM DYNAMIC MODE2ページ最大値
 #DIM DYNAMIC MODE5ページ最大値
 #DIM DYNAMIC MODE6ページ最大値
-
+#DIM DYNAMIC 덱_ID実数
 
 IF 설정 == 2
 	덱モード = 2
@@ -190,8 +191,8 @@ FOR カウンタ,0,2000
 	TRYCALLFORM DUELDECK_{60000 + カウンタ}("存在確認")
 	SIF RESULT != 1
 		CONTINUE
-	덱リスト6:カウンタC = 60000 + カウンタ
-	カウンタC ++
+	덱リスト6:カウンタD = 60000 + カウンタ
+	カウンタD ++
 	SIF カウンタC % 60 == 0
 		MODE6ページ最大値 ++
 NEXT
@@ -285,21 +286,19 @@ ELSEIF GROUPMATCH(덱モード,2,5,6)
 	VARSET カウンタB
 	FOR カウンタ,0 + (ページ開始 * 60),60 + (ページ開始 * 60)
 		VARSET RESULT
-
 		IF 덱モード == 2
-			TRYCALLFORM DUELDECK_{덱リスト2:カウンタ}("存在確認")
+			덱_ID実数 = 덱リスト2:カウンタ
 		ELSEIF 덱モード == 5
-			TRYCALLFORM DUELDECK_{덱リスト5:カウンタ}("存在確認")
+			덱_ID実数 = 덱リスト5:カウンタ
 		ELSEIF 덱モード == 6
-			TRYCALLFORM DUELDECK_{덱リスト6:カウンタ}("存在確認")
+			덱_ID実数 = 덱リスト6:カウンタ
 		ENDIF
+		TRYCALLFORM DUELDECK_{덱_ID実数}("存在確認")
 		IF RESULT != 1
 			PRINTFORM %"",50,LEFT%
 		ELSE
 			덱名 = 【%RESULTS%】
-			IF RESULT != 0
-				PRINTFORM 　[{カウンタ,3}] - %덱名,40,LEFT%
-			ENDIF
+			PRINTFORM 　[{カウンタ,3}] - %덱名,40,LEFT%
 		ENDIF
 		カウンタB ++
 		SIF カウンタB % 3 == 0
@@ -366,10 +365,12 @@ IF 덱モード != 4
 	PRINTBUTTON "[외부자 덱]", 6670
 	RESETCOLOR
 	PRINT 　　
-	SIF 덱モード == 6
-		SETCOLOR C_GREEN
-	PRINTBUTTON "[E.R.A 덱]", 6671
 
+	IF 投入禁止枚数 == 0
+		SIF 덱モード == 6
+			SETCOLOR C_GREEN
+		PRINTBUTTON "[E.R.A 덱]", 6671
+	ENDIF
 	RESETCOLOR
 	PRINTL
 	CUSTOMDRAWLINE ―

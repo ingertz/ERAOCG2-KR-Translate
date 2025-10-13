@@ -118,6 +118,7 @@ VARSET 효과条件同攻守, -1
 VARSET 효과条件속성, -1
 VARSET 효과条件종족, -1
 VARSET 효과条件レベル, -1
+VARSET 효과条件固レベル, -1
 VARSET 효과条件変レベル, -1
 VARSET 효과条件攻撃力
 VARSET 효과条件以攻撃力, -1
@@ -159,6 +160,8 @@ VARSET 효과条件他所, -1
 VARSET 효과条件山切り無し
 VARSET 효과条件固名前起動
 VARSET 효과条件固名前選択
+VARSET 효과条件固レベル選択
+
 VARSET 효과条件特不無視
 VARSET 효과条件상대モン
 VARSET 효과条件所有
@@ -402,7 +405,7 @@ IF 듀얼리스트 == "자신"
 	RESETCOLOR
 ELSEIF 듀얼리스트 == "상대"
 	;발동確認
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,5,カードID)
+	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,5,カードID,종류)
 	SETCOLOR C_W_RED
 	CUSTOMDRAWLINE —
 	PRINTL
@@ -454,8 +457,10 @@ SIF Ｘ플래그 >= 1
 IF ゾーン == "마함"
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
 		SETVAR @"%듀얼리스트%_魔_表:場所", 1
+
+		SETVAR @"%듀얼리스트%_魔_効発:場所", GETVAR(@"%듀얼리스트%_魔_効発:場所") + 1
 ELSEIF ゾーン == "필드"
-	SETVAR @"%듀얼리스트%_MZ_効発:場所", 1
+	SETVAR @"%듀얼리스트%_MZ_効発:場所", GETVAR(@"%듀얼리스트%_MZ_効発:場所") + 1
 ENDIF
 
 SIF 無効불가 == 2
@@ -497,6 +502,7 @@ ELSEIF 効後_발동無:処理中番号 != 0
 	;カード側の구상（효과失敗）
 	CALL KOJO_MESSAGE_SEND("CARD",カードID,2,종류,1)
 	;場所データを読み込まない타입は無視
+	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,5,カードID,-1)
 
 	IF !GROUPMATCH(종류,필드→묘지,손패→묘지,덱→묘지,破壊→묘지,戦闘→묘지,필드→戦離,제외時,戦破壊→묘지,R素材時효과,F素材時효과,S素材時효과,X素材時효과,L素材時효과)
 		IF 効後_발동無:処理中番号 == 無効行き
@@ -575,6 +581,9 @@ ELSE
 	ENDIF
 	CALL CARD_FIN_BIT_SET(듀얼리스트,ゾーン,1)
 	CALL CARD_FIN_ID_SET(듀얼리스트,カードID,"효과발동")
+	CALL CARD_FIN_ID_SET(듀얼리스트,カードID,"효과이력")
+
+
 	VARSET 処理中_효과ID, -1
 	VARSET 処理中_듀얼리스트
 	処理中_효과ID = カードID
@@ -675,6 +684,13 @@ IF 듀얼리스트 == "상대" && 발동処理中 != 1
 	CALL ENEMY_RUTIN_EFFECT(종류,ゾーン,場所,カードID)
 	SIF RESULT == 1
 		RETURN 1
+	IF ゾーン == "필드"
+		SIF 상대_MZ_効発:場所 >= 10
+			RETURN 1
+	ELSEIF ゾーン == "마함"
+		SIF 상대_魔_効発:場所 >= 10
+		RETURN 1
+	ENDIF
 ENDIF
 
 SELECTCASE 듀얼리스트
@@ -706,9 +722,21 @@ ENDSELECT
 SIF カードID == 58242
 	RETURN 0
 
-
-SIF 종류 == 付与효과 || 종류 == 필드起動付与 || 종류 == 상대起動付与
+SIF 종류 == 付与효과 || 종류 == 필드起動付与 || 종류 == 상대起動付与 || 종류 == 맥시멈条件 || 종류 == チェーン可否
 	RETURN 0
+
+IF 듀얼리스트 == "상대" && 발동処理中 != 1
+	CALL ENEMY_RUTIN_EFFECT(종류,ゾーン,場所,カードID)
+	SIF RESULT == 1
+		RETURN 1
+	IF ゾーン == "필드"
+		SIF 상대_MZ_効発:場所 >= 10
+			RETURN 1
+	ELSEIF ゾーン == "마함"
+		SIF 상대_魔_効発:場所 >= 10
+			RETURN 1
+	ENDIF
+ENDIF
 
 IF !GROUPMATCH(종류, 攻守変動, 지속효과, 攻紋章起動, 短紋章起動, 永紋章起動, 永攻紋章起動, 時限紋章起動,効後紋章起動)
 	IF GETVAR(@"%듀얼리스트%_마함無効") >= 1
@@ -1669,8 +1697,8 @@ IF 소환権 >= 1 || (追소환権 >= 1 && GETVAR(@"%듀얼리스트%_手_召可
 
 	TRYCALLFORM CARD_{カードID}("レベル")
 	カードレベル = RESULT
-	SIF GETVAR(@"%듀얼리스트%_手_一星:場所") >= 1
-		カードレベル -= GETVAR(@"%듀얼리스트%_手_一星:場所")
+	カードレベル -= GETVAR(@"%듀얼리스트%_手_一星:場所")
+
 	SIF カードレベル <= 1
 		カードレベル = 1
 	SELECTCASE カードレベル
@@ -2470,6 +2498,13 @@ ENDIF
 #DIM DYNAMIC 효과소환플래그
 #DIM DYNAMIC 現在最小攻撃力
 
+;효과소환플래그
+;1 = モンスターの효과などで行われる소환
+;2 = バルバロス/神など妥協や소환される際の플래그
+;3 = 추가소환権で소환する際の플래그
+;4 = 추가소환権で妥協소환する際の플래그
+;5 = モンスターの효과などで行われる生贄소환
+
 VARSET 묘지送カード, -1
 IF 소환権 == 0 && 효과소환플래그 == 0
 	PRINTW 소환권이 없습니다。
@@ -2484,61 +2519,32 @@ ENDIF
 ;소환한 いカードの레벨을 確認する：
 TRYCALLFORM CARD_{소환カード_ID}("レベル")
 カードレベル = RESULT
-SIF GETVAR(@"%듀얼리스트%_手_一星:選択カード") >= 1
-	カードレベル -= GETVAR(@"%듀얼리스트%_手_一星:選択カード")
+カードレベル -= GETVAR(@"%듀얼리스트%_手_一星:選択カード")
 SIF カードレベル <= 1
 	カードレベル = 1
 ;PRINTFORML 소환몬스터의 レベル：{カードレベル} / GETVAR:{GETVAR(@"%듀얼리스트%_手_一星:選択カード")}
 ;4以下はリリース必要なし
-IF カードレベル <= 4 || 효과소환플래그 == 1 || 효과소환플래그 == 2 || 효과소환플래그 == 4
+IF カードレベル <= 4 || 효과소환플래그 == 1 || 효과소환플래그 == 2 || 효과소환플래그 == 4 || (カードレベル <= 4 && 효과소환플래그 == 5)
 	PRINTFORMW 통상 소환！
 	;소환処理
 	IF 효과소환플래그 == 2 || 효과소환플래그 == 4
 		CALLFORM CARDEFFECT_{소환カード_ID}(듀얼리스트,효과소환,"손패",選択カード)
-		IF RESULT != 1
+		IF RESULT == 0
 			RETURN 0
+		ELSEIF RESULT == 2
+			효과소환플래그 = 1	
 		ENDIF
 	ENDIF
 	IF モンスター数(듀얼리스트) == 5
 		PRINTFORMW 몬스터 존이 가득 차서 소환할 수 없습니다。
 		RETURN 0
 	ENDIF
-	IF 표시形式 == "攻撃표시"
-		CALL CARD_SUMMON(듀얼리스트, 選択カード)
-	ELSE
-		CALL CARD_SUMMON(듀얼리스트, 選択カード,"裏側표시")
-	ENDIF
-	CALL CARD_FINAL(ターンプレイヤー);通常소환後のチェック
-	;소환演出
-	TRYCALLFORM CARDSUMMON_AA_{소환カード_ID}
-	IF 효과소환플래그 != 1	
-		IF (효과소환플래그 == 3 || 효과소환플래그 == 4) && 追소환権 >= 1
-			追소환権 -= 1
-		ELSE
-			소환権 -= 1
-		ENDIF
-	ENDIF
-	RETURN 1
 ;5以上はリリース必要、正直今時最上級で2リリース必要なのバグだと思うのでそれらも1枚だけ
 ELSEIF INRANGE(カードレベル,5,6) 
 	CALL FULLRESET
 	효과条件任意 = 1
 	CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드","어드밴스")
-	IF RESULT == 1
-		TRYCALLFORM CARDSUMMON_AA_{소환カード_ID}
-		IF 표시形式 == "攻撃표시"
-			CALL CARD_SUMMON(듀얼리스트, 選択カード)
-		ELSE
-			CALL CARD_SUMMON(듀얼리스트, 選択カード,"裏側표시")
-		ENDIF
-		IF (효과소환플래그 == 3 || 효과소환플래그 == 4) && 追소환権 >= 1
-			追소환権 -= 1
-		ELSE
-			소환権 -= 1
-		ENDIF
-		CALL CARD_FINAL(ターンプレイヤー);上級소환後のチェック
-		RETURN 1
-	ELSE
+	IF RESULT != 1
 		PRINTFORMW 돌아갑니다。
 		RETURN 0
 	ENDIF
@@ -2547,23 +2553,26 @@ ELSEIF INRANGE(カードレベル,7,12)
 	효과条件任意 = 1
 	효과条件複数 = 2
 	CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드","어드밴스")
-	IF RESULT == 1
-		TRYCALLFORM CARDSUMMON_AA_{소환カード_ID}
-		IF 표시形式 == "攻撃표시"
-			CALL CARD_SUMMON(듀얼리스트, 選択カード)
-		ELSE
-			CALL CARD_SUMMON(듀얼리스트, 選択カード,"裏側표시")
-		ENDIF
-		IF (효과소환플래그 == 3 || 효과소환플래그 == 4) && 追소환権 >= 1
-			追소환権 -= 1
-		ELSE
-			소환権 -= 1
-		ENDIF
-		CALL CARD_FINAL(ターンプレイヤー);最上級소환後のチェック
-		RETURN 1
-	ELSE
+	IF RESULT != 1
 		PRINTFORMW 돌아갑니다。
 		RETURN 0
+	ENDIF
+ENDIF
+
+
+IF 표시形式 == "攻撃표시"
+	CALL CARD_SUMMON(듀얼리스트, 選択カード)
+ELSE
+	CALL CARD_SUMMON(듀얼리스트, 選択カード,"裏側표시")
+ENDIF
+CALL CARD_FINAL(ターンプレイヤー);通常소환後のチェック
+;소환演出
+TRYCALLFORM CARDSUMMON_AA_{소환カード_ID}
+IF !GROUPMATCH(효과소환플래그,1,5)
+	IF (효과소환플래그 == 3 || 효과소환플래그 == 4) && 追소환権 >= 1
+		追소환権 -= 1
+	ELSE
+		소환権 -= 1
 	ENDIF
 ENDIF
 
@@ -2582,10 +2591,13 @@ SELECTCASE デコレーション
 		PRINTL ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD
 		RESETCOLOR
 	CASE "P_MAGIC"
-		SETCOLOR C_MAGIC_G
-		PRINTFORML %"―" * 34% PENDULUM  MAGIC %"―" * 34%
+;		SETCOLOR C_MAGIC_G
+		CALL XON_GRADATION(C_MAGIC_G,C_MONS_BR,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
 
-		PRINTFORML %"―" * 29%이 카드는 지속 마법 취급으로 발동할 수 있다 %"―" * 29%
+;		PRINTFORML %"―" * 34% PENDULUM  MAGIC %"―" * 34%
+		CALL XON_GRADATION(C_MAGIC_G,C_MONS_BR,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+
+;		PRINTFORML %"―" * 29%이 카드는 지속 마법 취급으로 발동할 수 있다 %"―" * 29%
 
 		RESETCOLOR
 	CASE "P_MAGIC_2","D_HEART_2"
@@ -3136,31 +3148,17 @@ PRINTFORML 합계DP:{FLAG:듀얼포인트}
 ;Anonym추가
 IF 상대_듀얼패배플래그 >= 1
 	レート増減 = (획득DP / 100)
-	IF OPPOSER == -1 ;オンラインレート戦
-	IF オンラインレート < 100
-		レート増減 *= 5
-	ELSEIF INRANGE(オンラインレート,100,199)
+	IF CFLAG:MASTER:듀얼레이트 < 2000
+		レート増減 *= 6
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,2000,3999)
 		レート増減 *= 4
-	ELSEIF INRANGE(オンラインレート,200,299)
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,4000,5999)
 		レート増減 *= 3
-	ELSEIF INRANGE(オンラインレート,300,399)
+	ELSEIF INRANGE(CFLAG:MASTER:듀얼레이트,6000,7999)
 		レート増減 *= 2
 	ENDIF
-	ELSE ;오프라인레이트戦
-		IF CFLAG:MASTER:오프라인레이트 < 2000
-			レート増減 *= 4
-		ELSEIF INRANGE(CFLAG:MASTER:오프라인레이트,2000,3999)
-			レート増減 *= 3
-		ELSEIF INRANGE(CFLAG:MASTER:오프라인레이트,4000,7999)
-			レート増減 *= 2
-		ENDIF
-	ENDIF
 ELSEIF 자신_듀얼패배플래그 >= 1
-	IF OPPOSER == -1 ;オンラインレート戦
-		レート増減 = 8 + (オンラインレート / 1000 * 3)
-	ELSE ;오프라인레이트戦
-		レート増減 = 20 + (CFLAG:MASTER:오프라인레이트 / 100)
-	ENDIF
+		レート増減 = 20 + (CFLAG:MASTER:듀얼레이트 / 100)
 ENDIF
 
 
@@ -3650,10 +3648,9 @@ ENDIF
 
 
 VARSET 상대_손패,-1
-
 상대_손패:0 = 70011
-상대_손패:1 = 70037
-상대_손패:2 = 23030
+상대_손패:1 = 70003
+
 
 @CARD_KANPRINT(元参照先,場所,カードID,설정플래그,使用機能)
 #DIMS DYNAMIC 参照先
@@ -4240,6 +4237,7 @@ SIF RESULT == 1
 
 VARSET RESULT
 TRYCALLFORM CARDCAN_{カードID}(듀얼리스트,チェーン可否,ゾーン,場所)
+;PRINTFORML CHAINCAN RESULT == {RESULT}／{カードID}
 SIF RESULT == 1
 	RETURN 1
 

@@ -1,0 +1,303 @@
+﻿@CARDNAME_44402,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 독에 물든 요정 공주 아리아
+	CASE "略称"
+		RESULTS = 독에물든 아리아
+	CASE "カテゴリ"
+		RESULTS:0 = 엘프 클래스
+		RESULTS:1 = 요정
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_44402(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 1600
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 250321
+	CASE "生成カード"
+		RESULT:1 = 104402
+		RETURN 144402
+	CASE "連動ID"
+		RETURN 4402
+ENDSELECT
+
+RETURN 0
+
+
+@CARDSUMMON_44402(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ4
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 4
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+	素材条件カテゴリ:0 = 엘프 클래스
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,44402) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_44402(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "엘프 클래스" 튜너 1장＋튜너 이외의 몬스터 1장 이상
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번만 사용할 수 있다.
+CALLFORM CARD_ABLE(0,효과後強制誘発)
+PRINTL ①：이 카드 필드에 존재하는 한, 레벨 1 이하의 몬스터가 필드에서 묘지로 보내질 때 마다,
+PRINTL 상대 라이프에 400 데미지를 준다.
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신 메인 페이즈에, 패 / 필드의 레벨 1 몬스터 1장을 묘지로 보내는 것으로 발동할 수 있다.
+PRINTL 덱에서 "요정" 마법 / 함정 카드 1장을 자신 필드에 세트한다.
+PRINTL 그 후, 패에서 "엘프 프렌드 요정" 1장을 생성한다.
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ③：자신의 묘지 / 제외 상태인 카드의 수가 10장 이상이라면, 이하를 적용한다.
+PRINTL ●자신 필드에 레벨 1 이하의 "요정" 몬스터가 소환 / 특수 소환될 경우, 그 카드를 파괴한다.
+PRINTL 그 후, 패에서 레벨1 몬스터 1장을 소환할 수 있다.
+
+
+@CARDCAN_44402(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과先
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,44402)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,44402)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件レベル = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件종류 = 마함全般
+	효과条件カテゴリ = 요정
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 효과後強制誘発
+	CALL FULLRESET
+	효과条件レベル = 1
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	CALL FULLRESET
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 10
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 요정
+	효과条件レベル = 1
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_44402(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과先
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44402,2)
+	IF RESULT == 0
+		
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件レベル = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+			효과条件カテゴリ = 요정
+			효과条件종류 = 마함全般
+			CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"裏側표시")
+			CALL CARD_GENERATE_HAND(듀얼리스트,144402)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後強制誘発
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",400,1)
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44402)
+	IF RESULT == 0
+		효과先 = FINAL_SUMMON_TARGET(듀얼리스트)
+		CALL CARD_DISPOSE(듀얼리스트,"필드",효과先,破壊行き)
+	ENDIF
+ENDIF
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@CARDNAME_144402,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘프 프렌드 요정
+	CASE "略称"
+		RESULTS = 요정
+	CASE "カテゴリ"
+		RESULTS:0 = 엘프 클래스
+		RESULTS:1 = 요정
+ENDSELECT
+
+
+@CARD_144402(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 400
+	CASE "守備力"
+		RETURN 400
+	CASE "성별"
+		RETURN 牝性
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_144402(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신 필드에 "엘프 클래스" 몬스터가 존재할 경우,
+PRINTL 패의 이 카드는 특수 소환할 수 있다.
+
+
+@CARDCAN_144402(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,144402)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,144402)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,144402,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ:0 = 엘프 클래스
+	효과条件표시 = 10
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_144402(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,144402,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+	ENDIF
+ENDIF
+
+
+

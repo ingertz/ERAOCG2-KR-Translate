@@ -1,0 +1,238 @@
+@IRAI_EVENT_302641(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2641-03)花と歯車のテヰサロン
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL カラットの家が主催する私的ティーサロンへ招待された。
+		PRINTL サロン庭園で祖母に拝謁しよう。
+		PRINTL 
+		PRINTL 報酬：5000DP
+	CASE "条件"
+        SIF 依頼_完了횟수:202641 == 0
+            RETURN 0
+        RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2641):호감도 < 1000
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2641):반발각인 > 0
+			;ちょっと変化を入れよう
+			RESULTS = ご機嫌麗しからず、招きを見合わせるべきかもしれません。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_302641(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2641)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 朝、あなたのポストに重厚な封筒が届いた。
+	PRINTFORMW 封蝋には花と歯車の紋章—%CALLNAME:이벤트主%の家の印が刻まれている。
+	
+	PRINTFORML 「%CALLNAME:MASTER%様へ。祖母主催の私的ティーサロンにて、
+	PRINTFORMW 　改めてご挨拶を賜りたく存じます——%CALLNAME:이벤트主%」
+	
+	PRINTFORML 身支度を整える前に、手土産を用意するべきだろうか。
+	PRINTFORMW 礼に過不足なき選び方が求められそうだ。
+	
+    $INPUT_LOOP
+	PRINTL
+	PRINTL [0] - 何も持たず、身だしなみを徹底する
+    SIF MONEY > 10000
+	    PRINTL [1] - 上質な茶葉の詰め合わせを選ぶ（10000円）
+    SIF MONEY > 15000
+	    PRINTL [2] - 上品な菓子折りを選ぶ（15000円）
+	BINPUT
+	
+	IF RESULT == 0
+        PRINTFORML 礼は所作に宿る。無駄を削ぎ、身なりを整え、所作を正す。
+        PRINTFORMW 余計な手数を省き、心を澄ませることにした。
+        依頼_進行보존:302641 = 0
+	ELSEIF RESULT == 1
+        SIF 依頼_見返し中 == 0
+            CALL MONEY_GET(-10000)
+        PRINTFORML 気取らないが確かな品質の茶葉を選んだ。渋みと香りの均衡が美しい。
+        PRINTFORMW 「礼は形にあらず、心に宿るもの」——そんな言葉がふと胸を過る。
+        依頼_進行보존:302641 = 10
+	ELSE
+        SIF 依頼_見返し中 == 0
+			CALL MONEY_GET(-15000)
+        PRINTFORML 焼き手の銘が入った菓子折りを選んだ。見目も味も相応だ。
+        PRINTFORMW 箱を抱え、深呼吸して気を引き締める。
+        依頼_進行보존:302641 = 11
+	ENDIF
+	
+	PRINTFORML 迎えの車に乗り込み、会場へ向かう。
+	PRINTFORMW あなたは車窓に流れる街並みを静かに見送った。
+	
+	依頼_달성상황 ++
+	依頼_場所 = 場所_高級ホテル
+	CALL EVENT_TIMER(15)
+	RETURN 1
+
+ELSEIF 依頼_달성상황 == 1
+	依頼_場所 = 場所_高級ホテル
+	
+	PRINTFORML サロン庭園。白い天幕の下、緑陰と風鈴の音が涼やかに交わる。
+	PRINTFORMW %CALLNAME:이벤트主%の祖母が温かくも厳しい眼差しであなたを迎える。
+	
+	PRINTFORML 祖母「礼は形にあらず、心に宿るもの——忘れなさるな」
+	PRINTFORMW あなたは深く頭を垂れ、胸の内でその言葉を反芻した。
+	
+	IF 依頼_進行보존:302641 == 10
+		PRINTFORML 祖母は茶葉の包みを手に取り、僅かに目を細めた。
+		PRINTFORMW 祖母「渋みは心、香りは誠。よう選ばれた」
+		CALL EVENT_FAVUP(이벤트主, 200)
+	ELSEIF 依頼_進行보존:302641 == 11
+		PRINTFORML 祖母は菓子折りの意匠を眺め、口元に微笑を浮かべた。
+		PRINTFORMW 祖母「甘やかであれど、品を失わず。よろしい」
+		CALL EVENT_FAVUP(이벤트主, 200)
+	ELSE
+		PRINTFORML 祖母はあなたの所作を一瞥し、短く頷いた。
+		PRINTFORMW 祖母「身は正しく、息は静かに。それでよい」
+	ENDIF
+	
+	PRINTFORML %CALLNAME:이벤트主%「%CALLNAME:MASTER%様……本日はよくお越しくださいました」
+	PRINTFORMW %CALLNAME:이벤트主%「至らぬ点多々あれど、どうぞよろしくてよ」
+	
+	PRINTFORML そこへ、燕尾服の執事・鴻巣が一歩進み出た。
+	PRINTFORMW 鴻巣「旦那様よりの仰せ——御手並み、拝見仕る」
+	
+	PRINTFORML %CALLNAME:이벤트主%「焦りは禁物、いと危（あや）うし。間合いを詰めすぎませぬよう」
+	PRINTFORMW %CALLNAME:이벤트主%は扇子で口元を隠し、あなたにだけ聞こえる声でそっと囁いた。
+	
+	PRINTL
+	PRINTL [0] - 黙礼して構える
+	PRINTL [1] - 胸に手を当て、礼を尽くして構える
+	PRINTL [2] - 無駄口を叩かず、静かにディスクを起動する
+	BINPUT
+	
+	IF RESULT == 0
+		PRINTFORML あなたは静かに黙礼し、気を一点に集めた。
+		PRINTFORMW 鴻巣「うむ……よい姿勢だ」
+		CALL EVENT_FAVUP(이벤트主, 100)
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは胸に手を当て、礼を尽くした。
+		PRINTFORMW 祖母「礼は心より出でて、形に兆（きざ）す。よろしい」
+		CALL EVENT_FAVUP(이벤트主, 150)
+	ELSE
+		PRINTFORML あなたは余計な所作を捨て、ただ静謐にディスクを起動する。
+		PRINTFORMW 鴻巣「剣呑、されど佳き集中だ」
+	ENDIF
+	
+	PRINTFORML 鴻巣「では——御試合（おたしなみ）、始めさせていただこう」
+	PRINTFORMW あなたはデュエルディスクを起動した。
+	
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(302641)
+	
+	IF RESULT == 1
+		; 승리
+		PRINTFORML 鴻巣「見事。高打点も除去も、焦らず捌かれたか」
+		PRINTFORMW 鴻巣は恭しく一礼し、승리を称えた。
+		
+		PRINTFORML 祖母「此度の縁、まこと悦ばし。——家の信、預けてもよいかと存ずる」
+		PRINTFORMW 祖母は穏やかに微笑み、あなたの目をまっすぐに見つめる。
+		
+		PRINTFORML %CALLNAME:이벤트主%「……これより一層、頼もしゅうございますわ」
+		PRINTFORMW %CALLNAME:이벤트主%は頬を染め、扇子の陰でそっと微笑んだ。
+		
+		IF 依頼_進行보존:302641 >= 10
+			PRINTFORML 帰り際、祖母から小さな包みを手渡された。香り高い茶と焼き菓子の詰め合わせだ。
+			PRINTFORMW 「気持ちは受け取り、気持ちで返す」——その余韻がいつまでも心に残った。
+            IF 依頼_見返し中 == 0
+                SETCOLOR C_YELLOW
+                PRINTFORML 체력と기력が上昇しました（+100）
+                MAXBASE:MASTER:체력 += 100
+                MAXBASE:MASTER:기력 += 100
+            ENDIF
+		ENDIF
+		
+		CALL EVENT_TIMER(30)
+		RETURN 2
+	ELSE
+		; 패배
+		PRINTFORML 鴻巣「詰めの一手——焦りにほころびが出たか。然れど資質は十二分」
+		PRINTFORMW 祖母「負けを知りて、勝ちを知る。——次（つい）でよい」
+		
+		PRINTFORML %CALLNAME:이벤트主%「%CALLNAME:MASTER%様……無理はなりませぬ。次こそは」
+		PRINTFORMW あなたは拳を軽く握り、鴻巣と次の再戦の約束をした。
+		
+		CALL EVENT_TIMER(30)
+		RETURN 3
+	ENDIF
+
+ENDIF
+
+RETURN 1
+
+
+@IRAI_REWARD_302641
+CALL DP_GET(5000)
+
+
+@IRAI_DECK_302641(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+; 執事・鴻巣（帝）덱
+SIF 듀얼리스트 == "상대"
+	RETURN 302641
+RETURN 0
+
+; デュエル開始時台詞
+@IRAI_DUEL_INTRO_302641
+PRINTFORML 
+PRINTFORML 執事・鴻巣「僭越ながら、御手並み拝見つかまつる」
+PRINTFORMW 
+
+@DUELDECK_302641(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 93160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20011
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20011
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20011
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29012
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 31135
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 31142
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91052
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91052
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23130

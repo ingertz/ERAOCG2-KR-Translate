@@ -1,0 +1,131 @@
+@CARDNAME_81063,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 프라이아의 사과
+	CASE "略称"
+		RESULTS = 프라이아의 사과
+	CASE "カテゴリ"
+		RESULTS:0 = 왈큐레
+ENDSELECT
+
+
+@CARD_81063(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 251005
+ENDSELECT
+
+RETURN 0
+@CARD_EXPLANATION_81063(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,마함起動)
+PRINTL ①：자신フィールドの「왈큐레」モンスターの数まで상대の묘지のカードを대상として발동できる。
+PRINTL そのカードを제외する。
+PRINTL こうして제외した枚数分、상대の덱の上からカードを제외する。
+CALLFORM CARD_ABLE(0,破壊→묘지,제외時)
+PRINTL ②：このカードが破壊、または제외された場合に발동できる。
+PRINTL 자신は자신フィールドの「왈큐레」モンスターの数＋１枚を덱からドローする。
+
+
+@CARDCAN_81063(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC EX条件달성
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,81063)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 왈큐레
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대묘지 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0		
+	RETURN 1
+ELSEIF 종류 == 破壊→묘지 || 종류 == 제외時
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 왈큐레
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_81063(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 素材数
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC リピート数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81063)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 왈큐레
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		リピート数 = RESULT
+		IF RESULT >= 1
+			CALL FULLRESET
+			효과範囲상대묘지 = 1
+			효과条件複数 = 100 - リピート数
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				リピート数 = RESULT:2
+				CALL FULLRESET
+				CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",リピート数,제외行き,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 破壊→묘지 || 종류 == 제외時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81063)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 왈큐레
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		リピート数 = RESULT + 1
+		CALL CARDDRAW_BASIC(듀얼리스트,リピート数)
+	ENDIF
+ENDIF

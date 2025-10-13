@@ -167,6 +167,7 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC 選択レベル
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC 条件달성
@@ -195,7 +196,6 @@ IF 종류 == EX덱起動
 ELSEIF 종류 == 身代효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4070,00,X消費1)
 	IF RESULT == 0
-		CALLFORM CARD_STANBY(4074,듀얼리스트,他효과起動,"필드",場所)
 		RETURN 1
 	ENDIF
 	RETURN 0
@@ -205,16 +205,16 @@ ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4074)
 	IF RESULT == 0
 		CALL FULLRESET
-		CALL CARD_CHOOSE_BASIC(対面者,"필드",ゾーン,場所)
-		選択カード = RESULT
-		IF 選択カード != 9999
-			選択レベル = RESULT:99
-			CALL CARD_DISPOSE(対面者,"필드",選択カード,손패行き)
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+		IF RESULT == 1
+			選択カード_ID = RESULT:2
+			TRYCALLFORM CARD_{選択カード_ID}, "レベル"
+			選択レベル = RESULT
 			
 			CALL FULLRESET
 			효과範囲묘지 = 1
 			CALL 효과条件レベル_ADV(選択レベル, "以下")
-			효과条件종류 = モン全般
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
 		ENDIF
 	ENDIF

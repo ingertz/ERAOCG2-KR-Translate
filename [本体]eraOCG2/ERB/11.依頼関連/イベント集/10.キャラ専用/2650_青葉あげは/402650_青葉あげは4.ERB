@@ -1,0 +1,287 @@
+@IRAI_EVENT_402650(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2650-04)一番伝えたい言葉
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_学校内
+	CASE "詳細"
+		PRINTL いつになく真剣な表情の青葉あげは。
+		PRINTL 彼女は何か、とても大事なことを伝えようとしている。
+		PRINTL 
+		PRINTL 報酬：10000DP
+	CASE "条件"
+		SIF 依頼_完了횟수:302650 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2650):호감도 < 2000 && TALENT:NO_TO_CHARANUM(2650):연모 == 0
+			RESULTS = 호감도/条件が不足しています。
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2650):반발각인 > 0
+			RESULTS = 今の彼女と会うのは得策じゃない…분노が収まるのを待とう。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_402650(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC ツァンディレ
+
+이벤트主 = NO_TO_CHARANUM(2650)
+ツァンディレ = NO_TO_CHARANUM(2656)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 放課後、あなたは青葉あげはからの呼び出しを受けて、学園の屋上に向かった。
+	PRINTFORML 夕日が校舎を染める中、彼女は一人でフェンスの向こうを見つめている。
+	PRINTFORMW いつもとは違う、どこか決意を秘めた雰囲気が漂っていた。
+
+	PRINTFORML あなたが近づくと、あげはは振り返る。
+	PRINTFORML その表情は緊張と不安で強張っていた。
+	PRINTFORMW 「あ…来てくれたのね。ありがとう」
+
+	PRINTFORML 彼女は何度も口を開きかけては閉じる。
+	PRINTFORML 普段のお節介な彼女からは想像できないほど、言葉に詰まっている。
+	PRINTFORMW 「……あのさ。ずっと、あなたに言いたいことがあったんだけど……」
+
+	PRINTFORML 「私、言葉にするの、下手だから」
+	PRINTFORML あげはは震える手でデュエルディスクを取り出す。
+	PRINTFORMW 「だから、デュエルしよう。いつものみたいに」
+
+	PRINTFORML 「……もし、あなたが勝ったら、ちゃんと言うから」
+	PRINTFORML 彼女の瞳に強い決意が宿る。
+	PRINTFORMW 「私の……本当の気持ち」
+
+	IF TALENT:ツァンディレ:연모 > 0
+		PRINTFORML その時、屋上への扉が開く音が響いた。
+		PRINTFORML 「あら、こんなところにいたのね」
+		PRINTFORMW ツァン・ディレが現れる。
+
+		PRINTFORML あげはの表情が一瞬で青ざめる。
+		PRINTFORML 「な、なんでアンタがここに…！」
+		PRINTFORMW ツァン・ディレは興味深そうに二人を見回す。
+
+		PRINTFORML 「偶然通りかかったら、面白そうな雰囲気だったから」
+		PRINTFORML 「まさか、告白でもするつもり？」
+		PRINTFORMW その言葉に、あげはは顔を真っ赤にする。
+
+		PRINTL
+		PRINTL [0] - 「今だけは邪魔をしないでくれ」
+		PRINTL [1] - 「今は二人だけの時間が欲しい」
+		PRINTL [2] - 「あげはの気持ちを尊重してほしい」
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたの強い口調に、ツァン・ディレは少し驚く。
+			PRINTFORML 「……そう。わかったわ」
+			PRINTFORMW 「邪魔して悪かったわね」
+    		CALL EVENT_FAVUP(ツァンディレ,-100)
+			PRINTFORML ツァン・ディレは去っていく。
+            
+			PRINTFORML あげはは安堵の表情を見せる。
+			PRINTFORMW 「ありがとう…助かった」
+			依頼_進行보존:402650 = 1
+		ELSEIF RESULT == 1
+			PRINTFORML ツァン・ディレはしばらく黙っていると、苦笑いしながら語った。
+			PRINTFORML 「なんか、いいじゃない」
+			PRINTFORMW 「頑張りなさい、あげは」
+    		CALL EVENT_FAVUP(ツァンディレ,-200)
+
+			PRINTFORML 意外にも、ツァン・ディレは応援の言葉を残して去る。
+			PRINTFORML あげはは驚きながらも、少し勇気をもらったようだ。
+			PRINTFORMW 「まさか、彼女に応援されるなんて…」
+            PRINTFORMW そうであるような、そうでもないような…
+			依頼_進行보존:402650 = 2
+		ELSE
+			PRINTFORML あなたの言葉に、あげはは感動したような表情を見せる。
+			PRINTFORML ツァン・ディレも「そこまで言われたら…」と苦笑する。
+			PRINTFORMW 「わかったわ。今度、ちゃんと話を聞かせてもらうから」
+
+			PRINTFORML ツァン・ディレが去った後、あげはは嬉しそうに微笑む。
+			PRINTFORML 「私のこと、守ってくれるのね」
+			PRINTFORMW 「ますます、伝えたいことがあるわ」
+	        PRINTFORML 再び二人だけになった屋上で、あげはは深呼吸をする。
+			依頼_進行보존:402650 = 3
+		ENDIF
+	ELSE
+		依頼_進行보존:402650 = 0
+        PRINTFORML あげはは深呼吸をする。
+	ENDIF
+
+	PRINTFORML 「行くわよ。私の全部を受け止めて」
+	PRINTFORMW 夕日を背に、運命のデュエルが始まる。
+
+	TARGET = 이벤트主
+	CALL CHOICE_DUEL_TYPE(402650)
+	依頼_달성상황++
+
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML デュエルが終わり、二人は息を整える。
+	PRINTFORML あげはは俯いたまま、しばらく沈黙を保つ。
+	PRINTFORMW やがて、震える声で話し始めた。
+
+	IF TALENT:NO_TO_CHARANUM(2650):연모 == 0
+		; 初告白の場合
+		PRINTFORML 「私、자신に自信ないし、すぐお節介焼いて失敗するし」
+		PRINTFORML 「面倒くさい人間だって、자신でもわかってる……」
+		PRINTFORMW 彼女の声は小さく、不安に満ちている。
+
+		PRINTFORML 「でも、あなたの隣にいると、そんな자신でもいいのかなって思えるんだ」
+		PRINTFORML 彼女は顔を上げ、涙目で、しかし真っ直ぐな目であなたを見る。
+		PRINTFORMW 「あなたといると、私、強くなれるの」
+
+		PRINTFORML 「好きです……！」
+		PRINTFORML あげはは勇気を振り絞って叫ぶ。
+		PRINTFORMW 「あなたのことが、大好きです！わ、私と……付き合ってください！」
+
+        SETCOLOR C_PINK
+        PRINTFORML 告白の言葉が夕日に響く。
+        PRINTFORMW %CALLNAME:이벤트主%は【연모】を得た
+        RESETCOLOR
+		PRINTFORML 彼女の頬には涙が伝っているが、その瞳は希望に輝いている。
+		PRINTFORMW あなたの答えを、彼女は震えながら待っている。
+
+		PRINTL
+		PRINTL [0] - 「僕も君が好きだ」
+		PRINTL [1] - 「君の気持ちに応えたい」
+		PRINTL [2] - 「よく考えてから答えたいので、少し時間をください」
+		BINPUT
+
+		IF RESULT == 0 || RESULT == 1
+			PRINTFORML あなたの言葉に、あげはの表情が一気に明るくなる。
+			PRINTFORML 「本当に…？嘘じゃない？」
+			PRINTFORMW 「やった…やったぁ！」
+
+			PRINTFORML 彼女は嬉しさのあまり、あなたに飛び込んでくる。
+			PRINTFORML 「ありがとう…本当に、ありがとう」
+			PRINTFORMW 夕日の中で、二人は静かに抱き合った。
+
+			IF 依頼_進行보존:402650 == 2
+				PRINTFORML 「ツァン・ディレにも、今度お礼を言わなきゃ」
+				PRINTFORMW あげはは幸せそうに呟く。
+				PRINTFORMW 後で苦労しそうだけど…まあ何とかなるでしょう。
+			ENDIF
+
+			CALL EVENT_FAVUP(이벤트主,300)
+		ELSE
+			PRINTFORML あなたの言葉に、あげはは少し寂しそうな表情を見せる。
+			PRINTFORML 「そう…そうよね。急すぎたかも」
+			PRINTFORMW 「でも、気持ちは伝えられたから…それだけで十分」
+
+			PRINTFORML 「待ってるから。あなたの答えを」
+			PRINTFORML 彼女は涙を拭いながら、それでも微笑む。
+			PRINTFORMW 「私、頑張るから。あなたに相応しい女性になれるように」
+		ENDIF
+	ELSE
+		; 既に恋人同士の場合
+		PRINTFORML 「……時々、不安になるの」
+		PRINTFORML あげはは少し微笑んで、あなたに近づく。
+		PRINTFORMW 「私なんかで、本当にいいのかなって」
+
+		PRINTFORML 「でも、今日のデュエルで確信した」
+		PRINTFORML 「あなたは私を、ちゃんと受け止めてくれる」
+		PRINTFORMW 「これからも、ずっと一緒にいてくれる？」
+
+		PRINTFORML 彼女はあなたの手を握る。
+		PRINTFORML 「私、あなたのために、もっと強くなりたい」
+		PRINTFORMW 「あなたを支えられる女性になりたいの」
+
+		PRINTL
+		PRINTL [0] - 「君はもう十分強いよ」
+		PRINTL [1] - 「一緒に強くなろう」
+		PRINTL [2] - 「君のままでいてほしい」
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML 「そんなこと…でも、嬉しい」
+			PRINTFORML あげはは照れながら微笑む。
+			PRINTFORMW 「あなたがそう言ってくれるなら、自信が持てる」
+			CALL EVENT_FAVUP(이벤트主,200)
+		ELSEIF RESULT == 1
+			PRINTFORML 「うん！一緒に頑張ろう」
+			PRINTFORML あげはは力強く頷く。
+			PRINTFORMW 「二人なら、どんなことでも乗り越えられる気がする」
+			CALL EVENT_FAVUP(이벤트主,250)
+		ELSE
+			PRINTFORML 「私のまま…」
+			PRINTFORML あげはは少し驚いたような表情を見せる。
+			PRINTFORMW 「ありがとう。そう言ってもらえると、安心する」
+			CALL EVENT_FAVUP(이벤트主,180)
+		ENDIF
+
+		PRINTFORML 「これからも、よろしくお願いします」
+		PRINTFORML あげはは深々とお辞儀をする。
+		PRINTFORMW 「私の恋人さん」
+	ENDIF
+
+	依頼_달성상황++
+
+ELSEIF 依頼_달성상황 == 2
+	; エピローグ
+	PRINTFORML 告白の後、二人は並んで夕日を眺める。
+	PRINTFORML 学園の向こうに沈んでいく太陽が、空を赤く染めている。
+	PRINTFORMW あげはは幸せそうに、あなたの隣に寄り添っている。
+
+	PRINTFORML 「ねえ、覚えてる？初めて会った時のこと」
+	PRINTFORML 彼女は懐かしそうに呟く。
+	PRINTFORMW 「あの時は、まさかこんな風になるなんて思わなかった」
+
+	PRINTFORML 「私、昔から人付き合いが下手で」
+	PRINTFORML 「いつも一人でいることが多かったの」
+	PRINTFORMW 「でも、あなたと出会って、変われた気がする」
+
+	IF 依頼_進行보존:402650 == 1
+		PRINTFORML 「さっきは、ちゃんと守ってくれたし」
+		PRINTFORMW 「頼もしい恋人を持てて、私は幸せ者ね」
+	ELSEIF 依頼_進行보존:402650 == 2
+		PRINTFORML 「ツァン・ディレまで応援してくれるなんて」
+		PRINTFORMW 「あなたの人柄のおかげかな」
+	ELSEIF 依頼_進行보존:402650 == 3
+		PRINTFORML 「私のことを、あんなに大切にしてくれて」
+		PRINTFORMW 「本当に、あなたと出会えてよかった」
+	ENDIF
+
+	PRINTFORML 「これからは、もっとお節介焼いちゃうかも」
+	PRINTFORML あげはは悪戯っぽく笑う。
+	PRINTFORMW 「覚悟しておいてよね」
+
+	PRINTFORML 夕日が完全に沈み、空に星が瞬き始める。
+	PRINTFORML 二人の新しい物語が、今、始まろうとしていた。
+	PRINTFORMW 「帰りましょうか。明日も、一緒にいられるから」
+
+	CALL EVENT_TIMER(120)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_402650
+CALL DP_GET(10000)
+
+@IRAI_DECK_402650(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 2650
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_402650
+
+PRINTFORML 
+PRINTFORML 青葉あげは「私の全部を…受け止めて」
+PRINTFORMW 

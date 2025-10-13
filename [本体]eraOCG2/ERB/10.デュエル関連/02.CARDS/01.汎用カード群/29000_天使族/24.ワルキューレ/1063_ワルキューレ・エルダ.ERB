@@ -1,0 +1,140 @@
+@CARDNAME_1063,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 왈큐레 에르다
+	CASE "略称"
+		RESULTS = 에르다
+	CASE "カテゴリ"
+		RESULTS:0 = 왈큐레
+ENDSELECT
+
+
+@CARD_1063(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족 
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 2200
+	CASE "성별"
+		RETURN 牝性
+	CASE "単一存在"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251005
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1063(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "왈큐레 에르다"는 자신 필드에 1체밖에 앞면 표시로 존재할 수 없다.
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 발동할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과 ,攻守変動)
+PRINTL ①: 이 카드가 몬스터 존에 존재하는 한, 상대 필드의 몬스터의 공격력은 1000 내리고,
+PRINTL 상대의 묘지로 보내지는 카드는 묘지로는 가지 않고 제외된다.
+CALLFORM CARD_ABLE(2,손패起動)
+PRINTL ②：패에서 이 카드와 "왈큐레" 카드 １장을 버리고 발동할 수 있다。
+PRINTL 덱에서 레벨４ 이하의 "왈큐레" 몬스터 １장을 특수 소환한다。
+PRINTL 이 효과의 발동 후、턴 종료시까지 자신은 천사족 몬스터밖에 특수 소환할 수 없다。
+
+@CARDCAN_1063(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1063)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,1063)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 왈큐레
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 왈큐레
+	CALLFORM 효과条件レベル_ADV(4, "以下")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1063(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL SET_PLAYER_INFO(듀얼리스트,"제외置換",3,1)
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-1000,0,1063)
+
+
+ELSEIF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1063,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = 왈큐레
+		효과条件他所 = 1
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 왈큐레
+			CALLFORM 효과条件レベル_ADV(4, "以下")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+			SS소환可能종족 = 천사족
+			CALL CARD_SS_RESTRICTION(듀얼리스트)
+		ENDIF
+	ENDIF
+ENDIF
+

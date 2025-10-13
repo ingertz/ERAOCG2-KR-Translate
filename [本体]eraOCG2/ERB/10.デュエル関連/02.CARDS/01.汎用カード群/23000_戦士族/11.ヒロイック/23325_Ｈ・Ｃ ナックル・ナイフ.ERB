@@ -1,0 +1,160 @@
+﻿@CARDNAME_23325,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = H·C 너클 나이프
+	CASE "略称"
+		RESULTS = HC너클
+	CASE "カテゴリ"
+		RESULTS:0 = 히로익
+ENDSELECT
+
+
+@CARD_23325(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 600
+	CASE "守備力"
+		RETURN 200
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251003
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_23325(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신フィールドにレベル１モンスター以外の「히로익」モンスターが存在する場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환に成功した場合、자신フィールドの전사족モンスター１体を대상として발동できる。
+PRINTL そのモンスターとこのカードのレベルは、その内の１体のレベルと同じになる。
+PRINTL この효과の발동後、ターン終了時まで자신はＸモンスターでしか攻撃宣言できない。
+
+@CARDCAN_23325(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23325)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,23325)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,23325,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 히로익
+	CALLFORM 효과条件レベル_ADV(1,"以外")
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,23325)
+		RETURN 0
+	
+	カウンタ = GETVAR(@"%듀얼리스트%_MZ_星:場所")
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 전사족
+	CALLFORM 효과条件レベル_ADV(カウンタ,"以外")
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_23325(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードレベル
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23325,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23325,2)
+	IF RESULT == 0
+		カウンタ = GETVAR(@"%듀얼리스트%_MZ_星:場所")
+
+		CALL FULLRESET
+		효과条件종족 = 전사족
+		CALLFORM 효과条件レベル_ADV(カウンタ,"以外")
+		효과条件표시 = 表側표시
+		효과条件종류 = レベル持ち
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			選択カードレベル = GETVAR(@"%듀얼리스트%_MZ_星:選択カード")
+
+			IF 듀얼리스트 == "자신"
+				PRINTL 【レベルを選択してください】
+				PRINTL
+				PRINTFORML [0] - {カウンタ}
+				PRINTFORML [1] - {選択カードレベル}
+				BINPUT
+			ELSE
+				RESULT = 1
+			ENDIF
+
+			IF RESULT == 0
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永星",カウンタ,1)
+			ELSEIF RESULT == 1
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",選択カードレベル,1)
+			ENDIF
+		ENDIF
+		攻撃可能종류 = 엑시즈
+		CALL CARD_ATK_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF

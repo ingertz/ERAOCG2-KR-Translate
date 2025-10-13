@@ -46,6 +46,7 @@ IF BASE:MASTER:체력 <= 300 || BASE:MASTER:술기운 >= 1500
 	SIF オプション_체력기력상승 == 1
 		CFLAG:MASTER:401 += 10
 
+
 	CFLAG:MASTER:수면 = 1
 	CFLAG:MASTER:취침시간 = DAY * 1440 + TIME
 	SIF INRANGE(CFLAG:MASTER:시작위치,場所_依頼用エリア１,場所_依頼用エリア３)
@@ -74,34 +75,40 @@ IF BASE:MASTER:체력 <= 300 || BASE:MASTER:술기운 >= 1500
 			ENDIF
 		ENDIF
 	ENDIF
-	徹底虐めモード = 0
+	
 	FLAG:1 = 1
-	CALL TOUCH_SET(0,0,0,1)
+	IF TFLAG:섹스승부
+		CFLAG:MASTER:H패배경험 ++
+		CFLAG:TARGET:H승리경험 ++
+	ENDIF
+	CALL RESET_SEXVARIENT()
+	RETURN 0
 ENDIF
 IF TARGET && TCVAR:기분나쁨
 	PRINTFORMW %CALLNAME:TARGET%을 화나게 하고 말았다…
 	FOR 캐릭터_ID,0,CHARANUM
 		CALL RESET_SEXCON(캐릭터_ID)
 	NEXT
-	徹底虐めモード = 0
-	CALL TOUCH_SET(0,0,0,1)
+	CALL RESET_SEXVARIENT()
+	RETURN 0
 ENDIF
 
-IF TARGET && BASE:TARGET:체력 < 300 && 徹底虐めモード == 0
-	PRINTFORMW （ %CALLNAME:TARGET%의 체력이 한계에 도달했습니다）
-	IF GROUPMATCH(CFLAG:MASTER:현재위치,CFLAG:MASTER:시작위치,場所_캐릭터家,場所_ラブホ) && 徹底虐めモード == 0 && CFLAG:TARGET:우후후 && TALENT:TARGET:즉시타락 >= 1
-		PRINTFORML 체력의 한계를 넘어서、 %CALLNAME:TARGET%를 괴롭히시겠습니까？
+IF TARGET && BASE:TARGET:체력 < 300 && TFLAG:철저학대모드 == 0
+	PRINTFORMW （%CALLNAME:TARGET%의 체력이 한계에 도달했습니다）
+	IF GROUPMATCH(CFLAG:MASTER:현재위치,CFLAG:MASTER:시작위치,場所_캐릭터家,場所_ラブホ) && TFLAG:철저학대모드 == 0 && CFLAG:TARGET:우후후 && TALENT:TARGET:즉시타락 >= 1
+		PRINTFORML 체력의 한계를 넘어서、%CALLNAME:TARGET%를 괴롭히시겠습니까？
 		PRINTL [0] - 예
 		PRINTL [1] - 아니오
 		BINPUT
 		IF RESULT == 0
-			徹底虐めモード = 1
+			TFLAG:철저학대모드 = 1
+			CFLAG:TARGET:H패배경험 ++
 			RETURN 0
 		ENDIF
 	ENDIF
 	IF ITEM:천년카메라 >= 1
 		IF BEDROOM(CFLAG:MASTER:현재위치) && CFLAG:TARGET:우후후 && !GETBIT(CFLAG:TARGET:사진플래그 ,写真_더블ピース)
-			PRINTFORML …… %CALLNAME:TARGET%의 부끄러운 사진을 찍겠습니까？
+			PRINTFORML ……%CALLNAME:TARGET%의 부끄러운 사진을 찍겠습니까？
 			PRINTL [0] - 예
 			PRINTL [1] - 아니오
 			BINPUT
@@ -112,20 +119,23 @@ IF TARGET && BASE:TARGET:체력 < 300 && 徹底虐めモード == 0
 				CALL SOURCE_CALC_정복(TARGET, MASTER, 500)
 				SETBIT CFLAG:TARGET:사진플래그 , 写真_더블ピース
 				CALL GET_YOWAMI(TARGET)
+				CFLAG:TARGET:H패배경험 += 5
 			ENDIF
 		ENDIF
 	ENDIF
-	徹底虐めモード = 0
+	CALL RESET_SEXVARIENT()
 	CFLAG:쇠약 = 300
 	;캐릭터_IDの체력最大値상승
 	SIF オプション_체력기력상승 == 1
-		CFLAG:TARGET:401 += 10
+		CFLAG:TARGET:체력기력AWS += 10
+
 	CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 3, 5)
 	CALL CHARA_SLEEP(TARGET)
 	FOR 캐릭터_ID,0,CHARANUM
-		CFLAG:캐릭터_ID:우후후 = 0
+		CALL RESET_SEXCON(캐릭터_ID)
 	NEXT
-	CALL TOUCH_SET(0,0,0,1)
+	
+
 	IF GROUPMATCH(CFLAG:MASTER:현재위치,場所_캐릭터家)
 		PRINTFORMW 혼자서 상대의 방에 있는 것도 나쁜 생각이 드니 돌아간다고 하자。
 		CFLAG:MASTER:현재위치 = 1
@@ -291,8 +301,8 @@ FOR 캐릭터_ID,0,CHARANUM
 			TCVAR:캐릭터_ID:위치관계 = 0
 	ENDIF
 	;ついでに사정処理用文字列変数の初期化
-	CSTR:캐릭터_ID:10 = /
-	CSTR:캐릭터_ID:11 = /
+	;CSTR:캐릭터_ID:10 = /
+	;CSTR:캐릭터_ID:11 = /
 	;服装플래그
 	CALL CLOTHES_SETTING_TRAIN(캐릭터_ID)
 NEXT

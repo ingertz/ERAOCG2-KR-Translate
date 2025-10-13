@@ -1,0 +1,192 @@
+﻿@CARDNAME_51621,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Ｈ－Ｃ　크레이브솔리시
+	CASE "略称"
+		RESULTS = HC크레이브
+	CASE "カテゴリ"
+		RESULTS:0 = 히로익
+ENDSELECT
+
+
+@CARD_51621(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251003
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_51621(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 4
+素材条件종족 = 전사족
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,51621) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_51621(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 전사족レベル４モンスター×２
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：상대は他のモンスターを攻撃대상に選択できない。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：５００ＬＰになるようにＬＰを払って발동できる。
+PRINTL このターンのバトルフェイズ開始時、자신フィールドのモンスター１体を選んで攻撃力を倍にする。
+CALLFORM CARD_ABLE(3,攻撃時誘発)
+PRINTL ③：상대モンスターが戦闘を行う攻撃宣言時、このカードのＸ素材を１つ取り除いて발동できる。
+PRINTL このカードの攻撃力はターン終了時まで、상대フィールドの表側표시モンスター１体の攻撃力分アップする。
+
+@CARDCAN_51621(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51621)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,51621)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 500
+		RETURN 0
+	SIF ターン数 <= 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == バトル開始時強制
+	SIF 발동済_2(듀얼리스트,51621) == 0
+		RETURN 0
+	SIF 발동済_4(듀얼리스트,51621)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF 발동済_3(듀얼리스트,51621)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	IF 듀얼리스트 != "자신"
+		SIF 戦闘場所(듀얼리스트) != 場所
+			RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_51621(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51621,2)
+	IF RESULT == 0
+		攻撃力修正 = GETVAR(@"ライフ_%듀얼리스트%") - 500
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",攻撃力修正)
+	ENDIF
+
+ELSEIF 종류 == バトル開始時強制
+	CALL FULLRESET
+	효과条件표시 = 表側표시
+	CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+	IF RESULT != 9999
+		攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:RESULT")
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",RESULT,"永攻",攻撃力修正)
+	ENDIF
+	CALL CARD_EFFECT_USE(듀얼리스트,51621,4)
+
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51621,3,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+		IF RESULT != 9999
+			攻撃力修正 = GETVAR(@"%対面者%_MZ_攻:RESULT")
+			CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"一攻",攻撃力修正)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻誘")
+ENDIF

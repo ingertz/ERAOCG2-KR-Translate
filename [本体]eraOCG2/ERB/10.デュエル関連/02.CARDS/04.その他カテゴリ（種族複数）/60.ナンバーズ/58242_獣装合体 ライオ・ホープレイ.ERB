@@ -7,13 +7,13 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 수장합체 라이오 호프레이
+		RESULTS = 수장합체 라이오 호프레이
 	CASE "略称"
-RESULTS = 수장합체 LHR
+		RESULTS = 수장합체 LHR
 	CASE "カテゴリ"
-RESULTS:0 = 넘버즈
-RESULTS:1 = 유토피아
-RESULTS:2 = 카오스
+		RESULTS:0 = 넘버즈
+		RESULTS:1 = 유토피아
+		RESULTS:2 = 카오스
 ENDSELECT
 
 
@@ -36,8 +36,6 @@ SELECTCASE 参照先
 		RETURN 2500
 	CASE "守備力"
 		RETURN 2000
-	CASE "C불가"
-		RETURN 1
 ENDSELECT
 
 RETURN 0
@@ -63,7 +61,7 @@ ENDIF
 #DIM DYNAMIC 종류
 
 PRINTL 레벨 5 몬스터 x 3
-PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 발동할 수 없다.
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 PRINTL 이 카드의 효과 상대는 효과를 발동할 수 없으며, 이 카드의 효과는 무효화되지 않는다.
 CALLFORM CARD_ABLE(1,필드起動)
 PRINTL ①: 이 카드의 엑시즈 소재를 1개 제거하고 발동할 수 있다.
@@ -123,6 +121,8 @@ ELSEIF 종류 == フリー誘発
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_58242(듀얼리스트,종류,ゾーン,場所)
@@ -167,7 +167,7 @@ ELSEIF 종류 == フリー誘発
 	IF RESULT == 0
 		CALL FULLRESET
 		효과条件표시 = 表側표시
-		효과추가종류 = 12
+		효과추가종류 = 22
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"지속無効")
 	ENDIF
 ENDIF

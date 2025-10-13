@@ -1,0 +1,146 @@
+﻿@CARDNAME_34603,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 지구거인 가이아 플레이트
+	CASE "略称"
+		RESULTS = 가이아 플레이트
+	CASE "カテゴリ"
+		RESULTS = 화석
+ENDSELECT
+
+
+@CARD_34603(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 1000
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34603(종류)
+#DIM DYNAMIC 종류
+
+;PRINTL このカードのコントローラーは、자신のスタンバイフェイズ毎に자신の묘지から岩石族モンスター１体を제외する。
+;PRINTL または제외せずにこのカードを묘지へ送る。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：このカードは자신の묘지の岩石族モンスター２体を제외し、손패から특수소환できる。
+CALLFORM CARD_ABLE(2,지속효과)
+;PRINTL ②：このカードと戦闘を行う상대モンスターの攻撃力・守備力はダメージ計算時のみ半分になる。
+PRINTL ②：このカードがフィールドに存在する限り、상대モンスターの攻撃力・守備力は半分になる。
+CALLFORM CARD_ABLE(3,지속효과)
+PRINTL ③：자신の묘지に「화석융합－파슬 퓨전」が存在する場合、
+PRINTL 자신フィールドの원소정령족モンスターは효과では破壊されず、このカードは상대のカードの효과の대상にならない。
+
+
+@CARDCAN_34603(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34603)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 손패起動
+	; ①自己특수소환효과
+	;CALL CARD_SS_CHECK(듀얼리스트,34603,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 원소정령족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	; ②ステータス변경효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34603(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 守備力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	; ①自己특수소환효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34603,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 원소정령족
+		효과条件複数 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	; ②ステータス변경효과
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		CALL FULLRESET
+		攻撃力修正 = GETVAR(@"%対面者%_MZ_攻:カウンタ")
+		守備力修正 = GETVAR(@"%対面者%_MZ_守:カウンタ")
+		;CALL STATCHANGE_BASIC(対面者,"自身",カウンタ,-攻撃力修正 / 2,-守備力修正 / 2)
+		CALL STATCHANGE_EFFECT(듀얼리스트,"対面自身",カウンタ,"永攻",-攻撃力修正/2)
+		CALL STATCHANGE_EFFECT(듀얼리스트,"対面自身",カウンタ,"永守",-守備力修正/2)
+	NEXT
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 화석융합－파슬 퓨전
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과条件종족 = 원소정령족
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+	ENDIF
+ENDIF

@@ -226,29 +226,29 @@ $CHAIN_LOOP
 ;플레이어는 無差別でタイムスタンプ順
 ;待機효과발동確認画面――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ;발동한 カードのフリーや효과後 이외의 、효과가 ここにストックされる
-IF 実行者 == "자신"
-	CUSTOMDRAWLINE —
-	PRINTFORML 【대기 효과 발동 확인】（사용할 효과를 선택해 주세요）
-	CUSTOMDRAWLINE —
-	;발동予定確認コラム
-	FOR カウンタ,0,効後_カウンタ
-		IF 効後_実行者:カウンタ == "자신"
-			SETCOLOR C_W_BLUE 
-		ELSEIF 効後_実行者:カウンタ == "상대"
-			SETCOLOR C_W_RED
-		ENDIF
-		SIF カウンタ == 0
-			PRINTL 선택된 카드：
-		TRYCALLFORM CARDNAME_{効後_효과ID:カウンタ}, "名前"
-		PRINTFORML 체인({カウンタ + 1,4})대기 %RESULTS%
-		RESETCOLOR
-	NEXT
-	CUSTOMDRAWLINE —
-ENDIF
+CUSTOMDRAWLINE —
+PRINTFORML 【대기 효과 발동 확인】（사용할 효과를 선택해 주세요）
+CUSTOMDRAWLINE —
+;발동予定確認コラム
+FOR カウンタ,0,効後_カウンタ
+	IF 効後_実行者:カウンタ == "자신"
+		SETCOLOR C_W_BLUE 
+	ELSEIF 効後_実行者:カウンタ == "상대"
+		SETCOLOR C_W_RED
+	ENDIF
+	SIF カウンタ == 0
+		PRINTL 선택된 카드：
+	TRYCALLFORM CARDNAME_{効後_효과ID:カウンタ}, "名前"
+	PRINTFORML 체인({カウンタ + 1,4})대기 %RESULTS%
+	RESETCOLOR
+NEXT
+CUSTOMDRAWLINE —
 
 ;チェーンの最後のプレイヤーが현재의 実行者じゃないかつ、
 ;チェーンの最後의 효과가 チェーン불가能であればば、待機処理をすべて無視し、
 ;実行者権を대전상대에게 渡して효과後誘発/フリーチェーンの処理へ。
+
+;PRINTFORML 効後_カウンタ:{効後_カウンタ}／実行者：%実行者%
 IF 効後_カウンタ >= 1 && 効後_実行者:(効後_カウンタ - 1) != 実行者
 	CALLFORM CHAIN_CAN(効後_実行者:(効後_カウンタ - 1),待機_효과種:(効後_カウンタ - 1),効後_ゾーン:(効後_カウンタ - 1),効後_設場所:(効後_カウンタ - 1),効後_효과ID:(効後_カウンタ - 1))
 	IF RESULT != 0
@@ -365,60 +365,63 @@ VARSET 상대_효과無し
 フリチェOFF状態 = オプション_フリチェ
 
 $CHOICE_LOOP
+;PRINTFORML チョイスループ：実行者:%実行者%
 VARSET 選択カード, 999
 VARSET 효과在り
 VARSET ループ횟수
 VARSET チェーン불가
-IF 実行者 == "자신"
-	CUSTOMDRAWLINE —
-	PRINTFORML 【유발 효과 확인】
-	CUSTOMDRAWLINE —
-	IF 効後_カウンタ >= 1 && 実行者 == "자신"
-		FOR カウンタ,0,効後_カウンタ
-			IF 効後_実行者:カウンタ == "자신"
-				SETCOLOR C_W_BLUE 
-			ELSEIF 効後_実行者:カウンタ == "상대"
-				SETCOLOR C_W_RED
-			ENDIF
-			SIF カウンタ == 0
-				PRINTL 선택된 카드：
-			IF 効後_STANDB:カウンタ == 1
-				TRYCALLFORM CARDNAME_{効後_효과ID:カウンタ}, "名前"
-				PRINTFORML 체인({カウンタ + 1,4})대기 『{効後_設場所:カウンタ,3}』 %RESULTS%
-				RESETCOLOR
-				;レイ追記20250124
-				SIF 効後_実行者:カウンタ == "상대"
-					TRYCALLFORM CARD_UI(効後_효과ID:カウンタ) 
+
+CUSTOMDRAWLINE —
+PRINTFORML 【유발 효과 확인】
+CUSTOMDRAWLINE —
+IF 効後_カウンタ >= 1 && 実行者 == "자신"
+	FOR カウンタ,0,効後_カウンタ
+		IF 効後_実行者:カウンタ == "자신"
+			SETCOLOR C_W_BLUE 
+		ELSEIF 効後_実行者:カウンタ == "상대"
+			SETCOLOR C_W_RED
+		ENDIF
+		SIF カウンタ == 0
+			PRINTL 선택된 카드：
+		IF 効後_STANDB:カウンタ == 1
+			TRYCALLFORM CARDNAME_{効後_효과ID:カウンタ}, "名前"
+			PRINTFORML 체인({カウンタ + 1,4})대기 『{効後_設場所:カウンタ,3}』 %RESULTS%
+			RESETCOLOR
+			;レイ追記20250124
+			SIF 効後_実行者:カウンタ == "상대"
+				TRYCALLFORM CARD_UI(効後_효과ID:カウンタ) 
+		ELSE
+			IF 選択済:カウンタ >= 3000
+				CALL CARD_SELECT(効後_実行者:カウンタ,選択済:カウンタ - 3000)
+			ELSEIF 選択済:カウンタ >= 2000
+				CALL CARD_SELECT(効後_実行者:カウンタ,選択済:カウンタ - 2000)
 			ELSE
-				IF 選択済:カウンタ >= 3000
-					CALL CARD_SELECT(効後_実行者:カウンタ,選択済:カウンタ - 3000)
-				ELSEIF 選択済:カウンタ >= 2000
-					CALL CARD_SELECT(効後_実行者:カウンタ,選択済:カウンタ - 2000)
-				ELSE
-					CALL CARD_SELECT(効後_実行者:カウンタ,選択済:カウンタ)
-				ENDIF
-				TRYCALLFORM CARDNAME_{効後_효과ID:カウンタ}, "名前"
-				PRINTFORML 체인({カウンタ + 1,4})%参照先（CS）%『{選択カード（CS）,3}』 %RESULTS%
-				RESETCOLOR
+				CALL CARD_SELECT(効後_実行者:カウンタ,選択済:カウンタ)
 			ENDIF
-		NEXT
-		CUSTOMDRAWLINE —
-	ENDIF
+			TRYCALLFORM CARDNAME_{効後_효과ID:カウンタ}, "名前"
+			PRINTFORML 체인({カウンタ + 1,4})%参照先（CS）%『{選択カード（CS）,3}』 %RESULTS%
+			RESETCOLOR
+		ENDIF
+	NEXT
+	CUSTOMDRAWLINE —
 ENDIF
+
 ;チェーンの最後のプレイヤーが현재의 実行者じゃないかつ、
 ;チェーンの最後의 효과가 チェーン불가能であればば、待機処理をすべて無視し、
 ;実行者権を대전상대에게 渡して효과後誘発/フリーチェーンの処理へ。
-
+IF 効後_カウンタ >= 1
+;	PRINTFORML T1　効後_カウンタ:{効後_カウンタ}／実行者A:%効後_実行者:(効後_カウンタ - 1)%／実行者B:%実行者%
+ENDIF
 IF 効後_カウンタ >= 1 && 効後_実行者:(効後_カウンタ - 1) != 実行者
 	;듀얼리스트,ゾーン,場所)
 	;듀얼리스트 = 効後_実行者:(効後_カウンタ - 1)
 	;場所 = 効後_設場所
 	;ゾーン = 効後_ゾーン
+	;	PRINTFORML T2　実行者A:%効後_実行者:(効後_カウンタ - 1)%／효과種:{待機_효과種:(効後_カウンタ - 1)}／ゾーン：%効後_ゾーン:(効後_カウンタ - 1)%／場所:{効後_設場所:(効後_カウンタ - 1)}／효과ID:{効後_효과ID:(効後_カウンタ - 1)}
 	CALLFORM CHAIN_CAN(効後_実行者:(効後_カウンタ - 1),待機_효과種:(効後_カウンタ - 1),効後_ゾーン:(効後_カウンタ - 1),効後_設場所:(効後_カウンタ - 1),効後_효과ID:(効後_カウンタ - 1))
 	IF RESULT != 0
 		SETVAR @"%実行者%_효과無し", 1
-;		PRINTFORMW 이 카드의 효과에는 체인할 수 없습니다！！
-;		CUSTOMDRAWLINE —
+		PRINTFORMW %実行者%는 이 카드의 효과에는 체인할 수 없습니다！！
 		IF 実行者 == 듀얼리스트
 			実行者 = %対面者%
 		ELSEIF 実行者 == 対面者
@@ -699,7 +702,6 @@ FOR カウンタ,0,5
 	자신_MZ_召酔:カウンタ = 0
 	상대_MZ_召酔:カウンタ = 0
 NEXT
-
 VARSET 자신_C1禁止令, -1
 VARSET 자신_C1禁カウンタ
 VARSET 상대_C1禁止令, -1
@@ -724,7 +726,11 @@ RETURN 발동在り
 
 IF 参照先 == "直前破壊" && カード_ID >= 1
 	SETVAR @"%듀얼리스트%_直前破壊_保", カード_ID
-;	PRINTFORMW GETVAR(@"%듀얼리스트%_直前破壊_保"):{GETVAR(@"%듀얼리스트%_直前破壊_保")}
+	RETURN 1
+ELSEIF 参照先 == "효과이력" && カード_ID >= 1
+	カウンタ数 = GETVAR(@"%듀얼리스트%_효과이력_CT")
+	SETVAR @"%듀얼리스트%_효과이력:カウンタ数", カード_ID
+	SETVAR @"%듀얼리스트%_효과이력_CT", カウンタ数 + 1
 	RETURN 1
 ENDIF
 
@@ -816,12 +822,12 @@ ENDSELECT
 #DIM DYNAMIC 対面플래그
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタD
 #DIM DYNAMIC サーチ範囲
-#DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 취득カード_ID,1000
 #DIM DYNAMIC リスト취득플래그
-
+#DIM DYNAMIC 대상カードID
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
@@ -1007,6 +1013,13 @@ FOR カウンタ,0,サーチ範囲
 		CONTINUE
 
 	IF リスト취득플래그 == 1
+		대상カードID = GETVAR(@"%実行者%_%参照先%:カウンタ")
+		IF 효과条件固名前起動 == 1
+			TRYCALLFORM CARDNAME_{대상カードID}, "名前"
+			효과条件固名前:カウンタD = %RESULTS%
+			カウンタD ++
+		ENDIF
+		
 		취득カード_ID:カウンタB = GETVAR(@"%実行者%_%参照先%:カウンタ")
 		カウンタB ++
 	ELSE

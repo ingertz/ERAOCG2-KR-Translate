@@ -1,0 +1,200 @@
+﻿@CARDNAME_52440,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 슈퍼 비크로이드 스텔스 유니온
+	CASE "略称"
+		RESULTS = SBR S 유니온
+	CASE "カテゴリ"
+		RESULTS:0 = 비크로이드
+ENDSELECT
+
+
+@CARD_52440(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3600
+	CASE "守備力"
+		RETURN 3000
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_52440(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「트럭로이드」＋「익스프레스로이드」＋「드릴로이드」＋「스텔스로이드」
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：このカードは連続戦闘と貫通攻撃を持つ。
+CALLFORM CARD_ABLE(0,EX소환時,攻撃時誘発)
+PRINTL ②：このカードが융합소환した場合、またはこのカードが戦闘を行う場合に발동できる。
+PRINTL 자신の손패・묘지のレベル４以下の「비크로이드」モンスター１体をターン終了時まで제외する。
+PRINTL この효과は、제외したそのモンスターの소환成功時に발동する효과と同じになる。
+
+
+
+@CARDSUMMON_52440(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 4
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 트럭로이드
+ELSEIF EX参照 == 10
+	素材条件名前 = 익스프레스로이드
+ELSEIF EX参照 == 11
+	素材条件名前 = 드릴로이드
+ELSEIF EX参照 == 12
+	素材条件名前 = 스텔스로이드
+ENDIF
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,52440) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARDCAN_52440(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,52440)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 비크로이드
+	CALL 효과条件レベル_ADV(4, "以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 비크로이드
+	CALL 효과条件レベル_ADV(4, "以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_52440(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 조교대상
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"連戦")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"貫通")
+ELSEIF 종류 == EX소환時  || 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52440)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 비크로이드
+		CALL 효과条件レベル_ADV(4, "以下")
+		효과条件行先플래그 = 제외行き
+		효과条件추가플래그 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			SELECTCASE 選択カード_ID
+			CASE 24420
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件カテゴリ = 비크로이드
+				효과条件종류 = モン全般
+				효과条件複数 = 98
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			CASE 24421
+				CALL FULLRESET
+				효과範囲상대마함 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+			CASE 24422
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과条件표시 = 守備표시
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+			CASE 24423
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과範囲상대필드 = 1
+				효과範囲묘지 = 1
+				효과範囲상대묘지 = 1
+				효과条件他所 = 1
+				효과条件攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:場所")
+				CALL CARD_EQUIP_MONSTER_ADV(듀얼리스트,ゾーン,場所,1)
+			CASE 24428
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과範囲상대마함 = 1
+				효과条件표시 = 裏側표시
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+			CASE 24429
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = 비크로이드
+				효과条件固名前 = 스트라이크로이드
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDSELECT
+		ENDIF
+	ENDIF
+ENDIF

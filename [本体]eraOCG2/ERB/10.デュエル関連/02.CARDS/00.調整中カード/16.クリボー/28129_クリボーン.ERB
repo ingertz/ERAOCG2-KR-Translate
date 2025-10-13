@@ -1,0 +1,141 @@
+﻿@CARDNAME_28129,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 크리보온
+	CASE "略称"
+		RESULTS = 크리보온
+	CASE "カテゴリ"
+		RESULTS:0 = 크리보
+ENDSELECT
+
+
+@CARD_28129(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 300
+	CASE "守備力"
+		RETURN 200
+	CASE "추가日"
+		RETURN 251009
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28129(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ①：자신のモンスターが戦闘で破壊された時、손패のこのカードを묘지へ送って발동できる。
+PRINTL そのモンスターを묘지から특수소환する。
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ②：상대モンスターの攻撃宣言時、묘지のこのカードを제외して발동できる。
+PRINTL 자신の묘지の「크리보」モンスターを任意の数だけ특수소환する。
+PRINTL その後、これが상대の直接攻撃であれば、その攻撃を無効にし、攻撃モンスターの攻撃可能횟수を１回増やす。
+
+@CARDCAN_28129(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28129)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻撃後誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트) < 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件ID = 直前戦闘破壊ID(듀얼리스트)
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 크리보
+	효과条件他所 = 1
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28129(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환可能数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28129)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件ID = 直前戦闘破壊ID(듀얼리스트)
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28129)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		소환可能数 = 5 - モンスター数(듀얼리스트)
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 크리보
+		효과条件複数 = 100 - 소환可能数
+		IF 듀얼리스트 == "자신"
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ELSE
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+		ENDIF
+		IF RESULT == 1
+			CALL EVADE_ATTACK(듀얼리스트)
+			CALL SET_FIELD_INFO(対面者,"필드",戦闘場所(듀얼리스트,1),"戦",1)
+		ENDIF
+	ENDIF
+ENDIF
+

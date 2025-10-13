@@ -326,6 +326,14 @@ FOR カウンタ,0,30
 					PRINTFORM %"",17,LEFT%
 				ENDIF
 			ENDIF
+			VARSET RESULT
+			TRYCALLFORM CARD_{選択カード_ID}, "외부자"
+			IF RESULT >= 1
+				PRINTBUTTON @"（외）",97002
+			ELSE
+				PRINTFORM %RESULTS,6,LEFT%
+			ENDIF
+			PRINTFORM %"",11,LEFT%
 		ELSE
 			PRINTFORM %"",40,LEFT%
 		ENDIF
@@ -684,6 +692,8 @@ FOR カウンタ,0,30
 		VARSET RESULT
 		VARSET RESULTS
 
+
+
 		IF EX切り替え == 0
 			IF 컬렉션_編集:(リストスタート + カウンタB) == -1
 				PRINT
@@ -698,7 +708,6 @@ FOR カウンタ,0,30
 			ENDIF
 		ENDIF
 		IF EX切り替え == 0
-
 			CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB)
 			SIF カウンタ % 2 == 0
 				CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB,,1)
@@ -1891,6 +1900,11 @@ ELSEIF RESULT == 97000
 
 ELSEIF RESULT == 97001
 	필터条件튜너 ^= 1
+	リストスタート = 0
+	GOTO FILTER_LOOP
+
+ELSEIF RESULT == 97002
+	픽터条件外部 ^= 1
 	リストスタート = 0
 	GOTO FILTER_LOOP
 

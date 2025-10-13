@@ -68,10 +68,7 @@ SIF RESULT == 1
 IF 종류 == 특수소환時
 	SIF 발동済_2(듀얼리스트,38164)
 		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
+
 	CALL FULLRESET
 	효과範囲묘지 = 1
 	효과条件カテゴリ = S－Force
@@ -87,7 +84,10 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
-
+		SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -128,7 +128,7 @@ IF 종류 == 필드起動
 		효과条件名前:1 = S－Force 체이스
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
-PRINTL 묘지의 S－Force 효과 대용 카드를 제외합니까?
+			PRINTL 묘지의 S－Force 효과 대용 카드를 제외합니까?
 			CALL YN_CHOICE(듀얼리스트)
 		ELSE
 			RESULT = 1

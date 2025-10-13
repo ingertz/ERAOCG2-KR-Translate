@@ -1,0 +1,87 @@
+﻿@CARDNAME_28120,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 날개 크리보
+	CASE "略称"
+		RESULTS = 날개 크리보
+	CASE "カテゴリ"
+		RESULTS:0 = 크리보
+		RESULTS:1 = 날개 크리보
+ENDSELECT
+
+
+@CARD_28120(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 300
+	CASE "守備力"
+		RETURN 200
+	CASE "추가日"
+		RETURN 251009
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28120(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ①：フィールドのこのカードが破壊され묘지へ送られた場合に발동できる。
+PRINTL このターン、자신が受ける戦闘ダメージは０になる。
+PRINTL 
+PRINTL 
+PRINTL 
+
+@CARDCAN_28120(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28120)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊")
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_ダメージ無効") == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28120(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28120)
+	IF RESULT == 0
+		CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ無効",1)
+	ENDIF
+ENDIF
+

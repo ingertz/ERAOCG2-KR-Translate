@@ -1,0 +1,153 @@
+@IRAI_EVENT_202640(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2640-02)炎王の力を求めて
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_STカドショ
+	CASE "詳細"
+		PRINTL 光焔ねねからの依頼。彼女の덱強化のため炎王カードを探す。
+		PRINTL どうやら強くなる必要があるという。
+		PRINTL
+		PRINTL 報酬：2500DP、【炎王神天焼】×3
+	CASE "条件"
+		SIF 依頼_完了횟수:102640 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2640):호감도 < 500
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2640):반발각인 > 0
+			RESULTS = 怒っているようです。분노が収まるまで待ちましょう。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_202640(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2640)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML サテライト・カードショップ…の隣の倒産したショップ跡に足を踏み入れる。
+	PRINTFORML 割れたショーケースと埃を被った束のカード。
+	PRINTFORMW 忘れ去られた店内に、かすかな足音が響く。
+	PRINTFORML 「%CALLNAME:MASTER%…来てくれたんだ。ほんとに、ありがとう」
+	PRINTFORMW %CALLNAME:이벤트主%は小さく会釈し、あなたの隣に並ぶ。
+	PRINTFORML 「最近ね、学校の男子たちが…私をデュエルで負かすのを、憂さ晴らしみたいにしてて」
+	PRINTFORMW 「挑まれたら逃げないけど、負けるたびに“ほらな”って笑われる…それが悔しくて」
+	PRINTFORML 「だから強くなりたいの。炎王なら、流れを掴める気がするの。私、運は悪いけど…努力は裏切らないって信じたい」
+	PRINTFORMW %CALLNAME:이벤트主%は埃を払って、炎王の名が覗く束を丁寧に拾い上げる。
+	依頼_달성상황 ++
+	依頼_場所 = 場所_STカドショ
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML 「これ…『炎王』のロゴ…！」%CALLNAME:이벤트主%の指が、古い仕切りの奥を示す。
+	PRINTFORMW その瞬間、奥の闇から荒い足音が近づいてきた。
+	PRINTFORML 「おい、そのカードは俺のモンだ」野良デュエリストがニヤリと笑い、距離を詰める。
+	PRINTFORMW 「先に見つけた俺の勝ち。嫌なら——デュエルで決めようぜ」
+	PRINTFORML 「また…不運？どうして、私ばっかり…」%CALLNAME:이벤트主%は苦笑し、視線を落とした。
+	PRINTFORMW あなたに助けを求めるような、不安げな瞳がこちらを見上げる。
+	PRINTL
+	PRINTFORML [0] - 「%CALLNAME:이벤트主%の前に立ち、無言で睨み返す」
+	PRINTL [1] - 「事情を尋ね、穏便に済ませようと手を上げて制す」
+	PRINTL [2] - 「デュエルで決めよう、と静かにディスクを起動する」
+	BINPUT
+	IF RESULT == 0
+		PRINTFORML あなたは%CALLNAME:이벤트主%を庇うように一歩踏み出し、男の視線を真正面から受け止めた。
+		PRINTFORML 野良デュエリストは舌打ちし、鼻で笑う。
+		CALL EVENT_FAVUP(이벤트主,100)
+	ELSEIF RESULT == 1
+		PRINTFORML あなたが間に入り事情を問うと、男は肩をすくめる。
+		PRINTFORML 「この街のルールは単純だ。強い方が持ってく。それだけだ」
+	ELSE
+		PRINTFORML あなたは迷いなくディスクを構えた。
+		PRINTFORML 男の口角が吊り上がり、薄い殺気が漂う。
+	ENDIF
+	PRINTFORMW %CALLNAME:이벤트主%は不安そうにあなたと男を見比べ、ぎゅっと拳を握った。
+	PRINTFORML 「…私といると、不運を巻き込むかもしれない。でも、もう逃げない」
+	PRINTFORMW 野良デュエリストがディスクを叩きつける。「かかって来いよ」
+
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(202640)
+
+	IF RESULT == 0
+		PRINTFORMW 負けてしまった…
+		PRINTFORMW カードが奪われて、男は意気揚々と行った。
+		PRINTFORMW 仕方ない、別の機会でまた探すか…
+		RETURN 3
+	ENDIF
+
+	PRINTFORML 男は膝をつき、悔しげに唇を噛む。「チッ…覚えてろ」と捨て台詞を残し、
+	PRINTFORMW 暗がりの奥へ姿を消した。静寂が戻る。
+	PRINTFORML 「ありがとう、%CALLNAME:MASTER%…あなたといると、珍しく“良いこと”が起こるんだね」
+	PRINTFORMW %CALLNAME:이벤트主%は胸元で炎王カードを大切そうに抱きしめ、安堵の息をつく。
+	PRINTFORML 「…ね、少し私の話、してもいい？」%CALLNAME:이벤트主%は視線を落とす。
+	PRINTFORMW 「私、もともとはシティの住民だったの。綺麗で、なんでも揃ってて…でも」
+	PRINTFORML 「この不運体質のせいで、いつも何かが壊れたり、巻き込んだり…皆、私を避けるようになって」
+	PRINTFORMW 「居場所がなくなって…気づいたら、サテライトに流れ着いてた。」
+	PRINTFORMW 「発展から外れた街だけど…ここには、まだ私を見てくれる人がいる気がするの」
+	PRINTL
+	PRINTL [0] - 「黙って最後まで耳を傾ける」
+	PRINTL [1] - 「肩にそっと手を置いて頷く」
+	PRINTL [2] - 「次は俺が隣にいる——と視線で伝える」
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは相槌も打たず、ただ彼女の言葉を受け止めた。
+		PRINTFORML %CALLNAME:이벤트主%は安心したように、最後まで語り切る。
+	ELSEIF RESULT == 1
+		PRINTFORML そっと肩に触れると、%CALLNAME:이벤트主%の緊張が少しほどけた。
+		PRINTFORML 「…うん。話せて良かった」彼女は小さく微笑む。
+		CALL EVENT_FAVUP(이벤트主,100)
+	ELSE
+		PRINTFORML あなたの静かな視線に、%CALLNAME:이벤트主%は恥ずかしそうに笑う。
+		PRINTFORML 「…頼りにしても、いいのかな」その声は微かに震えていた。
+		CALL EVENT_FAVUP(이벤트主,150)
+	ENDIF
+
+	PRINTFORML %CALLNAME:이벤트主%は棚の裏から未開封の束を取り出した。「これなんだけど…」
+	PRINTFORMW 「6枚束で売ってたみたい。私が3枚、%CALLNAME:MASTER%に3枚…お礼に、受け取って」
+	PRINTFORML 6枚束で売るっていうのは誰得だろう、だからこそ倒産したんじゃない？
+	PRINTFORMW …こんなツッコミは胸にしまって、素直に受け取ろう。
+	PRINTFORML 「強くなって、もう誰かの憂さ晴らしなんてさせない。…また会えるかな？」
+	PRINTFORMW あなたは頷き、彼女の背中を見送った。今日は、彼女にとって確かに「良い日」だった。
+
+	CALL EVENT_TIMER(30)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_202640
+CALL DP_GET(2500)
+CALL CARD_GET_SINGLE(72632,0,3)
+
+@IRAI_DECK_202640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+	CALL CHOOSE_DECK_RANDOM
+	RETURN RESULT
+ENDIF
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_202640
+PRINTFORML
+PRINTFORML 野良デュエリスト「そのカードは俺のモンだ」
+PRINTFORML 確かに、強い方が持ってく——ここじゃそれがルールだ。
+PRINTFORMW

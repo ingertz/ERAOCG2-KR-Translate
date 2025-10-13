@@ -136,6 +136,7 @@ RETURN 1
 
 ;使用場所(30):汎用구상설정관리
 ;使用場所(31):구상デバッグの관리
+;使用場所(35):캐릭터依頼の관리
 
 
 
@@ -146,12 +147,6 @@ SIF 使用場所 == 0
 ;필터_所持 = 1
 $INPUT_LOOP_RESETLIST
 
-SIF 使用場所 == 1 || 使用場所 == 10 || 使用場所 == 11 || 使用場所 == 12
-	VARSET 필터_所持
-
-
-SIF 使用場所 == 3 || 使用場所 == 9 || 使用場所 == 4
-	VARSET 필터_所持,1
 IF 아이템플래그 == 71
 	필터_素質:2 = 1
 ELSEIF 아이템플래그 == 72
@@ -161,6 +156,15 @@ ELSEIF 아이템플래그 == 77
 ENDIF
 SIF 아이템플래그 == 82
 	VARSET 필터_연모,1
+
+
+SIF 使用場所 == 1 || 使用場所 == 10 || 使用場所 == 11 || 使用場所 == 12
+	VARSET 필터_所持
+
+
+SIF 使用場所 == 3 || 使用場所 == 9 || 使用場所 == 4
+	VARSET 필터_所持,1
+
 
 SIF 使用場所 == 15
 	VARSET 필터_消去可,1
@@ -178,14 +182,16 @@ SIF 使用場所 == 18
 SIF 使用場所 == 20
 	VARSET 필터_저장모유량,1
 
-
 SIF 使用場所 == 2
 	VARSET 필터_特価品,1
 
 SIF 使用場所 == 31
 	VARSET 필터_구상 ,1
 
-IF GROUPMATCH(使用場所,5,6,7,8,15,16,17,18,19,20,30)
+SIF 使用場所 == 35
+	VARSET 필터_依頼 ,1
+;ここONで듀얼리스트も含める
+IF GROUPMATCH(使用場所,5,6,7,8,15,16,17,18,19,20,30,31,35)
 	VARSET 필터_듀얼리스트
 ELSEIF 使用場所 == 10 || 使用場所 == 11 || 使用場所 == 12
 	VARSET 필터_듀얼리스트,2
@@ -272,6 +278,8 @@ FOR カウンタ,リストスタート,(リストスタート + リスト표시)
 						SETCOLOR C_GRAY
 					PRINT 
 				CASE 17
+					RESETCOLOR
+				CASE 35
 					RESETCOLOR
 				CASEELSE
 					VARSET RESULT
@@ -412,9 +420,10 @@ IF 使用場所 == 8
 	RESETCOLOR
 	PRINT 　　
 	PRINTBUTTON "[외부자 덱]", 6670
-	PRINT 　　
-	PRINTBUTTON "[E.R.A 덱]", 6671
-
+	IF 投入禁止枚数 == 0
+		PRINT 　　
+		PRINTBUTTON "[E.R.A 덱]", 6671
+	ENDIF
 	PRINTL
 	CUSTOMDRAWLINE ―
 ENDIF
@@ -556,7 +565,7 @@ ELSE
 				GOTO INPUT_LOOP
 		ENDIF
 		RETURN 캐릭터_ID
-	ELSEIF 使用場所 == 4 || 使用場所 == 31
+	ELSEIF 使用場所 == 4 || 使用場所 == 31  || 使用場所 == 35
 		RETURN 캐릭터_ID
 
 	ELSEIF 使用場所 == 0 || 使用場所 == 17
@@ -765,9 +774,9 @@ ENDIF
 #DIM DYNAMIC 使用場所
 #DIMS DYNAMIC リスト표시
 #DIMS DYNAMIC 덱名
-
+#DIM DYNAMIC 설정依頼ID
 IF 소환_リスト:リスト_ID == 0
-	PRINTFORM %リスト표시,32,RIGHT%
+	PRINTFORM %リスト표시,30,RIGHT%
 	RETURN
 ENDIF
 
@@ -855,8 +864,24 @@ SELECTCASE 使用場所
 		ELSE
 			PRINTFORM 유
 		ENDIF
-	CASEELSE
 		
+	CASE 35
+		FOR カウンタ,1,10
+			설정依頼ID = (100000 * カウンタ) + NO:캐릭터_ID
+			IF EXISTFUNCTION(@"IRAI_EVENT_{설정依頼ID}") >= 1
+				IF 依頼플래그:설정依頼ID == 2
+					SETCOLOR C_GOLD
+					PRINTFORM %"☆",2%
+					RESETCOLOR
+				ELSE
+					PRINTFORM %"〇",2%
+				ENDIF
+			ELSE
+				PRINTFORM %"",2%
+			ENDIF
+		NEXT
+		PRINTFORM %"",12%
+	CASEELSE
 		IF CFLAG:캐릭터_ID:소유함 == 1 || CFLAG:캐릭터_ID:전화번호 == 1 
 			PRINTFORM 【체력】
 			CALL PRINT_COLORBAR, BASE:캐릭터_ID:체력, MAXBASE:캐릭터_ID:체력, 8, UNICODE(0x2584), UNICODE(0x2584),  BARCOLORSET("赤"), RESULT:1

@@ -48,8 +48,7 @@ RETURN 0
 
 CALL RESETCONDITION_MAT
 必要링크数 = 1
-素材条件召種 = 召種通常
-素材条件攻撃力 = 1000
+素材条件カテゴリ = 영령
 
 IF EX参照 == 1
 	CALL LINCAN(듀얼리스트,소환カード,4515) 
@@ -81,6 +80,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,4515)
+		RETURN 0
 	SIF !GROUPMATCH(ゾーン,"필드")
 		RETURN 0
 	CALL FULLRESET
@@ -100,7 +101,7 @@ ELSEIF 종류 == 발동誘発
 	효과範囲필드 = 1
 	효과条件カテゴリ = 영령
 	효과条件固名前 = 낙원의 요정 아르토리아 캐스터
-	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	CALL CARD_CHECK_START_DATA(듀얼리스트)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1

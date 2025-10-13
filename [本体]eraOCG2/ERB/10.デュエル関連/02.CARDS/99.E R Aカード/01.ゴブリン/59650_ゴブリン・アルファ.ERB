@@ -170,6 +170,7 @@ ENDIF
 #DIM DYNAMIC 戦闘ダメージ
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC 조교대상
+#DIM DYNAMIC 설정소환先
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -191,12 +192,11 @@ IF 종류 == EX덱起動
 			효과条件성별 = 牝性
 			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
 			選択カードB = RESULT
-			選択カード_ID = RESULT:99
 			IF 選択カードB != 9999
 				CALL CARD_SELECT(듀얼리스트,選択カードA)
-				CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）)				
-
+				CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）)
 				CALL CARD_EX_SUMMON(듀얼리스트, "EX덱", 場所)
+				설정소환先 = カード소환先
 
 				CALL CARD_SELECT(듀얼리스트,選択カードB)
 				CALL CARD_EROTICS_FIELD(대상者（CS）,参照先（CS）,選択カード（CS）)
@@ -204,6 +204,7 @@ IF 종류 == EX덱起動
 					조교대상 = RESULT
 					PRINTFORMW %CALLNAME:조교대상%은 거대한 고블린의 거근에 장비로 장착되어버렸다。
 				ENDIF
+				
 				CALL CARD_SELECT(듀얼리스트,選択カードB)
 				CALL CARD_EQUIP_MONSTER(대상者（CS）,カード소환先,参照先（CS）,選択カード（CS）)
 			ENDIF

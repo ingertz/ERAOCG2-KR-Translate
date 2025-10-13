@@ -1,0 +1,211 @@
+@IRAI_EVENT_302642(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+    CASE "名前"
+        RESULTS = (CH2642-03)炎上と真実
+    CASE "이벤트種"
+        RETURN 이벤트_通常
+    CASE "依頼先"
+        RETURN 即時開始
+    CASE "詳細"
+        PRINTL
+        PRINTL 悪質な麻衣の捏造スキャンダルがネットに流れている。
+        PRINTL 彼女に協力し、炎上の真相を突き止めよう。
+        PRINTL
+        PRINTL 報酬：4500DP、お金5000
+    CASE "条件"
+        SIF 依頼_完了횟수:202642 == 0
+            RETURN 0
+        RETURN 1
+    CASE "추가条件"
+        IF CFLAG:NO_TO_CHARANUM(2642):호감도 < 1000
+            RESULTS = 호감도が不足しています
+            RETURN 1
+        ENDIF
+        IF MARK:NO_TO_CHARANUM(2642):반발각인 > 0
+            RESULTS = 怒っている腹黒アイドルはちょっと会いにくい…분노が収まるまで待ちましょう。
+            RETURN 1
+        ENDIF
+		IF FLAG:악랄치 < 10
+			RESULTS = いいやつすぎるあなたに、腹黒アイドルについでいけないでしょう。
+			RETURN 1
+		ENDIF
+        RETURN 0
+    CASE "回想可"
+        RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_302642(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2642)
+
+IF 依頼_달성상황 == 0
+    ; 自宅での導入
+    PRINTFORML 大型匿名掲示板に不穏なスレッドが立っているのを見つけた。
+    PRINTFORML 「【悲報】アイドル善羽麻衣、ファンを金蔓としか見ていない証拠音声」
+    PRINTFORMW 巧妙に編集された音声は、麻衣が裏でファンを嘲笑しているかのように聞こえ、瞬く間に拡散されていた。
+    PRINTFORML その時、あなたのスマートフォンが軽快な通知音を鳴らす。
+    PRINTFORMW %CALLNAME:이벤트主%からのダイレクトメッセージだった。
+    PRINTFORML 「面白いことになってるね」
+    PRINTFORMW 「ねえ、あなたにしか頼めない『お仕事』があるんだけど」
+    PRINTFORML 彼女は冷静な口調で、あなたに「ファン目線でしか辿り着けない情報源を探し、炎上の発信源を特定してほしい」と依頼する。
+    PRINTFORML 「ただし、これは私の指示じゃない。あなたが勝手にやったことにして」
+    PRINTFORML 「失敗したら、あなたのせい。成功したら、手柄は私のもの」
+    PRINTFORMW 「…それでも、やってくれる？」
+    PRINTFORMW もちろん特定は違法だけど、今更純白無欠なあなたでもない。
+    PRINTFORML それに…イジワルに聞こえるが、
+	PRINTFORMW これが彼女をよく知っているあなたしか分からない、彼女なりの信頼。
+    PRINTL
+    PRINTL [0] - 「…やってみる」
+    BINPUT
+    PRINTFORML あなたは静かに頷き、依頼を引き受ける意思を示した。
+    PRINTFORMW 「ふふっ、話が早くて助かる。…じゃ、期待してるから」
+    CALL EVENT_FAVUP(이벤트主, 50)
+    依頼_달성상황 ++
+    依頼_場所 = 場所_リビング
+ELSEIF 依頼_달성상황 == 1
+    ; 犯人特定とデュエル1
+    PRINTFORML あなたは以前、%CALLNAME:이벤트主%から託された「ファン向け掲示板관리者アカウント」を使い、調査を開始する。
+    PRINTFORML 匿名掲示板とファン向け掲示板のサーバーが同一であることに気づいたあなたは、サーバー관리者に連絡を取った。
+    PRINTFORMW 「最近うちのサーバーに悪質なアクセスがありました。調査のため、IPログを提供していただけないでしょうか」と頼むと、驚くほどあっさりとログを入手できた。
+    PRINTFORML ログを解析し、最初に情報を拡散したアカウントを特定。
+    PRINTFORMW あなたがそのアカウントにコンタクトを取ると、상대はすぐに反応を示した。
+    PRINTFORML 「なんだお前は…邪魔する気か？ 俺は麻衣に裏切られたファンだ！」
+    PRINTFORMW 「俺が勝ったら、お前も真実を広めるのを手伝え。あいつがファンをどう思ってるか、その証拠をな！」
+
+    TARGET = -1 ; 炎上拡散者（モブ）
+    CALL CHOICE_DUEL_TYPE(302642)
+
+    IF RESULT == 1 ; 승리
+        PRINTFORML 激しいデュエルの末、あなたは승리を収めた。
+        PRINTFORMW 「な、なんで俺が負けるんだ…！」
+        PRINTFORML あなたは상대を問い詰める。彼は観念したように、すべてを白状した。
+        PRINTFORMW 「…わかったよ！話せばいいんだろ！俺は、クロマって地下アイドルに唆されただけなんだ！麻衣を妬んでたみたいで…」
+        PRINTFORMW めっちゃ黒幕じゃないか。
+        PRINTFORML あなたは即座にその情報を%CALLNAME:이벤트主%に報告した。
+        PRINTFORML 電話の向こうで、彼女は一瞬の沈黙の後、愉悦を隠さない声で笑った。
+        PRINTFORML 「そっか。最高の燃料、ありがと」
+        PRINTFORMW 「…じゃあ、最高の카운터トラップ、見せてあげよっか」
+        依頼_進行보존:302642 = 1
+        依頼_달성상황 ++
+        依頼_場所 = 場所_KCステージ
+    ELSE ; 패배
+        PRINTFORML デュエルに패배し、あなたは一時撤退を余儀なくされた。
+        PRINTFORMW 「ハッ、口ほどにもないな！ これで分かっただろ、正義は俺にあるんだよ！」
+        PRINTFORML 상대は勝ち誇ったように去っていく。
+        PRINTFORMW まだだ、まだ終われない。あなたはリベンジを誓い、体勢を立て直すことにした。
+        RETURN 3
+    ENDIF
+ELSEIF 依頼_달성상황 == 2
+    ; デュエル2（観戦）
+    PRINTFORML 数日後、%CALLNAME:이벤트主%は「捏造には、真実で応える」と題した緊急生配信を企画した。
+    PRINTFORML 黒幕の地下アイドル・クロマを名指しで「公開デュエル」の舞台へと引きずり出す。
+    PRINTFORMW あなたは特別ゲストとして最前列に招かれ、全ての経緯を知る証人として、その戦いを見守ることになる。
+    PRINTFORML ステージ上で、クロマは「ファンを騙したアイドルに正義の鉄槌を！」と叫び、観客を味方につけようとする。
+    PRINTFORMW 対する%CALLNAME:이벤트主%は、冷静にデュエルディスクを構え、あなたの方をちらりと見て、悪戯っぽくウインクした。
+    PRINTFORML デュエルが開始される。クロマは宣言通り、【ゼンマイ】を徹底的にメタる戦術で%CALLNAME:이벤트主%を追い詰めていく。
+    PRINTFORML 묘지利用を封じられ、思うように展開できない%CALLNAME:이벤트主%のライフは着実に削られていく。観客席にも不安が広がった。
+    PRINTFORML 劣勢の中、%CALLNAME:이벤트主%はマイクパフォーマンスで語りかける。
+    PRINTFORML 「噂や嘘で、私のゼンマイは止められない」
+    PRINTFORMW 「なぜなら…私のゼンマイは、信じてくれるたった一人の声さえあれば、何度でも巻き直せるから！」
+    PRINTFORML 彼女の視線が、まっすぐにあなたを射抜く。
+    CALL FLASH(2)
+    PRINTFORMW その言葉を合図に、%CALLNAME:이벤트主%は驚異的な連続展開で盤面を覆し、一気に勝負を決めた。
+    PRINTFORML 配信は大成功に終わり、捏造の噂は完全に払拭された。
+    PRINTFORMW あなたは舞台袖で、승리に沸く観客席を背にした彼女に迎えられた。
+    依頼_달성상황 ++
+    依頼_場所 = 場所_選手室
+ELSEIF 依頼_달성상황 == 3
+    ; エンディング
+    PRINTFORML 二人きりの控室で、%CALLNAME:이벤트主%はいつもの強気な仮面を外し、疲れたようにソファに沈んだ。
+    PRINTFORMW 「疲れたー。…ねえ、肩揉んで」
+    PRINTL [0] - 「図々しいな」と言いながら肩を揉む
+    PRINTL [1] - 「図々しいな」と言いながら胸を揉む
+    PRINTL [2] - 何もしない
+    BINPUT
+    IF RESULT == 0
+        PRINTFORML あなたは呆れたように言いながらも、彼女の肩に手を置いた。
+        PRINTFORMW 「…ふふ、素直じゃないんだから」
+        CALL EVENT_FAVUP(이벤트主, 150)
+    ELSEIF RESULT == 1
+        PRINTFORML あなたは呆れたように言いながらも、彼女の胸に手を置いた。
+        PRINTFORMW 「…あんたの方が図々しいじゃないか」
+		CALL SOURCE_CALC_快Ｂ(이벤트主, MASTER, 100)
+		CALL SOURCE_CALC_快Ｂ(이벤트主, MASTER, 100)
+		CALL SOURCE_CALC_快Ｂ(이벤트主, MASTER, 100)
+		CALL SOURCE_CALC_快Ｂ(이벤트主, MASTER, 100)
+		CALL SOURCE_CALC_快Ｂ(이벤트主, MASTER, 100)
+        PRINTFORML 疲れ果てたのか、反抗はしなかった。
+        PRINTFORMW 気持ちよさそうで何よりです。
+    ELSE
+		PRINTFORML あなたは呆れたように断った。
+        PRINTFORMW 「むー%CALLNAME:MASTER%先生厳しぃー」
+        CALL EVENT_FAVUP(이벤트主, 50)
+    ENDIF
+    PRINTFORML しばしの沈黙の後、彼女はぽつりと呟いた。
+    PRINTFORMW 「…ありがと。…私の、共犯者さん」
+    PRINTFORML その横顔は、いつもの腹黒アイドルではなく、信頼を寄せる一人の女の子のものだった。
+    CALL EVENT_TIMER(60)
+    RETURN 2 ; 任務完了
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_302642
+CALL DP_GET(4500)
+CALL MONEY_GET(5000)
+
+@IRAI_DECK_302642(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+SIF 듀얼리스트 == "상대"
+    RETURN 302642
+
+@IRAI_DUEL_INTRO_302642
+PRINTFORML
+PRINTFORML 炎上拡散者「お前みたいなやつに、麻衣を好きなファンの気持ちが分かってたまるか！」
+PRINTFORML 「デュエルで俺が勝って、あいつの嘘を暴いてやる！」
+PRINTFORMW
+
+@DUELDECK_302642(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1229
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1227
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1227
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1227
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1226
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1226
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1226
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81230
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81230
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81230
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1232
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1232
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1232
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61230
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61230
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61230
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91071
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71026
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71004
+

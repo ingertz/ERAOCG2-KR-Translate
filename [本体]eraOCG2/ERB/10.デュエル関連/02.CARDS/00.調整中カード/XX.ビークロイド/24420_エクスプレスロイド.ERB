@@ -1,0 +1,128 @@
+﻿@CARDNAME_24420,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 익스프레스로이드
+	CASE "略称"
+		RESULTS = 익스프레스로이드
+	CASE "カテゴリ"
+		RESULTS:0 = 비크로이드
+ENDSELECT
+
+
+@CARD_24420(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 400
+	CASE "守備力"
+		RETURN 1600
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_24420(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：このカードがドロー以外の方法で손패に加わった場合に발동できる。
+PRINTL このカードを특수소환する。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL このカード名以外の자신の묘지の「비크로이드」モンスター２体まで選び、そのモンスターを손패に加える。
+
+@CARDCAN_24420(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24420)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,24420)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,24420,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = 익스프레스로이드
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,24420)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 비크로이드
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_24420(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24420,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24420,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 비크로이드
+		효과条件종류 = モン全般
+		효과条件複数 = 98
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+

@@ -19,7 +19,15 @@
 #DIM DYNAMIC 攻撃可能モンスター確認
 #DIM DYNAMIC 攻撃元
 #DIM DYNAMIC 攻撃先
+
 #DIM DYNAMIC 발동カード_ID
+#DIM DYNAMIC 確認カード_ID
+#DIMS DYNAMIC 参照先
+#DIMS DYNAMIC 설정参照先
+#DIM DYNAMIC 효과종류
+#DIM DYNAMIC 설정효과종류
+#DIM DYNAMIC 最大PRI値
+#DIM DYNAMIC サーチ範囲
 
 
 IF メインフェイズ移行 == 0
@@ -48,26 +56,66 @@ IF メインフェイズ == 1
 	NEXT
 ENDIF
 
-
-
-;PRINTL 손패 카드 확인 처리
-;패의 カード발동チェック
+;――――――――――――――――――――――――――――――――――――――――――――――――――
+;――효과발동のチェック―――――――――――――――――――――――――――――――――――――――
+;――――――――――――――――――――――――――――――――――――――――――――――――――
+VARSET カウンタB
 VARSET 選択カード, -1
-FOR カウンタ,0,紙束最大値
-	SIF 상대_손패:カウンタ == -1
+VARSET 最大PRI値, -1
+$INPUT_EFFECT_LOOP
+IF カウンタB == 0
+	サーチ範囲 = 紙束最大値
+	参照先 = 손패
+	효과종류 = 손패起動
+ELSEIF カウンタB == 1
+	サーチ範囲 = 5
+	参照先 = 필드
+	효과종류 = 필드起動
+ELSEIF カウンタB == 2
+	サーチ範囲 = 5
+	参照先 = 마함
+	효과종류 = 마함起動
+ELSEIF カウンタB == 3
+	サーチ範囲 = 紙束最大値
+	参照先 = 묘지
+	효과종류 = 묘지起動
+ENDIF
+
+FOR カウンタ,0,サーチ範囲
+	SIF GETVAR(@"상대_%参照先%:カウンタ") == -1
 		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_손패:カウンタ}("상대",손패起動,"손패",カウンタ)
+	確認カード_ID = GETVAR(@"상대_%参照先%:カウンタ")
+	;カードの효과を使えて――
+	TRYCALLFORM CARDCAN_{確認カード_ID}("상대",효과종류,参照先,カウンタ)
 	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
+		;설정したルーチンで、最大PRI値以上の結果が出た時に通される
+		;1つ目は大体通ってしまう
+
+		CALL ENEMY_RUTIN_ACT_EFFECT(효과종류,参照先,カウンタ,確認カード_ID)
+		IF RESULT > 最大PRI値
+			最大PRI値 = RESULT
+			選択カード = カウンタ
+			설정参照先 = %参照先%
+			설정효과종류 = 효과종류
+		ENDIF
 	ENDIF
 NEXT
-;패의 カード발동処理
-IF 選択カード == -1
-;	PRINTL
-ELSE
-	발동カード_ID = 상대_손패:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,1)
+IF カウンタB < 3
+	カウンタB ++
+	GOTO INPUT_EFFECT_LOOP
+ENDIF
+
+IF 選択カード != -1
+	발동カード_ID = GETVAR(@"상대_%설정参照先%:選択カード")
+	IF 설정参照先 == "손패"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,1)
+	ELSEIF 설정参照先 == "필드"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,2)
+	ELSEIF 설정参照先 == "마함"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,3)
+	ELSEIF 설정参照先 == "묘지"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,4)
+	ENDIF
 	SETCOLOR C_W_RED
 	CUSTOMDRAWLINE —
 	CALLFORM CARDNAME_{발동カード_ID}("名前")
@@ -80,8 +128,9 @@ ELSE
 ENDIF
 
 
+[SKIPSTART]
+	;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ;PRINTL フィールドカード確認処理
-;필드의 카드 발동チェック
 VARSET 選択カード, -1
 FOR カウンタ,0,5
 	SIF 상대_필드:カウンタ == -1
@@ -94,8 +143,6 @@ FOR カウンタ,0,5
 NEXT
 ;필드의 카드 발동処理
 IF 選択カード == -1
-;	PRINTL
-ELSE
 	발동カード_ID = 상대_필드:選択カード
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,2)
 	SETCOLOR C_W_RED
@@ -108,10 +155,8 @@ ELSE
 	CALL CARD_FINAL(ターンプレイヤー);상대ターン필드의 起動後のチェック
 	RETURN 0
 ENDIF
-
-
-;PRINTL 마함カード確認処理
-;필드의 카드 발동チェック
+	;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;PRINTL カード確認処理
 VARSET 選択カード, -1
 FOR カウンタ,0,5
 	SIF 상대_마함:カウンタ == -1
@@ -123,9 +168,7 @@ FOR カウンタ,0,5
 	ENDIF
 NEXT
 ;필드의 카드 발동処理
-IF 選択カード == -1
-;	PRINTL
-ELSE
+IF 選択カード != -1
 	발동カード_ID = 상대_마함:選択カード
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,3)
 	SETCOLOR C_W_RED
@@ -138,10 +181,8 @@ ELSE
 	CALL CARD_FINAL(ターンプレイヤー);상대ターン마함の起動後のチェック
 	RETURN 0
 ENDIF
-
-
+	;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ;PRINTL 묘지カード確認処理
-;묘지의 カード발동チェック
 VARSET 選択カード, -1
 FOR カウンタ,0,紙束最大値
 	SIF 상대_묘지:カウンタ == -1
@@ -153,9 +194,7 @@ FOR カウンタ,0,紙束最大値
 	ENDIF
 NEXT
 ;필드의 카드 발동処理
-IF 選択カード == -1
-;	PRINTL
-ELSE
+IF 選択カード != -1
 	발동カード_ID = 상대_묘지:選択カード
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,4)
 	SETCOLOR C_W_RED
@@ -169,8 +208,10 @@ ELSE
 	RETURN 0
 ENDIF
 
+[SKIPEND]
 
 
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ;PRINTL EX덱효과確認
 VARSET 選択カード, -1
 FOR カウンタ,0,紙束最大値
@@ -182,14 +223,11 @@ FOR カウンタ,0,紙束最大値
 		BREAK
 	ENDIF
 NEXT
-IF 選択カード == -1
-;	PRINTL
-ELSE
+IF 選択カード != -1
 	TRYCALLFORM CARDEFFECT_{상대_EX덱:選択カード}("상대",EX덱起動,"EX덱",選択カード)
 	CALL CARD_FINAL(ターンプレイヤー);상대ターンEX덱효과起動後のチェック
 	RETURN 0
 ENDIF
-
 ;부스트のチェック――――――――――――――――――――――――――――――――――――――――――――――――――
 IF 특수듀얼종류 == ライディングＤ
 	VARSET RESULT
@@ -206,7 +244,9 @@ IF 특수듀얼종류 == ライディングＤ
 	ENDIF
 ENDIF
 
-
+;――――――――――――――――――――――――――――――――――――――――――――――――――
+;――メインフェイズの処理――――――――――――――――――――――――――――――――――――――――
+;――――――――――――――――――――――――――――――――――――――――――――――――――
 IF メインフェイズ == 1
 	FOR カウンタ,0,紙束最大値
 		VARSET 現在攻撃力

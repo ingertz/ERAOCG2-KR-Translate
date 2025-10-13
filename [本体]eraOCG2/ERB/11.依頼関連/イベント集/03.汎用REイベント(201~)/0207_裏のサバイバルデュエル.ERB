@@ -237,7 +237,7 @@ ELSE
 			CFLAG:ベットカード:처녀버린상대 = -1
 			CFLAG:ベットカード:동정버린상대 = -1
 			SIF TALENT:ベットカード:듀얼리스트 >= 1
-				CFLAG:ベットカード:오프라인레이트 = 4000
+				CFLAG:ベットカード:듀얼레이트 = 4000
 			IF EXISTCSV(NO:ベットカード)
 				NAME:ベットカード = %CSVNAME(NO:ベットカード)%
 				CALLNAME:ベットカード = %CSVCALLNAME(NO:ベットカード)%
@@ -317,11 +317,20 @@ IF 依頼_進行보존:207
 			PRINTFORML
 			CALL CARD_GENERATE_HAND("상대",39611)
 			PRINTFORML
-			PRINTFORMW ""...덱에서 드로우한다고는 말 안 했는데요?"
+			PRINTFORMW "……덱에서 드로우한다고는 말 안 했는데요?"
 			CASE 2
 			PRINTFORMW "도전자님의 라이프를 절반으로 해서 시작합니다!"
 			CALL LIFE_CHANGE("자신","減少","효과",ライフ_자신 / 2)
 		ENDSELECT
+		IF 依頼_進行보존:207 >= 15
+			CALL CARD_GENERATE_MAGIC("상대",179619,1)
+			PRINTFORMW "추가로추가로、필드 마법《섹슈얼 아레나》를 발동합니다！"
+			IF 依頼_進行보존:207 == 5
+				TRYCALLFORM CARD_UI(179619)
+				PRINTFORML
+				WAIT
+			ENDIF
+		ENDIF
 	ENDIF
 ENDIF
 
@@ -332,9 +341,17 @@ ENDIF
 IF 듀얼리스트 == "상대"
 	SELECTCASE RAND:5
 		CASE 0
-			RETURN 159650
+			IF 依頼_進行보존:207 < 15
+				RETURN 59650
+			ELSE
+				RETURN 159650
+			ENDIF
 		CASE 1
-			RETURN 59702
+			IF 依頼_進行보존:207 < 15
+				RETURN 59702
+			ELSE
+				RETURN 59751
+			ENDIF
 		CASE 2
 			RETURN 59751
 		CASE 3
@@ -422,19 +439,19 @@ SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39652
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39652
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39653
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39653
-SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79616
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70011
-SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70011
-SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70023
-SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79619
-SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79619
-SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79619
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79618
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79618
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79618
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79652
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90500
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90500
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
 SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
@@ -525,4 +542,134 @@ ENDIF
 
 IF 종류 == 永攻紋章起動
 	CALL CARD_EFFECT_PROHIB(듀얼리스트,79685,,1)
+ENDIF
+
+
+;CPU専用セクシャル・アレーナ
+@CARDNAME_179619,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 섹슈얼 아레나
+	CASE "略称"
+		RESULTS = 이성투기장
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_179619(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_179619(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 자신 필드는 "이성투기장"이 된다。
+PRINTL 이 카드의 발동과 효과에 대해서、상대는 카드의 효과를 발동할 수 없다。
+CALL CARD_ABLE(0,필드起動,손패起動)
+PRINTL ①：이 카드의 발동시의 효과 처리로서、필드의 무성 몬스터를 전부 소유자의 덱 가장 아래로 되돌린다。
+CALL CARD_ABLE(0,발동強制誘発)
+PRINTL ②：무성 몬스터가 효과를 발동했을 때에 발동한다。
+PRINTL 그 발동을 무효로 하고、덱 가장 아래로 되돌린다。
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ③：필드가 "이성투기장"으로 있는 한、
+PRINTL 필드의 무성 몬스터의 공격력 / 수비력은 0이 된다。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_179619(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,179619)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件성별 = 無性
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA_2(듀얼리스트,2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_179619(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 조교대상
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,179619)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과条件성별 = 無性
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"덱")
+	ENDIF
+ELSEIF 종류 == 발동強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,179619)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効2",場所,"덱")
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件성별 = 無性
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,-999999999,-999999999)
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-999999999,-999999999)
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "이성투기장")
 ENDIF

@@ -14,7 +14,42 @@ FOR カウンタ,0,5
 NEXT
 RETURN 0
 
-;そもそも효과를 발동するかの설정
+
+@ENEMY_RUTIN_ACT_EFFECT(종류,ゾーン,場所,カードID)
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 返し値
+
+
+SIF カードID <= 0
+	RETURN 0
+
+CALLFORM CARDNAME_{カードID}("名前")
+SELECTCASE RESULTS
+CASE "증원"
+	返し値 += 10000
+CASE "번개"
+	CALL FULLRESET_EXT
+	濾過範囲상대필드 = 1
+	濾過条件CNT = 1
+	CALL CARD_CHECK_EXT("상대",0,"",場所)
+	SIF RESULT >= 1
+		返し値 += 5500 * RESULT
+CASE "크샤트리라 유니콘"
+	返し値 += 3000
+CASE "크샤트리라 펜리르"
+	返し値 += 2000
+CASE "서큐베 바르모니카"
+	返し値 += 3000
+ENDSELECT
+
+
+RETURN 返し値
+
+
+;そもそも효과を발동するかの설정
 @ENEMY_RUTIN_EFFECT(종류,ゾーン,場所,カードID)
 #DIM DYNAMIC カードID
 #DIMS DYNAMIC ゾーン
@@ -234,10 +269,32 @@ CASE "No.39 유토피아"
 	ENDIF
 	RETURN 1
 CASE "해제 버튼（TSP）"
-
-
 	RETURN 1
-
+CASE "M∀LICE＜Q＞HEARTS OF CRYPTER"
+	IF 종류 == 필드起動 || 종류 == フリー誘発
+		CALL FULLRESET_EXT
+		濾過範囲상대필드 = 1
+		濾過範囲상대마함 = 1
+		CALL CARD_CHECK_EXT("상대",0,"",場所)
+		SIF RESULT == 0
+			RETURN 1
+	ENDIF
+CASE "M∀LICE＜P＞March Hare"
+	IF ターンプレイヤー != "상대"
+		CALL FULLRESET_EXT
+		濾過範囲손패 = 1
+		濾過条件名前 = M∀LICE＜P＞White Rabbit
+		CALL CARD_CHECK_EXT("상대",0,"",場所)
+		IF RESULT == 0
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前:0 = M∀LICE＜Q＞WHITE BINDER
+			濾過条件名前:1 = M∀LICE＜Q＞RED RANSOM
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+	ENDIF
 ENDSELECT
 
 ;カテゴリチェック
@@ -251,6 +308,18 @@ CASE "함정 속으로"
 			RETURN 1
 	NEXT
 ENDSELECT
+
+;CPUは자신마함に펜듈럼が２枚以上あれば펜듈럼の손패起動を使わない。
+CALLFORM CARD_{カードID}("分割")
+IF RESULT == 펜듈럼 && 종류 == 손패起動
+	CALL FULLRESET_EXT
+	濾過範囲마함 = 1
+	濾過条件종류 = 펜듈럼
+	濾過条件CNT = 1
+	CALL CARD_CHECK_EXT("상대",0,"",場所)
+	SIF RESULT >= 2
+		RETURN 1
+ENDIF
 
 RETURN 0
 
@@ -290,6 +359,7 @@ RETURN 0
 #DIMS DYNAMIC 参照先
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
 #DIM DYNAMIC 条件달성
 
 
@@ -297,7 +367,120 @@ SIF カードID <= 0
 	RETURN 0
 
 CALLFORM CARDNAME_{カードID}("名前")
-SELECTCASE RESULTS
+カード名 = %RESULTS%
+
+IF 효과条件손패취득 == 1 ;Anonym추가
+	SELECTCASE カード名
+		CASE "상검대사－적소"
+			IF 발동済_1("상대",61895)
+				CALL FULLRESET_EXT
+				濾過範囲손패 = 1
+				濾過範囲묘지 = 1
+				濾過条件名前 = 상검사－막야
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				IF RESULT == 0
+					효과条件優先名前 = 상검사－막야
+				ELSEIF RESULT == 1
+					CALL FULLRESET_EXT
+					濾過範囲손패 = 1
+					濾過範囲묘지 = 1
+					濾過条件名前 = 상검군사－용연
+					CALL CARD_CHECK_EXT("상대",0,"",場所)
+					SIF RESULT == 0
+						효과条件優先名前 = 상검군사－용연
+				ENDIF
+			ELSE
+				효과条件優先名前 = 용상검현
+			ENDIF
+		CASE "용상검현"
+			CALL FULLRESET_EXT
+			濾過範囲손패 = 1
+			濾過範囲묘지 = 1
+			濾過条件名前 = 상검사－막야
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT == 0
+				효과条件優先名前 = 상검사－막야
+			ELSEIF RESULT == 1
+				CALL FULLRESET_EXT
+				濾過範囲손패 = 1
+				濾過範囲묘지 = 1
+				濾過条件名前 = 상검군사－용연
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				SIF RESULT == 0
+					효과条件優先名前 = 상검군사－용연
+			ENDIF
+		CASE "여섯 무사의 군대장"
+			CALL FULLRESET_EXT
+			濾過範囲손패 = 1
+			濾過範囲마함 = 1
+			濾過条件名前 = 여섯 무사의 문
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT != 1
+				효과条件優先名前 = 여섯 무사의 문
+			ENDIF
+		CASE "시엔의 봉화"
+			효과条件優先名前 = 진 여섯 무사－카게키
+		CASE "여섯 무사의 문"
+			효과条件優先名前 = 진 여섯 무사－키잔
+		CASE "E－이멀전시 콜"
+			IF 소환権
+				효과条件優先名前 = 엘리멘틀 히어로 에어맨
+			ELSE
+				CALL FULLRESET_EXT
+				濾過範囲손패 = 1
+				濾過条件名前 = 엘리멘트 스파크
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				IF RESULT == 1
+					효과条件優先名前:0 = 엘리멘틀 히어로 어나더 네오스
+					효과条件優先名前:1 = 엘리멘틀 히어로 네오스
+				ENDIF
+			ENDIF
+		CASE "엘리멘틀 히어로 에어맨"
+			CALL FULLRESET_EXT
+			濾過範囲손패 = 1
+			濾過条件名前 = 엘리멘트 스파크
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT == 1
+				효과条件優先名前:0 = 엘리멘틀 히어로 어나더 네오스
+				효과条件優先名前:1 = 엘리멘틀 히어로 네오스
+			ENDIF
+		CASE "빛의 원군"
+			효과条件優先名前 = 라이트로드 서머너 루미나스
+		CASE "섬도희－카가리"
+			효과条件優先名前 = 섬도기동－인게이지
+		CASE "섬도희－시즈쿠"
+			효과条件優先名前 = 섬도기동－인게이지
+		CASE "섬도기동－인게이지"
+			CALL FULLRESET_EXT
+			濾過範囲손패 = 1
+			濾過範囲필드 = 1
+			濾過範囲묘지 = 1
+			濾過条件名前:0 = 섬도희－레이
+			CALL CARD_CHECK_EXT("상대",0,"",0)
+			SIF RESULT == 0
+				효과条件優先名前 = 섬도희－레이
+		CASE "이블 히어로 어더스터 골드"
+			효과条件劣後名前 = 이블 히어로 헬 라이더
+		CASE "매혹의 뱀파이어레이디"
+			효과条件劣後名前:0 = 유령토끼
+			효과条件劣後名前:1 = 부유벚꽃
+			효과条件劣後名前:2 = 저택 와라시
+			효과条件劣後名前:3 = 하루 우라라
+			효과条件劣後名前:4 = 사요 시구레
+			효과条件劣後名前:5 = 하나 미즈키
+		CASE "조커즈 스트레이트"
+			CALL FULLRESET_EXT
+			濾過範囲덱 = 1
+			濾過条件名前 = 킹스 나이트
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT == 1 
+				효과条件優先名前 = 킹스 나이트
+			ENDIF
+		CASE "백업＠이그니스터"
+			효과条件優先名前 = 위자드＠이그니스터
+	ENDSELECT
+ELSE
+	SELECTCASE カード名
 	CASE "마기스토스 베르 산드리용", "마기스토스 플레임 조로아", "마기스토스 마스터 엔디미온", "마기스토스 그리모어 크로울리", "마기스토스 다이몬 조로아"
 		효과条件劣後名前:0 = 마기스토스 우르스라그나 조로아
 		효과条件劣後名前:1 = 마기스토스 다이몬 조로아
@@ -309,23 +492,6 @@ SELECTCASE RESULTS
 
 	CASE "사이코 엔드 퍼니셔"
 		효과条件劣後名前 = 사이코 엔드 퍼니셔
-	CASE "용상검현", "상검대사－적소"
-		CALL FULLRESET_EXT
-		濾過範囲손패 = 1
-		濾過範囲묘지 = 1
-		濾過条件名前 = 상검사－막야
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		IF RESULT == 0
-			효과条件名前 = 상검사－막야
-		ELSEIF RESULT == 1
-			CALL FULLRESET_EXT
-			濾過範囲손패 = 1
-			濾過範囲묘지 = 1
-			濾過条件名前 = 상검군사－용연
-			CALL CARD_CHECK_EXT("상대",0,"",場所)
-			SIF RESULT == 0
-				효과条件名前 = 상검군사－용연
-		ENDIF
 	CASE "디마이즈도우저"
 		CALL FULLRESET_EXT
 		濾過範囲덱 = 1
@@ -378,6 +544,7 @@ SELECTCASE RESULTS
 		SIF RESULT == 0 && 条件달성
 			효과条件優先名前 = 좀비 캐리어
 	CASE "골드 가제트", "실버 가제트","양철 금붕어"
+		IF 参照先 == "손패"
 		CALL FULLRESET_EXT
 		濾過範囲손패 = 1
 		濾過条件名前:0 = 그린 가제트
@@ -389,40 +556,6 @@ SELECTCASE RESULTS
 			효과条件優先名前:1 = 레드 가제트
 			효과条件優先名前:2 = 옐로 가제트
 		ENDIF
-
-	CASE "여섯 무사의 군대장" ;Anonym추가
-		IF 参照先 == "덱"
-			CALL FULLRESET_EXT
-			濾過範囲손패 = 1
-			濾過範囲마함 = 1
-			濾過条件名前 = 여섯 무사의 문
-			CALL CARD_CHECK_EXT("상대",0,"",場所)
-			IF RESULT != 1
-				CALL FULLRESET_EXT
-				濾過範囲덱 = 1
-				濾過条件名前 = 여섯 무사의 문
-				CALL CARD_CHECK_EXT("상대",0,"",場所)
-				IF RESULT == 1
-					효과条件優先名前 = 여섯 무사의 문
-				ENDIF
-			ENDIF
-		ENDIF
-	CASE "시엔의 봉화"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件名前 = 진 여섯 무사－카게키
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		IF RESULT == 1
-			효과条件優先名前 = 진 여섯 무사－카게키
-		ENDIF
-	CASE "여섯 무사의 문"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過範囲묘지 = 1
-		濾過条件名前 = 진 여섯 무사－키잔
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		IF RESULT == 1
-			효과条件優先名前 = 진 여섯 무사－키잔
 		ENDIF
 
 	CASE "라바르 헬하운드"
@@ -440,13 +573,6 @@ SELECTCASE RESULTS
 		IF RESULT == 0 && 条件달성
 			효과条件優先名前 = 라바르 아처
 		ENDIF
-	CASE "E─이멀전시 콜", "엘리멘틀 히어로 에어맨"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件名前 = 엘리멘틀 히어로 어나더 네오스
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 1
-			효과条件優先名前 = 엘리멘틀 히어로 어나더 네오스
 
 	CASE "천저의 사도"
 		IF 参照先 == "EX덱"
@@ -460,13 +586,6 @@ SELECTCASE RESULTS
 			ENDIF
 		ENDIF
 			
-	CASE "빛의 원군"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件名前 = 라이트로드 서머너 루미너스
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 1
-			효과条件優先名前 = 라이트로드 서머너 루미너스
 	CASE "섬도희－하야테"
 		CALL FULLRESET_EXT
 		濾過範囲묘지 = 1
@@ -480,36 +599,6 @@ SELECTCASE RESULTS
 		CALL CARD_CHECK_EXT("상대",0,"",場所)
 		SIF RESULT == 0
 			효과条件優先名前 = 섬도희－레이
-	CASE "섬도희－カガリ"
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前:0 = 섬도기동－인게이지
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		SIF RESULT == 1
-			효과条件優先名前 = 섬도기동－인게이지
-	CASE "섬도희－カガリ"
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前:0 = 섬도기동－인게이지
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		SIF RESULT == 1
-			효과条件優先名前 = 섬도기동－인게이지
-	CASE "섬도희－シズク"
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前:0 = 섬도기동－인게이지
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		SIF RESULT == 0
-			효과条件優先名前 = 섬도기동－인게이지
-	CASE "섬도기동－인게이지"
-		CALL FULLRESET_EXT
-		濾過範囲손패 = 1
-		濾過範囲필드 = 1
-		濾過範囲묘지 = 1
-		濾過条件名前:0 = 섬도희－레이
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		SIF RESULT == 0
-			효과条件優先名前 = 섬도희－레이
 	CASE "흑익의 마술사"
 		효과条件優先名前:0 = 레드 데몬즈 드래곤/버스터
 	CASE "비전 히어로 바이온"
@@ -518,15 +607,6 @@ SELECTCASE RESULTS
 		ELSE
 			효과条件名前:0 = 비전 히어로 그래비토
 		ENDIF
-	CASE "이블 히어로 어더스터 골드"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件カテゴリ = E-HERO
-		濾過条件종류 = モン全般
-		濾過条件固名前:0 = 이블 히어로 헬 라이더
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		SIF RESULT == 1
-			효과条件固名前:1 = 이블 히어로 헬 라이더
 	CASE "이블 히어로 데스 프리즌"
 		CALL FULLRESET_EXT
 		濾過範囲덱 = 1
@@ -534,7 +614,7 @@ SELECTCASE RESULTS
 		濾過条件종류 = 通常モン
 		CALL CARD_CHECK_EXT("상대",0,"",0)
 		IF RESULT == 1
-			효과条件カテゴリ:1 = E•HERO
+			효과条件カテゴリ:0 = E•HERO
 			효과条件종류 = 通常モン
 		ENDIF
 	CASE "음화의 덧칠"
@@ -594,7 +674,7 @@ SELECTCASE RESULTS
 			IF RESULT == 0
 				효과条件優先名前 = 촉수궁의 휴프노
 			ELSE
-				효과条件優先名前:1 = 촉수궁의 가디언
+				효과条件優先名前 = 촉수궁의 가디언
 			ENDIF
 		ENDIF
 	CASE "텐타클 바이오 플랜트"
@@ -631,24 +711,15 @@ SELECTCASE RESULTS
 				ENDIF
 			ENDIF
 		ENDIF
-	CASE "매혹의 뱀파이어레이디"
-		효과条件劣後名前:0 = 유령토끼
-		효과条件劣後名前:1 = 부유벚꽃
-		효과条件劣後名前:2 = 저택 와라시
-		효과条件劣後名前:2 = 하루 우라라
-		효과条件劣後名前:2 = 사요 시구레
-		효과条件劣後名前:2 = 하나 미즈키
-	CASE "조커즈 스트레이트"
-		IF 参照先 == "덱"
-			CALL FULLRESET_EXT
-			濾過範囲덱 = 1
-			濾過条件名前 = 킹스 나이트
-			CALL CARD_CHECK_EXT("상대",0,"",場所)
-			IF RESULT == 1 
-				효과条件優先名前:1 = 킹스 나이트
-			ENDIF
-		ENDIF
+	CASE "M∀LICE＜P＞March Hare"
+			효과条件優先名前:0 = M∀LICE＜Q＞RED RANSOM
+			효과条件優先名前:1 = M∀LICE＜Q＞WHITE BINDER
+			SIF ターンプレイヤー != "상대"
+				효과条件優先名前:2 = M∀LICE＜P＞White Rabbit
+		CASE "도도도도 워리어"
+			효과条件劣後名前:0 = 도도도도 워리어
 ENDSELECT
+ENDIF
 
 
 ;特定の条件下以外で出させたくない場合はここで설정
@@ -871,8 +942,6 @@ SELECTCASE RESULTS
 		RETURN -10000
 	CASE "사요 시구레"
 		RETURN -10000
-	CASE "하루 우라라"
-		RETURN -10000
 	CASE "하나 미즈키"
 		RETURN -10000
 	CASE "이펙트 뵐러"
@@ -959,11 +1028,31 @@ SELECTCASE RESULTS
 		RETURN 2600
 	CASE "저승사자 고즈"
 		RETURN -10000
-
 	CASE "날개들의 여왕 티타니아"
 		RETURN 20000
-
-
+	CASE "날개들의 여왕 티타니아"
+		RETURN 20000
+	CASE "M∀LICE＜P＞Dormouse"
+		SIF 발동済_1("상대",2173) == 0
+			RETURN 5000
+	CASE "M∀LICE＜Q＞RED RANSOM"
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過範囲제외 = 1
+		濾過条件名前 = M∀LICE＜Q＞RED RANSOM
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			RETURN 500
+	CASE "M∀LICE＜Q＞WHITE BINDER"
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過範囲제외 = 1
+		濾過条件名前 = M∀LICE＜Q＞WHITE BINDER
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			RETURN 400
 	CASEELSE
 		IF 손패플래그
 			TRYCALLFORM CARDCAN_{カードID}("상대",소환時,"필드")
@@ -972,6 +1061,8 @@ SELECTCASE RESULTS
 			ENDIF
 		ENDIF
 ENDSELECT
+
+
 RETURN 0
 
 
@@ -1025,6 +1116,80 @@ TRYCALLFORM CARDNAME_{カードID}, "名前"
 SIF MATCH(효과条件劣後名前, RESULTS)
 	修正値 += -10000
 
+;個別での優先度修正 ;Anonym추가
+TRYCALLFORM CARDNAME_{カードID}, "名前"
+SELECTCASE RESULTS
+	CASE "호색한 용병"
+		CALL FULLRESET_EXT
+		濾過条件성별 = 牝性
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1
+			修正値 += +10000
+		ENDIF
+	CASE "크샤트리라 유니콘"
+		;同名カードチェック
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過条件名前 = 크샤트리라 유니콘
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1;あったら
+			修正値 += -2000
+		ELSE ;無かったら
+			修正値 += 500
+		ENDIF
+	CASE "크샤트리라 펜리르"
+		;同名カードチェック
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過条件名前 = 크샤트리라 펜리르
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1;あったら
+			修正値 += -2000
+		ELSE ;無かったら
+			修正値 += 500
+		ENDIF
+	CASE "스케어클로 크샤트리라"
+		;同名カードチェック
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過条件名前 = 스케어클로 크샤트리라
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1;あったら
+			修正値 += 0
+		ELSE ;無かったら
+			修正値 += 2100
+		ENDIF
+	CASE "크샤트리라 라이즈하트"
+		;同名カードチェック
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過条件名前 = 크샤트리라 라이즈하트
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1;あったら
+			修正値 += 0
+		ELSE ;無かったら
+			修正値 += 800
+		ENDIF
+	CASE "크샤트리라 오우거"
+		;同名カードチェック
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過条件名前 = 크샤트리라 오우거
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1;あったら
+			修正値 += -2000
+		ELSE ;無かったら
+			修正値 += -500
+		ENDIF
+	CASE "M∀LICE＜P＞Dormouse"
+		修正値 += 1000
+	CASE "M∀LICE＜P＞White Rabbit"
+		修正値 += 500
+	CASE "M∀LICE＜C＞GWC-06"
+		修正値 += 500
+	CASE "M∀LICE＜C＞MTP-07"
+		修正値 += 300
+ENDSELECT
 
 $SKIP_RUTIN
 返し値 = 攻撃力설정 + 修正値
@@ -1060,7 +1225,7 @@ SELECTCASE RESULTS
 	CASE "이블 어썰트", "이블 히어로 시니스터 네크롬"
 		CALL FULLRESET_EXT
 		濾過範囲덱 = 1
-		濾過条件カテゴリ = E-HERO
+		濾過条件カテゴリ = 이블 히어로
 		濾過条件종류 = モン全般
 		濾過条件固名前:0 = 이블 히어로 어더스터 골드
 		CALL CARD_CHECK_EXT("상대",0,"",0)
@@ -1120,8 +1285,91 @@ RETURN 1
 @ENEMY_RUTIN_FRCHAIN
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC カウンタ
-#DIM DYNAMIC 발동カード_ID
+#DIM DYNAMIC カウンタB
 
+#DIM DYNAMIC 발동カード_ID
+#DIM DYNAMIC 確認カード_ID
+#DIMS DYNAMIC 参照先
+#DIMS DYNAMIC 설정参照先
+#DIM DYNAMIC 효과종류
+#DIM DYNAMIC 설정효과종류
+#DIM DYNAMIC 最大PRI値
+#DIM DYNAMIC サーチ範囲
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――
+;――효과발동のチェック―――――――――――――――――――――――――――――――――――――――
+;――――――――――――――――――――――――――――――――――――――――――――――――――
+VARSET カウンタB
+VARSET 選択カード, -1
+VARSET 最大PRI値, -1
+$INPUT_EFFECT_LOOP
+IF カウンタB == 0
+	サーチ範囲 = 紙束最大値
+	参照先 = 손패
+	효과종류 = 손패起動
+ELSEIF カウンタB == 1
+	サーチ範囲 = 5
+	参照先 = 필드
+	효과종류 = 필드起動
+ELSEIF カウンタB == 2
+	サーチ範囲 = 5
+	参照先 = 마함
+	효과종류 = 마함起動
+ELSEIF カウンタB == 3
+	サーチ範囲 = 紙束最大値
+	参照先 = 묘지
+	효과종류 = 묘지起動
+ENDIF
+
+FOR カウンタ,0,サーチ範囲
+	SIF GETVAR(@"상대_%参照先%:カウンタ") == -1
+		CONTINUE
+	確認カード_ID = GETVAR(@"상대_%参照先%:カウンタ")
+	;カードの효과を使えて――
+	TRYCALLFORM CARDCAN_{確認カード_ID}("상대",효과종류,参照先,カウンタ)
+	IF RESULT == 1
+		;설정したルーチンで、最大PRI値以上の結果が出た時に通される
+		;1つ目は大体通ってしまう
+
+		CALL ENEMY_RUTIN_ACT_EFFECT(효과종류,参照先,カウンタ,確認カード_ID)
+		IF RESULT > 最大PRI値
+			最大PRI値 = RESULT
+			選択カード = カウンタ
+			설정参照先 = %参照先%
+			설정효과종류 = 효과종류
+		ENDIF
+	ENDIF
+NEXT
+IF カウンタB < 3
+	カウンタB ++
+	GOTO INPUT_EFFECT_LOOP
+ENDIF
+
+IF 選択カード != -1
+	발동カード_ID = GETVAR(@"상대_%설정参照先%:選択カード")
+	IF 参照先 == "손패"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,1)
+	ELSEIF 参照先 == "필드"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,2)
+	ELSEIF 参照先 == "마함"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,3)
+	ELSEIF 参照先 == "묘지"
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,4)
+	ENDIF	
+	SETCOLOR C_W_RED
+	CUSTOMDRAWLINE —
+	CALLFORM CARDNAME_{발동カード_ID}("名前")
+	PRINTFORMW 상대는 %参照先%에서 『{選択カード}』%RESULTS%의 효과 발동 선언을 했습니다！
+	CUSTOMDRAWLINE —
+	RESETCOLOR
+	CALLFORM CARD_STANBY(발동カード_ID,"상대",설정효과종류,설정参照先,選択カード)
+	CALL CARD_FINAL(ターンプレイヤー)
+	RETURN 0
+ENDIF
+
+
+[SKIPSTART]
 ;패의 カード발동チェック――――――――――――――――――――――――――――――――――――――――――――――――
 ;PRINTL 손패カード確認処理
 VARSET 選択カード, -1
@@ -1259,7 +1507,7 @@ IF 특수듀얼종류 == ライディングＤ
 		RETURN 0
 	ENDIF
 ENDIF
-
+[SKIPEND]
 
 
 

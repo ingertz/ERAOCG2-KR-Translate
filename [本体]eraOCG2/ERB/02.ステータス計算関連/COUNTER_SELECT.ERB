@@ -62,6 +62,10 @@ IF 全力押倒モード == 0
 	IF 행동順 == 1 && CFLAG:캐릭터_ID:우후후 == 2 && BASE:캐릭터_ID:만족 == MAXBASE:캐릭터_ID:만족
 		RESETCOLOR
 		PRINTFORMW %CALLNAME:캐릭터_ID%는 만족한 것 같다。
+		IF TFLAG:섹스승부
+			CFLAG:MASTER:H패배경험 ++
+			CFLAG:TARGET:H승리경험 ++
+		ENDIF
 		IF !GETBIT(CFLAG:캐릭터_ID:기정사실 , 0)
 			SETCOLOR C_PINK
 			PRINTFORMW %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%의 상대를 마음에 들어하고、앞으로도 부탁하면 시켜 줄 것 같다。
@@ -87,7 +91,7 @@ IF 全力押倒モード == 0
 				CALL RESET_SEXCON(캐릭터_ID_2)
 			NEXT
 			CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 10, 2, 1)
-			CALL TOUCH_SET(0,0,0,1)
+			CALL RESET_SEXVARIENT()
 			PRINTL
 			RETURN 0
 		ELSE
@@ -297,3 +301,13 @@ CFLAG:캐릭터_ID:추가가슴사이즈 = 0
 CFLAG:캐릭터_ID:최면상태 = 0
 CALL CLOTHES_RESET(캐릭터_ID)
 CALL CLOTHES_SETTING_TRAIN(캐릭터_ID)
+
+
+
+@RESET_SEXVARIENT()
+
+TFLAG:섹스승부 = 0
+TFLAG:철저학대모드 = 0
+SIF 全力押倒モード == 1
+	全力押倒モード = 0
+CALL TOUCH_SET(0,0,0,1)

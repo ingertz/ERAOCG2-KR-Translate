@@ -1,0 +1,222 @@
+;今の勢いでは多分캐릭터数が将来10000超えるんじゃないかな？と考えて、
+;캐릭터名+100000/200000/300000/400000を四段階のシナリオとする。
+
+@IRAI_EVENT_102640(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2640-01)不運な少女
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL 天気がいいから、散歩しましょう。
+		PRINTL 
+		PRINTL 报酬：2000DP
+	CASE "条件"
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2640):호감도 < 100
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2640):반발각인 > 0
+			RESULTS = 怒っているようです。분노が収まるまで待ちましょう。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_102640(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2640)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 最近は部屋に籠ってゲームを遊んだばかりで、体がだるい…
+	PRINTFORMW 軽く散歩でもいこうか。
+	依頼_달성상황 ++
+	依頼_場所 = 場所_ゴミ処理場
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML 公園を歩いていると、
+	PRINTFORMW 遠くから慌ただしい足音が聞こえてくる。
+
+	PRINTFORML 「待て！そこの少女！」
+	PRINTFORMW セキュリティの声が響く。
+
+	PRINTFORML 角の向こうから、一人の少女が駆け出してきた。
+	PRINTFORMW 茶色の髪を揺らしながら、必死に逃げている。
+
+	PRINTFORML 「また不運が…どうして私ばっかり…」
+	PRINTFORMW 少女は涙声で呟きながら走り続ける。
+
+	PRINTFORML その時、少女の足が瓦礫に引っかかり、
+	PRINTFORMW 転びそうになった。
+
+	PRINTFORMW あなたは反射的に手を差し伸べた。
+
+	PRINTFORML 「え…？」
+	PRINTFORMW 少女は驚いた表情であなたを見上げる。
+
+	PRINTFORML 「ありがとう…でも、危険よ」
+	PRINTFORMW 「私といると不幸になるから…」
+
+	PRINTFORML その時、重い足音が近づいてくる。
+	PRINTFORMW セキュリティが姿を現した。
+
+	PRINTFORML 「そこの市民！その少女から離れろ！」
+	PRINTFORMW 「彼女は危険人物だ！」
+
+	PRINTFORML 「危険人物って…私、何もしてないのに…」
+	PRINTFORMW 少女は震え声で反論する。
+	PRINTFORMW …よく見たら%CALLNAME:이벤트主%じゃないか。
+
+	PRINTFORML セキュリティの隊員がデュエルディスクを構える。
+	PRINTFORML 「市民、その少女を引き渡せ。さもなくば…」
+	PRINTFORMW 「デュエルで決着をつけさせてもらう！」
+
+	PRINTL
+	PRINTL [0] - 「訳わからんがとにかく守る！」
+	PRINTL [1] - 「事情を聞かせてもらおう」
+	PRINTL [2] - 「…いまデュエルって言ったな？」
+	BINPUT
+	
+	IF RESULT == 0
+		PRINTFORML あなたは迷わず%CALLNAME:이벤트主%の前に立ちはだかった。
+		PRINTFORML %CALLNAME:이벤트主%は驚いた表情で「どうして…私なんかのために…」と呟く。
+		CALL EVENT_FAVUP(이벤트主,100)
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは冷静に상황を把握しようとしたが、
+		PRINTFORML セキュリティは苛立ちながら「一般民衆の知るべきことじゃない！」と答える。
+		PRINTFORML なんか腹立つな…
+	ELSE
+		PRINTFORML デュエルデュエルデュエルデュエル！
+		PRINTFORML よくわからんが、デュエルができるなら他の事はどうでもいい！
+		PRINTFORML 大喜びするあなたに見て、セキュリティーの人もちょっと引いている…
+	ENDIF
+
+	PRINTFORMW あなたもデュエルディスクを起動させた。
+
+	PRINTFORML 「え…？」
+	PRINTFORMW %CALLNAME:이벤트主%は信じられないという表情を浮かべる。
+
+	PRINTFORML 「でも、本当に大丈夫？」
+	PRINTFORMW 「私の不運が移ったりしない？」
+
+	PRINTFORML あなたは%CALLNAME:이벤트主%に安心するよう頷いた。
+
+	PRINTFORMW 「デュエル開始だ！」
+	PRINTFORMW セキュリティ隊員が宣言する。
+	
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(102640)
+
+	;승리
+	IF RESULT == 1
+		PRINTFORML 「くそーーこれで終わったと思うな！！」
+		PRINTFORML 無様に逃げたセキュリティ。
+		PRINTFORML 「ありがとうございます…助かりました」
+		PRINTFORMW %CALLNAME:이벤트主%は深々と頭を下げる。
+		PRINTFORMW 「でも、私の不運体質はきっとあなたにも迷惑をかけてしまいます…」
+		PRINTFORML そう言い残して、%CALLNAME:이벤트主%は廃墟の向こうへと姿を消していった。
+		PRINTFORML あなたは複雑な気持ちを抱いたまま、彼女の後ろ姿を見送った。
+		PRINTFORMW これで終わりではないような予感がする…
+	ELSE
+		PRINTFORMW 負けてしまった…
+		PRINTFORMW 「口ほどじゃないみたいだな…って、あいつ逃げたんじゃないか！」
+		PRINTFORMW セキュリティがキレてるみたい…
+		PRINTFORML 「こうなったら仕方ない。お前があいつの罰金を払え。」
+		PRINTFORMW どうやら公園の施設が壊れて、その時間帯では%CALLNAME:이벤트主%しか通ってないそうだ。
+		PRINTFORMW %CALLNAME:이벤트主%の不幸体質を考えたら、たぶん本当に勝手に壊れたんだろう。
+		PRINTFORMW というのも当然セキュリティに通用せず、結局罰金を払った。
+		PRINTFORMW ひどい目に遭ったな…
+		CALL MONEY_GET(-10000)
+	ENDIF
+	
+	CALL EVENT_TIMER(30)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_102640
+CALL DP_GET(2000)
+
+@IRAI_DECK_102640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 102640
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_102640
+
+PRINTFORML 
+PRINTFORML セキュリティー「命落としてもわからんぞ！」
+PRINTFORMW 
+
+;SF덱
+@DUELDECK_102640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1321
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1321
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38164
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38164
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38165
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81320
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 1322
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1322
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1322
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1631
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1645
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 11876
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50721
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58620
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58620
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58620
+
+
+

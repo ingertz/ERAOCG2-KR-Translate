@@ -1,0 +1,215 @@
+﻿@CARDNAME_73886,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 여신의 성검－에아토스
+	CASE "略称"
+		RESULTS = 성검 에아토스
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 가디언
+ENDSELECT
+
+
+@CARD_73886(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "추가日"
+		RETURN 250931
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_73886(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：装備モンスターの攻撃力は제외状態のモンスターの数×５００アップする。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：このカードが묘지に存在する場合に발동できる。
+PRINTL 자신の손패・フィールドの「가디언 에아토스」１枚をお互いに確認し、このカードを손패に加える。
+PRINTL その後、자신の묘지のカードを６枚まで덱に戻すことができる。
+CALLFORM CARD_ABLE(3,戦破壊→묘지)
+PRINTL ③：このカードがフィールドから묘지へ送られた場合に발동できる。
+PRINTL 묘지のこのカードを자신フィールドの「가디언」モンスター１体に装備する。
+
+
+@CARDCAN_73886(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73886)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ELSEIF 종류 == 손패起動
+		SIF 마함数(듀얼리스트) >= 5
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	SIF 듀얼리스트 == "자신"
+		효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,73886)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前 = 가디언 에아토스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_3(듀얼리스트,73886)
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊","リリース")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 가디언
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	SIF 装備先 == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_73886(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73886)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		SIF 듀얼리스트 == "자신"
+			효과範囲상대필드 = 1
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73886,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件名前 = 가디언 에아토스
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 여신의 성검－에아토스
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件行先플래그 = 덱行き
+				효과条件複数 = 94
+				효과条件任意 = 1
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73886,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 여신의 성검－에아토스
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = 가디언
+			효과条件표시 = 表側표시
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과範囲상대제외 = 1
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	CALL STATCHANGE_BASIC(装備者,"装備",場所,500*RESULT)
+ENDIF
+

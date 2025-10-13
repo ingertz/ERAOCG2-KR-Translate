@@ -1,0 +1,275 @@
+@IRAI_EVENT_302651(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+    CASE "名前"
+        RESULTS = (CH3651-03)光と闇の協奏曲
+    CASE "이벤트種"
+        RETURN 이벤트_通常
+    CASE "依頼先"
+        RETURN 即時開始
+    CASE "詳細"
+        PRINTL
+        PRINTL 最近、特定の덱타입を使うデュエリストばかりを狙う「덱狩り」が噂になっている。
+        PRINTL ひなたが使う「暗黒界」もターゲットの一つらしい。友人のあげはも心配しているようだ。
+        PRINTL
+        PRINTL 報酬：5000DP
+    CASE "条件"
+        SIF 依頼_完了횟수:202651 == 0
+            RETURN 0
+        RETURN 1
+    CASE "추가条件"
+        IF CFLAG:NO_TO_CHARANUM(2651):호감도 < 1000
+            RESULTS = 호감도が不足しています
+            RETURN 1
+        ENDIF
+        ;発注人はあげはなので、あげはの속성をチェックする。
+        ;仕様です。
+        IF CFLAG:NO_TO_CHARANUM(2650):면식 == 0
+            RESULTS = あげはと면식がないため、この依頼は受けられない。
+            RETURN 1
+        ENDIF
+        IF MARK:NO_TO_CHARANUM(2650):반발각인 > 0
+            RESULTS = あげはが怒っているため、この依頼は受けられない。
+            RETURN 1
+        ENDIF
+        ;本人もチェックしておこうか…
+        IF MARK:NO_TO_CHARANUM(2651):반발각인 > 0
+            RESULTS = ひなたが怒っているため、この依頼は受けられない。
+            RETURN 1
+        ENDIF
+        RETURN 0
+    CASE "回想可"
+        RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_302651(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC あげは
+#DIM DYNAMIC ゆま
+
+이벤트主 = NO_TO_CHARANUM(3651)
+あげは = NO_TO_CHARANUM(2650)
+ゆま = NO_TO_CHARANUM(2653)
+
+IF 依頼_달성상황 == 0
+    ; 自宅での導入
+    PRINTFORML 午後の静かな時間、あなたの自宅に突然の来訪者があった。
+    PRINTFORMW ドアを開けると、そこには青葉あげはが立っていた。
+    PRINTFORML いつもの活発な様子とは違い、どこか焦燥感を漂わせている。
+    PRINTFORMW 「%CALLNAME:MASTER%！大変なの、ひなたが危険かもしれない！」
+    
+    ; あげはとの関係による분기
+    IF CFLAG:NO_TO_CHARANUM(2650):호감도 >= 1000 || TALENT:NO_TO_CHARANUM(2650):연모 > 0
+        PRINTFORML 「恋のライバルが増えそうだけど…それ以上に友人との関係が大切なの」
+        PRINTFORMW 「あなたが頼もしいことは、私が一番知ってるから…お願い！」
+    ELSEIF TALENT:NO_TO_CHARANUM(2650):굴복됨 > 0
+        PRINTFORML 「ご主人様…私の大切な友人が危機なんです」
+        PRINTFORMW 「ご主人様の強さが唯一の頼りです。どうか、ご慈悲を…」
+    ELSE
+        PRINTFORML 「頼れる人がいないの…私、弱いから」
+        PRINTFORML 「ひなたと%CALLNAME:MASTER%の関係がよさそうだから、頼みに来たの」
+        PRINTFORMW 「アンタしか頼れる人がいないの！あの子のこと、守ってあげて！」
+    ENDIF
+    
+    PRINTFORML あげはは「덱狩り」という噂について説明した。
+    PRINTFORML 特定の덱타입を使うデュエリストを狙い、패배したデュエリストから덱を奪う悪質な行為らしい。
+    PRINTFORMW 「ひなたの『暗黒界』も狙われてるって噂があるの…」
+    PRINTFORML あなたはあげはの必死な表情を見て、事の重大さを理解した。
+    PRINTFORMW すぐにでも%CALLNAME:이벤트主%の元へ向かう必要がある。
+    
+    PRINTL
+    PRINTL [0] - 「分かった、すぐに向かおう」
+    BINPUT
+    PRINTFORML あなたは即座に立ち上がり、外出の準備を始めた。
+    PRINTFORMW 「ありがとう！急いで！」
+    CALL EVENT_FAVUP(あげは, 100)
+    依頼_달성상황++
+    依頼_場所 = 場所_公園
+ELSEIF 依頼_달성상황 == 1
+    ; 公園での遭遇
+    PRINTFORML 公園に到着すると、既に騒然とした雰囲気が漂っていた。
+    PRINTFORMW 人だかりの中心では、%CALLNAME:이벤트主%が見知らぬデュエリストと対峙している。
+    PRINTFORML その傍らには、宮田ゆまが倒れ込んでいる。どうやら既にデュエルで패배したようだ。
+    PRINTFORMW 謎のデュエリストは不敵に笑いながら言い放った。
+    PRINTFORML 「中途半端な正義を振りかざす中二病偽善者め！」
+    PRINTFORMW 「暗黒界だのヒーローだの、どちらも偽物の力に過ぎん！」
+    PRINTFORML %CALLNAME:이벤트主%は果敢にデュエルを挑むが、상대の狡猾な戦術の前に苦戦を強いられる。
+    PRINTFORMW 「そんな…私の暗黒界が…」
+    PRINTFORML ついに%CALLNAME:이벤트主%のライフが0になった瞬間、상대が덱に手を伸ばそうとする。
+    PRINTFORMW その時、あなたが二人の間に立ちはだかった。
+    PRINTFORML 「邪魔をするな！これは正義の執行だ！」
+    PRINTFORMW 「お前も同じ偽善者の仲間か？ならば、まとめて叩き潰してやる！」
+    
+    TARGET = -1 ; 덱狩りのデュエリスト（モブ）
+    CALL CHOICE_DUEL_TYPE(302651)
+    
+    IF RESULT == 1 ; 승리
+        PRINTFORML 激しいデュエルの末、あなたは見事승리を収めた。
+        PRINTFORMW 「馬鹿な…俺の完璧な戦術が…」
+        PRINTFORML しかし、상대は負け惜しみを続ける。
+        PRINTFORMW 「だが、お前の仲間はもう戦えないはずだ！一度패배した者に二度目はない！」
+        PRINTFORML その時、%CALLNAME:이벤트主%がゆっくりと立ち上がった。
+        PRINTFORML 「もう一度やらせて！」
+        PRINTFORMW 「今度は%CALLNAME:MASTER%の戦い方を見て、私の덱の『答え』が見つかったから！」
+        PRINTFORML %CALLNAME:이벤트主%の瞳に、新たな決意の炎が宿っていた。
+        PRINTFORMW あなたの戦いから何かを学び取ったようだ。
+        依頼_달성상황++
+        依頼_場所 = 場所_公園
+    ELSE ; 패배
+        PRINTFORML デュエルに패배し、あなたは膝をついた。
+        PRINTFORMW 「ハハハ！所詮はその程度か！」
+        PRINTFORML 「これで分かっただろう、偽善者どもに正義を語る資格などない！」
+        PRINTFORMW 덱狩りデュエリストは勝ち誇ったように%CALLNAME:이벤트主%の덱に手を伸ばす。
+        PRINTFORML 「やめて！」%CALLNAME:이벤트主%の悲痛な叫び声が響く。
+        PRINTFORMW しかし、あなたは何もできずにただ見ているしかなかった…
+        PRINTFORML 大切な友人の덱が奪われていく光景に、絶望感が胸を締め付ける。
+        PRINTFORMW 「%CALLNAME:MASTER%…ごめんね…」涙を流す%CALLNAME:이벤트主%の姿が視界に映る。
+        PRINTFORML あなたの意識は徐々に薄れていき…
+        PRINTFORMW 
+        CALL FLASH(3)
+        PRINTFORML 
+        PRINTFORML 「…%CALLNAME:MASTER%！%CALLNAME:MASTER%！」
+        PRINTFORMW あなたは%CALLNAME:이벤트主%の声で目を覚ました。
+        PRINTFORML 気がつくと、自宅のソファで横になっていた。
+        PRINTFORMW 「よかった…目を覚ましたのね」安堵の表情を浮かべるあげは。
+        PRINTFORML 「急に倒れちゃうから心配したよ」%CALLNAME:이벤트主%も心配そうにあなたを見つめている。
+        PRINTFORMW どうやら、あげはの話を聞いている最中に居眠りをしてしまったようだ。
+        PRINTFORML 「덱狩りの話、すごく心配になっちゃったから…悪い夢でも見たの？」
+        PRINTFORMW あなたは頭を振り、改めて気を引き締めた。夢で見た光景を現実にしてはいけない。
+        PRINTFORML 「今度こそ、本当に%CALLNAME:이벤트主%を守らなければ」
+        PRINTFORMW そう心に誓い、再び立ち上がるのだった。
+        RETURN 3
+    ENDIF
+ELSEIF 依頼_달성상황 == 2
+    ; ひなたの再戦
+    PRINTFORML %CALLNAME:이벤트主%と덱狩りデュエリストの再戦が始まった。
+    PRINTFORMW あなたは少し離れた場所から、その戦いを見守る。
+    PRINTFORML 今度の%CALLNAME:이벤트主%は違った。あなたの戦いから学んだ新たな戦術を駆使している。
+    PRINTFORMW 「暗黒界の真の力を見せてあげる！」
+    PRINTFORML 見事な連続展開で상대を圧倒し、ついに승리を収めた。
+    PRINTFORMW 「そんな…俺の完璧な理論が…」
+    PRINTFORML 덱狩りデュエリストは패배を認め、その場から立ち去っていく。
+    PRINTFORMW %CALLNAME:이벤트主%があなたの元に駆け寄ってきた。
+    PRINTFORML 「%CALLNAME:MASTER%！ありがとう！」
+    PRINTFORMW 二人はハイタッチを交わし、승리の喜びを分かち合った。
+    PRINTFORML 遠くからあげはとゆまがその様子を見守っている。
+    PRINTFORMW ゆまは微笑みながら呟いた。「いいパートナーを見つけたみたいだね」
+    
+    ; あげはの反応분기
+    IF CFLAG:NO_TO_CHARANUM(2650):호감도 >= 1000 || TALENT:NO_TO_CHARANUM(2650):연모 > 0
+        PRINTFORML あげはは安堵の表情を浮かべながらも、どこか複雑そうな顔をしている。
+        PRINTFORMW 「よかった…でも、なんだか悔しいような…」
+    ELSEIF TALENT:NO_TO_CHARANUM(2650):굴복됨 > 0
+        PRINTFORML あげはは深々と頭を下げた。
+        PRINTFORMW 「ご主人様、本当にありがとうございました」
+        PRINTFORMW ご主人様？と不思議に首を傾けるひなただが、%CALLNAME:MASTER%はうまく話術でごまかせた。
+    ELSE
+        PRINTFORML あげはは心からの安堵の表情を浮かべた。
+        PRINTFORMW 「本当にありがとう！%CALLNAME:MASTER%に頼んでよかった！」
+    ENDIF
+    
+    依頼_달성상황++
+    依頼_場所 = 場所_カフェ
+ELSEIF 依頼_달성상황 == 3
+    ; エンディング
+    PRINTFORML 事件解決後、%CALLNAME:이벤트主%に誘われて近くのカフェで一息ついていた。
+    PRINTFORMW 「今日は本当にありがとう、%CALLNAME:MASTER%」
+    PRINTFORML 彼女はいつもの明るい笑顔を浮かべながら、感謝の気持ちを伝えてくれた。
+    PRINTFORMW 「あなたの戦い方を見て、私も新しい可能性に気づけたよ」
+    PRINTFORML 「一人で抱え込まずに、信頼できる人と一緒に戦うことの大切さも」
+    PRINTFORMW あなたは%CALLNAME:이벤트主%の成長を感じ、嬉しく思った。
+    PRINTFORML この경험を通じて、二人の絆はより一層深まったようだ。
+    PRINTFORMW 「また何かあったら、頼らせてもらうかも。その時はよろしく！」
+    
+    PRINTL
+    PRINTL [0] - 「いつでも頼ってくれ」
+    PRINTL [1] - 「君なら一人でも大丈夫だよ」
+    BINPUT
+    IF RESULT == 0
+        PRINTFORML あなたは力強く頷いた。
+        PRINTFORMW 「ありがとう！心強いよ」
+        CALL EVENT_FAVUP(이벤트主, 200)
+    ELSE
+        PRINTFORML あなたは%CALLNAME:이벤트主%の成長を認めた。
+        PRINTFORMW 「そう言ってもらえると嬉しい！でも、困った時は遠慮しないからね」
+        CALL EVENT_FAVUP(이벤트主, 100)
+    ENDIF
+    
+    PRINTFORML カフェの窓から見える夕日が、二人の新たな友情を温かく照らしていた。
+    CALL EVENT_TIMER(120)
+    RETURN 2 ; 任務完了
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_302651
+CALL DP_GET(5000)
+
+@IRAI_DECK_302651(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+SIF 듀얼리스트 == "상대"
+    RETURN 302651
+
+@IRAI_DUEL_INTRO_302651
+PRINTFORML
+PRINTFORML 덱狩り「真の正義とは何か、デュエルで教えてやる！」
+PRINTFORMW
+
+@DUELDECK_302651(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1261
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1262
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1262
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1280
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1280
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1280
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33330
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33330
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33331
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33331
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33331
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71332
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71330
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71331
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72441
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71332
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72441
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33330
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71330
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71330
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72441
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1281
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71331
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 51650
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51650
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51650
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58075
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58075
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58075
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1627
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1627
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1627
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
+

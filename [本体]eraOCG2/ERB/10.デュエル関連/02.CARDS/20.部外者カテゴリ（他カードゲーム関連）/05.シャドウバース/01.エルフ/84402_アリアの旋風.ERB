@@ -1,0 +1,132 @@
+﻿@CARDNAME_84402,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 아리아의 회오리바람
+	CASE "略称"
+		RESULTS = 아리아회오리바람
+	CASE "カテゴリ"
+		RESULTS:0 = 엘프 클래스
+		RESULTS:1 = 요정
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_84402(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 250322
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_84402(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,마함起動)
+PRINTL ①："요정" 몬스터를 제외하고, 모든 상대 몬스터의 공격력과 수비력을
+PRINTL 이 카드를 포함하지 않고, 이 턴 중에 발동한 효과의 수×５００ 다운시킨다.
+PRINTL 그 후, 이 효과로 공격력 또는 수비력이 0이 된 몬스터를 모두 파괴한다.
+IF ターンプレイヤー == "자신"
+	PRINTFORML （현재의 턴 플레이어가 발동한 효과의 수는 {자신_발동数}회）
+ELSE
+	PRINTFORML （현재의 턴 플레이어가 발동한 효과의 수는 {상대_발동数}회）
+ENDIF
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：묘지의 이 카드를 제외하고 발동할 수 있다.
+PRINTL 패에서 "요정" 몬스터 １장을 소환한다.
+
+@CARDCAN_84402(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,84402)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
+	SIF 발동済_1(듀얼리스트,84402)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_발동数") == 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 10
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF 발동済_2(듀얼리스트,84402)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 요정
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_84402(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 발동数
+IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84402,1)
+	IF RESULT == 0
+		발동数 = GETVAR(@"%듀얼리스트%_발동数") - 1
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		효과条件固カテゴリ = 요정
+		효과추가종류 = 13
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"永攻DOWN",발동数*500)
+	ENDIF
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84402,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = 요정
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",1)
+		ENDIF
+	ENDIF
+ENDIF

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 정크 스피더
+		RESULTS = 정크 스피더
 	CASE "略称"
-RESULTS = 정크 스피더
+		RESULTS = JUNK스피더
 	CASE "カテゴリ"
-RESULTS:0 = 정크
+		RESULTS:0 = 정크
 
 ENDSELECT
 
@@ -139,17 +139,14 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == EX소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51561,1)
 	IF RESULT == 0
-		FOR カウンタ,1,6
-			CALL FULLRESET
-			효과範囲덱 = 1
-			효과条件カテゴリ = 싱크론
-			효과条件튜너 = 1
-			효과条件レベル = カウンタ
-			효과条件任意 = 1
-			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-			SIF モンスター数(듀얼리스트) >= 5
-				BREAK
-		NEXT
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 싱크론
+		효과条件튜너 = 1
+		효과条件固レベル選択 = 1
+		효과条件複数 = 任意の数
+		효과条件任意 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		EX소환可能종류 = 싱크로
 		CALL CARD_EX_RESTRICTION(듀얼리스트)
 	ENDIF

@@ -1,0 +1,213 @@
+@IRAI_EVENT_102651(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = お人よしはトラブルの始まり？
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_繁華街
+	CASE "詳細"
+		PRINTL 街で困っている人を見かけたひなた。彼女の様子を見に行こう。
+		PRINTL 
+		PRINTL 报酬：1500DP、カードパック5個
+	CASE "条件"
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2651):호감도 < 100
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+        ;街で助けるシナリオなので、반발각인は不問
+        ;ここは無条件に進行する
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_102651(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 悪質デュエリスト
+
+이벤트主 = NO_TO_CHARANUM(2651)
+悪質デュエリスト = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML あなたは街を歩いていると、見慣れた声が聞こえてきた。
+	PRINTFORML 声の方向を見ると、%CALLNAME:이벤트主%が見知らぬデュエリストと話している。
+	PRINTFORMW どうやら何かトラブルに巻き込まれているようだ。
+
+	PRINTFORML 「お願いします！僕の大切なレアカードを探してください！」
+	PRINTFORML 見知らぬデュエリストが%CALLNAME:이벤트主%に頭を下げている。
+	PRINTFORMW %CALLNAME:이벤트主%は困惑した表情を浮かべている。
+
+	PRINTFORML 「えーっと…どんなカードなんですか？」
+	PRINTFORML %CALLNAME:이벤트主%が優しく尋ねる。
+	PRINTFORMW 彼女のお人よしな性格が表れている。
+
+	PRINTFORML 「『レッド・デーモンズ・ドラゴン』なんです！この辺りで落としてしまって…」
+	PRINTFORML デュエリストが説明を続ける。
+	PRINTFORMW 「でも、もし見つからなかったら、君のカードで弁償してもらうからね」
+
+	PRINTFORML 「え？でも、それは…」
+	PRINTFORML %CALLNAME:이벤트主%が戸惑っている。
+	PRINTFORMW デュエリストの태도が急に威圧的になってきた。
+
+	PRINTFORML 「アンティルールでデュエルだ！負けたら君のレアカードをもらうぞ！」
+	PRINTFORML デュエリストがデュエルディスクを構えた。
+	PRINTFORMW %CALLNAME:이벤트主%は明らかに困っている。
+
+	PRINTL
+	PRINTL [0] - 「250円じゃないか！」
+	BINPUT
+
+	PRINTFORML あなたが割って入ると、デュエリストは振り返った。
+	PRINTFORML 「何だお前は？関係ないだろう」
+	PRINTFORMW デュエリストが睨みつけてくる。
+
+	PRINTFORML %CALLNAME:이벤트主%があなたに気づいた。
+	PRINTFORML 「%CALLNAME:MASTER%！」
+	PRINTFORMW 彼女は安堵の表情を浮かべた。
+
+	PRINTL
+	PRINTL [0] - 「彼女の代わりに俺がカードを探そう」
+	PRINTL [1] - 「アンティルールは違法だぞ」
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは冷静に提案したが…
+		PRINTFORML 「うるさい！絶対にデュエルに負かして、あとで体で覚えさせる！」
+		PRINTFORMW …とんだ屑人間のようだ。
+	ELSE
+		PRINTFORML あなたは法的な問題を指摘した。
+	ENDIF
+
+    PRINTFORML 「こんなことをすれば、セキュリティが来ますよ」と主張する%CALLNAME:이벤트主%。
+    PRINTFORMW デュエリストが焦り始めた。
+	PRINTFORML デュエリストがあなたに向かってデュエルディスクを向けた。
+	PRINTFORMW 「くそ…勝ったら俺の要求を飲んでもらうからな！」
+
+	PRINTFORML %CALLNAME:이벤트主%が心配そうにあなたを見つめている。
+	PRINTFORML 「%CALLNAME:MASTER%さん、大丈夫ですか？」
+	PRINTFORMW 彼女の優しさが伝わってくる。
+
+	PRINTFORML デュエリストが不敵な笑みを浮かべている。
+	PRINTFORML 「さあ、始めようじゃないか！」
+	PRINTFORMW 緊張感が漂っている。
+
+	PRINTL
+	PRINTL [0] - 「受けて立つ！」
+	BINPUT
+
+	PRINTFORML あなたはデュエルディスクを起動させた。
+	PRINTFORML 「デュエル開始だ！」
+	PRINTFORMW 周りに人だかりができ始めた。
+
+    CALL CHOOSE_DECK_RANDOM
+    依頼_進行보존:102651 = RESULT
+
+	TARGET = -1
+    CALL DUEL_SYSTEM(1,102651,1)
+
+    $INPUT_LOOP
+	;승리
+	IF RESULT == 1
+		PRINTFORML 「くそっ！こんなはずじゃ…」
+		PRINTFORML デュエリストは悔しそうに歯ぎしりしている。
+		PRINTFORMW あなたの승리だ。
+
+		PRINTL
+		PRINTL [0] - 「アンティルールは見逃すから、パックをもらおうか」
+		SIF FLAG:악랄치 >= 30
+			PRINTL [1] - アンティルールで상대のカードを奪う
+		BINPUT
+
+		IF RESULT == 1 && FLAG:악랄치 >= 30
+			PRINTFORML あなたはアンティルールを適用することにした。
+			PRINTFORML 「え？でも、それは…」
+			PRINTFORMW %CALLNAME:이벤트主%が少し引いているようだ。
+			CALL EVENT_FAVUP(이벤트主,-30)
+		    PRINTL [0] - 「悪人には、された方の気持ちをわからせないと」
+            BINPUT
+            PRINTFORMW 「そ、そうなんですか…」
+            PRINTFORMW ひなたはさすがにちょっと釈然としない様子でした。
+			CALL ANTE_RULE(1,悪質デュエリスト)
+			FLAG:악랄치 += 5
+        ELSE
+			PRINTFORML あなたは報酬としてカードパックを要求した。
+			PRINTFORML 「ちぇ…」
+			PRINTFORMW デュエリストが悔しい顔でパックを差し出した。
+			CALL CARD_PACK_SHORI(5)
+		ENDIF
+
+		PRINTFORML %CALLNAME:이벤트主%が駆け寄ってくる。
+		PRINTFORML 「%CALLNAME:MASTER%さん、ありがとうございます！」
+		PRINTFORMW 彼女の笑顔が輝いている。
+
+		PRINTFORML 「ちっ、覚えてろよ！」
+		PRINTFORML デュエリストは捨て台詞を吐いて逃げていく。
+		PRINTFORMW 周りの観客たちも散っていった。
+
+		PRINTFORML %CALLNAME:이벤트主%があなたに向き直る。
+		PRINTFORML 「本当にありがとうございました！お礼がしたいです」
+		PRINTFORMW 彼女は深々と頭を下げた。
+
+		PRINTFORML 「また会ってください！今度はもっとちゃんとお礼がしたいです」
+		PRINTFORML %CALLNAME:이벤트主%が手を振っている。
+		PRINTFORMW 善行は気持ちいいな。
+
+		CALL EVENT_FAVUP(이벤트主,100)
+
+	ELSE
+		PRINTFORMW 負けてしまった…
+
+		PRINTFORML 「ざまあみろ！これで君のカードは俺のものだ！」
+		PRINTFORML デュエリストが勝ち誇っている。
+		PRINTFORMW %CALLNAME:이벤트主%が青ざめている。
+
+		PRINTFORML その時、遠くからサイレンの音が聞こえてきた。
+		PRINTFORML 「セキュリティだ！違法なアンティルールデュエルが行われているという通報があった！」
+		PRINTFORMW 街中が大混乱に陥った。
+
+		PRINTFORML 「くそっ！」
+		PRINTFORML デュエリストが慌てて逃げていく。
+		PRINTFORMW あなたも%CALLNAME:이벤트主%と一緒に急いでその場を離れた。
+
+		PRINTFORML 「%CALLNAME:MASTER%さん、すみません…私のせいで…」
+		PRINTFORML %CALLNAME:이벤트主%が申し訳なさそうに謝っている。
+		PRINTFORMW 彼女の機嫌があまり良くないようだ。
+
+		CALL EVENT_FAVUP(이벤트主,-50)
+		RETURN 3
+	ENDIF
+
+	CALL EVENT_TIMER(120)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_102651
+CALL DP_GET(1500)
+
+@IRAI_DECK_102651(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 依頼_進行보존:102651
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_102651
+
+PRINTFORML 
+PRINTFORML 悪質デュエリスト「お前なんかに負けるわけがない！」
+PRINTFORMW 

@@ -1,0 +1,127 @@
+﻿@CARDNAME_24054,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미궁의 중마전차
+	CASE "略称"
+		RESULTS = 미궁의 중마전차
+	CASE "カテゴリ"
+		RESULTS:0 = 게이트 가디언
+ENDSELECT
+
+
+@CARD_24054(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 2400
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_24054(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,효과소환)
+PRINTL ①：このカードはリリースなしで소환できる。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL 자신の덱・묘지・제외状態の「번개 마신－썬가」「풍 마신－휴가」「수 마신－스가」のいずれか１体を選び、
+PRINTL 자신の마법＆함정ゾーンに表側표시で置く。
+PRINTL フィールドが「래비린스 월」の場合、さらに상대フィールドのモンスター１体を破壊できる。
+
+
+@CARDCAN_24054(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24054)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과소환
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,24054)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件名前:0 = 번개 마신－썬가
+	효과条件名前:1 = 풍 마신－휴가
+	효과条件名前:2 = 수 마신－스가
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_24054(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과소환
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24054,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件名前:0 = 번개 마신－썬가
+		효과条件名前:1 = 풍 마신－휴가
+		효과条件名前:2 = 수 마신－스가
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+		IF RESULT == 1 && (GETVARS(@"자신_フィールド名") == "래비린스 월" || GETVARS(@"상대_フィールド名") == "래비린스 월")
+			CALL FULLRESET
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+		ENDIF
+	ENDIF
+ENDIF
+
+

@@ -1,0 +1,158 @@
+@CARDNAME_91671,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 이 손에 떨어지지 않는 제물은 없다
+	CASE "略称"
+		RESULTS = 오지않는제물없다
+	CASE "カテゴリ"
+		RESULTS:0 = 메가 콜로니
+		RESULTS:4 = 뱅가드
+ENDSELECT
+
+@CARD_91671(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_91671(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_91671(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과は１ターンにいずれか１つしか使用できない。
+CALL CARD_ABLE(1,발동誘発)
+PRINTL ①：상대の효과が발동した場合に、자신フィールドに「그레도라」モンスターが存在するなら발동できる。
+PRINTL その발동を無効にする。
+PRINTL その後、상대フィールドのモンスター１体を대상として悪性카운터を１つ置くことができる。
+CALL CARD_ABLE(2,효과後誘発)
+PRINTL ②：상대モンスターが묘지に送られた場合に발동できる。
+PRINTL 묘지のこのカードを제외し、덱から「메가 콜로니」モンスター１枚を손패に加える。
+
+@CARDCAN_91671(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ数
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91671)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,91671)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,91671)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 그레도라
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,91671)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,91671)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 메가 콜로니
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+ENDIF
+
+@CARDEFFECT_91671(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 修正値
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91671,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件除去種 = 選択
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				PRINTL 悪性카운터を置くモンスターを選択してください。
+				CALL FULLRESET
+				효과条件任意 = 1
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")
+				IF RESULT == 1
+					CALL SET_FIELD_INFO(対面者,"필드",RESULT:1,"悪Ｃ",1)
+				ENDIF
+			ENDIF
+		ENDIF
+		RETURN 1
+	ENDIF
+	RETURN 0
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91671,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 메가 콜로니
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

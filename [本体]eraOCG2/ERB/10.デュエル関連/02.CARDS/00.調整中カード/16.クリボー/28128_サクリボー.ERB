@@ -1,0 +1,152 @@
+﻿@CARDNAME_28128,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 새크리보
+	CASE "略称"
+		RESULTS = 새크리보
+	CASE "カテゴリ"
+		RESULTS:0 = 크리보
+ENDSELECT
+
+
+@CARD_28128(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 300
+	CASE "守備力"
+		RETURN 200
+	CASE "추가日"
+		RETURN 251009
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28128(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,R素材時효과)
+PRINTL ①：このカードが의식素材となった場合に발동できる。
+PRINTL 자신は덱から１枚ドローする。
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ②：자신のモンスターが戦闘・효과で破壊される場合、
+PRINTL 代わりに묘지のこのカードを제외できる。
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：このカードが묘지に存在する場合、손패の의식モンスターか의식마법１枚を見せて발동できる。
+PRINTL このカードを묘지から특수소환する。
+PRINTL この효과で특수소환したこのカードがフィールドに存在する限り、자신はＥＸ덱からモンスターを특수소환できない。
+
+@CARDCAN_28128(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28128)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == R素材時효과
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"효과","戦闘")
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,28128)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,28128,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件スーパー종류 = 의식
+	효과条件カテゴリ = 의식마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28128(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == R素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28128)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28128)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28128,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件スーパー종류 = 의식
+		효과条件カテゴリ = 의식마법
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 새크리보
+			효과추가종류 = 効追汎数
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL SET_TMP_EX_RST(듀얼리스트,"全般")
+ENDIF
+

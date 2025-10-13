@@ -1,0 +1,155 @@
+﻿@CARDNAME_1673,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 새벽천사 캄빈
+	CASE "略称"
+		RESULTS = 새벽천사 캄빈
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_1673(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 500
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251005
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1673(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+
+PRINTL ①：자신フィールドのモンスターが、存在しない場合または천사족モンスターのみの場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：このカードを含む자신フィールドの천사족モンスターを任意の数だけリリースして발동できる
+PRINTL （この효과を발동するターン、자신は천사족モンスターしか특수소환できない）。
+PRINTL リリースしたモンスターのレベルの合計と同じレベルを持つ천사족モンスター１体を덱から특수소환する。
+
+@CARDCAN_1673(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 合計レベル
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1673)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,1673)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1673,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	CALLFORM 효과条件종족_ADV(천사족, "以外")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,1673)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	CALLFORM 효과条件종족_ADV(천사족,"以外")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+	SIF RESULT != 0
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 천사족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	合計レベル = RESULT:2
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 천사족
+	효과条件소환可 = 2
+	CALL 효과条件レベル_ADV(合計レベル,"以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1673(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 合計レベル
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1673,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1673,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종족 = 천사족
+		효과条件複数 = 任意の数
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			合計レベル = RESULT:200 + 1
+		ELSE
+			合計レベル = 1
+		ENDIF
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종족 = 식물족
+		CALL 효과条件レベル_ADV(合計レベル,"以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

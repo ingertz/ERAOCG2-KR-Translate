@@ -26,12 +26,14 @@ $MYDECK_INPUT
 SIF 詰め플래그
 	GOTO GAMESTART
 
-IF 連戦플래그 >= 1
-
+IF 連戦플래그 >= 1 && 連戦덱 >= 0 ;Anonym修正
 	덱選択 = 連戦덱
 	GOTO SKIPDECK
 ENDIF
 
+;Anonym추가
+SIF 連戦플래그 >= 2 && 引継ライフ_자신 <= 0
+	引継ライフ_자신 = 8000
 
 듀얼モード = 1
 
@@ -81,7 +83,7 @@ ENDIF
 CALL ENEMYDECK_CHECK(OPPOSER)
 IF RESULT == 0
 	IF GROUPMATCH(이벤트플래그,0,2)
-		CALL ENEMY_DECK_AUTO_MAKE(OPPOSER) ;Anonym추가
+		CALL ENEMY_DECK_AUTO_MAKE(OPPOSER)
 		IF RESULT == 1
 			;PRINTFORML 스킵 도달！
 			GOTO SKIPDECK ;オート덱作りが無事済んだら一回処理を戻る
@@ -179,6 +181,9 @@ ELSE
 		ターンプレイヤー = 자신
 	ENDIF
 ENDIF
+IF 連戦플래그 == 2;Anonym추가
+	ライフ_자신 = 引継ライフ_자신
+ENDIF
 
 ;셔플＆5ドロー
 CALL SHUFFLE("자신")
@@ -195,7 +200,7 @@ REND
 $PUZZLE_SET
 CALL FULLRESET
 효과範囲덱 = 1
-효과範囲EX덱 = 1 ;Anonym추가
+효과範囲EX덱 = 1
 효과範囲손패 = 1
 효과条件カテゴリ = E.R.A
 CALL CARD_CHECK_ADV("자신")
@@ -425,6 +430,10 @@ IF RESULT == 1000
 	IF RESULT != 0
 		승리판정 = RESULT
 		VARSET RESULT
+		;Anonym추가
+		IF 連戦플래그 == 2 && 승리판정 == 1
+			引継ライフ_자신 = ライフ_자신
+		ENDIF
 		IF G_イベ起動 >= 1 && 승리판정 == 1
 			CUSTOMDRAWLINE —
 			PRINTL 

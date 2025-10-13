@@ -85,6 +85,9 @@ SELECTCASE 元参照先
 		대상者 = %対面者%
 		参照先 = 제외	
 ENDSELECT
+IF ゾーン != "어드밴스"
+	カードID = 処理中_효과ID
+ENDIF
 
 IF 参照先 == "덱" && 효과条件行先플래그 == 0
 	CALL URARA_CHANCE(듀얼리스트,カードID,"묘지")
@@ -103,10 +106,9 @@ ENDIF
 
 
 
-IF ゾーン != "어드밴스"
-	カードID = 処理中_효과ID
-ENDIF
+
 $CHOICE_LOOP
+カードID = 処理中_효과ID
 IF 듀얼리스트 == "자신"
 	CUSTOMDRAWLINE —
 	PRINT 【카드를 선택해 주세요】
@@ -193,6 +195,10 @@ IF 효과条件複数 != 0
 		IF 효과条件固名前選択
 			CALLFORM CARDNAME_{GETVAR(@"%대상者%_%参照先%:{選択カード:複数カウンタ}")},"名前"
 			효과条件固名前:複数カウンタ = %RESULTS%
+		ENDIF
+		IF 효과条件固レベル選択
+			CALLFORM CARD_{GETVAR(@"%대상者%_%参照先%:{選択カード:複数カウンタ}")},"レベル"
+			효과条件固レベル:複数カウンタ = RESULT
 		ENDIF
 		複数カウンタ ++
 		選択数 ++
@@ -338,6 +344,7 @@ ENDIF
 
 
 $CHOICE_LOOP
+カードID = 処理中_효과ID
 IF 듀얼리스트 == "자신"
 	CUSTOMDRAWLINE —
 	PRINTL 【카드를 선택해 주세요】
@@ -427,6 +434,11 @@ IF 효과条件複数 != 0
 			CALL CARD_SELECT(듀얼리스트,選択カード:複数カウンタ)
 			CALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")},"名前"
 			효과条件固名前:複数カウンタ = %RESULTS%
+		ENDIF
+		IF 효과条件固レベル選択
+			CALL CARD_SELECT(듀얼리스트,選択カード:複数カウンタ)
+			CALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")},"レベル"
+			효과条件固レベル:複数カウンタ = RESULT
 		ENDIF
 		複数カウンタ ++
 		選択数 ++
@@ -826,8 +838,17 @@ ELSEIF ゾーン == "마함"
 	ENDIF
 ELSEIF ゾーン == "손패"
 	IF 行先플래그 == 제외行き
-		CALL CARD_ADD(듀얼리스트, "손패", "제외",場所)
+		IF 추가플래그 == 0
+			CALL CARD_ADD(듀얼리스트, "손패", "제외",場所)
+		ELSEIF 추가플래그 == 1
+			CALL CARD_ADD(듀얼리스트, "손패", "제외",場所,"帰墓")
+		ELSEIF 추가플래그 == 2
+			CALL CARD_ADD(듀얼리스트, "손패", "제외",場所,"帰手")
+		ENDIF
+
 		CALLFORM CARD_STANBY(選択カード_ID,듀얼리스트,제외時,"제외")
+
+
 	ELSEIF 行先플래그 == 덱行き
 		CALL CARD_ADD(듀얼리스트, "손패", "덱",場所)
 	ELSEIF 行先플래그 == 마함行き

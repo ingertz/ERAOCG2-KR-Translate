@@ -32,9 +32,9 @@ RETURN 0
 @CARD_EXPLANATION_70201(종류)
 #DIM DYNAMIC 종류
 
-PRINTL	상대 필드의 앞면 표시 몬스터에게 장비할 수 있다.
+PRINTL	상대 필드의 앞면 표시 몬스터에게 장착할 수 있다.
 CALLFORM CARD_ABLE(1,지속효과)
-PRINTL ①：장비 몬스터의 컨트롤을 얻는다.
+PRINTL ①：장착 몬스터의 컨트롤을 얻는다.
 CALLFORM CARD_ABLE(0,ターン開始時強制)
 PRINTL ②：상대 스탠바이 페이즈에 발동한다.
 PRINTL 상대는 1000 LP 회복한다.
@@ -51,6 +51,10 @@ PRINTL
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,70201)
 SIF RESULT == 1
@@ -88,9 +92,6 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") > 0
 		RETURN 0
-	CALL 装備판정(듀얼리스트,場所,ゾーン)
-	装備者 = %RESULTS%
-	装備先 = RESULT
 	SIF GETVAR(@"%듀얼리스트%_필드:装備先") == -1
 		RETURN 0
 	SIF モンスター数(듀얼리스트) >= 5
@@ -130,6 +131,11 @@ ENDIF
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
 IF 종류 == 마함起動 || 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,70201)
 	IF RESULT == 0
@@ -149,9 +155,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 ELSEIF 종류 == 효과後強制誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,70201)
 	IF RESULT == 0
-		CALL 装備판정(듀얼리스트,場所,ゾーン)
-		装備者 = %RESULTS%
-		装備先 = RESULT
 		CALL FULLRESET
 		효과추가종류 = 110 + 場所
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",装備先,"強奪")

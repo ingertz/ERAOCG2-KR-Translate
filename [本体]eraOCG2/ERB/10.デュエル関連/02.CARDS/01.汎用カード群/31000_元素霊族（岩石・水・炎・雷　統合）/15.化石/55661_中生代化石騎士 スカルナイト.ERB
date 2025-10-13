@@ -1,0 +1,141 @@
+﻿@CARDNAME_55661,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 중생대 화석 기사 스컬나이트
+	CASE "略称"
+		RESULTS = 중생대 화석 기사
+	CASE "カテゴリ"
+		RESULTS:0 = 화석
+ENDSELECT
+
+
+@CARD_55661(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 1100
+	CASE "추가日"
+		RETURN 250919
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_55661(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 원소정령족 몬스터＋레벨５ / ６의 몬스터
+PRINTL 이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,지속효과)
+PRINTL ①：이 카드가 수비 표시 몬스터를 공격한 경우、
+PRINTL 그 수비력을 공격력이 넘은 만큼 전투 데미지를 준다。
+CALLFORM CARD_ABLE(2,攻撃後誘発)
+PRINTL ②：이 카드의 공격으로 몬스터를 파괴했을 때에 발동할 수 있다。
+PRINTL 이 카드는 １번더 이어서 공격할 수 있다。
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：묘지의 이 카드를 제외하고、필드의 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 파괴한다。
+
+@CARDSUMMON_55661(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件종족 = 원소정령족
+ELSEIF EX参照 >= 10
+	素材条件종류 = レベル持ち
+	素材条件レベル:0 = 5
+	素材条件レベル:1 = 6
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,55661) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_55661(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55661)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,55661)
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,55661)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_55661(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"貫通")
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55661,2)
+	SIF RESULT == 0
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",1)
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55661,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ENDIF
+

@@ -1,0 +1,118 @@
+﻿@CARDNAME_79607,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 리벤지 새크리파이스
+	CASE "略称"
+		RESULTS = 리벤지 새크리
+	CASE "カテゴリ"
+		RESULTS:0 = 새크리파이스
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_79607(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79607(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL CARD_ABLE(1,효과後誘発)
+PRINTL ①：자신 필드의 몬스터가 전투 / 효과로 파괴된 경우에 발동할 수 있다。
+PRINTL 상대 필드의 몬스터 1장을 릴리스하고、
+PRINTL 자신의 패 / 묘지의 레벨５ 이상의 몬스터 １장을 특수 소환한다。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_79607(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79607)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF !GROUPMATCH(ゾーン,"손패","마함")
+		RETURN 0
+	IF ゾーン == "손패"
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	CALLFORM 효과条件レベル_ADV(5,"以上")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_79607(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 조교대상
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79607)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"リリース")
+		IF RESULT == 1
+			選択カード_ID = RESULT:2
+			CALL CARD_EROTICS(選択カード_ID,듀얼리스트)
+			IF RESULT != -1
+				조교대상 = RESULT
+				PRINTFORML 어둠에서 나타난 촉수가 %NAME:조교대상%을 집어 삼켰다。
+				CALL EROTIC_MOVE("丸飲み",조교대상,-1,100)
+			ENDIF
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			CALLFORM 효과条件レベル_ADV(5,"以上")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+
+	ENDIF
+ENDIF

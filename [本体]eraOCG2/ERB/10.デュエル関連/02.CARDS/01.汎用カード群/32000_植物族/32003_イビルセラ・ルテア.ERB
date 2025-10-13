@@ -1,0 +1,134 @@
+﻿@CARDNAME_32003,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 이빌세라 루테아
+	CASE "略称"
+		RESULTS = 이빌세라 루테아
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_32003(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+
+	CASE "종족"
+		RETURN 식물족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 100
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_32003(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1, 지속효과)
+PRINTL ①：자신フィールドに他のモンスターが存在する限り、このカードは戦闘では破壊されない。
+CALL CARD_ABLE(2, 지속효과)
+PRINTL ②：このカードがモンスターゾーンに存在する限り、자신フィールドの表側표시の마법・함정カードは효과の대상にならない。
+CALLFORM CARD_ABLE(3, 묘지起動, フリー誘発)
+PRINTL ③：자신・상대ターンに、묘지のこのカードを제외し、
+PRINTL 자신の묘지の、自身をモンスターとして특수소환する효과を持つ지속함정カード１枚を대상として발동できる。
+PRINTL そのカードをセットする。そのカードはセットしたターンに발동できる。
+
+
+@CARDCAN_32003(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 32003)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	SIF 발동済_3(듀얼리스트, 32003)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件分割 = 分割在り
+	효과条件종류 = 지속함정
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_32003(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	;自身に戦闘耐性付与
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "戦耐")
+	ENDIF
+	
+	;자신の表側표시の마함に대상耐性付与
+	CALL FULLRESET
+	효과条件표시 = 表側표시
+	효과条件종류 = 마함全般
+	CALL STATCHANGE_EFFECT(듀얼리스트, "필드", 場所, "対耐")
+	CALL FULLRESET
+	효과条件표시 = 表側표시
+	효과条件종류 = 마함全般
+	CALL STATCHANGE_EFFECT(듀얼리스트, "마함", 場所, "対耐")
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 32003, 3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件分割 = 分割在り
+		효과条件종류 = 지속함정
+		CALL CARD_SET_ADV(듀얼리스트, ゾーン, 場所, "使化裏側표시")
+	ENDIF
+ENDIF
+
+

@@ -1,0 +1,210 @@
+﻿@CARDNAME_91203,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 양자고양이
+	CASE "略称"
+		RESULTS = 양자고양이
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_91203(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "속성"
+		RETURN 빛속성
+
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "分割"
+		RETURN 효과モン
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_91203(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードの元々の속성は빛속성、元々の종족は미확인족、元々の攻撃力は０、元々の守備力は０として扱う。
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(0, 마함起動)
+PRINTL ①：종족と속성を１つずつ宣言してこのカードを발동できる。
+PRINTL このカードは②の효과と宣言した종족・속성を持つ효과モンスターとなり、モンスターゾーンに특수소환する（함정カードとしても扱う）。
+PRINTL （星４・攻０／守２２００）
+CALL CARD_ABLE(2, 발동誘発)
+PRINTL ②：このカードがモンスターゾーンに存在し、자신モンスターゾーンに表側표시のモンスターカードが存在しない状態で、
+PRINTL 상대の효과が발동した時に발동できる。
+PRINTL このカードを제외する。
+PRINTL 次のスタンバイフェイズに、종족と속성を１つずつ宣言し、제외状態のこのカードは②の효과と宣言した종족・속성を持つ효과モンスターとなり、
+PRINTL モンスターゾーンに특수소환する（함정カードとしても扱う）。
+PRINTL （星４・攻２２００／守０）
+
+
+@CARDCAN_91203(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 91203)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트, 91203, "마함")
+	SIF RESULT == 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트, 91203)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 0
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트, 1)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == ターン開始時予約
+	CALL CARD_SS_CHECK(듀얼리스트, 91203, "제외")
+	SIF RESULT == 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_91203(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択종족
+#DIM DYNAMIC 選択속성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 91203, 1)
+	IF RESULT == 0
+		CALL CHOOSE_TYPE_AND_ATTRIBUTE_91203(듀얼리스트)
+		選択종족 = RESULT:0
+		選択속성 = RESULT:1
+		
+		CALL FULLRESET
+		효과추가종류:0 = 効追永種 + 選択종족
+		효과추가종류:1 = 効追永属 + 選択속성
+		효과추가종류:2 = 効追永守 + 2200
+		CALL CARD_SP_SUMMON(듀얼리스트, "마함", 場所)
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 91203, 2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 제외行き)
+		CALL CARD_RESERV(듀얼리스트, 91203, スタン予約)
+	ENDIF
+ELSEIF 종류 == ターン開始時予約
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件名前 = 양자고양이
+	CALL CARD_CHOOSE_ADV(듀얼리스트, ゾーン, 場所)
+	IF RESULT != 9999
+		CALL CHOOSE_TYPE_AND_ATTRIBUTE_91203(듀얼리스트)
+		選択종족 = RESULT:0
+		選択속성 = RESULT:1
+		
+		CALL FULLRESET
+		효과추가종류:0 = 効追永種 + 選択종족
+		효과추가종류:1 = 効追永属 + 選択속성
+		효과추가종류:2 = 効追永攻 + 2200
+		CALL CARD_SP_SUMMON(듀얼리스트, "제외", 選択カード（CS）)
+	ENDIF
+ENDIF
+
+@CHOOSE_TYPE_AND_ATTRIBUTE_91203(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 選択종족
+#DIM DYNAMIC 選択속성
+
+IF 듀얼리스트 == "자신"
+	PRINTL
+	PRINTL 종족を選択してください
+	PRINTL
+	PRINT [01] - 마법사족　
+	PRINT [02] - 드래곤족　
+	PRINTL [03] - 언데드족
+	PRINT [04] - 전사족　　　
+	PRINT [05] - 기계족　　　
+	PRINTL [06] - 야수족
+	PRINT [07] - 비행야수족　　　
+	PRINT [08] - 비늘야수족　　　
+	PRINTL [09] - 악마족
+	PRINT [10] - 천사족　　　
+	PRINT [11] - 곤충족　　　
+	PRINTL [12] - 원소정령족
+	PRINT [13] - 식물족　　　
+	PRINT [14] - 사이킥족
+	PRINTL [15] - 사이버스족
+	PRINT [16] - 바다생물족　　　
+	PRINT [17] - 미확인족　　
+	PRINTL [20] - 환신야수족
+	BINPUT
+	選択종족 = RESULT
+	PRINTL
+	PRINTL
+	PRINTL 속성を選択してください
+	PRINTL
+	PRINT [01] - 빛속성　
+	PRINT [02] - 어둠속성　
+	PRINTL [03] - 땅속성
+	PRINT [04] - 물속성　
+	PRINT [05] - 화염속성　
+	PRINTL [06] - 바람속성
+	PRINTL [07] - 신속성
+	BINPUT
+	選択속성 = RESULT
+ELSE
+	選択종족 = RAND:17 + 1
+	選択속성 = RAND:6 + 1
+ENDIF
+
+RESULT:1 = 選択속성
+RETURN 選択종족
+
+

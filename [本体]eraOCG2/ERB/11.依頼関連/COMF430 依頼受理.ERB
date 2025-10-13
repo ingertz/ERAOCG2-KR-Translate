@@ -36,12 +36,16 @@ RETURN 1
 #DIM DYNAMIC 一時보존,10
 #DIM DYNAMIC 消去カード
 #DIM DYNAMIC 選択依頼
+#DIM DYNAMIC 選択캐릭터
+#DIM DYNAMIC 選択캐릭터_ID
 #DIM DYNAMIC Continue数
 #DIM DYNAMIC 표시モード
 #DIM DYNAMIC 依頼リスト最大値
 #DIM DYNAMIC 回想설정
 #DIMS DYNAMIC 選択依頼名
+#DIM DYNAMIC 설정依頼ID
 #DIM CONST 依頼リストサイズ = 15
+
 #DIM 現在モード
 
 IF CFLAG:MASTER:감기플래그 >= 1 && 回想설정
@@ -56,9 +60,12 @@ ENDIF
 CALL UPDATE_CHARA
 
 $INPUT_FILTER
-CALL IRAI_SORT(現在モード,표시モード)
+CALL IRAI_SORT(現在モード,표시モード,回想설정)
 依頼リスト最大値 = RESULT
 $INPUT_LOOP
+SIF 표시モード == 5
+	GOTO SKIP_TO_CHARA
+
 
 CUSTOMDRAWLINE ―
 PRINTL 　의뢰수령
@@ -148,19 +155,19 @@ FOR カウンタ,0 + リストスタート,依頼リストサイズ + リスト�
 	PRINT ┃
 	VARSET RESULT
 	VARSET RESULTS
+	설정依頼ID = 依頼_リスト:カウンタ
 	IF 依頼_リスト:カウンタ != 0
-		IF 依頼플래그:(依頼_リスト:カウンタ) == 2 && 回想설정 == 0
+		IF 依頼플래그:설정依頼ID == 2 && 回想설정 == 0
 			SETCOLOR C_GRAY
-		ELSEIF 依頼_受領中 == (依頼_リスト:カウンタ)
+		ELSEIF 依頼_受領中 == 설정依頼ID
 			SETCOLOR C_GREEN
 		ENDIF
 		VARSET RESULT
-		CALLFORM IRAI_EVENT_{(依頼_リスト:カウンタ)}("추가条件")
+		CALLFORM IRAI_EVENT_{설정依頼ID}("추가条件")
 		IF RESULT >= 1 && 回想설정 == 0
 			SETCOLOR C_GRAY
 		ENDIF
-		
-		CALLFORM IRAI_EVENT_{(依頼_リスト:カウンタ)}("名前")
+		CALLFORM IRAI_EVENT_{설정依頼ID}("名前")
 		選択依頼名 = %RESULTS%
 		STRLENS 選択依頼名
 		IF RESULT >= 60
@@ -169,12 +176,12 @@ FOR カウンタ,0 + リストスタート,依頼リストサイズ + リスト�
 		ELSE
 			PRINTFORM [{(カウンタ + 1),3}] - %選択依頼名,63,LEFT%
 		ENDIF
-		IF 依頼플래그:(依頼_リスト:カウンタ) == 2
+		IF 依頼플래그:설정依頼ID == 2
 			PRINT  (달성됨)
 
-		ELSEIF 依頼_受領中 == (依頼_リスト:カウンタ)
+		ELSEIF 依頼_受領中 == 설정依頼ID
 			PRINT  (수주중)
-		ELSEIF 確認플래그:(依頼_リスト:カウンタ) == 0
+		ELSEIF 確認플래그:설정依頼ID == 0
 			SETCOLOR C_YELLOW
 			PRINT  ( NEW！)
 		ELSE
@@ -224,9 +231,10 @@ PRINTFORM %"",80,LEFT%
 PRINT ┃　┃
 PRINTL
 PRINT ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━┛
+
 PRINTL
-
-
+CUSTOMDRAWLINE ―
+PRINTFORM 　[7777] - 캐릭터 스토리　
 PRINTL
 CUSTOMDRAWLINE ―
 PRINTFORM [9999] - 돌아간다　　　　　　　　　　　　　　　　
@@ -237,6 +245,89 @@ CUSTOMDRAWLINE ―
 BINPUT
 IF RESULT == 9999
 	RETURN 0
+ELSEIF RESULT == 7777
+	표시モード = 5
+	$SKIP_TO_CHARA
+	CALL MONSTER_LIST(35)
+	選択캐릭터 = RESULT
+	IF 選択캐릭터 >= 1
+		選択캐릭터_ID = NO:RESULT
+		CUSTOMDRAWLINE ―
+		PRINTFORML 　■%NAME:選択캐릭터%의 개인 의뢰
+		CUSTOMDRAWLINE ―
+		PRINTL ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+		PRINTL ┃　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　┃
+
+		FOR カウンタ,1,10
+			PRINT ┃
+			VARSET RESULT
+			VARSET RESULTS
+			설정依頼ID = (100000 * カウンタ) + 選択캐릭터_ID
+			IF 依頼플래그:설정依頼ID == 2 && 回想설정 == 0
+				SETCOLOR C_GRAY
+			ELSEIF 依頼_受領中 == 설정依頼ID
+				SETCOLOR C_GREEN
+			ENDIF
+			VARSET RESULT
+			TRYCALLFORM IRAI_EVENT_{설정依頼ID}("추가条件")
+			IF RESULT >= 1 && 回想설정 == 0 
+				SETCOLOR C_GRAY
+			ENDIF
+			VARSET RESULT
+			TRYCALLFORM IRAI_EVENT_{설정依頼ID}("条件")
+			IF RESULT == 0
+				IF カウンタ == 1
+					SETCOLOR C_GRAY
+				ELSE
+					RESETCOLOR
+					PRINTFORM %"",80,LEFT%
+					PRINTPLAIN ┃
+					PRINTL
+					CONTINUE
+				ENDIF
+			ENDIF
+
+
+			TRYCALLFORM IRAI_EVENT_{설정依頼ID}("名前")
+			選択依頼名 = %RESULTS%
+			STRLENS 選択依頼名
+			IF RESULT >= 60
+				SUBSTRING 選択依頼名, 0, 60
+				PRINTBUTTON @"[{カウンタ,3}] - %RESULTS,60,LEFT%…",설정依頼ID
+			ELSE
+				PRINTBUTTON @"[{カウンタ,3}] - %選択依頼名,63,LEFT%",설정依頼ID
+			ENDIF
+			IF 依頼플래그:설정依頼ID == 2
+				PRINT  (달성済)
+
+			ELSEIF 依頼_受領中 == 설정依頼ID
+				PRINT  (受注中)
+			ELSEIF 確認플래그:설정依頼ID == 0
+				SETCOLOR C_YELLOW
+				PRINT  ( NEW！)
+			ELSE
+				PRINTFORM %"",9,LEFT%
+			ENDIF
+			RESETCOLOR
+
+			PRINTPLAIN ┃
+			PRINTL
+		NEXT
+		PRINT ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+		PRINTFORML
+		CUSTOMDRAWLINE ―
+		PRINTFORML　 [9999] - 돌아간다
+		CUSTOMDRAWLINE ―
+		BINPUT
+		IF RESULT == 9999
+			GOTO INPUT_LOOP
+		ENDIF
+		選択依頼 = RESULT
+		GOTO INPUT_IRAI
+	ELSE
+		표시モード = 1
+		GOTO INPUT_LOOP
+	ENDIF
 ELSEIF RESULT == 8888
 	PRINTL 정말 모든 의뢰 상황을 리셋하시겠습니까？
 	PRINTL [0] - 예
@@ -305,9 +396,11 @@ ELSEIF RESULT == 8501
 	ENDIF
 	GOTO INPUT_LOOP
 ENDIF
-
 選択依頼 = 依頼_リスト:(RESULT - 1)
-IF 依頼플래그:選択依頼 == 2
+$INPUT_IRAI
+
+
+IF 依頼플래그:選択依頼 == 2 && 回想설정 == 1
 	TRYCALLFORM IRAI_EVENT_{選択依頼}("回想可")
 	IF RESULT != 1 && デバッグシステム != 1
 		PRINTL 이 의뢰는 회상할 수 없습니다。
@@ -347,6 +440,10 @@ IF 依頼플래그:選択依頼 == 2
 		TRYCALLFORM IRAI_BADEND_{選択依頼}(2)
 	ENDIF
 	GOTO INPUT_LOOP
+ELSEIF 依頼플래그:選択依頼 == 2
+	PRINTL 이 의뢰는 이미 해결했습니다.
+	PRINTL 
+	GOTO INPUT_LOOP
 ENDIF
 
 TRYCALLFORM IRAI_EVENT_{選択依頼}("이벤트種")
@@ -361,13 +458,12 @@ ENDIF
 確認플래그:選択依頼 = 1
 
 CUSTOMDRAWLINE ―
-CALLFORM IRAI_EVENT_{選択依頼}("名前")
+TRYCALLFORM IRAI_EVENT_{選択依頼}("名前")
 PRINTFORML 의뢰：%RESULTS%
 CUSTOMDRAWLINE ―
-CALLFORM IRAI_EVENT_{選択依頼}("詳細")
-
+TRYCALLFORM IRAI_EVENT_{選択依頼}("詳細")
 CUSTOMDRAWLINE ―
-CALLFORM IRAI_EVENT_{選択依頼}("依頼先")
+TRYCALLFORM IRAI_EVENT_{選択依頼}("依頼先")
 IF RESULT >= 1 
 	PRINTFORML 지정장소:{RESULT}　%GETPLACENAME(RESULT)%
 ELSEIF RESULT == -1
@@ -377,8 +473,13 @@ CUSTOMDRAWLINE ―
 
 ;条件の지정
 TRYCALLFORM IRAI_EVENT_{選択依頼}("추가条件")
-IF RESULT >= 1
+IF RESULT >= 1 && デバッグシステム == 0
 	PRINTFORMW %RESULTS%
+	GOTO INPUT_LOOP
+ENDIF
+TRYCALLFORM IRAI_EVENT_{選択依頼}("条件")
+IF RESULT == 0 && デバッグシステム == 0
+	PRINTFORMW 조건이 부족합니다
 	GOTO INPUT_LOOP
 ENDIF
 
@@ -401,20 +502,17 @@ IF RESULT == 0
 		RETURN 0
 	ENDIF
 	CALL IRAI_RESET
-	CALLFORM IRAI_EVENT_{選択依頼}("依頼先")
+	TRYCALLFORM IRAI_EVENT_{選択依頼}("依頼先")
 	依頼_場所 = RESULT
-	CALLFORM IRAI_EVENT_{選択依頼}("대상캐릭터")
-	依頼_대상캐릭터 = RESULT
 	依頼_受領中 = 選択依頼
 	依頼플래그:選択依頼 = 1
 	VARSET RESULT
-	CALLFORM IRAI_EVENT_{選択依頼}("依頼先")
+	TRYCALLFORM IRAI_EVENT_{選択依頼}("依頼先")
 	IF RESULT == 即時開始
 		CALL COM431()
 	ENDIF
 	SELECTCOM = 430
 	TFLAG:SELECTCOM보존 = SELECTCOM
-
 	RETURN 1
 ELSEIF RESULT == 1
 	GOTO INPUT_LOOP

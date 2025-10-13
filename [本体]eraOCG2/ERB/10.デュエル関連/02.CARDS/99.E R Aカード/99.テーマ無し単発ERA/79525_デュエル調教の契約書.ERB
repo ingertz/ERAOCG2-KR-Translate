@@ -41,10 +41,10 @@ RETURN 0
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없으며、발동한 이 카드는 묘지로 보내지지 않고 소멸한다。
 SETCOLOR C_D_GRAY
-PRINTL （발동자가 MASTER이고、상대 플레이어가 조교 가능한 캐릭터인 경우에만 발동할 수 있다。）
+PRINTL （발동자가 MASTER이고、상대 플레이어가 조교 가능하고 카드 데이터를 가진 캐릭터인 경우에만 발동할 수 있다。）
 RESETCOLOR
 CALLFORM CARD_ABLE(1,마함起動)
-PRINT ①：상대의 마법＆함정 존에 ""
+PRINT ①：상대의 마법＆함정 존에 "
 IF 듀얼モード == 0
 	PRINT [　　　]의 계약서
 ELSE
@@ -90,6 +90,7 @@ CALL TEXT_DECORATION("ROGUE")
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 조교대상 = -1
+#DIM DYNAMIC 조교대상ID = -1
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -112,11 +113,18 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 마함数(対面者) >= 5
 		RETURN 0
 	
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
-	SIF RESULT <= -1
+	조교대상 = RESULT
+	조교대상ID = NO:조교대상
+	SIF 조교대상 <= -1
 		RETURN 0
 	
+	;PRINTFORMW 조교대상CSV：{조교대상}
+	;PRINTFORMW 조교대상ＩＤ：{조교대상ID}
+	;상대プレイヤーのカードデータがないと발동불가。モブは起動효과のタイミングだとRESULTSが「상대」になる事があるのでそれも排除
+	TRYCALLFORM CARDNAME_{조교대상ID}, "名前"
+	SIF RESULTS == "" || RESULTS == "상대"
+		RETURN 0
 	CALL CARD_DRAW_CHECK
 	RETURN 1
 ENDIF
@@ -141,7 +149,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79525,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
-		CALL FULLRESET
 		CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
 		조교대상 = RESULT
 		IF 조교대상 <= -1
@@ -154,15 +161,15 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 				CALL CARD_GENERATE_MAGIC(対面者,379525,1)
 				PRINTFORML 
 				PRINTFORML 듀얼하고 있는 %CALLNAME:조교대상%의 앞에, 1장의 계약서가 표시되었다.
-				PRINTFORM ""
+				PRINTFORM "
 				SETCOLOR C_RED
 				PRINTFORM 『성노예의 계약서』
 				RESETCOLOR
-				PRINTFORML ""라고 피처럼 붉은 글씨로 쓰여진 서류에는, 동의하고 사인하는 것으로
+				PRINTFORML "라고 피처럼 붉은 글씨로 쓰여진 서류에는, 동의하고 사인하는 것으로
 				PRINTFORML 자신의 LP를 회복하고 대전 상대는 1장 드로우. 그 후, 대전 상대의 LP를 절반으로 줄일 수 있다고 쓰여있다.
 				PRINTFORMW 하지만, 그 대상으로 자신의 분신이 필드에 특수 소환되어, 듀얼 중에는 받은 데미지에 따라 성적인 고통을 받게 된다고 쓰여있었다.
 				PRINTFORMW 게다가, 이 듀얼 중에는 카드의 효과를 발동할 때 『성노예』는 『주인님』의 허가가 필요하게 된다고도 쓰여있다.
-				PRINTFORMW …보통의 듀얼리스트라면, 이런 듀얼이 성립되지 않을 조건에 사인할 리가 없지만.
+				PRINTFORMW ・・・보통의 듀얼리스트라면, 이런 듀얼이 성립되지 않을 조건에 사인할 리가 없지만.
 				IF CFLAG:조교대상:호감도 >= 10000
 					PRINTFORMW 이미 실컷 조교를 받아, 몸도 마음도 『주인님』의 말대로가 된 %CALLNAME:조교대상%는, 황홀한 듯한 표정으로 서류에 사인했다.
 				ELSE
@@ -190,9 +197,9 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 				PRINTFORML 자신의 LP를 회복하고 대전 상대는 1장 드로우. 그 후, 대전 상대의 LP를 절반으로 줄일 수 있다고 쓰여있다.
 				PRINTFORMW 하지만, 그 대상으로 자신의 분신이 필드에 특수 소환되어, 듀얼 중에는 받은 데미지가 성적인 쾌감으로 변환되게 된다고도 쓰여있었다.
 				IF TALENT:조교대상:굴복됨
-					PRINTFORMW …망설이는 듯한 태도를 보인 %CALLNAME:조교대상%였지만, 굴복한 입장에서 명령을 거역할 수 있을 리도 없고, 비장한 표정으로 서류에 사인했다.
+					PRINTFORMW ・・・망설이는 듯한 태도를 보인 %CALLNAME:조교대상%였지만, 굴복한 입장에서 명령을 거역할 수 있을 리도 없고, 비장한 표정으로 서류에 사인했다.
 				ELSE
-					PRINTFORMW …잠시 망설이고 있던 %CALLNAME:조교대상%였지만, 대전 상대의 LP를 절반으로 줄일 수 있다는 이점에는 저항하지 못하고, 서류에 사인했다.
+					PRINTFORMW ・・・잠시 망설이고 있던 %CALLNAME:조교대상%였지만, 대전 상대의 LP를 절반으로 줄일 수 있다는 이점에는 저항하지 못하고, 서류에 사인했다.
 				ENDIF
 			ENDIF
 		ENDIF
@@ -224,7 +231,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 				ELSEIF TALENT:조교대상:굴복됨
 					;굴복됨（거역하는 의지를 보인다）
 					PRINTFORMW LP를 절반으로 줄이는 처리를 할지 질문받은 %CALLNAME:조교대상%는, 부들부들 떨리는 손가락을 살짝 뻗어, 절반으로 줄이는 처리를 했다.
-					PRINTFORMW …좋은 배짱이다. LP를 절반으로 줄이면, 혹시 이길 가능성이 있을지도 모른다고 생각하는 걸까?
+					PRINTFORMW ・・・좋은 배짱이다. LP를 절반으로 줄이면, 혹시 이길 가능성이 있을지도 모른다고 생각하는 걸까?
 					PRINTFORMW 저항의 의지를 보인 %CALLNAME:조교대상%에게는, 상응하는 벌과 보복을 줄 필요가 있을 것이다. 그렇게 생각하며 듀얼 디스크를 다시 잡았다.
 					CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",(GETVAR(@"ライフ_%듀얼리스트%")  / 2))
 				ELSE
@@ -258,12 +265,12 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 					PRINTFORMW 이걸로 이해했냐고 묻자, %CALLNAME:조교대상%는 아직 납득하지 못한 모습이었다.
 					PRINTL
 					PRINTFORMW "이치는 알겠습니다. 하지만, 다른 비슷한 카드에서는 『그 후,』의 처리도 행해졌는데요?"
-					PRINTFORMW …뭐, 그런 경우는 많지.
+					PRINTFORMW ・・・뭐, 그런 경우는 많지.
 					PRINTFORMW 하지만, 거기까지 텍스트에 따른 엄밀한 효과 처리를, 룰대로 구현하는 것을 모두 철저히 하려고 하면 괴로워하는 사람도 있는 거야. 알아줘.
 					PRINTL
 					PRINTFORMW "하아. 그런데, 왜 이 카드의 처리는 이런 텍스트로 되어 있고, 이런 촌극이 시작된 건가요?"
 					PRINTL
-					PRINTFORMW …그건 말이지, 너처럼 바로바로 유발 효과를 던지는 녀석에게 따끔한 맛을 보여주기 위해 이런 효과 처리 텍스트로 되어 있는 거야.
+					PRINTFORMW ・・・그건 말이지, 너처럼 바로바로 유발 효과를 던지는 녀석에게 따끔한 맛을 보여주기 위해 이런 효과 처리 텍스트로 되어 있는 거야.
 					PRINTFORMW 그리고, 『계약서의 텍스트는 잘 읽지 않으면, 언젠가 큰 손해를 보게 된다』라는 말장난을 위해, 이런 촌극을 준비한 거야.
 					PRINTFORMW 자, 알았으면 듀얼로 돌아갈까.
 					;언젠가 CPU가 우라라를 던져야 할지 판단할 수 있을 정도로 똑똑해지지는… 못하겠지. MD의 CPU도 그 정도고, 애초에 명확한 정답이 없는 영역이니까.
@@ -338,7 +345,6 @@ CALLFORM CARD_ABLE(0,ライフ変強制誘発)
 PRINTL ②：이 카드가 마법＆함정 존에 앞면 표시로 존재하는 한、서명자는 받은 데미지에 따른 쾌감 데미지를 받습니다。
 ;デュエル中の場合だと、デュエルしてる実際の日にちと、상대プレイヤーの署名が표시されるよ
 IF 듀얼モード == 1
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	;実時間を取ってきてRESULTS:0に格納するGETTIME
@@ -400,10 +406,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 마함数("상대") >= 5
 		RETURN 0
 	
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	SIF 조교대상 <= -1
+		RETURN 0
+
+	TRYCALLFORM CARDNAME_{NO:조교대상}, "名前"
+	SIF RESULTS == ""
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 효과後強制誘発
@@ -415,7 +424,6 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	SIF 対面者 != "자신"
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	SIF 조교대상 <= -1
@@ -425,6 +433,10 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	;PRINTFORML {조교대상}
 	;PRINTFORML {조교대상ID}
+
+	TRYCALLFORM CARDNAME_{조교대상ID}, "名前"
+	SIF RESULTS == ""
+		RETURN 0
 	CALL FULLRESET
 	CALL CARD_SS_CHECK(듀얼리스트,조교대상ID,"")
 	SIF RESULT == 1
@@ -454,7 +466,6 @@ ELSEIF 종류 == ライフ変強制誘発
 		RETURN 0
 	SIF ダメージ増減 != "減少"
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
 	SIF RESULT == -1
 		RETURN 0
@@ -491,7 +502,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 ELSEIF 종류 == 효과後強制誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,179525)
 	IF RESULT == 0
-		CALL FULLRESET
 		CALL CARD_EROTICS(상대プレイヤー,"자신")
 		조교대상 = RESULT
 		SIF 조교대상 <= -1
@@ -594,7 +604,6 @@ PRINTL ③：이 카드가 마법＆함정 존에 앞면 표시로 존재하는 
 RESETCOLOR
 ;デュエル中の場合だと、デュエルしてる実際の日にちと、상대プレイヤーの署名が표시されるよ
 IF 듀얼モード == 1
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	;実時間を取ってきてRESULTS:0に格納するGETTIME
@@ -654,10 +663,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 마함数("상대") >= 5
 		RETURN 0
 	
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	SIF 조교대상 <= -1
+		RETURN 0
+
+	TRYCALLFORM CARDNAME_{NO:조교대상}, "名前"
+	SIF RESULTS == ""
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 효과後強制誘発
@@ -669,7 +681,6 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	SIF 対面者 != "자신"
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	SIF 조교대상 <= -1
@@ -679,6 +690,10 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	;PRINTFORML {조교대상}
 	;PRINTFORML {조교대상ID}
+
+	TRYCALLFORM CARDNAME_{조교대상ID}, "名前"
+	SIF RESULTS == ""
+		RETURN 0
 	CALL FULLRESET
 	CALL CARD_SS_CHECK(듀얼리스트,조교대상ID,"")
 	SIF RESULT == 1
@@ -708,7 +723,6 @@ ELSEIF 종류 == ライフ変強制誘発
 	;	RETURN 0
 	SIF ダメージ増減 != "減少"
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
 	SIF RESULT == -1
 		RETURN 0
@@ -745,7 +759,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 ELSEIF 종류 == 효과後強制誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,279525)
 	IF RESULT == 0
-		CALL FULLRESET
 		CALL CARD_EROTICS(상대プレイヤー,"자신")
 		조교대상 = RESULT
 		SIF 조교대상 <= -1
@@ -867,7 +880,6 @@ IF 듀얼モード == 0
 	PRINTFORML 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　서명일　：
 	PRINTFORML 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　서명자　：
 ELSE
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	;実時間を取ってきてRESULTS:0に格納するGETTIME
@@ -981,10 +993,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 마함数("상대") >= 5
 		RETURN 0
 	
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	SIF 조교대상 <= -1
+		RETURN 0
+
+	TRYCALLFORM CARDNAME_{NO:조교대상}, "名前"
+	SIF RESULTS == ""
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 효과後強制誘発
@@ -996,7 +1011,6 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	SIF 対面者 != "자신"
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	조교대상 = RESULT
 	SIF 조교대상 <= -1
@@ -1006,6 +1020,10 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	;PRINTFORML {조교대상}
 	;PRINTFORML {조교대상ID}
+
+	TRYCALLFORM CARDNAME_{조교대상ID}, "名前"
+	SIF RESULTS == ""
+		RETURN 0
 	CALL FULLRESET
 	CALL CARD_SS_CHECK(듀얼리스트,조교대상ID,"")
 	SIF RESULT == 1
@@ -1042,7 +1060,6 @@ ELSEIF 종류 == ライフ変強制誘発
 		RETURN 0
 	SIF ダメージ増減 != "減少"
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	SIF RESULT == -1
 		RETURN 0
@@ -1063,7 +1080,6 @@ ELSEIF 종류 == 발동強制誘発
 	SIF RESULT != 1
 		RETURN 0
 	
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	SIF RESULT == -1
 		RETURN 0
@@ -1077,7 +1093,6 @@ ELSEIF 종류 == 지속효과
 		RETURN 0
 	SIF 対面者 != "자신"
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	SIF RESULT == -1
 		RETURN 0
@@ -1115,7 +1130,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 ELSEIF 종류 == 효과後強制誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,379525)
 	IF RESULT == 0
-		CALL FULLRESET
 		CALL CARD_EROTICS(상대プレイヤー,"자신")
 		조교대상 = RESULT
 		SIF 조교대상 <= -1
@@ -1145,7 +1159,6 @@ ELSEIF 종류 == ライフ変強制誘発
 		ダメージ量 = 1060 + (ダメージ量 / 100)
 	SIF ダメージ量 > 10000
 		ダメージ量 = 1200
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	IF RESULT != -1
 		조교대상 = RESULT
@@ -1172,7 +1185,6 @@ ELSEIF 종류 == ライフ変強制誘発
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 발동強制誘発
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー,"자신")
 	IF RESULT != -1
 		조교대상 = RESULT
@@ -1194,7 +1206,7 @@ ELSEIF 종류 == 발동強制誘発
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効2",場所,"無効")
 	ELSE
 		PRINTFORML 
-		PRINTFORML 좋겠지.
+		PRINTFORML 좋지.
 		PRINTFORMW 허가해주자, %CALLNAME:조교대상%는 감사의 말을 하며 깊이 고개를 숙였다.
 	ENDIF
 ELSEIF 종류 == 지속효과

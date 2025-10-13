@@ -1,0 +1,159 @@
+﻿@CARDNAME_51636,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 강귀 더 자이언트 오우거
+	CASE "略称"
+		RESULTS = 강귀 자이언트
+	CASE "カテゴリ"
+		RESULTS:0 = 강귀 
+ENDSELECT
+
+
+@CARD_51636(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	;효과モン/通常モン/의식/융합/싱크로/엑시즈/링크/초차원
+	CASE "종류"
+		RETURN 링크
+	;어둠속성/빛속성/땅속성/물속성/화염속성/바람속성
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 0
+	;牝性/雄性があるよ
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+RETURN 0
+
+
+@CARDSUMMON_51636(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 4
+素材条件カテゴリ = 강귀 
+
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,51636) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_51636(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「강귀」モンスター２体以上 
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：フィールドのこのカードは、戦闘では破壊されず、モンスター耐性を得る。
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ②：상대のカードの효과が발동した時に발동できる。
+PRINTL このカードの攻撃力を５００ダウンし、자신フィールドの「강귀」モンスターはターン終了時まで대상耐性を得る。
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに１度、このカードの攻撃力が元々の攻撃力と異なる場合に발동できる。
+PRINTL このカードの攻撃力はターン終了時まで１０００アップする。
+
+
+@CARDCAN_51636(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51636)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+    SIF 발동済_1(듀얼리스트,51636)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") < 500
+		RETURN 0	
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") == 3000
+		RETURN 0
+	RETURN 1	
+
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드" 
+		RETURN 0
+	RETURN 1	
+
+ENDIF
+
+@CARDEFFECT_51636(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성A
+#DIM DYNAMIC 条件달성B
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51636,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",-500)
+		CALL FULLRESET
+		효과条件カテゴリ = 강귀 
+		효과条件종류 = モン全般
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐",1)
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51636,10)
+	IF RESULT == 0
+	    CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",1000)
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+
+ENDIF	
+
+

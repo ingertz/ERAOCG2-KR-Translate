@@ -1,0 +1,145 @@
+﻿@CARDNAME_4400,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 신비의 탐구자 앨리스
+	CASE "略称"
+		RESULTS = 신비의 앨리스
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = 진화가능
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_4400(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4400(종류)
+#DIM DYNAMIC 종류
+
+;PRINTL 이 카드명의 ①의 효과는 １ターンに１번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時)
+PRINTL ①: 이 카드가 소환되었을 경우에 발동할 수 있으며, "진화(각성)"은 1턴에 1번밖에 할 수 없다.
+PRINTL 이 듀얼 중, 이하의 효과를 적용한다. (중복 가능)
+PRINTL ●자신 필드의 모든 "뉴트럴" 몬스터의 공격력, 수비력을 700 올린다.
+PRINTL (『뉴트럴』이란 일반 몬스터 효과를 가지지 않는 몬스터, 카테고리를 가지지 않는 몬스터를 지칭한다)
+PRINTL 그 후, 이 듀얼 중에 "자신의 몬스터가 진화(각성)한 횟수"가 3회 이상이라면, 2장 드로우한다.
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②: 자신 메인 페이즈에 1번만, 이 카드를 "진화"할 수 있다.
+PRINTL 그렇게 했을 경우, 이 카드의 공격력, 수비력은 1000 올라가고,
+PRINTL 패 / 묘지에서 "신비의 탐구자 앨리스" 이외의 "뉴트럴" 몬스터 1장을 특수 소환할 수 있다.
+PRINTL "진화(각성)"은 1턴에 1번밖에 할 수 없다.
+
+
+
+@CARDCAN_4400(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4400)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時; || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,4400)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 永攻紋章起動
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,覚醒발동)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4400(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+
+
+IF 종류 == 소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4400)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,4400,永攻紋章予約)
+		;효과발동횟수を기록
+		CALL CARD_EFFECT_D1USE(듀얼리스트,4400)
+		IF 覚醒횟수(듀얼리스트) >= 3
+			CALL CARDDRAW_BASIC(듀얼리스트,2)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 永攻紋章起動
+	CALL FULLRESET
+	효과条件カテゴリ = 없음
+	효과条件スーパー종류 = 효과無し全般
+	攻撃力修正 = 700 * (FINDELEMENT(자신_발동済D1,4400) + 1)
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",0,攻撃力修正,攻撃力修正)
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",1000)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",1000)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件固ID = 4400
+		효과条件カテゴリ = 없음
+		효과条件スーパー종류 = 효과無し全般
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件固ID = 4400
+			효과条件カテゴリ = 없음
+			효과条件スーパー종류 = 효과無し全般
+			효과条件任意 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+

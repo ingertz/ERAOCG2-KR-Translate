@@ -1,0 +1,183 @@
+@IRAI_EVENT_102650(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2650-01)ほんの少しの興味本位
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_学校内
+	CASE "詳細"
+		PRINTL アカデミアで見かけたあなたに、青葉あげはが声をかけてきた。何かを探るような目で、彼女はデュエルを申し込んでくる。彼女の真意とは……？
+		PRINTL 
+		PRINTL 報酬：2000DP
+	CASE "条件"
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2650):호감도 < 100
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2650):반발각인 > 0
+			RESULTS = 今の彼女と会うのは得策じゃない…분노が収まるのを待とう。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_102650(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2650)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML あなたはデュエル・アカデミアの敷地を散策していた。
+	PRINTFORML 生徒ではないが、以前から何度か足を運んでいる場所だ。
+	PRINTFORMW 今日も特に目的もなく、のんびりと歩いている。
+
+	PRINTFORML その時、少し離れた場所から視線を感じた。
+	PRINTFORMW 振り返ると、青葉あげはがこちらを窺っている。
+
+	PRINTFORML あなたが気づくと、彼女は少し気まずそうに近づいてくる。
+	PRINTFORML 「あなた、この間の……。生徒じゃないのに、また来てるんだ」
+	PRINTFORMW 彼女の表情には複雑な感情が浮かんでいる。
+
+	PRINTFORML 「別に、あなたに興味があるわけじゃないけど」
+	PRINTFORML あげはは少し照れたような、困ったような表情を見せる。
+	PRINTFORMW 「でも、ちょっと気になることがあって…」
+
+	PRINTFORML 「実は…アカデミアの生徒として、外部の人がうろついてるのを見過ごすわけにはいかないの」
+	PRINTFORML あげはは少し強がるような口調で続ける。
+	PRINTFORMW 「あなたがここにいても問題ない実力者かどうかを確かめたいの」
+
+	PRINTFORML 「これは取引よ。あなたの実力を私に見せる。それで私も納得する」
+	PRINTFORML 彼女はデュエルディスクを構えながら言う。
+	PRINTFORMW 「お互い損はないでしょ？」
+
+	PRINTFORML 「それに…」
+	PRINTFORML あげはは少し俯いて呟く。
+	PRINTFORMW 「私、友達少ないから…強い人と戦えるのは嬉しいかも」
+
+	PRINTL
+	PRINTL [0] - 「分かった、受けて立とう」
+	PRINTL [1] - 「なぜそんなに一人で抱え込むんだ？」
+	PRINTL [2] - 「君は十分強いと思うけど」
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは素直にデュエルを受け入れた。
+		PRINTFORML 「そう…ありがと」
+		PRINTFORMW あげはは少しほっとしたような表情を見せる。
+		依頼_進行보존:102650 = 1
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは彼女の心配を察して声をかけた。
+		PRINTFORML 「別に…一人で抱え込んでるわけじゃないわよ」
+		PRINTFORMW 彼女は少し慌てたように答える。
+		PRINTFORML 「でも…ありがとう。そう言ってくれる人、久しぶりかも」
+		PRINTFORMW あげはの表情が少し和らいだ。
+		依頼_進行보존:102650 = 2
+	ELSE
+		PRINTFORML あなたは彼女を励ますように言った。
+		PRINTFORML 「えっ…そんなこと言われたの初めて」
+		PRINTFORMW あげはは顔を赤くして驚いている。
+		PRINTFORML 「でも、それなら尚更…あなたの実力を確かめないと」
+		PRINTFORMW 彼女は照れ隠しのように強がって見せる。
+		依頼_進行보존:102650 = 3
+	ENDIF
+
+	PRINTFORML 「デュエル開始よ！」
+	PRINTFORML あげはがデュエルディスクを起動させる。
+	PRINTFORMW 彼女の目には真剣な光が宿っている。
+
+	TARGET = 이벤트主
+	CALL CHOICE_DUEL_TYPE(102650)
+
+	IF RESULT == 1
+		PRINTFORML デュエルに승리した。
+		PRINTFORML 「くっ…やるじゃない」
+		PRINTFORMW あげはは悔しそうだが、どこか만족げな表情を見せる。
+
+		IF 依頼_進行보존:102650 == 1
+			PRINTFORML 「ふん、まあ…思ったよりはやるみたいね」
+			PRINTFORML 彼女は少し照れたように言う。
+			PRINTFORMW 「これなら、アカデミアにいても問題ないか」
+		ELSEIF 依頼_進行보존:102650 == 2
+			PRINTFORML 「あなたって…意外と優しいのね」
+			PRINTFORML あげはは少し赤くなりながら言う。
+			PRINTFORMW 「実力も問題ないし…今度は友達として話しましょうか」
+		ELSE
+			PRINTFORML 「本当に強いのね…私の見る目も悪くなかった」
+			PRINTFORML あげはは嬉しそうに微笑む。
+			PRINTFORMW 「これで安心して…また会えるかな」
+		ENDIF
+
+		CALL EVENT_FAVUP(이벤트主,100)
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML 「そう…これが実力なのね」
+		PRINTFORMW あげはは複雑な表情を浮かべている。
+
+		PRINTFORML 「でも、まあ…悪い人じゃなさそうだから」
+		PRINTFORML 彼女は少し困ったような笑顔を見せる。
+		PRINTFORMW 「今度はもう少し本気でやりましょ」
+
+		IF 依頼_進行보존:102650 == 2
+			PRINTFORML 「それに…優しい人だってことは分かったし」
+			PRINTFORMW あげはは少し照れながら付け加えた。
+		ELSEIF 依頼_進行보존:102650 == 3
+			PRINTFORML 「私を褒めてくれた人に負けるわけにはいかないもの」
+			PRINTFORMW 彼女は少し意地っ張りに言う。
+		ENDIF
+
+		CALL EVENT_FAVUP(이벤트主,50)
+	ENDIF
+
+	PRINTFORML あげはは足早に立ち去ろうとする。
+	PRINTFORML 「じゃあ、また今度…」
+	PRINTFORMW 彼女の頬は少し赤く染まっていた。
+
+	PRINTFORML しかし、数歩歩いた後で振り返る。
+	PRINTFORML 「あの…もしよかったら、今度一緒にカフェでも…」
+	PRINTFORMW 小さな声で呟いて、慌てて走り去っていった。
+
+	PRINTFORML 彼女の後ろ姿を見送りながら、あなたは少し微笑んだ。
+	PRINTFORMW 今日は良い出会いだったかもしれない。
+
+	CALL EVENT_TIMER(60)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_102650
+CALL DP_GET(2000)
+
+@IRAI_DECK_102650(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 2650
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_102650
+
+PRINTFORML 
+PRINTFORML あげは「あなたの実力、見せてもらうわよ！」
+PRINTFORMW 
+
+@DUELDECK_102650(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+; 青葉あげはの덱構成（学生らしい標準的な덱）
+; カード構成は後で補完予定

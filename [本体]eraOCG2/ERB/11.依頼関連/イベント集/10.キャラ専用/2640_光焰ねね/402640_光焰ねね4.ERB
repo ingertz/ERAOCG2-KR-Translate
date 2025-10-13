@@ -1,0 +1,362 @@
+
+@IRAI_EVENT_402640(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2640-04)運命を超えた彼方
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		; 開始は自宅で即時開始（依頼_달성상황==0は常に自宅）
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL 光焰ねねを狙う謎の組織が最終行動を開始。
+		PRINTL 彼女の「不運」を巡る真実が明かされ、決戦へ——
+		PRINTL 共に戦い彼女の運命はいかに…
+		PRINTL
+		PRINTL 報酬：10000DP
+	CASE "条件"
+		; 前置任務クリア판정（依頼_完了횟수:302640 > 0）
+		SIF 依頼_完了횟수:302640 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		; 호감도2000以上 または 既に연모
+		IF CFLAG:NO_TO_CHARANUM(2640):호감도 < 2000 && TALENT:NO_TO_CHARANUM(2640):연모 == 0
+			RESULTS = 호감도/条件が不足しています。
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2640):반발각인 > 0
+			RESULTS = 怒っているようです。분노が収まるまで待ちましょう。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_402640(参照)
+#DIM DYNAMIC 参照
+
+; ゲスト・対戦상대の枠（IDは差し替え前提）
+#DIM DYNAMIC 이벤트主
+이벤트主 = NO_TO_CHARANUM(2640)  ; 光焰ねね
+
+; 依頼進行보존を분기관리にも利用
+; 11 = 幹部戦イントロ, 12 = ボス戦イントロ
+
+IF 依頼_달성상황 == 0
+	; 自宅（即時開始）
+	PRINTFORML 空気が張り詰めている。%CALLNAME:이벤트主%は落ち着かず、何度も窓の外を見る。
+	PRINTFORMW 「……嫌な予感がするの。胸がざわざわして……」
+	PRINTFORML あなたは彼女の不安の理由を尋ねた。
+	PRINTFORMW 「きっと“あの人たち”が動き出した……私の『不運』のこと、利用しようとしてる組織……」
+
+	PRINTFORML そこへ、一通の暗号メッセージが届く。지정された場所は「隠れ家」。
+	PRINTFORMW 함정の匂いは濃いが、放置はできない。
+
+	PRINTL
+	PRINTL [0] - 「大丈夫。必ず君を守る」 と強く告げる
+	PRINTL [1] - 「情報が少ない、慎重に行こう」 と落ち着かせる
+	PRINTL [2] - 黙って彼女の手を取り、うなずく
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたの断言に、%CALLNAME:이벤트主%ははっと目を見開く。
+		PRINTFORMW 「……%CALLNAME:MASTER%……ありがとう。少し、怖くなくなった」
+		依頼_進行보존:402640 = 1
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは상황を整理し、最短の動線と退路を確認した。
+		PRINTFORMW 「慎重に……うん。私、ついていく」
+		依頼_進行보존:402640 = 2
+	ELSE
+		PRINTFORML 余計な言葉は要らない。ただ、その手のぬくもりだけで充分だった。
+		PRINTFORMW 「……行こう。私は、もう逃げない」
+		依頼_進行보존:402640 = 3
+	ENDIF
+	CALL EVENT_FAVUP(이벤트主,150)
+
+	; 동행開始と次の現地へ
+	CALL EVENT_DOUKOU(이벤트主)
+	依頼_달성상황 ++
+	依頼_場所:0 = 場所_空き家
+	CALL EVENT_TIMER(10)
+
+ELSEIF 依頼_달성상황 == 1
+	; 隠れ家：真実の開示 → 幹部戦前
+	PRINTFORML 人の気配のない薄暗い室内。待っていたのは組織の幹部だった。
+	PRINTFORMW 「よく来たな。光焰ねね」
+	PRINTFORML %CALLNAME:이벤트主%の肩が震える。あなたは一歩前に出て、幹部を睨む。
+	PRINTL [0] - 彼女の「不運」を操って、一体何を企んでいる？
+	BINPUT
+	PRINTFORMW 「不運？違うな。お前の本質は偏在する確率を捻じ曲げる、得難い資質」
+	PRINTFORMW 「わからないか？ふん、お前でも分かるように一言で言えば…」
+	PRINTFORMW 「未熟だが、『運命の操作能力』だ。」
+	PRINTFORMW 「자신が制御できなくて、周りを巻き込んで不運の方向へ一直線に行っているけどな」
+
+	PRINTFORML 「……私が、みんなを不幸にしてきた……？」と%CALLNAME:이벤트主%が自責の色を滲ませる。
+	PRINTFORMW 「自覚したのなら話は早い。我らに従え。」
+	PRINTFORML 「我らがお前の精神を制御してやれば、世界の勝敗は、容易く掌に載る」
+	PRINTFORMW 「最大の価値を生かすにはこれが最善。お前も隣のこいつを不幸にしたくないだろう」
+
+	PRINTL
+	PRINTL [0] - 「彼女の価値は力なんかじゃない、彼女自身だ」
+	PRINTL [1] - 幹部の挑発を無視し、彼女の手を握ってうなずく
+	PRINTL [2] - 「ごちゃごちゃ言ってないでデュエルで決着だ」
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたの言葉が静かに落ちる。視線の揺らぎが止まり、彼女は前を向く。
+		PRINTFORMW 「……うん。私のせいじゃない。私の選び方で、誰かを守れる」
+		CALL EVENT_FAVUP(이벤트主,100)
+	ELSEIF RESULT == 1
+		PRINTFORML 言葉は少なく、それでも伝わるものがある。
+		PRINTFORMW 「ありがとう。怖いけど……一緒なら、戦える」
+		CALL EVENT_FAVUP(이벤트主,100)
+	ELSE
+		PRINTFORML 幹部の口元が歪む。「いいだろう、小手調べといこうか」
+		PRINTFORMW 「気をつけて……！」と緊張する%CALLNAME:이벤트主%。
+		PRINTFORMW これは…負けるわけにはいかない！
+	ENDIF
+
+	; 幹部戦
+	依頼_進行보존:402640 = 11
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(402640)
+
+	IF RESULT == 1
+		PRINTFORML 幹部「ちっ……想定よりも『偏り』が強いな……！」
+		PRINTFORMW 幹部は奥へと退いた。「ボスがお前たちを待っている」
+	ELSE
+		PRINTFORMW 負けてしまった…
+		PRINTFORMW 薄れてゆく意識の中で、%CALLNAME:이벤트主%の顔が揺れて…
+		PRINTFORMW やがて視界が純粋な黒へ変わった。
+		RETURN 6
+	ENDIF
+
+	依頼_달성상황 ++
+	依頼_場所:0 = 場所_空き家
+	CALL EVENT_TIMER(30)
+
+ELSEIF 依頼_달성상황 == 2
+	; ボス対面 → 二戦目（ボス戦）
+	PRINTFORML 間仕切りの向こうに、静かに立つ影。組織のボスがこちらを見据えている。
+	PRINTFORMW ボス「来たか、運命の担い手どもよ」
+
+	PRINTFORML ボス「不運という仮面に怯えてきた、光焰%CALLNAME:이벤트主%。だが」
+	PRINTFORMW ボス「お前は確率を撓め、選択の道筋を描く。支配者にこそふさわしい才だ」
+
+	PRINTFORML %CALLNAME:이벤트主%は俯きかけて、しかしあなたを見た。
+	IF TALENT:이벤트主:연모 > 0
+		PRINTFORMW 「……%CALLNAME:MASTER%と出会って、私、初めて『幸せ』ってものを知ったの。私は、もう자신を呪わない」
+	ELSE
+		PRINTFORMW 「私は、誰かを不幸にするために生きてない。私の選択で、誰かを守るために——」
+	ENDIF
+
+	PRINTFORML あなたは頷き、듀얼の構えを取る。
+	PRINTFORMW ボス「良い表情だ。ならば相応の儀をもって迎えよう」
+
+	; BOSS FIGHT演出（強敵戦）
+	CALLFORM ANIME_TEST("　揺らぐ運命の観測者　","　謎の組織のリーダー　","The Leader of Secret Society")
+
+	; ボス戦
+	依頼_進行보존:402640 = 12
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(402640)
+
+	PRINTFORML 「馬鹿な……『偏り』が私の計算を超えている……？こうなったら…」
+	PRINTFORMW ボスは痙攣するように、後ろの禍々しい装置を起動した。「こうなったら、力を暴走させ——！」
+
+	PRINTFORML 瞬間、世界のノイズが増幅した。床が軋み、照明が破裂し、最悪の事象が雪崩のように押し寄せる。
+	PRINTFORMW %CALLNAME:이벤트主%の周囲に、目に見えない渦が生まれた——運命の偏りが暴走している。
+
+	PRINTFORML 飛来する破片、崩れる梁、転ぶ確率、外れる確率——全てが最悪へ傾く。
+	PRINTFORMW それでも、あなたは彼女の元へ踏み込んで、手を伸ばした。
+
+	PRINTL
+	PRINTL [0] - 「君はひとりじゃない」
+	PRINTL [1] - そっと抱きしめ、静かに呼吸を合わせる
+	PRINTFORML [2] - 「%CALLNAME:이벤트主%、戻ってこい…！」
+	BINPUT
+	
+	IF RESULT == 0
+		PRINTFORMW 負けてしまった…
+		PRINTFORMW 薄れてゆく意識の中で、%CALLNAME:이벤트主%の顔が揺れて…
+		PRINTFORMW やがて視界が純粋な黒へ変わった。
+		RETURN 6
+	ENDIF
+
+	IF RESULT == 0
+		PRINTFORML 言葉が渦の中心に届く。ほどけるように、狂った偏りが弱まっていく。
+		PRINTFORMW 「……聞こえる。あなたの声が、私を“選んで”くれてる」
+	ELSEIF RESULT == 1
+		PRINTFORML 体温と鼓動が同期する。零れ落ちていた確率が、ひとつ、またひとつ帰順していく。
+		PRINTFORMW 「……怖くない。ここにいると、ちゃんと私でいられる」
+	ELSE
+		PRINTFORML 何度でも呼ぶ。その名は灯台のように、荒波の只中で進むべき方角を示した。
+		PRINTFORMW どれだけ時間が経ったかはわからないがー
+		PRINTFORMW 「……ただいま。私、戻ってこれたよ」
+	ENDIF
+	CALL EVENT_FAVUP(이벤트主,200)
+	CALL EVENT_TIMER(180)
+
+	PRINTFORML ボスは膝をつき、崩れ落ちた。「馬鹿な……お前ごときで、運命の暴走を鎮まるとは……」
+	PRINTFORMW やがて静寂。暴走は止まり、重い息だけが残った。
+
+	IF TALENT:이벤트主:연모 > 0
+		PRINTFORML %CALLNAME:이벤트主%はあなたを見つめ、柔らかく微笑む。
+		PRINTFORMW 「あなたといると、初めて——ずっと“幸せ”でいられるって思える」
+	ELSE
+		PRINTFORML %CALLNAME:이벤트主%は少し照れたように、それでも真っ直ぐにあなたを見る。
+		PRINTFORMW 「あなたといると、初めて“幸せ”を感じるの。もし、よかったら——これからも、隣で」
+		SETCOLOR C_PINK
+		PRINTFORML %CALLNAME:이벤트主%の強い意志と揺るがない感情を感じられる…
+		PRINTFORMW %CALLNAME:이벤트主%は【연모】を得た
+		RESETCOLOR
+		TALENT:이벤트主:연모 = 1
+	ENDIF
+
+	PRINTL [0] - 「…行こうか。」
+	BINPUT
+	PRINTFORML 完全に放心したボスを無視して、%CALLNAME:이벤트主%に手を伸ばす。
+	PRINTFORMW %CALLNAME:이벤트主%も最高の笑顔で握り返した。
+	PRINTFORML 彼女の『不運』は静かに穏やかさを取り戻していく。
+	PRINTFORML 新しい人生の予感が、確かにここにある。
+
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+
+@IRAI_REWARD_402640
+CALL DP_GET(10000)
+
+
+@IRAI_DECK_402640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+	SIF 依頼_進行보존:402640 == 11
+		RETURN 402640
+	RETURN 412640
+ENDIF
+RETURN 0
+
+; 듀얼開始時の導入（幹部戦）
+@IRAI_DUEL_INTRO_402640
+PRINTFORML 幹部「確率は殴り書きできる。お前たちの勝ち筋など、初めから——」
+PRINTFORMW ねね「そんなの、決めつけないで！」
+
+; 듀얼開始時の導入（ボス戦）
+@IRAI_DUEL_INTRO_412640
+PRINTFORML ボス「運命は私が采配する。覆せるなら、やってみせろ」
+PRINTFORMW ねね「……行こう。私たちの選択で、未来を決める」
+
+@DUELDECK_402640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1872
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33500
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33502
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33503
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33504
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33505
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33506
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33507
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33507
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61875
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61875
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70113
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72970
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72820
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73351
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73352
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93351
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33500
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 33501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91071
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 1335
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1645
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 11876
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41870
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52052
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52052
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52250
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52250
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52251
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52251
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54000
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 11876
+
+@DUELDECK_412640(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 25400
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 25400
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 25400
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 26400
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28104
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28104
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28104
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28106
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72810
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72810
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72810
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72813
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72813
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 1335
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2155
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41816
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41255
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50530
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58038
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58038
+

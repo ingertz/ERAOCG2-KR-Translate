@@ -1,0 +1,165 @@
+﻿@CARDNAME_51638,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 강귀 더 타이란트 오우거
+	CASE "略称"
+		RESULTS = 강귀 타이란트
+	CASE "カテゴリ"
+		RESULTS:0 = 강귀 
+ENDSELECT
+
+
+@CARD_51638(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	;효과モン/通常モン/의식/융합/싱크로/엑시즈/링크/초차원
+	CASE "종류"
+		RETURN 융합
+	;어둠속성/빛속성/땅속성/물속성/화염속성/바람속성
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 3500
+	CASE "守備力"
+		RETURN 0
+	;牝性/雄性があるよ
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+RETURN 0
+
+
+@CARDSUMMON_51638(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 강귀 
+	素材条件종류 = 링크
+ELSEIF EX参照 >= 10
+	素材条件종족:0 = 전사족
+	素材条件종족:1 = 비늘야수족
+	素材条件종족:2 = 사이버스족
+ENDIF
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,51638) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_51638(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「강귀」Ｌモンスター＋전사족・비늘야수족・사이버스족モンスター
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードが융합소환した場合に발동できる。
+PRINTL 묘지の「강귀」Lモンスター１体を選び、その링크の数まで상대フィールドのカードを破壊する。
+PRINTL この효과の발동に対して상대は효과を발동できない。
+CALLFORM CARD_ABLE(0,攻撃時強制誘発)
+PRINTL ②：このカードが戦闘を行う場合、상대はダメージステップ終了時までカードの효과を발동できない。
+
+
+@CARDCAN_51638(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51638)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,51638)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 강귀 
+	효과条件종류 = 링크
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_51638(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードレベル
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51638,1)
+	IF RESULT == 0
+	    CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 강귀 
+		효과条件종류 = 링크
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL CARD_SELECT(듀얼리스트,RESULT)
+		選択カード = RESULT
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_묘지:選択カード")},"レベル"
+		選択カードレベル = RESULT
+		REPEAT 選択カードレベル
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件任意 = 1
+			효과条件除去種 = 묘지
+		    효과条件行先플래그 = 破壊行き
+		    CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		REND
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦阻")
+
+ENDIF
+

@@ -1,0 +1,129 @@
+﻿@CARDNAME_4425,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 오색찬란한 봉황 소녀 호쨩
+	CASE "略称"
+		RESULTS = 호쨩
+	CASE "カテゴリ"
+		RESULTS:0 = 드래곤 클래스
+		RESULTS:1 = 진화가능
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_4425(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비행야수족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251004
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4425(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名の①の효과は１ターンに１度しか발동できず、「進化(覚醒)」は１ターンに１度しか行えない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL 자신は１０００LP회복する。
+PRINTL さらにこのターン、자신は通常소환に加えて１度、「드래곤 클래스」モンスターを소환できる。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：このカードは、자신メインフェイズに１度だけ「進化」できる。
+PRINTL そうした場合、このカードの攻撃力・守備力は１０００アップし、このデュエル中、以下の효과を適用する。（重複불가）
+PRINTL ●자신の손패のモンスターの소환する際のレベルはそのレベルの半分下がる。
+
+
+@CARDCAN_4425(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4425)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,4425)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,覚醒발동)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 短紋章起動
+	RETURN 1
+ELSEIF 종류 == 永攻紋章起動
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_4425(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 守備力修正
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4425,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
+		CALL CARD_RESERV(듀얼리스트,4425,短紋章予約)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",1000)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",1000)
+		IF 발동済_D1(듀얼리스트,4425) == 0
+			CALL CARD_RESERV(듀얼리스트,4425,永攻紋章予約)
+
+			CALL CARD_EFFECT_D1USE(듀얼리스트,4425)
+		ENDIF		
+	ENDIF
+ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과条件カテゴリ = 드래곤 클래스
+	CALL STATCHANGE_HAND(듀얼리스트,"全体",場所,"召可")
+ELSEIF 종류 == 永攻紋章起動
+	CALL FULLRESET
+	CALL STATCHANGE_HAND(듀얼리스트,"全体",場所,"一星",200)
+ENDIF
+

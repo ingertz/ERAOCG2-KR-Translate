@@ -1,0 +1,175 @@
+﻿@CARDNAME_4412,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 저승의 강 관리자 카론
+	CASE "略称"
+		RESULTS = 카론
+	CASE "カテゴリ"
+		RESULTS:0 = 나이트메어 클래스
+		RESULTS:1 = 진화가능
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_4412(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 250628
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4412(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없으며, "진화(각성)"은 1턴에 1번밖에 할 수 없다.
+CALLFORM CARD_ABLE(1,破壊→묘지)
+PRINTL ①: 이 카드가 파괴되었을 경우에 발동할 수 있다.
+PRINTL 덱에서 "저승의 강 관리자 카론"을 제외한 "나이트메어 클래스" 몬스터 1장을 효과를 무효화하여 특수 소환하고 파괴한다.
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②: 자신 묘지에 이 카드를 제외한 언데드족 몬스터가 3체 이상 존재할 경우,
+PRINTL 이 카드는 묘지에서 특수 소환할 수 있다.
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ③: 이 카드는 자신 메인 페이즈에 1번만 "진화"할 수 있다.
+PRINTL 그렇게 했을 경우, 이 카드의 공격력/수비력은 800 업하고,
+PRINTL 묘지에서 언데드족 몬스터 1체를 특수 소환할 수 있다.
+PRINTL 이 효과로 특수 소환한 몬스터는 턴 종료시에 파괴된다.
+PRINTL "진화(각성)"은 1턴에 1번밖에 할 수 없다.
+
+
+
+@CARDCAN_4412(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4412)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 破壊→묘지
+	SIF 발동済_1(듀얼리스트,4412)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 나이트메어 클래스
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	효과条件固名前 = 저승의 강 관리자 카론
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,4412)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4412,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件종족 = 언데드족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 4
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,覚醒발동)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+; ELSEIF 종류 == チェーン可否
+; 	SIF !GROUPMATCH(チェーン可否종류,묘지起動)
+; 		RETURN 0
+; 	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4412(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC レベル合計
+
+
+IF 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4412,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 나이트메어 클래스
+		효과条件固名前 = 저승의 강 관리자 카론
+		효과추가종류:0 = 効追無効
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			CALL CARD_DISPOSE(듀얼리스트,"필드",カード소환先,破壊行き)
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4412,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"묘지",場所)	
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",800)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",800)
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 언데드족
+		효과추가종류:0 = 効追終破
+		효과条件任意 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

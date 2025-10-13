@@ -1,0 +1,167 @@
+﻿@CARDNAME_24424,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 드래곤로이드
+	CASE "略称"
+		RESULTS = 드래곤로이드
+	CASE "カテゴリ"
+		RESULTS:0 = 비크로이드
+ENDSELECT
+
+
+@CARD_24424(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RESULT:1 = 드래곤족
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2900
+	CASE "守備力"
+		RETURN 1000
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_24424(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：손패のこのカードを묘지に送って발동できる。
+PRINTL 덱からこのカード名以外の「비크로이드」モンスター１枚を손패に加える。
+PRINTL このターン、자신の기계족융합モンスターの소환・특수소환成功時に상대は효과を발동できない。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：このカードが기계족モンスターに装備されている場合、상대ターンに발동できる。
+PRINTL 상대フィールドのカードを１枚破壊する。
+
+@CARDCAN_24424(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24424)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,24424)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 비크로이드
+	효과条件固名前 = 드래곤로이드
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,24424)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 装備者 != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%装備者%_필드:装備先") == -1
+		RETURN 0
+	CALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("종족")
+	SIF !GROUPMATCH(RESULT, 기계족)
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 短紋章起動
+	SIF 最終소환ID <= 0
+		RETURN 0
+
+	CALLFORM CARD_{最終소환ID}("종류") 
+	SIF !GROUPMATCH(RESULT,융합)
+		RETURN 0
+	CALLFORM CARD_{最終소환ID}("종족") 
+	SIF !GROUPMATCH(RESULT,기계족)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_24424(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24424,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 비크로이드
+		효과条件固名前 = 드래곤로이드
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		CALL CARD_RESERV(듀얼리스트,24424,短紋章予約)
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24424,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 短紋章起動
+	CALL SET_PLAYER_INFO(듀얼리스트,"특수阻害中止",3)
+ENDIF
+
+
+

@@ -367,7 +367,14 @@ SELECTCASE 효과範囲
 
 
 			IF GROUPMATCH(효과種,"一星")
-				SETVAR @"%実行者%_手_%효과種%:カウンタ", GETVAR(@"%実行者%_手_%효과種%:カウンタ") + 持続
+				IF 持続 == 200
+					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:カウンタ")}, "レベル"
+					IF RESULT >= 1
+						SETVAR @"%実行者%_手_%효과種%:カウンタ", GETVAR(@"%実行者%_手_%효과種%:カウンタ") + RESULT / 2
+					ENDIF
+				ELSE
+					SETVAR @"%実行者%_手_%효과種%:カウンタ", GETVAR(@"%実行者%_手_%효과種%:カウンタ") + 持続
+				ENDIF
 			ELSE
 				IF 持続 == 0
 					SIF GETVAR(@"%実行者%_手_%효과種%:カウンタ") == 0

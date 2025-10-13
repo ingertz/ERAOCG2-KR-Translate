@@ -1,0 +1,137 @@
+﻿@CARDNAME_21610,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 천재지변의 시작 창세의 용
+	CASE "略称"
+		RESULTS = 천재지변창세의용
+	CASE "カテゴリ"
+		RESULTS:0 = 드래곤 클래스
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_21610(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 4000
+	CASE "추가日"
+		RETURN 251004
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_21610(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードを소환する際のレベルは、現在のターンの数分下がる。
+PRINTL こうして소환する際、レベルが１以下である限り「進化」された状態で場に소환され、소환権を消費しない。
+CALLFORM CARD_ABLE(2,손패起動)
+PRINTL ②：상대が４体以上のモンスターを소환・특수소환した상대ターンのメインフェイズに발동できる。
+PRINTL 손패のこのカードを捨て、フィールドの守備力２０００以下のモンスター全て破壊する。
+PRINTL この효과の발동後、次のエンドフェイズまで자신は드래곤족モンスター以外を특수소환できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：특수소환されたこのカードは攻撃できない。
+
+
+@CARDCAN_21610(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21610)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 攻守変動
+	SIF ゾーン != "손패"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과소환
+	SIF GETVAR(@"%듀얼리스트%_手_一星:場所") < 9
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패起動 || 종류 == フリー誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,21610)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,21610,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF GETVAR(@"%対面者%_モン出現数") < 4
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時予約
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") == 召種通常
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_21610(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 守備力修正
+
+IF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_HAND(듀얼리스트,"지정",場所,"一星",ターン数)
+ELSEIF 종류 == 효과소환
+	RETURN 2
+ELSEIF 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21610,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件守備力 = 2000
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+		SS소환可能종족 = 드래곤족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+		CALL CARD_RESERV(듀얼리스트,21610,スタン予約)
+	ENDIF
+ELSEIF 종류 == ターン開始時予約
+	SS소환可能종족 = 드래곤족
+	CALL CARD_SS_RESTRICTION(듀얼리스트)
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+ENDIF
+

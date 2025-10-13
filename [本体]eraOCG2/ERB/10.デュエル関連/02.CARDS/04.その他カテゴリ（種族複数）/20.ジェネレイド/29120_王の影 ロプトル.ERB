@@ -75,7 +75,7 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 	효과範囲덱 = 1
 	효과条件カテゴリ = 제너레이드
 	효과条件レベル = 9
-	효과条件소환可 = 1
+	효과条件소환可 = 2
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -96,7 +96,7 @@ ENDIF
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
-#DIMS DYNAMIC 選択カード名前
+#DIMS DYNAMIC 選択カード名
 
 IF 종류 == 필드起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29120,1)
@@ -107,14 +107,19 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		選択カード = RESULT
 		IF 選択カード != 9999
 			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:選択カード")}, "名前"
-			選択カード名前 = %RESULTS%
+			選択カード名 = %RESULTS%
 			CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード)
 			
 			CALL FULLRESET
 			효과範囲덱 = 1
 			효과条件カテゴリ = 제너레이드
 			효과条件レベル = 9
-			효과条件固名前 = %選択カード名前%
+			효과条件固名前 = %選択カード名%
+			IF ターン数 < 1
+				효과条件優先名前 = 빛의 제너레이드 마르델
+			ELSE
+				효과条件優先名前 = 제너레이드 세이즈 발라
+			ENDIF
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF	

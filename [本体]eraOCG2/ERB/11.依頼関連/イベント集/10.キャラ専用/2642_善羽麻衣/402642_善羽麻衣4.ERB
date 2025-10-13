@@ -1,0 +1,236 @@
+@IRAI_EVENT_402642(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+    CASE "名前"
+        RESULTS = (CH2642-04)君と回す、未来のゼンマイ
+    CASE "이벤트種"
+        RETURN 이벤트_通常
+    CASE "依頼先"
+        RETURN 即時開始
+    CASE "詳細"
+        PRINTL 大手KC社からのスカウト、全国ネットの特別ライブ。
+        PRINTL うまく決まればデビュー確定。
+        PRINTL あなたは麻衣の特別ゲストとして招待された。
+        PRINTL
+        PRINTL 報酬：10000DP
+    CASE "条件"
+        SIF 依頼_完了횟수:302642 == 0
+            RETURN 0
+        RETURN 1
+    CASE "추가条件"
+        IF CFLAG:NO_TO_CHARANUM(2642):호감도 < 2000 && TALENT:NO_TO_CHARANUM(2642):연모 == 0
+            RESULTS = 호감도/条件が不足しています。
+            RETURN 1
+        ENDIF
+        IF MARK:NO_TO_CHARANUM(2642):반발각인 > 0
+            RESULTS = 怒っている腹黒アイドルはちょっと会にくい…분노が収まるまで待ちましょう。
+            RETURN 1
+        ENDIF
+        RETURN 0
+    CASE "回想可"
+        RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_402642(参照)
+#DIM DYNAMIC 参照
+
+; ゲスト・対戦상대の枠（IDは差し替え前提）
+#DIM DYNAMIC 이벤트主
+이벤트主 = NO_TO_CHARANUM(2642)    ; 善羽麻衣
+
+; 依頼進行보존を분기관리にも利用
+; 11 = デュエル1回戦, 12 = デュエル2回戦, 13 = デュエル3回戦
+
+IF 依頼_달성상황 == 0
+    ; 自宅（即時開始）
+    PRINTFORML KC社主催の特別記念ライブ。これまでの活動の集大成となる大舞台だ。
+    PRINTFORMW あなたは%CALLNAME:이벤트主%の特別ゲストとして、関係者エリアに招待されていた。
+    PRINTFORML 生放送のカウントダウンが迫る中、%CALLNAME:이벤트主%は完璧な笑顔で準備を整えている。
+    PRINTFORMW しかし、その瞳にはこれまでにない緊張の色が浮かんでいた。
+    
+    PRINTFORML 本番直前、二人きりになった控室で、%CALLNAME:이벤트主%はあなたの目をじっと見つめる。
+    
+    IF TALENT:NO_TO_CHARANUM(2642):연모 > 0
+        ; 恋愛플래그成立済みの場合
+        PRINTFORML 彼女はあなたの手を握り、その表情は穏やかだ。
+        PRINTFORMW 「思えば、遠くまで来たね。炎上も、ライバルとの勝負も、全部あなたと乗り越えてきた」
+        PRINTFORMW 「私、性格の悪い女という自覚ぐらいはあるよ。それでも…あなたのそばに居ていいかな？」
+        PRINTFORMW 「今日のステージは、私たちの集大成。世界中に見せつけてやりましょう。」
+        PRINTFORMW 「二人で回すゼンマイが、どれだけ強いか。…あなたの答えを、デュエルで、私に刻みつけて」
+    ELSE
+        ; 恋愛플래그未成立の場合
+        PRINTFORMW 「ねえ。…私、ずっと腹黒で、計算高くて、ファンのみんなも자신のための駒だって、そうやって자신に言い聞かせてきた」
+        PRINTFORML 彼女は、初めて本当の弱さを見せる。
+        PRINTFORMW 「でも、あなただけは違った。あなたが隣にいると、計算が狂うの。ゼンマイが、うまく巻けないの。」
+        PRINTFORMW 「…アイドル善羽麻衣は、ファンのもの。でも、ただの『麻衣』の心は…あなたに回してほしい」
+        PRINTFORML 彼女はデュエルディスクを構える。
+        PRINTFORMW 「ステージで、答えを聞かせて。もしあなたも同じ気持ちなら、私と未来を回す覚悟を、デュエルで見せて」
+    ENDIF
+    
+    ; 동행開始と次の現地へ
+    CALL EVENT_DOUKOU(이벤트主)
+    依頼_달성상황 ++
+    依頼_場所:0 = 場所_KCステージ
+    CALL EVENT_TIMER(30)
+
+ELSEIF 依頼_달성상황 == 1
+    ; ステージでのデュエル開始
+    PRINTFORML ステージの幕が上がる。スポットライトが、対戦상대として立つあなたを照らし出す。
+    PRINTFORMW 会場がどよめく中、二人は静かにディスクを構える。
+    
+    PRINTFORML 観客の熱い視線が注がれる中、運命のラストステージが始まる。
+    PRINTFORMW 「行くよ、%CALLNAME:MASTER%！私の全てを受け止めて！」
+    
+    ; 1回戦
+    TARGET = 이벤트主
+    CALL CHOICE_DUEL_TYPE(402642)
+    
+    IF RESULT == 1
+        PRINTFORML 1回戦はあなたの승리。観客席から大きな歓声が上がる。
+        PRINTFORMW %CALLNAME:이벤트主%は悔しそうに、しかし嬉しそうに微笑む。
+        PRINTFORMW 「やるじゃない…でも、まだまだよ！」
+        SETCOLOR C_YELLOW
+        PRINTFORML 現場の상황を見ると、一方的に圧倒する戦いでは観客が興味を失ってしまうだろう。
+        PRINTFORMW これはただのデュエル場ではなく、麻衣のデビューがかかっている。
+        PRINTFORMW 次のデュエルは慎重に戦う必要がある！
+        RESETCOLOR
+        依頼_進行보존:402642 = 1    ; プレイヤー1勝
+    ELSE
+        PRINTFORML 1回戦は%CALLNAME:이벤트主%の승리。彼女の華麗なコンボに観客が沸く。
+        PRINTFORMW 「これが私の実力よ。でも…あなたの本気はこんなものじゃないでしょう？」
+        SETCOLOR C_YELLOW
+        PRINTFORML 現場の상황を見ると、一方的に圧倒される戦いでは観客が興味を失ってしまうだろう。
+        PRINTFORMW これはただのデュエル場ではなく、麻衣のデビューがかかっている。
+        PRINTFORMW この상황をうまく処理しなければ！
+        RESETCOLOR
+        依頼_進行보존:402642 = 2    ; 麻衣1勝
+    ENDIF
+    
+    依頼_달성상황 ++
+    CALL EVENT_TIMER(45)
+
+ELSEIF 依頼_달성상황 == 2
+    ; 2回戦
+    PRINTFORML MCが会場を盛り上げる。「さあ、2回戦の始まりです！両者、頑張って！」
+    PRINTFORML 司会者の声が響く中、観客席からは熱い声援が飛び交う。
+    PRINTFORMW 「麻衣ちゃん頑張れ！」「すごいデュエルだ！」会場全体が一体となって二人の戦いを見守っている。
+
+    TARGET = 이벤트主
+    CALL CHOICE_DUEL_TYPE(402642)
+    
+    IF RESULT == 1
+        IF 依頼_進行보존:402642 == 1
+            ; プレイヤー2-0で승리（一方的すぎる）
+            PRINTFORML 2回戦もあなたの승리。しかし、一方的すぎる展開に観客が興味を失い始める。
+            PRINTFORMW %CALLNAME:이벤트主%も頑張って会場を盛り上げるが、残念ながら挽回できず。
+            PRINTFORMW デビューの夢は、また次の機会へと持ち越されることになった。
+            CALL EVENT_FAVUP(이벤트主,-100)
+            RETURN 3    ; ミッション失敗
+        ELSE
+            ; 1-1で3回戦へ
+            PRINTFORML 2回戦はあなたの승리！これで1勝1敗のタイ。
+            PRINTFORMW MCが興奮して叫ぶ。「これは素晴らしい！見事に逆転です！次は決勝だー！승리はどちらの手にーーーー」
+        ENDIF
+    ELSE
+        IF 依頼_進行보존:402642 == 2
+            ; 麻衣2-0で승리（一方的すぎる）
+            PRINTFORML 2回戦も%CALLNAME:이벤트主%の승리。しかし、一方的すぎる展開に観客が興味を失い始める。
+            PRINTFORMW あなたも精一杯戦ったが、残念ながら会場を盛り上げることはできなかった。
+            PRINTFORMW デビューの夢は、また次の機会へと持ち越されることになった。
+            CALL EVENT_FAVUP(이벤트主,-200)
+            RETURN 3    ; ミッション失敗
+        ELSE
+            ; 1-1で3回戦へ
+            PRINTFORML 2回戦は%CALLNAME:이벤트主%の승리！これで1勝1敗のタイ。
+            PRINTFORMW MCが興奮して叫ぶ。「これは素晴らしい！見事に逆転です！次は決勝だー！승리はどちらの手にーーーー」
+        ENDIF
+    ENDIF
+    
+    依頼_달성상황 ++
+    CALL EVENT_TIMER(45)
+
+ELSEIF 依頼_달성상황 == 3
+    ; 3回戦（最終戦）
+    PRINTFORML 会場の熱気は最高潮に達している。これが最後の戦いだ。
+    
+    TARGET = 이벤트主
+    CALL CHOICE_DUEL_TYPE(402642)
+    
+    PRINTFORMW %CALLNAME:이벤트主%が切り札の連続展開であなたを追い詰める。
+    PRINTFORMW 「これが私の全力！受け止めて、そしてあなたの答えを…！」
+    PRINTFORML あなたは、持てる力の全てを振り絞り、その猛攻に耐え、あるいは切り返す。
+    PRINTFORMW 勝敗は問題ではない。デュエルを通して、彼女の覚悟を受け止め、자신の覚悟を示すことこそが、本当の「答え」だった。
+    
+    PRINTFORML 激闘の末、デュエルは決着する。
+    PRINTFORML %CALLNAME:이벤트主%は息を弾ませながら、晴れやかな笑顔をあなたに向ける。
+    PRINTFORMW そして%CALLNAME:이벤트主%は深く息を吸い、マイクに向かって力強く宣言した。
+    PRINTFORMW 「皆さん、今日は本当にありがとうございました！私、善羽麻衣は…」
+    PRINTFORML 会場が静まり返る。全ての視線が彼女に注がれている。
+    PRINTFORMW 「KC社に所属するアイドルとしてデビューすることが決まりました！」
+    PRINTFORMW 「これからも、皆さんと一緒に最高のステージを作っていきたいと思います！」
+    PRINTFORML 会場が爆発的な歓声に包まれる。
+    PRINTFORMW スポットライトが彼女を照らし、新しいスターの誕生を祝福していた。
+    PRINTFORMW ファンたちの「麻衣ちゃん！」「おめでとう！」という声が会場中に響き渡った。
+    
+    CALL EVENT_FAVUP(이벤트主,200)
+    依頼_달성상황 ++
+    CALL EVENT_TIMER(60)
+
+ELSEIF 依頼_달성상황 == 4
+    ; エピローグ
+    PRINTFORML ライブ後、誰もいないステージで、二人は並んで夜景を眺める。
+    
+    PRINTL
+    PRINTL [0] - 「まさか、本当にデュエルで告白するなんてね」
+    BINPUT
+    
+    PRINTFORML あなたがそう言うと、%CALLNAME:이벤트主%は悪戯っぽく笑う。
+    PRINTFORMW 「腹黒アイドルだから。欲しいものは、どんな手を使っても手に入れるの」
+    
+    IF TALENT:NO_TO_CHARANUM(2642):연모 == 0
+        SETCOLOR C_PINK
+        PRINTFORML %CALLNAME:이벤트主%はあなたが欲しいのようだ…
+        PRINTFORMW %CALLNAME:이벤트主%は【연모】を得た
+        RESETCOLOR
+        TALENT:NO_TO_CHARANUM(2642):연모 = 1
+    ENDIF
+    
+    PRINTFORML そして、彼女は真剣な表情で付け加える。
+    PRINTFORMW 「…あなたという、運命のゼンマイだけは、もう絶対に手放さない」
+    PRINTFORMW 二人の物語は、ここからが本当の始まりだった。
+    
+    RETURN 2
+
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_402642
+CALL DP_GET(10000)
+
+@IRAI_DECK_402642(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+    RETURN 2642
+ENDIF
+RETURN 0
+
+; 듀얼開始時の導入
+@IRAI_DUEL_INTRO_402642
+IF 依頼_進行보존:402642 == 0
+    PRINTFORML %CALLNAME:NO_TO_CHARANUM(2642)%「さあ、始めましょう。私の全てを見せてあげる」
+ELSEIF 依頼_進行보존:402642 == 1
+    PRINTFORML %CALLNAME:NO_TO_CHARANUM(2642)%「まだまだ終わらないわよ。本当の勝負はここからよ！」
+ELSEIF 依頼_進行보존:402642 == 2
+    PRINTFORML %CALLNAME:NO_TO_CHARANUM(2642)%「この程度じゃないでしょう？お互い頑張りましょう！」
+ELSE
+    PRINTFORML %CALLNAME:NO_TO_CHARANUM(2642)%「最後の戦い…私の想い、受け取って！」
+ENDIF

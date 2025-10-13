@@ -634,6 +634,9 @@ ELSE
 ENDIF
 
 CALL CARD_LOADUP
+SIF チェーン불가 == 2
+	RETURN 1
+
 IF カードID
 	CALL CARD_FIN_BIT_SET(듀얼리스트,実行出処)
 	CALLFORM CARD_SS_USE(듀얼리스트,カードID)
@@ -656,7 +659,6 @@ IF カードID
 		ENDIF
 		IF GETVAR(@"%소환者%_MZ_無効:カード소환先") == 0
 			CALLFORM CARD_STANBY(カードID,소환者,특수소환時,"필드",カード소환先)
-
 			VARSET RESULT
 			TRYCALLFORM CARDCAN_{カードID}(소환者,특수소환時強制,"필드",カード소환先)
 			SIF RESULT == 1
@@ -1254,6 +1256,11 @@ IF 마함플래그 == 0
 
 		ELSEIF 효과추가종류:カウンタ == 40
 			SETVAR @"%듀얼리스트%_MZ_戦狂:カード소환先", 1
+		ELSEIF 효과추가종류:カウンタ == 41
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カード소환先")}, "攻撃力"
+			TIMES RESULT,0.5
+			SETVAR @"%듀얼리스트%_MZ_永攻:カード소환先", -RESULT
+
 
 
 		ELSEIF 효과추가종류:カウンタ == 51

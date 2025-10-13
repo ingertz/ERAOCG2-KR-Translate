@@ -1,0 +1,669 @@
+﻿@IRAI_EVENT_116(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE  "名前"
+		RESULTS = (WCS4-1)ワールドチャンピオンシップ、世界大会
+	CASE "이벤트種"
+		RETURN 이벤트_物語
+	CASE "依頼先"
+		RETURN 場所_KL入口
+	CASE "詳細"
+		PRINTL いよいよワールドチャンピオンシップも大詰めだ。
+		PRINTL 덱の準備に不安がないなら、会場のカイバーランドに向かおう。
+		PRINTL
+			SETCOLOR C_YELLOW
+		PRINTL （注意！　？回連戦＋덱변경불가＋E.R.Aカード使用불가！）
+			RESETCOLOR
+		PRINTL 
+	CASE "条件"
+		SIF 依頼_完了횟수:115 == 0
+			RETURN 0
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_116(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主,30
+#DIM DYNAMIC ツァンディレ
+#DIM DYNAMIC 宮田ゆま
+#DIM DYNAMIC レイン恵
+#DIM DYNAMIC 海野幸子
+#DIM DYNAMIC 嶺開花
+#DIM DYNAMIC メイ喜多嬉
+#DIM DYNAMIC 紬紫
+#DIM DYNAMIC 藤原雪乃
+#DIM DYNAMIC 対戦상대
+#DIMS DYNAMIC 표시名前
+#DIM DYNAMIC 승리횟수
+#DIM DYNAMIC 패배횟수
+
+ツァンディレ = NO_TO_CHARANUM(2656)
+宮田ゆま = NO_TO_CHARANUM(2653)
+レイン恵 = NO_TO_CHARANUM(2654)
+メイ喜多嬉 = NO_TO_CHARANUM(2662)
+紬紫 = NO_TO_CHARANUM(2658)
+藤原雪乃 = NO_TO_CHARANUM(2657)
+海野幸子 = NO_TO_CHARANUM(2655)
+嶺開花 = NO_TO_CHARANUM(2663)
+효과条件カテゴリ = E.R.A
+投入禁止枚数 = 1
+
+;テスト用
+; CFLAG:ツァンディレ:호감도 = 2000
+; CFLAG:宮田ゆま:호감도 = 2000
+; CFLAG:レイン恵:호감도 = 2000
+; CFLAG:メイ喜多嬉:호감도 = 2000
+; CFLAG:紬紫:호감도 = 2000
+; CFLAG:藤原雪乃:호감도 = 2000
+; CFLAG:海野幸子:호감도 = 2000
+; CFLAG:嶺開花:호감도 = 2000
+
+;カイバ―ランドのマップの一定場所から一般캐릭터を退去させたり、
+;プレイヤーを離脱불가にしたい！
+
+IF 依頼_달성상황 == 0
+	PRINTFORMW いよいよWCSも世界大会だ。
+	IF CFLAG:ツァンディレ:호감도 >= 2000 || CFLAG:宮田ゆま:호감도 >= 2000 || CFLAG:レイン恵:호감도 >= 2000 || CFLAG:メイ喜多嬉:호감도 >= 2000 || CFLAG:紬紫:호감도 >= 2000 || CFLAG:藤原雪乃:호감도 >= 2000 || CFLAG:海野幸子:호감도 >= 2000 || CFLAG:嶺開花:호감도 >= 2000
+		PRINTFORMW 大会会場に入ろうとすると、見覚えのある顔が待ち構えていた。
+		IF CFLAG:ツァンディレ:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中からツァンディレが顔を出した。
+			PRINTFORMW 「あんた、やっと来たわね。ほら、このカードを持って行きなさい」
+			CALL CARD_GET_SINGLE(70011)
+			PRINTFORML 
+			PRINTFORMW 「덱と合わなかったりもう持ってるなら、無理して入れなくていいからお守りにでも持ってなさい」
+			PRINTFORMW 「べ、別にどのカードを渡すか悩んでたり、早朝から待ってたりしてないんだからね！」
+			PRINTFORMW ツァンディレはそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+		IF CFLAG:宮田ゆま:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中から宮田ゆまが顔を出した。
+			PRINTFORMW 「%CALLNAME:MASTER%さん！このカードを受け取って下さい！」
+			CALL CARD_GET_SINGLE(70010)
+			PRINTFORML 
+			PRINTFORMW 「お守りにどうぞ！」
+			PRINTFORMW 「世界大会、頑張ってくださいね！」
+			PRINTFORMW 宮田ゆまはそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+		IF CFLAG:レイン恵:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中からレイン恵が顔を出した。
+			PRINTFORMW 「……これ」
+			CALL CARD_GET_SINGLE(70016)
+			PRINTFORML 
+			PRINTFORMW 「お守りに……」
+			PRINTFORMW 「………」
+			PRINTFORMW 「……頑張って」
+			PRINTFORMW レイン恵はそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+		IF CFLAG:メイ喜多嬉:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中からメイ喜多嬉が顔を出した。
+			PRINTFORMW 「%CALLNAME:MASTER%さん。このカードを差し上げますわ」
+			CALL CARD_GET_SINGLE(50106)
+			PRINTFORML 
+			PRINTFORMW 「別に無理して덱に入れろとまでは言いませんわ。持って頂くだけで結構です」
+			PRINTFORMW 「世界大会、私の分まで頑張ってください」
+			PRINTFORMW メイ喜多嬉はそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+		IF CFLAG:紬紫:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中から紬紫が顔を出した。
+			PRINTFORMW 「%CALLNAME:MASTER%様。こちらをお受け取りください」
+			CALL CARD_GET_SINGLE(52301)
+			PRINTFORML 
+			PRINTFORMW 「私からの気持ちです」
+			PRINTFORMW 「世界大会、応援しております」
+			PRINTFORMW 紬紫はそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+		IF CFLAG:藤原雪乃:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中から藤原雪乃が顔を出した。
+			PRINTFORMW 「%CALLNAME:MASTER%。受け取りなさい」
+			CALL CARD_GET_SINGLE(61880)
+			PRINTFORML 
+			PRINTFORMW 「WCSもこれで最後たと思うと寂しいわね」
+			PRINTFORMW 「せっかくここまで来たんだから、頑張るのよ」
+			PRINTFORMW 藤原雪乃はそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+		IF CFLAG:海野幸子:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中から紬紫が顔を出した。
+			PRINTFORMW 「%CALLNAME:MASTER%。特別にこのカードを差し上げます」
+			CALL CARD_GET_SINGLE(70033)
+			PRINTFORML 
+			PRINTFORMW 「私に勝ったんですから、半端な所で負けると承知しませんわよ」
+			PRINTFORMW 紬紫はそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+		IF CFLAG:嶺開花:호감도 >= 2000
+			PRINTFORML 
+			PRINTFORMW 人混みの中から嶺開花が顔を出した。
+			PRINTFORMW 「%CALLNAME:MASTER%くーん。はい、どうぞ！」
+			CALL CARD_GET_SINGLE(50126)
+			PRINTFORML 
+			PRINTFORMW 「私がカードをあげた事、他のファンには内緒だよ？」
+			PRINTFORMW 「世界大会、優勝目指してがんばろー！」
+			PRINTFORMW 嶺開花はそのまま人混みの中に戻る。
+			依頼_進行보존:116 ++
+		ENDIF
+	ENDIF
+	PRINTFORMW ………
+	PRINTFORMW 係員に声を掛け、手続きを済ませてカイバーランドの中へ入る。
+	PRINTFORMW するとあちこちのスピーカーからアナウンスが聞こえた。
+	PRINTFORMW 『皆さーん！ようこそいらっしゃいました！』
+	PRINTFORMW 『デュエルモンスターズ、ワールドチャンピオンシップ。いよいよ世界大会の決勝ステージが始まります！』
+	PRINTFORMW 『決勝ステージのステージはカイバーランド全域！なんと、貸し切りです！』
+	PRINTFORMW 『今！世界各国から勝ち上がって来た６人の猛者がカイバ―ランドの各地に散らばっています！』
+	PRINTFORMW 『ルールは簡単！６人それぞれは対戦상대を探してカイバ―ランドを徘徊し、他の選手と出会い頭にデュエルして負けた方は即敗退のサバイバル！』
+	PRINTFORMW 『そしてもう一つ。決勝ステージは前のデュエルでのライフを引き継ぐ連戦になります。残りライフに気を付けながらデュエルしましょう！』
+	PRINTFORMW 『そうやって最後まで生き残った一人が優勝！デュエリスト・オブ・デュエリストの称号を手にします！』
+	PRINTFORMW 『準備はいいですか？』
+	PRINTFORMW 『それでは……』
+	PRINTFORMW 『デュエルモンスターズ、ワールドチャンピオンシップ、決勝ステージ、スタート！』
+	PRINTFORMW いよいよ最後の大会が始まった。
+	PRINTFORMW 取りあえず適当に상대を探して歩き回る事にしよう。
+	PRINTFORMW 
+	依頼_달성상황 ++
+	依頼_場所 = 場所_ジャングル
+	CALL EVENT_TIMER(10)
+	RETURN 1
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORMW ジャングルクルーズで選手と思わしき상대を見つけた。
+	PRINTFORMW 상대もこちらの存在を認識し、無言でデュエルディスクを構える。
+	PRINTFORMW 最初のデュエルだ。心して掛かろう。
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(116,2)
+	TARGET = LOCAL
+	IF RESULT == 1
+	ELSE
+		PRINTFORMW 負けてしまった……
+		PRINTFORMW %NAME:MASTER%は目の前が真っ暗になった！
+		PRINTFORMW …………
+		PRINTFORMW ………
+		PRINTFORMW …
+		PRINTFORMW あなたは目覚めるとベッドで横たわっていた、
+		PRINTFORMW よく覚えていないがどうやらさっきまでのは夢だったようだ。
+		PRINTFORMW しかし……結構な時間寝ていたというのに疲れが取れなかったようだ。
+		CALL EVENT_MOVE(MASTER,場所_寝室)
+		
+		CALL RECOVER_PERMIL(MASTER,-500,"체력")
+		CALL RECOVER_PERMIL(MASTER,-1000,"기력")
+		CALL EVENT_TIMER(60)
+		RETURN 3
+	ENDIF
+	PRINTFORMW 取りあえず勝った。
+	PRINTFORMW しかし상대が使ったのは間違いなくE.R.Aカード……
+	PRINTFORMW どういう事だ？
+	PRINTFORMW 気になるが、今は大会に集中しよう。
+	依頼_달성상황 ++
+	依頼_場所 = 場所_スリルゾーン
+	CALL EVENT_TIMER(10)
+	RETURN 1
+ELSEIF 依頼_달성상황 == 2
+	PRINTFORMW 次はドラゴンコースターで別の選手を見つけた。
+	PRINTFORMW 상대は不気味なまでの無言でデュエルディスクを構える。
+	PRINTFORMW 心なしか目の焦点が合ってない気がするが……今はデュエルに集中しよう。
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(116,2)
+	TARGET = LOCAL
+	IF RESULT == 1
+	ELSE
+		PRINTFORMW 負けてしまった……
+		PRINTFORMW %NAME:MASTER%は目の前が真っ暗になった！
+		PRINTFORMW …………
+		PRINTFORMW ………
+		PRINTFORMW …
+		PRINTFORMW あなたは目覚めるとベッドで横たわっていた、
+		PRINTFORMW よく覚えていないがどうやらさっきまでのは夢だったようだ。
+		PRINTFORMW しかし……結構な時間寝ていたというのに疲れが取れなかったようだ。
+		CALL EVENT_MOVE(MASTER,場所_寝室)
+		
+		CALL RECOVER_PERMIL(MASTER,-500,"체력")
+		CALL RECOVER_PERMIL(MASTER,-1000,"기력")
+		CALL EVENT_TIMER(60)
+		RETURN 3
+	ENDIF
+	PRINTFORMW また勝った。
+	PRINTFORMW しかしこの상대もE.R.Aカードを使った。
+	PRINTFORMW これはもしかして……？
+	PRINTFORMW 取りあえず大会はまだ続いている。
+	PRINTFORMW 次の상대を探そう。
+	依頼_달성상황 ++
+	依頼_場所 = 場所_観覧車
+	CALL EVENT_TIMER(10)
+	RETURN 1
+ELSEIF 依頼_달성상황 == 3
+	PRINTFORMW 超巨大観覧車の前で別の選手を見つけた。
+	PRINTFORMW この상대も無言でデュエルディスクを構える。
+	PRINTFORMW いよいよもって자신以外全員E.R.Aカードを使っていると見て間違いないだろう。
+	PRINTFORMW 注意して掛かろう。
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(116,2,1)
+	TARGET = LOCAL
+	IF RESULT == 1
+	ELSE
+		PRINTFORMW 負けてしまった……
+		PRINTFORMW %NAME:MASTER%は目の前が真っ暗になった！
+		PRINTFORMW …………
+		PRINTFORMW ………
+		PRINTFORMW …
+		PRINTFORMW あなたは目覚めるとベッドで横たわっていた、
+		PRINTFORMW よく覚えていないがどうやらさっきまでのは夢だったようだ。
+		PRINTFORMW しかし……結構な時間寝ていたというのに疲れが取れなかったようだ。
+		CALL EVENT_MOVE(MASTER,場所_寝室)
+		
+		CALL RECOVER_PERMIL(MASTER,-500,"체력")
+		CALL RECOVER_PERMIL(MASTER,-1000,"기력")
+		CALL EVENT_TIMER(60)
+		RETURN 3
+	ENDIF
+	PRINTFORMW 勝った。
+	PRINTFORMW ペース的に今回か次で終わりそうなんだが……
+	PRINTFORMW ……
+	PRINTFORMW 特にアナウンスが無い事から、まだ生き残っている選手がいるみたいだ。
+	PRINTFORMW 次の상대を探そう。
+	依頼_달성상황 ++
+	依頼_場所 = 場所_KCステージ
+	CALL EVENT_TIMER(10)
+	RETURN 1
+ELSEIF 依頼_달성상황 == 4
+	PRINTFORMW ショーステージで別の選手を見つけた。
+	PRINTFORMW この상대も無言でデュエルディスクを構える。
+	PRINTFORMW 자신以外の選手が誰も他の選手と戦ってない限り、流石にこれが最後になるはず。
+	PRINTFORMW そして今回の상대もE.R.Aカードを使って来るはずだ。注意して掛かろう。
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(116,2,1)
+	TARGET = LOCAL
+	IF RESULT == 1
+	ELSE
+		PRINTFORMW 負けてしまった……
+		PRINTFORMW %NAME:MASTER%は目の前が真っ暗になった！
+		PRINTFORMW …………
+		PRINTFORMW ………
+		PRINTFORMW …
+		PRINTFORMW あなたは目覚めるとベッドで横たわっていた、
+		PRINTFORMW よく覚えていないがどうやらさっきまでのは夢だったようだ。
+		PRINTFORMW しかし……結構な時間寝ていたというのに疲れが取れなかったようだ。
+		CALL EVENT_MOVE(MASTER,場所_寝室)
+		
+		CALL RECOVER_PERMIL(MASTER,-500,"체력")
+		CALL RECOVER_PERMIL(MASTER,-1000,"기력")
+		CALL EVENT_TIMER(60)
+		RETURN 3
+	ENDIF
+	PRINTFORMW 勝った。
+	PRINTFORMW これで終わり……
+	PRINTFORMW ……
+	PRINTFORMW じゃない？
+	PRINTFORMW しばらく待っても終了のアナウンスが聞こえない。
+	PRINTFORMW どうやら他の選手全員を상대にする事になりそうだ。
+	PRINTFORMW 最後の상대を探そう。
+	依頼_달성상황 ++
+	依頼_場所 = 場所_お城
+	CALL EVENT_TIMER(10)
+	RETURN 1
+ELSEIF 依頼_달성상황 == 5
+	PRINTFORMW ファンタジーゾーンの城の中で最後の選手を見つけた。
+	PRINTFORMW 「おや、まさかここまで生き残るとは」
+	PRINTFORMW ！？喋った！？
+	PRINTFORMW 「ああ、私は他の奴らとは違うとも」
+	PRINTFORMW 「気づいていたか？ここまでに貴様とデュエルした全員、我らE.R.Aグールズの傀儡だという事を」
+	PRINTFORMW なん……だと……
+	PRINTFORMW 「반발するのもいたが、デュエルで負けたらみんなE.R.Aカードの虜さ」
+	PRINTFORMW 「さて、ここで私と貴様で世界大会最後のデュエルをする訳だが、その前に提案がある」
+	PRINTFORMW 「貴様もE.R.Aカードを使ってみたくないか？」
+	PRINTFORMW 何？
+	PRINTFORMW 「ここまでに色んなE.R.Aカードを見て来たんだろう？その力と魅力を肌身で感じたはずだ」
+	PRINTFORMW 「私とのデュエル、即サレンダーするならE.R.Aカードを好きなだけ提供すると約束しよう。どうだ？」
+	PRINTFORMW ………
+	PRINTFORMW 考えるまでも無い。ここまで来てそんな提案に乗る気は無い。
+	PRINTFORMW 「そうか。なら仕方ない。力尽くで分からせるとしようか…！」
+	PRINTFORMW 상대がデュエルディスクを構えた。
+	PRINTFORMW これが最後の戦いだ。絶対に負ける訳にはいかない！
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(116,2,1)
+	TARGET = LOCAL
+	IF RESULT == 1
+	ELSE
+		PRINTFORMW 負けてしまった……
+		PRINTFORMW %NAME:MASTER%は目の前が真っ暗になった！
+		PRINTFORMW …………
+		PRINTFORMW ………
+		PRINTFORMW …
+		PRINTFORMW あなたは目覚めるとベッドで横たわっていた、
+		PRINTFORMW よく覚えていないがどうやらさっきまでのは夢だったようだ。
+		PRINTFORMW しかし……結構な時間寝ていたというのに疲れが取れなかったようだ。
+		CALL EVENT_MOVE(MASTER,場所_寝室)
+		
+		CALL RECOVER_PERMIL(MASTER,-500,"체력")
+		CALL RECOVER_PERMIL(MASTER,-1000,"기력")
+		CALL EVENT_TIMER(60)
+		RETURN 3
+	ENDIF
+	PRINTFORMW 勝った。
+	PRINTFORMW 「ま、まさか……私が……！」
+	PRINTFORMW 상대の選手はその場で崩れ落ちた。
+	PRINTFORMW その時、アナウンスが鳴り響く。
+	PRINTFORMW 『はい！最終ステージ、終了です！』
+	PRINTFORMW 『今、最後の生き残りにしてワールドチャンピオンシップの優勝者が決まりました！』
+	PRINTFORMW 『優勝したのは……』
+	PRINTFORMW 『……えっ』
+	PRINTFORMW 『ちょっとお待ちくださいね』
+	PRINTFORMW ん？
+	PRINTFORMW 『……えーと、ここで緊急連絡です』
+	PRINTFORMW 『今、運営でのトラブルにより、優勝式典と閉会式は別の日程で行う事になりました』
+	PRINTFORMW 『という事で、今日はここまでです！』
+	PRINTFORMW 『優勝式典と閉会式の日程については、ネットでお知らせいたしますので、チェックしてくださいね』
+	PRINTFORMW 『では、解散お願いします！』
+	PRINTFORMW なんか良く分からないが、優勝式典が引き延ばされてしまった……
+	PRINTFORMW 仕方ない。今日は帰って運営からの連絡を待つとしよう。
+	CALL EVENT_TIMER(10)
+	RETURN 2
+ENDIF
+
+
+@IRAI_DUEL_INTRO_116
+
+SETCOLOR C_RED
+CUSTOMDRAWLINE —
+PRINTL 
+PRINTFORML 　＊덱内のE.R.Aカードの効力により、あなた以外デュエル中の違和感に鈍感になった。
+PRINTL 
+CUSTOMDRAWLINE —
+PRINTW
+RESETCOLOR
+
+
+@IRAI_DECK_116(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+	SELECTCASE 依頼_달성상황
+		CASE 1
+			RETURN 21116
+		CASE 2
+			RETURN 22116
+		CASE 3
+			RETURN 23116
+		CASE 4
+			RETURN 24116
+		CASE 5
+			RETURN 25116
+	ENDSELECT
+ENDIF
+RETURN 0
+
+
+@DUELDECK_21116(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+;ERAゴブリンライダー
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1920
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1920
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1920
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 11921
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23505
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23505
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23505
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23506
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23507
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23508
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23509
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23509
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61920
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61920
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61920
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79619
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79619
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79619
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 51500
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51500
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51500
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54009
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54009
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54009
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59652
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59652
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59652
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59655
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59655
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59655
+
+
+@DUELDECK_22116(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+;MC
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1095
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1095
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1095
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39870
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39870
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39870
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39871
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39871
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39871
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39872
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99734
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99734
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99734
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99735
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99735
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99735
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70021
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79849
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79849
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79849
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79850
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79850
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79884
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79884
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1730
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1730
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1730
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99730
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99730
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 99736
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 99736
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 99736
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 99731
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 99731
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 99731
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59840
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59840
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59840
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59841
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59841
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59841
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59842
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59842
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59842
+
+
+@DUELDECK_23116(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+;ERA烙印
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1882
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1883
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1884
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1885
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1885
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1885
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1891
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 21090
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 21090
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 21091
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 21093
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 21093
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 21093
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39630
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39630
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39630
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39633
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39633
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39634
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39634
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71912
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79619
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79778
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79778
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79778
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79779
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91911
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 41882
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41882
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41882
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50604
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50604
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50604
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59740
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59740
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59740
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41881
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41881
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41881
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50616
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50616
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50616
+
+
+@DUELDECK_24116(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+;奇術
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1669
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1669
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1669
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39590
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39590
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 39590
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79581
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79582
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79583
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79585
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79585
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79585
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79586
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79586
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79586
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1731
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1731
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1731
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99580
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99581
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99584
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 59591
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59591
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59591
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59592
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59592
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59592
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59593
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59593
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59593
+
+
+@DUELDECK_25116(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+;サキュバス・ガール
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 2000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1005
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1005
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1005
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1006
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 20501
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 61000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79900
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79900
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79902
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79903
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79904
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 79905
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99625
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 99626
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 59850
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59850
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59850
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59851
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59851
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59851
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59852
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59852
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59852
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59853
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59853
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59853
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59854
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59854
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 59854

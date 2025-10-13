@@ -39,9 +39,8 @@ PRINTL "엘리멘틀 마스터 드리야드"의 강림에 필요.
 CALLFORM CARD_ABLE(0,마함起動,손패起動)
 PRINTL ①: 자신의 패 / 필드 위에서, 레벨의 합계가 3 이상이 되도록 몬스터를 릴리스하고,
 PRINTL 패에서 "엘리멘틀 마스터 드리야드" 1장을 의식 소환한다.
-;PRINTL 자신フィールドに「ドリアード」モンスターが存在する場合、자신の덱からも의식소환できる。
-PRINTL 그 후, 자신의 묘지에 땅 / 물 / 화염 / 바람 속성 몬스터가 모여 있는 경우,
-PRINTL 덱에서 땅 / 물 / 화염 / 바람 속성 몬스터를 1장씩 골라 패에 넣는다.
+PRINTL 자신 필드에 "드리야드" 몬스터가 존재하는 경우、자신의 덱에서도 의식 소환할 수 있다。
+
 
 
 @CARDCAN_61608(듀얼리스트,종류,ゾーン,場所)
@@ -62,19 +61,39 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 
-	CALL RESETAREA_MAT
-	素材範囲필드 = 1
-	素材範囲손패 = 1
-
 	CALL FULLRESET
-	효과範囲손패 = 1
-	효과範囲덱 = 1
-	효과条件종류 = 의식
-	효과条件名前 = 엘리멘틀 마스터 드리야드
-	효과条件소환可 = 1
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件カテゴリ = 드리야드
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+	IF RESULT == 1
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件종류 = 의식
+		효과条件名前 = 엘리멘틀 마스터 드리야드
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件종류 = 의식
+		효과条件名前 = 엘리멘틀 마스터 드리야드
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
 	RETURN 1
 ENDIF
 
@@ -94,59 +113,49 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)		
 
-		CALL RESETAREA_MAT
-		素材範囲손패 = 1
-		素材範囲필드 = 1
-
 		CALL FULLRESET
-		효과範囲손패 = 1
-		효과範囲덱 = 1
-		효과条件名前 = 엘리멘틀 마스터 드리야드
-		효과条件소환可 = 1
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT != 9999
-			CALL CARD_SELECT(듀얼리스트,RESULT)
-			選択カード = RESULT
+		효과範囲필드 = 1
+		효과条件표시 = 表側표시
+		효과条件カテゴリ = 드리야드
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
 			CALL RESETAREA_MAT
-			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:選択カード")}(듀얼리스트,選択カード)
-			素材範囲필드 = 1
 			素材範囲손패 = 1
-			TRYCALLFORM RITSUMMON(듀얼리스트, 選択カード,参照先（CS）)
+			素材範囲필드 = 1
 
 			CALL FULLRESET
-			효과範囲묘지 = 1
-			효과条件속성 = 땅속성
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			SIF RESULT == 1
-				条件달성 ++
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			효과条件名前 = 엘리멘틀 마스터 드리야드
+			효과条件소환可 = 1
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				CALL CARD_SELECT(듀얼리스트,RESULT)
+				選択カード = RESULT
+				CALL RESETAREA_MAT
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:選択カード")}(듀얼리스트,選択カード)
+				素材範囲필드 = 1
+				素材範囲손패 = 1
+				TRYCALLFORM RITSUMMON(듀얼리스트, 選択カード,参照先（CS）)
+			ENDIF
+		ELSE
+			CALL RESETAREA_MAT
+			素材範囲손패 = 1
+			素材範囲필드 = 1
 
 			CALL FULLRESET
-			효과範囲묘지 = 1
-			효과条件속성 = 물속성
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			SIF RESULT == 1
-				条件달성 ++
-
-			CALL FULLRESET
-			효과範囲묘지 = 1
-			효과条件속성 = 화염속성
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			SIF RESULT == 1
-				条件달성 ++
-
-			CALL FULLRESET
-			효과範囲묘지 = 1
-			효과条件속성 = 바람속성
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			SIF RESULT == 1
-				条件달성 ++
-				
-			IF 条件달성 >= 4
-				CALL FULLRESET
-				효과範囲덱 = 1
-				효과条件カテゴリ = 정령
-				효과条件종류 = モン全般
-				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			효과範囲손패 = 1
+			효과条件名前 = 엘리멘틀 마스터 드리야드
+			효과条件소환可 = 1
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				CALL CARD_SELECT(듀얼리스트,RESULT)
+				選択カード = RESULT
+				CALL RESETAREA_MAT
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:選択カード")}(듀얼리스트,選択カード)
+				素材範囲필드 = 1
+				素材範囲손패 = 1
+				TRYCALLFORM RITSUMMON(듀얼리스트, 選択カード,参照先（CS）)
 			ENDIF
 		ENDIF
 	ENDIF

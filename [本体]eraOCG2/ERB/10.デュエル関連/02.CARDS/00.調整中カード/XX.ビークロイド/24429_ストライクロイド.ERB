@@ -1,0 +1,123 @@
+﻿@CARDNAME_24429,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 스트라이크로이드
+	CASE "略称"
+		RESULTS = 스트라이크로이드
+	CASE "カテゴリ"
+		RESULTS:0 = 비크로이드
+ENDSELECT
+
+
+@CARD_24429(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 1400
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_24429(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+
+CALLFORM CARD_ABLE(1,戦闘→묘지,破壊→묘지,덱→묘지)
+PRINTL ①：このカードが破壊された場合、または덱から묘지へ送られた場合、８００LPを払うことで발동できる。
+PRINTL 묘지のこのカードを손패に戻す事ができる。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱からこのカード名以外の「비크로이드」モンスター１体を묘지へ送る。
+
+@CARDCAN_24429(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24429)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지 || 종류 == 덱→묘지
+	SIF 발동済_1(듀얼리스트,24429)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 800
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,24429)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 비크로이드
+	효과条件固名前 = 스트라이크로이드
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_24429(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지 || 종류 == 덱→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24429,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",800)
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 스트라이크로이드
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24429,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 비크로이드
+		효과条件固名前 = 스트라이크로이드
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+

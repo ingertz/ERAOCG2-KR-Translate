@@ -1,0 +1,147 @@
+﻿@CARDNAME_23537,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 강귀 거츠
+	CASE "略称"
+		RESULTS = 강귀 거츠
+	CASE "カテゴリ"
+		RESULTS:0 = 강귀 
+ENDSELECT
+
+
+@CARD_23537(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	;효과モン/通常モン/의식/융합/싱크로/엑시즈/링크/초차원
+	CASE "종류"
+		RETURN 효과モン
+	;어둠속성/빛속성/땅속성/물속성/화염속성/바람속성
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 0
+	;牝性/雄性があるよ
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_23537(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：守備표시のこのカードは戦闘では破壊されない。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ②：자신メインフェイズに발동できる。
+CALLFORM CARD_ABLE(0,攻紋章起動)
+PRINTL このターン、자신フィールドの全ての「강귀」モンスターの攻撃力は３００アップする。
+CALLFORM CARD_ABLE(2,戦破壊→묘지)
+PRINTL ③：このカードがフィールドから묘지へ送られた場合に발동できる。
+PRINTL 덱から「강귀거츠」以外の「강귀」カード１枚を손패に加える。
+
+
+@CARDCAN_23537(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23537)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+    SIF ゾーン != "필드"
+		RETURN 0
+    SIF 발동済_1(듀얼리스트,23537)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻紋章起動
+	RETURN 1	
+	
+ELSEIF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류,"リリース","破壊","戦闘破壊")
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,23537)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 강귀 
+	효과条件固名前 = 강귀 거츠
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1	
+	
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 1 
+		RETURN 0
+	RETURN 1
+	
+ENDIF
+
+@CARDEFFECT_23537(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23537,1)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,23537,攻紋章予約)
+	ENDIF
+
+ELSEIF 종류 == 攻紋章起動
+	CALL FULLRESET
+	효과条件カテゴリ = 강귀 
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",0,300)	
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23537,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 강귀 
+	    효과条件固名前 = 강귀 거츠
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")	
+
+ENDIF

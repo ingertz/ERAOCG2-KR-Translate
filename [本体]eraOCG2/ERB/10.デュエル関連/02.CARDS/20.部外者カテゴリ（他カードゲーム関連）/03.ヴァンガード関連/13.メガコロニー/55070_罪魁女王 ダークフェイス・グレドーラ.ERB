@@ -1,0 +1,253 @@
+﻿@CARDNAME_55070,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 길티 엠프레스 다크페이스 그레도라
+	CASE "略称"
+		RESULTS = 죄괴 그레도라
+	CASE "カテゴリ"
+		RESULTS:0 = 메가 콜로니
+		RESULTS:1 = 다크페이스
+		RESULTS:2 = 그레도라
+		RESULTS:4 = 뱅가드
+ENDSELECT
+
+
+@CARD_55070(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족 
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "특수불가"
+		RETURN 1
+	CASE "連動ID"
+		RETURN 2795
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+
+@CARDSUMMON_55070(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+
+CALL RESETCONDITION_MAT
+必要素材数 = 1
+素材条件カテゴリ = 그레도라
+
+IF EX参照 == 1
+	CALL STRIDECAN(듀얼리스트,소환カード,55070) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_55070(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 『超越』「그레도라」モンスター
+SETCOLOR C_L_GRAY
+PRINTL （자신の손패からモンスター１体を제외して발동できる。
+PRINTL 　EX덱のこのカードを、자신フィールドの지정されたモンスター１体の上に重ねて『超越』する。
+PRINTL  『超越』したこのカードの名前は重ねたモンスターと同じ名前として扱い、
+PRINTL 　重ねたモンスターの攻撃力・守備力分、このカードの攻撃力・守備力をアップする。
+PRINTL  『超越』は１ターンに１度しか行えず、先行１ターン目には使用できない）
+RESETCOLOR
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(0,지속효과,攻守変動)
+PRINTL ①：상대フィールドの悪性카운터が置かれたモンスターは발동無効を得る。
+CALL CARD_ABLE(1,EX소환時)
+PRINTL ②：このカードが超越した場合に발동できる。
+PRINTL ＥＸ덱の「길티 엠프레스 다크페이스 그레도라」１枚を제외し、
+PRINTL 次の상대のターンの終了時まで以下の효과すべてを適用する。
+CALL CARD_ABLE(0,短紋章起動)
+PRINTL ●상대フィールドに悪性카운터が置かれたモンスターがいる限り、자신フィールドの곤충족モンスターは대상耐性を得る。
+CALL CARD_ABLE(0,攻紋章起動)
+PRINTL ●상대フィールドの悪性카운터が置かれたモンスターは攻撃力が元々の攻撃力分ダウンし、발동無効・素材불가を得る。
+PRINTL 
+PRINTL その後、상대は덱からモンスター１体を悪性카운터が１つ置かれた状態で특수소환する。
+CALL CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신ターンに발동できる。
+PRINTL 덱・묘지からレベル８以下の곤충족モンスター１体を특수소환する。
+PRINTL その後、상대の悪性카운터が置かれたモンスター１体を完全제외することができる。
+
+@CARDCAN_55070(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55070)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,55070)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件名前 = 길티 엠프레스 다크페이스 그레도라
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,55070)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件종족 = 곤충족
+	CALL 효과条件レベル_ADV(8,"以下")
+	효과条件소환可 = 1
+	효과条件종류 = レベル持ち
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 短紋章起動 || 종류 == 攻紋章起動
+	RETURN 1
+ELSEIF 종류 == ターン開始時予約
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_55070(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件カード数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55070,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件名前 = 길티 엠프레스 다크페이스 그레도라
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL CARD_RESERV(듀얼리스트,55070,短紋章予約)
+			CALL CARD_RESERV(듀얼리스트,55070,攻紋章予約)
+			CALL CARD_RESERV(듀얼리스트,55070,スタン予約)
+
+			IF モンスター数(対面者) < 5
+				CALL FULLRESET
+				효과範囲덱 = 1
+				CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所)
+				IF RESULT == 1
+					CALL SET_FIELD_INFO(対面者,"필드",カード소환先,"悪Ｃ",1)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55070,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件종족 = 곤충족
+		CALL 효과条件レベル_ADV(8,"以下")
+		효과条件종류 = レベル持ち
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件悪Ｃ所持 = 999
+			효과条件行先플래그 = 完全제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件悪Ｃ所持 = 999
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無")
+ELSEIF 종류 == ターン開始時予約
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55070,0)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,55070,短紋章予約)
+		CALL CARD_RESERV(듀얼리스트,55070,攻紋章予約)
+	ENDIF
+ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과条件悪Ｃ所持 = 999
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"不材")
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件悪Ｃ所持 = 999
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과条件종족 = 곤충족
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+	ENDIF
+ELSEIF 종류 == 攻紋章起動
+	FOR カウンタ, 0, 5
+		選択カードID = GETVAR(@"%対面者%_필드:カウンタ")
+		SIF 選択カードID < 1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_悪Ｃ:カウンタ") < 1
+			CONTINUE
+		TRYCALLFORM CARD_{選択カードID}("攻撃力")
+		攻撃力修正 = RESULT
+		SIF 攻撃力修正 > 0
+			CALL STATCHANGE_BASIC(対面者,"自身",カウンタ,-(攻撃力修正))
+	NEXT
+ENDIF

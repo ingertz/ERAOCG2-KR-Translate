@@ -112,7 +112,6 @@ CASE 3
 			PRINTFORML [4] - 방에 데리고 간다
 		IF TALENT:TARGET:듀얼리스트 == 0 && CFLAG:TARGET:소유함 == 0 && CFLAG:MASTER:현재위치 < 500
 			PRINTFORML [5] - 이 세계의 주민이 아니지 않나？라고 몰아붙인다
-		;Anonym추가
 		ELSEIF ITEM:천년카메라 != 0 && CFLAG:TARGET:소유함 == 0
 			PRINTFORML [10] - 어둠의 게임
 		ENDIF
@@ -206,7 +205,6 @@ CASE 3
 			PRINTFORML 고액의 높은 상금을 내건 %CALLNAME:MASTER%가、지면 몸으로 갚으라는 하이레이트 승부를 제시하자
 			PRINTFORMW %CALLNAME:TARGET%는 잠시 %TEXTR("골똘히 생각했/고개를 숙이며 망설이는 모습을 보였")%지만、이윽고 %TEXTR("떨떠름하게/")% 끄덕이며、조건을 받아들여 디스크를 준비했다……！
 		ENDIF
-	;Anonym추가
 	CASE 10
 		CALL EVILTY_POINT(10)
 		PRINTFORMW   ！？！？
@@ -218,6 +216,8 @@ CASE 3
 		PRINTFORMW %CALLNAME:MASTER%가 어둠의 게임을 선언한 순간、주위 일대가 어둠에 휩싸였다。
 		PRINTFORMW 서로 지는 것이 용납되지 않는 듀얼이 시작된다……！
 	ENDSELECT
+	;ザポルグ追記
+	TFLAG:SELECTCOM분기 = 10 + 賭け内容
 CASE 5
 	TFLAG:SELECTCOM분기 = 10
 	CALL KOJO_MESSAGE_SEND("COMMAND")
@@ -237,7 +237,7 @@ CASEELSE
 	;オンライン練習
 	IF 選択モード == 2
 		CALL DUEL_SYSTEM(2,,,先攻플래그설정)
-	;オンラインレートマッチ
+	;CFLAG:MASTER:듀얼레이트マッチ
 	ELSEIF 選択モード == 4 || 選択モード == 5
 		CALL DUEL_SYSTEM(3)
 	;公式デュエル
@@ -285,34 +285,38 @@ IF 選択モード == 0
 	ELSEIF デュエル結果 == 結果_引分
 		CALL SOURCE_CALC_환락(TARGET, MASTER, 200)
 	ENDIF
-ELSEIF 選択モード == 4
+	;ザポルグ追記
+	TFLAG:SELECTCOM분기 = デュエル結果
+ELSEIF 選択モード == 4 ;온라인レートマッチ
 	IF デュエル結果 == 結果_승리
 		PRINTFORML 승리해서 레이트가 올랐다！
-		PRINTFORMW 현재 온라인 레이트:{オンラインレート} + {レート増減}
-		オンラインレート += レート増減
+		PRINTFORMW 현재 온라인 레이트:{CFLAG:MASTER:듀얼레이트} + {レート増減}
+		CFLAG:MASTER:듀얼레이트 += レート増減
 	ELSEIF デュエル結果 == 結果_패배
 		PRINTFORML 패배해서 레이트가 내려갔다…
-		PRINTFORMW 현재 온라인 레이트:{オンラインレート} - {レート増減}
-		オンラインレート -= レート増減
+		PRINTFORMW 현재 온라인 레이트:{CFLAG:MASTER:듀얼레이트} - {レート増減}
+		CFLAG:MASTER:듀얼레이트 -= レート増減
 	ENDIF
-ELSEIF 選択モード == 5 && TALENT:TARGET:듀얼리스트 >= 1
+	VARSET レート増減 ;Anonym추가
+ELSEIF 選択モード == 5 && TALENT:TARGET:듀얼리스트 >= 1 ;オフラインレートマッチ
 	IF デュエル結果 == 結果_승리
 		PRINTFORML 승리해서 레이트가 올랐다！
-		PRINTFORML 현재 자신의 오프라인 레이트:{CFLAG:MASTER:오프라인레이트} + {レート増減}
-		PRINTFORML 현재 %CALLNAME:TARGET%의 오프라인 레이트:{CFLAG:TARGET:오프라인레이트} - {レート増減 * 3}
-		CFLAG:MASTER:오프라인레이트 += レート増減
-		CFLAG:TARGET:오프라인레이트 -= レート増減 * 3
-		SIF CFLAG:TARGET:오프라인레이트 == 0
-			CFLAG:TARGET:오프라인레이트 = -1
+		PRINTFORML 현재 자신의 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} + {レート増減}
+		PRINTFORML 현재 %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} - {レート増減 * 3}
+		CFLAG:MASTER:듀얼레이트 += レート増減
+		CFLAG:TARGET:듀얼레이트 -= レート増減 * 3
+		SIF CFLAG:TARGET:듀얼레이트 == 0
+			CFLAG:TARGET:듀얼레이트 = -1
 	ELSEIF デュエル結果 == 結果_패배
 		PRINTFORML 패배해서 레이트가 내려갔다…
-		PRINTFORML 현재의 자신의 오프라인 레이트:{CFLAG:MASTER:오프라인레이트} - {レート増減 * 3}
-		PRINTFORML 현재의 %CALLNAME:TARGET%의 오프라인 레이트:{CFLAG:TARGET:오프라인레이트} + {レート増減 * 3}
-		CFLAG:MASTER:오프라인레이트 -= レート増減
-		SIF CFLAG:MASTER:오프라인레이트 == 0
-			CFLAG:MASTER:오프라인레이트 = -1
-		CFLAG:TARGET:오프라인레이트 += レート増減 * 3
+		PRINTFORML 현재의 자신의 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} - {レート増減 * 3}
+		PRINTFORML 현재의 %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} + {レート増減 * 3}
+		CFLAG:MASTER:듀얼레이트 -= レート増減
+		SIF CFLAG:MASTER:듀얼레이트 == 0
+			CFLAG:MASTER:듀얼레이트 = -1
+		CFLAG:TARGET:듀얼레이트 += レート増減 * 3
 	ENDIF
+	VARSET レート増減 ;Anonym추가
 ENDIF
 SIF 賭け内容 == 0
 	GOTO SKIP_KAKE
@@ -322,6 +326,8 @@ IF デュエル結果 == 結果_승리
 		CALL EVILTY_POINT(1)
 		PRINTFORMW 건 만큼의 카드팩을 받았다！
 		CALL CARD_PACK_SHORI(3)
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 30 + 賭け内容
 	CASE 2
 		CALL EVILTY_POINT(5)
 		PRINTFORMW 듀얼에서 승리하여 %CALLNAME:TARGET%을 데이트에 초대하는 데 성공했다。
@@ -331,6 +337,8 @@ IF デュエル結果 == 結果_승리
 		SIF CFLAG:TARGET:데이트중 != 1
 			CFLAG:TARGET:데이트중 = 1
 		CFLAG:TARGET:동행 = 1400
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 30 + 賭け内容
 	CASE 3
 		CALL EVILTY_POINT(10)
 		PRINTFORML 듀얼에 패배한 %CALLNAME:TARGET%은、%TEXTR("분한 듯 얼굴을 찌푸리며/부끄러운듯이 얼굴이 빨개지며")% 그 자리에서 치마 속으로 손을 넣어、
@@ -347,6 +355,8 @@ IF デュエル結果 == 結果_승리
 		CFLAG:TARGET:(200 + 6) = 0
 		SIF CFLAG:TARGET:패배함 <= 2
 			CFLAG:TARGET:패배함 = 2
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 30 + 賭け内容
 	CASE 4
 		CALL EVILTY_POINT(10)
 		PRINTFORMW 듀얼에서 승리하여 %CALLNAME:TARGET%을 정중하게 모셔가기로 했다……。
@@ -358,6 +368,8 @@ IF デュエル結果 == 結果_승리
 			CFLAG:TARGET:패배함 = 3
 		SETBIT CFLAG:TARGET:기정사실, 0
 		人祓いモード = 0
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 30 + 賭け内容
 	CASE 5
 		IF TALENT:TARGET:성별 == 1
 			PRINTFORML 패자가 된 %CALLNAME:TARGET%에게 %CALLNAME:MASTER%가 다가가자、 %CALLNAME:TARGET%는 특히나 겁에 질려、
@@ -386,6 +398,8 @@ IF デュエル結果 == 結果_승리
 				PRINTFORMW 들키지 않도록 조심해ー！
 				CFLAG:TARGET:현재위치 = 100
 				CFLAG:TARGET:호감도 += 100
+				;ザポルグ追記
+				TFLAG:SELECTCOM분기 = 135
 			;他にも「뒷골목あたりで手っ取り早く抜いてもらう」とかがあってもいい。中身はリゾートの性処理業務の수음だの펠라だの식스だのの서술문그대로 引っぱってきてもよい。あれ書いたの俺だもん。byうさみの
 			ELSEIF RESULT == 1
 				PRINTFORMW %CALLNAME:MASTER%이 부드럽게 달래듯 안된다고 말하자、 %CALLNAME:TARGET%은 눈물을 글썽이며 마지못해 %CALLNAME:MASTER%의 손을 받아들였다。
@@ -395,6 +409,8 @@ IF デュエル結果 == 結果_승리
 				CALL CARD_GET_CHARA(TARGET,1)
 				CFLAG:TARGET:현재위치 = 100
 				CFLAG:TARGET:호감도 += 10
+				;ザポルグ追記
+				TFLAG:SELECTCOM분기 = 235
 			ELSEIF RESULT == 2
 				CALL EVILTY_POINT(30)
 				;↓のラブホ連れ込みの流れを그대로 流用
@@ -463,6 +479,8 @@ IF デュエル結果 == 結果_승리
 					CFLAG:TARGET:호감도 -= 300
 						;PRINTFORMW ……拾い上げた카드를 よく見てみると、事後を그대로 カードにしたからか、イラストが裸だ。
 						;PRINTFORMW えっちな絵違いだ！やったね！
+					;ザポルグ追記
+					TFLAG:SELECTCOM분기 = 335
 				ELSE
 					IF TCVAR:TARGET:질내사정횟수 >= 1
 						;用意した화상が질내사정ありきの事後なので
@@ -493,7 +511,7 @@ IF デュエル結果 == 結果_승리
 						PRINTFORMW …………
 					ENDIF
 					PRINTL
-					PRINTFORMW  듀얼리스트로서의 프라이드도、여자로서의 순정도 존엄도、전부 다 %CALLNAME:MASTER%%TEXTR("에게 짓밟혀/에게 빼앗겨/에게 바쳐져/에게 건내/의 것이 되어")%버렸다는것을 나타내는 『기념사진』。
+					PRINTFORMW 듀얼리스트로서의 프라이드도、여자로서의 순정도 존엄도、전부 다 %CALLNAME:MASTER%%TEXTR("에게 짓밟혀/에게 빼앗겨/에게 바쳐져/에게 건내/의 것이 되어")%버렸다는것을 나타내는 『기념사진』。
 					PRINTL
 					SIF 패배のロストバージン == 1
 						PRINTFORM %TEXTR("평생 잊을수 없는/인생에 새겨진")%、%TEXTR("굴욕적인/치욕을 느낀")% %TEXTR("처음/로스트 버진/처녀상실")%의 기억。
@@ -511,12 +529,16 @@ IF デュエル結果 == 結果_승리
 						PRINTFORMW %CALLNAME:TARGET%의 몸에 【패배버릇】이 새겨져버렸다……！
 						TALENT:TARGET:패배버릇 = 1
 					ENDIF
+					;ザポルグ追記
+					TFLAG:SELECTCOM분기 = 435
 				ENDIF
 			ENDIF
 		ELSE
 			PRINTFORMW %CALLNAME:TARGET%은 몸이 빛에 휩싸여、카드의 모습이 되어버렸다！
 			CALL CARD_GET_CHARA(TARGET,1)
 			CFLAG:TARGET:현재위치 = 100
+			;ザポルグ追記
+			TFLAG:SELECTCOM분기 = 30 + 賭け内容
 		ENDIF
 
 	CASE 6
@@ -710,7 +732,7 @@ IF デュエル結果 == 結果_승리
 						IF RAND:2 == 1
 							PRINTFORMW  한때의 청춘 기분을 맛보기로 했다……。
 						ELSE
-							PRINTFORMW  %CALLNAME:TARGET%청춘을 그저 기분 좋아지기 위해서만 써버리기로 했다……。
+							PRINTFORMW  %CALLNAME:TARGET%의 청춘을 그저 기분 좋아지기 위해서만 써버리기로 했다……。
 						ENDIF
 					ENDSELECT
 					ラブホ以外 = 6
@@ -1397,7 +1419,8 @@ IF デュエル結果 == 結果_승리
 				TALENT:TARGET:패배버릇 = 1
 			ENDIF
 		ENDIF
-	;Anonym추가
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 30 + 賭け内容
 	CASE 10
 		FOR LOCAL, 0, 70
 			PRINTL
@@ -1413,6 +1436,8 @@ IF デュエル結果 == 結果_승리
 			CFLAG:TARGET:카드화됨 = 1
 		ENDIF
 		CFLAG:TARGET:현재위치 = 場所_VOID
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 30 + 賭け内容
 
 	ENDSELECT
 ELSEIF デュエル結果 == 結果_패배
@@ -1425,6 +1450,8 @@ ELSEIF デュエル結果 == 結果_패배
 		PRINTFORMW ………으ー음、아무래도 도망쳐버린 것 같다。
 		CFLAG:TARGET:현재위치 = 100
 		TIME += 60
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 50 + 賭け内容
 	CASE 6
 		IF TALENT:TARGET:패배버릇 == 1
 			PRINTFORMW 패배해버렸다……。
@@ -1456,6 +1483,8 @@ ELSEIF デュエル結果 == 結果_패배
 			CALL RESET_TARINCON
 			依頼조교대상 = TARGET
 			CALL EVENT_TRAIN
+			;ザポルグ追記
+			TFLAG:SELECTCOM분기 = 256
 		ELSE
 			PRINTFORML ……듀얼리스트에게 두말은 없다。
 			PRINTFORM 듀얼에 패배한 %CALLNAME:MASTER%는 승자가 된 %CALLNAME:TARGET%를 기려、
@@ -1468,6 +1497,8 @@ ELSEIF デュエル結果 == 結果_패배
 					PRINTFORMW 그녀의 약점에 대해서는 『잊어』주는 것을 약속했다……。
 				ENDIF
 				CFLAG:TARGET:약점장악 = 0
+				;ザポルグ追記
+				TFLAG:SELECTCOM분기 = 156
 			ELSE
 				PRINTFORMW 제시한 액의 배상금을 지불했다……。
 				IF TALENT:TARGET:연령 == -2
@@ -1477,6 +1508,8 @@ ELSEIF デュエル結果 == 結果_패배
 				ELSE
 					CALL MONEY_GET(-1000000)
 				ENDIF
+				;ザポルグ追記
+				TFLAG:SELECTCOM분기 = 56
 			ENDIF
 		ENDIF
 	CASE 2
@@ -1495,7 +1528,8 @@ ELSEIF デュエル結果 == 結果_패배
 			CFLAG:TARGET:데이트중 = 1
 			CFLAG:TARGET:동행 = 1400
 		ENDIF
-	;Anonym추가
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 50 + 賭け内容
 	CASE 10
 		FOR LOCAL, 0, 70
 			PRINTL
@@ -1521,11 +1555,15 @@ ELSEIF デュエル結果 == 結果_패배
 			PRINTFORMW 진 만큼 카드팩을 상대에게 넘겨주었다……。
 			PRINTFORMW 소지금이 450 줄었다……。
 			CALL MONEY_GET(-450)
+			;ザポルグ追記
+			TFLAG:SELECTCOM분기 = 51
 		CASEELSE
 			PRINTFORMW 듀얼에 패배한 후……아무것도 빼앗기진 않았지만 꽤 혼났다。
 			CALL RECOVER_PERMIL(MASTER,-200,"체력")
 			CALL RECOVER_PERMIL(MASTER,-300,"기력")
 			TIME += 60
+			;ザポルグ追記
+			TFLAG:SELECTCOM분기 = 50
 		ENDSELECT
 	ENDSELECT
 ELSEIF デュエル結果 == 結果_引分
@@ -1537,8 +1575,10 @@ ELSEIF デュエル結果 == 結果_引分
 		PRINTFORMW ………으ー음、아무래도 도망친 것 같다。
 		CFLAG:TARGET:현재위치 = 100
 		TIME += 60
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 50 + 賭け内容
 	CASE 10
-		PRINTFORMW 準備中
+		PRINTFORMW 준비중
 	ENDSELECT
 ELSEIF デュエル結果 == 結果_NOGAME
 	SELECTCASE 賭け内容
@@ -1549,6 +1589,8 @@ ELSEIF デュエル結果 == 結果_NOGAME
 		PRINTFORMW ………으ー음、아무래도 도망친 것 같다。
 		CFLAG:TARGET:현재위치 = 100
 		TIME += 60
+		;ザポルグ追記
+		TFLAG:SELECTCOM분기 = 50 + 賭け内容
 	CASE 10
 		PRINTFORMW 준비중
 	ENDSELECT

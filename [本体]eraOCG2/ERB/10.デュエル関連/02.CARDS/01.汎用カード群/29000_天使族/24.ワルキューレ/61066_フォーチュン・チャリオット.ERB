@@ -1,0 +1,146 @@
+﻿@CARDNAME_61066,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 포츈 채리어트
+	CASE "略称"
+		RESULTS = 운명의 전차
+	CASE "カテゴリ"
+		RESULTS:0 = 왈큐레
+ENDSELECT
+
+
+@CARD_61066(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 2000
+	CASE "分割"
+		RETURN 유니온
+	CASE "추가日"
+		RETURN 251005
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61066(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,손패起動,필드起動)
+PRINTL ①：자신フィールドの천사족モンスター１体を대상として발동できる。
+PRINTL 자신の손패・フィールドからこのカードを装備カードとして대상にしたモンスターに装備する。
+PRINTL 装備モンスターが戦闘・효과で破壊される場合、代わりにこのカードを破壊する。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：装備モンスターは直接攻撃できる。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：このカードがフィールドに存在し、상대のカードが제외された場合に발동できる。
+PRINTL 덱から「왈큐레」モンスター１体を손패に加える。
+
+@CARDCAN_61066(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,61066)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+IF 종류 == 손패起動 || 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 천사족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 装備先 == 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF !GROUPMATCH(ゾーン,"필드","마함")
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,61066)
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과除送",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 왈큐레
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_61066(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 손패起動 || 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61066)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종족 = 천사족
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_EQUIP_MONSTER(듀얼리스트,選択カード,ゾーン,場所,4)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"直攻")
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61066,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 왈큐레
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

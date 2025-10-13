@@ -1,0 +1,143 @@
+@CARDNAME_1071,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 여신 스쿨드의 탁선
+	CASE "略称"
+		RESULTS = 여신 스쿨드
+	CASE "カテゴリ"
+		RESULTS:0 = 여신
+	CASE "検索カテゴリ"
+		RESULTS:0 = 왈큐레
+ENDSELECT
+
+
+@CARD_1071(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251005
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1071(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드 및 ②의 효과는 1턴에 1번밖에 발동할 수 없으며,
+PRINTL 자신 필드에 "왈큐레" 몬스터가 존재할 경우에만 발동할 수 있다.
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①: 이 카드의 발동 시의 효과 처리로서,
+PRINTL 덱에서 "여신 베르단디의 인도" 1장을 패로 가져올 수 있다.
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②: 자신 메인 페이즈에 발동할 수 있다.
+PRINTL 상대의 덱 위에서 카드 3장을 제외한다.
+PRINTL 그 후, 상대의 제외되어 있는 카드가 10장 이상 존재할 경우, "시간의 여신의 장난" 1장을 덱에서 패로 가져올 수 있다.
+
+
+@CARDCAN_1071(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1071)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,1071)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 왈큐레
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대덱 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,1071)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 왈큐레
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1071(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1071,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",3,제외行き,1)
+
+		CALL FULLRESET
+		효과範囲상대제외 = 1
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT >= 10
+			CALL FULLRESET
+			효과条件任意 = 1
+			효과条件名前 = 시간의 여신의 장난
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1071,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과条件名前 = 여신 베르단디의 인도
+		효과条件任意 = 1
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+
+	ENDIF
+ENDIF

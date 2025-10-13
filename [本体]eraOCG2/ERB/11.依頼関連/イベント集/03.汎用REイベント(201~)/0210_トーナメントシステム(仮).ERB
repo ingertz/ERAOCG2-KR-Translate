@@ -27,22 +27,43 @@ RETURN 0
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 出場番号
 #DIM DYNAMIC 大会ランク; 0=初級、1=中級、2=上級、3=最上級
+#DIM DYNAMIC 報酬ランク
 #DIM DYNAMIC 승리数
 #DIM DYNAMIC 勝敗枠
-#DIM DYNAMIC 破者枠
+#DIM DYNAMIC 敗者枠
+#DIM DYNAMIC デュエル結果;1=勝ち、2=負け、3=引き分け
+
 PRINTFORMW 대회 랭크를 선택해 주세요
 PRINTL
 PRINTL [0] - 초급
-PRINTL [1] - 중급
-PRINTL [2] - 상급
-PRINTL [3] - 최상급
+IF CFLAG:MASTER:듀얼레이트 >= 4000
+	PRINTL [1] - 중급
+ELSE
+	SETCOLOR C_GRAY
+	PRINTL (1) - 중급（듀얼레이트 4000이상으로 개방）
+	RESETCOLOR
+ENDIF
+IF CFLAG:MASTER:듀얼레이트 >= 5000
+	PRINTL [2] - 상급
+ELSE
+	SETCOLOR C_GRAY
+	PRINTL (2) - 상급 （듀얼레이트 5000이상으로 개방）
+	RESETCOLOR
+ENDIF
+IF CFLAG:MASTER:듀얼레이트 >= 6000
+	PRINTL [3] - 최상급
+ELSE
+	SETCOLOR C_GRAY
+	PRINTL (3) - 최상급 （듀얼레이트 6000이상으로 개방）
+	RESETCOLOR
+ENDIF
 BINPUT
 大会ランク = RESULT
 PRINTFORML
 PRINTFORML
 PRINTFORMW 토너먼트를 시작합니다
 PRINTFORMW 대진표를 구축합니다
-破者枠 = RAND:4 + 4
+敗者枠 = RAND:4 + 4
 CALL SET_TOURNAMENT(大会ランク)
 
 CALL SET_TOURNAMENT_HYOU(승리数)
@@ -50,19 +71,22 @@ PRINTFORMW 1회전을 시작합니다
 ;一回戦듀얼
 依頼_덱편집불가 = 1
 CALL SET_NEXT_OPP(승리数)
-CALL CHOICE_DUEL_TYPE(210,1)
-IF RESULT != 1;負け	
+CALL DUEL_SYSTEM(1,210,1)
+デュエル結果 = RESULT
+SIF TARGET > 0
+	CALL DUEL_KAKE(デュエル結果,5)
+IF デュエル結果 != 1;負け	
 	RETURN 3
 ENDIF
 승리数 ++ 
 大会対戦結果:0 = 승리数
 FOR カウンタ,1,4
 	勝敗枠 = カウンタ * 2
-	IF INRANGE(破者枠, 4,5) && カウンタ == 2
-		大会対戦結果:破者枠 = 승리数
+	IF INRANGE(敗者枠, 4,5) && カウンタ == 2
+		大会対戦結果:敗者枠 = 승리数
 		CONTINUE
-	ELSEIF INRANGE(破者枠, 6,7) && カウンタ == 3
-		大会対戦結果:破者枠 = 승리数
+	ELSEIF INRANGE(敗者枠, 6,7) && カウンタ == 3
+		大会対戦結果:敗者枠 = 승리数
 		CONTINUE
 	ENDIF
 	IF RAND:2
@@ -77,8 +101,11 @@ CALL SET_TOURNAMENT_HYOU(승리数)
 PRINTFORMW 2회전을 시작합니다
 ;二回戦듀얼
 CALL SET_NEXT_OPP(승리数)
-CALL CHOICE_DUEL_TYPE(210,1)
-IF RESULT != 1
+CALL DUEL_SYSTEM(1,210,1)
+デュエル結果 = RESULT
+SIF TARGET > 0
+	CALL DUEL_KAKE(デュエル結果,5)
+IF デュエル結果 != 1
 	;負け
 	RETURN 3
 ENDIF
@@ -86,14 +113,17 @@ ENDIF
 PRINTFORML
 승리数 ++
 大会対戦結果:0 = 승리数
-大会対戦結果:破者枠 = 승리数
+大会対戦結果:敗者枠 = 승리数
 PRINTFORMW 2회전 결과를 표시합니다
 CALL SET_TOURNAMENT_HYOU(승리数)
 PRINTFORMW 결승전을 시작합니다
 ;決勝戦듀얼
 CALL SET_NEXT_OPP(승리数)
-CALL CHOICE_DUEL_TYPE(210,1)
-IF RESULT != 1
+CALL DUEL_SYSTEM(1,210,1)
+デュエル結果 = RESULT
+SIF TARGET > 0
+	CALL DUEL_KAKE(デュエル結果,5)
+IF デュエル結果 != 1
 	;負け
 	RETURN 3
 ENDIF
@@ -102,6 +132,11 @@ ENDIF
 大会対戦結果:0 = 승리数
 PRINTFORMW 결승전 결과를 표시합니다
 CALL SET_TOURNAMENT_HYOU(승리数)
+PRINTFORMW 우승 축하드립니다！
+PRINTFORMW 우승 보너스로 {(大会ランク+1) * 1000}의 DP와 {(大会ランク+1) * 200}의 듀얼 레이트를 상여합니다！
+PRINTFORMW 현재 자신의 듀얼레이트:{CFLAG:MASTER:듀얼레이트} + {(大会ランク+1) * 200}
+FLAG:듀얼포인트 += (大会ランク + 1) * 1000
+CFLAG:MASTER:듀얼레이트 += (大会ランク + 1) * 200
 
 ;終了
 RETURN 2
@@ -128,11 +163,10 @@ RETURN 0
 ;事前に덱を選ぶならその専用処理を用意する必要があるかも
 ;取りあえず連戦덱初期化
 連戦덱 = -1
-対戦枠:0 = MASTER
 VARSET 大会対戦結果, 0
-
 VARSET 対戦枠, -1
 VARSET 対戦상대덱, -1
+
 ;大会ランクによって名アリの캐릭터登場タイミングを分散
 IF 大会ランク >= 3
 	CALL TOURNAMENT_OPP_ENTRY(1,対戦枠,1)
@@ -154,6 +188,7 @@ ELSE
 	対戦枠:1 = -1
 	対戦상대덱:1 = RESULT
 ENDIF
+;PRINTFORML 対戦상대덱:1 = {対戦상대덱:1}
 IF 大会ランク >= 3
 	CALL TOURNAMENT_OPP_ENTRY(2,対戦枠,1)
 	対戦枠:2 = RESULT
@@ -283,18 +318,20 @@ CALL DECK_LIST(1)
 トーナメント자신덱 = RESULT
 連戦덱 = RESULT
 
+;PRINTFORML 連戦덱 = {連戦덱}
 
-@TOURNAMENT_OPP_ENTRY(出場番号,対戦상대,모브스위치)
+
+@TOURNAMENT_OPP_ENTRY(出場番号,対戦상대,이름없음스위치)
 #DIM DYNAMIC 出場番号
 #DIM DYNAMIC 対戦상대
 #DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC 캐릭터数
 #DIM DYNAMIC 상대덱
-#DIM DYNAMIC 모브스위치
+#DIM DYNAMIC 이름없음스위치
 #DIM DYNAMIC 듀얼리스트캐릭터, 10000
 
 ;모브じゃないなら캐릭터から選別
-IF 모브스위치 != 0
+IF 이름없음스위치 != 0
 	FOR 캐릭터_ID,1,CHARANUM
 		SIF TALENT:캐릭터_ID:듀얼리스트 != 1
 			CONTINUE
@@ -309,18 +346,20 @@ IF 모브스위치 != 0
 		GOTO INPUT_LOOP
 	RETURN 듀얼리스트캐릭터:対戦상대
 ;모브なら무작위로 덱選別
-ELSEIF 모브스위치 == 0
+ELSEIF 이름없음스위치 == 0
 	$INPUT_LOOP2
 	IF RAND:20
 		상대덱 = RAND:5000
 	ELSE
 		상대덱 = RAND:70 + 10000
 	ENDIF
+	VARSET RESULT
 	TRYCALLFORM DUELDECK_{상대덱}("存在確認")
 	IF RESULT == 1
 		;PRINTFORML 対戦상대덱:{出場番号+1} : {対戦상대덱}
 		RETURN 상대덱
 	ELSE
+		;PRINTFORML 対戦상대덱:{出場番号} : {상대덱} RESULT = {RESULT}
 		GOTO INPUT_LOOP2
 	ENDIF
 ENDIF

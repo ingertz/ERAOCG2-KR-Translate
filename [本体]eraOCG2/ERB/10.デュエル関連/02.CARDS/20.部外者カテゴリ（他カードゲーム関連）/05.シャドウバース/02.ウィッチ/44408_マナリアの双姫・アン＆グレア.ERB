@@ -1,0 +1,275 @@
+﻿@CARDNAME_44408,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 마나리아의 두 공주 앤&글레어
+	CASE "略称"
+		RESULTS = 앤&글레어
+	CASE "カテゴリ"
+		RESULTS:0 = 위치 클래스
+		RESULTS:1 = 마나리아
+		RESULTS:2 = 진화가능
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_44408(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RESULT:1 = 화염속성
+		RETURN 물속성
+	CASE "종족"
+		RESULT:1 = 마법사족
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 3200
+	CASE "성별"
+		RETURN 牝性
+	CASE "単一存在"
+		RETURN 1
+	CASE "生成カード"
+		RETURN 144408
+	CASE "추가日"
+		RETURN 250428
+	CASE "連動ID"
+		SELECTCASE RAND:2
+			CASE 0
+				RESULT:1 = 4409
+				RETURN 4408
+			CASE 1
+				RESULT:1 = 4408
+				RETURN 4409
+		ENDSELECT
+ENDSELECT
+
+RETURN 0
+@CARDSUMMON_44408(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+素材条件名前 = 마나리아 마법 공주 앤
+ELSEIF EX参照 >= 10
+素材条件名前 = 마나리아 용족 공주 글레어
+ENDIF
+
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,44408) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_44408(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "앤"↑"글레어"
+PRINTL ①: 이 카드명의 카드는 자신 필드에 1체만 앞면 표시로 존재할 수 없으며, "진화(각성)"은 1턴에 1번밖에 할 수 없다.
+CALLFORM CARD_ABLE(0,EX소환時)
+PRINTL ②: 이 카드가 융합 소환했을 경우에 발동할 수 있다.
+PRINTL 덱 외부에서 "앤의 대영령" 1체와 "글레어의 작열하는 화염" 1장을 패에 생성한다.
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ③: 자신 메인 페이즈에 1번만, 이 카드는 "진화"할 수 있다.
+PRINTL 그렇게 했을 경우, 이 카드의 공격력 수비력은 800 상승하고,
+PRINTL 자신의 LP는 2000 회복하고, 덱 외부에서 "두 공주의 대마법" 1장을 패에 생성한다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ④: 몬스터 존의 이 카드는 1턴에 1번, 전투 효과로는 파괴되지 않는다.
+
+
+@CARDCAN_44408(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,44408)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,覚醒발동)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_44408(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44408)
+	IF RESULT == 0
+		CALL CARD_GENERATE_HAND(듀얼리스트,114408)
+		CALL CARD_GENERATE_HAND(듀얼리스트,114409)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",800)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",800)
+		CALL CARD_GENERATE_HAND(듀얼리스트,144408)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"一破")
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+@CARDNAME_144408,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 두 공주의 대마법
+	CASE "略称"
+		RESULTS = 두 공주의 대마법
+	CASE "カテゴリ"
+		RESULTS:0 = 위치 클래스
+		RESULTS:1 = 마나리아
+ENDSELECT
+
+
+@CARD_144408(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常마법
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_144408(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,손패起動,마함起動)
+PRINTL ①: 자신의 묘지 / 제외 상태에 "위치 클래스" 카드와 "마나리아" 카드가 10장 이상 존재할 경우에 발동할 수 있다.
+PRINTL 상대 필드의 몬스터 전부를 파괴한다.
+PRINTL 그 후, 자신의 묘지 / 제외 상태인 "마나리아" 몬스터를 가능한 한 특수 소환한다. (동명 카드는 1장까지)
+
+@CARDCAN_144408(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,144408)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 || 종류 == 마함起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ:0 = 위치 클래스
+	효과条件カテゴリ:1 = 마나리아
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 10
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_144408(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 손패起動 || 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,144408)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 마나리아
+		효과条件固名前選択 = 1
+		효과条件複数 = 99
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+

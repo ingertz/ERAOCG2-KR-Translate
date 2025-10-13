@@ -36,6 +36,9 @@
 #DIM DYNAMIC 除去成功数
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 複数カウンタ
+#DIM DYNAMIC 설정場所
+#DIM DYNAMIC 攻撃力판정
+
 VARSET 효과추가종류除去보존
 VARSET 효과추가カテ보존
 
@@ -381,6 +384,46 @@ SELECTCASE 효과範囲
 		SIF RESULT != 1
 			RETURN 0
 		RETURN 1
+	CASE "最高自動処理"
+		攻撃力판정 = -1
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%대상者%_필드:カウンタ") == -1
+				CONTINUE
+			SIF GETVAR(@"%대상者%_MZ_表:カウンタ") == 3
+				CONTINUE
+			IF 攻撃力판정 < GETVAR(@"%대상者%_MZ_攻:カウンタ")
+				攻撃力판정 = GETVAR(@"%대상者%_MZ_攻:カウンタ")
+				설정場所 = カウンタ
+			ENDIF
+		NEXT
+		CALL CARD_REMOVAL_ABLE(대상者,듀얼리스트,효과範囲,설정場所,除去種,カードID)
+		SIF RESULT != 1
+			RETURN 0
+		CALL CARD_REMOVAL_AFTERMATH(대상者,듀얼리스트,설정場所,除去種,カードID,修正値)
+		SIF RESULT != 1
+			RETURN 0
+		RETURN 1
+	CASE "最低自動処理"
+		攻撃力판정 = 9999999
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%대상者%_필드:カウンタ") == -1
+				CONTINUE
+			SIF GETVAR(@"%대상者%_MZ_表:カウンタ") == 3
+				CONTINUE
+			IF 攻撃力판정 > GETVAR(@"%대상者%_MZ_攻:カウンタ")
+				攻撃力판정 = GETVAR(@"%대상者%_MZ_攻:カウンタ")
+				설정場所 = カウンタ
+			ENDIF
+		NEXT
+		CALL CARD_REMOVAL_ABLE(대상者,듀얼리스트,효과範囲,설정場所,除去種,カードID)
+		SIF RESULT != 1
+			RETURN 0
+		CALL CARD_REMOVAL_AFTERMATH(대상者,듀얼리스트,설정場所,除去種,カードID,修正値)
+		SIF RESULT != 1
+			RETURN 0
+		RETURN 1
+
+
 ;――――――――――――――――――――――――――――――발동無効―――――――――――――――――――――――――
 	CASE "발동無効"
 		選択カード = 効後_設場所:(処理中番号 - 1)

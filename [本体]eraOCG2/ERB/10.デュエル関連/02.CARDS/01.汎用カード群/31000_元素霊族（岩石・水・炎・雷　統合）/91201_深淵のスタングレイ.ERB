@@ -1,0 +1,126 @@
+﻿@CARDNAME_91201,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 심연의 스턴그레이
+	CASE "略称"
+		RESULTS = 스턴그레이
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_91201(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "속성"
+		RETURN 빛속성
+
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1900
+	CASE "守備力"
+		RETURN 0
+	CASE "分割"
+		RETURN 효과モン
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_91201(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(1, 마함起動)
+PRINTL ①：このカードは발동後、②③の효과を持つ효과モンスターとしてモンスターゾーンに특수소환する（함정カードとしても扱う）。
+PRINTL （원소정령족・光・星５・攻１９００／守０）
+CALLFORM CARD_ABLE(2, 지속효과)
+PRINTL ②：モンスターゾーンに存在するこのカードは戦闘では破壊されない。
+CALLFORM CARD_ABLE(3, 戦破壊→묘지)
+PRINTL ③：モンスターゾーンに存在するこのカードが상대によって破壊された場合、상대フィールドの表側표시モンスター１体を대상として발동できる。
+PRINTL ターン終了時まで、そのモンスターの攻撃力を０にし、효과を無効にする。
+
+
+@CARDCAN_91201(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 91201)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트, 91201, "마함")
+	SIF RESULT == 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류, "破壊", "戦闘破壊")
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所, 91201)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_91201(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 91201)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "마함", 場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "戦耐")
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 91201)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		효과추가종류 = 11
+		CALL CARD_REMOVAL_BASIC(듀얼리스트, "필드単体", 場所, "無効")
+	ENDIF
+ENDIF
+
+

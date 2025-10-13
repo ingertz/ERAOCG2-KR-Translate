@@ -1,0 +1,193 @@
+@CARDNAME_71670,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 설명하지！메가 콜로니는 악의 범죄조직이다！
+	CASE "略称"
+		RESULTS = 거악 메가 콜로니
+	CASE "カテゴリ"
+		RESULTS:0 = 메가 콜로니
+		RESULTS:4 = 뱅가드
+ENDSELECT
+
+@CARD_71670(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_71670(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_71670(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：손패・フィールド（表側표시）の「그레도라」モンスター以外の곤충족モンスター１体を묘지に送り、
+PRINTL 덱から「메가 콜로니」カード１体を손패に加える。
+PRINTL その後、손패のレベル８以下の「메가 콜로니」モンスター１体を특수소환できる。
+CALL CARD_ABLE(2,묘지起動)
+PRINTL ②：자신メインフェイズに、상대フィールドのカード１枚を대상として발동できる。
+PRINTL 묘지のこのカードを제외し、손패・フィールド（表側표시）の「그레도라」モンスター以外の곤충족モンスター１体を묘지に送り、
+PRINTL 대상のカードを破壊する。
+RESETCOLOR
+
+@CARDCAN_71670(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ数
+
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71670)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,71670)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET	
+	효과範囲필드 = 1
+	효과範囲손패 = 1
+	효과条件표시 = 表側표시
+	효과条件固カテゴリ = 그레도라
+	효과条件종족 = 곤충족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET	
+	효과範囲덱 = 1
+	효과条件カテゴリ = 메가 콜로니
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,71670)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET	
+	효과範囲필드 = 1
+	SIF モンスター数(듀얼리스트) < 5
+		효과範囲손패 = 1
+	효과条件표시 = 表側표시
+	효과条件固カテゴリ = 그레도라
+	효과条件종족 = 곤충족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET	
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+ENDIF
+
+@CARDEFFECT_71670(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名
+#DIM DYNAMIC 条件Ａ
+#DIM DYNAMIC 条件Ｂ
+#DIM DYNAMIC 選択효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71670,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET	
+		효과範囲필드 = 1
+		효과範囲손패 = 1
+		효과条件표시 = 表側표시
+		효과条件固カテゴリ = 그레도라
+		효과条件종족 = 곤충족
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET	
+			효과範囲덱 = 1
+			효과条件カテゴリ = 메가 콜로니
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET	
+				효과範囲손패 = 1
+				효과条件소환可 = 1
+				효과条件カテゴリ = 메가 콜로니
+				CALL 효과条件レベル_ADV(8,"以下")
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET	
+					효과範囲손패 = 1
+					효과条件カテゴリ = 메가 콜로니
+					CALL 효과条件レベル_ADV(8,"以下")
+					효과条件任意 = 1
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71670,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET	
+		효과範囲필드 = 1
+		효과範囲손패 = 1
+		효과条件표시 = 表側표시
+		효과条件固カテゴリ = 그레도라
+		효과条件종족 = 곤충족
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET	
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"묘지")
+		ENDIF
+	ENDIF
+ENDIF

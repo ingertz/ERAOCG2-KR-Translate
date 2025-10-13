@@ -1,0 +1,129 @@
+﻿@CARDNAME_34601,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 프린트 크래거
+	CASE "略称"
+		RESULTS = 프린트 크래거
+	CASE "カテゴリ"
+		RESULTS:0 = 화석
+ENDSELECT
+
+
+@CARD_34601(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 1600
+	CASE "추가日"
+		RETURN 250927
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34601(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환に成功した場合に발동できる。
+PRINTL 자신の손패を１枚選んで捨て、ＥＸ덱から「화석」융합モンスター１体を묘지へ送る。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：フィールドのこのカードを묘지へ送って발동できる。
+PRINTL 상대に５００ダメージを与える。
+PRINTL 자신の묘지に「화석융합－파슬 퓨전」が存在する場合、
+PRINTL さらに제외されている자신の「화석」カード１枚を選んで묘지に戻す事ができる。
+
+@CARDCAN_34601(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34601)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,34601)
+		RETURN 0
+	;손패が1枚以上
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;EX덱に「화석」융합モンスターが存在する
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
+	효과条件カテゴリ = 화석
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,34601)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34601(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34601, 1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件종류 = 융합
+			효과条件カテゴリ = 화석
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34601, 2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",500,1)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 화석융합－파슬 퓨전
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲제외 = 1
+			효과条件カテゴリ:0 = 화석
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

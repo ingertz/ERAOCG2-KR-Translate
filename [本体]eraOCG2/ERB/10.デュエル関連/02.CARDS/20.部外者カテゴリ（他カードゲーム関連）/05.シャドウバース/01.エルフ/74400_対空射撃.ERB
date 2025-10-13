@@ -1,0 +1,125 @@
+﻿@CARDNAME_74400,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 대공사격
+	CASE "略称"
+		RESULTS = 대공사격
+	CASE "カテゴリ"
+		RESULTS:0 = 엘프 클래스
+		RESULTS:1 = 요정
+		RESULTS:4 = Shadowverse
+ENDSELECT
+
+
+@CARD_74400(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 250321
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_74400(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：자신의 턴에 발동할 수 있다.
+PRINTL 자신의 앞면 표시인 "엘프 클래스"카드 １장을 패로 되돌린다。
+PRINTL 그 후、상대 몬스터 １장을 파괴한다。
+PRINTL 그 후、패에서 레벨３ 이하의 "엘프 클래스" 몬스터 １장을 소환할 수 있다。
+
+@CARDCAN_74400(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,74400)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,74400)
+		RETURN 0
+	IF ゾーン == "손패"
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ:0 = 엘프 클래스
+	효과条件표시 = 10
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_74400(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,74400,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件カテゴリ:0 = 엘프 클래스
+		효과条件표시 = 10
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+
+
+
+			CALL FULLRESET
+			CALLFORM 효과条件レベル_ADV(3,"以下")
+			효과条件カテゴリ:0 = 엘프 클래스
+			효과条件종류 = モン全般
+			효과条件任意 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",1)
+			ENDIF
+
+		ENDIF
+	ENDIF
+ENDIF

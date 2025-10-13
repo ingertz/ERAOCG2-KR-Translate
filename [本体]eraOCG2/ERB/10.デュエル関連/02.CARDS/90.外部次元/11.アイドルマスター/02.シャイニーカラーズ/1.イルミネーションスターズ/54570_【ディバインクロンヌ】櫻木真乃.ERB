@@ -1,0 +1,353 @@
+@CARDNAME_54570,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 【디바인크론】사쿠라기 마노
+	CASE "略称"
+		RESULTS = ＤＣ마노
+	CASE "カテゴリ"
+		RESULTS:0 = 일루미네이션 스타즈
+		RESULTS:1 = 사쿠라기 마노
+		RESULTS:2 = 샤이니 컬러즈
+	CASE "맥시멈"
+		RESULTS = 일루미네 코어
+ENDSELECT
+
+@CARD_54570(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 4660
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_54570(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL このカード名のカードは１ターンに１度、
+PRINTL 자신フィールドの「일루미네이션 스타즈」마법・함정カードの個別카운터を１０個取り除き、
+PRINTL 자신モンスターゾーンの中央に存在する「사쿠라기 마노」モンスター１体を묘지に送った場合にのみ攻撃표시で특수소환できる。
+PRINTL このカード名の①③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：このカードがモンスターゾーンの中央に存在する場合、
+PRINTL このカードと隣接する「카자노 히오리」「하치미야 메구루」モンスターと맥시멈状態になれる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：자신フィールドの맥시멈状態の「카자노 히오리」「하치미야 메구루」モンスターは攻撃力・守備力が１５００アップし、完全耐性を得る。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに발동できる。
+PRINTL 자신フィールドの「카자노 히오리」「하치미야 메구루」モンスターの内１体を손패に戻す。
+PRINTL その後、손패・묘지から「카자노 히오리」「하치미야 메구루」モンスターの内、
+PRINTL この효과で손패に戻したカード名以外かつそのカードと同じカテゴリのモンスター１体を攻撃표시で특수소환する。
+
+@CARDCAN_54570(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 存在ひおり,5
+#DIM DYNAMIC 存在めぐる,5
+#DIM DYNAMIC 条件달성ひおり
+#DIM DYNAMIC 条件달성めぐる
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54570)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,54570)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,54570)
+	SIF RESULT == 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_필드:2") < 0
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"사쿠라기 마노")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 일루미네이션 스타즈
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT:9 < 10
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,54570)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	FOR カウンタ, 0, 5
+		選択カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+		SIF 選択カードID < 1
+			CONTINUE
+		TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+		IF MATCH(RESULTS,"카자노 히오리")
+			存在ひおり:カウンタB = 選択カードID
+			カウンタB++
+		ELSEIF MATCH(RESULTS,"하치미야 메구루")
+			存在めぐる:カウンタC = 選択カードID
+			カウンタC++
+		ENDIF
+	NEXT
+	IF カウンタB
+		FOR カウンタ, 0, VARSIZE("存在ひおり")
+			SIF 存在ひおり:カウンタ < 1
+				CONTINUE
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件固ID:カウンタ = 存在ひおり:カウンタ
+			효과条件カテゴリ = 카자노 히오리
+			효과条件소환可 = 2
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				条件달성ひおり = 1
+				BREAK
+			ENDIF
+		NEXT
+	ENDIF
+	IF カウンタC
+		FOR カウンタ, 0, VARSIZE("存在めぐる")
+			SIF 存在めぐる:カウンタ < 1
+				CONTINUE
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件固ID:カウンタ = 存在めぐる:カウンタ
+			효과条件カテゴリ = 하치미야 메구루
+			효과条件소환可 = 2
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				条件달성めぐる = 1
+				BREAK
+			ENDIF
+		NEXT
+	ENDIF
+	SIF !条件달성ひおり && !条件달성めぐる
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 맥시멈条件
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL CARD_CHECK_MAXX(듀얼리스트,ゾーン,場所,"일루미네 파츠")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54570(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
+#DIM DYNAMIC カウンタD
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 存在ひおり,5
+#DIM DYNAMIC 存在めぐる,5
+#DIM DYNAMIC 要求個数
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 条件달성ひおり
+#DIM DYNAMIC 条件달성めぐる
+#DIM DYNAMIC 候補カード,10
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54570,1)
+	IF RESULT == 0
+		要求個数 = 10
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT:9 < 要求個数
+			PRINTFORMW 個別카운터の総数が必要な個数に足りなくなりました
+			RETURN 0
+		ENDIF
+		DO
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲마함 = 1
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件個Ｃ所持 = 999
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				CALL CARD_SELECT(듀얼리스트,RESULT)
+				CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+				要求個数 --
+			ELSE
+				BREAK
+			ENDIF
+		LOOP 要求個数 > 0
+		IF 要求個数 == 0
+			CALL FULLRESET
+			CALL CARD_DISPOSE(듀얼리스트,"필드",2)
+			IF RESULT == 1
+				CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所,"攻撃표시")
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	FOR カウンタ, 0, 5
+		選択カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+		TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+		IF MATCH(RESULTS,"카자노 히오리") || MATCH(RESULTS,"하치미야 메구루")
+			TRYCALLFORM CARDCAN_{選択カードID}(듀얼리스트,맥시멈条件,"필드",カウンタ)
+			IF RESULT == 1
+				CALL STATCHANGE_EFFECT(듀얼리스트,"自身",カウンタ,"モ耐")
+				CALL STATCHANGE_EFFECT(듀얼리스트,"自身",カウンタ,"魔耐")
+				CALL STATCHANGE_EFFECT(듀얼리스트,"自身",カウンタ,"함정耐")
+			ENDIF
+		ENDIF
+	NEXT
+ELSEIF 종류 == 攻守変動
+	FOR カウンタ, 0, 5
+		選択カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+		TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+		IF MATCH(RESULTS,"카자노 히오리") || MATCH(RESULTS,"하치미야 메구루")
+			TRYCALLFORM CARDCAN_{選択カードID}(듀얼리스트,맥시멈条件,"필드",カウンタ)
+			IF RESULT == 1
+				CALL STATCHANGE_BASIC(듀얼리스트,"自身",カウンタ,1000,1000)
+			ENDIF
+		ENDIF
+	NEXT
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54570,2)
+	IF RESULT == 0
+		FOR カウンタ, 0, 5
+			選択カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+			TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+			IF MATCH(RESULTS,"카자노 히오리")
+				存在ひおり:カウンタB = 選択カードID
+				カウンタB++
+			ELSEIF MATCH(RESULTS,"하치미야 메구루")
+				存在めぐる:カウンタC = 選択カードID
+				カウンタC++
+			ENDIF
+		NEXT
+		IF カウンタB
+			FOR カウンタ, 0, VARSIZE("存在ひおり")
+				SIF 存在ひおり:カウンタ < 1
+					CONTINUE
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲묘지 = 1
+				효과条件固ID:カウンタ = 存在ひおり:カウンタ
+				효과条件カテゴリ = 카자노 히오리
+				효과条件소환可 = 2
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					条件달성ひおり = 1
+					候補カード:カウンタD = 存在ひおり:カウンタ
+					カウンタD++
+				ENDIF
+			NEXT
+		ENDIF
+		IF カウンタC
+			FOR カウンタ, 0, VARSIZE("存在めぐる")
+				SIF 存在めぐる:カウンタ < 1
+					CONTINUE
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲묘지 = 1
+				효과条件固ID:カウンタ = 存在めぐる:カウンタ
+				효과条件カテゴリ = 하치미야 메구루
+				효과条件소환可 = 2
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					条件달성めぐる = 1
+					候補カード:カウンタD = 存在めぐる:カウンタ
+					カウンタD++
+				ENDIF
+			NEXT
+		ENDIF
+		IF 条件달성ひおり || 条件달성めぐる
+			CALL FULLRESET
+			SIF 条件달성ひおり
+				효과条件カテゴリ = 카자노 히오리
+			IF 条件달성めぐる
+				IF 효과条件カテゴリ != ""
+					효과条件カテゴリ:1 = 하치미야 메구루
+				ELSE
+					효과条件カテゴリ:0 = 하치미야 메구루
+				ENDIF
+			ENDIF
+			FOR カウンタ, 0, カウンタD
+				SIF 候補カード:カウンタ < 1
+					BREAK
+				효과条件ID:カウンタ = 候補カード:カウンタ
+			NEXT
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+			IF RESULT != 9999
+				選択カードID = RESULT:99
+				CALL CARD_DISPOSE(듀얼리스트,"필드",RESULT,손패行き)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲손패 = 1
+					효과範囲묘지 = 1
+					효과条件固ID = 選択カードID
+					TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+					IF MATCH(RESULTS,"카자노 히오리")
+						효과条件カテゴリ = 카자노 히오리
+					ELSEIF MATCH(RESULTS,"하치미야 메구루")
+						효과条件カテゴリ = 하치미야 메구루
+					ENDIF
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"攻撃표시")
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

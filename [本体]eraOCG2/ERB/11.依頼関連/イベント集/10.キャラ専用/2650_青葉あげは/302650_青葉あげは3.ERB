@@ -1,0 +1,274 @@
+@IRAI_EVENT_302650(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2650-03)アイツにアンタの何がわかる！
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_学校内
+	CASE "詳細"
+		PRINTL あげはと楽しく会話しましょう。
+		PRINTL 
+		PRINTL 報酬：5000DP
+	CASE "条件"
+		SIF 依頼_完了횟수:202650 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2650):호감도 < 1000
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2650):반발각인 > 0
+			RESULTS = 今の彼女と会うのは得策じゃない…분노が収まるのを待とう。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_302650(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC ツァンディレ
+
+이벤트主 = NO_TO_CHARANUM(2650)
+ツァンディレ = NO_TO_CHARANUM(2656)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 学園の中庭で、あなたは青葉あげはと会話している。
+	PRINTFORML 最近のデュエルについて話していると、彼女は珍しく楽しそうに笑っている。
+	PRINTFORMW 「そういえば、この前のアドバイス、役に立った？」
+
+	PRINTFORML あげはは少し照れながらも、嬉しそうに話を続ける。
+	PRINTFORML 「まあ、私のアドバイスだから当然よね」
+	PRINTFORMW そんな和やかな雰囲気の中、足音が近づいてくる。
+
+    IF CFLAG:ツァンディレ:면식 == 0
+	    PRINTFORML 振り返ると、一人の少女が歩いてくるのが見えた。
+        CALL SYOTAIMEN(ツァンディレ)
+    ELSE
+	    PRINTFORML 振り返ると、ツァン・ディレが歩いてくるのが見えた。
+    ENDIF
+	PRINTFORML 彼女はあなたたちの様子を見て、足を止める。
+	PRINTFORMW あげはの表情が少し硬くなった。
+
+	; ツァン・ディレの호감도による분기
+	IF CFLAG:NO_TO_CHARANUM(2656):호감도 <= 100 && TALENT:NO_TO_CHARANUM(2656):연모 == 0
+		PRINTFORML ツァン・ディレはあなたを一瞥し。
+		PRINTFORML 「あげは、あんたも物好きね」
+		PRINTFORMW 「そんな得体の知れない部外者と何を話しているの？」
+
+		PRINTFORML その言葉に、あげはの表情が一変する。
+		PRINTFORML 普段の自信なさげな様子は消え、彼女の目に분노の炎が宿る。
+		PRINTFORMW 「……アンタに、この人の何がわかるっていうのよ！」
+
+		依頼_進行보존:302650 = 1
+	ELSEIF CFLAG:NO_TO_CHARANUM(2656):호감도 <= 1000 && TALENT:NO_TO_CHARANUM(2656):연모 == 0
+		PRINTFORML ツァン・ディレは少し複雑な表情を見せる。
+		PRINTFORML 「あげは…最近この人とよく一緒にいるわね」
+		PRINTFORMW 「別に気にしてるわけじゃないけど、大丈夫なの？」
+
+		PRINTFORML あげははその言葉の裏を読み取ったのか、眉をひそめる。
+		PRINTFORML 「何が大丈夫じゃないって言うのよ」
+		PRINTFORMW 「この人は私が認めた人なんだから！」
+
+		依頼_進行보존:302650 = 2
+	ELSE
+		PRINTFORML ツァン・ディレは明らかに不機嫌そうな表情を見せる。
+		PRINTFORML 「ちょっと、%CALLNAME:MASTER%」
+		PRINTFORMW 彼女はあなたに向き直る。
+
+		PRINTFORML 「私を差し置いて、あげはと親しくしているようだけど」
+		PRINTFORML 「浮気なんてしてないでしょうね？」
+		PRINTFORMW ツァン・ディレの言葉に、あげはは困惑する。
+
+		PRINTFORML 「え、えーっと…浮気って何の話？」
+		PRINTFORML あげはは戸惑いながらも、あなたを見つめる。
+		PRINTFORMW 「でも、この人を疑うなんて失礼よ！」
+
+		依頼_進行보존:302650 = 3
+	ENDIF
+
+	PRINTFORML ツァン・ディレは少し驚いたような表情を見せる。
+	PRINTFORML 「い、いや、別にそんな意味じゃ…」
+    PRINTFORML 「じゃなくて！と、とにかく…その人があなたに相応しいか」
+	PRINTFORMW 「デュエルで証明してみな…」
+
+	PRINTFORML その時、近くにいた男子生徒が割って入る。
+	PRINTFORML 「ツァン・ディレ様を侮辱するなんて許せない！」
+	PRINTFORMW 「俺が代わりに懲らしめてやる！」
+
+	PRINTFORML 乱入してきた男子生徒は学園内でもそこそこ名の知れたデュエリストらしい。
+	PRINTFORML 「ツァン・ディレ様に失礼な태도を取る奴は俺が許さない！」
+	PRINTFORMW 彼は興奮してデュエルディスクを構える。
+
+	PRINTFORML あげはは心配そうにあなたを見つめる。
+	PRINTFORMW 「大丈夫…？この人、結構強いって噂よ」
+	PRINTFORML ツァン・ディレは「な、何なの」と慌てたが、
+    PRINTFORMW やがて面倒そうな顔で腕を組んで様子を見ている。
+
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE()
+
+	IF RESULT == 0
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML 男子生徒は得意げに胸を張る。
+		PRINTFORMW 「ツァン・ディレ様を侮辱した罰よ！」
+
+		PRINTFORML あげはは申し訳なさそうに俯く。
+		PRINTFORML ツァン・ディレも少し複雑な表情を見せている。
+
+		PRINTFORML その時、学園の風紀委員が駆けつける。
+		PRINTFORML 「こら！学園内での無許可デュエルは禁止よ！」
+		PRINTFORMW あなたは学園から追い出されることになった。
+
+		PRINTFORMW この件で両方との関係が悪化してしまった…
+		CALL EVENT_FAVUP(이벤트主,-100)
+		CALL EVENT_FAVUP(ツァンディレ,-100)
+		RETURN 3
+	ENDIF
+
+    PRINTFORML デュエルに승리した。
+    PRINTFORML 男子生徒は悔しそうに歯ぎしりする。
+    PRINTFORMW 「く、くそ…覚えてろよ！」
+
+    PRINTFORML 負け惜しみを言いながら逃げていく男子生徒。
+    PRINTFORML ツァン・ディレは呆れた顔で「負けるとすぐ逃げるからモテないじゃないの？」と嘆いた。
+    PRINTFORMW そして、あなたに向き直る。
+
+    PRINTFORML 「少しはやるようね」
+    PRINTFORML ツァン・ディレは少し驚いた表情を見せる。
+    PRINTFORMW 「私が直接상대をしてあげる」
+
+    依頼_進行보존:302650 += 10
+    TARGET = ツァンディレ
+    CALL CHOICE_DUEL_TYPE(302650,1)
+    依頼_進行보존:302650 -= 10
+
+	IF RESULT == 1
+		PRINTFORML ツァン・ディレとのデュエルに승리した。
+		
+		IF 依頼_進行보존:302650 == 1
+			PRINTFORML 「……認めてあげる」
+			PRINTFORML ツァン・ディレは少し悔しそうに言う。
+			PRINTFORMW 「でも、次は負けないから」
+		ELSEIF 依頼_進行보존:302650 == 2
+			PRINTFORML 「まあ、悪くはないわね」
+			PRINTFORML ツァン・ディレは素끼なく言う。
+			PRINTFORMW 「あげはを大切にしなさいよ」
+		ELSE
+			PRINTFORML 「……今回は負けを認めるわ」
+			PRINTFORML ツァン・ディレは少し照れながら言う。
+			PRINTFORMW 「でも、浮気は絶対に許さないから」
+		ENDIF
+
+		PRINTFORML ツァン・ディレはそう言い残して立ち去る。
+		PRINTFORML 残されたあなたとあげは。
+		PRINTFORMW 彼女は気まずそうに顔を赤らめている。
+	ELSE
+		PRINTFORML ツァン・ディレとのデュエルに패배した。
+		PRINTFORML 「やっぱりね」
+		PRINTFORMW ツァン・ディレは만족そうに微笑む。
+
+		PRINTFORML その時、学園の風紀委員が駆けつける。
+		PRINTFORML 「学園内での無許可デュエルは禁止だ！」
+		PRINTFORMW あなたは学園から追い出されることになった。
+
+		PRINTFORMW この件で両方との関係が悪化してしまった…
+		CALL EVENT_FAVUP(이벤트主,-100)
+		CALL EVENT_FAVUP(ツァンディレ,-100)
+		RETURN 3
+	ENDIF
+
+	PRINTFORML 「ご、ごめん……」
+	PRINTFORML あげはは申し訳なさそうに俯く。
+	PRINTFORMW 「私、またお節介っていうか、でしゃばって……」
+
+	PRINTFORML 「でも、アンタのこと悪く言われるの、我慢できなくて……」
+	PRINTFORML 彼女は顔を真っ赤にしながら続ける。
+	PRINTFORMW 「私、アンタのこと……大切に思ってるから」
+
+	PRINTFORML 「あ、あー！今のは忘れて！」
+	PRINTFORML あげはは慌てて手を振る。
+	PRINTFORMW 「ただのお節介よ！本当に、それだけだから！」
+
+	PRINTFORML しかし、彼女の瞳には確かな想いが宿っていた。
+	PRINTFORML あなたを守ろうとした彼女の行動は、
+	PRINTFORMW 普段の弱気な彼女からは想像できないほど勇敢だった。
+
+	PRINTL
+	PRINTL [0] - 「ありがとう、守ってくれて」
+	PRINTL [1] - 「君の気持ちが嬉しい」
+	PRINTL [2] - 「お節介でも構わない」
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは素直に感謝の気持ちを伝えた。
+		PRINTFORML 「え、えーっと…当然よ！」
+		PRINTFORMW あげはは照れながらも嬉しそうに微笑む。
+		CALL EVENT_FAVUP(이벤트主,200)
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは彼女の気持ちを受け取った。
+		PRINTFORML 「き、気持ちって…そんなんじゃないから！」
+		PRINTFORMW あげはは顔を真っ赤にして否定する。
+		CALL EVENT_FAVUP(이벤트主,250)
+	ELSE
+		PRINTFORML あなたは彼女のお節介を受け入れた。
+		PRINTFORML 「そ、そう…なら、これからもお節介焼かせてもらうから」
+		PRINTFORMW あげはは少し安心したような表情を見せる。
+		CALL EVENT_FAVUP(이벤트主,180)
+	ENDIF
+
+	PRINTFORML 「今度からは、もう少し上手くやるから」
+	PRINTFORML あげはは小さく呟く。
+	PRINTFORMW 「アンタを守るために、私ももっと強くならないと」
+
+	PRINTFORML その日から、あげはの中で何かが変わったようだった。
+	PRINTFORML あなたのために戦う彼女の姿は、
+	PRINTFORMW とても美しく、そして頼もしく見えた。
+
+	CALL EVENT_TIMER(180)
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_302650
+CALL DP_GET(5000)
+
+@IRAI_DECK_302650(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+    RETURN 2656
+
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_302650
+
+IF 依頼_進行보존:302650 >= 10
+	PRINTFORML 
+    SIF 依頼_進行보존:302650 == 11
+	    PRINTFORML ツァン・ディレ「あげはを守れるかどうか、確かめてあげましょう」
+    SIF 依頼_進行보존:302650 == 12
+	    PRINTFORML ツァン・ディレ「成り行きでこうなったけど、勝負なら勝ちますわよ」
+    SIF 依頼_進行보존:302650 == 13
+	    PRINTFORML ツァン・ディレ「…ふん！」
+	PRINTFORMW 
+ELSE
+	PRINTFORML 
+	PRINTFORML 男子生徒「ツァン・ディレ様を侮辱した罪、身をもって知れ！」
+	PRINTFORML ツァン・ディレ「…いや、あの…」
+	PRINTFORMW 
+ENDIF
