@@ -3,77 +3,77 @@
 ;※※※※※※※※※※※※※※※※※※※※※※※※※
 ;==================================================
 ;300,会話
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗 -2=大失敗（TARGETがMASTERより교양が4以上高い)
-;TCVAR:302(0=会話可能 1=非연모時会話不能)
-;MARK:반발각인(3以上=会話不能)(4以上はバグ
-;TCVAR:泥酔(1=通常成功or大失敗)
-;CFLAG:우후후(조교中の会話)
-;CFLAG:변기화(肉便器の時の会話)
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패 -2=대실패 (TARGET이 MASTER보다 교양이 4 이상 높음)
+;TCVAR:302(0=대화 가능 1=비연모 시 대화 불가능)
+;MARK:반발각인(3 이상=대화 불가능)(4 이상은 버그)
+;TCVAR:만취(1=통상 성공 or 대실패)
+;CFLAG:우후후(조교 중의 대화)
+;CFLAG:변기화(육변기일 때의 대화)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_300
-;成否판정
-;TFLAG:192(-2=コマンド終了、-1＝強制失敗、0=COM依存、1=強制成功or大成功
+;성패판정
+;TFLAG:192(-2=커맨드 종료, -1=강제 실패, 0=COM 의존, 1=강제 성공 or 대성공)
 TFLAG:192 =0
 
 @M_KOJO_MESSAGE_COM_K2030_300
-;コマンド共通メッセージ(TRAIN_MESSAGE) 
-;削除すると「～話をした。」とかが消えます。また、削除した場合は自動で구상色が付きません。
+;커맨드 공통 메시지(TRAIN_MESSAGE) 
+;삭제하면 '~와(과) 이야기를 했다.' 같은 문장이 사라집니다. 또한, 삭제했을 경우 자동으로 구상색이 적용되지 않습니다.
 CALL TRAIN_MESSAGE
-;구상メイン呼出
+;구상 메인 호출
 CALL M_KOJO_MESSAGE_COM_K2030_300_1
 RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_300_1
 #DIM DYNAMIC 호감도修正
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-;はじめて会話
+;첫 대화
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「%CSTR:TARGET:MASCALL%と話すことなんてないわ」
-		PRINTFORMW バッサリである。泣いた
-		PRINTFORML 「……あぁ、わるいわね。わたし、ニンゲンとあまり関わりたくなかったから。正直何を話せばいいかわからないのよ」
-		PRINTFORMW 「……わたしのことが知りたい？　酔狂ね、まぁもうこちらが何者か知ってるみたいだし、教えてあげるわ、わたしたち魔妖のことを」
+		PRINTFORMW 「%CSTR:TARGET:MASCALL%(와)과 할 말 따윈 없어.」
+		PRINTFORMW 단칼에 잘라버린다. 울었다.
+		PRINTFORML 「……아아, 미안. 나, 인간과는 별로 엮이고 싶지 않아서. 솔직히 무슨 말을 해야 할지 모르겠어.」
+		PRINTFORMW 「……나에 대해 알고 싶어? 별나네. 뭐, 이쪽이 어떤 자인지 이미 아는 것 같으니, 가르쳐주지, 우리 마요에 대해서.」
 		RETURN 1
 	ENDIF
 
-	;호감도修正、通常（연모系陥落なし）で５
+	;호감도 수정, 통상 (연모계 함락 없음)으로 5
 	호감도修正 = 15
-	;TARGETが【애처】だったら호감도修正に＋２
+	;TARGET이 【애처】라면 호감도 수정에 +2
 	SIF TALENT:TARGET:애처
 		호감도修正 += 2
-	;TARGETが【親愛】だったら호감도修正に＋２
+	;TARGET이 【친애】라면 호감도 수정에 +2
 	SIF TALENT:TARGET:연모 == 2
 		호감도修正 += 5
-	;TARGETが【연모】を得ていたら호감도修正に＋１
+	;TARGET이 【연모】를 얻었다면 호감도 수정에 +1
 	SIF TALENT:TARGET:연모 >= 1
 		호감도修正 += 6
-	;「RAND:n」n面ダイスを振る
-	;우후후中の会話
+	;「RAND:n」n면 다이스를 굴림
+	;우후후 중의 대화
 	IF CFLAG:TARGET:우후후
 		SELECTCASE RAND:3 + 1
 			CASE 1
 				IF TALENT:TARGET:연모 || TALENT:TARGET:애처 
-					PRINTFORMW 「ねぇ、あたま、撫でてくれる……？　ふふ、嬉しい。%CSTR:TARGET:MASCALL%のためならがんばれそうだわ」
+					PRINTFORMW 「있지, 머리, 쓰다듬어 줄래……? 후훗, 기뻐. %CSTR:TARGET:MASCALL%를 위해서라면 힘낼 수 있을 것 같아.」
 				ELSEIF TALENT:TARGET:굴복됨 
-					PRINTFORMW 「んっ……❤どうしたの？　わたしを慮るなんて%CSTR:TARGET:MASCALL%らしくないですよ……❤」
+					PRINTFORMW 「응……❤ 왜 그러세요? 저를 헤아려주시다니 %CSTR:TARGET:MASCALL%답지 않아요……❤」
 				ELSE
-					PRINTFORMW 「んっ……いいわよ。あんたの情熱、せいぜいぶつけてみなさい」
+					PRINTFORMW 「응…… 좋아. 당신의 정열, 마음껏 부딪혀 봐.」
 				ENDIF
 			CASE 2
 				IF TALENT:TARGET:굴복됨 
-					PRINTFORMW 「遠慮なんていらないわよ❤わたしをいっぱい、きもちいいで流してください……❤」
+					PRINTFORMW 「사양 따윈 필요 없어요❤ 저를 가득, 기분 좋음으로 휩쓸어 주세요……❤」
 				ELSE
-					PRINTFORMW 「びっくりだわ。わたし、流されやすかったのね。……不思議ね、わるくない気分だわ」
+					PRINTFORMW 「놀랐어. 나, 의외로 잘 휩쓸리는 타입이었네. ……신기해, 나쁘지 않은 기분이야.」
 				ENDIF
 			CASE 3
 				IF TALENT:TARGET:굴복됨 
-					PRINTFORMW 「ゴメンナサイ❤わたし、だれかに굴복するのはじめてなのよ……❤」
-					PRINTFORMW 「だからもしも、言葉づかいがおかしかったらオシオキしてください……❤%CSTR:TARGET:MASCALL%❤」
+					PRINTFORMW 「죄송해요❤ 저, 누군가에게 굴복하는 건 처음이라서요……❤」
+					PRINTFORMW 「그러니 혹시, 말투가 이상하다면 벌을 주세요……❤ %CSTR:TARGET:MASCALL%❤」
 				ELSE
-					PRINTFORMW 「こっちみんな。……わたしだって恥ずかしいのよ、察して、よ……」
+					PRINTFORMW 「쳐다보지 마. ……나도 부끄럽단 말이야, 눈치 좀, 챙겨……」
 				ENDIF
 		ENDSELECT
 
@@ -81,185 +81,185 @@ IF LOCAL
 	ELSEIF CFLAG:TARGET:아르바이트 == 2 && CFLAG:MASTER:현재위치 == 場所_カフェ && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:6
 			CASE 0
-				PRINTFORMW 「……いらっしゃいませお客様。なぜお店にきたのですか」
+				PRINTFORMW 「……어서 오세요, 손님. 어째서 가게에 오셨습니까.」
 			CASE 1
-				PRINTFORMW 「おかえりなさいませ御主人様。さっさとお席におつきやがれください」
+				PRINTFORMW 「어서 오세요, 주인님. 냉큼 자리에 쳐앉으시지요.」
 			CASE 2
-				PRINTFORMW 「……サービスはしないわよ」
+				PRINTFORMW 「……서비스는 안 할 거야.」
 			CASE 3
-				PRINTFORMW 「はいお冷。……水が凍ってる？　まさか、メイドごときにそんな力あるわけないじゃない。……でしょう？」
+				PRINTFORMW 「자, 찬물입니다. ……물이 얼어있다구요? 설마, 메이드 따위에게 그런 힘이 있을 리 없잖아요. ……그렇죠?」
 			CASE 4
-				PRINTFORMW 「……似合ってる、かしら」
+				PRINTFORMW 「……어울려, 보이려나.」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「そう。ふふ、そう……」
+					PRINTFORMW 「그래. 후훗, 그래……」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「……よくわからないのよね。いつもどおり冷たい태도なのにやたら客から好評らしいのよ。どうしてかしら」
+				PRINTFORMW 「……잘 모르겠어. 평소처럼 차가운 태도인데 유난히 손님들한테 평판이 좋은 모양이야. 어째서일까.」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 3 && CFLAG:MASTER:현재위치 == 場所_神社 && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:6
 			CASE 0
-				PRINTFORMW 「和服、似合ってる？　当然でしょう」
+				PRINTFORMW 「와후쿠, 어울려? 당연하지.」
 			CASE 1
-				PRINTFORMW 「……よく考えたらこの神社の神様に恨み自体はないのよね」
+				PRINTFORMW 「……잘 생각해보니 이 신사의 신에게 원한 자체가 있는 건 아니었네.」
 			CASE 2
-				PRINTFORMW 「神頼みなんて酔狂ね。わたしみたいなのが現世でのうのうと暮らしてる時点で神なんていないと知りなさい」
+				PRINTFORMW 「신에게 소원을 빌다니 별일이네. 나 같은 존재가 이승에서 잘 먹고 잘살고 있는 시점에서 신 따윈 없다는 걸 알아둬.」
 			CASE 3
-				PRINTFORMW 「参拝の作法はしってるかしら。まずは手水で手と口を清めなさい」
-				PRINTFORMW 「……あのね、どれだけ恨んでても礼儀とか作法ぐらいはわきまえるわよ」
+				PRINTFORMW 「참배 예법은 알고 있어? 우선 테미즈야에서 손과 입을 깨끗이 하도록 해.」
+				PRINTFORMW 「……저기, 아무리 원망스러워도 예의나 예법 정도는 안다고.」
 			CASE 4
-				PRINTFORMW 「なにを祈りにきたの。まぁどうせいいカードがほしいとか、かわいい女の子と知り合いたいとかでしょうけど」
+				PRINTFORMW 「뭘 빌러 온 거야. 뭐, 어차피 좋은 카드 갖고 싶다거나, 귀여운 여자애랑 만나고 싶다거나 그런 거겠지.」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「は、わたし？　なんでわたしが神になんか祈らなきゃならないのよ。……자신の願いぐらい、자신の手で叶えるわ」
+					PRINTFORMW 「하, 나? 내가 왜 신 따위에게 빌어야 하는데. ……내 소원 정도는, 내 손으로 이룰 거야.」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「おみくじはこちら。お焚き上げはあちら。それとも厄払いかしら」
-				PRINTFORMW 「……今なら%CSTR:TARGET:MASCALL%のドロー運がおちてるから、デュエルで勝てるんじゃないかしら……！　冗談よ。仕事中だもの。えぇ、冗談」
+				PRINTFORMW 「오미쿠지는 이쪽. 태우는 곳은 저쪽. 아니면 액땜이려나.」
+				PRINTFORMW 「……지금이라면 %CSTR:TARGET:MASCALL%의 드로우 운이 떨어져 있으니, 듀얼로 이길 수 있지 않을까……! 농담이야. 일하는 중이니까. 응, 농담.」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 4 && CFLAG:MASTER:현재위치 == 場所_편의점 && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:6
 			CASE 0
-				PRINTFORMW 「いらっしゃいませ。またパック買いに来たの？」
+				PRINTFORMW 「어서 오세요. 또 팩 사러 왔어?」
 			CASE 1
-				PRINTFORMW 「買ってくれる分にはかまわないのだけど……。あんまり편의점飯ばっかりってのは止めといたほうがいいわよ？」
+				PRINTFORMW 「사주는 거야 상관없지만……. 너무 편의점 음식만 먹는 건 그만두는 게 좋을걸?」
 			CASE 2
-				PRINTFORMW 「飲み物を買いに来たの？　よければもっと冷やしてあげましょうか？」
+				PRINTFORMW 「마실 거 사러 왔어? 괜찮다면 더 차갑게 해줄까?」
 			CASE 3
-				PRINTFORMW 「この世界のお店ってすごいのね。わたしの常識では夜に開いてる店なんてなかったわ」
+				PRINTFORMW 「이 세계의 가게는 대단하네. 내 상식으로는 밤에 여는 가게 같은 건 없었어.」
 			CASE 4
-				PRINTFORMW 「……あら、もしかして콘돔を買いにきたのかしら？　ふぅん……」
+				PRINTFORMW 「……어머, 혹시 콘돔 사러 온 거야? 흐음……」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「……もしかしてわたしと一緒に使うためかしら。ふふ、バイトが終わるまで待ってて、ね……❤」
+					PRINTFORMW 「……혹시 나랑 같이 쓰려고? 후훗, 알바 끝날 때까지 기다려, 알았지……❤」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「男の客がやたら大きい額のお金で支払おうとするのよね。なんかお釣りを渡す時デレデレしてるし……」
-				PRINTFORMW 「そもそもわたしが彼らを상대することなんて万に一つもないのに、なぜこんなことするのか、全くニンゲンは愚か……」
+				PRINTFORMW 「남자 손님들이 유난히 큰돈으로 계산하려고 하더라. 왠지 거스름돈 줄 때 헤벌쭉하고……」
+				PRINTFORMW 「애초에 내가 그들이랑 상대해 줄 일은 만에 하나도 없는데, 왜 이런 짓을 하는 건지, 정말이지 인간은 어리석어……」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 5 && CFLAG:MASTER:현재위치 == 場所_スーパー && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:6
 			CASE 0
-				PRINTFORMW 「あら、来たの。なにか足りないものあった？」
+				PRINTFORMW 「어머, 왔네. 뭐 부족한 거 있었어?」
 			CASE 1
-				PRINTFORMW 「もし余裕があれば夕食をつくっといてくれない？　献立はまかせるわ」
+				PRINTFORMW 「혹시 여유 있으면 저녁밥 좀 해줄래? 메뉴는 맡길게.」
 			CASE 2
-				PRINTFORMW 「家に常備薬を置くのは大事よね。わたしはともかくあんたはかよわいニンゲンだもの」
+				PRINTFORMW 「집에 상비약을 둬야 하는 건 중요하지. 나는 그렇다 쳐도 당신은 연약한 인간이니까.」
 			CASE 3
-				PRINTFORMW 「まさかお酒を買いに来たんじゃないでしょうね。ほどほどにしなさいよ……？」
+				PRINTFORMW 「설마 술 사러 온 건 아니겠지. 적당히 마시라고……?」
 			CASE 4
-				PRINTFORMW 「……バイトが終わったらちょうどタイムセールになりそうね……。なにか買い足しとこうかしら」
+				PRINTFORMW 「……알바 끝나면 마침 타임 세일 할 것 같네……. 뭐 더 사둘까.」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「……あ、%CSTR:TARGET:MASCALL%はなにか食べたいのある？　明日にでも作ったげるわよ？」
+					PRINTFORMW 「……아, %CSTR:TARGET:MASCALL%는 뭐 먹고 싶은 거 있어? 내일이라도 만들어 줄게.」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「そういえば知ってるかしら。このスーパーで덱を売ってるって。興味があるなら聞いてみたら？」
+				PRINTFORMW 「그러고 보니 알고 있어? 이 슈퍼에서 덱을 판대. 관심 있으면 물어보는 게 어때?」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 6 && CFLAG:MASTER:현재위치 == 場所_ジム && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:6
 			CASE 0
-				PRINTFORMW 「……いらっしゃい、まぁ適当に体鍛えていけば？」
+				PRINTFORMW 「……어서 와, 뭐 적당히 몸 단련하고 가.」
 			CASE 1
-				PRINTFORMW 「そもそもわたし、筋トレの知識なんてないわよ……。教本がなければどうしようもなかったわ」
+				PRINTFORMW 「애초에 나, 헬스 지식 같은 건 없다고……. 교본이 없었으면 어쩔 뻔했어.」
 			CASE 2
-				PRINTFORMW 「お腹がすいたら식사をとりなさい。ここ、プロテインしかないけど」
+				PRINTFORMW 「배고프면 식사하도록 해. 여기, 프로틴밖에 없지만.」
 			CASE 3
-				PRINTFORMW 「つらい……。しんどい……。なんで、わたしが、がんばらなきゃならないのよ……」
+				PRINTFORMW 「괴로워……. 힘들어……. 어째서, 내가, 힘내야만 하는 건데……」
 			CASE 4
-				PRINTFORMW 「……あまり近づかないで。汗、いっぱいかいてるから」
+				PRINTFORMW 「……너무 다가오지 마. 땀, 잔뜩 흘렸으니까.」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「そう。ふふ、そう……」
+					PRINTFORMW 「그래. 후훗, 그래……」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「つかれた。もうやだ。甘いもの食べたい」
+				PRINTFORMW 「지쳤어. 이제 싫어. 단 거 먹고 싶어.」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 7 && CFLAG:MASTER:현재위치 == 場所_식사通り && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:6
 			CASE 0
-				PRINTFORMW 「……いらっしゃいませお客様。なぜお店にきたのですか」
+				PRINTFORMW 「……어서 오세요, 손님. 어째서 가게에 오셨습니까.」
 			CASE 1
-				PRINTFORMW 「ファミレスって思ったほど料理の技術いらないのね。意気込んだのに残念だわ」
+				PRINTFORMW 「패밀리 레스토랑은 생각보다 요리 기술이 필요 없구나. 잔뜩 벼르고 왔는데 아쉬워.」
 			CASE 2
-				PRINTFORMW 「おしぼりをどうぞ。冷めてる？　安心して、%CSTR:TARGET:MASCALL%にだけよ」
+				PRINTFORMW 「물수건입니다. 차갑다구요? 안심하세요, %CSTR:TARGET:MASCALL%에게만 그런 거니까.」
 			CASE 3
-				PRINTFORMW 「はいお冷。キンキンに冷やしてあげたわよ」
+				PRINTFORMW 「자, 찬물입니다. 꽁꽁 얼려드렸어요.」
 			CASE 4
-				PRINTFORMW 「……似合ってる、かしら」
+				PRINTFORMW 「……어울려, 보이려나.」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「まぁ可愛らしい制服で有名らしいからね。当然美少女であるわたしにもあうでしょう。……ありがと」
+					PRINTFORMW 「뭐, 귀여운 제복으로 유명한 모양이니까. 당연히 미소녀인 나한테도 어울리겠지. ……고마워.」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「식사をちゃんととるのはいいけど、あまりドカ食いはやめときなさいよ。ご飯はちゃんとしっかり噛み締めなさい」
+				PRINTFORMW 「식사를 제대로 하는 건 좋지만, 너무 폭식은 하지 말라고. 밥은 제대로 꼭꼭 씹어 먹어.」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 8 && CFLAG:MASTER:현재위치 == 場所_教会 && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:6
 			CASE 0
-				PRINTFORMW 「あら、お祈りかしら？　あんまり、%CSTR:TARGET:MASCALL%らしくない行動ね」
-				PRINTFORMW 「%CSTR:TARGET:MASCALL%はてっきり神だろうと悪魔だろうと자신の力でねじ伏せてやる！　って気概だと思ってたわ」
+				PRINTFORMW 「어머, 기도하러? 별로, %CSTR:TARGET:MASCALL%답지 않은 행동이네.」
+				PRINTFORMW 「%CSTR:TARGET:MASCALL%는 당연히 신이든 악마든 자신의 힘으로 굴복시키고 말겠다! 하는 기개일 거라고 생각했는데.」
 			CASE 1
-				PRINTFORMW 「色白いからか、周りから天使とか言われるのよね。ふふ、彼らがわたしの正体を知ったらどうするのかしらね」
+				PRINTFORMW 「피부가 하얘서 그런지, 주위에서 천사 같다는 말을 듣곤 해. 후훗, 그들이 내 정체를 알면 어떻게 할까.」
 			CASE 2
-				PRINTFORMW 「気をつけなさいよ。この教会、どうもよくない욕망が渦巻いている、そんな気を感じるわ」
-				PRINTFORMW 「まぁ%CSTR:TARGET:MASCALL%ならそれさえも踏み越えてしまうんでしょうね」
+				PRINTFORMW 「조심하는 게 좋아. 이 교회, 아무래도 좋지 않은 욕망이 소용돌이치는, 그런 기운이 느껴져.」
+				PRINTFORMW 「뭐, %CSTR:TARGET:MASCALL%라면 그것마저도 넘어버리겠지만.」
 			CASE 3
 				IF TALENT:TARGET:음교의신도
-					PRINTFORMW 「わたし、ここであなたに教え込まれたのよね……わたしの身の程を、そしてあなたの偉大さを……❤」
-					PRINTFORMW 「あぁ、あぁ！　もし命じていただければすぐにでもこんな布切れを脱ぎ捨てて、あなたのために全てを捧げます！！❤❤」
+					PRINTFORMW 「저, 여기서 당신에게 배웠었죠…… 제 분수를, 그리고 당신의 위대함을……❤」
+					PRINTFORMW 「아아, 아아! 만약 명하신다면 당장이라도 이런 천 조각은 벗어던지고, 당신을 위해 모든 것을 바치겠습니다!!❤❤」
 				ELSE
-					PRINTFORMW 「ほんとにここ、神への祈りを捧げる施設なのかしら……。バイトでは通してもらえない部屋がいくつもあるし、どうも雰囲気のおかしいシスターはいるし……」
+					PRINTFORMW 「정말로 여기, 신에게 기도를 올리는 시설이 맞는 걸까……. 알바생은 들어갈 수 없는 방이 몇 개나 있고, 아무래도 분위기가 이상한 수녀님도 있고……」
 				ENDIF
 			CASE 4
-				PRINTFORMW 「これ、海外の尼僧の姿なんでしょう？　黒が基本なのはなんだか不思議ね」
+				PRINTFORMW 「이거, 해외 수녀의 모습이지? 검은색이 기본이라니 왠지 신기하네.」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「別にどこだろうと神に祈る義理なんてないけれど……。まぁ%CSTR:TARGET:MASCALL%の日々の平穏ぐらいは祈ってあげるわ」
+					PRINTFORMW 「딱히 어디서든 신에게 빌어야 할 의리는 없지만……. 뭐, %CSTR:TARGET:MASCALL%의 나날이 평온하기를 비는 것 정도는 해줄게.」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「バイト？　割と楽よ。懺悔とか、상대の話に相槌だけうって聞き流せばいいだけだもの。それで勝手に救われるんだからニンゲンって案外気楽よね」
+				PRINTFORMW 「알바? 비교적 편해. 참회라든가, 상대 이야기에 맞장구만 치면서 한 귀로 흘리면 그만이니까. 그걸로 멋대로 구원받는다니 인간은 의외로 속 편하네.」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 100 && CFLAG:MASTER:현재위치 == 場所_裏通り && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
 		SELECTCASE RAND:5
 			CASE 0
-				PRINTFORMW 「どうかしら、매력的に映ってる？」
+				PRINTFORMW 「어때, 매력적으로 보여?」
 			CASE 1
-				PRINTFORMW 「雪女ってお化けじゃなかったのね。だって写真に写ってるんだもの。자신でも驚きだわ」
+				PRINTFORMW 「설녀는 귀신이 아니었구나. 왜냐면 사진에 찍히는걸. 나 스스로도 놀랐어.」
 			CASE 2
-				PRINTFORMW 「慣れてないからNG出しちゃうのよね。写っちゃいけないものが写ってるやつ。一応もらったけどいる？」
+				PRINTFORMW 「익숙하지 않아서 NG를 내버렸어. 찍히면 안 되는 게 찍힌 거. 일단 받긴 했는데 필요해?」
 			CASE 3
-				PRINTFORMW 「変装とかしたほうがいいのかしら……。こう言ってはなんだけどわたしってほら、美少女じゃない？　有名になったら色々うるさいだろうし……」
-				PRINTFORMW %CALLNAME:TARGET%は顎に手をあてながらブツブツ呟いている。冗談かと思ったが、その表情は真剣そのものだ……！
+				PRINTFORMW 「변장 같은 걸 하는 편이 좋으려나……. 이런 말 하긴 뭐 하지만 나, 그거잖아, 미소녀잖아? 유명해지면 여러모로 시끄러울 테고……」
+				PRINTFORMW %CALLNAME:TARGET%는 턱에 손을 댄 채 중얼거리고 있다. 농담인가 싶었지만, 그 표정은 진지하기 그지없다……!
 			CASE 4
-				PRINTFORMW 「……ほら、感想をいいなさい。%CSTR:TARGET:MASCALL%はわたしがモデルに相応しいと思ったからバイトに選んだんでしょ？」
+				PRINTFORMW 「……자, 감상을 말해. %CSTR:TARGET:MASCALL%는 내가 모델에 어울린다고 생각해서 이 알바를 고른 거잖아?」
 				IF TALENT:TARGET:연모
-					PRINTFORMW 「ん、褒められて悪い気はしないわね。……気分いいから、帰ったら%CSTR:TARGET:MASCALL%専用の写真会、やってあげてもいいわよ……？」
+					PRINTFORMW 「응, 칭찬받으니 나쁜 기분은 아니네. ……기분 좋으니까, 돌아가면 %CSTR:TARGET:MASCALL% 전용 사진회, 열어줘도 괜찮고……?」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「ふっ、ついに世界中が知る時がきたようね。わたしのこのクールビューティぶりが……！」
+				PRINTFORMW 「훗, 드디어 온 세상이 알게 될 때가 온 모양이네. 나의 이 쿨뷰티한 모습을……!」
 		ENDSELECT
 	ELSEIF CFLAG:TARGET:아르바이트 == 304 && CFLAG:MASTER:현재위치 == 場所_牧場 && INRANGE(TIME,KANTAN_TIME(17,00),KANTAN_TIME(23,00))
 		SELECTCASE RAND:6
 			CASE 0
-				;別に妲己や武部の有無で분기したりしないです　雪女が勝手に憐れんでるだけです
-				PRINTFORML 「あら、妲己も不知火の小娘もいないのかしら？　もしいないなら可哀そうね……」
-				PRINTFORMW 「……ふ、ふふ❤　だって……❤こんな、女の悦びも知らないなんてカワイソウね……❤」
+				;딱히 달기나 타케베의 유무로 분기하거나 하지 않습니다. 설녀가 멋대로 불쌍하게 여기는 것뿐입니다.
+				PRINTFORML 「어머, 달기도 시라누이의 애송이도 없는 걸까? 만약 없다면 불쌍하네……」
+				PRINTFORMW 「……후, 후훗❤ 왜냐면……❤ 이런, 여자의 기쁨도 모르다니 가엾어라……❤」
 			CASE 1
-				PRINTFORMW 「……❤　モーウ、モォーウ……❤　モウ❤　モゥ、モォーウ❤　モウ……❤」
+				PRINTFORMW 「……❤ 음머, 음머어……❤ 음머❤ 음머, 음머어❤ 음머……❤」
 			CASE 2			
 				IF TALENT:TARGET:가슴사이즈 >= 2
-					PRINTFORMW 「%CSTR:TARGET:MASCALL%にいっぱい育てられた、このでっかいでっかいおっぱいのおかげでお乳の出は良好よ❤」
-					PRINTFORMW 「牧場のみんなからも羨望の眼差しでみられるの。メスウシの鑑だって……❤」
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%가 잔뜩 키워준, 이 커다랗고 커다란 가슴 덕분에 젖은 잘 나오는 편이야❤」
+					PRINTFORMW 「목장의 모두에게도 선망의 눈빛을 받고 있어. 암소의 귀감이라면서……❤」
 				ELSE
-					PRINTFORMW 「わたし、자신のおっぱいには自身があるの。張りがあって、大きすぎず、でも女性らしい丸みと柔らかさがあって……」
-					PRINTFORMW 「でも思うのよ。もっとおおきく、そうメスウシのようにバカみたいなおっぱいだったらもっとお乳がでるのになぁ、って❤」
+					PRINTFORMW 「나, 내 가슴에는 자신이 있어. 탄력 있고, 너무 크지 않고, 그러면서도 여성스러운 둥글미와 부드러움이 있어서……」
+					PRINTFORMW 「하지만 생각해. 더 크게, 그래 암소처럼 바보 같은 가슴이었다면 더 젖이 잘 나왔을 텐데, 하고❤」
 				ENDIF
 			CASE 3
-				PRINTFORMW 「……あら、味見していく？　んっ……特別に直飲みを許してあげる、内緒よ……❤」
+				PRINTFORMW 「……어머, 맛보고 갈래? 응…… 특별히 직접 마시는 걸 허락해 줄게, 비밀이야……❤」
 			CASE 4
-				PRINTFORMW 「こんなバカみたいな衣装着て、おっぱいにこんなの着けられて……。昔のわたしがみたら軽蔑するでしょうね」
+				PRINTFORMW 「이런 바보 같은 옷이나 입고, 가슴에 이런 걸 달고……. 옛날의 내가 봤다면 경멸했겠지.」
 				IF TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-					PRINTFORMW 「そう、ここにいるのは%CALLNAME:TARGET%なんかじゃない、%CSTR:TARGET:MASCALL%のためのメスウシ……❤」
-					PRINTFORMW 「わるい、わぁるいオオカミさんに狙われたら食べられちゃうしかない哀れなメスウシよ……❤」
+					PRINTFORMW 「그래, 여기 있는 건 %CALLNAME:TARGET% 같은 게 아니야, %CSTR:TARGET:MASCALL%를 위한 암소……❤」
+					PRINTFORMW 「나쁜, 나아쁜 늑대 씨에게 노려지면 잡아먹힐 수밖에 없는 가련한 암소야……❤」
 				ENDIF
 			CASE 5
-				PRINTFORMW 「……%CSTR:TARGET:MASCALL%も可哀そうね。主人だからメスウシになれないのだもの」
-				PRINTFORMW 「こうやって一方的に乳を搾られる幸せがわからないなんて、ほんとカワイソウだわ……❤」
+				PRINTFORMW 「……%CSTR:TARGET:MASCALL%도 불쌍하네. 주인이니까 암소가 될 수 없는걸.」
+				PRINTFORMW 「이렇게 일방적으로 젖을 짜이는 행복을 모르다니, 정말 불쌍해……❤」
 		ENDSELECT
 
 	ELSEIF CFLAG:TARGET:데이트중
@@ -267,631 +267,631 @@ IF LOCAL
 			IF CFLAG:TARGET:현재위치 == 場所_繁華街
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「現代の服、か……。ちょっとだけ、興味があるわね……」
+						PRINTFORMW 「현대의 옷, 인가……. 조금, 흥미가 생기네……」
 					CASE 1
-						PRINTFORMW 「……さて、%CSTR:TARGET:MASCALL%ならわたしをどうコーディネートするのかしら。期待してるわよ」
+						PRINTFORMW 「……자, %CSTR:TARGET:MASCALL%라면 나를 어떻게 코디네이트할까. 기대하고 있을게.」
 					CASE 2
-						PRINTFORMW 「ここまできて편의점に寄るなんて無粋はしないわよね？」
+						PRINTFORMW 「여기까지 와서 편의점에 들르는 몰취미한 짓은 안 할 거지?」
 					CASE 3
-						PRINTFORMW 「……相変わらずの人混みね。はぐれないよう手を繋いでもらえる？」
+						PRINTFORMW 「……여전한 인파네. 놓치지 않게 손, 잡아줄래?」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_식사通り
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「식사に誘ってくれるのかしら。嬉しいわね」
+						PRINTFORMW 「식사에 초대해 주는 걸까. 기쁘네.」
 					CASE 1
-						PRINTFORMW 「美味しそうなニオイがしてるわ。%CSTR:TARGET:MASCALL%のオススメは何かしら」
+						PRINTFORMW 「맛있는 냄새가 나네. %CSTR:TARGET:MASCALL%의 추천 메뉴는 뭘까.」
 					CASE 2
-						PRINTFORMW 「映画のお誘い？　ふふ、デートらしくなってきたわね」
+						PRINTFORMW 「영화 보자는 거야? 후훗, 데이트다워졌네.」
 					CASE 3
-						PRINTFORMW 「……わかってたけど人が多いわね。はやくゆっくりできるところに行きたいわ」
+						PRINTFORMW 「……알고는 있었지만 사람이 많네. 빨리 편히 쉴 수 있는 곳으로 가고 싶어.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_スーパー
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「しまったわ……。冷蔵庫に何が残ってたか確認しておけばよかった」
+						PRINTFORMW 「실수했다……. 냉장고에 뭐가 남았는지 확인해 둘 걸.」
 					CASE 1
-						PRINTFORML 「デートってこんなところに来るものなのかしら？」
-						PRINTFORMW 「お買い物デート？　へぇ、そういうのもあるのね……」
+						PRINTFORML 「데이트란 게 이런 곳에 오는 거였나?」
+						PRINTFORMW 「장보기 데이트? 헤에, 그런 것도 있구나……」
 					CASE 2
-						PRINTFORMW 「こういうところで아르바이트もいいわね……。」
+						PRINTFORMW 「이런 곳에서 아르바이트하는 것도 좋겠네…….」
 					CASE 3
-						PRINTFORML 「……ちなみにここ、덱が売ってるって知ってた？」
-						PRINTFORMW 「こらこら、今はわたしとの데이트중でしょ。今ぐらいわたしを優先してよ」
+						PRINTFORML 「……참고로 여기, 덱을 판다는 거 알고 있었어?」
+						PRINTFORMW 「어이 어이, 지금은 나랑 데이트 중이잖아. 이럴 때 정도는 나를 우선시해줘.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_カフェ
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORML 「今まで飲んだことなかったけど、珈琲っていい香りなのね」
-						PRINTFORMW 「……苦いわね。お茶のほうが美味しく感じるわ。あぁ……でも嫌いじゃないかも、これも」
+						PRINTFORML 「지금까지 마셔본 적 없었는데, 커피는 향이 좋구나.」
+						PRINTFORMW 「……쓰네. 차 쪽이 더 맛있게 느껴져. 아아…… 하지만 싫지는 않을지도, 이것도.」
 					CASE 1
-						PRINTFORMW 「こんなところでもデュエルするなんて、この世界のニンゲンはちょっとどうかしてるわよ」
+						PRINTFORMW 「이런 곳에서도 듀얼을 하다니, 이 세계의 인간은 좀 이상해.」
 					CASE 2
-						PRINTFORML 「へぇ……『特別珈琲を一杯注文するとカードパックプレゼント！！』ですって」
-						PRINTFORMW 「……まさか、これ目的でここに来たんじゃないでしょうね？」
+						PRINTFORML 「헤에…… '스페셜 커피를 한 잔 주문하면 카드 팩 증정!!' 이라는데.」
+						PRINTFORMW 「……설마, 이거 때문에 여기 온 건 아니겠지?」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_病院
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORMW 「こんなところに来るなんてどうしたのよ。まさか、身体悪いの……？」
+						PRINTFORMW 「이런 곳에 오다니 무슨 일이야. 설마, 몸이라도 안 좋아……?」
 					CASE 1
-						PRINTFORMW 「……わたしのせいで감기ひいてないでしょうね？」
+						PRINTFORMW 「……나 때문에 감기 걸린 건 아니겠지?」
 					CASE 2
 						IF TALENT:TARGET:임신
-							PRINTFORMW 「……ありがとう、連れてきてくれて」
-							PRINTFORMW 「えぇ、不安、なのよ……。雪女とニンゲンの間の子なんてほんとにちゃんと産まれてきてくれるのかな、って……」
+							PRINTFORMW 「……고마워, 데려와 줘서.」
+							PRINTFORMW 「응, 불안, 한 걸……. 설녀와 인간 사이의 아이라니, 정말로 제대로 태어나 줄까, 하고……」
 						ELSE
-							PRINTFORMW 「わたしは雪女よ？　診てもらう必要なんてないわ」
+							PRINTFORMW 「나는 설녀야. 진찰받을 필요 같은 건 없어.」
 						ENDIF
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_カドショ || CFLAG:TARGET:현재위치 == 場所_MZカドショ || CFLAG:TARGET:현재위치 == 場所_STカドショ || CFLAG:TARGET:현재위치 == 場所_モール
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「데이트중でもカードだなんて、ほんと常識知らずのカードバカ」
+						PRINTFORMW 「데이트 중에도 카드라니, 정말 상식 없는 카드 바보네.」
 					CASE 1
-						PRINTFORMW 「なにか魔妖の強化につながるカードないかしら……」
-						PRINTFORMW 「……うぅんこういう時、わたしたちが排他的なのがネックになるのよね……」
+						PRINTFORMW 「어디 마요 강화에 도움 될 만한 카드 없으려나……」
+						PRINTFORMW 「……으음, 이럴 때, 우리가 배타적인 게 걸림돌이 된단 말이지……」
 					CASE 2
-						PRINTFORMW 「新しいカードないかしら。언데드족を強化するようなカードがあればいいんだけど」
+						PRINTFORMW 「새로운 카드 없으려나. 언데드족 신규 지원 카드가 있으면 좋을 텐데.」
 					CASE 3
-						PRINTFORMW 「……%CSTR:TARGET:MASCALL%はちゃんと清潔な格好しなさいよ。例えどんな場所でも隣のわたしに恥をかかせないようにしなさい」
+						PRINTFORMW 「……%CSTR:TARGET:MASCALL%는 제대로 깔끔한 옷차림을 하도록 해. 어떤 장소에서든 옆에 있는 내가 창피하지 않도록 하라고.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_ジム
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「いやよ。そんな汗かいてまで鍛えたくないわ」
+						PRINTFORMW 「싫어. 그렇게 땀 흘려가면서까지 단련하고 싶지 않아.」
 					CASE 1
-						PRINTFORMW 「……わたしはこのプロポーションで完璧なのよ。これ以上鍛えてもバランスが悪くなるだけだわ」
+						PRINTFORMW 「……나는 이 프로포션으로 완벽한걸. 이 이상 단련해봤자 밸런스가 나빠질 뿐이야.」
 					CASE 2
-						PRINTFORMW 「……もし疲れたら帰る時おぶっていきなさいよ？」
+						PRINTFORMW 「……혹시 지치면 돌아갈 때 업고 가?」
 					CASE 3
-						PRINTFORMW 「こんなところで働くなんて酔狂ね。わたしだったら絶対ごめんだわ」
+						PRINTFORMW 「이런 곳에서 일하다니 별난 사람이네. 나라면 절대 사양이야.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_神社
 				SELECTCASE RAND:5
 					CASE 0
-						PRINTFORMW 「ここもあの神社のように凍りつかせてやろうかしら。……冗談よ」
+						PRINTFORMW 「여기도 그 신사처럼 얼려버릴까. ……농담이야.」
 					CASE 1
-						PRINTFORMW 「……%CSTR:TARGET:MASCALL%でも神頼みなんてするのね、意外だわ」
+						PRINTFORMW 「……%CSTR:TARGET:MASCALL%도 신에게 소원을 비는구나, 의외네.」
 					CASE 2
-						PRINTFORML 「……そんな不安な顔するぐらいならここに連れてこないでよ」
-						PRINTFORMW 「えぇ、ちょっとピリッとするぐらいよ。まぁわたし、妖怪だしね」
+						PRINTFORML 「……그렇게 불안한 표정 지을 거면 여기에 데려오지 말라고.」
+						PRINTFORMW 「응, 그냥 조금 찌릿할 뿐이야. 뭐, 나는 요괴니까.」
 					CASE 3
-						PRINTFORMW 「もしかしたらと思ったけど、まぁ歓迎されてない空気を感じるわね。……もうちょっと近くによっていいかしら」
-						;こいつこの空気にかこつけて、いちゃついてますよ神様！
+						PRINTFORMW 「혹시나 했는데, 역시 환영받지 못하는 공기가 느껴지네. ……조금 더 가까이 다가가도 괜찮을까?」
+						;이 녀석 이 분위기를 틈타서 애정행각을 벌이고 있어요, 신이시여!
 					CASE 4
-						PRINTFORMW 「……もしかしてここに来たのは巫女服目当てじゃないでしょうね」
+						PRINTFORMW 「……설마 여기 온 게 무녀복 때문은 아니겠지.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_公園 || CFLAG:TARGET:현재위치 == 場所_川沿い || CFLAG:TARGET:현재위치 == 場所_散歩道 || CFLAG:TARGET:현재위치 == 場所_サイクル
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORML 「たまには散歩するのもいいわね」
-						PRINTFORMW 「もちろん、%CSTR:TARGET:MASCALL%と二人っきりだからいいのよ」
+						PRINTFORML 「가끔은 산책하는 것도 좋네.」
+						PRINTFORMW 「물론, %CSTR:TARGET:MASCALL%(와)과 단둘이라서 좋은 거야.」
 					CASE 1
-						PRINTFORMW 「……空気がおいしいわね」
+						PRINTFORMW 「……공기가 맛있네.」
 					CASE 2
-						PRINTFORMW 「わたしの知るニンゲンは常に目の前の生活に忙しそうだったから、こうやってのんびりすること自体が新鮮だわ」
+						PRINTFORMW 「내가 알던 인간은 늘 눈앞의 생활에 바빠 보였으니까, 이렇게 느긋하게 지내는 것 자체가 신선해.」
 					CASE 3
-						PRINTFORMW 「……手、繋ぎましょうか？」
+						PRINTFORMW 「……손, 잡을까?」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_教会
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「異教の神を信仰する施設ね。実は%CSTR:TARGET:MASCALL%も信仰してるかしら？」
+						PRINTFORMW 「이교의 신을 믿는 시설이네. 혹시 %CSTR:TARGET:MASCALL%도 믿고 있어?」
 					CASE 1
-						PRINTFORMW 「信じるものは救われる、ね。妖怪でも信じたとしたら救ってもらえるのかしら」
+						PRINTFORMW 「믿는 자는 구원받는다, 인가. 요괴가 믿는다고 해도 구원받을 수 있으려나.」
 					CASE 2
-						PRINTFORMW 「……もしかしてここに来たのはシスター服目当てじゃないでしょうね」
+						PRINTFORMW 「……설마 여기 온 게 수녀복 때문은 아니겠지.」
 					CASE 3
-						PRINTFORMW 「さてさて、妖怪は彼らにとって悪魔にあたるのかしら？」
+						PRINTFORMW 「어디 보자, 요괴는 그들에게 있어서 악마에 해당하는 걸까?」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_東駅 || CFLAG:TARGET:현재위치 == 場所_南駅 || CFLAG:TARGET:현재위치 == 場所_北駅 || CFLAG:TARGET:현재위치 == 場所_西駅
-				PRINTFORML 「さ、どこに連れて行ってくれるの？」
-				PRINTFORMW 「まぁ%CSTR:TARGET:MASCALL%と一緒なら駅の中でも楽しめそうだけど」
+				PRINTFORML 「자, 어디로 데려가 줄 거야?」
+				PRINTFORMW 「뭐, %CSTR:TARGET:MASCALL%(와)과 함께라면 역 안에서도 즐거울 것 같지만.」
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_森 || CFLAG:TARGET:현재위치 == 場所_鉱山
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORML 「静かでいいけど、歩きにくいわね……」
+						PRINTFORML 「조용해서 좋긴 한데, 걷기 힘드네……」
 					CASE 1
 						IF CFLAG:TARGET:현재위치 == 場所_鉱山
-							PRINTFORMW 「淀んだ空気ね。いえ、何よりもたくさんの無念と恩讐の想念を感じるわ」
-							PRINTFORMW 「……ふふ、いい地縛霊になりそうね。%CSTR:TARGET:MASCALL%、ここに連れてきたのはいいチョイスだわ……！」
+							PRINTFORMW 「공기가 탁하네. 아니, 무엇보다도 수많은 원념과 원한의 상념이 느껴져.」
+							PRINTFORMW 「……후훗, 좋은 지박령이 될 것 같네. %CSTR:TARGET:MASCALL%, 여기로 데려온 건 좋은 선택이야……!」
 						ELSE
-							PRINTFORMW 「……空気がおいしいわね」
+							PRINTFORMW 「……공기가 맛있네.」
 						ENDIF
 					CASE 2
-						PRINTFORMW 「今度からここに行くならあらかじめ言ってくれる？　いつもの履物じゃ歩きづらいのよ……」
+						PRINTFORMW 「다음부터 여기에 갈 거면 미리 말해줄래? 평소 신던 신발로는 걷기 힘들단 말야……」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_銭湯
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORML 「残念だったわね、混浴じゃなくて」
-						PRINTFORMW 「ふふ、ほら、上がったら待ち合わせしましょ……♪」
+						PRINTFORML 「유감이네, 혼탕이 아니라서.」
+						PRINTFORMW 「후훗, 자, 다 씻고 나오면 밖에서 만나자……♪」
 					CASE 1
-						PRINTFORML 「銭湯は好きよ。広い浴場で熱いお湯を浴びるのは最高だわ」
-						PRINTFORMW 「大丈夫、溶けないわよ。ちょっと風呂上がりに赤くなっちゃうだけでね」
+						PRINTFORML 「대중목욕탕은 좋아. 넓은 욕탕에서 뜨거운 물을 쬐는 건 최고야.」
+						PRINTFORMW 「괜찮아, 녹지 않아. 목욕하고 나왔을 때 조금 빨개질 뿐이니까.」
 					CASE 2
-						PRINTFORMW 「……へぇ、いつの間にか牛乳も瓶じゃなくなったのね」
+						PRINTFORMW 「……헤에, 어느샌가 우유도 병이 아니게 됐네.」
 					CASE 3
-						PRINTFORML 「……湯上がりの女性をえっちな目で追わないの」
-						PRINTFORMW 「そういうのはわたしだけにしなさい」
+						PRINTFORML 「……목욕하고 나온 여자를 야한 눈으로 쫓지 마.」
+						PRINTFORMW 「그런 건 나한테만 하라고.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_ラブホ
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「……いっぱい、休憩しましょ❤」
+						PRINTFORMW 「……잔뜩, 쉬도록 할까❤」
 					CASE 1
-						PRINTFORMW 「ほら、押し倒しなさいよ……❤」
+						PRINTFORMW 「자, 덮치라고……❤」
 					CASE 2
-						PRINTFORMW 「……どうしたの、まさか%CSTR:TARGET:MASCALL%に限って怖気づいたわけでもないでしょう？」
-						PRINTFORMW 「そっちからこないなら、わたしから襲っちゃおうかしら……❤」
+						PRINTFORMW 「……왜 그래, 설마 %CSTR:TARGET:MASCALL%씩이나 돼서 겁먹은 건 아니겠지?」
+						PRINTFORMW 「그쪽에서 안 오면, 이쪽에서 덮쳐버릴까……❤」
 					CASE 3
-						PRINTFORMW 「どうしたのって、わたしから言わせないでよ……バカ」
+						PRINTFORMW 「뭐냐니, 내 입으로 말하게 하지 마…… 바보.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_夜のお店
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「あらあら、こんなところに連れてきてどうしたの？」
+						PRINTFORMW 「어머어머, 이런 곳에 데려와서 어쩔 셈이야?」
 					CASE 1
-						PRINTFORMW 「ふぅん……。こういうのが%CSTR:TARGET:MASCALL%の好みなんだ。へぇえ……」
+						PRINTFORMW 「흐음……. 이런 게 %CSTR:TARGET:MASCALL%의 취향이구나. 헤에……」
 					CASE 2
-						PRINTFORMW 「もしわたしがここで働きたいって言ったらどうする？　すぐにお客で引っ張りだこになったりして……❤」
+						PRINTFORMW 「만약 내가 여기서 일하고 싶다고 하면 어쩔 거야? 금방 인기인이 될지도 모르는데……❤」
 					CASE 3
-						PRINTFORML 「さっさとこんなとこ出ましょうよ」
-						PRINTFORMW 「……家に帰ったらこんなサービスぐらい、わたしがしてあげるわよ……❤」
+						PRINTFORML 「빨리 이런 곳 나가자.」
+						PRINTFORMW 「……집에 돌아가면 이 정도 서비스쯤은, 내가 해줄게……❤」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_裏通り
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「あらあら、こんなところに連れてきてどうしたの？」
+						PRINTFORMW 「어머어머, 이런 곳에 데려와서 어쩔 셈이야?」
 					CASE 1
-						PRINTFORMW 「……きゃっ、不躾な視線を感じるわ……。まるでわたしを『犯してやりたい』って욕망渦巻く眼……。怖いわ……」
-						PRINTFORMW 不安そうな声でギュッとこちらの腕に抱きつく%CALLNAME:TARGET%。しかしよく見ればその口元にはニンマリと笑みが浮かんでいる……
+						PRINTFORMW 「……꺅, 무례한 시선이 느껴져……. 마치 나를 '범하고 싶다'는 욕망이 소용돌이치는 눈……. 무서워……」
+						PRINTFORMW 불안한 듯한 목소리로 이쪽 팔에 꽉 달라붙는 %CALLNAME:TARGET%. 하지만 자세히 보니 그 입가에는 히죽 하고 미소가 떠올라 있다……
 					CASE 2
-						PRINTFORMW 「一人にしないでよ、こんなところで。もし襲われたら化けてでてきてやるから」
+						PRINTFORMW 「혼자 두지 마, 이런 곳에서. 만약 덮쳐지면 귀신이 돼서 나타날 테니까.」
 					CASE 3
-						PRINTFORMW 「……ねぇ、わたしのこと、見捨てないわよ、ね……？」
+						PRINTFORMW 「……있지, 나, 버리지 않을 거지, 응……?」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_学校内
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「%CSTR:TARGET:MASCALL%もここで学んだのかしら？」
+						PRINTFORMW 「%CSTR:TARGET:MASCALL%도 여기서 공부했으려나?」
 					CASE 1
-						PRINTFORMW 「ふぅん……、もしかして制服目的なのかしら？」
+						PRINTFORMW 「흐음……, 혹시 교복이 목적인가?」
 					CASE 2
-						PRINTFORMW 「……別に外見で負けてるとは思わないけれど」
-						PRINTFORMW 「ここにいると無性に『若いっていいわね……』って気持ちになってよくないわ」
+						PRINTFORMW 「……딱히 외모로 진다고는 생각 안 하지만.」
+						PRINTFORMW 「여기에 있으면 이유 없이 '젊은 건 좋구나……' 하는 기분이 들어서 안 좋다니까.」
 					CASE 3
-						PRINTFORML 「%CSTR:TARGET:MASCALL%、たまにここで稽古をつけてやってるんだって？」
-						PRINTFORMW 「つよいつよいとは思ってたけど、思った以上に評価されてるのね」
+						PRINTFORML 「%CSTR:TARGET:MASCALL%, 가끔 여기서 연습을 봐준다고?」
+						PRINTFORMW 「강하다 강하다 생각은 했지만, 생각 이상으로 평가받고 있구나.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_スタジアム || CFLAG:TARGET:현재위치 == 場所_観客席
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「大きい施設ね……。いつか%CSTR:TARGET:MASCALL%もここで戦いたいと、そう思ってるのかしら？」
+						PRINTFORMW 「커다란 시설이네……. 언젠가 %CSTR:TARGET:MASCALL%도 여기서 싸우고 싶다고, 그렇게 생각하고 있으려나?」
 					CASE 1
-						PRINTFORMW 「あの二人の選手、どっちが勝つと思う？　……へぇ、なるほどね……」
+						PRINTFORMW 「저 두 선수, 어느 쪽이 이길 것 같아? ……헤에, 그렇구나……」
 					CASE 2
-						PRINTFORML 「いつか%CSTR:TARGET:MASCALL%もここに立って戦うのかしら……」
-						PRINTFORMW 「その時はわたしが、一番の応援をしてあげるわ」
+						PRINTFORML 「언젠가 %CSTR:TARGET:MASCALL%도 여기에 서서 싸우게 될까……」
+						PRINTFORMW 「그때는 내가, 최고의 응원을 해줄게.」
 					CASE 3
-						PRINTFORML 「うん、大丈夫。……信じてる」
-						PRINTFORMW 「今ここで戦ってるデュエリスト全員よりも%CSTR:TARGET:MASCALL%のほうが強いって、そうわたしは信じてるわ」
+						PRINTFORML 「응, 괜찮아. ……믿고 있어.」
+						PRINTFORMW 「지금 여기서 싸우고 있는 듀얼리스트 전원보다 %CSTR:TARGET:MASCALL%가 더 강하다고, 그렇게 나는 믿고 있어.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_직장
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORMW 「ニンゲンは愚か……なぜわざわざ辛いと思うことをしようとするのかしら……」
+						PRINTFORMW 「인간은 어리석어…… 왜 일부러 힘들다고 생각하는 일을 하려고 하는 걸까……」
 					CASE 1
-						PRINTFORMW 「わざわざ직장まで来る必要ないと思うのだけど……」
+						PRINTFORMW 「굳이 직장까지 올 필요는 없다고 생각하는데……」
 					CASE 2
-						PRINTFORMW 「……望むなら壊して差し上げましょうか？」
-						PRINTFORMW 「ふふふ、たまには妖怪らしいことしないとねぇ……。冗談よ」
+						PRINTFORMW 「……원한다면 부숴줄까?」
+						PRINTFORMW 「후후훗, 가끔은 요괴다운 짓도 해야지……. 농담이야.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_学校内
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「%CSTR:TARGET:MASCALL%もここで学んだのかしら？」
+						PRINTFORMW 「%CSTR:TARGET:MASCALL%도 여기서 공부했으려나?」
 					CASE 1
-						PRINTFORMW 「ふぅん……、もしかして制服目的なのかしら？」
+						PRINTFORMW 「흐음……, 혹시 교복이 목적인가?」
 					CASE 2
-						PRINTFORMW 「……別に外見で負けてるとは思わないけれど」
-						PRINTFORMW 「ここにいると無性に『若いっていいわね……』って気持ちになってよくないわ」
+						PRINTFORMW 「……딱히 외모로 진다고는 생각 안 하지만.」
+						PRINTFORMW 「여기에 있으면 이유 없이 '젊은 건 좋구나……' 하는 기분이 들어서 안 좋다니까.」
 					CASE 3
-						PRINTFORML 「%CSTR:TARGET:MASCALL%、ここで稽古をつけてやってるんだって？」
-						PRINTFORMW 「つよいつよいとは思ってたけど、思った以上に評価されてるのね」
+						PRINTFORML 「%CSTR:TARGET:MASCALL%, 여기서 연습을 봐준다고?」
+						PRINTFORMW 「강하다 강하다 생각은 했지만, 생각 이상으로 평가받고 있구나.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_카지노
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORMW 「……ふふ、いつの時代もニンゲンは욕망にまみれてるのね」
+						PRINTFORMW 「……후후, 어느 시대나 인간은 욕망에 절어있네.」
 					CASE 1
-						PRINTFORMW 「ふふふ、大勝ちしてやるわ……！」
+						PRINTFORMW 「후후훗, 한몫 단단히 챙겨주겠어……!」
 					CASE 2
-						PRINTFORMW 「まさか%CSTR:TARGET:MASCALL%は카지노で破産なんてバカはしないわよねぇ？」
-						PRINTFORMW 「……ちょっと、なんで目をそらすの。『イシズガチャ脳とけりゅううう』！？　は！？　まちなさい、ちょっと！？」
+						PRINTFORMW 「설마 %CSTR:TARGET:MASCALL%는 카지노에서 파산하는 바보 같은 짓은 안 하겠지?」
+						PRINTFORMW 「……어이, 왜 눈을 돌리는 거야. '이시즈 가챠에 뇌가 녹아버려어어어'!? 하!? 기다려, 잠깐!?」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_牧場
 				IF 依頼_完了횟수:304 != 0
 					IF TALENT:TARGET:모유체질
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「この牧場で働いてるみんなが羨ましいわ……❤」
+						PRINTFORMW 「이 목장에서 일하는 모두가 부러워……❤」
 							CASE 1
-								PRINTFORMW 「ねぇ、お金に困ってないかしら」
-								PRINTFORMW 「……もしよければ、わたしのこのおっぱい、存分につかって、ね……❤」
+								PRINTFORMW 「있지, 돈 때문에 곤란하지는 않아?」
+								PRINTFORMW 「……만약 괜찮다면, 나의 이 가슴, 마음껏 써도, 괜찮아……❤」
 							CASE 2
-								PRINTFORML 「この牧場を見てると、身体の奥が疼くのよ」
-								PRINTFORMW 「……あぁ、わたしも%CSTR:TARGET:MASCALL%に飼われたい、って……❤」
+								PRINTFORML 「이 목장을 보고 있으면, 몸속 깊은 곳이 근질거려.」
+								PRINTFORMW 「……아아, 나도 %CSTR:TARGET:MASCALL%에게 길러지고 싶다, 고……❤」
 							CASE 3
-								PRINTFORML 「んっ……❤　やだわ、お乳、溢れてきそう……❤」
-								PRINTFORMW 「どう……？　『乳搾り体験』興味ないかしら……❤」
+								PRINTFORML 「응……❤ 싫다, 젖, 넘칠 것 같아……❤」
+								PRINTFORMW 「어때……? '젖 짜기 체험' 흥미 없어……❤」
 						ENDSELECT
 					ELSE
 						SELECTCASE RAND:4
 							CASE 0
-								PRINTFORMW 「ここ、%CSTR:TARGET:MASCALL%の所有物なんだって？　意外とお金持ってたのね……」
+								PRINTFORMW 「여기, %CSTR:TARGET:MASCALL%의 소유물이라고? 의외로 돈 많았네……」
 							CASE 1
-								PRINTFORML 「……ねぇここ、ほんとに牧場？」
-								PRINTFORMW 「家畜の姿も見えないけど、一体何を飼ってるというの？」
+								PRINTFORML 「……있지 여기, 정말로 목장 맞아?」
+								PRINTFORMW 「가축의 모습도 안 보이는데, 대체 뭘 기른다는 거야?」
 							CASE 2
-								PRINTFORMW 「へぇ、牧場と言っても家畜特有のくさいニオイしないのね」
-								PRINTFORMW 「かわりになんだか乳臭いけど。牛やヤギならそんなものなのかしら」
+								PRINTFORMW 「헤에, 목장이라고 해도 가축 특유의 구린내가 안 나네.」
+								PRINTFORMW 「대신 왠지 젖비린내가 나는데. 소나 염소라면 그런 걸까.」
 							CASE 3
-								PRINTFORMW 「せっかく見学にきたんだから『乳搾り体験』みたいなサービスないのかしら。そこんとこどうなの、牧場主さん？」
+								PRINTFORMW 「모처럼 견학하러 왔는데 '젖 짜기 체험' 같은 서비스는 없으려나. 그 점은 어때, 목장주 씨?」
 						ENDSELECT						
 					ENDIF
 				ELSE
-					PRINTFORMW 「さびれた牧場ね……。廃業間近とかなのかしら」
+					PRINTFORMW 「썰렁한 목장이네……. 폐업 직전이라도 되는 걸까.」
 				ENDIF
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_KL入口
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORMW 「……ひと、すごいわね……やっぱ別のところにしない？」
+						PRINTFORMW 「……사람, 엄청나네…… 역시 다른 데로 갈까?」
 					CASE 1
-						PRINTFORMW 「どれだけ並ばなきゃダメなの……」
+						PRINTFORMW 「얼마나 줄을 서야 하는 거야……」
 					CASE 2
-						PRINTFORMW 「高い！　え、なんで入場だけでこんな高いの！？」
-						PRINTFORMW 「……へぇ、子供は無料。……ちょっと、止めないでよ。今だけ『雪娘』の姿になるだけよ」
-				ENDSELECT			
+						PRINTFORMW 「비싸! 엣, 왜 입장만으로 이렇게 비싼 거야!?」
+						PRINTFORMW 「……헤에, 어린이는 무료. ……잠깐, 말리지 마. 지금만 '설랑'의 모습이 될 뿐이니까.」
+				ENDSELECT		
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_KL広場
 				SELECTCASE RAND:4
 					CASE 0
 						PRINTFORMW 「……」
-						PRINTFORMW %CALLNAME:TARGET%は想像以上のスケールに声もなく圧倒されている
+						PRINTFORMW %CALLNAME:TARGET%는 상상 이상의 스케일에 말문이 막혀 압도당하고 있다.
 					CASE 1
-						PRINTFORMW 「迷いそうだわ……地図とかないかしら」
+						PRINTFORMW 「길 잃을 것 같아…… 지도 같은 건 없으려나.」
 					CASE 2
-						PRINTFORMW 「中も人混みがヒドいわね……」
-						PRINTFORMW 「……ほら、はぐれたらどうしようとか考えない？　ほら、察しなさいよ」
+						PRINTFORMW 「안에도 인파가 심하네……」
+						PRINTFORMW 「……자, 놓치면 어쩌나 하는 생각 안 들어? 자, 눈치껏 행동하라고.」
 					CASE 3
-						PRINTFORML 「さっ、どこからいくの？」
-						PRINTFORMW いつも通りを装う%CALLNAME:TARGET%だが、その目は隠しきれない期待の色がうつっている
+						PRINTFORML 「자, 어디부터 갈 거야?」
+						PRINTFORMW 평소처럼 행동하려 애쓰는 %CALLNAME:TARGET%지만, 그 눈에는 숨길 수 없는 기대의 빛이 서려 있다.
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_ジャングル || CFLAG:TARGET:현재위치 == 場所_スリルゾーン || CFLAG:TARGET:현재위치 == 場所_お城 || CFLAG:TARGET:현재위치 == 場所_観覧車 || CFLAG:TARGET:현재위치 == 場所_KCスタジアム
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「……ふふっ♪　ねぇ！　次はどこに行きましょうかっ」
-						PRINTFORMW %CALLNAME:TARGET%はウキウキでパンフレットを覗き込んでいる
+						PRINTFORMW 「……후훗♪ 있지! 다음은 어디로 갈까?」
+						PRINTFORMW %CALLNAME:TARGET%는 신이 나서 팸플릿을 들여다보고 있다.
 					CASE 1
-						PRINTFORMW 「楽しかったわ……！　もう一度行ってもいいわ……！」
+						PRINTFORMW 「즐거웠어……! 한 번 더 가도 괜찮아……!」
 					CASE 2
-						PRINTFORMW 「それだけ인기ってことだろうけど、さすがに並ぶことになるわね……」
-						PRINTFORMW 「……それでも退屈しないのは、隣にだれかがいるから、かな……」
+						PRINTFORMW 「그만큼 인기 있다는 거겠지만, 역시 줄을 서게 되네……」
+						PRINTFORMW 「……그래도 지루하지 않은 건, 옆에 누군가가 있어서, 일까……」
 					CASE 3
 						IF CFLAG:TARGET:현재위치 == 場所_観覧車
-							PRINTFORMW 「……知ってるわよ、本で読んだ。……二人きりの男女は頂上で、……키스、するんでしょ」
+							PRINTFORMW 「……알고 있어, 책에서 읽었어. ……단둘이 있는 남녀는 꼭대기에서, ……키스, 하는 거지?」
 						ELSE
-							PRINTFORML 「ふふ……！　限られた時間でどれだけ周れるかしら……！」
-							PRINTFORMW 「さぁ、%CSTR:TARGET:MASCALL%もちゃんとついてきなさいっ！　今日はたのしむわよ……！」
+							PRINTFORML 「후훗……! 한정된 시간 동안 얼마나 돌아볼 수 있을까……!」
+							PRINTFORMW 「자, %CSTR:TARGET:MASCALL%도 제대로 따라와! 오늘은 즐기는 거야……!」
 						ENDIF
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_마법都市
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「ニンゲンでも마법を使えるようになればモンスターとかわらない、か」
+						PRINTFORMW 「인간이라도 마법을 쓸 수 있게 되면 몬스터와 다를 바 없, 나.」
 					CASE 1
-						PRINTFORMW 「%CSTR:TARGET:MASCALL%も마법をつかいたいって思うのかしら？」
-						PRINTFORMW 「……もし覚えたら、わたしは%CSTR:TARGET:MASCALL%に退治されちゃうのかしら……。なんてね」
+						PRINTFORMW 「%CSTR:TARGET:MASCALL%도 마법을 쓰고 싶다고 생각하려나?」
+						PRINTFORMW 「……만약 배우게 되면, 나는 %CSTR:TARGET:MASCALL%에게 퇴치당하는 걸까……. 농담이야.」
 					CASE 2
-						PRINTFORML 「……마법使いってけっこう可愛らしい娘多いわね……」
-						PRINTFORMW 「わたしだって、負けてない、わよね……？」
+						PRINTFORML 「……마법사는 꽤 귀여운 애들이 많네……」
+						PRINTFORMW 「나도, 지지, 않지……?」
 					CASE 3
-					;ウィッチクラフト
-						PRINTFORML 「あらステキなお店ね。こちらの服、興味あるわ」
-						PRINTFORMW 「……で？　%CSTR:TARGET:MASCALL%はどこ見てるのかしら。店員さんの胸ばっか見てるように思えるのだけど」
+					;위치크래프트
+						PRINTFORML 「어머, 멋진 가게네. 이쪽 옷, 흥미로운데.」
+						PRINTFORMW 「……그래서? %CSTR:TARGET:MASCALL%는 어딜 보고 있는 거야. 점원 가슴만 쳐다보는 것 같은데.」
 					ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_王宮都市
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORMW 「うそでしょ異世界ってだけでこんなに強いニンゲンばっかりになるの……？」
+						PRINTFORMW 「거짓말이지, 이세계라는 것만으로 이렇게 강한 인간들만 있는 거야……?」
 					CASE 1
-					;センチュリオン
-						PRINTFORMW 「%CSTR:TARGET:MASCALL%って割と子供よね、あんなデカいだけの鎧に眼を輝かせて」
-						PRINTFORMW 「……まちなさい、もしかして上に乗ってる少女のほうを見てたのかしら。ちょっと、こっち見なさい」
+					;센츄리온
+						PRINTFORMW 「%CSTR:TARGET:MASCALL%는 의외로 어린애네, 저렇게 크기만 한 갑옷에 눈을 빛내고.」
+						PRINTFORMW 「……기다려, 혹시 위에 타고 있는 소녀 쪽을 보고 있었어? 어이, 이쪽 봐.」
 					CASE 2
 					;ARG☆S
-						PRINTFORML 「すごいわね、女の子だけのチームなのに상대の巨人を翻弄してる」
-						PRINTFORMW 「ええっと、『アルゴスターズ』ね。ふふ、うちの餓者髑髏なんかは一泡吹かされそうね」
+						PRINTFORML 「대단하네, 여자애들만 있는 팀인데 상대 거인을 농락하고 있어.」
+						PRINTFORMW 「어디 보자, '아르고스타즈'인가. 후후, 우리 가샤도쿠로 같은 건 한 방 먹을 것 같네.」
 				ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_밧줄張り
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「……なんでこんなところに連れてきたの。あぁもう！　服が汚れるじゃない……」
+						PRINTFORMW 「……왜 이런 곳에 데려온 거야. 아 정말! 옷 더러워지잖아……」
 					CASE 1
-					;蟲惑魔　＠マンはストーリーでひどいことしたよね
-						PRINTFORMW 「……わたしの目はごまかせないわよ。あの少女たち、『化けて』るわね」
-						PRINTFORMW 「ところで……なんか酷く%CSTR:TARGET:MASCALL%に怯えてない？　%CSTR:TARGET:MASCALL%彼女たちに何をしたのよ」
+					;충혹마 @맨은 스토리에서 심한 짓을 했지
+						PRINTFORMW 「……내 눈은 속일 수 없어. 저 소녀들, '둔갑'하고 있네.」
+						PRINTFORMW 「그런데…… 왠지 엄청 %CSTR:TARGET:MASCALL%를 무서워하지 않아? %CSTR:TARGET:MASCALL%, 쟤들한테 무슨 짓 했어?」
 					CASE 2
-					;六花
-						PRINTFORML 「あらこんな鬱蒼とした世界に随分可憐な少女たちがいたものね」
-						PRINTFORMW 「……ふふ、なんだかわたしと近しいものを感じるわ。全てを凍りつかせそうな、その雰囲気に」
+					;육화
+						PRINTFORML 「어머, 이렇게 음산한 세계에 제법 가련한 소녀들이 있었네.」
+						PRINTFORMW 「……후후, 왠지 나와 비슷한 걸 느껴. 모든 것을 얼려버릴 듯한, 그 분위기에.」
 					CASE 3
-					;ハーピィ
-						PRINTFORML 「あらあらニンゲン未満の小鳥どもがカァカァと鳴いてるわ、うるさいわね」
-						PRINTFORMW 「ほらほら、目を奪われちゃだめよ。彼女たちに巣に運ばれて、餌にされてしまうのがオチよ」
+					;해피
+						PRINTFORML 「어머어머, 인간 미만의 작은 새들이 까악까악 울고 있네, 시끄러워라.」
+						PRINTFORMW 「자자, 눈을 빼앗기면 안 돼. 쟤들 둥지로 끌려가서, 먹이가 되어버리는 게 끝일 테니.」
 					ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_魔界繁華街
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「……どうしてかしら、わたしの世界と近しい雰囲気を感じるわ。ふふ、芳醇な死と욕망の香りが……！」
+						PRINTFORMW 「……어째서일까, 내 세계와 비슷한 분위기가 느껴져. 후후, 풍요로운 죽음과 욕망의 향기가……!」
 					CASE 1
-					;ゴーストリック
-						PRINTFORMW 「ほら見て、かわいらしい幽霊たちが歩いているわ。……あら？」
-						PRINTFORMW 「……おんなじ雪女でも、随分気楽な娘がいたものね。……羨ましい」
+					;고스트릭
+						PRINTFORMW 「저것 봐, 귀여운 유령들이 걷고 있어. ……어라?」
+						PRINTFORMW 「……같은 설녀라도, 제법 속 편한 애도 있구나. ……부럽네.」
 					CASE 2
-					;働くデス
-						PRINTFORML 「へぇ、随分と賑わっていると思ったらバスが通っているのね」
-						PRINTFORMW 「……あら？　あのガイドさん、どこかで見たことあるような……。そう、ちょうど%CSTR:TARGET:MASCALL%の周りで……」
+					;일하는 데가
+						PRINTFORML 「헤에, 제법 활기차다 싶었더니 버스가 다니는구나.」
+						PRINTFORMW 「……어라? 저 가이드 씨, 어디서 본 것 같은데……. 그래, 마침 %CSTR:TARGET:MASCALL%의 주변에서……」
 					CASE 3
-					;ヴァンパイア
-						PRINTFORML 「ビックリしたわ。まさかこんなところでヴァンパイアのご令嬢たちを目にするなんて」
-						PRINTFORMW 「ああいうのはこーんな下々のところまで降りてこないものだと思ってたわ。……さっさと帰ればいいのに」
+					;뱀파이어
+						PRINTFORML 「놀랐네. 설마 이런 곳에서 뱀파이어 영애들을 보게 될 줄이야.」
+						PRINTFORMW 「저런 분들은 이런 아랫것들이 사는 곳까지는 내려오지 않는다고 생각했는데. ……빨리 돌아가면 좋을 텐데.」
 					ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_천공의성역
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「……あまりの眩しさに目が潰れそうだわ」
+						PRINTFORMW 「……너무 눈이 부셔서 눈이 멀 것 같아.」
 					CASE 1
-					;ホーリーナイツ　ぶっちゃけメンバー少ないから他を気にする余裕ないと思う
-						PRINTFORMW 「今すれ違った一団ってホーリーナイツよね。聖なる夜を駆ける騎士」
-						PRINTFORMW 「夏の夜を乱すわたしたち魔妖と、冬の夜を祝福する騎士たち。……少しだけ対抗心あるわ、向こうは意識してないでしょうけど」
+					;홀리나이츠 솔직히 멤버가 적어서 다른 걸 신경 쓸 여유가 없을 거라 생각함
+						PRINTFORMW 「방금 스쳐 지나간 일행, 홀리나이츠 맞지? 성스러운 밤을 달리는 기사.」
+						PRINTFORMW 「여름밤을 어지럽히는 우리 마요와, 겨울밤을 축복하는 기사들. ……조금은 대항심이 드네, 저쪽은 의식하지 않겠지만.」
 					CASE 2
-					;堕天使　というか失楽
-						PRINTFORML 「……ふふ、あははっ。ご、ごめんなさい、つい哀れに思っちゃって……」
-						PRINTFORMW 「あれ、見なさい。翼を黒くした女が、周りの目を気にしながらコソコソと万引きしてるわ。見つかりたくないならしなければいいのに、ねぇ？」
+					;타락천사 라기보단 실락
+						PRINTFORML 「……후후, 아하핫. 미, 미안, 나도 모르게 불쌍해서……」
+						PRINTFORMW 「저것 봐. 날개를 검게 물들인 여자가, 주위 시선을 신경 쓰면서 슬금슬금 물건을 훔치고 있어. 들키고 싶지 않으면 안 하면 될 텐데, 안 그래?」
 					CASE 3
-					;ピュ　こいつ惚気てません？
-						PRINTFORML 「……あら？　どうしたの、飼い主とはぐれたのかしら？」
-						PRINTFORMW 「ごめんなさいね、できれば探してやりたいけどこちらも都合があるの……。好い人と出会えるのを願っているわ、ね？」
+					;퓨 어라, 이 녀석 염장 지르는 거 아냐?
+						PRINTFORML 「……어라? 왜 그러니, 주인님이랑 떨어졌나?」
+						PRINTFORMW 「미안하네, 괜찮다면 찾아주고 싶지만 이쪽도 사정이 있어서……. 좋은 사람을 만나길 바랄게, 알았지?」
 					ENDSELECT
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_近未来都市
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「……うそでしょナニこれ。こ、こんな綺羅びやかな世界があるというの……？」
+						PRINTFORMW 「……거짓말이지 뭐야 이거. 이, 이런 휘황찬란한 세계가 있다니……?」
 					CASE 1
 					;PUNK
-						PRINTFORML 「……！　すごい、すごいわねあの芸……！」
-						PRINTFORMW %CALLNAME:TARGET%は蛍光色のライトに心奪われながら、P.U.N.K.たちのパフォーマンスに拍手をおくっている
+						PRINTFORML 「……! 대단해, 대단하네 저 재주는……!」
+						PRINTFORMW %CALLNAME:TARGET%는 형광색 라이트에 마음을 빼앗긴 채, P.U.N.K.들의 퍼포먼스에 박수를 보내고 있다.
 					CASE 2
 					;M∀LICE
-						PRINTFORMW 「……最近の若者のファッションってどうなってるのかしら！？　なによあのハイレグ、恥って言葉しらないのかしら」
-						PRINTFORMW 「……ちなみに%CSTR:TARGET:MASCALL%はどう思う？　……その、わたしが着たら興奮、するかしら……」
+						PRINTFORMW 「……요즘 젊은 애들 패션은 어떻게 된 거야!? 뭐야 저 하이레그는, 부끄럽다는 말도 모르는 건가.」
+						PRINTFORMW 「……참고로 %CSTR:TARGET:MASCALL%는 어떻게 생각해? ……저기, 내가 입으면 흥분, 하려나……」
 					CASE 3
-						PRINTFORML 「連れてきてもらって何だけど、わたしにこの世界は合わないかな……」
-						PRINTFORMW 「しょせん、わたしは妖怪、夜の住人……。だけどこの世界は夜も明るすぎるわ……」
+						PRINTFORML 「데려와 줘서 미안하지만, 나랑 이 세계는 안 맞는 것 같아……」
+						PRINTFORMW 「결국, 나는 요괴, 밤의 주민……. 하지만 이 세계는 밤도 너무 밝아……」
 					ENDSELECT
 			ELSE
 				SELECTCASE RAND:4
 					CASE 0
-						PRINTFORMW 「楽しいかって？　楽しいわよ。%CSTR:TARGET:MASCALL%と一緒ならどこでだって楽しいわ」
+						PRINTFORMW 「즐겁냐고? 즐거워. %CSTR:TARGET:MASCALL%(와)과 함께라면 어디든 즐거워.」
 					CASE 1
-						PRINTFORMW 「こうやって歩いているだけなのに、いつもとまるで違って見えるわ」
-						PRINTFORMW 「……ねぇ、どうしてだと思う……❤」
+						PRINTFORMW 「이렇게 걷고 있을 뿐인데, 평소와는 전혀 다르게 보여.」
+						PRINTFORMW 「……있지, 왜 그런다고 생각해……❤」
 					CASE 2
-						PRINTFORMW 「ねぇ、お願いがあるの。手を繋いでくれる？」
+						PRINTFORMW 「있지, 부탁이 있어. 손, 잡아줄래?」
 					CASE 3
-						PRINTFORMW 「他の人からわたしたちってどう見えるのかしらね」
-						PRINTFORMW 「お似合いのカップル……なんて見られてたら嬉しいわね」
+						PRINTFORMW 「다른 사람이 보면 우리는 어떻게 보일까.」
+						PRINTFORMW 「잘 어울리는 커플…… 이라고 보이면 기쁘겠네.」
 				ENDSELECT
 			ENDIF
 		ELSE
 			IF CFLAG:TARGET:현재위치 == 場所_繁華街 || CFLAG:TARGET:현재위치 == 場所_식사通り || CFLAG:TARGET:현재위치 == 場所_スーパー || CFLAG:TARGET:현재위치 == 場所_学校内 || CFLAG:TARGET:현재위치 == 場所_東駅 || CFLAG:TARGET:현재위치 == 場所_南駅 || CFLAG:TARGET:현재위치 == 場所_観客席 || CFLAG:TARGET:현재위치 == 場所_モール || CFLAG:TARGET:현재위치 == 場所_北駅 || CFLAG:TARGET:현재위치 == 場所_KL入口 || CFLAG:TARGET:현재위치 == 場所_KL広場 
-				PRINTFORMW 「人混みは嫌いだわ……。はやく別の場所にいきましょう」			
+				PRINTFORMW 「인파는 싫어……. 빨리 다른 곳으로 가자.」				
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_病院
-				PRINTFORMW 「誰かに診てもらわないと身体の不調も治らないなんて、ニンゲンは不便ね」
+				PRINTFORMW 「누군가에게 진찰받지 않으면 몸이 안 좋은 게 낫지도 않는다니, 인간은 불편하네.」
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_カドショ
-				PRINTFORMW 「魔妖の新カード……ないわね。……まぁ不知火も強化はないみたいだしよしとしましょう」
+				PRINTFORMW 「마요괴 신 카드…… 없네. ……뭐, 시라누이도 강화는 없는 것 같으니 괜찮다고 할까.」
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_神社 || CFLAG:TARGET:현재위치 == 場所_教会
-				PRINTFORMW 「もしかして喧嘩売られてるのかしら。よりによってこんなところに連れて行かれるなんて」
+				PRINTFORMW 「혹시 싸움 거는 걸까. 하필이면 이런 곳에 데려오다니.」
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_公園 || CFLAG:TARGET:현재위치 == 場所_川沿い || CFLAG:TARGET:현재위치 == 場所_散歩道 || CFLAG:TARGET:현재위치 == 場所_サイクル
-				PRINTFORMW 「たまにはこうやって散歩するのもわるくないわね」
-				PRINTFORMW 「これで隣が%CSTR:TARGET:MASCALL%じゃなければもっとよかったけど」
+				PRINTFORMW 「가끔은 이렇게 산책하는 것도 나쁘지 않네.」
+				PRINTFORMW 「여기서 옆이 %CSTR:TARGET:MASCALL%가 아니었다면 더 좋았겠지만.」
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_森 || CFLAG:TARGET:현재위치 == 場所_鉱山
-				PRINTFORMW 「……ああもう！　歩き、にくい、わっ」
+				PRINTFORMW 「……아 정말! 걷기, 힘, 들잖아!」
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_裏通り || CFLAG:TARGET:현재위치 == 場所_ラブホ || CFLAG:TARGET:현재위치 == 場所_夜のお店 || CFLAG:TARGET:현재위치 == 場所_샤워室
 				IF TALENT:TARGET:굴복됨
-					PRINTFORML 「……いつでも、どうぞ❤」
-					PRINTFORMW %CALLNAME:TARGET%は顔を赤らめながら胸が見えるように服を少しはだけさせた
+					PRINTFORML 「……언제든지, 괜찮아요❤」
+					PRINTFORMW %CALLNAME:TARGET%는 얼굴을 붉히며 가슴이 보이도록 옷을 살짝 헤쳤다.
 				ELSE
-					PRINTFORMW 「で、こんなところで何をする気？　……不埒なことを企むようなら凍らせるわよ」
+					PRINTFORMW 「그래서, 이런 곳에서 뭘 할 생각이야? ……불순한 짓을 꾸민다면 얼려버리겠어.」
 				ENDIF
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_選手室 || CFLAG:TARGET:현재위치 == 場所_スタジアム || CFLAG:TARGET:현재위치 == 場所_듀얼場 || CFLAG:TARGET:현재위치 == 場所_KCスタジアム || CFLAG:TARGET:현재위치 == 場所_KCステージ
-				PRINTFORMW 「ほんとニンゲンは愚かね……。今も昔も力を見せびらかすことばっかり」
+				PRINTFORMW 「정말 인간은 어리석어……. 예나 지금이나 힘을 과시하는 것뿐이네.」
 			ELSEIF CFLAG:TARGET:현재위치 == 場所_中継地点 || CFLAG:TARGET:현재위치 == 場所_마법都市 || CFLAG:TARGET:현재위치 == 場所_王宮都市 || CFLAG:TARGET:현재위치 == 場所_밧줄張り || CFLAG:TARGET:현재위치 == 場所_魔界繁華街 || CFLAG:TARGET:현재위치 == 場所_천공의성역 || CFLAG:TARGET:현재위치 == 場所_近未来都市
-				PRINTFORMW 「異世界って……%CSTR:TARGET:MASCALL%なんでもありね……」
-				PRINTFORMW 「ところでわたしの世界には……いけない？　まぁここに比べれば田舎か……」
+				PRINTFORMW 「이세계라니…… %CSTR:TARGET:MASCALL%, 정말 뭐든지 있구나……」
+				PRINTFORMW 「그런데 내 세계로는…… 갈 수 없어? 뭐, 여기에 비하면 시골이겠지만……」
 			ELSE
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORMW 「それで、どうやってわたしを楽しませてくれるのかしら？」
+						PRINTFORMW 「그래서, 어떻게 나를 즐겁게 해줄 생각이지?」
 					CASE 1
-						PRINTFORMW 「ま、期待はしてないから。気楽にやりなさい」
+						PRINTFORMW 「뭐, 기대는 안 하니까. 편하게 해.」
 					CASE 2
-						PRINTFORMW 「ほんとにわたしと来て%CSTR:TARGET:MASCALL%は楽しいのかしら。楽しい？　へんなの」
+						PRINTFORMW 「정말로 나랑 같이 와서 %CSTR:TARGET:MASCALL%는 즐거운 걸까. 즐겁다고? 이상하네.」
 				ENDSELECT
 			ENDIF
 		ENDIF
 
 
-	;日常会話
+	;일상 대화
 	ELSE
 		SELECTCASE RAND:호감도修正 + 1
 			CASE 1
-				PRINTFORML 「知っての通り、魔妖は昼はニンゲンに紛れ、夜は妖怪として暴れていた集団よ」
-				PRINTFORMW 「忌々しい太陽の元だと妖怪としての力がだせなくなるの。だから奪い、夜だけの世界をつくる。それがわたしたち魔妖の目的よ」
+				PRINTFORML 「알다시피, 마요는 낮에는 인간들 사이에 섞여들고, 밤에는 요괴로서 날뛰던 집단이야.」
+				PRINTFORMW 「저주스러운 태양 아래에서는 요괴로서의 힘을 낼 수 없게 돼. 그래서 빼앗고, 밤만의 세계를 만든다. 그것이 우리 마요의 목적이야.」
 					IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-						PRINTFORMW 「……だったんだけどね。男一人にここまで揺さぶられるなんて、ほんと不覚だわ……。ふふっ♪」
+						PRINTFORMW 「……였는데 말이지. 남자 하나에 이렇게까지 흔들리다니, 정말 불찰이야……. 후훗♪」
 					ELSEIF TALENT:TARGET:굴복됨 
-						PRINTFORMW 「まぁ所詮負け犬の遠吠えだったのよね❤%CSTR:TARGET:MASCALL%どころか不知火にすら負けちゃってるんだから❤」
+						PRINTFORMW 「뭐, 결국 패배자의 넋두리였던 거지❤ %CSTR:TARGET:MASCALL%는커녕 시라누이에게조차 져버렸으니까❤」
 					ENDIF
 			CASE 2
-				PRINTFORML 「この世界、ニンゲンだらけなのが癪だけど、いいところがないわけではないわ」
-				PRINTFORMW 「なにせ太陽が昇っていても、妖怪としての力を失わずにすんでるもの。あとはニンゲンさえいなければいいんだけど」
+				PRINTFORML 「이 세계, 인간 천지인 건 아니꼽지만, 좋은 점이 없는 건 아니야.」
+				PRINTFORMW 「왜냐면 태양이 떠 있어도, 요괴로서의 힘을 잃지 않고 있을 수 있으니까. 이젠 인간만 없으면 될 텐데.」
 					IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-					PRINTFORMW 「……悪いけど意見を変えるつもりはないわ。ただ、妖怪にも嫌なヤツがいるように、ニンゲンにも好いたヒトがいた……それだけよ」
+					PRINTFORMW 「……미안하지만 의견을 바꿀 생각은 없어. 다만, 요괴에게도 싫은 녀석이 있듯이, 인간에게도 마음에 든 사람이 있었다…… 그뿐이야.」
 					ELSEIF TALENT:TARGET:굴복됨
-					PRINTFORMW 「もちろん%CSTR:TARGET:MASCALL%は別よ❤望まれるなら王として奉りあげたいところだわ♪」
+					PRINTFORMW 「물론 %CSTR:TARGET:MASCALL%는 예외야❤ 원하신다면 왕으로 모시고 싶을 정도인걸♪」
 					ENDIF			
 			CASE 3
-				PRINTFORML 「朧車……あいつは魔妖の中でも足が早くてね。真っ先に突っ込んで他の安全を確保するのよ」
-				PRINTFORMW 「それでいて目端が聞くから怪我人がいたら安全なところまで運んだりするのよ。……一番よわっちいから真っ先に退場するのもあいつなんだけどね」
+				PRINTFORML 「수레귀…… 그 녀석은 마요 중에서도 발이 빨라서 말이지. 가장 먼저 돌격해서 다른 동료의 안전을 확보해.」
+				PRINTFORMW 「그러면서도 눈치가 빨라서 부상자가 있으면 안전한 곳까지 옮기기도 하고. ……제일 약해 빠져서 가장 먼저 퇴장하는 것도 그 녀석이지만.」
 			CASE 4
-				PRINTFORML 「土蜘蛛……あいつは知恵が働くの。함정を仕掛けたり奇襲をしかけたり、あの図体で中々小器用でしょ？」
-				PRINTFORMW 「ただ狡っ辛いというか臆病というか……あまり正面から仕掛けたがらないのよね……。変に欲かいて失敗するのも日常茶飯事だし」
+				PRINTFORML 「땅거미…… 그 녀석은 머리가 잘 돌아가. 함정을 설치하거나 기습을 걸거나, 그 덩치로 제법 손재주가 좋지?」
+				PRINTFORMW 「다만 교활하다고 할까 겁쟁이라고 할까…… 별로 정면으로 덤비려고 하질 않아……. 괜히 욕심부리다 실패하는 것도 일상다반사고.」
 			CASE 5
-				PRINTFORML 「逢魔ノ刻に天狗がいるときの安心感ったらないわね。あいつぐらいよ？　積極的にニンゲンから学ぼうとするのは」
-				PRINTFORMW 「こちらが気づかない함정を事前に察知したり、상대の急所を勘ぐったり……もっとも頼れる男といってもいいわ。こっちをスケベな目で見ないしね」
+				PRINTFORML 「봉마의 각에 탱구가 있을 때의 안심감이란 이루 말할 수 없지. 그 녀석 정도라고? 적극적으로 인간에게서 배우려고 하는 건.」
+				PRINTFORMW 「이쪽이 눈치채지 못한 함정을 사전에 감지하거나, 상대의 급소를 간파하거나…… 가장 믿음직한 남자라고 해도 좋아. 이쪽을 야한 눈으로 보지도 않고 말이야.」
 			CASE 6
-				PRINTFORML 「妖狐……我らが魔妖の『オヒメサマ』ね……。わたしたち魔妖は彼女の呼びかけによって集まったわ……」
-				PRINTFORMW 「噂じゃ別の土地ではニンゲンを散々手玉にとって弄んでいたとか……まちがいなくわたしたちの中心、まさに『オヒメサマ』よ……」
+				PRINTFORML 「요호…… 우리 마요의 '공주님'이지……. 우리 마요는 그녀의 부름에 따라 모였어……」
+				PRINTFORMW 「소문으로는 다른 땅에서는 인간을 실컷 가지고 놀았다던가…… 틀림없는 우리의 중심, 그야말로 '공주님'이야……」
 					IF TALENT:TARGET:애처
-					PRINTFORMW 「……心配しないで。もう妲己なんかに劣等感はないわ。だって%CSTR:TARGET:MASCALL%がいるんだもの……❤」
+					PRINTFORMW 「……걱정하지 마. 이제 달기 따위에게 열등감은 없어. 왜냐면 %CSTR:TARGET:MASCALL%가 있는걸……❤」
 					ENDIF
-			;魔改造された夜叉つよいよね・・・
+			;마개조된 야차 강하지・・・
 			CASE 7
-				PRINTFORML 「餓者髑髏ぉ？　あんなの見た目通り、図体がでかいだけの暴れん坊よ。考える脳もない上に協調性の欠片もない、まさに単細胞よ」
-				PRINTFORMW 「……だったはずなんだけど、封印から目覚めたアイツ、なんか妙に気が利くようになってるのよね……%CSTR:TARGET:MASCALL%、何でか知らない？」
+				PRINTFORML 「아자촉루? 그런 건 생긴 그대로, 덩치만 큰 망나니야. 생각하는 뇌도 없을뿐더러 협조성이라곤 눈곱만큼도 없는, 그야말로 단세포지.」
+				PRINTFORMW 「……였을 텐데, 봉인에서 깨어난 그 녀석, 왠지 묘하게 눈치가 빨라졌단 말이지……. %CSTR:TARGET:MASCALL%, 왜 그런지 알고 있어?」
 			CASE 8
-				PRINTFORML 「別に暑いからって溶けたりしないし、熱いものが食べられないわけじゃないわ。そりゃ体温は低いけれども」
-				PRINTFORMW 「そもそもわたし、大の大人一人ぐらいなら凍らせられる程度の冷気を使えるのよ？　どうして熱を遮断できないと思ってるのよ」
+				PRINTFORML 「딱히 덥다고 녹거나 하진 않고, 뜨거운 걸 못 먹는 것도 아니야. 뭐 체온이 낮긴 하지만.」
+				PRINTFORMW 「애초에 나, 다 큰 어른 하나쯤은 얼려버릴 정도의 냉기를 쓸 수 있다고? 어째서 열을 차단하지 못할 거라고 생각하는 거야.」
 				IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-					PRINTFORMW 「……だから、ね。不安にならなくていいわ。わたしは溶けて消えたりしないから」
+					PRINTFORMW 「……그러니까, 말이야. 불안해하지 않아도 돼. 나는 녹아서 사라지거나 하지 않으니까.」
 				ENDIF
 			CASE 9
-				PRINTFORML 「わたしたち、프라이드は高いの。わけもわからない奴らをいれて百鬼夜行を台無しにされたくないの」
-				PRINTFORMW 「……ただそのせいで덱を組む時、苦労するわね。あぁもう、もうすこし寛容になるべきだったかしら？」
+				PRINTFORML 「우리는, 프라이드가 높아. 정체 모를 놈들을 들여서 백귀야행을 망치고 싶지 않거든.」
+				PRINTFORMW 「……다만 그 탓에 덱을 짤 때, 고생 좀 하지. 아 정말, 좀 더 너그러워져야 했던 걸까?」
 					IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-						PRINTFORMW 「……今のわたしはともかく、링크３以上のわたしならアンデット덱で採用もできるわ。……少々重い女だけど、それでも許してくれる？」
+						PRINTFORMW 「……지금의 나는 그렇다 쳐도, 링크 3 이상의 나라면 언데드 덱에 채용할 수도 있어. ……조금 무거운 여자지만, 그래도 용서해 줄래?」
 					ELSEIF TALENT:TARGET:굴복됨
-						PRINTFORMW 「わたし自身は利用できそうならとことん利用するスタンスなのに……。もちろん、%CSTR:TARGET:MASCALL%はわたしをいっぱい利用してくださいね❤」
+						PRINTFORMW 「나 자신은 이용할 수 있다면 철저하게 이용하는 입장이면서……. 물론, %CSTR:TARGET:MASCALL%는 저를 마음껏 이용해주세요❤」
 					ENDIF
 			CASE 10
-				PRINTFORML 「灰流うらら……犬畜生がニンゲンに媚び売って、死んでからも守るなんて。所詮バカ犬は尻尾を振るだけしか能がないのよ」
-				PRINTFORMW 「……別に私怨じゃないわ。……あっ！　こら！？　波旬殿の효과にチェーンするんじゃない！？」
-			;墓穴の指名者やめてくだしあ
+				PRINTFORML 「하루 우라라…… 개돼지 같은 게 인간에게 아양이나 떨고, 죽어서까지 지키겠다니. 결국 바보 개는 꼬리나 흔드는 것밖에 재주가 없는 거야.」
+				PRINTFORMW 「……딱히 개인적인 원한은 아니야. ……앗! 이봐!? 파순 공의 효과에 체인 걸지 마!?」
+			;묘혈의 지명자 그만둬주세요
 			CASE 11
-				PRINTFORML 「……うん、そりゃあ百鬼夜行の中で墓場を荒らしたことぐらいあるわ。罰当たりなぐらいじゃなきゃ目的を달성できないもの」
-				PRINTFORMW 「でもいざカードで荒らされるとムカつくわね……！　とくにこの緑の手！　気軽に제외して、しかも無効化するんじゃないの……っ」
+				PRINTFORML 「……응, 그야 백귀야행 중에 무덤을 파헤친 적 정도는 있어. 천벌받을 각오 정도는 해야 목적을 달성할 수 있는 법이니까.」
+				PRINTFORMW 「하지만 막상 카드로 당하니까 짜증 나네……! 특히 이 녹색 손! 아무렇지 않게 제외하고, 거기다 무효화까지 하지 말라고……!」
 			CASE 12
-				PRINTFORML 「ひっ、不知火！？　……こほん、わすれなさい。ええ、今すぐに」
+				PRINTFORML 「히익, 시라누이!? ……크흠, 잊어버려. 그래, 지금 당장.」
 					IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-						PRINTFORMW 「……情けないと笑わない？　ありがと。やっぱり、怖いものは怖いのよ……」
+						PRINTFORMW 「……한심하다고 비웃지 않을 거야? 고마워. 역시, 무서운 건 무서운걸……」
 					ELSEIF TALENT:TARGET:굴복됨
-						PRINTFORMW 「だって今のわたしが畏れるのは%CSTR:TARGET:MASCALL%にだけ……❤こんなのにビビった過去が恥ずかしいわ❤」
+						PRINTFORMW 「왜냐면 지금의 제가 두려워하는 건 %CSTR:TARGET:MASCALL%뿐……❤ 이런 거에 쫄았던 과거가 부끄러워❤」
 					ENDIF
 			CASE 13			
-				PRINTFORMW 「わたしたち魔妖の野望を挫き封印したにっくき不知火。その強さはカードじゃあ表現しきれないわよ。その恐怖、%CSTR:TARGET:MASCALL%にはわからないでしょうね」
+				PRINTFORMW 「우리 마요의 야망을 꺾고 봉인한 증오스러운 시라누이. 그 강함은 카드로는 다 표현할 수 없어. 그 공포, %CSTR:TARGET:MASCALL%는 모르겠지.」
 				IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-					PRINTFORMW 「……うん、今は大丈夫。となりに%CSTR:TARGET:MASCALL%がいてくれる、それだけで心強いわ」
+					PRINTFORMW 「……응, 지금은 괜찮아. 옆에 %CSTR:TARGET:MASCALL%가 있어주는 것, 그것만으로도 마음이 든든해.」
 				ELSE
-					PRINTFORML 　　　　　　　　　　　　　　　　　　　　　　　　　　　わたし
-					PRINTFORMW 「……もっとも、奴らは最後の最後に詰めを見誤った。一匹の妖怪を取り逃がした。ふふ、それこそが奴らにとって、致命的な疵となるのよ……！」
+					PRINTFORML 　　　　　　　　　　　　　　　　　　　　　　　　　　		　나
+					PRINTFORMW 「……뭣보다도, 녀석들은 마지막의 마지막에 마무리를 얕봤어. 한 마리의 요괴를 놓쳤지. 후후, 그것이야말로 녀석들에게, 치명적인 상처가 될 거야……!」
 				ENDIF
 			CASE 14
-				PRINTFORML 「……いいわ、直接的な戦闘はともかく、下働きとしてはすごくいい……。雰囲気もわたしたちにピッタリね」
-				PRINTFORMW 「なるほど、馬頭鬼……というのね。もし정령にあったら魔妖に勧誘しなくちゃ……！」
+				PRINTFORML 「……좋네, 직접적인 전투는 그렇다 쳐도, 막일꾼으로서는 아주 좋아……. 분위기도 우리랑 딱 맞고.」
+				PRINTFORMW 「과연, 마두귀……라고 하는구나. 만약 정령을 만나면 마요로 권유해야겠어……!」
 			CASE 15
 				IF  GET_MONTH() == "봄의 달"
-					PRINTFORMW 「ニンゲンにとって春は一番いい季節なんでしょうね。あちこちで浮かれたバカどもを見るわ」
-					PRINTFORMW 「わたし？　雪が溶けゆく季節だからね……。少々憂鬱な季節といったところかしら……」
+					PRINTFORMW 「인간에게 봄은 가장 좋은 계절이겠지. 여기저기서 들뜬 바보들이 보여.」
+					PRINTFORMW 「나? 눈이 녹아가는 계절이니까……. 조금 우울한 계절이라고 할까……」
 				ELSEIF GET_MONTH() == "여름의 달"
-					PRINTFORMW 「夏は好きよ。意外そうね……。冷気をまとえばこの程度余裕よ」
-					PRINTFORMW 「それにほら、夏の夜といえば妖怪の季節でしょう……！　ふふふ、ニンゲン共を恐怖に慄かせてやるわ……！」
+					PRINTFORMW 「여름은 좋아. 의외라는 표정이네……. 냉기를 두르면 이 정도는 여유로워.」
+					PRINTFORMW 「그리고 그거 알지, 여름밤이라고 하면 요괴의 계절이잖아……! 후후훗, 인간들을 공포에 떨게 해주겠어……!」
 				ELSEIF GET_MONTH() == "가을의 달"
-					PRINTFORMW 「秋、それはたくさんの食べ物が採れる季節。この時期は米倉庫の監視が一段と厳しくなるのよね……」
-					PRINTFORMW 「ふふふ、ちゃんと衣食住が確保されてる生活ってステキね……！　……ただ、食べ過ぎには注意がいるけど」
+					PRINTFORMW 「가을, 그건 많은 먹거리를 얻을 수 있는 계절. 이 시기는 쌀 창고 감시가 한층 더 엄격해지지……」
+					PRINTFORMW 「후후훗, 의식주가 제대로 확보된 생활이란 건 멋지네……! ……다만, 과식에는 주의가 필요하지만.」
 				ELSE
-					PRINTFORMW 「さぁわたしの季節がきたわよ？　あらゆる生命が死に絶える季節が……！」
-					PRINTFORMW 「……だけどこの世界のニンゲンはたくましいわね……。冬でも働くの？　休めるときに休みなさいよ……？」
+					PRINTFORMW 「자, 나의 계절이 왔어. 모든 생명이 죽어 없어지는 계절이……!」
+					PRINTFORMW 「……하지만 이 세계의 인간은 억척스럽네……. 겨울에도 일하는 거야? 쉴 수 있을 때 쉬라고……?」
 				ENDIF
 			;연모
 			CASE 13
-				PRINTFORMW 「──！？　……あぁ、ニンゲンの姿をしたわたし、『氷の魔妖－雪娘』ね……。正直、苦労した思い出しかないわ」
-				PRINTFORML 「嫌いなニンゲンに紛れ、各地を転々とし、虎視眈々と封印された魔妖の復活を企ててきたわ。それこそ憎き不知火が世間から忘れ去られるまで……」
-				PRINTFORMW 「時には泥を舐めたわ。時には木の根をかじったわ。……そうしてまでも復活させたかったのよ、魔妖。そう、そのはずだったのに……」
+				PRINTFORMW 「──!? ……아아, 인간의 모습을 한 나, '고드름의 마요괴-설랑' 말이지……. 솔직히, 고생한 기억밖에 없어.」
+				PRINTFORML 「싫어하는 인간들 사이에 섞여, 각지를 전전하며, 호시탐탐 봉인된 마요의 부활을 꾀해왔어. 그야말로 증오스러운 시라누이가 세간에서 잊힐 때까지……」
+				PRINTFORMW 「때로는 진흙을 핥았어. 때로는 나무뿌리를 씹었지. ……그렇게까지 해서 부활시키고 싶었던 거야, 마요를. 그래, 그랬을 텐데……」
 			CASE 14
-				PRINTFORML 「知ってる？　雪女の伝説。二人の親子が雪山で雪女に出くわし、子の方だけが生かされた。その後結婚したが、実は妻こそがかつての雪女だった」
-				PRINTFORMW 「夫が雪女に会ったことをバラすぐらい口が軽かったため今度こそ殺そうとしたが、結局できずに去っていってしまった。そんなお話」
+				PRINTFORML 「알고 있어? 설녀 전설. 두 부자가 설산에서 설녀를 만나, 아들 쪽만 살아남았지. 그 후 결혼했는데, 사실은 아내가 바로 과거의 그 설녀였다.」
+				PRINTFORMW 「남편이 설녀를 만났던 걸 떠벌릴 정도로 입이 가벼워서 이번에야말로 죽이려 했지만, 결국 그러지 못하고 떠나가 버렸지. 그런 이야기.」
 				IF TALENT:TARGET:애처
-					PRINTFORMW 「おろかな女……改めてそう思うわ。なぜその程度で失望して、幸せを手放しちゃったの？　わたしだったら意地でも離れない。離れたくないのに……」
+					PRINTFORMW 「어리석은 여자…… 새삼스럽게 그렇게 생각해. 왜 그 정도로 실망해서, 행복을 놓아버린 걸까? 나라면 어떻게든 떨어지지 않을 텐데. 떨어지고 싶지 않은데……」
 				ELSE
-					PRINTFORMW 「昔はおろかだと、そう思っていたわ。男一人に心乱されるなんて情けない……って。今？　今はすこしだけ、わかる気がするの……」
+					PRINTFORMW 「옛날에는 어리석다고, 그렇게 생각했어. 남자 하나에 마음이 흔들리다니 한심하다고……. 지금? 지금은 조금, 알 것 같은 기분이 들어……」
 				ENDIF
 			CASE 15
-				PRINTFORML 「悪魔がそうであるように、わたしたちも本当の名を晒すことは大きな弱点になるわ。……逆に言えば常に名前を堂々と名乗ってる妖怪は桁違いの強さなのよ」
-				PRINTFORMW 「妲己……。彼女がそうであるように、ね。だからこそわたしたちは敬意と畏怖をもって呼ぶのよ……『オヒメサマ』とね……」
+				PRINTFORML 「악마가 그렇듯이, 우리도 진짜 이름을 드러내는 것은 커다란 약점이 돼. ……반대로 말하면 늘 이름을 당당하게 밝히는 요괴는 격이 다른 강자라는 거지.」
+				PRINTFORMW 「달기……. 그녀가 그런 것처럼, 말이야. 그렇기 때문에 우리는 경의와 외경을 담아 부르는 거야…… '공주님'이라고……」
 					IF TALENT:TARGET:애처
-					PRINTFORMW 「でももういいの。わたしには%CSTR:TARGET:MASCALL%がいる。そう、それだけでいい、いいのよ……❤」
+					PRINTFORMW 「하지만 이제 괜찮아. 나에게는 %CSTR:TARGET:MASCALL%가 있어. 그래, 그것만으로 됐어, 된 거야……❤」
 				ELSEIF TALENT:TARGET:굴복됨
-					PRINTFORMW 「そんな『オヒメサマ』、へし折りたくありませんか❤もしよろしければ紹介しますよ♪」
+					PRINTFORMW 「그런 '공주님', 꺾어버리고 싶지 않으세요❤ 괜찮으시다면 소개해 드릴게요♪」
 					ENDIF
 			CASE 16
-				PRINTFORML 「何度も言ってるけどニンゲンは嫌いよ。……理屈じゃないの、よわっちいくせに我が物顔で世界を謳歌してるのが、嫌い」
-				PRINTFORMW 「でもまぁ、わたしに協力してくれるあんたのことは、少しだけ認めてあげる。……居場所がなくなったらきなさい。特別に魔妖にいれてあげるわ」
+				PRINTFORML 「몇 번이고 말하지만 인간은 싫어. ……이유 같은 게 아니야, 약해 빠졌으면서 제멋대로 세상을 활보하는 게, 싫어.」
+				PRINTFORMW 「하지만 뭐, 나에게 협력해 주는 당신만큼은, 조금은 인정해 줄게. ……있을 곳이 없어지면 오라고. 특별히 마요에 넣어줄 테니.」
 			CASE 17
-				PRINTFORML 「『逢華妖麗譚－魔妖語』。知ってるわよね、当然。お互いの立場も知らず交流を続けていた妖狐と不知火の末裔。真実が明かされ、争い合う運命となる二人」
-				PRINTFORMW 「そこへ突然、『雪女』が二人に割って入った。突然の乱入者に驚く二人を尻目に、『雪女』は不知火の刀に手を伸ばし──」
-				PRINTFORMW 「実は続きがあるのよ。『零氷』へと至ったわたしと、対峙する二人の『オヒメサマ』。……『逢華妖麗譚－魔妖不知火語』、こちらはこの世界には伝わってないみたいね……」
+				PRINTFORML 「'봉화요려담-마요괴이야기'. 알고 있겠지, 당연히. 서로의 입장도 모른 채 교류를 계속하던 요호와 시라누이의 후예. 진실이 밝혀지고, 싸워야 할 운명이 된 두 사람.」
+				PRINTFORMW 「그곳에 갑자기, '설녀'가 두 사람 사이에 끼어들었어. 갑작스러운 난입자에 놀라는 두 사람을 아랑곳 않고, '설녀'는 시라누이의 칼에 손을 뻗어──」
+				PRINTFORMW 「실은 뒷이야기가 있어. '영빙'에 이른 나와, 대치하는 두 명의 '공주님'. ……'봉화요려담-마요괴시라누이이야기', 이쪽은 이 세계에는 전해지지 않은 모양이네……」
 			CASE 18
-				PRINTFORML 「『氷の魔妖－雪女』。えぇ、今、目の前にいるわたしね。長きにわたる雌伏の末に、魔妖復活の偉業をなしたわたし」
-				PRINTFORML 「でもね、長い時間って人を変えちゃうのよ。ただの小娘が身に余る野望を抱くには十分すぎるほど、ね。……それは%CSTR:TARGET:MASCALL%も知っているでしょう？」
-				PRINTFORMW %CALLNAME:TARGET%は紺色の枠のカードを二枚、ヒラヒラさせている……
-			;親愛
+				PRINTFORML 「'고드름의 마요괴-설녀'. 그래, 지금, 눈앞에 있는 나 말이야. 오랜 세월 몸을 낮춘 끝에, 마요 부활의 위업을 이룬 나.」
+				PRINTFORML 「하지만 말이야, 긴 시간이란 건 사람을 바꿔버리는 법이야. 그저 어린 소녀가 분에 넘치는 야망을 품기에는 충분하고도 남을 만큼, 말이지. ……그건 %CSTR:TARGET:MASCALL%도 알고 있겠지?」
+				PRINTFORMW %CALLNAME:TARGET%는 감색 테두리의 카드 두 장을, 팔랑거리고 있다……
+			;친애
 			CASE 19
-				PRINTFORML 「……えぇ、えぇ認めましょう。わたし、……わたし！　『オヒメサマ』が憎くてたまらなかった！　羨ましくて、嫉妬して、取って代わりたいと何度も思っていた！」
-				PRINTFORMW 「자신勝手にはぐれ妖怪を集めて百鬼夜行を始めて！　余所者だったのにまわりからチヤホヤされて！　なのに復活したらまた자신勝手にニンゲンに絆されて！！」
-				PRINTFORMW 「……なによりも、ただの『妖狐』じゃなく『妲己』という立派な名前をもってて……。わたし、わたしだってただの『雪女』で終わりたくない！！　そう思ったの！！」
+				PRINTFORML 「……에, 에에, 인정할게. 나, ……나는! '공주님'이 죽도록 미웠어! 부러워서, 질투 나서, 그 자리를 빼앗고 싶다고 몇 번이고 생각했어!」
+				PRINTFORMW 「제멋대로 떠돌이 요괴들을 모아서 백귀야행을 시작하고! 외부인이었으면서 주위에서 떠받들어주고! 그런데 부활했더니 또 제멋대로 인간에게 마음을 주고!!」
+				PRINTFORMW 「……무엇보다도, 그저 '요호'가 아니라 '달기'라는 훌륭한 이름을 가지고 있어서……. 나, 나도 그저 '설녀'로 끝나고 싶지 않아!! 그렇게 생각했어!!」
 			CASE 20
-				PRINTFORML 「もう隠す必要もないわね、教えましょうわたしの野望、目的。……それは所詮、ただの雪女にすぎないわたしが『わたし』になること」
-				PRINTFORMW 「最初から名前をもってるあんたにはわからないでしょうね、この苦しみは。例えるなら%CSTR:TARGET:MASCALL%が『ニンゲン』としか呼ばれない、そういうものよ」
-				PRINTFORMW 「だから私はただの雪女にならない。男に絆されたりしないし、力が手に入るなら奪って見せる。……滑稽でしょう？　結局、%CSTR:TARGET:MASCALL%に絆されちゃったわ」
+				PRINTFORML 「이제 숨길 필요도 없겠네, 가르쳐주지. 나의 야망, 목적. ……그건 결국, 그저 설녀에 불과한 내가 '나' 자신이 되는 것.」
+				PRINTFORMW 「처음부터 이름을 가진 당신은 모르겠지, 이 괴로움은. 비유하자면 %CSTR:TARGET:MASCALL%가 '인간'이라고만 불리는, 그런 거야.」
+				PRINTFORMW 「그래서 나는 그저 설녀가 되지 않아. 남자에게 마음 따위 주지 않고, 힘이 손에 들어온다면 빼앗아 보이겠어. ……우스꽝스럽지? 결국, %CSTR:TARGET:MASCALL%에게 마음을 줘버렸지만.」
 			CASE 21
-				PRINTFORML 「実は『垂氷』の姿ってよくわからないのよ。本来、『氷』から『零氷』に至ったわけだしね」
-				PRINTFORMW 「でもこれが何を示しているかはわかるわ。……『垂氷』とはつららから溶け出した水、これで本当に良かったのかと心に問いかけている姿、なのでしょうね」
+				PRINTFORML 「사실 '수빙'의 모습은 잘 모르겠어. 본래, '빙'에서 '영빙'에 이른 셈이니까.」
+				PRINTFORMW 「하지만 이것이 무엇을 의미하는지는 알고 있어. ……'수빙'이란 고드름에서 녹아내린 물, 이걸로 정말 괜찮았던 건지 마음에 묻고 있는 모습, 이겠지.」
 			CASE 22
-				PRINTFORML 「『零氷の魔妖－雪女』。ふふっ、ついにあの妖狐にすら攻撃力が並んだわ……！　これでだれも、私を無視できない！」
-				PRINTFORMW 「……なのにこうしてカードとしてみるとむなしいわね。ここまでしても、結局わたしは『雪女』のままなのね」
+				PRINTFORML 「'영빙의 마요괴-설녀'. 후훗, 드디어 그 요호와도 공격력이 나란히 섰어……! 이걸로 아무도, 나를 무시할 수 없어!」
+				PRINTFORMW 「……그런데 이렇게 카드로 보니 허무하네. 여기까지 해도, 결국 나는 '설녀' 그대로구나.」
 			CASE 23
-				PRINTFORML 「すきなもの？　さぁ、なんだったかな……」
-				PRINTFORMW 「こころをこおらせないと、ここまでやってこれなかったから。はたしてわたしは、なにがすきだったんでしょうね……」
-				PRINTFORMW 「……なんてね？　そんな顔しないの。今は胸をはって言えるから。わたしが好きなのは、……目の前の%CSTR:TARGET:MASCALL%だって❤」
+				PRINTFORML 「좋아하는 거? 글쎄, 뭐였더라……」
+				PRINTFORMW 「마음을 얼리지 않으면, 여기까지 올 수 없었으니까. 과연 나는, 무엇을 좋아했던 걸까……」
+				PRINTFORMW 「……농담이야. 그런 표정 짓지 마. 지금은 가슴 펴고 말할 수 있으니까. 내가 좋아하는 건, ……눈앞의 %CSTR:TARGET:MASCALL%라고❤」
 			;애처
 			CASE 24
-				PRINTFORMW 「ずっと知らなかったわ。しあわせって意外と身近で、あたたかいものだったのね……❤」
+				PRINTFORMW 「계속 몰랐어. 행복이란 건 의외로 가까이에, 그리고 따뜻한 것이었구나……❤」
 			CASE 25
-				PRINTFORML 「所詮ガイコツの雑魚が群れてるだけってバカにしてたけど、今では彼らのありかたが眩しく見えるわ……」
-				PRINTFORMW 「ワイト……旦那が敵を倒し、妻が支え、家族が助ける……。わたしも、あなたとそんな家族がつくれるかしら？」
+				PRINTFORML 「결국 해골 잡몹이 무리 지어 있는 것뿐이라고 무시했었는데, 지금은 그들의 모습이 눈부셔 보여……」
+				PRINTFORMW 「저주받은 하인…… 남편이 적을 쓰러뜨리고, 아내가 지지하고, 가족이 돕고……. 나도, 당신과 그런 가족을 만들 수 있을까?」
 		ENDSELECT
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;301,お茶を淹れる
+;301,차를 끓인다
 ;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_301
-;成否판정
+;성패판정
 ;TFLAG:192(-2=コマンド終了、-1＝強制失敗、0=COM依存、1=強制成功or大成功
 TFLAG:192 =0
 
@@ -902,31 +902,31 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_301_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-;はじめてお茶
+;첫 차
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「お茶？　%CSTR:TARGET:MASCALL%が？　そう、じゃ、おねがい」
-		PRINTFORMW 「……好み？　そうねぇ……うんと渋くて、熱いお茶かしら」
-		PRINTFORMW 「え、熱いのダメだと思ってた？　……美味しいお茶はアツアツだからいいんじゃない」
+		PRINTFORMW 「차? %CSTR:TARGET:MASCALL%가? 그래, 그럼, 부탁할게.」
+		PRINTFORMW 「……취향? 글쎄…… 아주 떫고, 뜨거운 차려나.」
+		PRINTFORMW 「에, 뜨거운 건 안 될 거라고 생각했어? ……맛있는 차는 뜨거워야 제맛이잖아.」
 		RETURN 1
 	ENDIF
 
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1
-			PRINTFORML 「……ん。美味しい。甘いものよりはせんべいのほうがほしいわね」
-			PRINTFORMW 「……ババ臭い？　まぁ見た目よりはながく生きてるから、しかたないでしょ」
+			PRINTFORML 「……음. 맛있네. 단 것보다는 센베이 과자가 더 당기네.」
+			PRINTFORMW 「……할머니 같다고? 뭐, 보기보다는 오래 살았으니까, 어쩔 수 없지.」
 		CASE 0
-			PRINTFORMW 「ふぅ……。渋くていい感じだわ、ありがと。精進なさい」
+			PRINTFORMW 「후우……. 떫고 좋네, 고마워. 정진하도록 해.」
 		CASE -1
-			PRINTFORMW 「……まさか客人상대に茶葉の使い回しなんてしてないわよね？　違うなら%CSTR:TARGET:MASCALL%の腕を過剰に評価しちゃってたみたいね……」
+			PRINTFORMW 「……설마 손님 상대로 찻잎을 재탕한 건 아니겠지? 아니라면 %CSTR:TARGET:MASCALL%의 솜씨를 과대평가했나 보네……」
 	ENDSELECT
 ENDIF
 RETURN 1
 ;==================================================
-;302,スキンシップ
+;302,스킨십
 ;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_302
@@ -941,55 +941,55 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_302_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 
-;はじめてスキンシップ
+;첫 스킨십
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「わたしに触れたい、ねぇ。……正気？」
-		PRINTFORMW 「いくら目の前に美少女がいるからって、わたし、%CSTR:TARGET:MASCALL%をいつでも凍らせられるのよ？　わかってる？」
-		PRINTFORMW 「……はぁ、いっても聞かないバカなのね。せめて優しくしなさい」
+		PRINTFORMW 「나를 만지고 싶다, 라. ……제정신이야?」
+		PRINTFORMW 「아무리 눈앞에 미소녀가 있다고 해도, 나, %CSTR:TARGET:MASCALL%를 언제든지 얼려버릴 수 있다고? 알고는 있어?」
+		PRINTFORMW 「……하아, 말해도 듣지 않는 바보구나. 적어도 상냥하게 하라고.」
 		RETURN 1
 	ENDIF
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처 
-				PRINTFORML 「ふふっ、いいわよ。もっとわたしを、大事に扱いなさい？」
-				PRINTFORMW 「%CSTR:TARGET:MASCALL%から愛されていると、もっと実感させて……？」
+				PRINTFORML 「후훗, 좋아. 나를 더, 소중하게 다뤄줘.」
+				PRINTFORMW 「%CSTR:TARGET:MASCALL%에게 사랑받고 있다고, 더 실감하게 해줘……?」
 			ELSEIF TALENT:TARGET:굴복됨
-				PRINTFORML 「……も、もしかしてわたし、焦らされているのかしら？　それともどう応えるか試されている……？」
-				PRINTFORMW %CALLNAME:TARGET%は顔を赤くしながらカチコチかたまっている
+				PRINTFORML 「……호, 혹시 저, 애태움 당하는 건가요? 아니면 어떻게 반응할지 시험당하는……?」
+				PRINTFORMW %CALLNAME:TARGET%는 얼굴을 붉히며 돌처럼 굳어있다.
 			ELSE
-				PRINTFORML 「……へぇ、思ったより上手なのね。」
-				PRINTFORMW 「もっとわたしを만족させられるなら、もうちょっとすごいことを許してやってもいいわよ？　なんてね」
+				PRINTFORML 「……헤에, 생각보다 능숙하네.」
+				PRINTFORMW 「나를 더 만족시킨다면, 좀 더 대단한 걸 허락해 줘도 괜찮고? 농담이야.」
 			ENDIF
 		CASE 0
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처 
-				PRINTFORMW 「覚えておきなさい。どれだけ時間を重ねても、こういう単純な접촉が案外好きなのよ……❤」
+				PRINTFORMW 「기억해 둬. 아무리 시간이 흘러도, 이런 단순한 접촉을 의외로 좋아하니까……❤」
 			ELSEIF TALENT:TARGET:굴복됨
-				PRINTFORMW 「%CSTR:TARGET:MASCALL%らしくないわね。もっと好きにしたくないの……？」
+				PRINTFORMW 「%CSTR:TARGET:MASCALL%답지 않네요. 더 마음대로 하고 싶지 않으세요……?」
 			ELSE
-				PRINTFORMW 「……まぁ、目の前にこんな美少女がいたらちょっとぐらい触りたくなるわよね。まったく……」
+				PRINTFORMW 「……뭐, 눈앞에 이런 미소녀가 있으면 조금쯤은 만지고 싶어지겠지. 정말이지……」
 			ENDIF
 		CASE -1
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처 
-				PRINTFORMW 「いくら慣れた상대だからって、자신本位なのはだめでしょう？
-				PRINTFORMW 　……ん、反省した？　ならやり直しを要求するわ」
+				PRINTFORMW 「아무리 익숙한 상대라고 해도, 자기 멋대로인 건 안되지?」
+				PRINTFORMW 「……응, 반성했어? 그럼 다시 하도록 해.」
 			ELSE
-				PRINTFORMW 「へたくそ。もっと상대のことかんがえなさい」
+				PRINTFORMW 「서투르네. 좀 더 상대를 생각하라고.」
 			ENDIF
 	ENDSELECT
 ENDIF
 RETURN 1
 ;==================================================
-;303,謝る
-;TFLAG:SELECTCOM분기(2=菓子折成功 1=大成功 0=成功 -1=失敗 -2=菓子折失敗)
+;303,사과하기
+;TFLAG:SELECTCOM분기(2=과자 선물 성공 1=대성공 0=성공 -1=실패 -2=과자 선물 실패)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_303
-;成否판정
-;TFLAG:192(-2=コマンド終了、-1＝強制失敗、0=COM依存、1=強制成功or大成功
+;성패 판정
+;TFLAG:192(-2=커맨드 종료, -1=강제 실패, 0=COM 의존, 1=강제 성공 or 대성공)
 TFLAG:192 =0
 
 @M_KOJO_MESSAGE_COM_K2030_303
@@ -999,25 +999,25 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_303_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기 
 		CASE 0,1,2
-			PRINTFORML 「わかった。じゃあ今回は許してあげる」
-			PRINTFORMW 「早くないか？　バカね、ずっと怒っているってのも疲れるのよ」
+			PRINTFORML 「알았어. 그럼 이번엔 용서해 줄게.」
+			PRINTFORMW 「너무 빠르다고? 바보네, 계속 화내는 것도 피곤한 법이야.」
 		CASEELSE
-			PRINTFORMW 「誠意がみえない。やりなおし」
+			PRINTFORMW 「성의가 안 보이네. 다시 해.」
 	ENDSELECT
 ENDIF
 RETURN 1
 [SKIPSTART]
 ;==================================================
-;304,仕事を手伝う
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
-;CFLAG:350(仕事内容(JOB_仕事内容.ERB参照のこと
-;TCVAR:手伝えない(=2 手伝っても早くは終わらない、時間停止中불가 永琳の診察等)
+;304,일을 돕는다
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패)
+;CFLAG:350(일 내용(JOB_일내용.ERB 참조할 것)
+;TCVAR:도울수없음(=2 도와줘도 빨리 끝나지 않음, 시간 정지 중 불가, 에이린의 진찰 등)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_304
 ;成否판정
@@ -1031,7 +1031,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_304_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1040,13 +1040,13 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;305,膝枕してもらう
-;TFLAG:SELECTCOM분기(-5=MASTERがTARGETよりも巨体の場合(TALENT:MASTER:체형 > TALENT:체형 + 2) 1=大成功 0=成功 -1=失敗)(-5以外は地の文분기無し)
-;ABL:친밀(6以上=顔をのぞき込みながら頭を撫でてくれる 3以上=ただ頭を撫でてくれる 2以下=縮こまっている)
+;305, 무릎베개 받기
+;TFLAG:SELECTCOM분기(-5=MASTER가 TARGET보다 거구일 경우(TALENT:MASTER:체형 > TALENT:체형 + 2) 1=대성공 0=성공 -1=실패)(-5 이외는 서술 분기 없음)
+;ABL:친밀(6 이상=얼굴을 들여다보며 머리를 쓰다듬어 줌 3 이상=그냥 머리를 쓰다듬어 줌 2 이하=움츠러듦)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_305
 ;成否판정
-;TFLAG:192(-2=コマンド終了、-1＝強制失敗、0=COM依存、1=強制成功or大成功
+;TFLAG:192(-2=커맨드 종료, -1=강제 실패, 0=COM 의존, 1=강제 성공 or 대성공)
 TFLAG:192 =0
 
 @M_KOJO_MESSAGE_COM_K2030_305
@@ -1056,42 +1056,42 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_305_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-;はじめて膝枕
+;첫 무릎베개
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「人の膝をなんだと思ってるの。お断りよ」
-		PRINTFORMW 「そもそも%CSTR:TARGET:MASCALL%、ちゃんと髪洗ってんの？　頭重くない？　膝、痺れるのいやよ？」
-		PRINTFORMW 「……そんな目でみるな。やってあげるから。ただこれからは、わたしに気をつかいなさい」
+		PRINTFORMW 「남의 무릎을 뭐라고 생각하는 거야. 거절이야.」
+		PRINTFORMW 「애초에 %CSTR:TARGET:MASCALL%, 머리는 제대로 감는 거야? 머리 무겁지 않아? 무릎, 저리는 거 싫다고.」
+		PRINTFORMW 「……그런 눈으로 보지 마. 해주면 되잖아. 다만 앞으로는, 나를 신경 쓰라고.」
 		RETURN 1
 	ENDIF
 
 	IF ABL:TARGET:친밀 >= 6
 		IF TALENT:TARGET:굴복됨
-			PRINTFORML 「気持ちいい？　ならよかった」
-			PRINTFORMW 「ヒンヤリしていて気持ちいいでしょう？　いいんですよ、寝てしまっても……❤」
+			PRINTFORML 「기분 좋아요? 그럼 다행이네요.」
+			PRINTFORMW 「서늘해서 기분 좋죠? 괜찮아요, 잠들어 버려도……❤」
 		ELSE
-			PRINTFORMW 「……わたしがややこを授かったら、こんな感じなのかしら、ね」
+			PRINTFORMW 「……내가 아기를 가지면, 이런 느낌일까, 응.」
 		ENDIF
 	ELSEIF ABL:TARGET:친밀 >= 3
 		IF TALENT:TARGET:굴복됨
-			PRINTFORML 「……ふ、ふふ、もちろん命令には絶対服従、わかってるわ」
-			PRINTFORMW 「で、でもなんだかその、むず痒いの……。こ、こんなのでいいんですか？」
+			PRINTFORML 「……후, 후훗, 물론 명령에는 절대복종, 알고 있어요.」
+			PRINTFORMW 「그, 그런데 왠지 그, 간질거려요……. 이, 이런 걸로 괜찮으신가요?」
 		ELSE
-			PRINTFORML 「そうやってしてたら無害そうな顔なのにね……。ほら、頭うごかさない」
-			PRINTFORMW 「もし疲れてるなら目を閉じてもいいのよ？　……わたしの顔、見ていたい？　そう……」
+			PRINTFORML 「그렇게 있으니 순한 얼굴이네……. 자, 머리 움직이지 마.」
+			PRINTFORMW 「혹시 피곤하면 눈 감아도 괜찮아. ……내 얼굴, 보고 싶어? 그래……」
 		ENDIF
 	ELSE
-		PRINTFORMW 「気持ちいい？　そう。よかったわね。……で、いつまで我慢すればいいの？」
+		PRINTFORMW 「기분 좋아? 그래. 다행이네. ……그래서, 언제까지 참으면 되는 거야?」
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;306,お腹を撫でる
-;TFLAG:SELECTCOM분기(1=ABL:친밀6以上かつ임신時 0=成功 -1=ABL:친밀5以下)
-;TCVAR:질내사정횟수(1to5=子種入り 6to15=たっぷり 16to50=どっぷり 51以上=ぽってり)
+;306,배를 만진다
+;TFLAG:SELECTCOM분기(1=ABL:친밀6 이상 및 임신 시 0=성공 -1=ABL:친밀5 이하)
+;TCVAR:질내사정횟수(1to5=씨앗 들어감 6to15=듬뿍 16to50=흥건 51이상=볼록)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_306
 CALL TRAIN_MESSAGE
@@ -1100,12 +1100,12 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_306_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	;-------------------------------------------------
-	;記入チェック（=0, 非표시、1, 표시）
+	;기입 체크（=0, 비표시、1, 표시）
 	;질내사정횟수분기
 	LOCAL:1 = 1
 	;-------------------------------------------------
@@ -1113,52 +1113,52 @@ IF LOCAL
 		SELECTCASE TCVAR:TARGET:질내사정횟수
 		CASE 1 TO 5
 			IF TALENT:TARGET:굴복됨 
-				PRINTFORMW 「……わかってるわ、これぐらいで만족、しませんよね……❤」
+				PRINTFORMW 「……알고 있어요, 이 정도로는 만족, 안 하시겠죠……❤」
 			ELSE
-				PRINTFORMW 「……今は、さわらないで」
-				PRINTFORMW 「どうしても、注ぎ込まれたものを、意識しちゃうから……」
+				PRINTFORMW 「……지금은, 만지지 마.」
+				PRINTFORMW 「아무래도, 안에 쏟아진 게, 신경 쓰이니까……」
 			ENDIF
 		CASE 6 TO 15
 			IF TALENT:TARGET:굴복됨
-				PRINTFORMW 「……んっ❤お腹の中でうごいてるみたい❤」
+				PRINTFORMW 「……응❤ 뱃속에서 움직이는 것 같아❤」
 			ELSE
-				PRINTFORMW 「そんなにお腹を撫で回して……」
-				PRINTFORMW 「もしかして私が孕むことを期待してるの？」
+				PRINTFORMW 「그렇게나 배를 쓰다듬고……」
+				PRINTFORMW 「혹시 내가 임신하기를 기대하는 거야?」
 			ENDIF
 		CASE 16 TO 50
 			IF TALENT:TARGET:굴복됨
-				PRINTFORMW 「……さすがです❤性豪❤絶倫❤偉大なオス様❤」
-				PRINTFORMW 「こんなの、赤ちゃん孕んじゃいますよぅ……❤」
+				PRINTFORMW 「……역시 대단하세요❤ 성호❤ 절륜❤ 위대한 수컷님❤」
+				PRINTFORMW 「이러다간, 아기 가져버린다구요……❤」
 			ELSE
-				PRINTFORMW （あ……お腹の中、あったかい……）
-				PRINTFORMW （ふふ、こんなに사정しちゃうぐらい、わたしのことがよかったのね……❤）
+				PRINTFORMW (아…… 뱃속, 따뜻해……)
+				PRINTFORMW (후훗, 이렇게나 사정해버릴 만큼, 내가 좋았던 거구나……❤)
 			ENDIF
 		CASEELSE
-			PRINTFORMW 「……ふふっ❤見て、このお腹、もう임신してるみたい❤」
-			PRINTFORMW 「ここまでするなんて、%CSTR:TARGET:MASCALL%のほうがよっぽどバケモノと言うしかないわね❤」
+			PRINTFORMW 「……후훗❤ 봐, 이 배, 이제 임신한 것 같아❤」
+			PRINTFORMW 「여기까지 하다니, %CSTR:TARGET:MASCALL% 쪽이 훨씬 더 괴물이라고 할 수밖에 없겠네❤」
 		ENDSELECT
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1
-			PRINTFORMW 「……しっかり、大きく育つんですよ」
-			PRINTFORMW 「大丈夫、かか様が丈夫に産んであげますからね……」
+			PRINTFORMW 「……튼튼하게, 무럭무럭 자라야 한단다.」
+			PRINTFORMW 「괜찮아, 엄마가 건강하게 낳아줄 테니까……」
 		CASE 0
-			PRINTFORMW 「時代は変わるものね。お腹を撫でるだなんてはしたない」
+			PRINTFORMW 「시대가 변했구나. 배를 쓰다듬다니 망측해라.」
 		CASE -1
-			PRINTFORMW 「……なにが楽しいの？」
+			PRINTFORMW 「……뭐가 재밌는 거야?」
 	ENDSELECT
 ENDIF
 RETURN 1
 [SKIPSTART]
 ;==================================================
 ;307,頬をつまむ
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)(地の文분기無し
-	;以下は先に書いた条件が優先される
-	;TALENT:연모(受け入れつつ笑顔でやり返す
-	;ABL:친밀(6以上=おずおずとやり返す
-	;ABL:순종(5以上=されるがまま
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패)(서술 분기 없음)
+	;이하는 먼저 쓰인 조건이 우선됨
+	;TALENT:연모(받아들이면서 미소로 되갚아줌)
+	;ABL:친밀(6 이상=쭈뼛거리며 되갚아줌)
+	;ABL:순종(5 이상=당하는 대로 가만히 있음)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_307
 ;成否판정
@@ -1172,7 +1172,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_307_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1180,9 +1180,9 @@ IF LOCAL
 ENDIF
 RETURN 1
 ;==================================================
-;308,頬をつつく
-;添い寝中or수면中限定
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
+;308, 뺨을 찌른다
+;곁잠 중 or 수면 중 한정
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_308
 ;成否판정
@@ -1196,7 +1196,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_308_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1206,7 +1206,7 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;309,頭を撫でる
+;309,머리를 쓰다듬는다
 ;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
 ;ABL:친밀(6以上=通常成功時분기
 ;==================================================
@@ -1222,41 +1222,41 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_309_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-;はじめて頭撫で
+;첫 머리 쓰다듬기
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「……ちょっと。勝手に頭を撫でないで」
-		PRINTFORMW 「童あつかいするな。わたしは立派なオトナなんだから……」
+		PRINTFORMW 「……어이. 마음대로 머리 쓰다듬지 마.」
+		PRINTFORMW 「애 취급하지 마. 나는 어엿한 어른이니까……」
 		RETURN 1
 	ENDIF
 
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처 
-				PRINTFORMW 「覚えておきなさい。どれだけ時間を重ねても、こういう単純な접촉が案外好きなのよ……❤」
+				PRINTFORMW 「기억해 둬. 아무리 시간이 흘러도, 이런 단순한 접촉을 의외로 좋아하니까……❤」
 			ELSEIF TALENT:TARGET:굴복됨 
-				PRINTFORMW 「%CSTR:TARGET:MASCALL%らしくないわね。もっと好きにしたくないの……？」
+				PRINTFORMW 「%CSTR:TARGET:MASCALL%답지 않네요. 더 마음대로 하고 싶지 않으세요……?」
 			ELSE
-				PRINTFORMW 「……まぁ、目の前にこんな美少女がいたらちょっとぐらい触りたくなるわよね。まったく……」
+				PRINTFORMW 「……뭐, 눈앞에 이런 미소녀가 있으면 조금쯤은 만지고 싶어지겠지. 정말이지……」
 			ENDIF
 		CASE 0
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처 
-				PRINTFORMW 「……うん。もっと撫でて。褒めて」
+				PRINTFORMW 「……응. 더 쓰다듬어줘. 칭찬해줘.」
 			ELSE
-				PRINTFORMW 「……子供だと思ってない？　わたしのこと」
+				PRINTFORMW 「……어린애라고 생각하는 거 아니야? 나를.」
 			ENDIF
 		CASE -1
-			PRINTFORMW 「調子にのるな。わたしはもう童じゃないのよ」
+			PRINTFORMW 「우쭐대지 마. 난 이제 애가 아니라고.」
 	ENDSELECT
 ENDIF
 RETURN 1
 [SKIPSTART]
 ;==================================================
-;331,お茶を淹れる（薬入り）
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
+;331, 차를 끓인다 (약 넣음)
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_331
 ;成否판정
@@ -1270,7 +1270,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_331_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1279,11 +1279,11 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;332,お酒をふるまう
-;TFLAG:SELECTCOM분기(12=下戸飲み成功 0=通常成功 -1=失敗 -5=下戸飲みあきらめ)
-;TFLAG:194(420=ビール 421=チューハイ 422=ワイン 423=ほろよい 424=鬼殺し)
-;TALENT:술내성(-2=下戸)
-;CFLAG:泥酔姦(1=できる)
+;332, 술을 권한다
+;TFLAG:SELECTCOM분기(12=술 못하는 사람 성공 0=통상 성공 -1=실패 -5=술 못하는 사람 포기)
+;TFLAG:194(420=맥주 421=츄하이 422=와인 423=호로요이 424=오니고로시)
+;TALENT:술내성(-2=술 못함)
+;CFLAG:만취간(1=가능)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_332
 ;成否판정
@@ -1299,28 +1299,28 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_332_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-;はじめてお酒
+;첫 술
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「……別に、お酒ぐらい飲めます」
-		PRINTFORMW 「見た目よりわたしはオトナよ、バカにしないで」
+		PRINTFORMW 「……별로, 술 정도는 마실 수 있어.」
+		PRINTFORMW 「보기보다 나는 어른이야, 무시하지 마.」
 		RETURN 1
 	ENDIF
 
 	SELECTCASE TFLAG:SELECTCOM분기
-		;成功
+		;성공
 		CASE 0
-			PRINTFORMW 「……ん、イケなくもないわね」
-		;失敗
+			PRINTFORMW 「……음, 못 마실 것도 없네.」
+		;실패
 		CASE -1
-			PRINTFORMW 「……なにこのお酒、安物かしら」
-		;下戸飲み成功
+			PRINTFORMW 「……뭐야 이 술, 싸구려인가.」
+		;술 못하는 사람 성공
 		CASE 12
 			PRINTFORMW 
-		;下戸飲みあきらめ
+		;술 못하는 사람 포기
 		CASE -5
 			PRINTFORMW 
 	ENDSELECT
@@ -1328,8 +1328,8 @@ ENDIF
 RETURN 1
 [SKIPSTART]
 ;==================================================
-;333,愚痴を聞く
-;TFLAG:SELECTCOM분기(6=大成功(酔い) 5=成功(酔い) 4=失敗(酔い) 3=大成功 2=成功 1=失敗)
+;333, 푸념을 들어준다
+;TFLAG:SELECTCOM분기(6=대성공(취함) 5=성공(취함) 4=실패(취함) 3=대성공 2=성공 1=실패)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_333
 ;成否판정
@@ -1343,30 +1343,30 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_333_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 6
-		;大成功（酔い）
+		;대성공 (취함)
 		CASE 5
-		;成功（酔い）
+		;성공 (취함)
 		CASE 4
-		;失敗（酔い）
+		;실패 (취함)
 		CASE 3
-		;大成功
+		;대성공
 		CASE 2
-		;成功
+		;성공
 		CASE 1
-		;失敗
+		;실패
 	ENDSELECT
 ENDIF
 RETURN 1
 ;==================================================
-;334,杯を交わす
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
-;CFLAG:임신自覚状態(1=식사)
+;334, 술잔을 나눈다
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패)
+;CFLAG:임신자각상태(1=식사)
 ;TALENT:술내성(-2=식사)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_334
@@ -1381,7 +1381,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_334_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1396,8 +1396,8 @@ IF LOCAL
 ENDIF
 RETURN 1
 ;==================================================
-;335,介抱する
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
+;335, 간병한다
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_335
 ;成否판정
@@ -1411,7 +1411,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_335_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1427,8 +1427,8 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;336,膝枕する
-;ABL:친밀(4以下=居心地悪げ 9以下=恥ずかしげ 10以上=幸せそう
+;336, 무릎베개를 해준다
+;ABL:친밀(4 이하=불편한 듯 9 이하=부끄러워하는 듯 10 이상=행복한 듯)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_336
 ;成否판정
@@ -1442,38 +1442,38 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_336_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-;はじめて膝枕
+;첫 무릎베개
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「どうしたのよ、いきなり膝枕だなんて」
-		PRINTFORMW 「……硬いし、違和感がすごいわ。あまり枕向きじゃないわね」
+		PRINTFORMW 「무슨 일이야, 갑자기 무릎베개를 해주다니.」
+		PRINTFORMW 「……딱딱하고, 위화감이 엄청나네. 별로 베개로는 안 좋겠어.」
 		RETURN 1
 	ENDIF
 
 	IF ABL:TARGET:친밀 >= 10
-		PRINTFORMW 「……ん。少しだけ、目を閉じるわね」
+		PRINTFORMW 「……음. 잠깐만, 눈 좀 감을게.」
 	ELSEIF ABL:TARGET:친밀 <= 9
-		PRINTFORMW 「……別に、いやじゃ、ないのよ」
-		PRINTFORMW 「ただ……優しくされることに、なれてない、だけ」
+		PRINTFORMW 「……딱히, 싫지는, 않아.」
+		PRINTFORMW 「다만…… 다정하게 대해주는 거에, 익숙하지, 않을 뿐이야.」
 	ELSE
-		PRINTFORML 「……なによ、なんなのよ」
-		PRINTFORMW 「わたしに膝枕して、なにが、したいのよ……」
+		PRINTFORML 「……뭐야, 뭐냐고.」
+		PRINTFORMW 「나한테 무릎베개 해주고, 뭘, 하고 싶은 건데……」
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;350,押し倒す（時姦時イタズラする
-;TFLAG:194 (0=成功 1=人目がある　2=野外は嫌でござりまする　3=多人数プレイは勘弁　4=合意があっても무드が足りぬ　100=合意はあるが구상内특수판정によって失敗）
-;TCVAR:抱き寄せ初回　1=普通に合意ゲット　2=先に키스ぐらいしろよ　3=媚薬or発情には勝てなかったよお…　4=悔しい…각인さえなければﾋﾞｸﾋﾞｸﾝ
-;5=強引に迫られると断れぬ(素質臆病持ち専用) 6=まんざらでもない　7=駄目　8=論外 98=구상内특수판정による失敗 99=구상内특수판정による成功
-;구상内특수판정は該当するCFLAGが0だと無効
-;CFLAG:MASTER:우후후 (1=通常時　2=攻守反転)
+;350, 덮친다 (시간 정지 시 장난친다)
+;TFLAG:194 (0=성공 1=보는 눈이 있음 2=야외는 싫소이다 3=다인 플레이는 좀 4=합의가 있어도 무드가 부족 100=합의는 있지만 구상 내 특수 판정에 의해 실패)
+;TCVAR:끌어안기 초회 1=평범하게 합의 획득 2=먼저 키스 정도는 해라 3=미약 or 발정에는 이길 수 없었어… 4=분하다… 각인만 없었어도 부들부들
+;5=강제로 들이대면 거절할 수 없음(소질 겁쟁이 전용) 6=싫지 않은 눈치 7=안돼 8=논외 98=구상 내 특수 판정에 의한 실패 99=구상 내 특수 판정에 의한 성공
+;구상 내 특수 판정은 해당하는 CFLAG가 0이면 무효
+;CFLAG:MASTER:우후후 (1=통상 시 2=공수 반전)
 
-;押し倒せるタイミングでないとコマンドが出ないため、TFLAG:194 == 0 以外は書く必要は無い
-;上記の抱き寄せ初回は使えないため注意すること
+;덮칠 수 있는 타이밍이 아니면 커맨드가 나오지 않으므로, TFLAG:194 == 0 이외는 쓸 필요 없음
+;상기의 끌어안기 초회는 쓸 수 없으므로 주의할 것
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_350
 CALL TRAIN_MESSAGE
@@ -1482,70 +1482,70 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_350_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;抱き寄せ初回
+	;끌어안기 초회
 	IF FIRSTTIME(TOSTR(350),1)
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「……ふふ。男らしく、押し倒して……ね？」
+			PRINTFORMW 「……후훗. 남자답게, 덮쳐줘…… 알았지?」
 		ELSE
-			PRINTFORMW 「……どうぞ。好きにすれば？」
+			PRINTFORMW 「……자. 마음대로 하면 되잖아?」
 		ENDIF
-	;それ以外
+	;그 외
 	ELSE
-		;通常押し倒し
+		;통상 덮치기
 		IF CFLAG:MASTER:우후후 == 1
 			IF CFLAG:TARGET:아르바이트 == 3 && CFLAG:MASTER:현재위치 == 場所_神社 || CFLAG:TARGET:아르바이트 == 8 && CFLAG:MASTER:현재위치 == 場所_教会
 				IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-					PRINTFORMW 「……やだ、燃えてきたじゃない❤」
-					PRINTFORMW 「ふふ、神とやらに見せつけてやりましょうよ、わたしたちの仲を、ね……❤」
+					PRINTFORMW 「……어머, 달아올라 버렸잖아❤」
+					PRINTFORMW 「후훗, 신이란 놈에게 과시해주자고, 우리의 사이를, 응……❤」
 				ELSE
-					PRINTFORMW 「……へぇ、面白いこと考えるじゃない……！」
-					PRINTFORMW 「普段なら野外なんてはしたなくてイヤだけど、神を貶めるためなら飲んであげるわ……！」
+					PRINTFORMW 「……헤에, 재밌는 생각을 하는구나……!」
+					PRINTFORMW 「평소라면 야외 같은 건 망측해서 싫지만, 신을 폄하하기 위해서라면 받아주겠어……!」
 				ENDIF	
 			ELSEIF CFLAG:TARGET:아르바이트 == 433 && CFLAG:MASTER:현재위치 == 場所_教会
-				PRINTFORMW 「はい……❤　卑しき妖怪の身なれど、わたしの全てを偉大なる御身に捧げます……❤」
-				PRINTFORMW 「どうか魂の一片まで패배の証を刻んでください……❤」
+				PRINTFORMW 「네……❤ 천한 요괴의 몸이오나, 저의 모든 것을 위대하신 분께 바치겠습니다……❤」
+				PRINTFORMW 「부디 영혼의 한 조각까지 패배의 증표를 새겨주세요……❤」
 			ELSEIF CFLAG:TARGET:아르바이트 == 100 && CFLAG:MASTER:현재위치 == 場所_裏通り
-				PRINTFORMW 「……撮影中のお触りは禁止よ」
-				PRINTFORMW 「なーんて……どうせ%CSTR:TARGET:MASCALL%はそういうのが興奮するのよね……。ふふ、仕方ない人❤」
+				PRINTFORMW 「……촬영 중에 만지는 건 금지야.」
+				PRINTFORMW 「농~담…… 어차피 %CSTR:TARGET:MASCALL%는 그런 거에 흥분하지…… 후훗, 못 말리는 사람❤」
 			ELSEIF CFLAG:TARGET:아르바이트 == 304 && CFLAG:MASTER:현재위치 == 場所_牧場
-				PRINTFORMW 「……❤　モーウ、モォーウ……❤　モウ❤　モゥ、モォーウ❤」
-				PRINTFORMW 「モォーウ、だめぇ、わるいオオカミさんに食べられちゃう❤　……ンモォーウ❤」			
+				PRINTFORMW 「……❤ 음머, 음머어……❤ 음머❤ 음머, 음머어❤」
+				PRINTFORMW 「음머어, 안돼애, 나쁜 늑대 씨에게 잡아먹혀버려❤ ……음머어❤」			
 			ELSE
 				SELECTCASE RAND:3
 					CASE 0
 						IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-							PRINTFORMW 「……眼がケダモノみたいね？」
-							PRINTFORMW 「ふふ、わたしも、こんな眼をしてるのかしら……❤」
+							PRINTFORMW 「……눈이 짐승 같네?」
+							PRINTFORMW 「후훗, 나도, 이런 눈을 하고 있으려나……❤」
 						ELSE
-							PRINTFORMW 「……強引な殿方は嫌われるわよ」
+							PRINTFORMW 「……강압적인 남자는 미움받는다고.」
 						ENDIF
 					CASE 1
 						IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-							PRINTFORMW 「……さ、いらっしゃい？」
-							PRINTFORMW %CALLNAME:TARGET%は抱きとめるように両手をこちらに突き出してきた……
+							PRINTFORMW 「……자, 이리 온.」
+							PRINTFORMW %CALLNAME:TARGET%는 껴안으려는 듯 양팔을 이쪽으로 내밀었다……
 						ELSE
-							PRINTFORMW 「あんまり見るな、バカ……」
+							PRINTFORMW 「너무 쳐다보지 마, 바보……」
 						ENDIF
 					CASE 2
 						IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-							PRINTFORMW 「%CSTR:TARGET:MASCALL%とならいつでもいいのよ……」
-							PRINTFORMW 「わたしをただの女だと、そう教えてちょうだい……❤」
+							PRINTFORMW 「%CSTR:TARGET:MASCALL%(와)과 함께라면 언제든지 괜찮아……」
+							PRINTFORMW 「나를 그저 여자일 뿐이라고, 그렇게 가르쳐줘……❤」
 						ELSE
-							PRINTFORMW 「どうぞ、好きにすれば……」
+							PRINTFORMW 「자, 마음대로 하라구……」
 						ENDIF
 				ENDSELECT
 			ENDIF
 		;攻守反転（MASTERが受け）
 		ELSEIF CFLAG:MASTER:우후후 == 2
 			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-				PRINTFORMW 「あらあら、いいのかしら……❤」
-				PRINTFORMW 「覚悟なさい。わるい妖怪に食べられちゃうわよ……❤」
+				PRINTFORMW 「어머어머, 괜찮겠어……❤」
+				PRINTFORMW 「각오해. 나쁜 요괴에게 잡아먹힐 테니……❤」
 			ELSE
-				PRINTFORMW 「……ふ、ふふ！　そうよね、舐められっぱなしはよくないわよね……！」
+				PRINTFORMW 「……후, 후훗! 그렇지, 얕보이기만 하는 건 좋지 않지……!」
 			ENDIF
 		ENDIF
 	ENDIF
@@ -1553,7 +1553,7 @@ ENDIF
 RETURN 1
 [SKIPSTART]
 ;==================================================
-;351,連れ出す
+;351,데리고 나간다
 ;==================================================
 ;eraOCG2_V0.40_BT_240518時点では流れないため注意
 @M_KOJO_MESSAGE_COM_K2030_351
@@ -1563,7 +1563,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_351_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1572,8 +1572,8 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;352,告白する
-;TFLAG:SELECTCOM분기 (1=成功 0=失敗)
+;352, 고백한다
+;TFLAG:SELECTCOM분기 (1=성공 0=실패)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_352
 ;成否판정
@@ -1587,42 +1587,42 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_352_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;成功
+	;성공
 	IF TFLAG:SELECTCOM분기 == 1
 		PRINTFORML 
-		PRINTFORMW 「……ふ、ふふふ、あははははっ！」
-		PRINTFORMW 「バカなニンゲン！　よりにもよってわたしに！　この『氷の魔妖－雪女』に！　告白だなんて！！」
-		PRINTFORML 「ははっ、ははは……」
-		PRINTFORMW 「……ねぇわかってる？　わたし、魔妖よ？　妖怪、なのよ……？」
-		PRINTFORML 「ニンゲンを、ただわたしたちより繁栄していて妬ましいから恨んでいるような女なのよ……？」
-		PRINTFORMW 「どこにも、好きになる要素なんかないじゃない……。バカじゃないの……」
-		PRINTFORMW 「……っ、いいわ。いいわよ」
-		PRINTFORMW 「%CSTR:TARGET:MASCALL%の告白、受け入れてあげましょう」
-		PRINTFORMW 「だけどね、せいぜい幻滅するといいわ。%CSTR:TARGET:MASCALL%が好きになった女はこんなにも心が狭く、どうしようもない女なんだってね」
-		PRINTFORMW 「勝負しましょうか。%CSTR:TARGET:MASCALL%の想いが散るか、わたしが根負けして退治されるか」
-		PRINTFORML 　　　　　　　　　　　　　 　わたし
-		PRINTFORMW 「ふふ、今のうちに後悔なさい。雪女に恋した自身の愚かさをね……！」
+		PRINTFORMW 「……후, 후후훗, 아하하하핫!」
+		PRINTFORMW 「바보 같은 인간! 하필이면 나에게! 이 '고드름의 마요괴-설녀'에게! 고백이라니!!」
+		PRINTFORML 「하핫, 하하하……」
+		PRINTFORMW 「……있지, 알고는 있는 거야? 나, 마요야. 요괴, 라고……?」
+		PRINTFORML 「인간을, 그저 우리보다 번성했다는 게 아니꼬와서 미워하는 그런 여자란 말이야……?」
+		PRINTFORMW 「어딜 봐도, 좋아할 요소 같은 건 없잖아……. 바보 아니야……」
+		PRINTFORMW 「……큿, 좋아. 좋다고.」
+		PRINTFORMW 「%CSTR:TARGET:MASCALL%의 고백, 받아주도록 하지.」
+		PRINTFORMW 「하지만 말야, 실컷 환멸이나 느끼는 게 좋을 거야. %CSTR:TARGET:MASCALL%가 좋아하게 된 여자는 이렇게나 속이 좁고, 구제 불능인 여자라는 걸 말이야.」
+		PRINTFORMW 「승부해볼까. %CSTR:TARGET:MASCALL%의 마음이 꺾이는지, 내가 먼저 지쳐서 퇴치당하는지.」
+		PRINTFORML 　　　　　　　　　　　　　 　나
+		PRINTFORMW 「후훗, 지금 실컷 후회하라고. 설녀를 사랑하게 된 자신의 어리석음을 말이야……!」
 		IF TALENT:TARGET:연모
 			PRINTFORML 
-			PRINTFORMW （──……でも）
-			PRINTFORMW （嬉しかったわ。たしかに嬉しかったの）
-			PRINTFORMW （だからこそ、ダメなの）
-			PRINTFORMW （わたしは、ただの『雪女』で終わりたくないから）
-			PRINTFORMW （だからお願い、諦めて）
+			PRINTFORMW (──……하지만)
+			PRINTFORMW (기뻤어. 분명히 기뻤다고.)
+			PRINTFORMW (그렇기 때문에, 안 되는 거야.)
+			PRINTFORMW (나는, 그저 '설녀'로 끝나고 싶지 않으니까.)
+			PRINTFORMW (그러니 제발, 포기해줘.)
 		ENDIF
-	;失敗
+	;실패
 	ELSE
-		PRINTFORMW 「サムいわね。聞かなかったことにしてあげるわ」
+		PRINTFORMW 「썰렁하네. 못 들은 걸로 해줄게.」
 	ENDIF
 ENDIF
 RETURN 1
 [SKIPSTART]
 ;==================================================
-;353,許しを乞う
+;353,용서를 빈다
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_353
 CALL TRAIN_MESSAGE
@@ -1631,7 +1631,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_353_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1640,8 +1640,8 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;354,指輪を渡す
-;一日が終了する
+;354, 반지를 건넨다
+;하루가 종료된다
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_354
 CALL TRAIN_MESSAGE
@@ -1650,98 +1650,98 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_354_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;成功
+	;성공
 	IF TFLAG:250
 		PRINTFORML
-		PRINTFORMW 「──っは」
-		PRINTFORMW 今、わたしの目の前に差し出されたもの
-		PRINTFORMW 決して渡されることはないと思っていたもの
-		PRINTFORMW わたしとニンゲンを永遠に繋ぎ止めるもの
-		PRINTFORMW それを前にして、わたしは一歩後ずさる
+		PRINTFORMW 「──앗.」
+		PRINTFORMW 지금, 내 눈앞에 내밀어진 것.
+		PRINTFORMW 결코 건네받을 일은 없을 거라 생각했던 것.
+		PRINTFORMW 나와 인간을 영원히 이어주는 것.
+		PRINTFORMW 그것을 앞에 두고, 나는 한 걸음 뒷걸음질 쳤다.
 		PRINTFORML
-		PRINTFORMW 「……ねぇ、それを、わたしに渡す。……その意味がわかっているのかしら？」
+		PRINTFORMW 「……있지, 그것을, 나에게 건넨다……. 그 의미를 알고는 있는 거야?」
 		PRINTFORML 
-		PRINTFORMW 嗚呼、全く。わたしはなんと愚かなのだろうか
-		PRINTFORMW この期に及んで、まったく意味のない問いをして
-		PRINTFORMW こと此処に至ってこのような冗談をするような関係でないことぐらい、자신でもわかっているだろうに！
-		PRINTFORMW それでもそう問いを投げかけてしまったのは、間違いなく自身の覚悟が定まっていなかったからなのだろう
-		PRINTFORMW ──……本当はとっくに패배していたというのに
+		PRINTFORMW 아아, 정말이지. 나는 어찌 이리 어리석은가.
+		PRINTFORMW 이 마당에, 전혀 의미 없는 질문을 하고.
+		PRINTFORMW 일이 이 지경에 이르러 이런 농담을 할 사이가 아니란 것쯤은, 나 자신도 알고 있을 터인데!
+		PRINTFORMW 그런데도 그런 질문을 던져버린 것은, 틀림없이 내 각오가 정해지지 않았기 때문이겠지.
+		PRINTFORMW ──……사실은 진작에 패배해 있었으면서.
 		PRINTFORML 
-		PRINTFORMW ……目の前のニンゲンは、何も発さない
-		PRINTFORMW なぜなら상대の行動こそが全てを語っているから
-		PRINTFORMW もはやわたしのほうが答えをだすしかないのだ
+		PRINTFORMW ……눈앞의 인간은, 아무 말도 하지 않는다.
+		PRINTFORMW 왜냐하면 상대의 행동이야말로 모든 것을 말해주고 있으니까.
+		PRINTFORMW 이제는 내가 대답을 내놓을 수밖에 없는 것이다.
 		PRINTFORML
-		PRINTFORML 　　このひとにまけちゃう　　　　ことわりたくない
-		PRINTFORMW 『結婚することを受け入れる』か『折角の告白を断る』かを……──
+		PRINTFORML 　　이 사람에게 져버려　　　　　　거절하고 싶지 않아
+		PRINTFORMW '결혼을 받아들일지', '모처럼의 고백을 거절할지'를……──
 		PRINTFORML 
-		PRINTFORMW 「……はは、まったく。非道い話」
-		PRINTFORMW 「いっぱい、いっぱい、わたしなりに頑張って来たつもりだったのに」
-		PRINTFORMW 「結局、本当の幸せは身近なものでした、なんて……──今日日、三文小説でも結末にしないわよ」
+		PRINTFORMW 「……하하, 정말이지. 지독한 이야기네.」
+		PRINTFORMW 「나름대로, 잔뜩, 잔뜩, 열심히 해왔다고 생각했는데.」
+		PRINTFORMW 「결국, 진짜 행복은 가까운 곳에 있었습니다, 라니……──요즘 세상에, 삼류 소설에서도 그런 결말은 안 쓴다고.」
 		PRINTFORML 
-		PRINTFORML 　　　　　　　　　　　　　　　　　　　・・・・・
-		PRINTFORMW 「……ねぇ、知ってる？　わたしね、……名前がないの」
-		PRINTFORMW 「ただの雪女でしかないの、わたし。それが嫌で嫌で、力さえあれば『わたし』になれると思ってたの」
-		PRINTFORMW 「だけど、だから……お願いよ」
-		PRINTFORMW 「わたしに『わたし』の名前をちょうだい……。ただの雪女に、三文小説のような結末をちょうだい……？」
+		PRINTFORML 　　　　　　　　　　　　　　　　·····
+		PRINTFORMW 「……있지, 알아? 나 말이야, ……이름이 없어.」
+		PRINTFORMW 「그저 설녀일 뿐이야, 나는. 그게 싫고 싫어서, 힘만 있으면 '나' 자신이 될 수 있을 거라 생각했어.」
+		PRINTFORMW 「하지만, 그러니까…… 부탁이야.」
+		PRINTFORMW 「나에게 '나'의 이름을 줘……. 그저 설녀일 뿐인 나에게, 삼류 소설 같은 결말을 줄래……?」
 		PRINTFORML
-		PRINTFORML  ……%CALLNAME:TARGET%の呼び方を入力してください（未入力で変化無し）
+		PRINTFORML  ……%CALLNAME:TARGET%의 호칭을 입력해주세요 (미입력 시 변화 없음)
 		INPUTS
 		IF RESULTS != ""
 		CALLNAME:TARGET = %RESULTS%
 			PRINTFORML 
-			PRINTFORMW 「……%CALLNAME:TARGET%、%CALLNAME:TARGET%ね」
+			PRINTFORMW 「……%CALLNAME:TARGET%, %CALLNAME:TARGET%인가.」
 			PRINTFORML 
-			PRINTFORMW 呟く、二、三回、新しくもらった名前を
-			PRINTFORMW それはどうにも慣れない響きをもっていて、
-			PRINTFORMW だけど呟くたびに胸の埋まらなかったモノにじんわりと染み込んでいって……──
+			PRINTFORMW 중얼거린다, 두세 번, 새로 받은 이름을.
+			PRINTFORMW 그것은 아무래도 익숙하지 않은 울림을 가졌고,
+			PRINTFORMW 하지만 중얼거릴 때마다 가슴속 채워지지 않던 무언가에 촉촉이 스며들어 가서……──
 			PRINTFORML 
-			PRINTFORMW 「……嬉しいわ。ほんとに、ほんとに嬉しいの」
-			PRINTFORMW 「ふふ、なんでかしら。こんなにも嬉しくて嬉しくて……なのに涙がとまらないの」
-			PRINTFORMW 「どうしてかしら。……ふふ、ええ、ほんとはわかっている」
-			PRINTFORMW 「……ハレの日ってステキね。こんなバカみたいな雪女でも、溶かしてしまうんだもの」
+			PRINTFORMW 「……기뻐. 정말, 정말로 기뻐.」
+			PRINTFORMW 「후후, 어째서일까. 이렇게나 기쁘고 기쁜데……그런데도 눈물이 멈추질 않아.」
+			PRINTFORMW 「어째서일까. ……후후, 응, 사실은 알고 있어.」
+			PRINTFORMW 「……경사스러운 날이란 건 멋지구나. 이런 바보 같은 설녀라도, 녹여버리는 걸.」
 		ELSE
 			PRINTFORML 
-			PRINTFORMW 「……そう、結局わたしはただの『雪女』なのかしら」
+			PRINTFORMW 「……그래, 결국 나는 그저 '설녀'인 걸까.」
 			PRINTFORML
-			PRINTFORMW 呟き、上を向く。空がじんわりと、滲んでくる
-			PRINTFORMW 駄目だ、ダメだ。いつものように強がれ、いつものようには取り繕えない
-			PRINTFORMW 笑顔で差し出された指輪を受け取れ
-			PRINTFORMW みっともなく泣いて、どうして、と叫びたい
-			PRINTFORMW ただの雪女であるわたしにはどっちもできなくて、それでもあの人に応えたくて、
-			PRINTFORMW ……中途半端に笑みながら、前をみる。結局、溢れた涙がこぼれるのを自覚したままに
+			PRINTFORMW 중얼거리며, 위를 본다. 하늘이 촉촉하게, 번져온다.
+			PRINTFORMW 안돼, 안돼. 평소처럼 강한 척해, 평소처럼 꾸며낼 수가 없어.
+			PRINTFORMW 미소 지으며 내밀어진 반지를 받아.
+			PRINTFORMW 꼴사납게 울면서, 어째서냐고, 소리치고 싶어.
+			PRINTFORMW 그저 설녀일 뿐인 나는 어느 쪽도 할 수 없어서, 그런데도 그 사람에게 화답하고 싶어서,
+			PRINTFORMW ……어중간하게 미소 지으며, 앞을 본다. 결국, 넘쳐흐른 눈물이 떨어지는 것을 자각한 채로.
 			PRINTFORML 
-			PRINTFORML ──……だが、しかし
-			PRINTFORMW いつの間にか差し出されていたものが、指輪以外にもう一つ……──
+			PRINTFORML ──……하지만, 그러나.
+			PRINTFORMW 어느샌가 내밀어져 있던 것이, 반지 말고도 하나 더……──
 			PRINTFORML 
-			PRINTFORMW  「これは……『氷の魔妖－雪女』のカード……？　それが、どういう……！？」
-			PRINTFORML 気付いた。気付かされた
-			PRINTFORMW このニンゲンにとってわたしはカードの정령で、だからこそ『氷の魔妖－雪女』こそが唯一わたしを示す名前で……──
-			PRINTFORMW 「そう、そうなのね……。なぁんだ、わたしの早とちりか……」
-			PRINTFORMW 先程までとは違う感情、羞恥におもわず頬が熱くなる
-			PRINTFORMW 紅潮した頬をパタパタと手で仰ぐことに気を取られ、あの人が微笑ましそうな顔で見ていることにわたしは最後まで気づかなかった
+			PRINTFORMW  「이건…… '고드름의 마요괴-설녀'의 카드……? 그게, 무슨……!?」
+			PRINTFORML 깨달았다. 깨닫게 되었다.
+			PRINTFORMW 이 인간에게 있어 나는 카드의 정령이고, 그렇기에 '고드름의 마요괴-설녀'야말로 나를 가리키는 유일한 이름이라는 것을……──
+			PRINTFORMW 「그래, 그런 거였구나……. 뭐야, 내 착각이었나……」
+			PRINTFORMW 방금까지와는 다른 감정, 수치심에 나도 모르게 뺨이 뜨거워진다.
+			PRINTFORMW 붉어진 뺨을 파닥파닥 손으로 부채질하느라 정신이 팔려, 그 사람이 흐뭇한 얼굴로 보고 있다는 것을 나는 마지막까지 눈치채지 못했다.
 		ENDIF
 		PRINTFORML 
-		PRINTFORMW 「……末永く、死がふたりを分かつまで、よろしくおねがいしますね、旦那さま」
-		PRINTFORMW 「えぇ、あなたが歳をとり、ヨボヨボになっても隣にいてあげるわ」
-		PRINTFORMW 「そしてその生命が終わりを迎えたなら」
-		PRINTFORMW 「わたしも、一緒の棺桶に入ってあげるから。安心して生きなさい」
-		PRINTFORMW 「ずっと一緒よ、わたしの旦那さま……❤」
+		PRINTFORMW 「……오래도록, 죽음이 두 사람을 갈라놓을 때까지, 잘 부탁해요, 서방님.」
+		PRINTFORMW 「네, 당신이 나이를 먹고, 꼬부랑 할아버지가 되어도 곁에 있어줄게.」
+		PRINTFORMW 「그리고 그 생명이 끝을 맞이한다면」
+		PRINTFORMW 「나도, 같은 관에 들어가 줄 테니. 안심하고 살도록 해.」
+		PRINTFORMW 「계속 함께야, 나의 서방님……❤」
 		PRINTFORMW 
-		CSTR:TARGET:MASCALL = 旦那さま
-	;失敗　
+		CSTR:TARGET:MASCALL = 서방님
+	;실패 
 	ELSE
-		PRINTFORMW 「……ニンゲンごときが、雪女であるわたしに求婚？　どういうつもりかしら」
-		PRINTFORMW 「短慮は命を縮めるわよ、よく考えなさい。……お互いのためにも」
+		PRINTFORMW 「……인간 따위가, 설녀인 나에게 청혼? 무슨 생각이지?」
+		PRINTFORMW 「짧은 생각은 목숨을 재촉하는 법이야, 잘 생각해. ……서로를 위해서라도.」
 	ENDIF
 ENDIF
 RETURN 1
 [SKIPSTART]
 ;==================================================
-;355,時止め（地の文の改変程度に留めるべき
+;355,시간 정지（地の文の改変程度に留めるべき
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_355
 CALL TRAIN_MESSAGE
@@ -1750,7 +1750,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_355_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1759,7 +1759,7 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;356,物陰に誘う
+;356,그늘로 이끈다
 ;ABL:노출증 + TALENT:수치심で판정
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_356
@@ -1774,20 +1774,20 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_356_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「ついてこいって？　ふふ、強引ね」
+	PRINTFORMW 「따라오라고? 후훗, 억지스럽네.」
 ENDIF
 RETURN 1
 ;==================================================
-;360,なすがまま
-;TCVAR:TARGET:CT행동(27=谷間を見せる 30=키스 31=後ろから抱きつく 32=前から抱きつく 33=胸を揉ませる 34=股間をまさぐる 35=スカートの中を見せる 36=後ろから胸揉まれる
-;50=수음 51=펠라 52=스마타 53=파이즈리 54=풋잡 59=乳首吸われる 60=답키스 61=逆レイプ 62=耳舐め 70=クンニ強制 72=애널奉仕 73=ぱふぱふ 
+;360, 되는 대로 맡긴다
+;TCVAR:TARGET:CT행동(27=가슴골을 보여준다 30=키스 31=뒤에서 껴안는다 32=앞에서 껴안는다 33=가슴을 주무르게 한다 34=가랑이를 더듬게 한다 35=스커트 속을 보여준다 36=뒤에서 가슴 주물러짐
+;50=수음 51=펠라 52=스마타 53=파이즈리 54=풋잡 59=유두 빨림 60=답례 키스 61=역강간 62=귀핥기 70=커닐링구스 강제 72=애널 봉사 73=파후파후
 
-;77以降はeraOCG2_V0.55_BT_240825現在では存在しない
-;77=乳を吸わせる 85=Ｖ삽입する 86=だいしゅきホールド 87=Ａ삽입する 88=腰振りＶ 89=腰振りＡ
+;77 이하는 eraOCG2_V0.55_BT_240825 현재 존재하지 않음
+;77=젖을 빨리게 한다 85=Ｖ삽입한다 86=다이스키 홀드 87=Ａ삽입한다 88=허리 흔들기Ｖ 89=허리 흔들기Ａ
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_360
 CALL TRAIN_MESSAGE
@@ -1796,86 +1796,86 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_360_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE TCVAR:TARGET:20
 		CASE 27
-			PRINTFORMW 「……ふふふ、前から目線がここを見ていたの知っていたのよ。ほら、もっと見なさい……❤」
+			PRINTFORMW 「……후후훗, 전부터 시선이 여기를 향하는 거 알고 있었어. 자, 더 보라고……❤」
 		CASE 30
 			IF EXP:TARGET:Ｍ경험 == 1 && EXP:TARGET:펠라경험 == 0 && CALLNAME:(CFLAG:TARGET:키스상실상대) == CALLNAME:MASTER
-				PRINTFORMW 「んっ！　……ちゅっ❤　んふっ❤　ちゅ……っ❤」
-				PRINTFORMW 「ふ、ふふ……！　あげちゃったわ、わたしのハジメテ……！」
+				PRINTFORMW 「응! ……츕❤ 으흣❤ 츄……❤」
+				PRINTFORMW 「후, 후훗……! 줘버렸네, 나의 처음……!」
 			ELSE
-				PRINTFORMW 「ちゅっ❤　んちゅっ❤　ちゅば……っ❤」
-				PRINTFORMW 「……んふふ、リップ音が恥ずかしいわね……❤」
+				PRINTFORMW 「츄릅❤ 으츄❤ 츄릅……❤」
+				PRINTFORMW 「……으흥, 립 소리가 부끄럽네……❤」
 			ENDIF
 		CASE 31
-			PRINTFORMW 「だーれだっ♪　……なーんて一人しかいないわよね……❤」
+			PRINTFORMW 「누~구게♪ ……농담, 한 명밖에 없잖아……❤」
 		CASE 32
-			PRINTFORMW 「ふふふ、%CSTR:TARGET:MASCALL%の顔がちかぁい❤」
-			PRINTFORMW 「あらあら、腰になにやら硬いモノがあたってるわね……❤」
+			PRINTFORMW 「후후훗, %CSTR:TARGET:MASCALL%의 얼굴이 가까워❤」
+			PRINTFORMW 「어머어머, 허리에 뭔가 딱딱한 게 닿고 있네……❤」
 		CASE 33
-			PRINTFORML 「ほら、%CSTR:TARGET:MASCALL%の好きなおっぱいよ❤」
-			PRINTFORMW 「ほら、ほら、好きになさいよ。いまだけは許してあげる……❤　んっ❤」
+			PRINTFORML 「자, %CSTR:TARGET:MASCALL%가 좋아하는 가슴이야❤」
+			PRINTFORMW 「자, 자, 마음대로 해. 지금만큼은 허락해 줄게……❤ 응❤」
 		CASE 34
-			PRINTFORMW 「あらあら、なにやら硬いモノが手に触れてるわね？　はたして何かしら、これ……❤」
+			PRINTFORMW 「어머어머, 뭔가 딱딱한 게 손에 닿고 있네? 대체 뭘까, 이건……❤」
 		CASE 35
-			PRINTFORMW 「見える？　%CSTR:TARGET:MASCALL%のせいでこんなグショグショよ❤」
+			PRINTFORMW 「보여? %CSTR:TARGET:MASCALL% 때문에 이렇게 질퍽질퍽해❤」
 		CASE 50
-			PRINTFORML 「んっ……。いいのよ、すべてをわたしに委ねて……」
-			PRINTFORMW 「わたしの白魚のような指で、%CSTR:TARGET:MASCALL%を天国に導いてあげるから……❤」
+			PRINTFORML 「응……. 괜찮아, 모든 걸 내게 맡겨……」
+			PRINTFORMW 「나의 은어 같은 손가락으로, %CSTR:TARGET:MASCALL%를 천국으로 이끌어줄 테니……❤」
 		CASE 51
-			PRINTFORML 「ちゅっ❤　あーん……❤　ぐちゅっ❤　ぐぽっ❤　んぢゅっ❤　じゅるるるっ❤　……ろーほ？　ひもひひい？❤」
-			PRINTFORMW 「……ぷはぁっ❤　ほーら、만족するまでお口で搾り取ってあげるから、ね……❤」
+			PRINTFORML 「츄릅❤ 아앙……❤ 우물❤ 우웁❤ 으츕❤ 쥬르르릅❤ ……어때? 기분 조아?❤」
+			PRINTFORMW 「……푸핫❤ 자아, 만족할 때까지 입으로 짜내 줄 테니까, 응……❤」
 		CASE 52
-			PRINTFORML 「知ってるわよ、%CSTR:TARGET:MASCALL%がわたしの太ももに興味津々だってこと」
-			PRINTFORMW 「どうかしら、ひんやりすべすべ太ももに挟まれて❤　我慢せずにだしてもいいのよ❤」
+			PRINTFORML 「알고 있어, %CSTR:TARGET:MASCALL%가 내 허벅지에 흥미진진하다는 거.」
+			PRINTFORMW 「어때, 차갑고 매끈한 허벅지에 끼워져서❤ 참지 말고 싸도 괜찮아❤」
 		CASE 53
-			PRINTFORMW 「ん……んしょ……❤　どうかしら、男の夢なんでしょ……파이즈리❤」
-			PRINTFORMW 「ん……っ、ちょっと、不慣れだけど、気持ちよく、なってるなら、嬉しいわ……❤」
+			PRINTFORMW 「응……영차……❤ 어때, 남자의 꿈이지……파이즈리❤」
+			PRINTFORMW 「응……, 조금, 익숙하지 않지만, 기분, 좋다면, 기뻐……❤」
 		CASE 54
-			PRINTFORMW 「あーらら、ちょっと力いれたらおチンチン潰れちゃいそうねー」
-			PRINTFORMW 「……んふっ❤　ほら、命乞いしてみなさい。『イジワルしないでやさしくしてー』って❤　んふふっ❤」
+			PRINTFORMW 「어머머, 조금만 힘주면 자지가 뭉개져버릴 것 같네~」
+			PRINTFORMW 「……으훗❤ 자, 목숨을 구걸해봐. '심술부리지 말고 상냥하게 해줘~' 하고 말이야❤ 으흐흣❤」
 		CASE 59
-			PRINTFORMW 「おやぁ？　乳首、吸われて感じちゃってるのかしら、なっさけなーい❤　くふふっ❤」
+			PRINTFORMW 「어머나? 유두, 빨려서 느껴버리는 거야? 한심해라~❤ 크후훗❤」
 		CASE 60
 			IF EXP:TARGET:Ｍ경험 == 1 && EXP:TARGET:펠라경험 == 0 && CALLNAME:(CFLAG:TARGET:키스상실상대) == CALLNAME:MASTER
-				PRINTFORMW 「んっ！　……ちゅっ❤　……じゅるるっ！❤　ぢゅぽ……っ❤」
-				PRINTFORMW 「……ぷはぁ！　ふふ、ハジメテの키스で혀を絡めて……。わたしってはしたないかしら？」
+				PRINTFORMW 「응! ……츄릅❤ ……쥬르릅!❤ 츕……❤」
+				PRINTFORMW 「……푸하앗! 후후, 첫 키스에 혀를 섞다니……. 나, 망측한 애일까?」
 			ELSE
-				PRINTFORMW 「ちゅっ❤　じゅぽっ❤　じゅるる……っ❤　ぐちゅっ❤　ぢゅぽっ❤　ぐちゅっ❤　れぇ……っ❤」
-				PRINTFORMW 「……ぷはぁ❤　はぁー……っ、はぁー……っ……❤　ふふ、혀ごと蕩けちゃいそう……❤」
+				PRINTFORMW 「츄릅❤ 쥬웁❤ 쥬르르……❤ 우물❤ 츕❤ 우물❤ 흐물……❤」
+				PRINTFORMW 「……푸하앗❤ 하아─……, 하아─……❤ 후훗, 혀째로 녹아버릴 것 같아……❤」
 			ENDIF
 		CASE 61
 			IF EXP:TARGET:Ｖ성교경험 == 1
-				PRINTFORMW 「……❤　ふふ、いくわよ……っ。んっ、くうっ、んんん……──！？　あああああああ！？　っく……」
-				PRINTFORMW 「ふ、ふふ、そうよ？　わたし、貞淑な女なの。これが、ハジメテ、なのよ……」
-				PRINTFORMW 「だ、だいじょうぶ。しんぱい、しないで……。痛いの、イヤだけど、この痛みだけは、ずっと、覚えて、いたいから……❤」
+				PRINTFORMW 「……❤ 후훗, 갈게……, 응, 크읏, 으으응……──!? 아아아아아아아!? 큭……」
+				PRINTFORMW 「후, 후훗, 그래. 나, 정숙한 여자야. 이게, 처음, 이야……」
+				PRINTFORMW 「괘, 괜찮아. 걱정, 하지 마……. 아픈 건, 싫지만, 이 아픔만큼은, 계속, 기억하고, 싶으니까……❤」
 			ELSE
-				PRINTFORMW 「さぁ、深く繋がり合いましょう？　身も心も、溶けてしまうほどに……❤」
+				PRINTFORMW 「자, 깊게 하나가 될까? 몸도 마음도, 녹아버릴 정도로……❤」
 			ENDIF
 		CASE 62
-			PRINTFORML 「ぐちゅ……❤　れろ……っ❤　ずちゅ……っ❤　ふふ、だぁめ、動いちゃ」
-			PRINTFORMW 「今は、わたしの声だけ、聞いてれば、いいのよ❤　……ちゅっ、れろ……ぉ❤」
+			PRINTFORML 「우물……❤ 낼름……❤ 즈츕……❤ 후훗, 안돼, 움직이면.」
+			PRINTFORMW 「지금은, 내 목소리만, 듣고 있으면, 돼❤ ……츄릅, 낼름……❤」
 		CASE 70
-			PRINTFORMW 「ほぉら、わたしの秘所、舐めてちょうだい……──んんっ！？」
-			PRINTFORMW 「あ、やだ、つよすぎ……❤　腰砕けに、なっちゃう……❤」
+			PRINTFORMW 「자아, 내 은밀한 곳, 핥아줘……──으응!?」
+			PRINTFORMW 「아, 싫어, 너무 강해……❤ 허리가, 녹아버릴 것 같아……❤」
 		CASE 72
-			PRINTFORML 「お尻で感じるなんて、一体どこの変態さんにしつけられちゃったのかしらね❤」
-			PRINTFORMW 「ほら、責任持って気持ちよくしなさいよ。……ひぅん❤」
+			PRINTFORML 「엉덩이로 느끼다니, 대체 어떤 변태한테 길들여진 걸까❤」
+			PRINTFORMW 「자, 책임지고 기분 좋게 만들라고. ……히융❤」
 		CASE 73
-			PRINTFORML 「……どうかしら、たしかにおっぱいは物足りないかもしれないけど」
-			PRINTFORMW 「だけどこのすべすべのお肌は誰にも負けない自信があるわ❤　ほらもっと身を預けなさい……❤」
+			PRINTFORML 「……어때, 확실히 가슴은 부족할지도 모르지만.」
+			PRINTFORMW 「하지만 이 매끈한 피부는 누구에게도 지지 않을 자신이 있어❤ 자, 더 몸을 맡겨……❤」
 		CASEELSE
 			SELECTCASE RAND:3
 				CASE 0
-					PRINTFORMW 「今だけはわたしの時間……❤　たっぷり愉しみましょう？」
+					PRINTFORMW 「지금만큼은 나의 시간……❤ 잔뜩 즐겨볼까?」
 				CASE 1
-					PRINTFORMW 「저항は無意味よ、おとなしく身も心も委ねなさい……❤」
+					PRINTFORMW 「저항은 무의미해, 얌전히 몸도 마음도 맡기라고……❤」
 				CASE 2
-					PRINTFORMW 「体が疼くのよ、つきあいなさいな……❤」
+					PRINTFORMW 「몸이 근질거리잖아, 좀 어울려줘……❤」
 			ENDSELECT
 	ENDSELECT
 ENDIF
@@ -1892,7 +1892,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_361_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1909,7 +1909,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_362_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1935,7 +1935,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_363_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1954,7 +1954,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_368_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -1962,7 +1962,7 @@ ENDIF
 RETURN 1
 [SKIPEND]
 ;==================================================
-;370,精神操作
+;370,정신 조작
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_370
 CALL TRAIN_MESSAGE
@@ -1971,17 +1971,17 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_370_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「……はぁい、したがいます❤」
+	PRINTFORMW 「……네에, 따르겠습니다❤」
 ENDIF
 RETURN 1
 
 ;==================================================
-;381,エネコン발동
-;流れる条件はエネコンを押した後、何もせずに終了する
+;381,에네콘 발동
+;나오는 조건은 에너미 컨트롤러를 누른 뒤, 아무것도 하지 않고 종료할 때
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_381
 CALL TRAIN_MESSAGE
@@ -1990,15 +1990,15 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_381_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「──……ぅん！？　%CSTR:TARGET:MASCALL%、今わたしに何かしなかった？」
+	PRINTFORMW 「──……응!? %CSTR:TARGET:MASCALL%, 방금 나한테 뭐 하지 않았어?」
 ENDIF
 RETURN 1
 ;==================================================
-;402,就寝
+;402,취침
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_402
 ;就寝にTRAIN_MESSAGEは無い
@@ -2007,29 +2007,29 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_402_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;TARGETがすでに寝ている
+	;TARGET이 이미 자고 있다
 	IF CFLAG:TARGET:수면 == 1
 		 
-	;それ以外
+	;그 외
 	ELSE
 		SELECTCASE RAND:3
 			CASE 0
-				PRINTFORMW 「おやすみなさい。ちゃんと寝なさいよ」
+				PRINTFORMW 「잘 자. 얌전히 자도록 해.」
 			CASE 1
-				PRINTFORMW 「夜はわたしたちの時間。ニンゲンはとっとと寝なさい」
+				PRINTFORMW 「밤은 우리들의 시간. 인간은 냉큼 자버려.」
 			CASE 2
-				PRINTFORMW 「良い夢、みれるといいわね」
+				PRINTFORMW 「좋은 꿈, 꿀 수 있으면 좋겠네.」
 		ENDSELECT
 	ENDIF
 ENDIF
 RETURN 1
 
 ;==================================================
-;403,休憩
+;403,휴식
 ;CFLAG:TARGET:수면(1=TARGETが寝てる隣で休憩
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_403
@@ -2039,40 +2039,40 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_403_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	IF CFLAG:MASTER:감기플래그 >= 1
-		;MASTERが감기の場合に休憩すると、이벤트の看病구상が流れます
-		;文章を繋げられる自信の無い方はここに書かないようにしてください
+		;MASTER가 감기일 경우에 휴식하면, 이벤트의 간병 구상이 나옵니다
+		;문장을 이어갈 자신이 없는 분은 여기에 쓰지 않도록 해주세요
 	ELSE
-		;添い寝する時
+		;곁잠 잘 때
 		IF CFLAG:TARGET:수면 == 1
 			
 		ELSEIF CFLAG:TARGET:현재위치 == 場所_浴室
 			IF TALENT:TARGET:연모 >=1 || TALENT:TARGET:굴복됨
-				PRINTFORMW 「あったかぁい……しあわせぇ……」
-				PRINTFORMW 「……ふふっ、%CSTR:TARGET:MASCALL%はどうかしら、ねぇ背もたれさん？」
+				PRINTFORMW 「따뜻해…… 행복해……」
+				PRINTFORMW 「……후훗, %CSTR:TARGET:MASCALL%는 어때, 응, 등받이 씨?」
 			ELSE
-				PRINTFORMW 「なんで%CSTR:TARGET:MASCALL%とこんなこと……。……殺すわよ、こっち向くな」
+				PRINTFORMW 「어째서 %CSTR:TARGET:MASCALL%(와)과 이런 짓을……. ……죽여버릴 거야, 이쪽 보지 마.」
 			ENDIF	
-		;それ以外
+		;그 외
 		ELSE
 			SELECTCASE RAND:3
 				CASE 0
-					PRINTFORMW 「生き急いでもいいことないわ。適度に休みましょう」
+					PRINTFORMW 「서두르며 살아봤자 좋을 거 없어. 적당히 쉬자고.」
 				CASE 1
-					PRINTFORMW 「あ、休むならついでに手伝ってくれない？　덱構築で相談したくて……」
+					PRINTFORMW 「아, 쉴 거면 겸사겸사 좀 도와주지 않을래? 덱 구축에 대해 상담하고 싶어서……」
 				CASE 2
-					PRINTFORMW 「休憩ついでにスリーブ交換って……。ほんとに休めているのかしら……？」
+					PRINTFORMW 「쉬는 김에 슬리브 교체라니……. 정말로 쉬고 있는 거 맞아……?」
 			ENDSELECT
 		ENDIF
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;404,覗く
+;404,엿보기
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_404
 CALL TRAIN_MESSAGE
@@ -2081,50 +2081,50 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_404_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE CFLAG:TARGET:현재위치
-		;風呂覗き
+		;목욕 엿보기
 		CASE 場所_浴室
-			PRINTFORMW 「……あー、いい湯だわー……。お家にお風呂があるのはこの世界の美点の一つねー……」
-			PRINTFORMW %CALLNAME:TARGET%は普段からは想像できないほどだらけきった笑顔で浴槽に浸かっている……
+			PRINTFORMW 「……아~, 물 좋네~……. 집에 목욕탕이 있는 건 이 세계의 미덕 중 하나야~……」
+			PRINTFORMW %CALLNAME:TARGET%는 평소에는 상상도 할 수 없을 만큼 풀어헤쳐진 미소로 욕조에 몸을 담그고 있다……
 		CASE 場所_トイレ
-			PRINTFORMW 「……今日もお通じがよくないわね。はぁ……」
+			PRINTFORMW 「……오늘도 변이 잘 안 나오네. 하아……」
 		CASE 場所_洗面所
-			PRINTFORMW 「美少女を名乗るからには日々の努力は欠かせないわね……。%CSTR:TARGET:MASCALL%に見つからないうちに終わらせないと……！」
-			PRINTFORMW %CALLNAME:TARGET%は鏡にむかってなにやら薬液を顔につけている。……そっとしておこう
+			PRINTFORMW 「미소녀를 자처하려면 매일의 노력은 빼놓을 수 없지……. %CSTR:TARGET:MASCALL%에게 들키기 전에 끝내야 해……!」
+			PRINTFORMW %CALLNAME:TARGET%는 거울을 향해 무언가 약액을 얼굴에 바르고 있다. ……조용히 떠나자
 		CASE 場所_ベランダ
-			PRINTFORMW 「……ふふふ、ニンゲンどもがゴミのようね……！」
-			PRINTFORMW ……さすがにラ◯ュタごっこしてるところを覗くのは忍びない。そっとしておこう……
+			PRINTFORMW 「……후후훗, 인간들이 쓰레기 같구나……!」
+			PRINTFORMW ……역시 라O타 놀이를 하는 모습을 엿보는 건 참기 힘들다. 조용히 떠나자……
 		CASE 場所_寝室
 			IF TALENT:TARGET:연모
-				PRINTFORML 「……ふふふ♪」
-				PRINTFORMW %CALLNAME:TARGET%は頬に手を当て、幸せそうに笑っている
+				PRINTFORML 「……후후훗♪」
+				PRINTFORMW %CALLNAME:TARGET%는 뺨에 손을 대고, 행복한 듯이 웃고 있다.
 			ELSE
-				PRINTFORML 「あいつのパソコン、なにが入ってるんでしょうね。この間チラ見したときにはイルカみたいなのが見えたし……」
-				PRINTFORMW %CALLNAME:TARGET%は興味津々といった感じでパソコンを覗いている
+				PRINTFORML 「저 녀석 컴퓨터, 뭐가 들어있으려나. 저번에 슬쩍 봤을 땐 돌고래 같은 게 보였는데……」
+				PRINTFORMW %CALLNAME:TARGET%는 흥미진진한 표정으로 컴퓨터를 들여다보고 있다.
 			ENDIF
-		;それ以外
+		;그 외
 		CASEELSE
 			SELECTCASE RAND:3
 				CASE 0
-					PRINTFORMW 「……ふぅーん、へぇ、……そうなのね」
-					PRINTFORMW 周りが聞こえないぐらい%CALLNAME:TARGET%は手にした本に集中している
+					PRINTFORMW 「……흐음, 헤에, ……그렇구나.」
+					PRINTFORMW 주위 소리가 들리지 않을 정도로 %CALLNAME:TARGET%는 손에 든 책에 집중하고 있다.
 				CASE 1
-					PRINTFORMW 「…………、……ふぁ……ぁ」
-					PRINTFORMW %CALLNAME:TARGET%は眠そうにウトウトしている
+					PRINTFORMW 「…………, ……하아……암.」
+					PRINTFORMW %CALLNAME:TARGET%는 졸린 듯이 꾸벅꾸벅 졸고 있다.
 				CASE 2
-					PRINTFORMW 「～～♪　～～～♪♪　～～～♪」
-					PRINTFORMW %CALLNAME:TARGET%は鼻歌を歌っている。……자신が生まれる前に流行ったという歌謡曲のようだ
+					PRINTFORMW 「~~♪ ~~~♪♪ ~~~♪」
+					PRINTFORMW %CALLNAME:TARGET%는 콧노래를 부르고 있다. ……자신이 태어나기 전에 유행했다는 가요인 듯하다.
 			ENDSELECT
 	ENDSELECT
 ENDIF
 RETURN 1
 
 [SKIPSTART]
-;外出/デートは460へ
+;외출/데이트는 460으로
 ;==================================================
 ;405,出掛ける(동행時デート
 ;条件が厄介なので、COMF405 出掛ける.ERBを参照のこと
@@ -2136,7 +2136,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_405_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2161,7 +2161,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_409_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2178,9 +2178,9 @@ RETURN 1
 [SKIPEND]
 
 ;==================================================
-;410,掃除
-;TFLAG:SELECTCOM분기(0=見てるだけ 1=一緒に掃除)
-;TFLAG:194(3=汚れ高 2=汚れ中 1=汚れ低 0=汚れ最小
+;410, 청소
+;TFLAG:SELECTCOM분기(0=보고만 있음 1=같이 청소)
+;TFLAG:194(3=더러움 높음 2=더러움 중간 1=더러움 낮음 0=더러움 최소)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_410
 CALL TRAIN_MESSAGE
@@ -2189,35 +2189,35 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_410_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;TARGETが寝ている時
+	;TARGET이 자고 있을 때
 	IF	CFLAG:TARGET:수면 == 1
 
 	IF FIRSTTIME(SELECTCOM)
-		PRINTFORMW 「掃除をするの？　……%CSTR:TARGET:MASCALL%がやるとなるとなんだか不安だわ」
-		PRINTFORMW 「だって普段ちゃんとカードのストレージ整理してる？　いつも『あのカードどこだ』って言ってない？」
+		PRINTFORMW 「청소하는 거야? ……%CSTR:TARGET:MASCALL%가 한다니 왠지 불안한데.」
+		PRINTFORMW 「그야, 평소에 카드 스토리지 정리 제대로 하기는 해? 맨날 '그 카드 어디 갔지' 하고 말하잖아?」
 		RETURN 1
 	ENDIF
 
-	;それ以外
+	;그 외
 	ELSE
 		SELECTCASE TFLAG:194
 			CASE 0,1
-				PRINTFORMW 「ま、これぐらいなら簡単よね」
+				PRINTFORMW 「뭐, 이 정도라면 간단하지.」
 			CASE 2
-				PRINTFORMW 「汚れ、気になるわね。気合い入れてやるか」
+				PRINTFORMW 「더러운 게, 신경 쓰이네. 기합 넣고 해볼까.」
 			CASE 3
-				PRINTFORMW 「……割烹着もってきなさい。いまから徹底的にやるわよ」
+				PRINTFORMW 「……앞치마 가져와. 지금부터 철저하게 해치울 테니까.」
 		ENDSELECT
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;411,トレーニング
-;TFLAG:194(3=夏の昼間 2=ヤバい天気 1=悪天候 0=屋内or通常天気
+;411, 트레이닝
+;TFLAG:194(3=여름 낮 2=심한 날씨 1=악천후 0=실내 or 보통 날씨)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_411
 CALL TRAIN_MESSAGE
@@ -2226,17 +2226,17 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_411_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE RAND:3
 		CASE 0
-			PRINTFORMW 「なんでわたしまで……」
+			PRINTFORMW 「어째서 나까지……」
 		CASE 1
-			PRINTFORMW 「も、もう休んでいい……？」
+			PRINTFORMW 「이, 이제 쉬어도 돼……?」
 		CASE 2
-			PRINTFORMW 「ふ、ふふ、明日は、筋肉痛、だわ……！」
+			PRINTFORMW 「후, 후훗, 내일은, 근육통, 이겠네……!」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -2251,39 +2251,39 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_412_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;TARGETが寝ている時
+	;TARGET이 자고 있을 때
 	IF	CFLAG:TARGET:수면 == 1
 
 	IF FIRSTTIME(SELECTCOM)
-	PRINTFORMW 「ニンゲンは大変ね。勉強ばっかりで」
-	PRINTFORMW 「……暇だしちょっと見せなさいよ。教えるのも勉強になるでしょ」
+	PRINTFORMW 「인간은 힘들겠네. 공부만 하고.」
+	PRINTFORMW 「……심심하니까 좀 보여줘 봐. 가르치는 것도 공부가 되겠지.」
 	RETURN 1
 	ENDIF
 
-	;それ以外
+	;그 외
 	ELSE
 		SELECTCASE RAND:3
 			CASE 0
-				PRINTFORMW 「……むずかしいわね。こんなのほんとに勉強する意味あるの？」
+				PRINTFORMW 「……어렵네. 이런 거 정말로 공부할 의미가 있는 거야?」
 			CASE 1
-				PRINTFORML 「『突進を使った暗黒騎士가이아に対し、アップル 매지션 걸の효과を使い攻撃力を半分にしました。暗黒騎士가이아の攻撃力はいくつですか？』」
-				PRINTFORMW 「そんなの、2300+700で3000の状態で半分だから1500でしょ……。え、間違い！？　正解は2300÷2で1150！？　え、なんで……？」
+				PRINTFORML 「'돌진을 사용한 암흑 기사 가이아에 대해, 애플 매지션 걸의 효과를 사용해 공격력을 절반으로 했습니다. 암흑 기사 가이아의 공격력은 얼마입니까?'」
+				PRINTFORMW 「그런 건, 2300+700으로 3000인 상태에서 절반이니까 1500이잖아……. 에, 틀렸어!? 정답은 2300÷2로 1150!? 엣, 어째서……?」
 			CASE 2
-				PRINTFORMW 「『マンガでわかる！　デュエルモンスターズの歴史！！』ねぇ……。言ってもそんな歴史ないでしょ」
-				PRINTFORMW 「……え！？　お注射天使リリーって禁止だったころがあるの！？　それが禁止なら링크４のわたしなんてとっくに収監ずみじゃない！？　うそぉ……」
+				PRINTFORMW 「'만화로 배우는! 듀얼몬스터즈의 역사!!'라……. 말은 그래도 그렇게 역사가 길진 않잖아.」
+				PRINTFORMW 「……엣!? 주사천사 리리가 금지였던 시절이 있어!? 그게 금지라면 링크 4인 나 같은 건 진작에 수감됐겠잖아!? 거짓말……」
 		ENDSELECT
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;413,料理
-;TFLAG:SELECTCOM분기(1=成功 -1=失敗)
+;413, 요리
+;TFLAG:SELECTCOM분기(1=성공 -1=실패)
 ;==================================================
-;一緒に料理をした後に流れる。タイミングは식사後。
+;함께 요리를 한 뒤에 나옴. 타이밍은 식사 후.
 @M_KOJO_MESSAGE_COM_K2030_413
 ;TFLAG:194が100以上の場合のみ
 CALL TRAIN_MESSAGE
@@ -2292,76 +2292,76 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_413_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	IF FIRSTTIME(SELECTCOM)
-	PRINTFORMW 「%CSTR:TARGET:MASCALL%が料理？　ちゃんと美味しくできているのかしら……」
-	PRINTFORMW 「……まぁどうしてもって言うなら手伝ってあげるわ。これでも雪女だからある程度なら炊事に自信があるの」
+	PRINTFORMW 「%CSTR:TARGET:MASCALL%가 요리를? 제대로 맛있게 될까……」
+	PRINTFORMW 「……뭐, 정 그렇다면 도와줄게. 이래 봬도 설녀니까 어느 정도는 부엌일에 자신이 있어.」
 	RETURN 1
 	ENDIF
-	;成功
+	;성공
 	IF TFLAG:SELECTCOM분기 == 1
 		IF GET_MONTH() == "봄의 달"
 			SELECTCASE RAND:3
 				CASE 0
-					PRINTFORMW 「春の食材といったらタラの芽やふきのとうよね。山菜を採りにでかけたいわ」
+					PRINTFORMW 「봄 식재료라고 하면 두릅이나 머위 꽃대지. 산나물 캐러 가고 싶네.」
 				CASE 1
-					PRINTFORMW 「春と言ったらタケノコは外せないわね。%CSTR:TARGET:MASCALL%竹林とか持ってない？」
+					PRINTFORMW 「봄이라고 하면 죽순을 빼놓을 수 없지. %CSTR:TARGET:MASCALL%, 혹시 대나무 숲 같은 거 없어?」
 				CASE 2
-					PRINTFORMW 「初鰹、いいわよね。タタキ売り出してないかしら……」
+					PRINTFORMW 「초가다랑어, 좋지. 짚불구이로 파는 곳 없으려나……」
 			ENDSELECT
 		ELSEIF GET_MONTH() == "여름의 달"
 			SELECTCASE RAND:3
 				CASE 0
-					PRINTFORML 「こう暑い日が続くとそうめんとか食べやすいものばっかりになりがちよね……」
-					PRINTFORMW 「でも栄養が偏るといけないから、せめて冷やし中華とかにしておきたいところね……」
+					PRINTFORML 「이렇게 더운 날이 계속되면 소면처럼 먹기 편한 것만 찾게 된단 말이지……」
+					PRINTFORMW 「하지만 영양이 치우치면 안 되니까, 적어도 히야시츄카 같은 걸로 해둬야겠어……」
 				CASE 1
-					PRINTFORMW 「夏野菜には栄養がたくさん詰まってるわ。トマト、ピーマン、かぼちゃ……。たまらないわね」
+					PRINTFORMW 「여름 채소에는 영양이 듬뿍 들어있어. 토마토, 피망, 호박……. 참을 수가 없네.」
 				CASE 2
-					PRINTFORMW 「夏の魚といえばやはりアジ。開きもいいしフライも捨てがたいわね」
+					PRINTFORMW 「여름 생선이라고 하면 역시 전갱이. 구이도 좋고 튀김도 버리기 아깝지.」
 			ENDSELECT
 		ELSEIF GET_MONTH() == "가을의 달"
 			SELECTCASE RAND:3
 				CASE 0
-					PRINTFORML 「食欲の秋よ。美味しいものがたくさん溢れてくる季節だわ」
-					PRINTFORMW 「……食べすぎて太らないようにしましょう、お互いに」
+					PRINTFORML 「식욕의 가을이야. 맛있는 게 잔뜩 넘쳐나는 계절이지.」
+					PRINTFORMW 「……너무 많이 먹어서 살찌지 않도록 하자, 서로.」
 				CASE 1
-					PRINTFORMW 「サンマよ、サンマを食べましょう。焼いて大根おろしをのせて、醤油をかける。これしかないわ」
+					PRINTFORMW 「꽁치야, 꽁치를 먹자. 구워서 간 무를 올리고, 간장을 뿌려서. 이거밖에 없어.」
 				CASE 2
-					PRINTFORML 「……いつの間にマツタケって高級扱いになったのかしら。わたしが知る限りじゃあちこちで採れたのに」
-					PRINTFORMW 「まぁ別に他のキノコも美味しいからいいけど。シイタケ、マイタケ、エリンギ……よりどりみどりだわ」
+					PRINTFORML 「……어느새 송이버섯이 고급 취급을 받게 된 걸까. 내가 알기로는 여기저기서 났었는데.」
+					PRINTFORMW 「뭐 딱히 다른 버섯도 맛있으니까 상관없지만. 표고, 잎새, 새송이…… 마음껏 고를 수 있네.」
 			ENDSELECT
 		ELSE
 			SELECTCASE RAND:3
 				CASE 0
-					PRINTFORML 「冬といえば鍋よね。昔、魔妖のみんなで囲んだことがあるわ」
-					PRINTFORMW 「ふふ、賑やかなのもいいけど、二人きりでつまむのも乙だわ。今度やりましょうよ」
+					PRINTFORML 「겨울이라고 하면 역시 전골이지. 옛날에, 마요 동료들이랑 다 같이 둘러앉아 먹은 적이 있어.」
+					PRINTFORMW 「후훗, 시끌벅적한 것도 좋지만, 단둘이서 집어 먹는 것도 운치 있네. 다음에 하자.」
 				CASE 1
-					PRINTFORML 「シチューにおでんにブリ大根……、冬は煮物がたべたくなるわね」
-					PRINTFORMW 「は？　『凍らせたおでん』？　なに言ってるのよふざけるなら作ってあげないわ」
+					PRINTFORML 「스튜에 오뎅에 방어 무조림……. 겨울은 조림 요리가 먹고 싶어져.」
+					PRINTFORMW 「하? '얼린 오뎅'? 무슨 소리야, 장난칠 거면 안 만들어줄 거야.」
 				CASE 2
-					PRINTFORMW 「冬は寒い分、いろんなものが脂が乗って美味しいわよね。ニワトリ、ブリ、マグロ……」
-					PRINTFORMW 「ちなみにウナギって本来は冬が旬なのよ？　知ってたかしら？」
+					PRINTFORMW 「겨울은 추운 만큼, 여러 가지 식재료에 기름이 올라서 맛있지. 닭, 방어, 참치……」
+					PRINTFORMW 「참고로 장어는 원래 겨울이 제철이야. 알고 있었어?」
 			ENDSELECT
 		ENDIF
 	;失敗
 	ELSEIF TFLAG:SELECTCOM분기 == -1
-		PRINTFORML 「……美味しくないわね、どこで間違えたのかしら」
-		PRINTFORMW 「これはお互いに特訓が必要ね……。失敗したままでは終われないわ」
+		PRINTFORML 「……맛없네, 어디서부터 잘못된 걸까.」
+		PRINTFORMW 「이건 서로 특훈이 필요하겠네……. 실패한 채로 끝낼 수는 없어.」
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;414,外食
-;TFLAG:SELECTCOM분기(1=カレーライス,2=寿司（高い）,3=ラーメン,4=かつ丼,5=バーガー、銭湯の場合は天そば,10=銭湯の牛乳
-;20=おにぎりとスナック,21=魔剤,22=サンドイッチ,23=편의점スイーツ
-;30=フレンチ,31=焼肉屋,32=ケーキ屋,33=ピッツァ,34=おでんバイキング,40=만족ステーキ,41=만족棒,42=ミルク,51=プロテインだ！)
+;414, 외식
+;TFLAG:SELECTCOM분기(1=카레라이스,2=초밥(비쌈),3=라면,4=가츠동,5=버거, 대중목욕탕에서는 덴푸라소바,10=대중목욕탕의 우유
+;20=주먹밥과 스낵,21=몬스터,22=샌드위치,23=편의점 디저트
+;30=프랑스 요리,31=고깃집,32=케이크 가게,33=피자,34=오뎅 뷔페,40=만족 스테이크,41=만족 바,42=우유,51=프로틴이다!)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_414
-;成否판정
-;TFLAG:192(-2=コマンド終了(非TARGET時強制失敗)、-1＝強制失敗、0=COM依存(非TARGET時強制成功)、1=強制成功or大成功
+;성패 판정
+;TFLAG:192(-2=커맨드 종료(비 TARGET 시 강제 실패), -1=강제 실패, 0=COM 의존(비 TARGET 시 강제 성공), 1=강제 성공 or 대성공)
 TFLAG:192 =0
 
 @M_KOJO_MESSAGE_COM_K2030_414
@@ -2371,133 +2371,133 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_414_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「家でつくるカレーとお店で食べるカレー、同じ料理なのにこうも違うのね……」
-				PRINTFORMW 「ところでわたしのカレー好き？　ふふ、ありがと。今度作ってあげるわ」
+				PRINTFORML 「집에서 만드는 카레랑 가게에서 먹는 카레, 같은 요리인데 이렇게나 다르네……」
+				PRINTFORMW 「그런데 내 카레 좋아해? 후훗, 고마워. 다음에 만들어줄게.」
 			ELSE
-				PRINTFORMW 「こういうスパイシーさは市販のルゥでは難しいわね……」
+				PRINTFORMW 「이런 스파이시함은 시판 루로는 내기 힘들지……」
 			ENDIF 
 		CASE 2
-		;寿司
+		;초밥
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「……ねぇ、お財布、無理してない？　大丈夫？」
-				PRINTFORMW 「……うん、心配ばっかしていたら折角のお寿司も美味しくないわよね。ここは%CSTR:TARGET:MASCALL%を信頼してご馳走になっちゃうわ、ありがと」
+				PRINTFORML 「……있지, 지갑, 무리하는 거 아니야? 괜찮아?」
+				PRINTFORMW 「……응, 걱정만 하고 있으면 모처럼의 초밥도 맛이 없겠지. 여기서는 %CSTR:TARGET:MASCALL%를 믿고 한턱 쏠쏠하게 얻어먹을게, 고마워.」
 			ELSE
-				PRINTFORMW 「ううむ、海辺でもないのにこの新鮮さ、すごいわね……」
+				PRINTFORMW 「으음, 바닷가도 아닌데 이 신선함, 대단하네……」
 			ENDIF 		
 		CASE 3
-		;ラーメン
+		;라멘
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「%CSTR:TARGET:MASCALL%はラーメンにこだわりがある方？　ほら、味とか食べ方とか」
-				PRINTFORMW 「わたし？　特にないわ。美味しいものは美味しい、それだけでいいでしょ」
+				PRINTFORML 「%CSTR:TARGET:MASCALL%는 라면에 까다로운 편이야? 있잖아, 맛이라든가 먹는 법이라든가.」
+				PRINTFORMW 「나? 딱히 없어. 맛있는 건 맛있는 거, 그것만으로 됐잖아.」
 			ELSE
-				PRINTFORMW 「インスタントの手軽さもいいけど、やはりお店のラーメンは一味違うわね……」
+				PRINTFORMW 「인스턴트의 간편함도 좋지만, 역시 가게 라멘은 한 수 위네……」
 			ENDIF 		
 		CASE 4
-		;カツ丼
-				PRINTFORMW 「上手に揚がったカツにダシが染み込んで、これは値打ちものね……」 
+		;가츠동
+				PRINTFORMW 「잘 튀겨진 돈가스에 국물이 스며들어서, 이건 일품이네……」 
 		CASE 5
-		;バーガーor天そば
+		;버거 or 덴푸라소바
 			IF CFLAG:MASTER:현재위치 == 場所_銭湯
-				PRINTFORMW 「これは……この天そばだけでも食っていけるんじゃないかしら」
+				PRINTFORMW 「이건…… 이 덴푸라소바만으로도 먹고 살 수 있겠는데.」
 			ELSEIF CFLAG:MASTER:현재위치 == 場所_繁華街
-				PRINTFORML 「笑わないでよ……」
-				PRINTFORMW %CALLNAME:TARGET%はうまく食べられなかったのか、中の具材がはみ出してしまっている……
+				PRINTFORML 「웃지 마……」
+				PRINTFORMW %CALLNAME:TARGET%는 잘 먹지 못했는지, 속 재료가 삐져나와 있다……
 			ENDIF		
 		CASE 10
-		;銭湯の牛乳
-			PRINTFORMW 「んくっ……んくっ……、ぷはぁ……。風呂上がりはこれよねー」
+		;대중목욕탕의 우유
+			PRINTFORMW 「꿀꺽……꿀꺽……, 푸하아……. 목욕 후엔 역시 이거지~」
 		CASE 20
-		;おにぎり＆スナック
+		;주먹밥&스낵
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「まさか普段からこればっかり食べてないでしょうね……」
-				PRINTFORMW 「せめて野菜をとりなさい。ほらサラダ買うわよ」
+				PRINTFORML 「설마 평소에 이것만 먹고 다니는 건 아니겠지……」
+				PRINTFORMW 「최소한 채소는 챙겨 먹어. 자, 샐러드 살 거야.」
 			ELSE
-				PRINTFORMW 「……まぁたまにならこういう정크なものもいいわよね」
+				PRINTFORMW 「……뭐, 가끔이라면 이런 정크푸드도 괜찮지.」
 			ENDIF 		
 		CASE 21
-		;魔剤
-			PRINTFORMW 「……ご馳走になってもらって言うのもなんだけど、こんなのばっか飲んでたら早死するわよ？」
+		;몬스터(에너지 드링크)
+			PRINTFORMW 「……사줘서 미안하지만, 이런 것만 마시다간 일찍 죽을걸?」
 		CASE 22
-		;サンドイッチ
+		;샌드위치
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「편의점のもいいけど、今度わたしが作ってあげましょうか」
-				PRINTFORMW 「それで……、その、作ったサンドイッチ持ってどこか出かけない？」
+				PRINTFORML 「편의점 것도 좋지만, 다음에 내가 만들어줄까?」
+				PRINTFORMW 「그래서……, 그, 만든 샌드위치 들고 어디 놀러 가지 않을래?」
 			ELSE
-				PRINTFORMW 「意外とレタスがシャキシャキで美味しいわね」
+				PRINTFORMW 「의외로 양상추가 아삭아삭해서 맛있네.」
 			ENDIF 		
 		CASE 23
-		;편의점スイーツ
-			PRINTFORMW 「値段と手頃さの割に侮れないのよね、편의점スイーツ」
-			PRINTFORMW 「ちょっと寄るたびに買いたくなって……、ダメダメ、食べすぎると太っちゃうわ……」
+		;편의점 디저트
+			PRINTFORMW 「가격과 간편함에 비해 얕볼 수 없다니까, 편의점 디저트는.」
+			PRINTFORMW 「잠깐 들를 때마다 사고 싶어져서……, 안돼 안돼, 너무 먹으면 살쪄버려……」
 		CASE 30
-		;フレンチ
+		;프랑스 요리
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「……このお料理、何を使っているのかしら……」
-				PRINTFORMW 「……ねぇ%CSTR:TARGET:MASCALL%、帰る時本屋に寄るわよ。レシピ本、探さなきゃ」
+				PRINTFORML 「……이 요리, 뭘 쓴 걸까……」
+				PRINTFORMW 「……있지 %CSTR:TARGET:MASCALL%, 돌아갈 때 서점에 들르자. 레시피 책, 찾아봐야겠어.」
 			ELSE
-				PRINTFORMW 「異国の料理ってすごいわね……。わたし、ビックリしちゃった」
+				PRINTFORMW 「이국의 요리는 대단하네……. 나, 깜짝 놀랐어.」
 			ENDIF 		
 		CASE 31
-		;焼き肉
+		;고깃집
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「昔、魔妖のみんなと一緒にやったことあったわ……。やかましい連中だったけど楽しかったわね……」
-				PRINTFORMW 「みんな好き嫌い多かったけど焼き肉なら文句言われなかったわね……。あ、ほら、そこ焼けてるわよ食べなさい？」
+				PRINTFORML 「옛날에, 마요 동료들이랑 다 같이 먹은 적 있었어……. 시끄러운 녀석들이었지만 즐거웠지……」
+				PRINTFORMW 「다들 편식이 심했는데 고기 구워주면 불평은 안 하더라……. 앗, 자, 거기 익었어, 먹어.」
 			ELSE
-				PRINTFORMW 「美味しいんだけど、服にニオイがつくのだけが難儀ね……」
+				PRINTFORMW 「맛있긴 한데, 옷에 냄새가 배는 것만이 흠이네……」
 			ENDIF 		
 		CASE 32
-		;ケーキ屋
+		;케이크 가게
 			IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-				PRINTFORML 「ありがと。ほら、%CSTR:TARGET:MASCALL%も一口食べなさい？」
-				PRINTFORMW 「……はい、あーん」
+				PRINTFORML 「고마워. 자, %CSTR:TARGET:MASCALL%도 한입 먹어.」
+				PRINTFORMW 「……자, 아~앙.」
 			ELSE
-				PRINTFORMW 「……罪の味だわ」
+				PRINTFORMW 「……죄의 맛이네.」
 			ENDIF 		
 		CASE 33
-		;ピッツァ
-			PRINTFORMW 「ふー、ふー。……初めて食べた時、チーズが熱くて火傷したのよ、悪い？」
+		;피자
+			PRINTFORMW 「후- 후-. ……처음 먹었을 때, 치즈가 뜨거워서 데었단 말이야, 뭐 문제 있어?」
 		CASE 34
-		;おでん
-			PRINTFORMW 「最近は冷やしおでんなるものがあるらしいけど、やっぱおでんはアツアツよねー」
+		;오뎅
+			PRINTFORMW 「요즘은 차가운 오뎅이란 것도 있는 모양이지만, 역시 오뎅은 뜨끈해야지~」
 		CASE 40
-		;ステーキ
-			PRINTFORMW 「……む、噛み応えがあるわね」
+		;스테이크
+			PRINTFORMW 「……음, 씹는 맛이 있네.」
 		CASE 41
-		;만족棒
-			PRINTFORMW 「まってこれ硬くない！？　どうやって固めたのよ……」
+		;만족 바
+			PRINTFORMW 「잠깐, 이거 딱딱하지 않아!? 어떻게 굳힌 거야……」
 		CASE 42
-		;ミルク
-			PRINTFORMW 「なんで牛乳だけで売ってるのかしら」
+		;우유
+			PRINTFORMW 「어째서 우유만 파는 걸까.」
 		CASE 51
-		;プロテイン
-			PRINTFORMW 「味を楽しむものじゃないのはわかるけど……これで식사をとったって言われるのはさみしいわね」
+		;프로틴
+			PRINTFORMW 「맛을 즐기는 게 아니란 건 알지만…… 이걸로 식사를 때웠다고 하는 건 좀 씁쓸하네.」
 		CASE 60
-		;ダイナーステーキ
-			PRINTFORMW 「いい焼き加減ね　和風ソースが美味しいわ」
+		;다이너 스테이크
+			PRINTFORMW 「굽기 정도가 좋네. 일본풍 소스가 맛있어.」
 		CASE 70
-		;ATK4500しそうなステーキ
-			PRINTFORMW 「……！　なに、なんなのこれ」
-			PRINTFORMW 「うそでしょ……これが、お肉だっていうの……！？　今まで食べたお肉とはひと味もふた味も違う……！」
+		;ATK 4500쯤 될 것 같은 스테이크
+			PRINTFORMW 「……! 뭐, 뭐야 이건.」
+			PRINTFORMW 「거짓말이지…… 이게, 고기라고……!? 지금까지 먹어본 고기랑은 한 차원, 두 차원 달라……!」
 		CASE 71
-		;ATK4000ありそうなバーガー
-			PRINTFORMW 「えええ……？　こんな大きなハンバーガー、口に収まりきらないわよ……」
-			PRINTFORMW 「え、ナイフとフォークを使うの？　そんなハンバーガーあるのね……」
+		;ATK 4000쯤 될 것 같은 버거
+			PRINTFORMW 「에에에……? 이렇게 큰 햄버거, 입에 다 안 들어온다고……」
+			PRINTFORMW 「에, 나이프랑 포크를 쓰는 거야? 그런 햄버거도 있구나……」
 		CASE 72
-		;激辛チキン
-			PRINTFORMW 「！！！？？？　ちょ、水！　いや牛乳！！　か、からっ、から────！？」
+		;매운 치킨
+			PRINTFORMW 「!!!??? 자, 잠깐, 물! 아니 우유!! 매, 맵, 매워────!?」
 		CASE 73
-		;サイダー
-			PRINTFORML 「…………ごめん、のこり、飲まない？」
-			PRINTFORMW 「わたしじゃ、むり、だったわ……」
+		;사이다
+			PRINTFORML 「…………미안, 남은 거, 안 마실래?」
+			PRINTFORMW 「나로선, 무리, 였어……」
 		CASEELSE 
-			PRINTFORMW 「……ふぅん、へぇ。こういうのもあるのね」
+			PRINTFORMW 「……흐음, 헤에. 이런 것도 있구나.」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -2518,7 +2518,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_415_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2527,9 +2527,9 @@ ENDIF
 RETURN 1
 
 ;==================================================
-;416,ゲームを遊ぶ
-;TFLAG:SELECTCOM분기(0=マスターデュエル,1=アラクエⅢ,2=悪魔城ラビュリンス,3=ヴァリアンツ,4=カプモン,5=마법少女レイちゃんR18(地の文は未実装))
-;ゲーム進行度 にゲームの進行度
+;416, 게임을 한다
+;TFLAG:SELECTCOM분기(0=마스터 듀얼,1=아라퀘Ⅲ,2=악마성 라뷰린스,3=밸리언츠,4=캡슐몬스터,5=마법소녀 레이쨩R18(서술은 미실장))
+;게임 진행도 에 게임의 진행도
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_416
 ;成否판정
@@ -2543,28 +2543,28 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_416_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;TARGETが寝ている
+	;TARGET이 자고 있다
 	IF	CFLAG:TARGET:수면 == 1
 		 
-	;それ以外
+	;그 외
 	ELSE
 		SELECTCASE RAND:3
 			CASE 0
-				PRINTFORMW 「囲碁や将棋ならわかるんだけど、これはよくわからないのよね……」
+				PRINTFORMW 「바둑이나 장기라면 알겠는데, 이건 잘 모르겠네……」
 			CASE 1
-				PRINTFORMW 「楽しそうね。今度やり方教えなさいよ」
+				PRINTFORMW 「재밌어 보이네. 다음에 하는 법 알려줘.」
 			CASE 2
-				PRINTFORMW 「熱中しすぎないようにしなさいよー」
+				PRINTFORMW 「너무 열중하지는 말라구~」
 		ENDSELECT
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;417,カードをプレゼント
+;417,카드를 선물한다
 ;TFLAG:SELECTCOM분기(URL,SPR,RARE,CMN,ERA)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_417
@@ -2574,23 +2574,23 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_417_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE ULR,SPR
-			PRINTFORMW 「そう、そうね。その調子でわたしに貢ぎなさい。ふふん♪」
+			PRINTFORMW 「그래, 그렇지. 그런 기세로 나에게 조공을 바치도록. 흐흥♪」
 		CASE RARE,CMN
-			PRINTFORMW 「プレゼント？　ん、ありがと」
+			PRINTFORMW 「선물? 응, 고마워.」
 		CASE ERA
-			PRINTFORMW 「なに、このカード……。不思議なチカラを感じるわ……。%CSTR:TARGET:MASCALL%、こんなカード貰ってもいいのかしら……？」
+			PRINTFORMW 「뭐야, 이 카드는……. 신비한 힘이 느껴져……. %CSTR:TARGET:MASCALL%, 이런 카드를 받아도 괜찮은 거야……?」
 	ENDSELECT
 ENDIF
 RETURN 1
 
 ;==================================================
-;418,映画を見る
+;418,영화를 본다
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_418
 CALL TRAIN_MESSAGE
@@ -2599,17 +2599,17 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_418_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE RAND:3
 		CASE 0
-			PRINTFORMW 「……ニンゲンも中々やるわね。おもわず身を乗り出しそうになったわ」
+			PRINTFORMW 「……인간도 제법이네. 나도 모르게 몸을 앞으로 기울일 뻔했어.」
 		CASE 1
-			PRINTFORMW %CALLNAME:TARGET%はこちらの視線にも気づかず、食い入るように映画を見ている
+			PRINTFORMW %CALLNAME:TARGET%는 이쪽의 시선도 눈치채지 못하고, 뚫어지게 영화를 보고 있다.
 		CASE 2
-			PRINTFORMW 「面白かったわ。では映画の感想戦といきましょうか……！」
+			PRINTFORMW 「재밌었어. 그럼 영화 감상회라도 시작해 볼까……!」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -2625,7 +2625,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_420_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2644,7 +2644,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_421_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2662,16 +2662,16 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_425_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「ちゃんと食材は常備しているかしら。消費期限にも気をつけなさいよ？」
+	PRINTFORMW 「식재료는 제대로 구비해 뒀으려나. 소비기한도 신경 쓰라고?」
 ENDIF
 RETURN 1
 
 ;==================================================
-;426,銭湯に入る
+;426,대중목욕탕에 들어간다
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_426
 CALL TRAIN_MESSAGE
@@ -2680,12 +2680,12 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_426_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「ふぅー……。いい湯ねー……。%CSTR:TARGET:MASCALL%の家にもこれぐらい大きい風呂があればいいのにねぇー……」
-	PRINTFORMW 湯上がりで火照った顔の%CALLNAME:TARGET%。銭湯の熱気にあてられたのかいつもより言動がぽやぽやしている……
+	PRINTFORMW 「후우~……. 물 좋네~……. %CSTR:TARGET:MASCALL%의 집에도 이 정도로 큰 목욕탕이 있으면 좋을 텐데~……」
+	PRINTFORMW 목욕을 막 마쳐 달아오른 얼굴의 %CALLNAME:TARGET%. 목욕탕의 열기에 취한 건지 평소보다 언동이 멍해져 있다……
 ENDIF
 RETURN 1
 
@@ -2703,7 +2703,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_431_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2722,7 +2722,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_467_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2741,7 +2741,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_435_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2750,9 +2750,9 @@ ENDIF
 RETURN 1
 
 ;==================================================
-;444,対戦상대を探す
+;444,대전 상대를 찾는다
 ;==================================================
-;流れるタイミングは「"見"に回った」「声をかけて対戦を申し込んだ」「電話で呼んで確定を押した」後
+;나오는 타이밍은 「"구경"만 했다」 「말을 걸어 대전을 신청했다」 「전화로 불러서 확정을 눌렀다」 후
 @M_KOJO_MESSAGE_COM_K2030_444
 CALL TRAIN_MESSAGE
 CALL M_KOJO_MESSAGE_COM_K2030_444_1
@@ -2760,17 +2760,17 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_444_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「……ふふ、たとえデュエルでもニンゲン상대には負けないわ……！」
+	PRINTFORMW 「……후훗, 설령 듀얼이라도 인간 상대로는 지지 않아……!」
 ENDIF
 RETURN 1
 ;==================================================
-;445,カフェでくつろぐ
+;445,카페에서 느긋하게 있기
 ;==================================================
-;流れるタイミングはパックを開けた後
+;나오는 타이밍은 팩을 깐 후
 @M_KOJO_MESSAGE_COM_K2030_445
 CALL TRAIN_MESSAGE
 CALL M_KOJO_MESSAGE_COM_K2030_445_1
@@ -2778,23 +2778,23 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_445_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	IF TALENT:TARGET:연모 
-		PRINTFORMW 「パック、剥いた？　そう、じゃあしまって」
-		PRINTFORMW 「確認なら家に帰ってからでもできるでしょ。今はわたしと一緒にすごしてほしいわ」
+		PRINTFORMW 「팩, 깠어? 그래, 그럼 집어넣어.」
+		PRINTFORMW 「확인하는 건 집에 돌아가서도 할 수 있잖아. 지금은 나랑 같이 있어줬으면 해.」
 	ELSE
-		PRINTFORMW 「いいカードは引けたかしら」
+		PRINTFORMW 「좋은 카드는 뽑았으려나.」
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;455,バイトをしてもらう
-;CFLAG:아르바이트(0=無職 1=バニーバー 2=デュエルメイド 3=巫女 4=편의점バイト 5=スーパー
-;6=ジムインストラクター 7=ファミレス 8=神父/シスター 9=自宅執事/メイド
-;100=グラビアモデル 304=搾乳牧場 433=음교의신도 451=エロ配信)
+;455, 아르바이트를 시킨다
+;CFLAG:아르바이트(0=무직 1=바니 바 2=듀얼 메이드 3=무녀 4=편의점 알바 5=슈퍼마켓
+;6=헬스 트레이너 7=패밀리 레스토랑 8=신부/수녀 9=자택 집사/메이드
+;100=그라비아 모델 304=착유 목장 433=음교의 신도 451=에로 방송)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_455
 CALL TRAIN_MESSAGE
@@ -2803,86 +2803,86 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_455_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	;働かない
+	;일하지 않음
 	IF CFLAG:아르바이트 == 0
-		PRINTFORMW 「いままで通り家にいろと、わかったわ」
-	;バニーバー
+		PRINTFORMW 「지금까지처럼 집에 있으라고, 알았어.」
+	;바니 바
 	ELSEIF CFLAG:아르바이트 == 1
-		PRINTFORMW 「ふぅん、こんな如何わしい服装で給仕ねぇ。ま、わたしの美貌にかかればあっという間に인기者でしょうね」
-		PRINTFORMW 「……もし厄介な客に絡まれたら、すぐに%CSTR:TARGET:MASCALL%を呼ぶから。そのときは頑張ってね」
-	;デュエルメイド
+		PRINTFORMW 「흐음, 이런 수상쩍은 복장으로 시중을 들라, 라. 뭐, 내 미모에 걸리면 순식간에 인기인이 되겠지.」
+		PRINTFORMW 「……만약 성가신 손님이 꼬이면, 바로 %CSTR:TARGET:MASCALL%를 부를 테니. 그때는 잘 부탁해.」
+	;듀얼 메이드
 	ELSEIF CFLAG:아르바이트 == 2
-		PRINTFORMW 「あら給仕服をわたしに着ろと。ふぅん……。ま、可愛らしいデザインだからゆるしてあげる」
-		PRINTFORMW 「……間違ってもこないでよ？」
-	;巫女
+		PRINTFORMW 「어머, 시중드는 옷을 나더러 입으라고. 흐음……. 뭐, 귀여운 디자인이니까 용서해 줄게.」
+		PRINTFORMW 「……절대로 오지 말라고?」
+	;무녀
 	ELSEIF CFLAG:아르바이트 == 3
-		PRINTFORMW 「……バカじゃないの、%CSTR:TARGET:MASCALL%。わたしが不知火にどれだけ手を焼かされたと……！」
-		PRINTFORMW 「……いえ、違うわね、考え方を改めます。神なんて堕ちればいいと考えてるわたしが神の領域に踏み入る……！　ふふふ、冒涜的でステキだわ……」
-	;편의점バイト
+		PRINTFORMW 「……바보 아니야, %CSTR:TARGET:MASCALL%. 내가 시라누이 때문에 얼마나 고생했는데……!」
+		PRINTFORMW 「……아니, 아니지, 생각을 고쳐먹겠어. 신 따위는 타락하면 된다고 생각하는 내가 신의 영역에 발을 들인다……! 후후훗, 모독적이라 멋진걸……」
+	;편의점 알바
 	ELSEIF CFLAG:아르바이트 == 4
-		PRINTFORMW 「知ってるわ、아르바이트の定番といえばこれなんでしょ。まぁ、まかせておきなさい」
-	;スーパー
+		PRINTFORMW 「알고 있어, 아르바이트의 정석이라고 하면 이거지? 뭐, 맡겨두라고.」
+	;슈퍼마켓
 	ELSEIF CFLAG:아르바이트 == 5
-		PRINTFORMW 「……ふむ、もし食材がなくなりかけたら帰り際に買い足そうかしら……」
-	;ジムインストラクター
+		PRINTFORMW 「……흠, 만약 식재료가 떨어져 가면 돌아오는 길에 사갈까……」
+	;헬스 트레이너
 	ELSEIF CFLAG:아르바이트 == 6
-		PRINTFORMW 「……正気？　かよわい雪女に、ジムで働け、と？　……正気？」
-	;ファミレス
+		PRINTFORMW 「……제정신이야? 연약한 설녀에게, 헬스장에서 일하라고? ……제정신?」
+	;패밀리 레스토랑
 	ELSEIF CFLAG:아르바이트 == 7
-		PRINTFORMW 「給仕……だけじゃなく料理も任されるの？　いいわね。腕がなるわ」
-	;シスター
+		PRINTFORMW 「시중……만이 아니라 요리도 맡는다고? 좋네. 실력 발휘 좀 해볼까.」
+	;수녀
 	ELSEIF CFLAG:아르바이트 == 8
-		PRINTFORMW 「異国の神職ね。どうしてこんなバイトさせようとおもったか聞かせてくれる？」
-		PRINTFORMW 「……へぇ、シスター服が似合ってると思ったから。いいわ、%CSTR:TARGET:MASCALL%の望み通りにしましょうか
-	;自宅メイド
+		PRINTFORMW 「이국의 성직자네. 어째서 이런 알바를 시키려고 생각했는지 들려줄래?」
+		PRINTFORMW 「……헤에, 수녀복이 어울릴 것 같아서. 좋아, %CSTR:TARGET:MASCALL%의 바람대로 해줄까.」
+	;자택 메이드
 	ELSEIF CFLAG:아르바이트 == 9
-		PRINTFORMW 「ふぅん%CSTR:TARGET:MASCALL%、わたしに奉仕してほしかったの」
-	;グラビアモデル
+		PRINTFORMW 「흐음, %CSTR:TARGET:MASCALL%, 나한테 봉사받고 싶었구나.」
+	;그라비아 모델
 	ELSEIF CFLAG:아르바이트 == 100
-		PRINTFORMW 「あら、いいのかしら%CSTR:TARGET:MASCALL%。世界中にわたしの매력が伝わってしまっても」	
-	;搾乳牧場
+		PRINTFORMW 「어머, 괜찮겠어, %CSTR:TARGET:MASCALL%? 온 세상에 나의 매력이 퍼져버려도.」	
+	;착유 목장
 	ELSEIF CFLAG:아르바이트 == 304
-		PRINTFORMW 「……❤　いいわ。%CSTR:TARGET:MASCALL%の淫らな乳牛が、いっぱい、いぃっぱい❤絞られてあげる、モー❤」
-	;음교의신도
+		PRINTFORMW 「……❤ 좋아. %CSTR:TARGET:MASCALL%의 음란한 젖소가, 가득, 가아득❤ 짜여져 줄게, 음머❤」
+	;음교의 신도
 	ELSEIF CFLAG:아르바이트 == 433
-		PRINTFORML 「うれしい……❤例えこの身がどうなろうと、すべて、すべてを%CSTR:TARGET:MASCALL%に捧げるわ……❤」
-		PRINTFORMW 「だからお願いします❤　どうか、どうかわたしからの捧げ物、受け取ってもらえませんか……❤」
-	;エロ配信
+		PRINTFORML 「기뻐요……❤ 설령 이 몸이 어떻게 되더라도, 모든 것을, 모든 것을 %CSTR:TARGET:MASCALL%에게 바칠게요……❤」
+		PRINTFORMW 「그러니 부탁드립니다❤ 부디, 부디 제가 바치는 것을, 받아주시지 않겠습니까……❤」
+	;에로 방송
 	ELSEIF CFLAG:아르바이트 == 451
-		PRINTFORML 「さぁて、どういう配信にしようかしら」
-		PRINT 「まずはわたしの
+		PRINTFORML 「자아, 어떤 방송으로 할까.」
+		PRINT 「우선 나의
 			IF TALENT:TARGET:가슴사이즈 >= 2
-				PRINT この手に収まりきらない爆乳を
+				PRINT  이 손에 다 담을 수 없는 폭유를
 			ELSE
-				PRINT 美しいおっぱいを
+				PRINT  아름다운 가슴을
 			ENDIF
-			PRINT 揉みしだきながら、
+			PRINT  주무르면서,
 			IF TALENT:TARGET:허벅지사이즈 >= 2
-				PRINT むっ……ちりとした太ももと、	
+				PRINT  포동……포동한 허벅지와, 
 			ELSE
-				PRINT しなやかな太ももと、
+				PRINT  매끈한 허벅지와,
 			ENDIF
 			IF TALENT:TARGET:엉덩이사이즈 >= 2
-				PRINT 赤ちゃんを孕んでも安心感のあるデカケツを
+				PRINT  아기를 낳아도 안심감 있는 왕궁뎅이를
 			ELSE
-				PRINT かわいらしいお尻を
+				PRINT  귀여운 엉덩이를
 			ENDIF					
-			PRINTW アピールしないとね……❤」
-		PRINTFORMW 「次に服をゆ……っくりはだけて、わたしの乳首も、クリトリスもチラッ……チラッ……と見せて❤　次第に愛液でトロットロに汚れた床を見せて……❤」
-		PRINTFORMW 「あら、興奮したのかしら？　ふふ、ダメよ❤　%CSTR:TARGET:MASCALL%との情事なんて見せたら画面の向こうのお猿さんたちが憤死してしまうわ❤　続きは終わったあとで、ね❤」			
+			PRINTW  어필해야지……❤」
+		PRINTFORMW 「그다음엔 옷을 천……천히 벗어젖히고, 내 유두도, 클리토리스도 슬쩍…… 슬쩍…… 보여주고❤ 점차 애액으로 질척질척 더러워진 바닥을 보여주고……❤」
+		PRINTFORMW 「어머, 흥분했어? 후훗, 안돼❤ %CSTR:TARGET:MASCALL%(와)과의 정사 같은 걸 보여주면 화면 너머의 원숭이들이 분사해버릴 거야❤ 뒷일은 끝난 다음에, 하자❤」			
 	ELSE
-		PRINTFORMW 「ニンゲンってなんで働かなきゃならないのかしら……まぁ%CSTR:TARGET:MASCALL%のためなら」
+		PRINTFORMW 「인간은 왜 일해야만 하는 걸까……. 뭐, %CSTR:TARGET:MASCALL%를 위해서라면.」
 	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
-;460,外出/デート
+;460,외출/데이트
 ;==================================================
-;流れるタイミングは目的地に到着した後。
+;나오는 타이밍은 목적지에 도착한 후.
 @M_KOJO_MESSAGE_COM_K2030_460
 CALL TRAIN_MESSAGE
 CALL M_KOJO_MESSAGE_COM_K2030_460_1
@@ -2890,7 +2890,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_460_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
@@ -2898,20 +2898,20 @@ IF LOCAL
 	IF CFLAG:TARGET:수면 == 1
 
 	ELSE
-		;TARGETとデート
+		;TARGET과 데이트
 		IF CFLAG:동행
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「さ、いきましょうか」
-			PRINTFORMW 「ふふ、お互いにとって楽しい時間になるといいわね？」
+			PRINTFORMW 「자, 가볼까.」
+			PRINTFORMW 「후훗, 서로에게 즐거운 시간이 되면 좋겠네?」
 		ELSE
-			PRINTFORMW 「……ちゃんと歓待なさいよ？」
+			PRINTFORMW 「……제대로 환대하라고?」
 		ENDIF 
-		;TARGET以外とデート
+		;TARGET 이외와 데이트
 		ELSEIF CFLAG:MASTER:동행
-			PRINTFORMW 「……そう、いってらっしゃい」
-		;お出かけお見送り
+			PRINTFORMW 「……그래, 다녀와.」
+		;외출 배웅
 		ELSE
-			PRINTFORMW 「いってらっしゃい。ちゃんと帰ってくるのよ」
+			PRINTFORMW 「다녀와. 제대로 돌아와야 해.」
 		ENDIF
 	ENDIF
 ENDIF
@@ -2927,7 +2927,7 @@ CALL M_KOJO_MESSAGE_COM_K2030_461_1
 
 @M_KOJO_MESSAGE_COM_K2030_461_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -2936,9 +2936,9 @@ RETURN 1
 [SKIPEND]
 
 ;==================================================
-;462,スーパーに通う
+;462,슈퍼에 들른다
 ;==================================================
-;流れるタイミングは店を出た後
+;나오는 타이밍은 가게를 나온 후
 @M_KOJO_MESSAGE_COM_K2030_462
 CALL TRAIN_MESSAGE
 CALL M_KOJO_MESSAGE_COM_K2030_462_1
@@ -2946,20 +2946,20 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_462_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「そっちはいい買い物できたかしら？」
-			PRINTFORMW 「あ、マイバッグ持ってきたからそっちに詰めるわね」
+			PRINTFORMW 「그쪽은 좋은 물건 샀어?」
+			PRINTFORMW 「아, 장바구니 가져왔으니까 그쪽에 담을게.」
 		ELSE
-			PRINTFORMW 「お会計おわった？　じゃ、いきましょうか」
+			PRINTFORMW 「계산 끝났어? 그럼, 가볼까.」
 		ENDIF 
 ENDIF
 RETURN 1
 ;==================================================
-;463,服屋を見に行く
+;463,옷가게를 보러 간다
 ;==================================================
 ;流れるタイミングは店を出た後
 @M_KOJO_MESSAGE_COM_K2030_463
@@ -2969,15 +2969,15 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_463_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「この世界の服ってすごいのね……。うぅん、わたしもお金貯めるべきかしら……」
+	PRINTFORMW 「이 세계의 옷은 대단하네……. 으음, 나도 돈을 모아야 하려나……」
 ENDIF
 RETURN 1
 ;==================================================
-;465,お仕事に向かう
+;465,일하러 간다
 ;==================================================
 ;流れるタイミングは到着した後
 @M_KOJO_MESSAGE_COM_K2030_465
@@ -2987,19 +2987,19 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_465_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「ちゃんと帰ってくるのよ。……まってるから」
+			PRINTFORMW 「제대로 돌아와야 해. ……기다릴 테니.」
 		ELSE
-			PRINTFORMW 「……ニンゲンも大変ね。日々食うためにも働かなきゃならないなんて」
+			PRINTFORMW 「……인간도 힘들겠네. 매일 먹고살기 위해서 일해야 한다니.」
 		ENDIF  
 ENDIF
 RETURN 1
 ;==================================================
-;471,願掛けする
+;471,소원을 빈다
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_471
 CALL TRAIN_MESSAGE
@@ -3008,20 +3008,20 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_471_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORML 「……またせたわね、行きましょうか」
-			PRINTFORMW 「長いお祈りだったな？　ふふふ、そうね。たぁっぷり惚気てやったわ。神がウンザリするほどね……！」
+			PRINTFORML 「……기다렸잖아, 가자.」
+			PRINTFORMW 「기도가 길었지? 후후훗, 그래. 듬~뿍 자랑하고 왔지. 신이 질려버릴 정도로 말이야……!」
 		ELSE
-			PRINTFORMW 「……おわったかしら？」
+			PRINTFORMW 「……끝났어?」
 		ENDIF 
 ENDIF
 RETURN 1
 ;==================================================
-;475,診察を受ける
+;475,진찰을 받는다
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_475
 CALL TRAIN_MESSAGE
@@ -3030,27 +3030,27 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_475_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 		IF TALENT:TARGET:연모 || TALENT:TARGET:애처
-			PRINTFORML 「……どうだったのよ」
-			PRINTFORMW 「何事もなければそれでいいの。わたしがムダに心配しただけで終わるから」
+			PRINTFORML 「……어땠어.」
+			PRINTFORMW 「아무 일 없으면 그걸로 됐어. 내가 쓸데없이 걱정한 걸로 끝나는 거니까.」
 		ELSEIF TALENT:TARGET:굴복됨
-			PRINTFORMW 「%CALLNAME:TARGET%どこかお身体が悪いのですか……？　心配です」
+			PRINTFORMW 「%CALLNAME:TARGET%님, 어디 몸이라도 안 좋으신가요……? 걱정됩니다.」
 		ELSE
-			PRINTFORMW 「おわった？　なにもなければいきましょうか」
+			PRINTFORMW 「끝났어? 아무 일 없으면 가볼까.」
 		ENDIF 
 ENDIF
 RETURN 1
 
 ;==================================================
-;600,散策する
-;데이트중の場合、CFLAG:현재위치に이동先の場所が既に入ってる
+;600, 산책한다
+;데이트 중일 경우, CFLAG:현재위치에 이동할 장소가 이미 들어있음
 ;==================================================
-;流れるタイミングは이동後
-;場所の名前は ERB/05.コマンド関連/이동関連（이동コマンド、COMF 400含む）/COMMON_PLACE に書いてある
+;나오는 타이밍은 이동 후
+;장소의 이름은 ERB/05.コマンド関連/이동関連(이동コマンド, COMF 400 포함)/COMMON_PLACE 에 쓰여있음
 @M_KOJO_MESSAGE_COM_K2030_600
 ;散策するにはTRAIN_MESSAGEが無い
 CALL M_KOJO_MESSAGE_COM_K2030_600_1
@@ -3058,36 +3058,36 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_600_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	IF CFLAG:MASTER:현재위치 == 場所_ラブホ
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
 			PRINTFORML 「……❤」
-			PRINTFORMW 「……期待に胸ふくらませても、いいかしら……？」
+			PRINTFORMW 「……기대에 가슴 부풀려도, 괜찮을까……?」
 		ELSE
-			PRINTFORMW 「……ただ休憩しにいくってわけじゃ、ないんでしょうね……」
+			PRINTFORMW 「……그저 쉬러 가는 것뿐만, 은 아니겠지……」
 		ENDIF 
 	ELSEIF CFLAG:MASTER:현재위치 == 場所_裏通り
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「わたし、どうされちゃうのかしらね……❤」
+			PRINTFORMW 「나, 어떻게 되어버리는 걸까……❤」
 		ELSE
-			PRINTFORMW 「……君子、危うきに近づかずって知ってる？」
+			PRINTFORMW 「……군자위부근(君子危不近)이라고 알아?」
 		ENDIF 
 	ELSEIF CFLAG:TARGET:현재위치 == 場所_カドショ || CFLAG:TARGET:현재위치 == 場所_MZカドショ || CFLAG:TARGET:현재위치 == 場所_STカドショ || CFLAG:TARGET:현재위치 == 場所_モール
-			PRINTFORMW 「……デートなのよね？　こんなときでもカードなの？」
+			PRINTFORMW 「……데이트 맞지? 이럴 때도 카드야?」
 	ELSEIF CFLAG:MASTER:현재위치 == 場所_神社
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「ふふ、神に見せつけにいくの？　わたしと%CSTR:TARGET:MASCALL%の仲睦まじさを……❤」
+			PRINTFORMW 「후훗, 신에게 과시하러 가는 거야? 나와 %CSTR:TARGET:MASCALL%의 다정한 사이를……❤」
 		ELSE
-			PRINTFORMW 「……本気なのかしら。本気でわたしを神社に連れていこうというのかしら」
+			PRINTFORMW 「……진심인가. 정말로 나를 신사에 데려가려는 건가.」
 		ENDIF
 	ELSE
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「%CSTR:TARGET:MASCALL%とならどこだって楽しいわ……❤」
+			PRINTFORMW 「%CSTR:TARGET:MASCALL%(와)과 함께라면 어디든 즐거워……❤」
 		ELSE
-			PRINTFORMW 「……さ、次はどうやってもてなしてくれるの？」
+			PRINTFORMW 「……자, 다음엔 어떻게 대접해 줄 거야?」
 		ENDIF 
 	ENDIF 			
 ENDIF
@@ -3108,7 +3108,7 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_605_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
@@ -3121,8 +3121,8 @@ ENDIF
 RETURN 1
 
 ;==================================================
-;617,甘味処に誘う
-;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)(地の文분기は大成功のみ추가
+;617, 디저트 가게에 초대한다
+;TFLAG:SELECTCOM분기(1=대성공 0=성공 -1=실패)(서술 분기는 대성공만 추가)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K2030_617
 ;成否판정
@@ -3136,23 +3136,23 @@ RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_617_1
 ;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
+;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1,0
 			IF GET_MONTH() == "봄의 달"
-				PRINTFORMW 「春といえば桜餅……と思ってたけど、このいちごパフェってのも甘くていいわね……。次からどっちを頼もうかしら……」
+				PRINTFORMW 「봄이라고 하면 사쿠라모찌……라고 생각했는데, 이 딸기 파르페란 것도 달고 좋네……. 다음엔 어느 쪽을 주문할까……」
 			ELSEIF GET_MONTH() == "여름의 달"
-				PRINTFORMW 「こう暑いと氷菓がうれしいわね……。ほら、%CSTR:TARGET:MASCALL%も頼んだら？」
+				PRINTFORMW 「이렇게 더우면 빙과가 최고지……. 자, %CSTR:TARGET:MASCALL%도 주문하는 게 어때?」
 			ELSEIF GET_MONTH() == "가을의 달"
-				PRINTFORMW 「サツマイモもいいけど栗もいいわね。……食べ過ぎに注意が必要ね」
+				PRINTFORMW 「고구마도 좋지만 밤도 좋네. ……과식에 주의해야겠어.」
 			ELSEIF GET_MONTH() == "겨울의 달"
-				PRINTFORMW 「冬は好きだけど甘味が少ないのが辛いところだったわ……。この世界だとそういう心配もなくて素晴らしいわね……！」
+				PRINTFORMW 「겨울은 좋지만 단 게 적어서 힘들었는데……. 이 세계에선 그런 걱정도 없어서 훌륭하네……!」
 			ENDIF
 		CASE -1
-			PRINTFORMW 「わるいけど、%CSTR:TARGET:MASCALL%の誘いをうける義理がないわ」
+			PRINTFORMW 「미안하지만, %CSTR:TARGET:MASCALL%의 초대에 응해줄 의리는 없어.」
 	ENDSELECT
 ENDIF
 RETURN 1
