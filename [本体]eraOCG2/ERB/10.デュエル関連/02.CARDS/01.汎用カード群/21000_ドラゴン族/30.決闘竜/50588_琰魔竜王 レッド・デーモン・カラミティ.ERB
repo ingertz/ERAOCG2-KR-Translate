@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 염마룡왕 레드 데몬 캘러미티
+		RESULTS = 염마룡왕 레드 데몬 캘러미티
 	CASE "略称"
-RESULTS = R 데몬 C
+		RESULTS = R 데몬 C
 	CASE "カテゴリ"
-RESULTS:0 = 레드 데몬
-RESULTS:1 = 데몬
+		RESULTS:0 = 레드 데몬
+		RESULTS:1 = 데몬
 ENDSELECT
 
 
@@ -35,8 +35,6 @@ SELECTCASE 参照先
 		RETURN 4000
 	CASE "守備力"
 		RETURN 3500
-	CASE "C불가"
-		RETURN 1
 	CASE "성별"
 		RETURN 雄性
 ENDSELECT
@@ -70,7 +68,7 @@ ENDIF
 @CARD_EXPLANATION_50588(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 튜너 2체 ＋ 튜너 이외의 "레드 데몬" S 몬스터 1체
+PRINTL 튜너 2장 ＋ 튜너 이외의 "레드 데몬" S 몬스터 1체
 PRINTL 이 카드의 효과의 발동에 대해, 상대는 카드의 효과를 발동할 수 없다.
 CALL CARD_ABLE(0,EX소환時)
 PRINTL ①: 이 카드가 S 소환했을 때에 발동할 수 있다.
@@ -121,6 +119,10 @@ ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	SIF !GROUPMATCH(チェーン可否종류, EX소환時)
 		RETURN 0
 	RETURN 1
 ENDIF
