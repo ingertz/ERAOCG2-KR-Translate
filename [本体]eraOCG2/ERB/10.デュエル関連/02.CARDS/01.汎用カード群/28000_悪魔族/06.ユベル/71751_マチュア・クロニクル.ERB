@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 매추어 크로니클
+		RESULTS = 매추어 크로니클
 	CASE "略称"
-RESULTS = 매추어 Chro
+		RESULTS = 매추어 Chro
 	CASE "カテゴリ"
-RESULTS:0 = 유벨
+		RESULTS:0 = 유벨
 ENDSELECT
 
 
@@ -62,7 +62,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
-효과条件名前 = 유벨
+	효과条件名前 = 유벨
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1 && GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") <= 1
 		RETURN 0
@@ -111,14 +111,14 @@ ENDIF
 IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71751,2)
 	IF RESULT == 0
-		PRINTFORML 個別카운터を何個取り除きますか？（현재의 個別카운터{GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}개）
+		PRINTFORML 개별 카운터를 몇개 제거하시겠습니까？（현재 개별 카운터{GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}개）
 		IF 듀얼리스트 == "자신"
 			CALL FULLRESET
 			효과範囲묘지 = 1
-효과条件名前 = 유벨
+			효과条件名前 = 유벨
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			SIF RESULT == 1 && GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 1
-				PRINTFORML [1] - 묘지에서 "유벨"を특수 소환한다。
+				PRINTFORML [1] - 묘지에서 "유벨"을 특수 소환한다。
 			CALL FULLRESET
 			효과範囲제외 = 1
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -127,19 +127,19 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 3
 				PRINTFORML [3] - 덱의 카드를 １장을 제외한다。
 			SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 4
-				PRINTFORML [4] - 場の카드를 １장을 파괴한다。
+				PRINTFORML [4] - 필드의 카드를 １장을 파괴한다。
 			CALL FULLRESET
 			효과範囲덱 = 1
-효과条件名前 = 초융합
+			효과条件名前 = 초융합
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			SIF RESULT == 1 && GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 5
-				PRINTFORML [5] - "超융합"を패에 넣는다。
+				PRINTFORML [5] - "초융합"을 패에 넣는다。
 			BINPUT
 			選択肢 = RESULT
 		ELSEIF 듀얼리스트 == "상대"
 			CALL FULLRESET
 			효과範囲덱 = 1
-효과条件名前 = 초융합
+			효과条件名前 = 초융합
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			SIF RESULT == 1 && GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 5
 				選択肢 = 5
@@ -157,7 +157,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 				選択肢 = 2
 			CALL FULLRESET
 			효과範囲묘지 = 1
-효과条件名前 = 유벨
+			효과条件名前 = 유벨
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			SIF RESULT == 1 && GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 1
 				選択肢 = 1
@@ -168,7 +168,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		IF 選択肢 == 1
 			CALL FULLRESET
 			효과範囲묘지 = 1
-효과条件名前 = 유벨
+			효과条件名前 = 유벨
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ELSEIF 選択肢 == 2
 			CALL FULLRESET
@@ -180,11 +180,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
 		ELSEIF 選択肢 == 4
 			CALL FULLRESET
-			효과条件行先플래그 = 破壊行き
-			CALL CARD_ADD_GY_BASIC(듀얼리스트,"両全場全体",ゾーン,場所)
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1
+			효과範囲마함 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 		ELSEIF 選択肢 == 5
 			CALL FULLRESET
-효과条件名前 = 초융합
+			효과条件名前 = 초융합
 			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 		ENDIF
 	ENDIF
@@ -197,6 +200,6 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 ELSEIF 종류 == 소환強制誘発
 	CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",1)
 	PRINTFORML
-	PRINTFORML 未来は歴史가 되며、年代記に愛が記される……（マチュア クロニクルの個別카운터{GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}개）
+	PRINTFORML 미래는 역사가 되며、연대기에 사랑이 기록된다……（매추어 크로니클의 개별 카운터{GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}개）
 	PRINTFORMW
 ENDIF
