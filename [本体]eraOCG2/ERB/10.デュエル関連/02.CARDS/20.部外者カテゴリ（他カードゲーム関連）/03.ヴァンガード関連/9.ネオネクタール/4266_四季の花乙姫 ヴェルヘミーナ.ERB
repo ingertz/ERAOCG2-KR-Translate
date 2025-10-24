@@ -72,26 +72,21 @@ ENDIF
 @CARD_EXPLANATION_4266(종류)
 #DIM DYNAMIC 종류
 
-PRINTL '초월' '아샤' 몬스터
-PRINTL (의 패에서 몬스터 1장을 제외하여 발동할 수 있다.
-PRINTL EX덱의 이 카드를, 필드의 지정된 몬스터 1장 위에 겹쳐 '초월'한다.
-PRINTL '초월'한 이 카드의 이름은 겹친 몬스터와 같은 이름으로 취급하며,
-PRINTL 겹친 몬스터의 공격력 / 수비력만큼, 이 카드의 공격력 / 수비력을 올린다.
-PRINTL '초월'은 1턴에 1번밖에 할 수 없으며, 선공 1턴째에는 사용할 수 없다)
+CALL PRINT_STRIDETEXT("아샤")
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,攻撃時誘発)
-PRINTL ①: 이 카드의 공격 선언 시에 EX덱에서 '네오 넥타르' 초차원 몬스터 1장을 제외하고 발동할 수 있다.
+PRINTL ①: 이 카드의 공격 선언 시에 EX덱에서 "네오 넥타르" 초차원 몬스터 1장을 제외하고 발동할 수 있다.
 PRINTL 이하의 효과를 각각 적용한다.
-PRINTL ● 필드의 초차원 몬스터 이외의 '네오 넥타르' 몬스터 1장을 고르고,
+PRINTL ● 필드의 초차원 몬스터 이외의 "네오 넥타르" 몬스터 1장을 고르고,
 PRINTL 그 동명 몬스터 1장을 덱 / EX덱에서 특수 소환한다.
 PRINTL ● 필드의 식물족 몬스터 1장을 고르고,
-PRINTL 묘지의 '네오 넥타르' 몬스터 1장을 이하의 효과를 가진 장착 마법 카드로 취급하여 대상의 몬스터에 장착한다.
+PRINTL 묘지의 "네오 넥타르" 몬스터 1장을 이하의 효과를 가진 장착 마법 카드로 취급하여 대상의 몬스터에 장착한다.
 PRINTL ● 장착 몬스터의 공격력은, 이 카드의 공격력만큼 올린다.
 PRINTL ● 장착 몬스터가 전투 / 효과로 파괴될 경우, 대신에 이 카드를 파괴한다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ②: 'G 브레이크' '4' (이 효과는 4턴째까지는 사용할 수 없다.)
-PRINTL 필드의 몬스터의 공격력은 1000 올리고,
-PRINTL 의 '네오 넥타르' 몬스터가 상대에게 주는 전투 데미지는 2배가 된다.
+PRINTL ②: 『G 브레이크』 "4" (이 효과는 4턴째까지는 사용할 수 없다.)
+PRINTL 필드의 몬스터의 공격력은 500 올리고,
+PRINTL 의 "네오 넥타르" 몬스터가 상대에게 주는 전투 데미지는 2배가 된다.
 
 @CARDCAN_4266(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -124,14 +119,14 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	CALL FULLRESET
 	효과範囲EX덱 = 1
-효과条件カテゴリ = 네오 넥타르
+	효과条件カテゴリ = 네오 넥타르
 	효과条件종류 = 초차원
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-효과条件カテゴリ = 네오 넥타르
+	효과条件カテゴリ = 네오 넥타르
 	효과条件종류:0 = 효과モン
 	효과条件종류:1 = 링크
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -139,7 +134,7 @@ ELSEIF 종류 == 필드起動
 		발동불가:0 = 1
 	CALL FULLRESET
 	효과範囲묘지 = 1
-효과条件カテゴリ = 네오 넥타르
+	효과条件カテゴリ = 네오 넥타르
 	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -187,13 +182,13 @@ ELSEIF 攻撃時誘発
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲EX덱 = 1
-효과条件カテゴリ = 네오 넥타르
+		효과条件カテゴリ = 네오 넥타르
 		효과条件종류 = 초차원
 		효과条件行先플래그 = 제외行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
-효과条件カテゴリ = 네오 넥타르
+			효과条件カテゴリ = 네오 넥타르
 			효과条件종류:0 = 효과モン
 			효과条件종류:1 = 링크
 			CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)	
@@ -201,7 +196,7 @@ ELSEIF 攻撃時誘発
 			IF 選択カード != 9999
 				CALL FULLRESET
 				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{選択カード}")},"名前"
-효과条件名前 = 네오 넥타르
+				효과条件名前 = 네오 넥타르
 				효과範囲덱 = 1
 				효과範囲EX덱 = 1
 				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
@@ -222,7 +217,7 @@ ELSEIF 攻撃時誘発
 	ENDIF
 ELSEIF 종류 == 攻守変動
 	CALL FULLRESET
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000)
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,500)
 ELSEIF 종류 == 攻撃時強制誘発
 	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ倍化",3,1)
 ENDIF

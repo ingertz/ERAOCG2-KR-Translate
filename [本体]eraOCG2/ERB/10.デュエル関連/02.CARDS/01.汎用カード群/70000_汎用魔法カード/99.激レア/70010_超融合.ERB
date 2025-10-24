@@ -24,8 +24,6 @@ VARSET RESULTS
 SELECTCASE 参照先
 	CASE "종류"
 		RETURN 速攻마법
-	CASE "C불가"
-		RETURN 1
 ENDSELECT
 RETURN 0
 
@@ -51,19 +49,16 @@ SIF RESULT == 1
 	RETURN 0
 	
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
-		SIF 손패数(듀얼리스트) == 1
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-		SIF 손패数(듀얼리스트) == 0
-			RETURN 0
-	ELSE
+		
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	CALL RESETAREA_MAT
 	素材範囲필드 = 1
 	素材範囲상대필드 = 1
@@ -76,8 +71,9 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
 ENDIF
-
 @CARDEFFECT_70010(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
@@ -90,8 +86,6 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択済カード
 ;융합소환
-VARSET 묘지送カード, 35
-VARSET 손패묘지送カード, 35
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,70010)
@@ -111,7 +105,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 			選択カード = RESULT
 			;돌아간다
 			IF 選択カード != 9999
-				; 카드의 条件を読み込む：
+				;카드의 条件を読み込む：
 				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
 				;素材処理を読み込む
 				CALL FUSSUMMON(듀얼리스트, 選択カード)

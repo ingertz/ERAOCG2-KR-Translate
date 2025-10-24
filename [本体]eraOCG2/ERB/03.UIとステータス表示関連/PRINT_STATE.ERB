@@ -11,6 +11,7 @@
 #DIM DYNAMIC 기력_ターゲット
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
 #DIM DYNAMIC 설정モード
 #DIM DYNAMIC 現在値
 #DIM DYNAMIC 最大値
@@ -25,19 +26,21 @@
 #DIM DYNAMIC 顔グラ_ID
 #DIM DYNAMIC ALT_グラID,20
 #DIM DYNAMIC グラ数
+#DIM DYNAMIC 지정グラカード
 #DIM DYNAMIC 지정グラ番号
 #DIM GDI보존
 
 $INPUT_LOOP
 ;そのままサムネ화상を취득する
-CALL FIND_CHARA_GID(캐릭터_ID)
-サムネ_ID = RESULT
-;PRINTFORM 그래픽설정 :{CFLAG:캐릭터_ID:그래픽설정}
+;CALL FIND_CHARA_GID(캐릭터_ID)
+;サムネ_ID = RESULT
+
 IF CFLAG:캐릭터_ID:그래픽설정 >= 100000
-	지정グラ番号 = (CFLAG:캐릭터_ID:그래픽설정 - NO:캐릭터_ID) / 100000
-	IF !ENUMFILES("RESOURCES/DUEL", @"{CFLAG:캐릭터_ID:그래픽설정}_DUEL_{지정グラ番号}.*")
+	지정グラカード = CFLAG:캐릭터_ID:グラ설정 % 100000
+	지정グラ番号 = CFLAG:캐릭터_ID:그래픽설정 / 100000
+	IF ENUMFILES("RESOURCES/DUEL", @"{지정グラカード}_DUEL_{지정グラ番号}.*")
 		サムネ_ID = CFLAG:캐릭터_ID:그래픽설정
-		화상パス지정 = {NO:캐릭터_ID}_DUEL_{지정グラ番号}.*
+		화상パス지정 = {지정グラカード}_DUEL_{지정グラ番号}.*
 	ELSE 
 		VARSET 화상パス지정
 		CFLAG:캐릭터_ID:그래픽설정 = 0
@@ -50,7 +53,7 @@ ELSEIF CFLAG:캐릭터_ID:그래픽설정 >= 1
 		VARSET 화상パス지정
 		CFLAG:캐릭터_ID:그래픽설정 = 0
 	ENDIF
-ELSEIF CFLAG:캐릭터_ID:그래픽설정 == 0
+ELSE
 	IF ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL.*")
 		サムネ_ID = NO:캐릭터_ID
 		화상パス지정 = {NO:캐릭터_ID}_DUEL.*
@@ -247,22 +250,12 @@ PRINTL
 PRINT ┗━━━━━━━━━━┛
 ;ALT그림がある事の確認
 IF !GROUPMATCH(설정モード,0,3) 
-	IF ENUMFILES("RESOURCES/CHARA", @"{NO:캐릭터_ID}_FACE_2*")
-		PRINTBUTTON "・[ALT얼굴 그래픽]", 9002
+		PRINTBUTTON "・[ALT얼굴 그래픽 설정]", 9002
 		PRINTFORM [설정：{CFLAG:캐릭터_ID:ALT그림 + 1}]
-	ENDIF
+	PRINT 　　
+		PRINTBUTTON "[ALT카드 화상 설정]", 9003
 ENDIF
-;캐릭터蔵が2つ以上あるとき
-CALL FIND_CHARA_GID(캐릭터_ID,2)
-PRINT 　　
-IF !GROUPMATCH(설정モード,0,3) 
-	IF RESULT >= 2
-		PRINTBUTTON "[ALT카드 있음]", 9003
-	;	PRINTFORM [설정：{CFLAG:캐릭터_ID:그래픽설정}]
-	ENDIF
-ENDIF
-
-
+;캐릭터グラが2つ以上あるとき
 PRINTL
 
 
@@ -526,37 +519,39 @@ IF TALENT:캐릭터_ID:생성자 >= 1
 ENDIF
 
 
-IF 캐릭터_ID != MASTER && 설정モード == 1
+IF 설정モード == 1
 	CUSTOMDRAWLINE —
-	PRINT 　　
-	FOR カウンタ,1,6
-		SIF CFLAG:캐릭터_ID:お気に入り == カウンタ
-			SETCOLOR C_GREEN
+	IF 캐릭터_ID != MASTER
+		PRINT 　　
+		FOR カウンタ,1,6
+			SIF CFLAG:캐릭터_ID:お気に入り == カウンタ
+				SETCOLOR C_GREEN
 
-		SIF お気に入り:カウンタ >= 1
-			SETCOLOR C_AQUA
-		SIF お気に入り:カウンタ == 캐릭터_ID
-			SETCOLOR C_GREEN
-		PRINTBUTTON @"[즐겨찾기 {カウンタ}로 설정]", (20 + カウンタ)
+			SIF お気に入り:カウンタ >= 1
+				SETCOLOR C_AQUA
+			SIF お気に入り:カウンタ == 캐릭터_ID
+				SETCOLOR C_GREEN
+			PRINTBUTTON @"[즐겨찾기 {カウンタ}로 설정]", (20 + カウンタ)
 
-		IF お気に入り:カウンタ >= 1
-			PRINTFORM %"（결정）",10,LEFT%
-		ELSEIF お気に入り:カウンタ == 캐릭터_ID
-			PRINTFORM %"（결정）",10,LEFT%
-		ELSE
-			PRINTFORM %"",10,LEFT%
-		ENDIF
-		RESETCOLOR
-	NEXT
-	PRINTL
-	CUSTOMDRAWLINE —
-	IF GET_TARGETNUM() > 1
-		PRINTBUTTON "[이전 캐릭터]", 10
-		PRINTFORM %"",40,RIGHT%
-		PRINTBUTTON "[다음 캐릭터]", 11
+			IF お気に入り:カウンタ >= 1
+				PRINTFORM %"（결정）",10,LEFT%
+			ELSEIF お気に入り:カウンタ == 캐릭터_ID
+				PRINTFORM %"（결정）",10,LEFT%
+			ELSE
+				PRINTFORM %"",10,LEFT%
+			ENDIF
+			RESETCOLOR
+		NEXT
 		PRINTL
 		CUSTOMDRAWLINE —
-		PRINTL
+		IF GET_TARGETNUM() > 1
+			PRINTBUTTON "[이전 캐릭터]", 10
+			PRINTFORM %"",40,RIGHT%
+			PRINTBUTTON "[다음 캐릭터]", 11
+			PRINTL
+			CUSTOMDRAWLINE —
+			PRINTL
+		ENDIF
 	ENDIF
 	PRINTBUTTON "[확인 종료]", 0
 ELSEIF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
@@ -596,16 +591,10 @@ ELSEIF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
 
 ENDIF
 
-
+[SKIPSTART]
 IF 캐릭터_ID != MASTER && 설정モード == 1
 	VARSET 現在値
-	FOR カウンタ,1,CHARANUM
-		SIF TARGET:カウンタ <= 0
-			CONTINUE
-		SIF 캐릭터_ID == TARGET:カウンタ
-			現在値 = カウンタ
-		最大値 = カウンタ
-	NEXT
+
 	;PRINTFORML 현재치　TARGET:{現在値}
 	BINPUT
 	$INPUT_SELECT
@@ -618,13 +607,9 @@ IF 캐릭터_ID != MASTER && 설정モード == 1
 			お気に入り:RESULT = 0
 		ENDIF
 	CASE 10
-		캐릭터_ID = TARGET:(現在値 - 1)
-		SIF 現在値 <= 1
-			캐릭터_ID = TARGET:最大値
+
 	CASE 11
-		캐릭터_ID = TARGET:(現在値 + 1)
-		SIF 現在値 >= 最大値
-			캐릭터_ID = TARGET:1
+
 	CASE 9000
 		TRYCALLFORM CARD_UI(NO:캐릭터_ID,1);　덱편집画面でのカード情報
 
@@ -644,6 +629,10 @@ IF 캐릭터_ID != MASTER && 설정モード == 1
 	CASE 9003
 		CALL FIND_CHARA_GID(캐릭터_ID,1)
 		グラ数 = RESULT
+		IF グラ数 <= 0
+			PRINTFORML 설정できる화상がありません。
+			GOTO INPUT_LOOP
+		ENDIF
 		FOR カウンタ,0,20
 			ALT_グラID:カウンタ = RESULT:(カウンタ + 1)
 		NEXT
@@ -664,12 +653,23 @@ IF 캐릭터_ID != MASTER && 설정モード == 1
 			FOR カウンタ,0,10
 				SIF !ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_{(カウンタ + 2)}*")
 					CONTINUE
+				PRINTFORML ここまでOK、{NO:캐릭터_ID}/{(カウンタ + 2)}
 				CALL PRINT_STATE_DUEL(NO:캐릭터_ID,0,2,カウンタ + 2)
 			NEXT
-			FOR カウンタ,0,10 
+			FOR カウンタ,0,グラ数
+				SIF !ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_{(カウンタ + 2)}*")
+					CONTINUE
+				IF GROUPMATCH(カウンタ,7,14,21)
+					FOR カウンタB,0,10 
 				PRINTL
 			NEXT
 		ENDIF
+		CALL PRINT_STATE_DUEL(ALT_グラID:カウンタ,0,2)
+			NEXT
+		ENDIF
+		FOR カウンタ,0,10 
+			PRINTL
+		NEXT
 		BINPUT
 		IF NO:캐릭터_ID == RESULT
 			CFLAG:캐릭터_ID:그래픽설정 = 0
@@ -698,9 +698,19 @@ IF 캐릭터_ID != MASTER && 설정モード == 1
 		RETURN 1
 	ENDSELECT
 
-	GOTO INPUT_LOOP
-
-ELSEIF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
+ENDIF
+[SKIPEND]
+;IF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
+IF 설정モード == 1
+	FOR カウンタ,1,CHARANUM
+		SIF TARGET:カウンタ <= 0
+			CONTINUE
+		SIF 캐릭터_ID == TARGET:カウンタ
+			現在値 = カウンタ
+		最大値 = カウンタ
+	NEXT
+ENDIF
+IF GROUPMATCH(설정モード,1,2,5,6)
 	BINPUT
 	FOR カウンタ,0,リスト最大値
 		SIF 소환_リスト:カウンタ != 캐릭터_ID
@@ -709,131 +719,171 @@ ELSEIF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
 		BREAK
 	NEXT
 	SELECTCASE RESULT
-	CASE 10
-		IF 現リスト値 <= 0
-			캐릭터_ID =  소환_リスト:(リスト最大値 - 1)
-		ELSE
-			캐릭터_ID = 소환_リスト:(現リスト値 - 1)
-		ENDIF
-	CASE 11
-		IF 現リスト値 >= リスト最大値 - 1
-			캐릭터_ID =  소환_リスト:0
-		ELSE
-			캐릭터_ID = 소환_リスト:(現リスト値 + 1)
-		ENDIF
-	CASE 0
-		RETURN 1
-	CASE 9000
-		TRYCALLFORM CARD_UI(NO:캐릭터_ID,1);　덱편집画面でのカード情報
-	CASE 9001
-		CALL ENEMYDECK_CHECK(캐릭터_ID)
-		SIF RESULT != 0
-			CALL CARD_DECK_CHECK(RESULT,4)
-	CASE 9002
-		;現在値＋ALT그림がある경우에 설정。
-		IF ENUMFILES("RESOURCES/CHARA", @"{NO:캐릭터_ID}_FACE_{(CFLAG:캐릭터_ID:ALT그림 + 2)}*")
-			CFLAG:캐릭터_ID:ALT그림 += 1
-		ELSE
-			CFLAG:캐릭터_ID:ALT그림 = 0
-		ENDIF
-	CASE 9003
-		CALL FIND_CHARA_GID(캐릭터_ID,1)
-		グラ数 = RESULT
-		FOR カウンタ,0,20
-			ALT_グラID:カウンタ = RESULT:(カウンタ + 1)
-		NEXT
-		PRINTFORML 설정한 그래픽을 선택해 주세요
-		FOR カウンタ,0,グラ数
-			IF GROUPMATCH(カウンタ,7,14,21)
-				FOR カウンタB,0,10 
-					PRINTL
-				NEXT
-			ENDIF
-			CALL PRINT_STATE_DUEL(ALT_グラID:カウンタ,0,2)
-		NEXT
-		FOR カウンタ,0,10 
-			PRINTL
-		NEXT
-		IF ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_2*")
-			PRINTFORML 카드ALT화상：
-			FOR カウンタ,0,10
-				SIF !ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_{(カウンタ + 2)}*")
-					CONTINUE
-				CALL PRINT_STATE_DUEL(NO:캐릭터_ID,0,2,カウンタ + 2)
-			NEXT
-			FOR カウンタ,0,10 
-				PRINTL
-			NEXT
-		ENDIF
-		BINPUT
-		IF NO:캐릭터_ID == RESULT
-			CFLAG:캐릭터_ID:그래픽설정 = 0
-		ELSE
-			CFLAG:캐릭터_ID:그래픽설정 = RESULT
-		ENDIF
+		CASE 10
+			IF 설정モード == 1
+				캐릭터_ID = TARGET:(現在値 - 1)
+				SIF 現在値 <= 1
+					캐릭터_ID = TARGET:最大値
 
-	CASE 9010
-		CALL SHOW_GRAPHICS(캐릭터_ID,2021,6)
-		WAIT
-	CASE 9011
-		IF CFLAG:캐릭터_ID:그래픽설정 >= 100000
-			CALL PRINT_STATE_DUEL(NO:캐릭터_ID,2,3,지정グラ番号)
-		ELSE
-			IF TALENT:캐릭터_ID:모브 > 0
-				CALL PRINT_STATE_MOBS(캐릭터_ID,2)
 			ELSE
-				CALL PRINT_STATE_DUEL(サムネ_ID,2,3)
+				IF 現リスト値 <= 0
+					캐릭터_ID =  소환_リスト:(リスト最大値 - 1)
+				ELSE
+					캐릭터_ID = 소환_リスト:(現リスト値 - 1)
+				ENDIF
 			ENDIF
-		ENDIF
-		WAIT
-	CASE 9050
-		IF デバッグシステム == 1
-			IF CFLAG:캐릭터_ID:면식 == 0
-				CALL SUMMON_SHORI(캐릭터_ID)
-				RETURN 2
+		CASE 11
+			IF 설정モード == 1
+				캐릭터_ID = TARGET:(現在値 + 1)
+				SIF 現在値 >= 最大値
+					캐릭터_ID = TARGET:1
 			ELSE
-				CALL SUMMON_SHORI(캐릭터_ID)
+				IF 現リスト値 >= リスト最大値 - 1
+					캐릭터_ID =  소환_リスト:0
+				ELSE
+					캐릭터_ID = 소환_リスト:(現リスト値 + 1)
+				ENDIF
 			ENDIF
-		ELSEIF CFLAG:캐릭터_ID:소유함 != 1 && CFLAG:캐릭터_ID:전화번호 != 1 
-			PRINTFORMW %NAME:캐릭터_ID%와의 연결고리가 없습니다。
-		ELSE
-			IF CFLAG:캐릭터_ID:면식 == 0
-				CALL SUMMON_SHORI(캐릭터_ID)
-				RETURN 2
+
+		CASE 20 TO 30
+			RESULT -= 20
+			IF お気に入り:RESULT != 캐릭터_ID
+				お気に入り:RESULT = 캐릭터_ID
+			ELSEIF お気に入り:RESULT == 캐릭터_ID
+				お気に入り:RESULT = 0
+			ENDIF
+
+		CASE 0
+			PRINTFORML 돌아갑니다.
+			RETURN 1
+		CASE 9000
+			TRYCALLFORM CARD_UI(NO:캐릭터_ID,1);　덱편집画面でのカード情報
+		CASE 9001
+			CALL ENEMYDECK_CHECK(캐릭터_ID)
+			SIF RESULT != 0
+				CALL CARD_DECK_CHECK(RESULT,4)
+		CASE 9002
+			;現在値＋ALT그림がある경우에 설정。
+			IF !ENUMFILES("RESOURCES/CHARA", @"{NO:캐릭터_ID}_FACE_2*")
+					PRINTFORMW 설정 가능한 얼굴화상이 없습니다。
+					GOTO INPUT_LOOP
+				ENDIF
+			IF ENUMFILES("RESOURCES/CHARA", @"{NO:캐릭터_ID}_FACE_{(CFLAG:캐릭터_ID:ALT그림 + 2)}*")
+				CFLAG:캐릭터_ID:ALT그림 += 1
 			ELSE
-				CALL SUMMON_SHORI(캐릭터_ID)
+				CFLAG:캐릭터_ID:ALT그림 = 0
 			ENDIF
-		ENDIF
-		FOR カウンタ,1,CHARANUM
-			SIF CFLAG:カウンタ:현재위치 != 0 && CFLAG:カウンタ:현재위치 <= 20
-				소환_現在値	++
-		NEXT
-		IF 소환_現在値 >= 最大소환値
-			PRINTFORMW 한 번에 소환할 수 있는 몬스터의 수가 최대가 되었습니다。
-			RETURN 2
-		ELSE
-			PRINTFORML 계속해서 몬스터를 소환하겠습니까？
-			PRINTFORML [0] - 예
-			PRINTFORML [1] - 아니오
+		CASE 9003
+			CALL FIND_CHARA_GID(캐릭터_ID,1)
+			グラ数 = RESULT
+			IF グラ数 <= 0
+				PRINTFORMW 설정 가능한 카드 화상이 없습니다。
+				GOTO INPUT_LOOP
+			ENDIF
+
+
+			FOR カウンタ,0,20
+				ALT_グラID:カウンタ = RESULT:(カウンタ + 1)
+			NEXT
+			PRINTFORML 설정한 그래픽을 선택해 주세요
+			FOR カウンタ,0,グラ数
+				IF カウンタ % 7 == 0 && カウンタ != 0
+					REPEAT 10 
+						PRINTL
+					REND
+				ENDIF
+				CALL PRINT_STATE_DUEL(ALT_グラID:カウンタ,0,2)
+			NEXT
+			REPEAT 10 
+				PRINTL
+			REND
+			IF ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_2*")
+				PRINTFORML 카드ALT화상：
+				VARSET カウンタC
+				FOR カウンタ,0,グラ数
+					FOR カウンタB, 0, 10
+						SIF !ENUMFILES("RESOURCES/DUEL", @"{ALT_グラID:カウンタ}_DUEL_{(カウンタB + 2)}*")
+							CONTINUE
+						IF カウンタC % 7 == 0 && カウンタC != 0
+							REPEAT 10 
+								PRINTL
+							REND
+						ENDIF
+						CALL PRINT_STATE_DUEL(ALT_グラID:カウンタ,0,2,カウンタB + 2)
+						カウンタC++
+					NEXT
+				NEXT
+				REPEAT 10
+					PRINTL
+				REND
+			ENDIF
 			BINPUT
-			IF RESULT == 1
-				RETURN 2
-			ELSEIF RESULT == 0
-				RETURN 1
+			IF NO:캐릭터_ID == RESULT
+				CFLAG:캐릭터_ID:그래픽설정 = 0
+			ELSE
+				CFLAG:캐릭터_ID:그래픽설정 = RESULT
 			ENDIF
-		ENDIF
-		RETURN 1
-	CASE 9051
-		RETURN 1
-	CASE 8888
-		PRINTL 입력대기
-		INPUT
-		NO:캐릭터_ID = RESULT
-	CASE 9999
-		DELCHARA 캐릭터_ID
-		RETURN 1
-	CASEELSE
-		GOTO INPUT_SELECT
+
+		CASE 9010
+			CALL SHOW_GRAPHICS(캐릭터_ID,2021,6)
+			WAIT
+		CASE 9011
+			IF CFLAG:캐릭터_ID:그래픽설정 >= 100000
+				CALL PRINT_STATE_DUEL(NO:캐릭터_ID,2,3,지정グラ番号)
+			ELSE
+				IF TALENT:캐릭터_ID:모브 > 0
+					CALL PRINT_STATE_MOBS(캐릭터_ID,2)
+				ELSE
+					CALL PRINT_STATE_DUEL(サムネ_ID,2,3)
+				ENDIF
+			ENDIF
+			WAIT
+		CASE 9050
+			IF デバッグシステム == 1
+				IF CFLAG:캐릭터_ID:면식 == 0
+					CALL SUMMON_SHORI(캐릭터_ID)
+					RETURN 2
+				ELSE
+					CALL SUMMON_SHORI(캐릭터_ID)
+				ENDIF
+			ELSEIF CFLAG:캐릭터_ID:소유함 != 1 && CFLAG:캐릭터_ID:전화번호 != 1 
+				PRINTFORMW %NAME:캐릭터_ID%와의 연결고리가 없습니다。
+			ELSE
+				IF CFLAG:캐릭터_ID:면식 == 0
+					CALL SUMMON_SHORI(캐릭터_ID)
+					RETURN 2
+				ELSE
+					CALL SUMMON_SHORI(캐릭터_ID)
+				ENDIF
+			ENDIF
+			FOR カウンタ,1,CHARANUM
+				SIF CFLAG:カウンタ:현재위치 != 0 && CFLAG:カウンタ:현재위치 <= 20
+					소환_現在値	++
+			NEXT
+			IF 소환_現在値 >= 最大소환値
+				PRINTFORMW 한 번에 소환할 수 있는 몬스터의 수가 최대가 되었습니다。
+				RETURN 2
+			ELSE
+				PRINTFORML 계속해서 몬스터를 소환하겠습니까？
+				PRINTFORML [0] - 예
+				PRINTFORML [1] - 아니오
+				BINPUT
+				IF RESULT == 1
+					RETURN 2
+				ELSEIF RESULT == 0
+					RETURN 1
+				ENDIF
+			ENDIF
+			RETURN 1
+		CASE 9051
+			RETURN 1
+		CASE 8888
+			PRINTL 입력대기
+			INPUT
+			NO:캐릭터_ID = RESULT
+		CASE 9999
+			DELCHARA 캐릭터_ID
+			RETURN 1
 	ENDSELECT
 	GOTO INPUT_LOOP	
 ENDIF
@@ -843,6 +893,7 @@ ENDIF
 
 PRINTL
 CUSTOMDRAWLINE —
+
 RETURN 1
 
 
@@ -1777,7 +1828,7 @@ PRINTL □ 절정횟수 □—————————————————�
 FOR LOCAL,0,20
 	SIF !STRLENS(EXNAME:LOCAL)
 		CONTINUE
-	SIF !EX:LOCAL
+	SIF !EX:ARG:LOCAL
 		CONTINUE
 	PRINTFORM %EXNAME:LOCAL,12%:{EX:ARG:LOCAL,5,LEFT}
 	LOCAL:1 ++

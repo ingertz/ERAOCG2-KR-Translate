@@ -9,7 +9,6 @@
 #DIM DYNAMIC カウンタC
 #DIM DYNAMIC カウンタD
 #DIMS DYNAMIC カード名
-#DIMS DYNAMIC 検索ワード,5
 #DIM 덱_추가済み
 #DIM 덱_入替先
 #DIM 덱_所有덱数
@@ -18,7 +17,7 @@
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC 代表カード_ID
-
+#DIM DYNAMIC カードID
 #DIM DYNAMIC 検索カウンタ
 
 #DIM DYNAMIC 取出カード
@@ -78,7 +77,7 @@ PRINT
 
 
 PRINT |　|
-PRINTFORM %"　　　　　　　　　　 |　|■ 컬렉션",58,LEFT%
+PRINTFORM %"　　　　　　　　　　 |　|■ 컬렉션",44,LEFT%
 
 
 
@@ -92,7 +91,14 @@ PRINTBUTTON "[ NEW CARD ]",91161
 RESETCOLOR
 PRINTFORM %"",2,LEFT%
 
-
+IF 필터お気に入り == 1
+	SETCOLOR C_GOLD
+ELSE
+	SETCOLOR C_GRAY
+ENDIF
+PRINTBUTTON "[ FAVORITE ]",91162
+RESETCOLOR
+PRINTFORM %"",2,LEFT%
 IF レア度グループ化 == 1
 	SETCOLOR C_ROYAL_BLUE
 ELSE
@@ -269,8 +275,7 @@ FOR カウンタ,0,30
 			ELSE
 				PRINTFORM %"",6,LEFT%
 			ENDIF
-
-			PRINTFORM %"",17,LEFT%
+			PRINTFORM %"",11,LEFT%
 		ELSE
 			PRINTFORM %"",40,LEFT%
 		ENDIF
@@ -504,66 +509,51 @@ FOR カウンタ,0,30
 		VARSET RESULTS
 
 		IF EX切り替え == 0
-			IF 컬렉션_編集:(リストスタート + カウンタB) == -1
-				PRINT
-			ELSEIF ITEM:(컬렉션_編集:(リストスタート + カウンタB)) == 0
-				SETCOLOR C_GRAY
-			ENDIF
+			カードID = 컬렉션_編集:(リストスタート + カウンタB)
 		ELSE
-			IF EX컬렉션_編集:(リストスタート + カウンタB) == -1
-				PRINT
-			ELSEIF ITEM:(EX컬렉션_編集:(リストスタート + カウンタB)) == 0
+			カードID = EX컬렉션_編集:(リストスタート + カウンタB)
+			ENDIF
+		IF カードID == -1
+			PRINT
+		ELSEIF ITEM:カードID == 0
 				SETCOLOR C_GRAY
+		ELSE
+			IF EX切り替え == 0
+				CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB)
+				SIF カウンタ % 2 == 0
+					CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB,,1)
+			ELSE
+				CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB)
+				SIF カウンタ % 2 == 0
+					CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB,,1)
 			ENDIF
 		ENDIF
-		IF EX切り替え == 0
-
-			CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB)
-			SIF カウンタ % 2 == 0
-				CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB,,1)
-
-			TRYCALLFORM CARDNAME_{컬렉션_編集:(リストスタート + カウンタB)}, "略称"
-			컬렉션ボタン = %RESULTS,16,LEFT%
-			PRINTBUTTON @"%컬렉션ボタン,16,LEFT%", (リストスタート + カウンタB) + 100
-			RESETCOLOR
-			SIF 컬렉션_編集:(リストスタート + カウンタB) != -1
-				RESULT = ITEM:(컬렉션_編集:(リストスタート + カウンタB))
-			PRINTFORM [x{RESULT,2}]
-			CALL CARD_RESTRICTION_CHECK(컬렉션_編集:(リストスタート + カウンタB))
-			IF RESULT  == 1
-				SETCOLOR C_RED
-				PRINTFORM (제)
-			ELSEIF RESULT  == 2
-				SETCOLOR C_ORANGE
-				PRINTFORM (준)
-			ELSE
-				PRINTFORM 　　
-			ENDIF
+		TRYCALLFORM CARDNAME_{カードID}, "略称"
+		컬렉션ボタン = %RESULTS,16,LEFT%
+		PRINTBUTTON @"%컬렉션ボタン,16,LEFT%", (リストスタート + カウンタB) + 100
+		RESETCOLOR
+		SIF カードID != -1
+			RESULT = ITEM:カードID
+		PRINTFORM [x{RESULT,2}]
+		CALL CARD_RESTRICTION_CHECK(カードID)
+		IF RESULT == 1
+			CALL XON_FONT("제한",C_RED)
+		ELSEIF RESULT == 2
+			CALL XON_FONT("준제한",C_ORANGE)
+		ELSEIF RESULT == 5
+			CALL XON_FONT("금지",C_RED)
+		ELSE
+			PRINTFORM 　　
+		ENDIF
+		IF カードID >= 1 && お気に入りカード설정:カードID
+			SETCOLOR C_GOLD
+			PRINTFORM ★
 			RESETCOLOR
 		ELSE
-			CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB)
-			SIF カウンタ % 2 == 0
-				CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB,,1)
-
-			TRYCALLFORM CARDNAME_{EX컬렉션_編集:(リストスタート + カウンタB)}, "略称"
-			컬렉션ボタン = %RESULTS,16,LEFT%
-			PRINTBUTTON @"%컬렉션ボタン,16,LEFT%", (リストスタート + カウンタB) + 100
-			RESETCOLOR
-			SIF EX컬렉션_編集:(リストスタート + カウンタB) != -1
-				RESULT = ITEM:(EX컬렉션_編集:(リストスタート + カウンタB))
-			PRINTFORM [x{RESULT,2}]
-			CALL CARD_RESTRICTION_CHECK(EX컬렉션_編集:(リストスタート + カウンタB))
-			IF RESULT  == 1
-				SETCOLOR C_RED
-				PRINTFORM (제)
-			ELSEIF RESULT  == 2
-				SETCOLOR C_ORANGE
-				PRINTFORM (준)
-			ELSE
-				PRINTFORM 　　
-			ENDIF
-			RESETCOLOR
+			PRINTFORM 　　
 		ENDIF
+
+		RESETCOLOR
 		SIF カウンタC < 2
 			PRINTFORM 　
 		カウンタB ++
@@ -715,7 +705,10 @@ ELSEIF RESULT == 91161
 
 	リストスタート = 0
 	GOTO FILTER_LOOP
-
+ELSEIF RESULT == 91162
+	필터お気に入り ^= 1
+	リストスタート = 0
+	GOTO FILTER_LOOP
 
 ;カード作成――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 91200

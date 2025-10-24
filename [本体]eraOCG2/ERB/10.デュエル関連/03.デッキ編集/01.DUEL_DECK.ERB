@@ -8,7 +8,6 @@
 #DIM DYNAMIC カウンタD
 #DIM DYNAMIC カウンタE
 #DIMS DYNAMIC カード名
-#DIMS DYNAMIC 検索ワード,5
 #DIM DYNAMIC 選択덱
 #DIM DYNAMIC 改行カウンタ
 #DIM DYNAMIC 選択カード
@@ -39,6 +38,7 @@
 
 #DIM DYNAMIC 同名カード枚数
 #DIM DYNAMIC 現在カードID
+#DIM DYNAMIC カードID
 #DIM DYNAMIC 구입カード,999
 
 
@@ -130,17 +130,25 @@ PRINT
 
 
 PRINT |　|
-PRINTFORM %"■ 컬렉션",33,LEFT%
+PRINTFORM %"■ 컬렉션",19,LEFT%
 
 IF 종류グループ化 == 1
 	SETCOLOR C_ROYAL_BLUE
 ELSE
 	SETCOLOR C_GOLD
 ENDIF
-;PRINTBUTTON "[TYPE GROUP]",91161
 PRINTBUTTON "[ NEW CARD ]",91161
 
 RESETCOLOR
+PRINTFORM %"",2,LEFT%
+IF 필터お気に入り == 1
+	SETCOLOR C_GOLD
+ELSE
+	SETCOLOR C_GRAY
+ENDIF
+PRINTBUTTON "[ FAVORITE ]",91162
+RESETCOLOR
+
 
 
 PRINTFORM %"",2,LEFT%
@@ -167,7 +175,7 @@ VARSET カウンタB
 
 
 FONTSTYLE 8
-PRINT ■ 카드 정보　　　　　　　　　　　　　　|
+PRINT ■ 카드 정보　　　　　　　　　　　　　 |
 
 PRINTFORM %"／■ ",9,RIGHT%
 IF EX切り替え == 0
@@ -460,9 +468,20 @@ FOR カウンタ,0,30
 		ELSE
 			PRINTFORM %"",40,RIGHT%
 		ENDIF
+	ELSEIF カウンタ == 11
+		IF 選択カード_ID > 0
+			PRINT 【
+			TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+			IF RESULTS:4 != ""
+				PRINTBUTTON @"%RESULTS:4,36,LEFT%", 93403
+			ELSE
+				PRINTFORM %"",36,LEFT%
+			ENDIF
+			PRINT 】
+		ELSE
+			PRINTFORM %"",40,RIGHT%
+		ENDIF
 
-	ELSEIF GROUPMATCH(カウンタ,5,12,15,19,26)
-		PRINT ――――――――――――――――――――
 	ELSEIF カウンタ == 13
 		IF 選択カード_ID > 0
 			PRINT 
@@ -507,12 +526,26 @@ FOR カウンタ,0,30
 
 	ELSEIF カウンタ == 18
 		PRINTBUTTON @"%"【 일괄분해 】"%", 92600
-		PRINTFORM %"",2,LEFT%
+		PRINTFORM %"",4,LEFT%
 		PRINTBUTTON @"%"【 일괄생성 】"%", 92601
-		PRINTFORM %"",10,LEFT%
+		PRINTFORM %"",8,LEFT%
+
+
 	ELSEIF カウンタ == 20
+		IF 選択カード_ID > 1
+			IF お気に入りカード설정:選択カード_ID >= 1
+				SETCOLOR C_GOLD
+			ENDIF
+			PRINTBUTTON @"%"【 ★즐겨찾기설정 】"%", 92700
+			RESETCOLOR
+			PRINTFORM %"",18,LEFT%
+		ELSE
+			PRINTFORM %"",40,LEFT%
+		ENDIF
+
+	ELSEIF カウンタ == 22
 		PRINTFORM %"■ 검색이력",40,LEFT%
-	ELSEIF カウンタ == 21
+	ELSEIF カウンタ == 23
 		PRINT 【
 		IF 検索ワード:0 != ""
 			PRINTBUTTON @"%検索ワード:0,36,LEFT%", 93310
@@ -520,7 +553,7 @@ FOR カウンタ,0,30
 			PRINTFORM %"",36,LEFT%
 		ENDIF
 		PRINT 】
-	ELSEIF カウンタ == 22
+	ELSEIF カウンタ == 24
 		PRINT 【
 		IF 検索ワード:1 != ""
 			PRINTBUTTON @"%検索ワード:1,36,LEFT%", 93311
@@ -528,7 +561,7 @@ FOR カウンタ,0,30
 			PRINTFORM %"",36,LEFT%
 		ENDIF
 		PRINT 】
-	ELSEIF カウンタ == 23
+	ELSEIF カウンタ == 25
 		PRINT 【
 		IF 検索ワード:2 != ""
 			PRINTBUTTON @"%検索ワード:2,36,LEFT%", 93312
@@ -536,7 +569,7 @@ FOR カウンタ,0,30
 			PRINTFORM %"",36,LEFT%
 		ENDIF
 		PRINT 】
-	ELSEIF カウンタ == 24
+	ELSEIF カウンタ == 26
 		PRINT 【
 		IF 検索ワード:3 != ""
 			PRINTBUTTON @"%検索ワード:3,36,LEFT%", 93313
@@ -544,7 +577,7 @@ FOR カウンタ,0,30
 			PRINTFORM %"",36,LEFT%
 		ENDIF
 		PRINT 】
-	ELSEIF カウンタ == 25
+	ELSEIF カウンタ == 27
 		PRINT 【
 		IF 検索ワード:4 != ""
 			PRINTBUTTON @"%検索ワード:4,36,LEFT%", 93314
@@ -552,7 +585,8 @@ FOR カウンタ,0,30
 			PRINTFORM %"",36,LEFT%
 		ENDIF
 		PRINT 】
-
+	ELSEIF GROUPMATCH(カウンタ,5,12,15,21,28)
+		PRINT ――――――――――――――――――――
 
 	ELSE 
 		VARSET RESULTS
@@ -681,76 +715,61 @@ FOR カウンタ,0,30
 
 
 		IF EX切り替え == 0
-			IF 컬렉션_編集:(リストスタート + カウンタB) == -1
-				PRINT
-			ELSEIF ITEM:(컬렉션_編集:(リストスタート + カウンタB)) == 0
-				SETCOLOR C_GRAY
-			ENDIF
+			カードID = 컬렉션_編集:(リストスタート + カウンタB)
 		ELSE
-			IF EX컬렉션_編集:(リストスタート + カウンタB) == -1
-				PRINT
-			ELSEIF ITEM:(EX컬렉션_編集:(リストスタート + カウンタB)) == 0
+			カードID = EX컬렉션_編集:(リストスタート + カウンタB)
+		ENDIF
+
+		IF カードID == -1
+			PRINT
+		ELSEIF ITEM:カードID == 0
 				SETCOLOR C_GRAY
+		ELSE
+			IF EX切り替え == 0
+				CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB)
+				SIF カウンタ % 2 == 0
+					CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB,,1)
+			ELSE
+				CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB)
+				SIF カウンタ % 2 == 0
+					CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB,,1)
 			ENDIF
 		ENDIF
-		IF EX切り替え == 0
-			CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB)
-			SIF カウンタ % 2 == 0
-				CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB,,1)
 
-			TRYCALLFORM CARDNAME_{컬렉션_編集:(リストスタート + カウンタB)}, "略称"
-			컬렉션ボタン = %RESULTS,16,LEFT%
-			PRINTBUTTON @"%컬렉션ボタン,16,LEFT%", (リストスタート + カウンタB) + 100
-			RESETCOLOR
-			VARSET 아이템数
-			SIF 컬렉션_編集:(リストスタート + カウンタB) != -1
-				아이템数 = ITEM:(컬렉션_編集:(リストスタート + カウンタB))
 
-			IF 아이템数 <= 99
-				PRINTFORM [x{아이템数,2}]
-			ELSE
-				PRINTFORM [+99]
-			ENDIF
-			CALL CARD_RESTRICTION_CHECK(컬렉션_編集:(リストスタート + カウンタB))
-			IF RESULT  == 1
-				SETCOLOR C_RED
-				PRINTFORM (제)
-			ELSEIF RESULT  == 2
-				SETCOLOR C_ORANGE
-				PRINTFORM (준)
-			ELSE
-				PRINTFORM 　　
-			ENDIF
-			RESETCOLOR
-		ELSE
-			CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB)
-			SIF カウンタ % 2 == 0
-				CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB,,1)
 
-			TRYCALLFORM CARDNAME_{EX컬렉션_編集:(リストスタート + カウンタB)}, "略称"
-			컬렉션ボタン = %RESULTS,16,LEFT%
-			PRINTBUTTON @"%컬렉션ボタン,16,LEFT%", (リストスタート + カウンタB) + 100
-			RESETCOLOR
-			VARSET 아이템数
-			SIF EX컬렉션_編集:(リストスタート + カウンタB) != -1
-				아이템数 = ITEM:(EX컬렉션_編集:(リストスタート + カウンタB))
-				IF 아이템数 <= 99
+		TRYCALLFORM CARDNAME_{カードID}, "略称"
+		컬렉션ボタン = %RESULTS,16,LEFT%
+		PRINTBUTTON @"%컬렉션ボタン,16,LEFT%", (リストスタート + カウンタB) + 100
+		RESETCOLOR
+		VARSET 아이템数
+		SIF カードID != -1
+			아이템数 = ITEM:カードID
+
+		IF 아이템数 <= 99
 			PRINTFORM [x{아이템数,2}]
-			ELSE
-				PRINTFORM [x99]
-			ENDIF
-			CALL CARD_RESTRICTION_CHECK(EX컬렉션_編集:(リストスタート + カウンタB))
-			IF RESULT  == 1
-				SETCOLOR C_RED
-				PRINTFORM (제)
-			ELSEIF RESULT  == 2
-				SETCOLOR C_ORANGE
-				PRINTFORM (준)
-			ELSE
-				PRINTFORM 　　
-			ENDIF
-			RESETCOLOR
+		ELSE
+			PRINTFORM [+99]
 		ENDIF
+		CALL CARD_RESTRICTION_CHECK(カードID)
+		IF RESULT == 1
+			CALL XON_FONT("제한",C_RED)
+		ELSEIF RESULT == 2
+			CALL XON_FONT("준제한",C_ORANGE)
+		ELSEIF RESULT == 5
+			CALL XON_FONT("금지",C_RED)
+		ELSE
+			PRINTFORM 　　
+		ENDIF
+		IF カードID >= 1 && お気に入りカード설정:カードID
+			SETCOLOR C_GOLD
+			PRINTFORM ★
+			RESETCOLOR
+		ELSE
+			PRINTFORM 　　
+		ENDIF
+		RESETCOLOR
+
 		SIF カウンタC < 2
 			PRINTFORM 　
 		カウンタB ++
@@ -920,6 +939,8 @@ ELSEIF RESULT == 90000
 			GOTO INPUT_LOOP
 		ENDIF			
 	ENDIF
+
+	最終編集덱 = 現在選択덱
 	CALLFORM MYDECK_SAVE(現在選択덱)
 	RETURN
 
@@ -966,7 +987,10 @@ ELSEIF RESULT == 91161
 	ENDIF
 	リストスタート = 0
 	GOTO FILTER_LOOP
-
+ELSEIF RESULT == 91162
+	필터お気に入り ^= 1
+	リストスタート = 0
+	GOTO FILTER_LOOP
 ;カード作成――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 91200
 	VARSET 구입ポイント
@@ -1287,6 +1311,8 @@ ELSEIF RESULT == 91601 || (INRANGE(RESULT, 100, 10000) && 選択カード == RES
 					SIF 編集_덱:カウンタ == 全周ID && 덱内枚数B == 2
 						制限違反数 += 1
 				ENDIF
+			ELSEIF RESULT == 5
+				制限違反数 += 1
 			ENDIF
 			全周ID = 編集_덱:カウンタ
 		NEXT
@@ -1313,6 +1339,8 @@ ELSEIF RESULT == 91601 || (INRANGE(RESULT, 100, 10000) && 選択カード == RES
 					SIF 編集_EX덱:カウンタ == 全周ID && 덱内枚数B == 2
 						制限違反数 += 1
 				ENDIF
+			ELSEIF RESULT == 5
+				制限違反数 += 1
 			ENDIF
 			全周ID = 編集_EX덱:カウンタ
 		NEXT
@@ -1323,39 +1351,43 @@ ELSEIF RESULT == 91601 || (INRANGE(RESULT, 100, 10000) && 選択カード == RES
 		IF RESULT == 1 && 덱内枚数 >= 1
 			IF 制限突破횟수 > 0 && 덱内枚数 <= (1 + 制限突破횟수) && 制限違反数 < 制限突破횟수
 				;OKルート。制限突破してて、まだ制限突破횟수よりも制限を違反してなかった場合
-				PRINTL 제한을 돌파하여 투입합니다。
-				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
+				PRINTFORML 제한을 돌파하여 투입합니다。
 			ELSEIF 制限突破횟수 > 0 && 制限違反数 >= 制限突破횟수
 				;NGルート。制限突破してて、制限突破횟수以上に制限を違反していた場合
-				PRINTL 제한해금 수를 넘었습니다。
-				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
+				PRINTFORML 제한해금 수를 넘었습니다。
 				GOTO INPUT_LOOP
 			ELSE
 				;制限突破してない普通のNGルート
-				PRINTL 제한카드는 1장까지만 넣을 수 있습니다。
-				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
+				PRINTFORML 제한카드는 1장까지밖에 넣을 수 없습니다。
 				GOTO INPUT_LOOP
 			ENDIF
 		ELSEIF RESULT == 2 && 덱内枚数 >= 2
 			IF 制限突破횟수 > 0 && 덱内枚数 <= (2 + 制限突破횟수) && 制限違反数 < 制限突破횟수
-				PRINTL 제한을 돌파합니다。
-				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
+				PRINTFORML 제한을 돌파합니다。
 			ELSEIF 制限突破횟수 > 0 && 制限違反数 >= 制限突破횟수
-				PRINTL 제한해금 수를 넘었습니다。
-				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
+				PRINTFORML 제한해금 수를 넘었습니다。
 				GOTO INPUT_LOOP
 			ELSE
-				PRINTL 제한카드는 2장까지만 넣을 수 있습니다。
-				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
+				PRINTFORML 준제한카드는 2장까지밖에 넣을 수 없습니다。
+				GOTO INPUT_LOOP
+			ENDIF
+		ELSEIF RESULT == 5
+			IF 制限突破횟수 > 0 && 덱内枚数 <= 制限突破횟수 && 制限違反数 < 制限突破횟수
+				PRINTFORML 제한을 돌파합니다。
+			ELSEIF 制限突破횟수 > 0 && 制限違反数 >= 制限突破횟수
+				PRINTFORML 제한해금 수를 넘었습니다。
+				GOTO INPUT_LOOP
+			ELSE
+				PRINTFORML 금지 카드입니다。
 				GOTO INPUT_LOOP
 			ENDIF
 		ENDIF
 
 		IF 現山札数("編集")  == 60
-			PRINTL 덱 상한에 도달했습니다。
+			PRINTFORML 덱 상한에 도달했습니다。
 
 		ELSEIF 덱内枚数 >= 3
-			PRINTL 같은 이름의 카드는 3장까지만 넣을 수 있습니다。
+			PRINTFORML 같은 이름의 카드는 3장까지만 넣을 수 있습니다。
 			GOTO INPUT_LOOP
 
 		ELSE
@@ -1445,37 +1477,47 @@ ELSEIF RESULT == 91601 || (INRANGE(RESULT, 100, 10000) && 選択カード == RES
 		CALL CARD_RESTRICTION_CHECK(選択カード_ID)
 		IF RESULT == 1 && 덱内枚数 >= 1
 			IF 制限突破횟수 > 0 && 덱内枚数 <= (1 + 制限突破횟수) && 制限違反数 < 制限突破횟수
-				PRINTL 제한을 돌파하여 투입합니다。
+				PRINTFORML 제한을 돌파하여 투입합니다。
 				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
 			ELSEIF 制限突破횟수 > 0 && 制限違反数 >= 制限突破횟수
-				PRINTL 제한해금 수를 넘었습니다。
+				PRINTFORML 제한해금 수를 넘었습니다。
 				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
 				GOTO INPUT_LOOP
 			ELSE
-				PRINTL 제한카드는 1장까지만 넣을수 있습니다。
+				PRINTFORML 제한카드는 1장까지만 넣을수 있습니다。
 				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
 				GOTO INPUT_LOOP
 			ENDIF
 		ELSEIF RESULT == 2 && 덱内枚数 >= 2
 			IF 制限突破횟수 > 0 && 덱内枚数 <= (2 + 制限突破횟수) && 制限違反数 < 制限突破횟수
-				PRINTL 제한을 돌파합니다。
+				PRINTFORML 제한을 돌파합니다。
 				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
 			ELSEIF 制限突破횟수 > 0 && 制限違反数 >= 制限突破횟수
-				PRINTL 제한해금 수를 넘었습니다。
+				PRINTFORML 제한해금 수를 넘었습니다。
 				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
 				GOTO INPUT_LOOP
 			ELSE
-				PRINTL 제한 카드는 2장까지만 넣을 수 있습니다。
+				PRINTFORML 제한 카드는 2장까지만 넣을 수 있습니다。
 				;PRINTFORML 制限違反数:{制限違反数} 制限突破횟수:{制限突破횟수}
+				GOTO INPUT_LOOP
+			ENDIF
+		ELSEIF RESULT == 5
+			IF 制限突破횟수 > 0 && 덱内枚数 <= 制限突破횟수 && 制限違反数 < 制限突破횟수
+				PRINTFORML 제한을 돌파하여 투입합니다。
+			ELSEIF 制限突破횟수 > 0 && 制限違反数 >= 制限突破횟수
+				PRINTFORML 제한해금 수를 넘었습니다。
+				GOTO INPUT_LOOP
+			ELSE
+				PRINTFORML 금지 카드입니다。
 				GOTO INPUT_LOOP
 			ENDIF
 		ENDIF
 
 
 		IF 現EX山札数("編集")  == 15
-			PRINTL EX 덱 상한에 도달했습니다。
+			PRINTFORML EX 덱 상한에 도달했습니다。
 		ELSEIF 덱内枚数 >= 3
-			PRINTL 같은 이름의 카드는 3장까지만 넣을 수 있습니다。
+			PRINTFORML 같은 이름의 카드는 3장까지만 넣을 수 있습니다。
 			GOTO INPUT_LOOP
 		ELSE
 			CALLFORM CARD_{選択カード_ID}("종류")
@@ -1758,12 +1800,8 @@ ELSEIF RESULT == 92400
 		PRINT
 	ENDIF
 
-
-
-
-
-
-
+ELSEIF RESULT == 92700
+	お気に入りカード설정:選択カード_ID ^= 1
 ;덱출력――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 92500
 	CALL DECK_LIST_GENERATE

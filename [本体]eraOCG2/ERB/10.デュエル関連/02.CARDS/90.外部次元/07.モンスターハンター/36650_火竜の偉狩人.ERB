@@ -114,10 +114,10 @@ ELSEIF 종류 == 攻撃時強制誘発
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트,1) == 5
 		RETURN 0
-	CALLFORM CARDNAME_{戦闘カードID(듀얼리스트,1)}("종족")
+	CALLFORM CARD_{戦闘カードID(듀얼리스트,1)}("종족")
 	SIF GROUPMATCH(RESULT,드래곤족,야수족,비행야수족,비늘야수족,악마족,곤충족,바다생물족,미확인족,원소정령족)
 		RETURN 0
-	CALLFORM CARDNAME_{戦闘カードID(듀얼리스트,1)}("종족")
+	CALLFORM CARD_{戦闘カードID(듀얼리스트,1)}("종족")
 	SIF !GROUPMATCH(RESULT,드래곤족,야수족,비행야수족,비늘야수족,악마족,곤충족,바다생물족,미확인족,원소정령족)
 		RETURN 0
 	RETURN 1
@@ -149,10 +149,11 @@ IF 종류 == 손패起動 || (종류 == フリー誘発 && ゾーン == "손패"
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,36650,2)
 	IF RESULT == 0
+
 		CALL FULLRESET
-		CALL SET_MONSTER_HUNTER
 		효과範囲상대필드 = 1
 		효과範囲상대마함 = 1
+		CALL SET_MONSTER_HUNTER
 		효과条件スーパー종류 = 마함全般
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 	ENDIF

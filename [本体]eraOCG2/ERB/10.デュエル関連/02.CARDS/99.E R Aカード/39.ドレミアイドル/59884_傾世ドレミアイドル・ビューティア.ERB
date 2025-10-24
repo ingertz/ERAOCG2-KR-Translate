@@ -56,10 +56,10 @@ PRINTL ①：이 카드가 특수 소환에 성공한 경우、상대 필드의 
 PRINTL 그 몬스터를 "뷰티아최애"로 한다。
 
 CALLFORM CARD_ABLE(2,효과後誘発)
-PRINTL ②：자신의 "도레미코드" 속공마법 / 일반 함정의 효과가 발동된 경우、
-PRINTL EX덱（앞면）레벨이 3이하와 4이상인 "도레미코드" P몬스터 각 1장을 덱으로 되돌리고 발동할 수 있다、그 발동을 무효로 한다。
-PRINTL 그 카드가 몬스터인 경우、추가로 그 몬스터를 상대 필드에 특수 소환한다。
-PRINTL 이 효과로 특수 소환한 몬스터를 "뷰티아최애"로 한다、는 소재 불가를 얻는다。
+PRINTL ②：자신 턴에, 자신의 마법 / 함정 존의 "도레미코드" 속공 마법 / 일반 함정의 효과가 발동 후、
+PRINTL EX덱（앞면）레벨이 3이하와 4이상인 "도레미코드" P몬스터 각 1장을 덱으로 되돌리고 발동할 수 있다。
+PRINTL 덱에서 그 발동한 카드 이외의 "도레미 아이돌" 마법 / 함정 카드 1장을 골라, 자신의 마법 / 함정 존에 세트한다。
+PRINTL 이 효과로 세트한 카드는 세트한 턴에도 발동할 수 있다。
 
 CALLFORM CARD_ABLE(3,ターン開始時)
 PRINTL ③：자신 스탠바이 페이즈에 발동할 수 있다。이 필드의 카드를 EX덱으로 되돌린다。그 후、다음 효과를 적용한다。
@@ -117,12 +117,15 @@ IF 종류 == 특수소환時 || 종류 == EX소환時
 ELSEIF 종류 == 발동誘発
 	SIF ゾーン != "필드"
 		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
 	CALL FULLRESET
+	효과範囲마함 = 1
 	효과条件カテゴリ = 도레미코드
 	효과条件종류:0 = 速攻마법
 	효과条件종류:1 = 通常함정
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
-	SIF RESULT != 1
+	SIF RESULT == 0
 		RETURN 0
 	CALL FULLRESET
 	효과範囲EX덱 = 1
@@ -192,7 +195,7 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択場所
-#DIM DYNAMIC レベル
+#DIM DYNAMIC 固ID
 #DIM DYNAMIC 조교대상
 #DIM DYNAMIC 実行役대상
 
@@ -235,6 +238,14 @@ ELSEIF 종류 == 효과後誘発
 
 		IF カウンタ == 2
 			CALL FULLRESET
+			효과範囲마함 = 1
+			효과条件カテゴリ = 도레미코드
+			효과条件종류:0 = 速攻마법
+			효과条件종류:1 = 通常함정
+			CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",,1)
+			固ID = RESULT:RESULT
+			CALL FULLRESET
+			효과条件固ID = 固ID
 			효과条件종류 = 마함全般
 			효과条件カテゴリ = 도레미아이돌
 			CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"使化裏側표시")

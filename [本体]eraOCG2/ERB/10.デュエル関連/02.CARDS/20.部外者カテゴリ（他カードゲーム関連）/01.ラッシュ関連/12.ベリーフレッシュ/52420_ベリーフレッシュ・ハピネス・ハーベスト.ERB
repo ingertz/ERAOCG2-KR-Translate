@@ -1,0 +1,176 @@
+﻿@CARDNAME_52420,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 베리프레쉬 하피니스 하베스트
+	CASE "略称"
+		RESULTS = Berry 하피니스H
+	CASE "カテゴリ"
+		RESULTS:0 = 베리프레쉬
+ENDSELECT
+
+
+@CARD_52420(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 100
+	CASE "守備力"
+		RETURN 500
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251012
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_52420(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 99
+素材条件レベル = 1
+素材条件数自由 = 1
+素材条件カテゴリ = 베리프레쉬
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,52420) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_52420(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨１ "베리프레쉬" 몬스터 ×２장 이상
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動,フリー誘発)
+PRINTL ①：자신 / 상대 턴에 이 카드의 Ｘ소재를 임의의 수 만큼 제거하고 발동할 수 있다。
+PRINTL 그 수 만큼 덱에서 "베리프레쉬" 몬스터를 효과를 무효화하고 특수 소환한다。（같은 이름의 카드는 １장까지）
+PRINTL 그 후、이 효과로 특수 소환한 장수와 같은 수 만큼 이 카드 이외의 패 / 필드의 카드를 묘지로 보낸다。
+CALLFORM CARD_ABLE(2,지속효과)
+PRINTL ②：이 카드는 자신의 공격력에 따라 이하의 효과를 얻는다。
+PRINTL ●３０００이상：이 카드는 마법 / 함정 카드의 효과를 받지 않는다。
+PRINTL ●４５００이상：이 카드는 １번의 배틀 페이즈에 ２회 공격할 수 있다。
+PRINTL ●６０００이상：이 카드가 수비 표시 몬스터를 공격한 경우, 그 수비력을 공격력이 넘은 만큼 전투 데미지를 준다。
+
+
+@CARDCAN_52420(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,52420)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動  || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,52420)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 베리프레쉬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_52420(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 消費制限
+#DIM DYNAMIC X消費
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動  || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52420,1)
+	IF RESULT == 0
+		消費制限 = 1 + GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所")
+		SIF 5 - モンスター数(듀얼리스트) < 消費制限
+			消費制限 = 5 - モンスター数(듀얼리스트)
+		;モンスターゾーンに空きがないと특수소환できない
+
+		IF 듀얼리스트 == "자신"
+			PRINTFORML 제거할 X소재의 수를 입력해주세요(1～{消費制限})
+			FOR カウンタ,1,消費制限
+				PRINTFORM [{カウンタ}]　
+			NEXT
+			PRINTL
+			BINPUT 
+		ENDIF
+		X消費 = RESULT
+		SIF RESULT == 0
+			X消費 = 99
+		SIF RESULT > 消費制限
+			X消費 = 消費制限
+		PRINTFORML X소재를 {X消費}제거합니다。	
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"Ｘ",-X消費)
+
+		CALL FULLRESET
+		효과条件複数 = 100 - X消費
+		효과範囲덱 = 1
+		효과条件カテゴリ = 베리프레쉬
+		효과条件固名前選択 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		
+		CALL FULLRESET
+		효과条件複数 = 100 - X消費
+		효과範囲손패 = 1
+		효과範囲마함 = 1
+		효과条件他所 = 1
+		효과範囲필드 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") >= 3000
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"魔耐")
+		SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") >= 3000
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
+	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") >= 4500
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",1)
+	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") >= 6000
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"貫通")
+ENDIF

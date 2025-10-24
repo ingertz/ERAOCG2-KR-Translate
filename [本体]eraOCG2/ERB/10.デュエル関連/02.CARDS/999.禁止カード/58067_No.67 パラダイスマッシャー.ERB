@@ -1,0 +1,235 @@
+﻿@CARDNAME_58067,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = No.67 파라다이스매셔
+	CASE "略称"
+		RESULTS = #67 파라다이스매셔
+	CASE "カテゴリ"
+		RESULTS:0 = 넘버즈
+		RESULTS:1 = 다이스
+ENDSELECT
+
+
+@CARD_58067(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 2100
+	CASE "성별"
+		RETURN 雄性
+	CASE "制限"
+		RETURN 禁止
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_58067(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 5
+素材条件レベル = 5
+素材条件数自由 = 1
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,58067) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_58067(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨５ 몬스터 ×２장 이상
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ①：１턴에 １번、자신 메인 페이즈에１에 이 카드의 Ｘ소재를 ２개 제거하고 발동할 수 있다。
+PRINTL 서로는 주사위를 ２번씩 굴린다。
+PRINTL 나온 눈의 합계가 큰 플레이어는、다음 턴 종료시까지 몬스터의 효과를 발동할 수 없으며、공격 선언할 수 없다。
+PRINTL ②：이 카드의 효과로 주사위를 굴린 후、이 카드가 Ｘ소재를 갖고있는 경우、
+PRINTL １턴에 １번만 그 눈을 ７로 적용할 수 있다。
+
+@CARDSUMMON_AA_58067
+
+SETCOLOR C_AQUA
+PRINT 　　　　　　　　　　　　　　　　　　　
+PRINTL 　　　　　　　　　　　　　　　　　　　
+PRINT 　　　　　　　　　　　　 ／￣＼　　　 
+PRINTL 　　 ／￣＼　　 ／￣￣￣￣￣￣￣￣＼　
+PRINT 　　　　　　　　　　　 ／　　 │　　  
+PRINTL 　　(　　　)　（　　　　　　　　　　）
+PRINT 　　　　　　　　　　 ／　　　／　　　 
+PRINTL 　　 ＼＿／　　 ＼＿＿＿＿　　　　／　
+PRINT 　　　　　　　　　 ／　　　／　　　　 
+PRINTL 　　　　　　　　　　　　／　　　／　　
+PRINT 　　　　　　　　　│　　 ／　　　　　 
+PRINTL 　　　　　　　　　　　／　　　／　　　
+PRINT 　　　　　　　　　 ＼＿／　　　　　　 
+PRINTL 　　　　　　　　　　／　　　／　　　　
+PRINT 　　　　　　　　　 　　　　　　　　　 
+PRINTL 　　　　　　　　　／　　　／　　　　　
+PRINT 　　　 ／￣￣＼　　／￣＼　　／￣￣＼ 
+PRINTL 　　　　　　　　／　　　／　　　　　　
+PRINT 　　　│　　　│　(　　　)　│　　　│
+PRINTL 　　　　　　　／　　　／　　　　　　　
+PRINT 　　　│　　　│　 ＼＿／　 │　　　│
+PRINTL 　　　　　　／　　　／　　　　　　　　
+PRINT 　　　│　　　 ＼＿＿＿＿＿／　　　 │
+PRINTL 　　　　　／　　　／　　　　　　　　　
+PRINT 　　　 ＼　　　　　　　　　　　　　／ 
+PRINTL 　　　　（　　　／　　　　　　　　　　
+PRINT 　　　　 ＼＿＿＿＿＿＿＿＿＿＿＿／　 
+PRINTL 　　　　　＼＿／　　　　　　　　　　　
+PRINT 　　　　　　　　　　　　　　　　　　　
+PRINTL 　　　　　　　　　　　　　　　　　　　
+PRINT 　　　　　　　　　　　　　　　　　　　
+PRINTL 　　　　　　　　　　　　　　　　　　　
+RESETCOLOR
+WAIT
+
+
+@CARDCAN_58067(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58067)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF メインフェイズ２ == 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_58067(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 다이스目
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 다이스合計,2
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58067,10,X消費2)
+	IF RESULT == 0
+		SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") >= 0
+			条件달성 = 1
+		REPEAT 2
+			CALL DICE_ROLL(듀얼리스트,1)
+			다이스目 = RESULT
+			IF 条件달성 == 1
+				IF 듀얼리스트 == "자신"
+					PRINTL 눈을 ７로 하시겠습니까？
+					CALL YN_CHOICE(듀얼리스트)
+					IF RESULT == 0
+						CALL DICE_ROLL_7(다이스目)
+						다이스目 = 7
+					ENDIF
+				ENDIF
+			ENDIF
+			다이스合計:0 += 다이스目
+		REND
+
+		REPEAT 2
+			CALL DICE_ROLL(対面者,1)
+			다이스目 = RESULT
+			IF 条件달성 == 1
+				IF 듀얼리스트 == "자신"
+					PRINTL 눈을 ７로 하시겠습니까？
+					CALL YN_CHOICE(듀얼리스트)
+					IF RESULT == 0
+						CALL DICE_ROLL_7(다이스目)
+						다이스目 = 7
+					ENDIF
+
+				ELSEIF 듀얼리스트 != "자신" && RESULT < 5
+					다이스目 = 7
+				ENDIF
+			ENDIF
+			다이스合計:1 += 다이스目
+		REND
+
+		PRINTFORMW %듀얼리스트%：{다이스合計:0}　　ＶＳ　　%対面者%：{:다이스合計:1}
+
+		IF 다이스合計:0 > 다이스合計:1
+			PRINTFORMW %対面者%의 승리！
+			CALL SET_PLAYER_INFO(듀얼리스트,"モン효과無効",4)
+			CALL SET_PLAYER_INFO(듀얼리스트,"バトルスキップ",1)
+		ELSEIF 다이스合計:0 < 다이스合計:1
+			PRINTFORMW %듀얼리스트%의 승리！
+			CALL SET_PLAYER_INFO(듀얼리스트,"モン효과無効",4,1)
+			CALL SET_PLAYER_INFO(듀얼리스트,"バトルスキップ",1,1)
+		ELSE
+			PRINTW 비김！
+		ENDIF
+	ENDIF
+ENDIF
+
+@DICE_ROLL_7(다이스目)
+#DIM DYNAMIC 다이스目
+
+SELECTCASE 다이스目
+	CASE 1,6
+		PRINTL ┌───┐　┌───┐
+		PRINTL │  ＿  │　│●●●│
+		PRINTL │＜◎＞│　│　　　│
+		PRINTL │  ￣  │　│●●●│
+		PRINTL └───┘　└───┘
+	CASE 2,5
+		PRINTL ┌───┐　┌───┐
+		PRINTL │●　　│　│●　●│
+		PRINTL │　　　│　│　●　│
+		PRINTL │　　●│　│●　●│
+		PRINTL └───┘　└───┘
+	CASE 3,4
+		PRINTL ┌───┐　┌───┐
+		PRINTL │●　　│　│●　●│
+		PRINTL │　●　│　│　　　│
+		PRINTL │　　●│　│●　●│
+		PRINTL └───┘　└───┘
+ENDSELECT

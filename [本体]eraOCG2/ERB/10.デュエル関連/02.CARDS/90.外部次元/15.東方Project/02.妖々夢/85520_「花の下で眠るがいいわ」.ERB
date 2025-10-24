@@ -57,7 +57,7 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF 발동済_1(듀얼리스트,92591)
+	SIF 발동済_1(듀얼리스트,85520)
 		RETURN 0
 	SIF ゾーン != "마함"
 		RETURN 0
@@ -99,14 +99,18 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 
 		IF 条件달성 >= 1
 			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲묘지 = 1
+			효과範囲제외 = 1
 			효과条件名前 = -이변- 묵염의 벚꽃
 			효과条件任意 = 1
-			CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"表側표시")
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
 		ENDIF
 		IF 条件달성 >= 3
 			CALL FULLRESET
+			효과範囲상대필드 = 1
 			효과条件任意 = 1
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"無効")
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"全場単体",場所,"無効")
 		ENDIF
 		IF 条件달성 >= 5
 			CALL FULLRESET
@@ -115,7 +119,9 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		ENDIF
 		IF 条件달성 >= 8
 			CALL FULLRESET
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"묘지")
 		ENDIF
 	ENDIF
 ENDIF

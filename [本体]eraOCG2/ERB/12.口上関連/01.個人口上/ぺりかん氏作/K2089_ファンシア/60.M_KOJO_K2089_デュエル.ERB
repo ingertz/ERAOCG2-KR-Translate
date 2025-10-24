@@ -1,0 +1,1101 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;DUEL用구상
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;カードID == (カードの番号)　でそのカード専用の구상が流せる
+;カード番号は 10.デュエル関連/02.CARDS 内に入っているため、必要に応じて参照するように
+;例：
+;		IF カードID == 1000
+;			PRINTFORMW 「ブラックマジシャンガールを소환！」
+;		ENDIF
+
+;==================================================
+;0,デュエルスタート！
+;==================================================
+@M_KOJO_DUEL_K2089_0(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「さぁ、今日は僕だけのオンステージ！　だけど退屈はさせないよっ♪」
+		CASE 2
+			PRINTFORMW 「例え僕しかいなくても、덱のみんながついている！　ドレミコード、開演の時間だよっ♪」
+		CASE 3
+			PRINTFORMW 「始めようか、君と僕のアンサンブル！　お代は熱いデュエルでけっこう、だよっ♪」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;1,モンスター소환
+;例：%カード名%を소환！
+;==================================================
+@M_KOJO_DUEL_K2089_1(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF カードID == 2086
+		PRINTFORMW 「一生懸命なみんなの妹！　%カード名%出番だよっ♪」
+	ELSEIF カードID == 2087
+		PRINTFORMW 「練習の成果、見せるときだよ！！　メアちゃんこと、%カード名%の登場！　拍手をどうぞ～♪」
+	ELSEIF カードID == 2088
+		PRINTFORMW 「僕しってるよ、エリーはすごいんだって！　%カード名%、今日もがんばろう！」
+	ELSEIF カードID == 2089
+		PRINTFORML 「ああこら、僕の言うこと聞けってば～！？
+		PRINTFORMW 　……コホン。%カード名%、そう僕自身が상대だ！！」	
+	ELSEIF カードID == 2094
+		PRINTFORMW 「見習いだからって甘く見るなよっ！　%カード名%はすごいって、教えてやろう♪」			
+	ELSE
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「%カード名%、出番だよっ♪」
+		CASE 2
+			PRINTFORMW 「いっけ～！　%カード名%소환♪」
+		CASE 3
+			PRINTFORMW 「GoGo!　%カード名%のお通りだ～♪」
+	ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;2,モンスター특수소환
+;==================================================
+@M_KOJO_DUEL_K2089_2(カードID,소환出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 소환出処
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE 소환出処
+		;패에서 
+		CASE 召種손패
+			IF GROUPMATCH(カードID,2085,2086,2087,2088,2089,2090,2091,2092,2094,12085)		
+				PRINTFORM 「
+				SETCOLOR C_FIRE_T
+				PRINTFORM 揺れろ、魂震わすタクト！　奏でよ、
+				SETCOLOR C_M_GREEN
+				PRINTFORM 光のシンフォニー！　펜듈럼소환！
+				RESETCOLOR
+				PRINTFORMW 」
+				IF カードID == 2086
+					PRINTFORMW 「一生懸命なみんなの妹分！　%カード名%出番だよっ♪」
+				ELSEIF カードID == 2087
+					PRINTFORMW 「メアちゃん、ファイトだよ！！　さぁ皆さん、%カード名%の登場だ！　拍手をどうぞ～♪」
+				ELSEIF カードID == 2088
+					PRINTFORMW 「僕しってるよ、エリーはすごいんだって！　%カード名%、今日もがんばろう！」
+				ELSEIF カードID == 2089
+					PRINTFORML 「ああこら、僕の言うこと聞けってば～！？
+					PRINTFORMW 　……コホン。%カード名%、そう僕自身が상대だ！！」	
+				ELSEIF カードID == 2094
+					PRINTFORMW 「見習いだからって甘く見るなよっ！　%カード名%はすごいって、教えてやろう♪」			
+				ELSEIF カードID == 2090
+					PRINTFORMW 「いこう、%カード名%さん！　今日も頼りにさせてもらいますっ♪」
+				ELSEIF カードID == 2091
+					PRINTFORMW 「ふっふっふ♪　僕の憧れ、%カード名%先輩がきてくれたぁ！！」
+				ELSEIF カードID == 2092
+					PRINTFORMW 「頼みます、先輩♪　さぁ驚きたまへ、%カード名%先輩の美しさに！！」
+				ELSEIF カードID == 2085
+					PRINTFORMW 「僕らの頼れる大先輩！！　%カード名%先輩の花道をあけよ～♪」
+				ELSEIF カードID == 12085
+					PRINTFORMW 「ふふっ♪　ただの妖精さんと、油断しないでね♪　%カード名%、いこう！」
+				ELSE
+					PRINTFORMW 「패에서 、%カード名%を특수소환！　さぁいくよっ♪」
+				ENDIF
+			ENDIF
+		;마법함정ゾーンから。　キリ番・シェイプシスターなどを出す場合
+		CASE 召種마함
+			IF GROUPMATCH(カードID,2085,2086,2087,2088,2089,2090,2091,2092,2094,12085)		
+				PRINTFORMW 「ドレミコード、Show must go on! 마법함정ゾーンからサプライズ登場っ♪」
+			ELSE
+				PRINTFORMW 「마법함정ゾーンから%カード名%、특수소환！　へへっ、驚いたっ？」
+			ENDIF
+		;덱에서 
+		CASE 召種덱
+			IF GROUPMATCH(カードID,2085,2086,2087,2088,2089,2090,2091,2092,2094,12085)		
+				PRINTFORMW 「呼ばれて飛び出て～♪　ドレミコードはとまらないっ！」
+			ELSE
+				PRINTFORMW 「덱에서 %カード名%が来てくれたぞ～♪」
+			ENDIF
+		;EX덱에서 
+		CASE 召種EX덱
+			IF GROUPMATCH(カードID,2085,2086,2087,2088,2089,2090,2091,2092,2094,12085)		
+				PRINTFORM 「
+				SETCOLOR C_FIRE_T
+				PRINTFORM 揺れろ、魂震わすタクト！　奏でよ、
+				SETCOLOR C_M_GREEN
+				PRINTFORM 光のシンフォニー！　펜듈럼소환！
+				RESETCOLOR
+				PRINTFORMW 」
+				IF カードID == 2086
+					PRINTFORMW 「『ド』はドーナツのド！　%カード名%っ♪」
+				ELSEIF カードID == 2087
+					PRINTFORMW 「『レ』はレモンのレ！　%カード名%～♪」
+				ELSEIF カードID == 2088
+					PRINTFORMW 「『ミ』はみんなのミ！　%カード名%～♪」
+				ELSEIF カードID == 2089
+					PRINTFORMW 「『ファ』はファンシーのファ！　%カード名%、いくよっ♪」	
+				ELSEIF カードID == 2090
+					PRINTFORMW 「『ソ』は青い空～♪　%カード名%、頼みますっ♪」			
+				ELSEIF カードID == 2091
+					PRINTFORMW 「『ラ』はラッパのラ～♪　%カード名%先輩、今日もステキっ♪」
+				ELSEIF カードID == 2092
+					PRINTFORMW 「『シ』はしあわせ八重奏♪　%カード名%先輩に見惚れなさいっ！」
+				ELSEIF カードID == 2085
+					PRINTFORMW 「そして『C』はCoolのC！　我らが主役、%カード名%先輩！！」
+				ELSEIF カードID == 2094
+					PRINTFORMW 「大丈夫っ！　僕たちがついてるからね♪　%カード名%、一緒にいこう♪」
+				ELSEIF カードID == 12085
+					PRINTFORMW 「グランドレミコード様の御使いたちっ♪　%カード名%と共に奏でるよっ♪」
+				ENDIF
+			ELSEIF GROUPMATCH(カードID,2093,42085)
+				PRINTFORML 「ドレミ界を突き抜けてどこまでも！　響け僕たちのシンフォニー！！」
+				PRINTFORMW 「さぁ、おいで下さいませ、%カード名%！！」
+			ELSE		
+			PRINTFORMW 「EX덱より、%カード名%、특수소환っ♪」
+			ENDIF
+		;묘지から
+		CASE 召種묘지
+			PRINTFORMW 「묘지からでも특수소환～♪　%カード名%、出番だよっ♪」
+		;제외状態から
+		CASE 召種제외
+			PRINTFORMW 「제외されたって、歌は届く！　%カード名%、帰還せよっ♪」
+		;主にトークン生成
+		CASE 10
+			PRINTFORMW 「僕らの歌に誘われて、%カード名%がきてくれたぞ～♪　やったね！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;3,특수モンスター소환
+;==================================================
+@M_KOJO_DUEL_K2089_3(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC カード種
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+
+TRYCALLFORM CARD_{カードID}("종류")
+カード種 = RESULT
+
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE カード種
+		CASE 의식
+			PRINTFORMW 「ニシシっ♪　僕らの音楽に呼ばれたのかなっ？　의식소환、%カード名%！」
+		CASE 융합
+			PRINTFORMW 「幻奏のみんな直伝っ♪　%カード名%、융합소환！」
+		CASE 싱크로
+			PRINTFORMW 「ゴキゲンなGROOVE、奏でてみよう♪　싱크로소환、響け！　%カード名%！」
+		CASE 엑시즈
+			PRINTFORMW 「音を重ねるのは得意だよ♪　엑시즈소환！　いこう、%カード名%！」
+		CASE 링크
+			IF カードID == 2093
+				PRINTFORMW 「かくも麗しき女神様、僕たちの交響楽団に素晴らしき伴奏をお添えください……。링크소환！　%カード名%、光臨！」
+			ELSEIF カードID == 42085
+				PRINTFORMW 「装いも新たに、僕たちの女神様が光臨だ♪　링크소환！　さぁ行きましょう、%カード名%先輩！！」
+			ELSEIF カードID == 1131
+				PRINTFORMW 「本日のスペシャルゲストに来てもらったよっ♪　링크소환、%カード名%！　さぁ皆様拍手をどうぞ！！」
+			ELSE
+			PRINTFORMW 「音と音とを링크して、紡ぎ出すは新たなハーモニー！　링크소환♪　いくよ、%カード名%！」
+			ENDIF
+		;초차원モンスター（デュエマ）
+		CASE 초차원
+			PRINTFORMW 「君たちも僕たちと一緒に歌いたいんだねっ♪　초차원よりきたれ！　%カード名%っ♪」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;4,효과使用宣言
+;==================================================
+@M_KOJO_DUEL_K2089_4(カードID,발동出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 발동出処
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE 발동出処
+		CASE 1
+			;손패발동
+			IF GROUPMATCH(カードID,79840,79841,79842,79843,79844,79845,79846,79847,79848)
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORM 「
+						SETCOLOR C_PINK
+						PRINTFORM ──√￣……わかり、ましたぁ❤　
+						RESETCOLOR
+						PRINTFORML ……これが僕たちドレミコードの、真の力だ！
+						PRINTFORM 　%カード名%、발동！！　へへっ♪　これなら%CSTR:TARGET:MASCALL%に
+						SETCOLOR C_PINK
+						PRINTFORMW も勝てるでしょ♪　残念だったねっ……❤」
+						RESETCOLOR						
+					CASE 1
+						PRINTFORM 「
+						SETCOLOR C_PINK
+						PRINTFORM ──√￣……まかせて、よ❤
+						RESETCOLOR
+						PRINTFORML 　……これが僕のとっておきっ！
+						PRINTFORM 마법발동、%カード名%！　ニシ
+						SETCOLOR C_PINK
+						PRINTFORMW シっ、残念だったね……❤」
+						RESETCOLOR
+					CASE 2
+						PRINTFORM 「
+						SETCOLOR C_PINK
+						PRINTFORM ──√￣……めいれい、じゅだく❤
+						RESETCOLOR
+						PRINTFORML 　……くらえ、必殺のぉ、
+						PRINTFORM 　%カード名%！　どう、チェーンあ
+						SETCOLOR C_PINK
+						PRINTFORMW る？　なければ효과処理にうつるね……❤」
+						RESETCOLOR
+				ENDSELECT
+			ELSEIF GROUPMATCH(カードID,79853,79854,79855,79857)
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORM 「
+						SETCOLOR C_PINK
+						PRINTFORM ──√￣……りょうかい、したよ❤　
+						RESETCOLOR
+						PRINTFORML ……きたっ♪　これが僕の最強の切り札っ
+						PRINTFORM 　くらえ、%カード名%！！　この효과により、僕は%CSTR:TARGET:MASCALL%にご奉
+						SETCOLOR C_PINK
+						PRINTFORMW 仕しなければならない！　覚悟するんだねっ……❤」
+						RESETCOLOR
+					CASE 1
+						PRINTFORM 「
+						SETCOLOR C_PINK
+						PRINTFORM ──√￣……おおせの、ままにぃ❤
+						RESETCOLOR
+						PRINTFORML 　……これならどうかなっ♪
+						PRINTFORM 　%カード名%の효과발동！　ふっふっ
+						SETCOLOR C_PINK
+						PRINTFORMW ふ♪　君は僕の奉仕攻撃をうけなければならない……❤」
+						RESETCOLOR
+					CASE 2
+						PRINTFORM 「
+						SETCOLOR C_PINK
+						PRINTFORM ──√￣……チキチキチキ……❤
+						RESETCOLOR
+						PRINTFORML 　……%カード名%を패에서 발동！
+						PRINTFORM 　효과により、%CSTR:TARGET:MASCALL%ち
+						SETCOLOR C_PINK
+						PRINTFORMW ゃんは僕の奉仕からは逃げられない♪　覚悟するんだね……❤」
+						RESETCOLOR
+				ENDSELECT
+			ELSEIF カードID == 62086
+				PRINTFORMW 「天まで響け、僕たちの交響曲！　%カード名%、발동っ♪」
+			ELSEIF カードID == 62087
+				PRINTFORMW 「このイラスト、懐かしいなぁ……♪　%カード名%발동するよっ♪」
+			ELSEIF カードID == 62088
+				PRINTFORMW 「僕たちが奏でる、幸せの多重奏っ！　響け！　%カード名%！！」
+			ELSE
+			PRINTFORMW 「패에서 ！　%カード名%を발동するよっ♪」
+			ENDIF
+		CASE 2
+			;필드발동
+			PRINTFORMW 「よぉし♪　%カード名%발동！」
+		CASE 3
+			;마함발동
+			IF GROUPMATCH(カードID,2085,2086,2087,2088,2089,2090,2091,2092,2094,12085)
+				PRINTFORMW 「さぁ……ドレミコード、開演！」
+			ELSE
+				PRINTFORMW 「ここで……！　%カード名%발동！」
+			ENDIF
+		CASE 4
+			;묘지발동
+			PRINTFORMW 「サプラ～イズ♪　묘지から%カード名%발동！」
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;5,효과발동
+;==================================================
+@M_KOJO_DUEL_K2089_5(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;無効にされた場合
+	IF ARG:1 == 1
+		PRINTFORMW 「やばっ、失敗しちゃった！？」
+	;それ以外
+	ELSEIF カードID == 2086
+		PRINTFORMW 「キュートにいこう！　%カード名%、ハーモニカよろしくっ」
+	ELSEIF カードID == 2087
+		PRINTFORMW 「きみの夢を響かせて！　%カード名%、フルートよろしくっ」
+	ELSEIF カードID == 2088
+		PRINTFORMW 「きみは優秀だよ、もっと胸はって！　%カード名%、チェロよろしくっ」
+	ELSEIF カードID == 2089
+		PRINTFORMW 「よっしゃファイトォ～！　これが僕のアコーディオンだっ」	
+	ELSEIF カードID == 2090
+		PRINTFORMW 「優美な音色、さすがです！　%カード名%さん、サックスどうぞっ」			
+	ELSEIF カードID == 2091
+		PRINTFORMW 「さぁ天使の音色に酔いしれろっ♪　%カード名%先輩のラッパ、今日もステキですっ」
+	ELSEIF カードID == 2092
+		PRINTFORMW 「音色だけじゃない、爪弾く姿も美しい……！　%カード名%先輩のハープ、おねがいしますっ」
+	ELSEIF カードID == 2085
+		PRINTFORMW 「いつもクールな我らが主役！　これが%カード名%先輩のヴァイオリン！！」
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「효과발동！　いっくよ～」
+			CASE 2			
+				PRINTFORMW 「にししっ、ここはこいつだ～！」
+			CASE 3
+				PRINTFORMW 「さぁ僕らをとめられるかな！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+;==================================================
+;6,カードセット
+;==================================================
+@M_KOJO_DUEL_K2089_6(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「カードセット！」
+		CASE 2			
+			PRINTFORMW 「カードを一枚ふせるよ！」
+		CASE 3
+			PRINTFORMW 「守りをかためるよ！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;7,カードドロー
+;==================================================
+@M_KOJO_DUEL_K2089_7(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「……ドロー！！」
+		CASE 2			
+			PRINTFORMW 「……聞こえるよ、덱の声！　ドロー！！」
+		CASE 3
+			PRINTFORMW 「いざっ♪　ドロー！！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;10,ダメージ反応！（ダメージ）
+;==================================================
+@M_KOJO_DUEL_K2089_10(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE ダメージ量
+		;ダメージなし
+		CASE 0
+			PRINTFORMW 「よし、こっちのダメージは０だっ」
+		;１～１９９９の時、小ダメージ
+		CASE 1 TO 1999
+			PRINTFORMW 「このくらい、へっちゃらだよっ」
+		;２０００～３９９９の時、結構なダメージ
+		CASE 2000 TO 3999
+			PRINTFORMW 「なかなかやるね♪　だけどまだまだ！」
+		;４０００～７９９９の時、超大ダメージ
+		CASE 4000 TO 7999
+			PRINTFORMW 「くぅぅぅぅ……！？」
+			IF ライフ_상대 >= 0
+				PRINTFORMW 「た、耐えた……？　よ、よしっ、さすが僕……！」
+			ELSE
+				PRINTFORMW 「……悔しいなぁ、僕の負けだよっ！」
+			ENDIF
+		;８０００以上、基本即死
+		CASEELSE
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;11,ダメージ反応！(회복)
+;==================================================
+@M_KOJO_DUEL_K2089_11(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「あ～……セラピーソング～……」
+ENDIF
+
+
+;==================================================
+;50,モンスター攻撃
+;==================================================
+@M_KOJO_DUEL_K2089_50(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF GROUPMATCH(カードID,2085,2086,2087,2088,2089,2090,2091,2092,2093,2094,12085,42085)	
+				PRINTFORMW 「今日の大마법『コード』の演目はこちら！　『%TEXTR("熱き듀얼리스트たち/神の분노/クリティウスの牙")%』！！」
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「さぁいこう！　%カード名%でアタック！」
+			CASE 2
+				PRINTFORMW 「いっくぞ～♪　%カード名%、攻撃！」
+			CASE 3
+				PRINTFORMW 「さぁいけるか……！？　攻撃行くよ、%カード名%！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;51,モンスター攻撃結果
+;==================================================
+@M_KOJO_DUEL_K2089_51(상황판정,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 상황판정
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;トドメ
+	SIF ARG:1 == 1
+		PRINTFORMW 「最後の……勝負だぁぁぁ！！」
+
+	SELECTCASE 상황판정
+		;상대モンスター撃破
+		CASE 1
+			PRINTFORMW 「よしっ、モンスター撃破！」
+		;자신にダメージ
+		CASE 2
+			PRINTFORMW 「うそっ！？　失敗したなぁ……」
+		;相打ち
+		CASE 3
+			PRINTFORMW 「……うん、仕事ははたしてくれたね」
+		;효과で戦闘前に除去
+		CASE 4
+			PRINTFORMW 「うわっ！？　そんなのアリ！？」
+		;ダイレクトアタック
+		CASE 5
+			PRINTFORMW 「よぉし♪　%CSTR:TARGET:MASCALL%にダイレクトだ～♪」
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;100,メインフェイズ移行
+;==================================================
+@M_KOJO_DUEL_K2089_100(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「メインフェイズ、いくよ！」
+		CASE 2
+			PRINTFORMW 「さぁ、メインフェイズの始まりだ～♪」
+		CASE 3
+			PRINTFORMW 「メインフェイズ、はいるよ！　いいかな？」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;101,ターン終了
+;==================================================
+@M_KOJO_DUEL_K2089_101(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		PRINTFORMW 「僕のターンはこれで閉幕！」
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		PRINTFORMW 「くぅ……！　ターン、終了するよ……！」
+	;それ以外
+	ELSE
+		PRINTFORMW 「僕のターンはこれで閉幕！　さぁ、ターンをどうぞっ」
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;102,メインフェイズ２に移行（バトル終了）
+;==================================================
+@M_KOJO_DUEL_K2089_102(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「バトル終了！　次の曲はメインフェイズ２！」
+ENDIF
+
+
+;==================================================
+;103,バトルフェイズに移行
+;==================================================
+@M_KOJO_DUEL_K2089_103(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「さぁお待ちかねバトルフェイズ！」
+ENDIF
+
+
+;==================================================
+;104,ターン開始時
+;==================================================
+@M_KOJO_DUEL_K2089_104(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		PRINTFORMW 「僕のターン、開演！」
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		PRINTFORMW 「……まだ、諦めてなんかやらないよっ。僕の、ターン！」
+	;それ以外
+	ELSE
+		PRINTFORMW 「よしっ♪　僕のターン、開演だ！」
+	ENDIF
+ENDIF
+
+;==================================================
+;999,EROTICS関連
+;実行コマンドは数が多いのでテンプレートにはよく使われてそうな物だけ書いておきます
+;추가したい場合は ERB/10.デュエル関連/01.デュエルシステム回り/효과汎用/エロ行動関連/02.カード조교
+;を参照してください
+;==================================================
+@M_KOJO_DUEL_K2089_999(ARG,ARG:1,実行コマンド)
+#DIM DYNAMIC 호감도修正
+#DIMS DYNAMIC 実行コマンド
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SETCOLOR C_PINK
+	SELECTCASE 実行コマンド
+		CASE "Ｃ単発"
+			PRINTFORMW 
+		CASE "묘상捕縛"
+			PRINTFORMW 
+		CASE "全身愛撫"
+			PRINTFORMW 
+		CASE "前穴凌辱"
+			IF TALENT:TARGET:처녀
+				PRINTFORMW 「……！？　ちょ、やっぱやめ……ッ゛！？　ギッ！？　アアアアァァッ！？　いたいぃ……っ、やめ、やめてよぉぉ……」
+				PRINTFORMW 「アッ❤　……えっ！？　ひっ❤　やだっ❤　なんでっ❤　ぼくっ❤　なんでっ❤　かんじてっ❤　やだっ❤　やだぁぁあっ❤！！？」
+				PRINTFORML %CALLNAME:TARGET%との接合部からは血が流れている……にも関わらず腰を動かすたび、明らかに感じたように甘えた声が漏れている
+				PRINTFORMW 처녀のはずなのに大した음란だな、と声を吐き捨てると、%CALLNAME:TARGET%は涙を流しながら両手で顔を隠した。──声に隠しきれない悦びが混ざったまま
+			ELSE
+				PRINTFORMW 「ダッ……！？　ぎぃっ！　ひぃぁ！　ぬくっ！　ぴぃ❤　あっ❤　ああっ❤　ひぃっ❤　やめっ❤　いやぁ❤　やめてぇ❤　そんなっ❤　むりやりっ❤　やめてよぉ❤」
+				PRINTFORMW 組み伏せられた%CALLNAME:TARGET%は、突かれるたびに腰を動かし嬌声をあげている。口からは止めるよう懇願しているようで、その実あきらかに喘いでいる
+				PRINTFORMW ひょっとして指揮棒を振るより、腰を振るほうが天職だったんじゃないかと尻を叩けば、「そんなこと、いわないでぇ……❤」と喜悦の声をあげてきた
+			ENDIF 
+		CASE "全身凌辱"
+			PRINTFORMW 
+		CASE "疑似出産"
+			PRINTFORMW 
+		CASE "憑依펠라"
+			PRINTFORML 「……僕のくちまんこ、つかいたいの？　いいよ」
+			PRINTFORMW 「んっ、ぐっ、んっ、ぐっ、ぐっ、じゅるっ、じゅるるるるる……」
+			IF ABL:TARGET:정액중독 >= 2
+				PRINTFORMW （……あれ、僕、なんでおチンチンしゃぶってるの？　夢？　……あっ❤　せーえきだ❤　やった……♪）
+			ENDIF
+		CASE "憑依파이즈리"
+			PRINTFORML 「……僕に파이즈리してほしいんだ？　うん、いいよ。しごいてあげるね」
+			PRINTFORMW 「んっ、ふっ、むぅ、くっ、ふっ、んっ……どう、僕のおっぱいに、いっぱいだしてね……？」
+			IF ABL:TARGET:봉사정신 >= 2
+				PRINTFORMW （……んっ、夢……かな？　あ、でも、おチンチンつらそう……おっぱいでよしよし、してあげなきゃ……❤）
+			ENDIF
+		CASE "憑依기승위"
+			PRINTFORML 「……はい。僕、%CALLNAME:TARGET%は%CSTR:TARGET:MASCALL%のおチンチンにまたがって、腰をふらせてもらうね……」
+			IF TALENT:TARGET:처녀
+				PRINTFORMW 「……よく見ててね、%CALLNAME:TARGET%の처녀を%CSTR:TARGET:MASCALL%に捧げる瞬間を……！？」
+				PRINTFORML 「し、しんぱいしないで……。さ、さぁ、腰をふらせて、もらうね……っ」
+				PRINTFORMW 「だからっ……え、えんりょせず、いつでも、だして……っ」
+			ELSE
+				PRINTFORMW 「……だから%CSTR:TARGET:MASCALL%はそのままで……うん、僕が全部やったげるから……」
+				PRINTFORMW 「んっ……くっ……ど、どうかなっ……いつでも好きなタイミングで、사정を、どうぞ……っ♪」
+			ENDIF
+		CASE "노출単発"
+			SELECTCASE RAND:2
+			CASE 0
+				IF ABL:TARGET:노출증 >= 2
+					PRINTFORMW 「……えへ、へ♪　はぁい……僕、『ファドレミコード・ファンシア』……よろしくね……❤」
+				ELSE
+					PRINTFORMW 「……へ？　みられてる……！？　ちょ、やだ、やだぁ……！」
+				ENDIF
+			CASE 1
+				IF ABL:TARGET:노출증 >= 2
+					PRINTFORMW 「にししっ♪　そぉんなに見たいんだ、僕のはだか……❤」
+				ELSE
+					PRINTFORMW 「こ、こっち見るな！　僕を、みるなぁ……！？」
+				ENDIF
+			ENDSELECT
+		CASE "최면自発자위"
+			IF ABL:TARGET:자위중독 >= 2
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「あっはぁ❤　どうかなっ❤　%CALLNAME:TARGET%の単独자위ショー♪
+						PRINTFORMW 　ほらほら❤　感想をどうぞっ❤　いまならとろとろお漏らしショーツ❤　あげちゃうよぉ❤」
+					CASE 1
+						PRINTFORML 「やっばぃ❤　ゆび❤　とまんなぁい❤　僕ひとりだとそうでもないのにっ❤　%CSTR:TARGET:MASCALL%に見られてるからかな❤
+						PRINTFORMW 　ほらぁ❤　僕をオカズに❤　%CSTR:TARGET:MASCALL%もシコって、いいんだよっ❤　相互자위鑑賞会っ❤　しよーよ♪」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「んっ……はっ、はっ、はっ、はっ……！
+						PRINTFORMW 　わ、わかってるよね！？　僕がほしいのはなにかって！　……イジワルしないでよ」
+					CASE 1
+						PRINTFORML 「はっ、はぁっ、ふっ、ひぅ、！？　づぅ……ぅん……
+						PRINTFORMW 　……あ！？　うそ、そんな、こし、かってに、ヘコヘコ、とまんない……ッ♪」
+				ENDSELECT
+			ENDIF
+		CASE "최면自発펠라"
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「じゅぽっ❤　ジュルルるるるる❤　んぢゅっ❤　ぐぽっ、ごぽぉ……ぉ❤
+						PRINTFORMW 　……にししっ♪　……%CALLNAME:TARGET%のくちまんこ、いっぱいつかっていいよっ❤」
+					CASE 1
+						PRINTFORML 「ぐっぽ❤　ぐちゅっ❤　ぬぽっ❤　どちゅっ❤　ぢゅるるるっ❤　ぐぷっ❤　ぐぽっ♪
+						PRINTFORMW 　……ん❤　あぁぁ……ん❤　……ごくんっ❤　……あーあ、明日の練習、せーえき臭くてバレちゃうかもなぁ……♪」
+				ENDSELECT
+		CASE "최면自発スロート","최면自発파이즈리スロート"
+			SELECTCASE RAND:2	
+				CASE 0
+					PRINTFORML 「……んぐっ！？❤　ごっ❤　がっ❤　げほっ❤　ぢゅぅ❤　んぐぇぇ……❤」
+					PRINTFORMW （いいよっ♪　ぼくっ❤　ぜんぶのむからっ♪　いっぱい❤　ちょうだいっ❤）
+				CASE 1
+					PRINTFORML 「も～♪　%CSTR:TARGET:MASCALL%、僕に対して遠慮してない？　ほらっ、僕のおくちも、のども、ぜぇんぶ%CSTR:TARGET:MASCALL%専用オナホだよっ♪」
+					PRINTFORMW 「ガッ！？　こ゛ぉ゛ぉ……っ❤　ぢゅる、んじゅっ❤　う゛んっ❤　け゛ほ゛っ❤　ち゛ゅる゛っ❤　し゛ゅほ゛っ❤　し゛ゅ゛る゛る゛る゛る゛る゛っ゛！！❤❤❤」
+			ENDSELECT
+		CASE "최면自発기승위"
+			SELECTCASE RAND:3
+			CASE 0
+				IF TALENT:TARGET:처녀
+					PRINTFORMW 「ニシシ♪　ほぉら、見えるかな？　僕の……처녀膜❤　見ててね？　これから자신の意志で、%CSTR:TARGET:MASCALL%に捧げるよ……❤　ぐぅ……っ❤」
+				ELSE
+					PRINTFORMW 「ねぇ……♪　知ってたんでしょ？　こぉんな格好をしたオンナなんてっ❤　자신で股を開く淫売ぐらいだもんね……❤」
+				ENDIF
+				PRINTFORMW 「どう……っ❤　きもちいいっ！？　ちゃんとできてるっ！？❤　……えへっ❤　うれしい❤　もっと、がんばるっ❤　がんばるね……っ❤」
+			CASE 1
+				IF TALENT:TARGET:처녀
+					PRINTFORML 「……あっ❤　うれしいっ❤　うれしいなっ❤　ぼくっ❤　バージン❤　%CSTR:TARGET:MASCALL%にささげられたぁ❤」
+					PRINTFORMW 「うんっ❤　うごくねっ❤　いっぱい❤　きもちよくなってねっ❤　いっぱい、いっぱい、せーしだしてねっ❤　あはっ、……とっても、しあわせぇ❤」
+				ELSE
+					PRINTFORML 「ほらっ❤　どうっ❤　いつでもっ❤　びゅっびゅっ❤　だしてぇ❤　どぷどぷっ❤　たねつけぇ❤　はやくぅ❤」
+					PRINTFORMW 「あっ❤　おなか、ドクドク❤　いっぱいっ❤　はらむぅ❤　いっぱいぃ❤　うんじゃう……❤」
+				ENDIF
+			CASE 2
+				PRINTFORML 「%CSTR:TARGET:MASCALL%、どうっ！？❤　僕、パンパンって、腰、うちつけてる音、聞こえるっ！？❤
+				IF TALENT:TARGET:처녀
+					PRINTFORMW 　……そうだよっ❤　僕、처녀だよ❤　バージン、君にあげたんだよ❤　あはっ❤　今深いところグリグリって❤　いいよっ❤　もっと一緒に❤　きもちよくなろっ♪」
+				ELSE
+					PRINTFORMW 　だしてっ❤　はらませてっ❤　いっぱいいっぱいはらませてっ❤　ぼく、いくらでもうんであげる❤　君のあかちゃん、うんであげるぅ❤」
+				ENDIF
+			ENDSELECT
+		CASE "최면수음"
+			IF ABL:TARGET:봉사정신 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「どうかなっ❤　僕、上手く出来てるっ？❤　うれしい❤　僕、アコーディオンやってきてよかった❤
+						PRINTFORMW 　ほら、だーせ、だーせ♪　せーしだぁせ♪　いっぱいだぁせ♪　せーえきお手々にぶっかけろ～……❤」
+					CASE 1
+						PRINTFORML 「ほぉら♪　%CSTR:TARGET:MASCALL%のおちんぽ、ガマンしなくていいからね……❤　ぜぇんぶ僕が、受け止めるから♪
+						PRINTFORMW 　……しーこ、しーこ……♪　しーこ、しーこ……♪　やけどしそうっ❤　おちんちん、あっつい❤　いつでもだしてっ❤　ぶっかけてっ❤」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「さぁ、%CSTR:TARGET:MASCALL%はおチンチンださないと♪　だめだよっ、君は효과で、僕の수음攻撃を受けなきゃダ～メっ♪
+						PRINTFORMW 　ほぉら、いっちに、いっちに♪　へへ、僕、運指には自信あるからね♪」
+					CASE 1
+						PRINTFORML 「ニシシ、%CSTR:TARGET:MASCALL%のおチンチン、もうそそり勃ってるじゃん♪　イヤなら효과を無効にしなかった자신を恨むんだね！
+						PRINTFORMW 　ふっ、ふっ、ふっ……♪　どうだい僕の수음攻撃♪　はやく사정しちゃいなよ……♪」
+				ENDSELECT
+			ENDIF
+		CASE "최면Ｃ자위"
+			IF ABL:TARGET:Ｃ감각 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「いいっ❤　いいのぉ❤　ぼくのクリトリスっ❤　よわむしクリトリスッ❤　ちょっとっ❤　つまびいただけでっ❤　おもらし、ぶしゃあぁぁぁ……❤
+						PRINTFORMW 　えへへぇ……❤　でゅえるぅ？　やだぁ❤　もっとっ❤　もっとクリちゃんいじるのぉ❤　ぼく、負け犬でいいからぁ❤」
+					CASE 1
+						PRINTFORML 「見てぇ❤　%CALLNAME:TARGET%のっ❤　ブザマなクリトリス見てぇぇ❤　イジりすぎてぇ❤　こぉんなに腫れ上がっちゃったよぉ❤
+						PRINTFORMW 　あは、あはは……❤　ねぇ、どぅしたのぉ❤　%CSTR:TARGET:MASCALL%もこっちにきて、クリトリスいじめてよぉ……❤」
+				ENDSELECT	
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「ふぅ～……っ、ふぅ～……っ……！？　び、ビビってないって、もちろん、やるよ……！
+						PRINTFORMW 　……ひゃんっ！？　んん……っ、くぅ……っ……！？　はぁ……はぁ……。……ん゛っ！　あ、ひぃぃんっ……❤」
+					CASE 1
+						PRINTFORML 「こっ、この효과でっ、発どぅ、したっ、ぷれい、やぁぁ、はっ……、陰核っ、クリトリスをっ、いじらないとっ、いけない……っ！
+						PRINTFORMW 　ぴぎゅっ……！？　あれっ！？　ぎぴっ！？　ひにゅっ！？　……ちょ、ちょっとさわっただけでっ、なんで、こんなぁ……！？」
+					ENDSELECT
+			ENDIF
+		CASE "최면Ｂ자위"
+			IF ABL:TARGET:Ｂ감각 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「おっぱいっ❤　ちくびっ❤　えへへ❤　じぶんでもみもみ❤　とまらなぁい……❤　えへへ❤　しあわせぇ❤　もっともっとぉ❤
+						PRINTFORMW 　やだぁ❤　%CSTR:TARGET:MASCALL%のぉ、しせんがこわいっ❤　こわいのぉ❤　おちんちんがぁ❤　おっぱいれーぷしたがってるぅ❤」
+					CASE 1
+						PRINTFORML 「うん❤　そうだよっ❤　ほんとはおっぱいイジり❤　したくないもん❤　ぼく、そんな❤　はしたなくないもんっ❤
+						PRINTFORMW 　でもぉ❤　カードがやれって❤　いってるんだもん❤　だからいやいやっ❤　しかたなくおっぱいイジらないとぉ❤」
+				ENDSELECT	
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「にっしっし♪　%CSTR:TARGET:MASCALL%のおわりだよ♪　君は僕がおっぱいをイジってるのを、このカードの효과で見届ける必要がある……！
+						PRINTFORM 　さぁ、いくよっ。……んっ、
+						IF BUST_SIZE(TARGET) <= -1
+							PRINTFORM あっ♪　ひ、貧乳だと감도が高いってほ、本当だったんだね……っ
+						ELSEIF BUST_SIZE(TARGET) == 0
+							PRINTFORM ど、どうかな、ぼくのおっぱい……。特別大きくも小さくもないけど、気に入ってくれると……うれしいな♪
+						ELSEIF BUST_SIZE(TARGET) == 1
+							PRINTFORM ふふ、ふ……っ！　さ、さすがにエンジェリア先輩ぐらい大きかったら……っ、%CSTR:TARGET:MASCALL%も無視、できないよね……っ！？
+						ELSEIF BUST_SIZE(TARGET) >= 2
+							PRINTFORM もう、大きくなって大変なんだからね……！　他のみんなに『%CSTR:TARGET:MASCALL%に騙されてない？』って心配されたんだから！
+						ENDIF
+						PRINTFORMW 」
+					CASE 1
+						PRINTFORML 「どうだ！　おっぱいによる視覚攻撃……！　ニシシっ、ぼ、僕の、生おっぱいをみたのはっ、%CSTR:TARGET:MASCALL%がはじめてだよ……！
+						PRINTFORMW 　だけど調子にのらないでよね！　あくまでこれはぁ……！　%CSTR:TARGET:MASCALL%のっ、おちんぽをっ、あおる、ため、だから……！」
+				ENDSELECT
+			ENDIF
+		CASE "최면Ａ자위"
+			IF ABL:TARGET:Ａ감각 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「きもちいっ❤　ダメなことは❤　きもちいいっ❤　すきぃ❤　%CALLNAME:TARGET%애널だいすきぃぃ……ぃ❤
+						PRINTFORMW 　あはっ❤　%CSTR:TARGET:MASCALL%も見てるぅ……？　こぉんなに拡がっちゃったぁ❤　もう指じゃものたりないのぉ❤　%CSTR:TARGET:MASCALL%のほしいのぉぉ❤」
+					CASE 1
+						PRINTFORML 「でゅえるぅ……？　なにそれぇ……❤　いまはぁ❤　애널をぉ❤　かわいがる時間だよぉ……❤
+						PRINTFORMW 　……にひっ❤　%CSTR:TARGET:MASCALL%見えるぅ❤　よぉくほぐれてるでしょ❤　はやくしようよぅ❤　애널孕ませせっくす……❤」
+				ENDSELECT	
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「くぅっ……！？　や、やだぁ……、おしりのっ、穴みられてる……は、恥ずかしい……っ
+						PRINTFORML 　でっ、でもっ、僕が使ったカードだか、ら……？　あれ、なんで、こんなカードを……？　……がっ！？
+						PRINTFORMW 　……そうだ、애널、イジらないと……ッ！？　애널、イジる……、애널……イジ、るぅ……」
+					CASE 1
+						PRINTFORML 「……えっ？　あ、そ、そうだね！　ちゃんと僕が애널、イジってるかわかるように、%CSTR:TARGET:MASCALL%にお尻、見てもらわないとねっ！」
+						PRINTFORMW （あっ！　やだぁ……！？　見られてるっ！？　わかるっ！　%CSTR:TARGET:MASCALL%の熱い視線っ！　おしりのあなっ！　シワの一本一本！　みられて、るぅ……！）
+					ENDSELECT
+			ENDIF
+		CASE "최면Ｖ자위"
+			IF ABL:TARGET:Ｖ감각 >= 5
+				SELECTCASE RAND:4
+					CASE 0
+						PRINTFORM 「だめっ❤　ちがうもんっ❤　ちがうのぉ❤　ぼくっ❤　いんらんじゃないもんっ❤
+						IF TALENT:TARGET:처녀
+							PRINTFORML 　だってぼく、まだ처녀だもんっ❤　バージン、%CSTR:TARGET:MASCALL%に捧げてないもん❤
+						ELSE
+							PRINTFORML 　%CSTR:TARGET:MASCALL%に孕ませてほしいだけの普通の女の子だもん❤
+						ENDIF
+						PRINTFORMW 　이 카드가 悪いんだよっ❤　もっと、もっとオマンコいじくれって書いてるからぁ❤　だからしたがってるだけだもん……❤」
+					CASE 1
+						PRINTFORML 「どうしたのさ❤　いつもはいやらしい目で、僕をみてるくせに❤　どうしてノッてこないの❤
+						PRINTFORMW 　……えぇ、デュエル中？❤　そうだったかなぁ❤　いいじゃん、デュエルなんてほっといて、いっしょにたのしもうよぉ❤」
+				ENDSELECT	
+			ELSE
+				SELECTCASE RAND:5
+					CASE 0
+						PRINTFORML 「……ふっ、ふぅっ……！　ど、どうだっ！？　ガニ股で僕の秘所見せつけられて……、ど、動揺したんじゃないのっ！？
+						IF TALENT:TARGET:처녀
+							PRINTFORMW 　さ、さらに特別サービス！　……じゃ～ん！　こ、これが僕の처녀膜だ、よ……！？　に、ニシシっ、さすがの%CSTR:TARGET:MASCALL%でも動揺したようだね……っ！」
+						ELSE
+							PRINTFORMW 　ほ、ほら目をそらすな……♪　僕のオマンコ、おチンチン欲しくてヒクヒクしてるでしょ！？　いつだって犯されたくてウズウズしてるんだからね……っ♪」
+						ENDIF
+					CASE 1
+						PRINTFORML 「ふぅ、ふぅ……。くっ、これだけ僕がオマンコ見せつけ자위してるのに、耐えるなんて……！？　さすが、%CSTR:TARGET:MASCALL%だね……！
+							IF TALENT:TARGET:처녀
+								PRINTFORMW 　……えっ！？　처녀なのにポタポタ愛液がおちてる……っ！？　……っ、しかたないじゃん、それがっ、このカードのコストなんだからっ……！」
+							ELSE
+								PRINTFORMW 　……い、イッてないよ！？　こ、この地面のシミはぁっ、……このカード！　このカードの효과処理のせいだから……ぁ！」
+							ENDIF
+					ENDSELECT
+			ENDIF
+		CASE "최면陰部嗅ぎ"
+			IF ABL:TARGET:순종 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「か、感想をつたえろって？　う、うんいいよ……❤　僕が%CSTR:TARGET:MASCALL%のおチンチン、レビューしちゃうね……❤
+						PRINTFORMW 　んっ❤　すえたニオイがする……❤　ひと嗅ぎ、するごとに脳がとろけて……❤　なぁんにもかんがえられなくなっちゃう……❤　だ、ダメだ❤　僕が、独占しないと……♪」
+					CASE 1
+						PRINTFORML 「……くそぉ❤　ここで使うべきタイミングじゃなかったなぁ……❤　……いま、チン嗅ぎなんてしたらさぁ……しゅうちゅうできないよぉ❤
+						PRINTFORMW 　やだっ❤　からだがあつくなっちゃう……❤　ゆ、ゆびがぁ❤　おチンチンもとめちゃう❤　あ、やばっ❤　ぼ、ぼく、てふだ……❤　おとしちゃいそう……❤」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「残念だったねっ、%CSTR:TARGET:MASCALL%の負けだよ♪　チン嗅ぎ攻撃、くらえ！　ほらほらおチンチンだしてだして～♪
+						PRINTFORML 　……んっ！？　……スンスン、うへぇ……、クンクン……
+						PRINTFORMW 　……ひ、にっひひ♪　ど、どうかな！？　急に僕みたいな美少女におチンチン嗅がれてビックリしたよね！？」
+					CASE 1
+						PRINTFORML 「あのねぇ……%CSTR:TARGET:MASCALL%、ちゃんと毎日お風呂はいってる？　君のおチンチン、クッサイよ？
+						PRINTFORMW 　まったく、ガニ股でおチンチンをクンクンしなきゃならない僕のこと考えてよ……。うえぇ……、よくみたらチンカスついてるし……　はぁ、くっさ……」
+				ENDSELECT
+			ENDIF
+		CASE "최면정음"
+			IF ABL:TARGET:정액중독 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「ゴキュッ……❤　ゴプッ……❤　ングッ……❤　んぐっ、ゴクッ、げぇぇぇ……っぷ♪
+						PRINTFORMW 　……もっと、おかわり……❤　……まだ、底に、たまってる……❤　あぁぁ……ん❤」
+					CASE 1
+						PRINTFORML 「へ、食レポ？　まぁいいけど……。ニオイは、……臭くて鼻がまがりそう。あんまり好きな人はいないかも、僕は好きだけど……❤
+						PRINTFORML 　んぐっ……♪　のどごしは、微妙、だね……ネバついて、ずっと喉に残る감각があるよ……♪　おかげでゲップしたらクッサイんだよねぇ……❤
+						PRINTFORMW 　……で、味は、う～ん……。とっても、マズくて、人が飲むもんじゃなくて……せかいで、いちばん、だぁいすき、かな❤」
+				ENDSELECT	
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「ニシシ♪　やったぜ、このカードのお陰で僕だけ水分補給できるよ♪　いや～緊張すると喉かわくよね♪
+						PRINTFORMW 　ん……ぐっ！？　……んんぅ、ごきゅっ、ごきゅっ……ごくっ！　……ぷはぁ、……なにこれ、のどにやたら絡むし、クサイし、まっず……」
+					CASE 1
+						PRINTFORML 「へへん♪　펫ボトル一気飲みチャレンジなんて、楽勝楽勝♪　……んぐっ……くぷっ……くぷっ……ぷはぁ……。げぷっ……！？
+						PRINTFORMW 　き、聞いてないよね……！？　……わ～っ！？　わすれてっ！？　ぼ、僕、ゲップなんてしないからね……っ！？」
+				ENDSELECT
+			ENDIF
+		CASE "최면자위"
+			IF ABL:TARGET:자위중독 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「くぅぅぅ❤　やだっ❤　やだぁぁぁ❤　ゆびぃ❤　僕のゆびじゃ、ものたりないぃぃぃ❤
+						PRINTFORMW 　%CSTR:TARGET:MASCALL%のぉ❤　%TEXTR("精子ドクドクおちんちん/立派に反り勃つおちんぽ/太くあったかいデカ魔羅")%でぇ❤　僕、貫かれたいのぉぉぉ❤」
+					CASE 1
+						PRINTFORML 「だ、だめ……っ！　これいじょう、おなにー、したら……っ、脳に、きもちいいが、やけ、ついちゃう……っ！？
+						PRINTFORMW 　……あへぁ❤　だけどぉ❤　カードがやれって言ってるからしかたないよねっ❤　うん、しかたないっ❤　もっともっとしたぁい……❤」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「さぁ、覚悟するんだね……！　%CSTR:TARGET:MASCALL%はこの효과により、僕のの자위ショーを鑑賞しなければならない……！
+						PRINTFORMW 　……はぁ、はぁ、……くっ。だ、ダメ！？　まだ、자위攻撃になれてないからっ、僕のほうがダメージ受けてる……！？」
+					CASE 1
+						PRINTFORML 「はっ……❤　はっ……❤　はっ……❤　にひっ……%CSTR:TARGET:MASCALL%、隙あり、だよ……♪
+						PRINTFORML 　君のおちんちん、ズボン履いててもでも발기してるのがわかるよ！　……立派だね。おかげでオカズが増えて자위攻撃がさらにパワーアップ！
+						PRINTFORMW 　……んっ❤　はっ……❤　あひぃ……❤」
+				ENDSELECT
+			ENDIF
+		CASE "최면パンツ晒し"
+			IF ABL:TARGET:노출증 >= 5
+				SELECTCASE RAND:6
+					CASE 0
+						PRINTFORML 「あぁ……❤　あっついなぁ……❤　もう、ショーツだけのまま、デュエルつづけよっかな……❤　別に『그 후、パンツをしまう』なんて書いてないしなぁ……❤
+						PRINTFORMW 　んっ……❤　やっばいなぁ……❤　僕、濡れてきちゃった……❤　あついし、シミになるし……❤　もう、ショーツも脱いじゃおっかな……❤　%CSTR:TARGET:MASCALL%は、どう思う……？」
+					CASE 1
+						PRINTFORML 「んっ……♪　僕の指、見える……？❤　そう、ココがクロッチ……❤　大事なトコロを隠している場所だよ……❤
+						PRINTFORMW 　ふふ……❤　すこし違うから、僕が濡れてるの、よくわかるでしょ……❤　……ニシシ、%CSTR:TARGET:MASCALL%の視線でどんどん濡れちゃう……❤　シミになっちゃうなぁ……❤」
+				ENDSELECT							
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「まったく……なんて효과だよ……！　『対戦상대にパンツを見せなければならない』って……
+						PRINTFORMW 　……んっ、くぅ……っ、……ほら、スパッツ脱いだよ！　これでもうショーツしか履いてないよ！　う、うぅ……こんなの、痴女じゃん……」
+					CASE 1
+						PRINTFORML 「……ど、どうだいっ！　下半身、下着だけになったよ！　ほらさっさと見……ちょ！？　せめてこっち見なよ！？
+						PRINTFORMW 　……え？　いいからデュエル続けるぞ？　……このっデュエルバカ～！　……え、まって！？　%CSTR:TARGET:MASCALL%が見なきゃショーツ丸出しのまま！？　は、早く見てよぉ……」
+				ENDSELECT				
+			ENDIF
+		CASE "최면晒しもの"
+			IF ABL:TARGET:욕망 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「あははっ❤　ほぉらほぉら❤　%CSTR:TARGET:MASCALL%はねぇ❤　このカードの효과でさぁ❤　僕のオマンコ、どちゅどちゅハメないといけないんだよ❤
+						PRINTFORMW 　しないのぉ？❤　ほらはやくきてよぉ❤　無効化もしなかったじゃん？❤　……じゃあ、こっちから、いっきまぁぁす……❤❤」
+					CASE 1
+						PRINTFORML 「%CALLNAME:TARGET%はぁ❤　ドレミコードなんかやめてぇ❤　%CSTR:TARGET:MASCALL%専用の마조メスオナホに就職しまぁす❤
+						PRINTFORMW 　だからぁ❤　おちんちん様をぉ❤　たぁくさん❤　おねだり마조メスにぃ❤　おめぐみ、くださぁい❤」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「どうかな！　僕、%CALLNAME:TARGET%によるドスケベダンスタイムだよ♪
+						PRINTFORMW 　ニシシ、この魅惑の腰振りでぇ……%CSTR:TARGET:MASCALL%のおチンチンをパンパンにしちゃうよっ♪」
+					CASE 1
+						PRINTFORM 「僕、ほしいの♪　おチンチン♪　僕の
+						IF TALENT:TARGET:처녀
+							PRINTFORM 처녀を♪　ちらしてくれる♪　
+						ELSE
+							PRINTFORM 子宮に♪　そそいでくれる♪　
+						ENDIF
+						PRINTFORML おチンチン♪　%CSTR:TARGET:MASCALL%にいっぱい、ハメられたいのぉ♪　だからわたしにっ♪　いっぱいください……っ♪
+						PRINTFORMW 「……えっ❤　恥ずかしくないのかって？　し、仕方ないじゃん！　だってこうしろってカードに書いてあるから……！」
+				ENDSELECT				
+			ENDIF
+		CASE "최면파이즈리"
+			IF ABL:TARGET:봉사정신 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「あ、こらっ♪　今は僕のターン！　僕がおっぱいでご奉仕中なんだから、%CSTR:TARGET:MASCALL%はお触り禁止なの！
+						PRINTFORMW 　……あんっ❤　ごめんなさいっ❤　触られたらまけいぬおっぱいなのバレちゃうから❤　だからかくしてたのに❤　ダメェ❤　僕がご奉仕するのぉ❤」
+					CASE 1
+						PRINTFORML 「遠慮しなくていいよ♪　僕のおっぱいにたくさんだしてね♪　大丈夫、僕のカードのせいなんだから、仕方ないよ♪　うん、しかたない……❤
+						IF BUST_SIZE(TARGET) <= -1
+							PRINTFORM 　このロリコンちっぱいで受け止めてあげるから、僕の胸、정액で染め上げて……❤
+						ELSEIF BUST_SIZE(TARGET) == 0
+							PRINTFORM 　結局、%CSTR:TARGET:MASCALL%って僕のおっぱいが一番なんだよね❤　うん、素直でよろしいっ♪
+						ELSEIF BUST_SIZE(TARGET) == 1
+							PRINTFORM 　ふふ……！　おんなじ巨乳でもエンジェリア先輩はここまでサービスしてくれないよっ♪　ほら、僕のおっぱいで妥協しなよ❤
+						ELSEIF BUST_SIZE(TARGET) >= 2
+							PRINTFORM  %CSTR:TARGET:MASCALL%がおっぱい魔人なせいで、僕のおっぱいオナホになっちゃった❤　うんいいよ❤　終わったらザーメンブリッジしてあげる❤
+						ENDIF
+						PRINTFORMW 　ふふっ、だーせ♪　せーしいっぱい、だぁせ♪　いつでもいいよっ❤　……はい、ど～ぞ❤」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「えいっ♪　僕の파이즈리こうげきをくらえ～♪　オトコの人ってこういうのに弱いんでしょ？
+						PRINTFORMW 　……あはは、ちょ、ちょっと恥ずかしいね……。で、でも攻撃の手は緩めない！　ちゃんとヤり切るよ！　……し、失礼しま～す……」
+					CASE 1
+						PRINTFORM 「……う～ん、想像よりもむずかしいなぁ、파이즈리。사정させればいいだけの효과って思ってたけど、中々苦戦中……
+						IF BUST_SIZE(TARGET) <= -1
+							PRINTFORML 　せめて%CSTR:TARGET:MASCALL%が勝手に僕のおっぱいを小さくしなければなぁ……。え、このサイズのほうが好き？　うーん、喜べない……」
+						ELSEIF BUST_SIZE(TARGET) == 0
+							PRINTFORML 　僕のおっぱいの大きさじゃ挟みきれないね、%CSTR:TARGET:MASCALL%のおチンチン。せめてエンジェリア先輩ぐらいあったらなぁ……」
+						ELSEIF BUST_SIZE(TARGET) == 1
+							PRINTFORML 　やっとエンジェリア先輩におっぱい並んだと思ったけど、それだけじゃダメなんだなぁ……。くそぅ、やっぱ天然おっぱいには勝てないのか……！」
+						ELSEIF BUST_SIZE(TARGET) >= 2
+							PRINTFORML 　これぐらい大きいなら視覚的に만족？　ぼ、僕の프라이드の問題だよっ。やるからには僕の手で%CSTR:TARGET:MASCALL%のおチンチン気持ちよくしないと……！」
+						ENDIF
+				ENDSELECT
+			ENDIF
+		CASE "최면ふとももコキ"
+			IF ABL:TARGET:봉사정신 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「ほぉら、ぐぅりぐり……❤　にひっ、僕、ドスケベダンサーの才能もあったんだねぇ❤　音楽で食ってけなくなったら、こっちの道に行こうかな♪
+						PRINTFORMW 　こうやって、毎日オトコの人のおチンチンはさんで、しごいて……♪　やんっ❤　あはは、嫉妬したの？　大丈夫、僕は君専用の太ももオナホだよっ❤」
+					CASE 1
+						PRINTFORML 「へへっ、%CSTR:TARGET:MASCALL%のおチンチンって立派だよねぇ……❤　たくさんの女の子を泣かせてきたんじゃないのっ♪
+						PRINTFORMW 　……でもざ～んねん♪　今日はおまんこじゃなくてっ♪　ふとももでぇ♪　しゃせーするひ、で～した……！❤　ビクビクして、かーわいぃ❤」
+				ENDSELECT	
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「んっ……♪　ど、どうかな、僕の太ももでおチンチンを挟む作戦は……！　な、なんだ、気持ちよさそうな顔してるじゃん♪
+						PRINTFORMW 　……さらに、ここでっ……♪　あははっ、まさかこんなにいやらしく腰を動かすなんて想定外だったようだね！　そぉら、もっと絞ってあげる……♪」
+					CASE 1
+						PRINTFORML 「あっ！？　……くぅぅっ、ま、まずいな……！？　まさか太ももコキ攻撃にこんなデメリットが……っ
+						PRINTFORMW 　くぅ！？　ぼ、僕のクリに%CSTR:TARGET:MASCALL%のおチンチンが当たるなんて、くそぉ、想定外だぁ……❤」
+				ENDSELECT
+			ENDIF
+		CASE "최면펠라"
+			IF ABL:TARGET:봉사정신 >= 5
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「んごっ♪　もごっ♪　ぐぷっ♪　ぐちゅっ♪　んごっ♪　ごぷっ♪　ぐちゅっ♪　もご……❤
+						PRINTFORMW 　……んっ！？　……❤❤❤　んんっ、……ぷはぁ……ぁっ❤　ニシシ、どう、만족できた？……❤」
+					CASE 1
+						PRINTFORML 「あぁぁ……ぁん♪　どうっ❤　%CSTR:TARGET:MASCALL%のだぁいすきな、%CALLNAME:TARGET%のおくちマンコだよっ……❤
+						PRINTFORMW 　んひぃ❤　もぐ、むぐっ……♪　んじゅっ♪　んぶっ♪　じゅるるるる……っ♪　んふ……っ❤」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 「……うぅん、これ、僕の口に入るかなぁ……、歯、当たらないようにしないと……
+						PRINTFORMW 　いやいや！　やめないよ！？　だってこれ僕の발동した효과だし、ちゃんとやりきるからね……♪」
+					CASE 1
+						PRINTFORML 「……れろっ……！？　ゲホッ！　ゴホッ、ガホッ……！　……ごめん、慣れてなくて
+						PRINTFORMW 　う～ん、メアとか先輩とかなら上手なのかなぁ、管楽器担当だし……。いやうん！　僕のカードなんだ、僕がやりきらなきゃ！　あぁ……ぁん♪」
+				ENDSELECT
+			ENDIF
+		;その他全部
+		CASEELSE
+			PRINTFORMW 
+	ENDSELECT
+	RESETCOLOR
+ENDIF

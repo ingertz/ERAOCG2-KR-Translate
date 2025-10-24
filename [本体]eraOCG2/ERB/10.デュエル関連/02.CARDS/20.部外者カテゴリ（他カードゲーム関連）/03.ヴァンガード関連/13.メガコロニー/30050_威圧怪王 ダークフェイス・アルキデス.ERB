@@ -24,7 +24,7 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "外部者"
+	CASE "외부자"
 		RETURN 1
 	CASE "종류"
 		RETURN 효과モン
@@ -40,8 +40,6 @@ SELECTCASE 参照先
 		RETURN 2800
 	CASE "성별"
 		RETURN 雄性
-	CASE "추가日"
-		RETURN 251010
 ENDSELECT
 
 RETURN 0
@@ -192,8 +190,10 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		NEXT
 		選択カード = 候補カード:(RAND:カウンタB)
 		CALL SET_FIELD_INFO(対面者,"필드",選択カード,"悪Ｃ",1)
-		SIF GETVAR(@"%対面者%_MZ_発無:RESULT") < 1
-			CALL SET_FIELD_INFO(対面者,"필드",RESULT,"発無",1,上書きモード)
+		SIF GETVAR(@"%対面者%_MZ_発無:選択カード") < 1
+			CALL SET_FIELD_INFO(対面者,"필드",選択カード,"発無",1,上書きモード)
+		TRYCALLFORM CALLNAME_{GETVAR(@"%対面者%_필드:選択カード")}("名前")
+		PRINTFORMW %RESULTS%『{選択カード}』에 악성 카운터가 １개 놓였습니다。
 	ENDIF
 ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,30050,2)

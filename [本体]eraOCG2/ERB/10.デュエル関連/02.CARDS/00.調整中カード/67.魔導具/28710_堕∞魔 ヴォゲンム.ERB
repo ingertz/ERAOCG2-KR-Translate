@@ -1,0 +1,89 @@
+﻿@CARDNAME_28710,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 다∞마 보겐무
+	CASE "略称"
+		RESULTS = 보겐무
+	CASE "カテゴリ"
+		RESULTS:0 = 마도구
+		RESULTS:1 = 커맨드
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_28710(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28710(종류)
+#DIM DYNAMIC 종류
+
+
+CALL CARD_ABLE(0,ターン終了時強制)
+PRINTL ①：자신 엔드 페이즈에 발동한다。
+PRINTL 자신의 덱 위에서 카드를 １３장 묘지로 보낸다。
+
+@CARDCAN_28710(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28710)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 13
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28710(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 攻撃力修正
+
+
+IF 종류 == ターン終了時強制
+	CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",13)
+ENDIF
+

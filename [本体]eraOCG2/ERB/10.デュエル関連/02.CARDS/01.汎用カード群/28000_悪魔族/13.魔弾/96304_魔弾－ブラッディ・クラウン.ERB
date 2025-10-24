@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 마탄환－블러디 크라운
+		RESULTS = 마탄환－블러디 크라운
 	CASE "略称"
-RESULTS = B 크라운
+		RESULTS = B 크라운
 	CASE "カテゴリ"
-RESULTS:0 = 마탄환
+		RESULTS:0 = 마탄환
 ENDSELECT
 
 
@@ -76,42 +76,37 @@ IF 종류 == 효과後誘発
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
+	IF ゾーン == "마함" && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		SIF 발동済_1(듀얼리스트,96304)
+			RETURN 0
+		SIF メインフェイズ != 1
+			RETURN 0
 		CALL FULLRESET
-		효과範囲필드 = 1
-		효과条件カテゴリ = 마탄환의 사수
-		효과条件표시 = 表側표시
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 마탄환
+		효과条件소환可 = 1
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT != 1
 			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-		IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			SIF 발동済_1(듀얼리스트,96304)
-				RETURN 0
-			SIF メインフェイズ != 1
-				RETURN 0
-			CALL FULLRESET
-			효과範囲손패 = 1
-			효과範囲묘지 = 1
-			효과条件カテゴリ = 마탄환
-			효과条件소환可 = 1
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			SIF RESULT != 1
-				RETURN 0
-		ENDIF
 	ELSE
-		RETURN 0
+		CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT != 1
+			IF ゾーン == "손패"
+				SIF ターンプレイヤー != 듀얼리스트
+					RETURN 0
+				CALL FULLRESET
+				효과範囲마함 = 1
+				효과条件他所 = 1
+				효과条件CNT = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT >= 5
+					RETURN 0
+			ELSE
+				RETURN 0
+			ENDIF
+		ENDIF
 	ENDIF
-	CALL FULLRESET
-	효과範囲마함 = 1
-	효과条件他所 = 1
-	효과条件CNT = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT >= 5
-		RETURN 0
-
 	RETURN 1
 ENDIF
 

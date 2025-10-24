@@ -39,16 +39,16 @@ RETURN 0
 
 PRINTL 이 카드명의 ①②의 효과는 1턴에 각각 1번만 사용할 수 있다.
 CALL CARD_ABLE(1,마함起動 ,손패起動 ,フリー誘発)
-PRINTL ①: 패 / 필드에서 '신기' 카드 1장을 제외하고,
+PRINTL ①: 패 / 필드에서 "신기" 카드 1장을 제외하고,
 PRINTL 이하의 효과 중에서 1개를 선택하여 발동할 수 있다.
-PRINTL  ●자신의 제외 상태의 '신기' 몬스터 1장을 선택하여 특수 소환한다.
+PRINTL  ●자신의 제외 상태의 "신기" 몬스터 1장을 선택하여 특수 소환한다.
 PRINTL  ●상대 필드의 몬스터 1장을 선택하여 파괴한다.
-PRINTL  ●'신기' S 몬스터 1장의 S 소환을 한다.
+PRINTL  ●"신기" S 몬스터 1장의 S 소환을 한다.
 CALLFORM CARD_ABLE(2,제외時)
 PRINTL ②: 이 카드가 제외되었을 경우에 발동할 수 있다.
-PRINTL 자신의 필드에 '신기' 토큰 1장을 특수 소환한다.
+PRINTL 자신의 필드에 신기 토큰 1장을 특수 소환한다.
 PRINTL
-PRINTL '신기 토큰'
+PRINTL "신기 토큰"
 PRINTL (천사족 / 튜너 / 빛 / 레벨 1 / 공격력 0 / 수비력 0)
 
 @CARDCAN_71091(듀얼리스트,종류,ゾーン,場所)
@@ -69,15 +69,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,71091)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
 	CALL FULLRESET
@@ -146,27 +140,27 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 			条件달성:2 = 1
 
 			IF 듀얼리스트 == "자신"
-				PRINTL 효과를 選択してください
+				PRINTL 효과를 선택해 주세요
 				PRINTL 
 				IF 条件달성:0 == 1
-					PRINTL [1] - 자신의 제외상태인 「신기」몬스터 １장을 選んで특수 소환한다。
+					PRINTL [1] - 자신의 제외상태인 "신기"몬스터 １장을 고르고 특수 소환한다.
 				ELSE
 					SETCOLOR C_GRAY
-					PRINTL ［X］- 제외상태인 「신기」몬스터가 いません。
+					PRINTL ［X］- 제외상태인 "신기" 몬스터가 없습니다。
 					RESETCOLOR
 				ENDIF
 				IF 条件달성:1 == 1
-					PRINTL [2] - 상대 필드의 몬스터 １장을 選んで파괴한다。
+					PRINTL [2] - 상대 필드의 몬스터 １장을 고르고 파괴한다。
 				ELSE
 					SETCOLOR C_GRAY
-					PRINTL ［X］- 상대 필드에 몬스터가 いません。
+					PRINTL ［X］- 상대 필드에 몬스터가 없습니다。
 					RESETCOLOR
 				ENDIF
 				IF 条件달성:2 == 1
 					PRINTL [3] - 「신기」S몬스터 １장의 S소환을 한다。
 				ELSE
 					SETCOLOR C_GRAY
-					PRINTL ［X］- EX덱に「신기」S몬스터가 いません。
+					PRINTL ［X］- EX덱에「신기」S몬스터가 없습니다。
 					RESETCOLOR
 				ENDIF
 				BINPUT

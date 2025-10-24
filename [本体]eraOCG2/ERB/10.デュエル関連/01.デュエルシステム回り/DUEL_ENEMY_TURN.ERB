@@ -265,17 +265,9 @@ IF メインフェイズ == 1
 		ENDIF
 	NEXT
 
-
-
-
-
-	SIF 소환権 <= 0 
-		GOTO SUMMON_SKIP
-
 	소환カード = -1
 	VARSET 現在最大攻撃力, -1
 	VARSET リリース可
-
 	FOR カウンタ,0,紙束最大値
 		VARSET 現在攻撃力
 		SIF 상대_손패:カウンタ == -1
@@ -284,10 +276,9 @@ IF メインフェイズ == 1
 		CALLFORM CARD_{상대_손패:カウンタ}("종류")
 		SIF !GROUPMATCH(RESULT, 효과モン,通常モン)
 			CONTINUE
-		;소환불가カード
-		VARSET RESULT
-		TRYCALLFORM CARD_{상대_손패:カウンタ}("소환불가")
-		IF RESULT == 1 ;Anonym修正
+
+		CALL CARD_NS_CHECK_OK("상대",カウンタ)
+		IF RESULT == 0 ;Anonym修正
 			TRYCALLFORM CARDCAN_{상대_손패:カウンタ}("상대",효과소환,"손패",カウンタ)
 			SIF RESULT != 1
 			CONTINUE
@@ -328,7 +319,6 @@ IF メインフェイズ == 1
 				CALL CARD_CHECK_EXT("상대")
 				SIF RESULT >= 2
 					リリース可 = 2
-				
 				SIF リリース可 == 0
 					CONTINUE
 			ENDIF
@@ -344,35 +334,52 @@ IF メインフェイズ == 1
 		ENDIF
 	NEXT
 	;カード소환処理
-	IF 소환カード != -1
+	CALL CARD_NS_CHECK_OK("상대",소환カード)
+	IF RESULT != 0
 		VARSET RESULT
 		TRYCALLFORM CARDCAN_{상대_손패:소환カード}("상대",효과소환,"손패",소환カード)
 		IF RESULT == 1
-			CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시",2)
+			IF 상대_手_召可:소환カード >= 1
+				CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시",4)
+			ELSE
+				CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시",2)
+			ENDIF
 			SIF RESULT == 1
 				RETURN 0
 		ELSE
 			CALLFORM CARD_{상대_손패:소환カード}, "レベル"
 			IF INRANGE(RESULT,0,4) 				
-				CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시")
+				IF 상대_手_召可:소환カード >= 1
+					CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시",3)
+				ELSE
+					CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시")
+				ENDIF
 				SIF RESULT == 1
 					RETURN 0
 			ELSEIF INRANGE(RESULT,5,6) && リリース可 >= 1
-				CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시")
+				IF 상대_手_召可:소환カード >= 1
+					CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시",3)
+				ELSE
+					CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시")
+				ENDIF
 				SIF RESULT == 1
 					RETURN 0
 			ELSEIF INRANGE(RESULT,7,12) && リリース可 >= 2
-				CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시")
+				IF 상대_手_召可:소환カード >= 1
+					CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시",3)
+				ELSE
+					CALL CARD_SUMMON_SHORI("상대",소환カード,"攻撃표시")
+				ENDIF
 				SIF RESULT == 1
 					RETURN 0
 			ENDIF
 		ENDIF
-	ELSEIF 소환カード == -1
+	ELSE
 		PRINTL
 	ENDIF
 	$SUMMON_SKIP
-
-;	PRINTL 추가소환処理
+[SKIPSTART]
+	;PRINTL 추가소환処理
 	SIF 소환権 <= 0 
 		GOTO SUMMON_SKIP2
 
@@ -478,7 +485,7 @@ IF メインフェイズ == 1
 		PRINTL
 	ENDIF
 	$SUMMON_SKIP2
-
+[SKIPEND]
 
 	;PRINTL EX덱確認2
 
@@ -580,8 +587,10 @@ IF バトルフェイズ
 		IF 상대_MZ_直攻:カウンタ >= 1
 			攻撃元 = カウンタ
 			BREAK
-		ELSEIF 상대_MZ_攻:カウンタ > 現在最大攻撃力
-			現在最大攻撃力 = 상대_MZ_攻:カウンタ
+		ENDIF
+		CALL ENEMY_RUTIN_ATK("상대",カウンタ)
+		IF RESULT > 現在最大攻撃力
+			現在最大攻撃力 = RESULT
 			攻撃元 = カウンタ
 		ENDIF
 	NEXT
@@ -647,7 +656,7 @@ IF バトルフェイズ
 							攻撃先 = カウンタ
 						ENDIF
 					ELSE
-						CALL ENEMY_RUTIN_ATK(カウンタ,攻撃元)
+						CALL ENEMY_RUTIN_ATK("자신",カウンタ,攻撃元)
 						SIF RESULT > 現在最大攻撃力
 							CONTINUE
 						IF 자신_MZ_攻:カウンタ >= 現在最大攻撃力_자신

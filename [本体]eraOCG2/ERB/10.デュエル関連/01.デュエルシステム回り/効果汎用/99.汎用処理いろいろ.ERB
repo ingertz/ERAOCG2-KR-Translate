@@ -190,9 +190,14 @@ VARSET 強制素材場所２,-1
 VARSET 強制素材禁止場所,-1
 
 VARSET 효과条件손패취득
+
 VARSET 효과条件優先名前
 VARSET 효과条件劣後名前
-
+VARSET 효과条件優先カテゴリ
+VARSET 효과条件優先종류,-1
+VARSET 효과条件優先レベル,-1
+VARSET 효과条件優先攻撃力,-1
+VARSET 효과条件優先성별,-1
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
 @RESETAREA
@@ -259,12 +264,13 @@ VARSET 反濾過条件カテゴリ
 
 VARSET 濾過条件ID, -1
 VARSET 濾過条件종류, -1
+VARSET 濾過条件分割, -1
 VARSET 濾過条件속성, -1
 VARSET 濾過条件종족, -1
 VARSET 濾過条件レベル, -1
 VARSET 濾過条件攻撃力
 VARSET 濾過条件以攻撃力, -1
-VARSET 濾過条件攻固撃力, -1
+VARSET 濾過条件固攻撃力, -1
 VARSET 濾過条件守備力, -1
 VARSET 濾過条件튜너
 VARSET 濾過条件표시, -1
@@ -277,6 +283,13 @@ VARSET 濾過条件성별, -1
 VARSET 濾過条件소환可, -1
 VARSET 濾過종류특수소환, -1
 VARSET 濾過条件他所, -1
+
+VARSET 濾過条件個Ｃ所持
+VARSET 濾過条件魔Ｃ所持
+VARSET 濾過条件悪Ｃ所持
+VARSET 濾過条件薬Ｃ所持
+
+VARSET 濾過条件条件達生
 
 VARSET 濾過条件의식無視
 VARSET 濾過条件CNT
@@ -446,6 +459,14 @@ IF 효과番号 != 0
 		CALL CARD_EFFECT_D2USE(듀얼리스트,カードID)
 	ELSEIF 효과番号 == 30
 		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",1)
+	ELSEIF GROUPMATCH(효과番号, 51, 52, 53, 54)
+		효과番号 -= 50
+		CALL CARD_EFFECT_USE(듀얼리스트,カードID,효과番号)
+		IF ゾーン == "마함"
+			SETVAR @"%듀얼리스트%_魔_効済:場所", 2
+		ELSEIF ゾーン == "필드"
+			SETVAR @"%듀얼리스트%_MZ_効済:場所", 2
+		ENDIF
 	ENDIF
 ENDIF
 
@@ -1673,6 +1694,9 @@ RETURN 0
 #DIM DYNAMIC 条件달성
 
 VARSET RESULT
+SIF 場所 <= -1
+	RETURN 0
+
 カードID = GETVAR(@"%듀얼리스트%_손패:場所")
 
 TRYCALLFORM CARD_{カードID}("종류")
@@ -2454,6 +2478,7 @@ ELSEIF RESULT >= 20 && RESULT < 30
 ELSEIF RESULT >= 30
 	SETCOLOR C_TRAP_PUR
 ENDIF
+
 IF 明度ダウン == 1
 	문자색설정 = GETCOLOR()
 	SETCOLOR 明度변경(80, 문자색설정)
@@ -2477,6 +2502,9 @@ IF 듀얼리스트 == "編集"
 	ENDIF
 ENDIF
 IF 듀얼리스트 == "컬렉션" || 듀얼리스트 == "EX컬렉션"
+	SIF お気に入りカード설정:カードID >= 1
+		SETCOLOR C_GOLD
+
 	IF ITEM:カードID == 0
 		SETCOLOR C_GRAY
 	ENDIF
@@ -2576,6 +2604,8 @@ IF !GROUPMATCH(효과소환플래그,1,5)
 	ENDIF
 ENDIF
 
+RETURN 1
+
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
 @TEXT_DECORATION(デコレーション)
@@ -2591,20 +2621,10 @@ SELECTCASE デコレーション
 		PRINTL ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD ROGUE CARD
 		RESETCOLOR
 	CASE "P_MAGIC"
-;		SETCOLOR C_MAGIC_G
-		CALL XON_GRADATION(C_MAGIC_G,C_MONS_BR,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
-
-;		PRINTFORML %"―" * 34% PENDULUM  MAGIC %"―" * 34%
-		CALL XON_GRADATION(C_MAGIC_G,C_MONS_BR,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
-
-;		PRINTFORML %"―" * 29%이 카드는 지속 마법 취급으로 발동할 수 있다 %"―" * 29%
-
-		RESETCOLOR
-	CASE "P_MAGIC_2","D_HEART_2"
-		SETCOLOR C_MAGIC_G
-		PRINTFORML %"―" * 24%이 카드는 필드에서 묘지로 보내졌을 경우 EX덱으로 간다%"―" * 23%
-		PRINTFORML %"―" * 34% 몬스터 효과 %"―" * 34%
-		RESETCOLOR
+		CALL XON_GRADATION(C_MONS_BR,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_MONS_BR,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "P_MAGIC_2"
+		CALL XON_GRADATION(C_MONS_BR,C_MAGIC_G,"―――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――")
 	CASE "MAXIMUM"
 		SETCOLOR C_GOLD
 		PRINTFORML %"―" * 33%【맥시멈모드】%"―" * 33%
@@ -2618,16 +2638,16 @@ SELECTCASE デコレーション
 		RESETCOLOR
 
 	CASE "D_HEART_F"
-		SETCOLOR C_MAGIC_G
-		PRINTFORML %"―" * 34% DRAG-HEART FORT %"―" * 34%
-		RESETCOLOR
+		CALL XON_GRADATION(C_PSY_RED,C_PSY_RED,"―――――――――――――――――――――――――――――――――――","DRAG-HEART FORT","―――――――――――――――――――――――――――――――――")
+	CASE "D_HEART_2"
+		CALL XON_GRADATION(C_PSY_RED,C_PSY_RED,"―――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――")
 
 	CASE "D_HEART_C"
-		SETCOLOR C_MAGIC_G
+		SETCOLOR C_PSY_RED
 		PRINTFORML %"―" * 32% DRAG-HEART CREATURE %"―" * 32%
 		RESETCOLOR
 	CASE "FORTRESS"
-		SETCOLOR C_MAGIC_G
+		SETCOLOR C_PSY_RED
 		PRINTFORML %"―" * 34% F O R T R E S S %"―" * 34%
 		RESETCOLOR
 
@@ -2839,10 +2859,10 @@ IF 설정타입 == 0
 		SETVAR @"%듀얼리스트%_%효과種%", 효과修正
 		SETVAR @"%対面者%_%효과種%", 효과修正
 	ENDIF
-
-	SIF 효과修正 != 3 && システム플래그 == 0
-		PRINTFORMW %대상名%에 『%효과種%』가 적용되었습니다。
-
+	IF 효과種 != "듀얼패배플래그"
+		SIF 효과修正 != 3 && システム플래그 == 0
+			PRINTFORMW %대상名%에 『%효과種%』가 적용되었습니다。
+	ENDIF
 ELSEIF 설정타입 == 1
 	IF 反転플래그 == 0
 		SETVAR @"%듀얼리스트%_%효과種%", GETVAR(@"%듀얼리스트%_%효과種%") + 효과修正
@@ -3032,6 +3052,45 @@ ELSE
 		RETURN 1
 ENDIF
 RETURN 0
+
+@CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+IF ゾーン == "손패"
+	IF GETVAR(@"%듀얼리스트%_手_発可:場所") == 0
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ENDIF
+ELSEIF ゾーン == "마함"
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+ELSE
+	RETURN 0
+ENDIF
+
+RETURN 1
+
+
+@CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+SIF ゾーン != "마함"
+	RETURN 0
+IF GETVAR(@"%듀얼리스트%_魔_発可:場所") == 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 2
+		RETURN 0
+ENDIF
+
+RETURN 1
 
 @CHECK_DP_GET(승리판정,이벤트플래그)
 #DIM DYNAMIC 승리판정
@@ -3648,8 +3707,18 @@ ENDIF
 
 
 VARSET 상대_손패,-1
-상대_손패:0 = 70011
-상대_손패:1 = 70003
+상대_손패:0 = 23170
+;CALL CARD_MAKE_FIELD("상대",)
+CALL CARD_MAKE_FIELD("상대",51531)
+CALL CARD_MAKE_FIELD("상대",23175)
+CALL CARD_MAKE_FIELD("상대",23173)
+
+자신_손패:0 = 23170
+;CALL CARD_MAKE_FIELD("상대",)
+CALL CARD_MAKE_FIELD("자신",51531)
+CALL CARD_MAKE_FIELD("자신",23175)
+CALL CARD_MAKE_FIELD("자신",23173)
+
 
 
 @CARD_KANPRINT(元参照先,場所,カードID,설정플래그,使用機能)
@@ -3664,6 +3733,7 @@ VARSET 상대_손패,-1
 #DIM DYNAMIC 표시星
 #DIM DYNAMIC 표시属
 #DIM DYNAMIC 표시種
+#DIM DYNAMIC 표시類
 #DIM DYNAMIC 표시攻
 #DIM DYNAMIC 표시守
 #DIM DYNAMIC 표시Ｔ
@@ -3921,6 +3991,8 @@ ENDIF
 
 IF 参照先 == "필드" && 대상者 != "상대" && 설정플래그 == 0 && INRANGE(場所,0,4)
 	표시星 = 자신_MZ_星:場所
+	TRYCALLFORM CARD_{カードID}, "종류"
+	표시類 = RESULT
 	TRYCALLFORM CARD_{カードID}, "コスト"
 	표시CT = RESULT
 	표시属 = 자신_MZ_属:場所
@@ -3930,6 +4002,8 @@ IF 参照先 == "필드" && 대상者 != "상대" && 설정플래그 == 0 && INR
 	표시Ｔ = 자신_MZ_Ｔ:場所
 ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,2000,2004)
 	場所 -= 2000
+	TRYCALLFORM CARD_{カードID}, "종류"
+	표시類 = RESULT
 	TRYCALLFORM CARD_{カードID}, "コスト"
 	표시CT = RESULT
 	표시星 = 상대_MZ_星:場所
@@ -3940,6 +4014,8 @@ ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,2000,2004
 	표시Ｔ = 상대_MZ_Ｔ:場所
 	場所 += 2000
 ELSE
+	TRYCALLFORM CARD_{カードID}, "종류"
+	표시類 = RESULT
 	TRYCALLFORM CARD_{カードID}, "レベル"
 	표시星 = RESULT
 	TRYCALLFORM CARD_{カードID}, "コスト"
@@ -4053,6 +4129,14 @@ IF 표시可否 == 1
 		IF 표시種 >= 1
 			PRINTFORM /%GET_TALENTNAME(191,표시種),12,RIGHT%
 		ENDIF
+;		PRINTFORM /
+;		IF 표시類 == 효과モン
+;			CALL XON_FONT("カード")
+;		ELSEIF 표시類 == 通常モン
+;			CALL XON_FONT("カード")
+;		ELSEIF 표시類 == 通常モン
+
+;		ENDIF
 		PRINTFORM /　（공:{표시攻,6}/방:{표시守,6}）
 		IF 参照先 == "필드"
 			보존する色 = GETCOLOR()
@@ -4280,14 +4364,15 @@ ENDIF
 
 RETURN 0
 
-@COLOR_LINE(설정カラー,UI플래그)
+@COLOR_LINE(설정カラー,설정カラー２,UI플래그)
 #DIM DYNAMIC 설정カラー
+#DIM DYNAMIC 설정カラー２
 #DIM DYNAMIC UI플래그
 
 IF UI플래그 == 0
-	SETCOLOR 설정カラー
-	CUSTOMDRAWLINE ―
-	RESETCOLOR
+	SIF 설정カラー２ == 0
+		설정カラー２ = 설정カラー
+	CALL XON_CUSTOMDRAWLINE(설정カラー,설정カラー２,"―")
 ELSEIF UI플래그 == 1
 	SIF CFLAG:MASTER:우후후 >= 1
 		SETCOLOR  C_Ne_PINK

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 중기화열차 데릭크레인
+		RESULTS = 중기화열차 데릭크레인
 	CASE "略称"
-RESULTS = 데릭크레인
+		RESULTS = 데릭크레인
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -49,10 +49,12 @@ PRINTL 이 카드를 패에서 특수 소환한다.
 PRINTL 이 효과로 특수 소환한 이 카드의 원래 공격력은 절반이 된다.
 CALLFORM CARD_ABLE(2,X素材時효과)
 PRINTL ②: 이 카드를 엑시즈 소재로 사용했을 경우에 발동할 수 있다.
-PRINTL 자신 필드의 엑시즈 몬스터 1장을 선택하고 이하의 효과를 부과한다.
-
-PRINTL ● 엑시즈 소재를 가지고 있을 경우, 자신 / 상대 턴에 1번, 상대 필드의 카드 1장을 대상으로 하고 발동할 수 있다.
-PRINTL 그 카드를 파괴한다.
+PRINTL 덱 밖에서 "데릭 포"를 1장 패에 넣는다.
+PRINTL
+PRINTL 「데릭 포」
+PRINTL ＞속공 마법
+PRINTL 자신이 랭크１０ 이상의 몬스터의 효과를 사용한 경우、상대 필드의 카드 １장을 대상으로 하고 발동할 수 있다.
+PRINTL 그 카드를 파괴한다。
 PRINTL 
 
 @CARDCAN_24100(듀얼리스트,종류,ゾーン,場所)
@@ -91,22 +93,6 @@ ELSEIF 종류 == X素材時효과
 		RETURN 0
 	RETURN 1
 
-;――――――――――――――――――――――――付与효과――――――――――――――――――――――――
-
-ELSEIF 종류 == 필드起動付与
-	SIF ゾーン != "필드"
-		RETURN 0
-	SIF 발동済_3(듀얼리스트,24100)
-		RETURN 0
-	CALL FULLRESET
-	효과範囲상대필드 = 1
-	효과範囲상대마함 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
-		RETURN 0
-	RETURN 1
 ENDIF
 
 @CARDEFFECT_24100(듀얼리스트,종류,ゾーン,場所)
@@ -133,25 +119,104 @@ IF 종류 == 효과後誘発
 ELSEIF 종류 == X素材時효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24100,2)
 	IF RESULT == 0
-		CALL FULLRESET
-		효과条件종류 = 엑시즈
-		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
-		選択カード = RESULT
-		IF 選択カード != 9999
-			CALL CARD_GRANT_SPECIAL(듀얼리스트,選択カード,24100)
+			CALL CARD_GENERATE_HAND(듀얼리스트,224100)
 		ENDIF
 	ENDIF
 
 
-;――――――――――――――――――――――――付与효과――――――――――――――――――――――――
-ELSEIF 종류 == 필드起動付与
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24100,3)
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+@CARDNAME_224100,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데릭 포
+	CASE "略称"
+		RESULTS = 데릭 포
+	CASE "カテゴリ"
+		RESULTS:0 = 열차
+ENDSELECT
+
+
+@CARD_224100(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_224100(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ①：자신がランク１０以上のモンスターの효과を使用した場合、
+PRINTL 상대フィールドの카드를 １장을 대상として발동できる。
+PRINTL そのカードを파괴한다。
+
+@CARDCAN_224100(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,224100)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과条件종류 = 엑시즈
+	효과条件レベル = 10
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_224100(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+#DIM DYNAMIC ドロー枚数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 효과後誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,224100)
 	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
 		효과範囲상대필드 = 1
 		효과範囲상대마함 = 1
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
-		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"특수状態",0,1)
 	ENDIF
 ENDIF
-

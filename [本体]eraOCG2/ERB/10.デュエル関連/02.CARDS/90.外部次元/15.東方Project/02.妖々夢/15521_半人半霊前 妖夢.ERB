@@ -55,8 +55,9 @@ PRINTL ①：필드에 "반령반인분 요우무"가 존재하지 않는 경우
 PRINTL "반령반인분 요우무" １장을 덱 / 패에서 특수 소환한다。
 PRINTL 이 효과의 발동 후、자신은 언데드족 몬스터밖에 EX덱에서 특수 소환할 수 없다。
 ;何らかの설定
-CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ②：자신 필드에 앞면 표시로 존재하는 "백옥루" 마법 카드는 １턴에 １번만 효과로는 파괴되지 않는다。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：상대의 패에서, 카드가 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL 덱에서 "백옥루" 마법 / 함정 카드 １장을 자신 필드에 세트한다。
 
 
 @CARDCAN_15521(듀얼리스트,종류,ゾーン,場所)
@@ -92,8 +93,23 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 
 
 	RETURN 1
-ELSEIF 종류 == 지속효과
+ELSEIF 종류 == 효과後誘発
 	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,15521)
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패墓送",1)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종류 = 마함全般
+	효과条件カテゴリ = 백옥루
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -123,24 +139,14 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 		EX소환可能종족 = 언데드족
 		CALL CARD_EX_RESTRICTION(듀얼리스트)
 	ENDIF
-ELSEIF 종류 == 攻撃時誘発
+ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,15521,2)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과範囲손패 = 1
-		효과条件종류 = 速攻마법
+		효과範囲덱 = 1
+		효과条件종류 = 마함全般
+		효과条件カテゴリ = 백옥루
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
-		カード추가先 = RESULT:2
-		選択カード_ID = RESULT:1
-		TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
-		IF MATCH(RESULTS,"스펠 카드")
-			SETVAR @"%듀얼리스트%_魔_表:カード추가先", 2
-		ENDIF
 	ENDIF
-ELSEIF 종류 == 지속효과
-	CALL FULLRESET
-	효과条件표시 = 表側표시
-	효과条件カテゴリ = 백옥루
-	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"一破")
 ENDIF
 

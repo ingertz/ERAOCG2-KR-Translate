@@ -187,10 +187,14 @@ ENDSELECT
 #DIM DYNAMIC 持続
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC カードID
-
+#DIM DYNAMIC 上書き플래그
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
+IF 효과種 == "永星上書"
+	효과種 = 永星
+	上書き플래그 = 1
+ENDIF
 
 SIF 효과条件표시 == -1
 	효과条件표시 = 表側표시
@@ -289,6 +293,8 @@ SELECTCASE 효과範囲
 					CALL SET_FIELD_INFO(実行者,"필드",カウンタ,효과種,持続)
 				ELSEIF 参照先 == "필드" && GROUPMATCH(효과種,"一星変動")
 					CALL SET_FIELD_INFO(実行者,"필드",カウンタ,"一星",持続)
+				ELSEIF 参照先 == "필드" && GROUPMATCH(효과種,"一星","永星")
+					CALL SET_FIELD_INFO(実行者,"필드",カウンタ,효과種,持続,上書き플래그)
 				ELSE
 					SETVAR @"%実行者%_%MZ魔판정%_%효과種%:カウンタ", 持続
 				ENDIF

@@ -4,7 +4,9 @@
 #DIM DYNAMIC 소환カード
 #DIM DYNAMIC カードID
 #DIM DYNAMIC カウンタ
+;EXモンスターをEX소환するかどうか判断する所（싱크로、엑시즈、링크、초차원）
 
+;基本、自身と同名カードが場にあれば同名カードはEX소환しない
 FOR カウンタ,0,5
 	SIF 상대_필드:カウンタ == -1
 		CONTINUE
@@ -14,7 +16,7 @@ FOR カウンタ,0,5
 NEXT
 RETURN 0
 
-
+;通常소환、EX소환するより先に、손패、フィールド等から효과발동する時の優先度ボーナスはここ
 @ENEMY_RUTIN_ACT_EFFECT(종류,ゾーン,場所,カードID)
 #DIM DYNAMIC カードID
 #DIMS DYNAMIC ゾーン
@@ -24,7 +26,7 @@ RETURN 0
 
 
 SIF カードID <= 0
-	RETURN 0
+	RETURN -1
 
 CALLFORM CARDNAME_{カードID}("名前")
 SELECTCASE RESULTS
@@ -87,214 +89,296 @@ NEXT
 
 CALLFORM CARDNAME_{カードID}("名前")
 SELECTCASE RESULTS
-CASE "사이코 엔드 퍼니셔"
-	IF 종류 == 필드起動
+	CASE "사이코 엔드 퍼니셔"
+		;場に자신しかいなければ발동しない
+		IF 종류 == 필드起動
+			SIF モンスター数("자신") == 0
+				RETURN 1
+			CALL FULLRESET_EXT
+			濾過範囲필드 = 1
+			濾過条件固名前 = 사이코 엔드 퍼니셔
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+
+	;トラブルサン：無駄に使わないようにするため
+	CASE "Evil★Twin's 트러블 써니","The Evil★Twins！키스킬＆리일라"
 		SIF モンスター数("자신") == 0
 			RETURN 1
-		CALL FULLRESET_EXT
-		濾過範囲필드 = 1
-		濾過条件固名前 = 사이코 엔드 퍼니셔
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			RETURN 1
-	ENDIF
-
-;トラブルサン：無駄に使わないようにするため
-CASE "Evil★Twin's 트러블 써니","The Evil★Twins！키스킬＆리일라"
-	SIF モンスター数("자신") == 0
-		RETURN 1
-;シュトラールを戻させないため
-CASE "드래곤메이드의 전환"
-	IF 종류 == 묘지起動
-		CALL FULLRESET_EXT
-		濾過範囲필드 = 1
-		濾過条件カテゴリ = 드래곤메이드
-		濾過条件종류 = 효과モン
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			RETURN 1
-	ENDIF
-;상검顕現、有効な場間がないため
-CASE "용상검현"
-	SIF 종류 == 제외時
-		RETURN 1
-;同上
-CASE "충혹의 동산"
-	SIF 종류 == 마함起動 && 상대_魔_表:場所 == 1
-		RETURN 1
-
-;비밀병기 폭탄
-CASE "비밀병기 폭탄"
-	SIF (モンスター数("자신") + 마함数("자신")) < 4
-		RETURN 1
-;デミス、裁き、無駄な殺傷はやめろ
-CASE "종언의 왕 데미스", "저지먼트 드래곤"
-	SIF (モンスター数("자신") + 마함数("자신")) == 0
-		RETURN 1
-	SIF (モンスター数("상대") + 마함数("상대")) >= 3
-		RETURN 1
-;無駄な殺傷はやめろ
-CASE "뉴스타트", "격류장"
-	SIF モンスター数("자신") <= 1
-		RETURN 1
-CASE "여섯 무사의 문"
-	IF 종류 == 마함起動 && 상대_魔_表:場所 == 1
-		SIF 상대_魔_個Ｃ:場所 < 4
-			RETURN 1
-	ENDIF
-CASE "여섯 무사의 결속"
-	IF 종류 == 마함起動 && 상대_魔_表:場所 == 1
-		SIF 상대_魔_個Ｃ:場所 <= 1
-			RETURN 1
-	ENDIF
-
-CASE "드래그마의 기사 플루르드리스"
-	SIF (モンスター数("자신")) == 0
-		RETURN 1
-CASE "섬도희－레이"
-	SIF ターンプレイヤー == "상대" && メインフェイズ == 1
-		RETURN 1
-CASE "다크 다이브 봄버"
-	IF 종류 == 필드起動
-		SIF 상대_MZ_戦:場所 != 0
-			RETURN 1
-	ENDIF
-CASE "무한포영", "이펙트 뵐러", "상검대사－적소"
-	SIF 종류 != フリー誘発
-		RETURN 1
-	SIF 効後_カウンタ < 1
-		RETURN 1
-
-	FOR カウンタ,0,100
-		SIF GROUPMATCH(상대_誘発選択済:カウンタ,90100,1095,50610)
-			RETURN 1
-	NEXT
-CASE "마를 새기는 데먼스미스"
-	IF 종류 == 필드起動
-		CALL FULLRESET_EXT
-		濾過範囲상대필드 = 1
-		濾過範囲상대마함 = 1
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			RETURN 1
-	ENDIF
-CASE "플레시아의 충혹마"
-	IF 종류 == 필드起動 || 종류 == フリー誘発
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過範囲제외 = 1
-		濾過条件名前 = 홀티아의 충혹마
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			RETURN 1
-	ENDIF
-CASE "날개들의 여왕 티타니아"
-	IF 종류 == 필드起動 || 종류 == フリー誘発
-		CALL FULLRESET_EXT
-		濾過範囲상대필드 = 1
-		濾過条件以攻撃力 = 2000
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			RETURN 1
-	ENDIF
-CASE "숲을 채색하는 엘프 여왕"
-	IF 종류 == 필드起動 || 종류 == フリー誘発
-		CALL FULLRESET_EXT
-		濾過範囲상대필드 = 1
-		濾過条件CNT = 1
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT < 2
-			RETURN 1
-	ENDIF
-CASE "하루 우라라"
-	SIF 効後_カウンタ == 0
-		RETURN 1
-	SIF 後듀얼리스트 == "상대"
-		RETURN 1
-
-	うららチェック = 1
-
-;	PRINTFORML 다음카드_ID:{後カード_ID}/다음듀얼리스트:%後듀얼리스트%/다음효과종류:{後효과種}/다음존:%後ゾーン%/다음장소:{後場所}
-	TRYCALLFORM CARDCAN_{後カード_ID}(後듀얼리스트,後효과種,後ゾーン,後場所)
-	VARSET うららチェック
-;	PRINTFORMW 우라라체크패스 : {うららチェックパス}
-	IF うららチェックパス == 0
-		VARSET うららチェックパス	
-		RETURN 1
-	ELSE
-		VARSET うららチェックパス	
-	ENDIF
-CASE "저택 와라시"
-	SIF 効後_カウンタ == 0
-		RETURN 1
-	SIF 後듀얼리스트 == "상대"
-		RETURN 1
-	わらしチェック = 1
-	TRYCALLFORM CARDCAN_{後カード_ID}(後듀얼리스트,後효과種,後ゾーン,後場所)
-	VARSET わらしチェック
-	IF わらしチェックパス == 0
-		VARSET わらしチェックパス	
-		RETURN 1
-	ELSE
-		VARSET わらしチェックパス	
-	ENDIF
-CASE "화목의 사자", "위협하는 포효", "패자의 일괄"
-	SIF 발동済_1("상대",91090)
-		RETURN 1
-	SIF 발동済_1("상대",91091)
-		RETURN 1
-	SIF 발동済_1("상대",91100)
-		RETURN 1
-	SIF ターンプレイヤー == "상대"
-		RETURN 1
-CASE "멸망룡 베이도스"
-	IF 종류 == 戦破壊→묘지
-		CALL FULLRESET_EXT
-		濾過範囲상대필드 = 1
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			RETURN 1
-	ENDIF
-CASE "No.39 유토피아"
-	IF 종류 == 攻撃時誘発
-		IF ターンプレイヤー == "상대"
+	;シュトラールを戻させないため
+	CASE "드래곤메이드의 전환"
+		IF 종류 == 묘지起動
 			CALL FULLRESET_EXT
-			濾過範囲손패 = 1
-			효과条件名前 = 더블 업 찬스
+			濾過範囲필드 = 1
+			濾過条件カテゴリ = 드래곤메이드
+			濾過条件종류 = 효과モン
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 0
 				RETURN 1
 		ENDIF
-		RETURN 1
-	ENDIF
-	RETURN 1
-CASE "해제 버튼（TSP）"
-	RETURN 1
-CASE "M∀LICE＜Q＞HEARTS OF CRYPTER"
-	IF 종류 == 필드起動 || 종류 == フリー誘発
-		CALL FULLRESET_EXT
-		濾過範囲상대필드 = 1
-		濾過範囲상대마함 = 1
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
+	;상검顕現、有効な場間がないため
+	CASE "용상검현"
+		SIF 종류 == 제외時
 			RETURN 1
-	ENDIF
-CASE "M∀LICE＜P＞March Hare"
-	IF ターンプレイヤー != "상대"
-		CALL FULLRESET_EXT
-		濾過範囲손패 = 1
-		濾過条件名前 = M∀LICE＜P＞White Rabbit
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		IF RESULT == 0
+	;同上
+	CASE "충혹의 동산"
+		SIF 종류 == 마함起動 && 상대_魔_表:場所 == 1
+			RETURN 1
+
+	CASE "비밀병기 폭탄"
+		;상대場のカードの数が少ないと使わせない
+		SIF (モンスター数("자신") + 마함数("자신")) < 4
+			RETURN 1
+	;デミス、裁き、無駄な殺傷はやめろ
+	CASE "종언의 왕 데미스", "저지먼트 드래곤"
+		SIF (モンスター数("자신") + 마함数("자신")) == 0
+			RETURN 1
+		SIF (モンスター数("상대") + 마함数("상대")) >= 3
+			RETURN 1
+	;無駄な殺傷はやめろ
+	CASE "뉴스타트", "격류장"
+		SIF モンスター数("자신") <= 1
+			RETURN 1
+	CASE "여섯 무사의 문"
+		;카운터４個以上じゃなければ使わせない
+		IF 종류 == 마함起動 && 상대_魔_表:場所 == 1
+			SIF 상대_魔_個Ｃ:場所 < 4
+				RETURN 1
+		ENDIF
+	CASE "여섯 무사의 결속"
+		;카운터１個以下では使わせない
+		IF 종류 == 마함起動 && 상대_魔_表:場所 == 1
+			SIF 상대_魔_個Ｃ:場所 <= 1
+				RETURN 1
+		ENDIF
+	;상대のモンスターがいなければ使わせない…？けど意図が分からなかったので一旦コメントアウト
+	;CASE "드래그마의 기사 플루르드리스"
+	;	SIF (モンスター数("자신")) == 0
+	;		RETURN 1
+	;(CPU)から見て자신のターン、メインフェイズには使わせない…んだったけど、ゼロが来て話が変わったので一旦コメントアウト
+	;CASE "섬도희－레이"
+	;	SIF ターンプレイヤー == "상대" && メインフェイズ == 1
+	;		RETURN 1
+	CASE "다크 다이브 봄버"
+		;攻撃する前は使わせない
+		IF 종류 == 필드起動
+			SIF 상대_MZ_戦:場所 != 0
+				RETURN 1
+		ENDIF
+	CASE "무한포영", "이펙트 뵐러", "상검대사－적소"
+		;상대の효과발동に合わせて발동させる
+		SIF 종류 != フリー誘発
+			RETURN 1
+		SIF 効後_カウンタ < 1
+			RETURN 1
+
+		FOR カウンタ,0,100
+			SIF GROUPMATCH(상대_誘発選択済:カウンタ,90100,1095,50610)
+				RETURN 1
+		NEXT
+	CASE "마를 새기는 데먼스미스"
+		;상대フィールドに除去するカードが無ければ발동させない
+		IF 종류 == 필드起動
+			CALL FULLRESET_EXT
+			濾過範囲상대필드 = 1
+			濾過範囲상대마함 = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+	CASE "플레시아의 충혹마"
+		;묘지、제외にホールティアの蟲惑魔が無ければ使わせない
+		IF 종류 == 필드起動 || 종류 == フリー誘発
 			CALL FULLRESET_EXT
 			濾過範囲묘지 = 1
-			濾過条件名前:0 = M∀LICE＜Q＞WHITE BINDER
-			濾過条件名前:1 = M∀LICE＜Q＞RED RANSOM
+			濾過範囲제외 = 1
+			濾過条件名前 = 홀티아의 충혹마
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 0
 				RETURN 1
 		ENDIF
-	ENDIF
+	CASE "날개들의 여왕 티타니아"
+		;상대フィールドに除去するカードが無ければ발동させない
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			CALL FULLRESET_EXT
+			濾過範囲상대필드 = 1
+			濾過条件以攻撃力 = 2000
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+	CASE "숲을 채색하는 엘프 여왕"
+		;상대フィールドに除去するカードが無ければ발동させない
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			CALL FULLRESET_EXT
+			濾過範囲상대필드 = 1
+			濾過条件CNT = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT < 2
+				RETURN 1
+		ENDIF
+	CASE "하루 우라라"
+		SIF 効後_カウンタ == 0
+			RETURN 1
+		SIF 後듀얼리스트 == "상대"
+			RETURN 1
+
+		うららチェック = 1
+
+	;	PRINTFORML 다음카드_ID:{後カード_ID}/다음듀얼리스트:%後듀얼리스트%/다음효과종류:{後효과種}/다음존:%後ゾーン%/다음장소:{後場所}
+		TRYCALLFORM CARDCAN_{後カード_ID}(後듀얼리스트,後효과種,後ゾーン,後場所)
+		VARSET うららチェック
+	;	PRINTFORMW 우라라체크패스 : {うららチェックパス}
+		IF うららチェックパス == 0
+			VARSET うららチェックパス	
+			RETURN 1
+		ELSE
+			VARSET うららチェックパス	
+		ENDIF
+	CASE "저택 와라시"
+		SIF 効後_カウンタ == 0
+			RETURN 1
+		SIF 後듀얼리스트 == "상대"
+			RETURN 1
+		わらしチェック = 1
+		TRYCALLFORM CARDCAN_{後カード_ID}(後듀얼리스트,後효과種,後ゾーン,後場所)
+		VARSET わらしチェック
+		IF わらしチェックパス == 0
+			VARSET わらしチェックパス	
+			RETURN 1
+		ELSE
+			VARSET わらしチェックパス	
+		ENDIF
+	CASE "화목의 사자", "위협하는 포효", "패자의 일괄"
+		;どれか１つでも발동していたら、발동しない
+		SIF 발동済_1("상대",91090)
+			RETURN 1
+		SIF 발동済_1("상대",91091)
+			RETURN 1
+		SIF 발동済_1("상대",91100)
+			RETURN 1
+		SIF ターンプレイヤー == "상대"
+			RETURN 1
+	CASE "멸망룡 베이도스"
+		;상대モンスターが無ければ使わせない
+		IF 종류 == 戦破壊→묘지
+			CALL FULLRESET_EXT
+			濾過範囲상대필드 = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+	CASE "No.39 유토피아"
+		;자신のターンかつ、自身の攻撃で、손패にダブル・アップ・チャンスがなければ使わせない
+		IF 종류 == 攻撃時誘発
+			IF ターンプレイヤー == "상대"
+				SIF 戦闘場所("상대") != 場所
+					RETURN 1
+				CALL FULLRESET_EXT
+				濾過範囲손패 = 1
+				효과条件名前 = 더블 업 찬스
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				SIF RESULT == 0
+					RETURN 1
+			ENDIF
+			RETURN 1
+		ENDIF
+		RETURN 1
+	CASE "No.39 희망황 비욘드 더 호프"
+		;自滅にしかならず、使わせるとしても使う場面の基準が作れないので一切使わせない
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			RETURN 1
+		ENDIF
+	CASE "갤럭시아이즈 포톤 드래곤"
+		;攻撃力2000以外のモンスターは대상から外すように
+		IF 종류 == 손패起動
+			CALL FULLRESET_EXT
+			濾過範囲필드 = 1
+			濾過条件固攻撃力 = 2000
+			濾過条件CNT = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT < 2
+				RETURN 1
+		ENDIF
+	CASE "해제 버튼（TSP）"
+		;自滅にしかならず、使わせるとしても使う場面の基準が作れないので一切使わせない
+		RETURN 1
+	CASE "M∀LICE＜Q＞HEARTS OF CRYPTER"
+		;상대のカードが無ければ自滅する事が多いので使わせない
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			CALL FULLRESET_EXT
+			濾過範囲상대필드 = 1
+			濾過範囲상대마함 = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+	CASE "M∀LICE＜P＞March Hare"
+		;상대ターンなら白うさぎが無ければ발동させない。자신ターンなら묘지に링크モンスターが無ければ발동させない
+		IF ターンプレイヤー != "상대"
+			CALL FULLRESET_EXT
+			濾過範囲손패 = 1
+			濾過範囲묘지 = 1
+			濾過条件名前 = M∀LICE＜P＞White Rabbit
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT == 0
+				CALL FULLRESET_EXT
+				濾過範囲묘지 = 1
+				濾過条件名前:0 = M∀LICE＜Q＞WHITE BINDER
+				濾過条件名前:1 = M∀LICE＜Q＞RED RANSOM
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				SIF RESULT == 0
+					RETURN 1
+			ENDIF
+		ENDIF
+	CASE "액세스코드 토커"
+		;コストが자신しかいなければ발동しない
+		IF 종류 == 필드起動
+			CALL FULLRESET_EXT
+			濾過範囲필드 = 1
+			濾過範囲묘지 = 1
+			濾過条件종류 = 링크
+			濾過条件固名前 = 액세스코드 토커
+			濾過条件속성:0 = 신속성
+			SIF GETBIT(GETVAR(@"상대_MZ_T1汎数:場所"),0) != 1
+				濾過条件속성:1 = 빛속성
+			SIF GETBIT(GETVAR(@"상대_MZ_T1汎数:場所"),1) != 1
+				濾過条件속성:2 = 어둠속성
+			SIF GETBIT(GETVAR(@"상대_MZ_T1汎数:場所"),2) != 1
+				濾過条件속성:3 = 땅속성
+			SIF GETBIT(GETVAR(@"상대_MZ_T1汎数:場所"),3) != 1
+				濾過条件속성:4 = 물속성
+			SIF GETBIT(GETVAR(@"상대_MZ_T1汎数:場所"),4) != 1
+				濾過条件속성:5 = 화염속성
+			SIF GETBIT(GETVAR(@"상대_MZ_T1汎数:場所"),5) != 1
+				濾過条件속성:6 = 바람속성
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+	CASE "기믹 퍼핏－블러디 돌"
+		IF 종류 == 손패起動
+			CALL FULLRESET_EXT
+			濾過範囲EX덱 = 1
+			濾過条件レベル = 8
+			濾過条件종류 = 엑시즈
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT != 1
+				RETURN 1
+		ENDIF
+	CASE "웰컴 라뷰린스", "빅웰컴 라뷰린스"
+		IF 종류 == 마함起動 || 종류 == フリー誘発
+			IF GETVARS(@"상대_フィールド名") == "라뷰린스 래버린스"
+				CALL FULLRESET_EXT	
+				濾過範囲상대필드 = 1
+				濾過範囲상대마함 = 1
+				;濾過条件除去種 = 묘지
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				SIF RESULT != 1
+					RETURN 1
+			ENDIF
+		ENDIF
 ENDSELECT
 
 ;カテゴリチェック
@@ -304,7 +388,7 @@ CASE "함정 속으로"
 	FOR カウンタ,0,100
 		VARSET RESULTS
 		TRYCALLFORM CARDNAME_{상대_誘発選択済:カウンタ}("カテゴリ")
-		SIF RESULTS　== "함정 속으로"
+		SIF RESULTS == "함정 속으로"
 			RETURN 1
 	NEXT
 ENDSELECT
@@ -312,12 +396,25 @@ ENDSELECT
 ;CPUは자신마함に펜듈럼が２枚以上あれば펜듈럼の손패起動を使わない。
 CALLFORM CARD_{カードID}("分割")
 IF RESULT == 펜듈럼 && 종류 == 손패起動
+	;PRINTFORML （A）　RESULT:{RESULT} ／ 종류 == {종류}
 	CALL FULLRESET_EXT
 	濾過範囲마함 = 1
 	濾過条件종류 = 펜듈럼
 	濾過条件CNT = 1
 	CALL CARD_CHECK_EXT("상대",0,"",場所)
+	;PRINTFORML （B）　RESULT:{RESULT}
 	SIF RESULT >= 2
+		RETURN 1
+ENDIF
+
+;同名のフィールド마법が自場にあれば、손패からそのフィールド마법を발동しない
+CALLFORM CARD_{カードID}("종류")
+IF RESULT == フィールド && 종류 == 손패起動
+	CALL FULLRESET_EXT
+	濾過範囲마함 = 1
+	濾過条件ID = カードID
+	CALL CARD_CHECK_EXT("상대",0,"",場所)
+	SIF RESULT == 1
 		RETURN 1
 ENDIF
 
@@ -369,7 +466,8 @@ SIF カードID <= 0
 CALLFORM CARDNAME_{カードID}("名前")
 カード名 = %RESULTS%
 
-IF 효과条件손패취득 == 1 ;Anonym추가
+;손패に加える処理の분기
+IF 효과条件손패취득 == 1
 	SELECTCASE カード名
 		CASE "상검대사－적소"
 			IF 발동済_1("상대",61895)
@@ -478,246 +576,284 @@ IF 효과条件손패취득 == 1 ;Anonym추가
 			ENDIF
 		CASE "백업＠이그니스터"
 			효과条件優先名前 = 위자드＠이그니스터
+		CASE "M∀LICE＜P＞March Hare"
+			효과条件優先名前:0 = M∀LICE＜P＞March Hare
+			효과条件劣後名前:0 = M∀LICE＜Q＞RED RANSOM
+			효과条件劣後名前:1 = M∀LICE＜Q＞WHITE BINDER
+			효과条件劣後名前:2 = M∀LICE＜Q＞HEARTS OF CRYPTER
+		CASE "라뷰린스 서번츠 아리안나"
+			효과条件劣後名前 = 백은 성의 라뷰린스
+		CASE "소울 레조네이터"
+			효과条件優先名前:0 = 본 데몬
+		CASE "콜 레조네이터","크림즌 헬가이아"
+			효과条件優先名前:0 = 소울 레조네이터
 	ENDSELECT
-ELSE
+ELSE ;その他、묘지に送る、제외するなどの処理の분기
 	SELECTCASE カード名
-	CASE "마기스토스 베르 산드리용", "마기스토스 플레임 조로아", "마기스토스 마스터 엔디미온", "마기스토스 그리모어 크로울리", "마기스토스 다이몬 조로아"
-		효과条件劣後名前:0 = 마기스토스 우르스라그나 조로아
-		효과条件劣後名前:1 = 마기스토스 다이몬 조로아
+		CASE "마기스토스 베르 산드리용", "마기스토스 플레임 조로아", "마기스토스 마스터 엔디미온", "마기스토스 그리모어 크로울리", "마기스토스 다이몬 조로아"
+			효과条件劣後名前:0 = 마기스토스 우르스라그나 조로아
+			효과条件劣後名前:1 = 마기스토스 다이몬 조로아
 
-	CASE "씰 오브・마기스토스 스푼"
-		효과条件劣後名前:0 = 씰 오브 마기스토스 스푼
-		효과条件劣後名前:1 = 마기스토스 우르스라그나 조로아
-		효과条件劣後名前:2 = 마기스토스 다이몬 조로아
+		CASE "씰 오브・마기스토스 스푼"
+			효과条件劣後名前:0 = 씰 오브 마기스토스 스푼
+			효과条件劣後名前:1 = 마기스토스 우르스라그나 조로아
+			효과条件劣後名前:2 = 마기스토스 다이몬 조로아
 
-	CASE "사이코 엔드 퍼니셔"
-		효과条件劣後名前 = 사이코 엔드 퍼니셔
-	CASE "디마이즈도우저"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件名前 = 루인섹트 나이트
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 1
-			条件달성 ++
-
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前 = 루인섹트 나이트
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		IF RESULT == 0 && 条件달성
-			효과条件優先名前 = 루인섹트 나이트
-
-		ELSEIF RESULT == 1
-			VARSET 条件달성
+		CASE "사이코 엔드 퍼니셔"
+			효과条件劣後名前 = 사이코 엔드 퍼니셔
+		CASE "디마이즈도우저"
 			CALL FULLRESET_EXT
 			濾過範囲덱 = 1
-			濾過条件名前 = 공진충
+			濾過条件名前 = 루인섹트 나이트
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 1
+				条件달성 ++
+
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前 = 루인섹트 나이트
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT == 0 && 条件달성
+				효과条件優先名前 = 루인섹트 나이트
+
+			ELSEIF RESULT == 1
+				VARSET 条件달성
+				CALL FULLRESET_EXT
+				濾過範囲덱 = 1
+				濾過条件名前 = 공진충
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				SIF RESULT == 1
+					条件달성 ++
+				CALL FULLRESET_EXT
+				濾過範囲묘지 = 1
+				濾過条件名前 = 공진충
+				CALL CARD_CHECK_EXT("상대",0,"",場所)
+				SIF RESULT == 0 && 条件달성
+					효과条件優先名前 = 공진충
+			ENDIF
+		CASE "디클레어러 디바이너"
+			CALL FULLRESET_EXT
+			濾過範囲EX덱 = 1
+			濾過条件名前 = 아크 디클레어러
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 1
+				효과条件優先名前 = 아크 디클레어러
+		CASE "우두귀", "유니좀비" 
+			;PRINTL 여기까지 기안했다～
+			CALL FULLRESET_EXT
+			濾過範囲덱 = 1
+			濾過条件名前 = 좀비 캐리어
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 1
 				条件달성 ++
 			CALL FULLRESET_EXT
 			濾過範囲묘지 = 1
-			濾過条件名前 = 공진충
+			濾過条件名前 = 좀비 캐리어
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 0 && 条件달성
-				효과条件優先名前 = 공진충
-		ENDIF
-	CASE "디클레어러 디바이너"
-		CALL FULLRESET_EXT
-		濾過範囲EX덱 = 1
-		濾過条件名前 = 아크 디클레어러
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 1
-			효과条件優先名前 = 아크 디클레어러
-	CASE "우두귀", "유니좀비" 
-		;PRINTL 여기까지 기안했다～
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件名前 = 좀비 캐리어
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 1
-			条件달성 ++
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前 = 좀비 캐리어
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0 && 条件달성
-			효과条件優先名前 = 좀비 캐리어
-	CASE "골드 가제트", "실버 가제트","양철 금붕어"
-		IF 参照先 == "손패"
-		CALL FULLRESET_EXT
-		濾過範囲손패 = 1
-		濾過条件名前:0 = 그린 가제트
-		濾過条件名前:1 = 레드 가제트
-		濾過条件名前:2 = 옐로 가제트
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		IF RESULT == 1
-			효과条件優先名前:0 = 그린 가제트
-			효과条件優先名前:1 = 레드 가제트
-			효과条件優先名前:2 = 옐로 가제트
-		ENDIF
-		ENDIF
-
-	CASE "라바르 헬하운드"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件名前 = 라바르 아처
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 1
-			条件달성 ++
-
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前 = 라바르 아처
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		IF RESULT == 0 && 条件달성
-			효과条件優先名前 = 라바르 아처
-		ENDIF
-
-	CASE "천저의 사도"
-		IF 参照先 == "EX덱"
+				효과条件優先名前 = 좀비 캐리어
+		CASE "골드 가제트", "실버 가제트","양철 금붕어"
+			IF 参照先 == "손패"
 			CALL FULLRESET_EXT
-			濾過範囲EX덱 = 1
-			濾過条件名前 = 공명의 날개 가루라
+			濾過範囲손패 = 1
+			濾過条件名前:0 = 그린 가제트
+			濾過条件名前:1 = 레드 가제트
+			濾過条件名前:2 = 옐로 가제트
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			IF RESULT == 1
+				효과条件優先名前:0 = 그린 가제트
+				효과条件優先名前:1 = 레드 가제트
+				효과条件優先名前:2 = 옐로 가제트
+			ENDIF
+			ENDIF
+
+		CASE "라바르 헬하운드"
+			CALL FULLRESET_EXT
+			濾過範囲덱 = 1
+			濾過条件名前 = 라바르 아처
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 1
+				条件달성 ++
+
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前 = 라바르 아처
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT == 0 && 条件달성
+				효과条件優先名前 = 라바르 아처
+			ENDIF
+
+		CASE "천저의 사도"
+			IF 参照先 == "EX덱"
 				SIF 발동済_1("상대",53000) == 0
 					효과条件優先名前 = 공명의 날개 가루라
 			ENDIF
-		ENDIF
-			
-	CASE "섬도희－하야테"
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前 = 섬도기동－인게이지
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			효과条件優先名前 = 섬도기동－인게이지
-		CALL FULLRESET_EXT
-		濾過範囲묘지 = 1
-		濾過条件名前 = 섬도희－레이
-		CALL CARD_CHECK_EXT("상대",0,"",場所)
-		SIF RESULT == 0
-			효과条件優先名前 = 섬도희－레이
-	CASE "흑익의 마술사"
-		효과条件優先名前:0 = 레드 데몬즈 드래곤/버스터
-	CASE "비전 히어로 바이온"
-		IF 발동済_3("상대",38092)
-			CALL 효과条件レベル_ADV(3, "以下")
-		ELSE
-			효과条件名前:0 = 비전 히어로 그래비토
-		ENDIF
-	CASE "이블 히어로 데스 프리즌"
-		CALL FULLRESET_EXT
-		濾過範囲덱 = 1
-		濾過条件カテゴリ = E•HERO
-		濾過条件종류 = 通常モン
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		IF RESULT == 1
-			효과条件カテゴリ:0 = E•HERO
-			효과条件종류 = 通常モン
-		ENDIF
-	CASE "음화의 덧칠"
-		CALL FULLRESET_EXT
-		濾過範囲필드 = 1
-		濾過範囲마함 = 1
-		濾過条件표시 = 10
-		濾過条件名前 = 소귀 무리의 음화
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		IF RESULT == 0
-			효과条件優先名前 = 소귀 무리의 음화
-		ELSE
+				
+		CASE "섬도희－하야테"
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前 = 섬도기동－인게이지
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				효과条件優先名前 = 섬도기동－인게이지
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前 = 섬도희－레이
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				효과条件優先名前 = 섬도희－레이
+		CASE "흑익의 마술사"
+			효과条件優先名前:0 = 레드 데몬즈 드래곤/버스터
+		CASE "비전 히어로 바이온"
+			IF 발동済_3("상대",38092)
+				효과条件優先レベル:0 = 1
+				효과条件優先レベル:1 = 2
+				효과条件優先レベル:2 = 3
+			ELSE
+				효과条件名前:0 = 비전 히어로 그래비토
+			ENDIF
+		CASE "이블 히어로 데스 프리즌"
+			CALL FULLRESET_EXT
+			濾過範囲덱 = 1
+			濾過条件カテゴリ = E•HERO
+			濾過条件종류 = 通常モン
+			CALL CARD_CHECK_EXT("상대",0,"",0)
+			IF RESULT == 1
+				효과条件カテゴリ:0 = E•HERO
+				효과条件종류 = 通常モン
+			ENDIF
+		CASE "음화의 덧칠"
 			CALL FULLRESET_EXT
 			濾過範囲필드 = 1
 			濾過範囲마함 = 1
 			濾過条件표시 = 10
-			濾過条件名前 = 음교 야연의 음화
+			濾過条件名前 = 소귀 무리의 음화
 			CALL CARD_CHECK_EXT("상대",0,"",0)
 			IF RESULT == 0
-				효과条件優先名前 = 음교 야연의 음화
+				효과条件優先名前 = 소귀 무리의 음화
 			ELSE
 				CALL FULLRESET_EXT
 				濾過範囲필드 = 1
 				濾過範囲마함 = 1
 				濾過条件표시 = 10
-				濾過条件名前 = 점액마의 음화
+				濾過条件名前 = 음교 야연의 음화
 				CALL CARD_CHECK_EXT("상대",0,"",0)
 				IF RESULT == 0
-					효과条件優先名前 = 점액마의 음화
+					효과条件優先名前 = 음교 야연의 음화
 				ELSE
 					CALL FULLRESET_EXT
 					濾過範囲필드 = 1
 					濾過範囲마함 = 1
 					濾過条件표시 = 10
-					濾過条件名前 = 마수 무리의 음화
+					濾過条件名前 = 점액마의 음화
 					CALL CARD_CHECK_EXT("상대",0,"",0)
 					IF RESULT == 0
-						효과条件優先名前 = 마수 무리의 음화
+						효과条件優先名前 = 점액마의 음화
 					ELSE
+						CALL FULLRESET_EXT
+						濾過範囲필드 = 1
+						濾過範囲마함 = 1
+						濾過条件표시 = 10
+						濾過条件名前 = 마수 무리의 음화
+						CALL CARD_CHECK_EXT("상대",0,"",0)
+						IF RESULT == 0
+							효과条件優先名前 = 마수 무리의 음화
+						ELSE
+						ENDIF
 					ENDIF
 				ENDIF
 			ENDIF
-		ENDIF
-		CASE "바이오 플랜트 룩터"
-		濾過範囲손패 = 1
-		濾過範囲묘지 = 1
-		濾過条件名前 = 촉수궁의 황새
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		IF RESULT == 0
-			효과条件優先名前 = 촉수궁의 황새
-		ELSE
-			CALL FULLRESET_EXT
+			CASE "바이오 플랜트 룩터"
 			濾過範囲손패 = 1
 			濾過範囲묘지 = 1
-			濾過条件名前 = 촉수궁의 휴프노
+			濾過条件名前 = 촉수궁의 황새
 			CALL CARD_CHECK_EXT("상대",0,"",0)
 			IF RESULT == 0
-				효과条件優先名前 = 촉수궁의 휴프노
-			ELSE
-				효과条件優先名前 = 촉수궁의 가디언
-			ENDIF
-		ENDIF
-	CASE "텐타클 바이오 플랜트"
-		효과条件優先名前:0 = 촉수궁의 자이언트 샌드 웜
-		효과条件優先名前:1 = 촉수궁의 가디언
-		효과条件優先名前:2 = 촉수궁의 휴프노
-	CASE "금지된 일적"
-		CALL FULLRESET_EXT
-		濾過範囲필드 = 1
-		濾過条件CNT = 1
-		CALL CARD_CHECK_EXT("자신",0,"",0)
-		IF RESULT > 1
-			효과条件複数 = (99 - RESULT) 
-		ELSE
-			효과条件複数 = 0
-		ENDIF
-	CASE "나이트메어 쓰론"
-		IF 参照先 == "덱"
-			CALL FULLRESET_EXT
-			濾過範囲손패 = 1
-			濾過条件名前 = 새크리파이스 데먼 로터스
-			CALL CARD_CHECK_EXT("상대",0,"",場所)
-			IF RESULT == 1
-				효과条件レベル = 10
+				효과条件優先名前 = 촉수궁의 황새
 			ELSE
 				CALL FULLRESET_EXT
-				濾過範囲덱 = 1
+				濾過範囲손패 = 1
+				濾過範囲묘지 = 1
+				濾過条件名前 = 촉수궁의 휴프노
+				CALL CARD_CHECK_EXT("상대",0,"",0)
+				IF RESULT == 0
+					효과条件優先名前 = 촉수궁의 휴프노
+				ELSE
+					효과条件優先名前 = 촉수궁의 가디언
+				ENDIF
+			ENDIF
+		CASE "텐타클 바이오 플랜트"
+			효과条件優先名前:0 = 촉수궁의 자이언트 샌드 웜
+			효과条件優先名前:1 = 촉수궁의 가디언
+			효과条件優先名前:2 = 촉수궁의 휴프노
+		CASE "금지된 일적"
+			CALL FULLRESET_EXT
+			濾過範囲필드 = 1
+			濾過条件CNT = 1
+			CALL CARD_CHECK_EXT("자신",0,"",0)
+			IF RESULT > 1
+				효과条件複数 = (99 - RESULT) 
+			ELSE
+				효과条件複数 = 0
+			ENDIF
+		CASE "나이트메어 쓰론"
+			IF 参照先 == "덱"
+				CALL FULLRESET_EXT
+				濾過範囲손패 = 1
 				濾過条件名前 = 새크리파이스 데먼 로터스
 				CALL CARD_CHECK_EXT("상대",0,"",場所)
 				IF RESULT == 1
-					효과条件名前 = 새크리파이스 데먼 로터스
-				ELSE
 					효과条件レベル = 10
+				ELSE
+					CALL FULLRESET_EXT
+					濾過範囲덱 = 1
+					濾過条件名前 = 새크리파이스 데먼 로터스
+					CALL CARD_CHECK_EXT("상대",0,"",場所)
+					IF RESULT == 1
+						효과条件名前 = 새크리파이스 데먼 로터스
+					ELSE
+						효과条件レベル = 10
+					ENDIF
 				ENDIF
 			ENDIF
-		ENDIF
-	CASE "M∀LICE＜P＞March Hare"
+		CASE "호색한 용병"
+			CALL FULLRESET_EXT
+			濾過範囲상대손패 = 1
+			濾過条件성별 = 牝性
+			CALL CARD_CHECK_EXT("상대")
+			IF RESULT == 1
+				효과条件성별 = 牝性
+			ENDIF
+		CASE "M∀LICE＜P＞March Hare"
 			효과条件優先名前:0 = M∀LICE＜Q＞RED RANSOM
 			효과条件優先名前:1 = M∀LICE＜Q＞WHITE BINDER
 			SIF ターンプレイヤー != "상대"
 				효과条件優先名前:2 = M∀LICE＜P＞White Rabbit
 		CASE "도도도도 워리어"
 			효과条件劣後名前:0 = 도도도도 워리어
+		CASE "갤럭시아이즈 포톤 드래곤"
+			;攻撃力2000以外のモンスターはリリース대상から外すように
+			IF 参照先 == "필드"
+				효과条件優先攻撃力 = 2000
+			ENDIF
+		CASE "액세스코드 토커"
+			;コスト候補から自身を外す
+			IF 参照先 == "필드"
+				효과条件劣後名前:0 = 액세스코드 토커
+			ENDIF
+		CASE "기믹 퍼핏－블러디 돌"
+			IF 参照先 == "EX덱"
+				효과条件優先レベル = 8
+			ENDIF
+		CASE "라뷰린스 샹드라", "라뷰린스 스토피"
+			효과条件劣後名前:0 = 라뷰린스 서번츠 아리안나
+			효과条件劣後名前:1 = 라뷰린스 서번츠 아리안느
+			효과条件劣後名前:2 = 레이디 오브 더 라뷰린스
+		CASE "본 데몬"
+			IF 参照先 == "덱"
+				효과条件優先名前:0 = 비전 레조네이터
+			ENDIF
+			효과条件劣後名前:0 = 소울 레조네이터
 ENDSELECT
 ENDIF
 
@@ -948,6 +1084,10 @@ SELECTCASE RESULTS
 		RETURN -10000
 	CASE "봉인된 엑조디아", "봉인된 자의 오른쪽 팔", "봉인된 자의 왼쪽 팔", "봉인된 자의 오른쪽 다리", "봉인된 자의 왼쪽 다리"
 		RETURN -10000
+	CASE "배틀 페이더"
+		RETURN -10000
+	CASE "속공의 허수아비"
+		RETURN -10000
 
 
 	CASE "소명의 신궁－아폴로우사"
@@ -994,7 +1134,7 @@ SELECTCASE RESULTS
 		RETURN 20000
 	CASE "라의 익신룡"
 		RETURN 20000
-	CASE "기사황 아크실라" ;Anonym추가
+	CASE "센츄리온 아크실라" ;Anonym추가
 		CALL FULLRESET_EXT
 		濾過範囲덱 = 1
 		濾過条件カテゴリ = 센츄리온
@@ -1003,7 +1143,7 @@ SELECTCASE RESULTS
 			CALL FULLRESET_EXT
 			濾過範囲필드 = 1
 			濾過範囲묘지 = 1
-			濾過条件名前 = 기사황 아크실라
+			濾過条件名前 = 센츄리온 아크실라
 			CALL CARD_CHECK_EXT("상대",0,"",0)
 			IF RESULT == 1
 				RETURN -4000
@@ -1011,11 +1151,11 @@ SELECTCASE RESULTS
 				RETURN 1000
 			ENDIF
 		ENDIF
-	CASE "기사황 레가티아"
+	CASE "센츄리온 레가티아"
 		CALL FULLRESET_EXT
 		濾過範囲필드 = 1
 		濾過範囲묘지 = 1
-		濾過条件名前 = 기사황 레가티아
+		濾過条件名前 = 센츄리온 레가티아
 		CALL CARD_CHECK_EXT("상대",0,"",0)
 		IF RESULT == 1
 			RETURN -4000
@@ -1053,6 +1193,14 @@ SELECTCASE RESULTS
 		CALL CARD_CHECK_EXT("상대",0,"",0)
 		SIF RESULT != 1
 			RETURN 400
+	CASE "기믹 퍼핏－판타직스 마키나"
+		RETURN 2000
+	CASE "엑소시스터 에리스"
+		RETURN -500
+	CASE "제알 웨폰－페가수스 트윈 세이버","제알 웨폰－라이트닝 블레이드","제알 웨폰－토네이도 브링거"
+		RETURN -10000
+	CASE "하염의 구희"
+		RETURN 1000
 	CASEELSE
 		IF 손패플래그
 			TRYCALLFORM CARDCAN_{カードID}("상대",소환時,"필드")
@@ -1066,7 +1214,7 @@ ENDSELECT
 RETURN 0
 
 
-
+;カードをサーチ、효과での특수소환する時の優先度ボーナスはここで설정
 @ENEMY_PRIORITY_FILTER(カードID,攻撃力설정)
 #DIMS DYNAMIC 参照先
 #DIM DYNAMIC 場所
@@ -1106,8 +1254,20 @@ IF 효과条件손패취득 == 1
 	ELSEIF RESULT == 通常함정
 		修正値 += 1
 	ENDIF
+
+	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	SELECTCASE RESULTS
+		CASE "제알 웨폰－페가수스 트윈 세이버","제알 웨폰－라이트닝 블레이드","제알 웨폰－토네이도 브링거"
+			修正値 += -10000
+		CASE "원죄보－스네이크아이"
+			SIF 발동済_1("상대",カードID) == 0 && 발동済_2("상대",カードID) == 0
+				修正値 += 10000
+		CASE "스네이크아이즈 포프루스"
+			SIF 발동済_1("상대",カードID) == 0
+				修正値 += 10000
+	ENDSELECT
 ENDIF
-;PRINTFORML 효과条件優先名前:%효과条件優先名前%
+
 TRYCALLFORM CARDNAME_{カードID}, "名前"
 SIF MATCH(효과条件優先名前, RESULTS)
 	修正値 += 10000
@@ -1116,16 +1276,41 @@ TRYCALLFORM CARDNAME_{カードID}, "名前"
 SIF MATCH(효과条件劣後名前, RESULTS)
 	修正値 += -10000
 
-;個別での優先度修正 ;Anonym추가
+TRYCALLFORM CARD_{カードID}, "レベル"
+SIF MATCH(효과条件優先レベル, RESULT)
+	修正値 += 10000
+
+TRYCALLFORM CARD_{カードID}, "攻撃力"
+SIF MATCH(효과条件優先攻撃力, RESULT)
+	修正値 += 10000
+
+
+;カテゴリで一纏め
+TRYCALLFORM CARDNAME_{カードID},"カテゴリ"
+IF MATCH(RESULTS,"라뷰린스")
+	TRYCALLFORM CARD_{カードID},"종류"
+	IF RESULT <= 10 ;モンスターはモンスターゾーンの同名カードチェック（마함置き除去ケア）
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過条件ID = カードID
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1;あったら
+			修正値 += -3000
+		ENDIF
+	ELSEIF INRANGE(RESULT,20,40) ;마함は마함ゾーンの同名カードチェック
+		CALL FULLRESET_EXT
+		濾過範囲마함 = 1
+		濾過条件ID = カードID
+		CALL CARD_CHECK_EXT("상대")
+		IF RESULT == 1;あったら
+			修正値 += -3000
+		ENDIF
+	ENDIF
+ENDIF
+
+;個別での優先度修正
 TRYCALLFORM CARDNAME_{カードID}, "名前"
 SELECTCASE RESULTS
-	CASE "호색한 용병"
-		CALL FULLRESET_EXT
-		濾過条件성별 = 牝性
-		CALL CARD_CHECK_EXT("상대")
-		IF RESULT == 1
-			修正値 += +10000
-		ENDIF
 	CASE "크샤트리라 유니콘"
 		;同名カードチェック
 		CALL FULLRESET_EXT
@@ -1189,7 +1374,36 @@ SELECTCASE RESULTS
 		修正値 += 500
 	CASE "M∀LICE＜C＞MTP-07"
 		修正値 += 300
+	CASE "센츄리온 프리메라"
+		IF 발동済_1("상대",カードID)
+			修正値 += -1000
+		ELSE
+			修正値 += 1000
+		ENDIF
+	CASE "센츄리온 트루디아"
+		IF 발동済_1("상대",カードID)
+			修正値 += -1000
+		ELSE
+			修正値 += 1000
+		ENDIF
+	CASE "센츄리온 아트리"
+		IF 발동済_1("상대",カードID)
+			修正値 += -1000
+		ELSE
+			修正値 += 1000
+		ENDIF
+	CASE "센츄리온 시메리아"
+		IF 발동済_1("상대",カードID)
+			修正値 += -1000
+		ELSE
+			修正値 += 1000
+		ENDIF
+	CASE "센츄리온 에메트ＶＩ"
+		修正値 += -1000
+	CASE "센츄리온 가고일ＩＩ"
+		修正値 += -1000
 ENDSELECT
+
 
 $SKIP_RUTIN
 返し値 = 攻撃力설정 + 修正値
@@ -1199,7 +1413,7 @@ SIF 返し値 <= 0
 RETURN 返し値
 
 
-
+;カードを효과での특수소환する時の優先するカードの指名はここで설정
 @ENEMY_RUTIN_CARD_SS(参照先,場所,カードID)
 #DIMS DYNAMIC 参照先
 #DIM DYNAMIC 場所
@@ -1249,7 +1463,7 @@ SIF 상대_MZ_攻:場所 <= 1500
 	RETURN 0
 RETURN 1
 
-
+;メインフェイズ１でセットする마법・함정はここで指名
 @ENEMY_RUTIN_SET_CARD(場所)
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カードID
@@ -1369,153 +1583,15 @@ IF 選択カード != -1
 ENDIF
 
 
-[SKIPSTART]
-;패의 カード발동チェック――――――――――――――――――――――――――――――――――――――――――――――――
-;PRINTL 손패カード確認処理
-VARSET 選択カード, -1
-FOR カウンタ,0,紙束最大値
-	VARSET RESULT
-	SIF 상대_손패:カウンタ == -1
-		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_손패:カウンタ}("상대",손패起動,"손패",カウンタ)
-	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
-	ENDIF
-NEXT
-;패의 カード발동処理
-IF 選択カード == -1
-;	PRINTL
-ELSE
-	발동カード_ID = 상대_손패:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,1)
-	SETCOLOR C_W_RED
-	CUSTOMDRAWLINE —
-	CALLFORM CARDNAME_{발동カード_ID}("名前")
-	PRINTFORMW 상대는 패에서 %RESULTS%의 효과 발동 선언을 했습니다！
-	CUSTOMDRAWLINE —
-	RESETCOLOR
-	CALLFORM CARD_STANBY(발동カード_ID,"상대",손패起動,"손패",選択カード)
-	CALL CARD_FINAL(ターンプレイヤー);상대패의 QE起動後のチェック
-	RETURN 0
-ENDIF
 
-;필드의 카드 발동チェック――――――――――――――――――――――――――――――――――――――――――――――――
-;PRINTL フィールドカード確認処理
-VARSET 選択カード, -1
-FOR カウンタ,0,5
-	VARSET RESULT
-	SIF 상대_필드:カウンタ == -1
-		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_필드:カウンタ}("상대",필드起動,"필드",カウンタ)
-	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
-	ENDIF
-NEXT
-
-;필드의 카드 발동処理
-IF 選択カード == -1
-;	PRINTL
-ELSE
-	발동カード_ID = 상대_필드:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,2)
-	SETCOLOR C_W_RED
-	CUSTOMDRAWLINE —
-	CALLFORM CARDNAME_{발동カード_ID}("名前")
-	PRINTFORMW 상대는 몬스터 존에서 %RESULTS%의 효과 발동 선언을 했습니다！
-	CUSTOMDRAWLINE —
-	RESETCOLOR
-	CALLFORM CARD_STANBY(발동カード_ID,"상대",필드起動,"필드",選択カード)
-	CALL CARD_FINAL(ターンプレイヤー);상대필드의 QE起動後のチェック
-	RETURN 0
-ENDIF
-
-;마함カード발동チェック――――――――――――――――――――――――――――――――――――――――――――――――
-;PRINTL 마함カード確認処理
-VARSET 選択カード, -1
-FOR カウンタ,0,5
-	VARSET RESULT
-	SIF 상대_마함:カウンタ == -1
-		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_마함:カウンタ}("상대",마함起動,"마함",カウンタ)
-	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
-	ENDIF
-NEXT
-;필드의 카드 발동処理
-IF 選択カード == -1
-;	PRINTL
-ELSE
-	발동カード_ID = 상대_마함:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,1)
-	SETCOLOR C_W_RED
-	CUSTOMDRAWLINE —
-	CALLFORM CARDNAME_{발동カード_ID}("名前")
-	PRINTFORMW 상대는 마함존에서 %RESULTS%의 효과 발동 선언을 했습니다！
-	CUSTOMDRAWLINE —
-	RESETCOLOR
-	CALLFORM CARD_STANBY(발동カード_ID,"상대",마함起動,"마함",選択カード)
-	CALL CARD_FINAL(ターンプレイヤー);상대마함のQE起動後のチェック
-	RETURN 0
-ENDIF
-
-;묘지의 カード발동チェック――――――――――――――――――――――――――――――――――――――――――――――――――
-;PRINTL 묘지カード確認処理
-VARSET 選択カード, -1
-FOR カウンタ,0,5
-	VARSET RESULT
-	SIF 상대_묘지:カウンタ == -1
-		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_묘지:カウンタ}("상대",묘지起動,"묘지",カウンタ)
-	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
-	ENDIF
-NEXT
-;필드의 카드 발동処理
-IF 選択カード == -1
-;	PRINTL
-ELSE
-	발동カード_ID = 상대_묘지:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,4)
-	SETCOLOR C_W_RED
-	CUSTOMDRAWLINE —
-	CALLFORM CARDNAME_{발동カード_ID}("名前")
-	PRINTFORMW 상대는 묘지에서 %RESULTS%의 효과 발동 선언을 했습니다！
-	CUSTOMDRAWLINE —
-	RESETCOLOR
-	CALLFORM CARD_STANBY(발동カード_ID,"상대",묘지起動,"묘지",選択カード)
-	CALL CARD_FINAL(ターンプレイヤー);상대묘지의 QE起動後のチェック
-	RETURN 0
-ENDIF
-
-
-;부스트のチェック――――――――――――――――――――――――――――――――――――――――――――――――――
-IF 특수듀얼종류 == ライディングＤ
-	VARSET RESULT
-	TRYCALLFORM CARDCAN_{상대_부스트}("상대",부스트起動,"")
-	IF RESULT == 1
-		CUSTOMDRAWLINE —
-		CALLFORM CARDNAME_{상대_부스트}("名前")
-		PRINTFORMW 상대는 부스트를 켜고、%RESULTS%의 효과 발동 선언을 했습니다！
-		CUSTOMDRAWLINE —
-		RESETCOLOR
-		TRYCALLFORM CARDEFFECT_{상대_부스트}("상대",부스트起動,"")
-		CALL CARD_FINAL(ターンプレイヤー);상대묘지のQE起動後のチェック
-		RETURN 0
-	ENDIF
-ENDIF
-[SKIPEND]
-
-
-
-@ENEMY_RUTIN_ATK(攻撃先,攻撃元)
+;상대のモンスターの攻撃力を、효과込みで判断するのはここ
+@ENEMY_RUTIN_ATK(듀얼리스트,攻撃先,攻撃元)
+#DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC 攻撃先
 #DIM DYNAMIC 攻撃元
 #DIM DYNAMIC 与攻撃カードID
 #DIM DYNAMIC 被攻撃カードID
+#DIM DYNAMIC 攻撃力修正
 
 
 被攻撃カードID = 자신_필드:攻撃先
@@ -1524,37 +1600,50 @@ SIF 被攻撃カードID <= 0
 
 CALLFORM CARDNAME_{被攻撃カードID}("名前")
 SELECTCASE RESULTS
-CASE "검의 미캉코 하레"
+CASE "검의 미캉코 하레", "구슬의 미캉코 후우리", "거울의 미캉코 니니"
 	CALL FULLRESET
-	CALL CARD_EQUIP_CHECK("자신",攻撃先,"필드")
-	SIF RESULT == 0
-		RETURN 0
-	RETURN 999999
-CASE "거울의 미캉코 니니"
-	CALL FULLRESET
-	CALL CARD_EQUIP_CHECK("자신",攻撃先,"필드")
-	SIF RESULT == 0
-		RETURN 0
-	RETURN 999999
-CASE "구슬의 미캉코 후우리"
-	CALL FULLRESET
-	CALL CARD_EQUIP_CHECK("자신",攻撃先,"필드")
+	CALL CARD_EQUIP_CHECK(듀얼리스트,攻撃先,"필드")
 	SIF RESULT == 0
 		RETURN 0
 	RETURN 999999
 CASE "잭나이츠 파라디온 아스트람"
-	SIF GETVAR(@"상대_MZ_召種:攻撃先") != 召種通常
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:攻撃元") != 召種通常
 		RETURN 999999
-CASE "오오히메의 미캉코"
-	RETURN 999999
-CASE "아라히메의 미캉코"
-	RETURN 999999
-CASE "No.92 위해신룡 Heart－eartH Dragon"
-	RETURN 999999
-CASE "유벨"
+CASE "오오히메의 미캉코", "아라히메의 미캉코", "우즈히메의 미캉코", "No.92 위해신룡 Heart－eartH Dragon", "유벨"
 	RETURN 999999
 CASE "환상의 소환신 엑조디아"
-	RETURN 자신_MZ_攻:攻撃先 + ライフ_자신
+	攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:攻撃先") + GETVAR(@"ライフ_%듀얼리스트%")
+	RETURN 攻撃力修正
 ENDSELECT
 
-RETURN 자신_MZ_攻:攻撃先
+攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:攻撃先")
+RETURN 攻撃力修正
+
+
+
+
+
+;표시形式の決定
+@ENEMY_RUTIN_POSE(カードID)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 표시形式
+
+#DIM DYNAMIC 상대攻撃力
+#DIM DYNAMIC 상대守備力
+#DIM DYNAMIC カードID
+
+
+CALLFORM CARDNAME_{カードID}("名前")
+SELECTCASE RESULTS
+CASEELSE
+	CALLFORM CARD_{カードID}("攻撃力")
+	상대攻撃力 = RESULT
+	CALLFORM CARD_{カードID}("守備力")
+	상대守備力 = RESULT
+	IF 상대守備力 > 상대攻撃力
+		표시形式 = 守備표시
+	ENDIF
+ENDSELECT
+
+RESULTS = %표시形式%
+RETURN 1

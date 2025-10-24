@@ -7,9 +7,9 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 　　운명
+		RESULTS = 　　운 명　　
 	CASE "略称"
-		RESULTS = 　　운명
+		RESULTS = 　　운 명　　
 	CASE "カテゴリ"
 		RESULTS:0 = 베토벤
 		RESULTS:4 = DUEL MASTERS
@@ -56,14 +56,9 @@ SIF RESULT == 1
 	RETURN 0
 	
 IF 종류 == 攻撃時誘発
-	IF ゾーン == "손패"
-		PRINT
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,64020)
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
@@ -77,7 +72,7 @@ IF 종류 == 攻撃時誘発
 	SIF 戦闘場所(듀얼리스트) == 5
 		RETURN 0
 	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)},"カテゴリ"
-	SIF !MATCH(RESULTS, "ベ-ト-ベン")
+	SIF !MATCH(RESULTS, "베토벤")
 		RETURN 0
 	CALL CARD_DRAW_CHECK
 	RETURN 1
@@ -113,7 +108,7 @@ IF 종류 == 攻撃時誘発
 			ELSE	
 				IF カウンタ < 3
 					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:現選択カード")}, "名前"
-					PRINTFORML 選ばれたカード:"{現選択カード}" %RESULTS%
+					PRINTFORML 선택된 카드:"{現選択カード}" %RESULTS%
 					選択カード:カウンタ = 現選択カード
 					カウンタ ++		
 					GOTO INPUT_HAND_LOOP

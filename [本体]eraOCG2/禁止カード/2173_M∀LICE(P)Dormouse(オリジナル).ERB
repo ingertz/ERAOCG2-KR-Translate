@@ -1,0 +1,156 @@
+﻿@CARDNAME_2173,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = M∀LICE＜P＞Dormouse
+	CASE "略称"
+		RESULTS = Dormouse
+	CASE "カテゴリ"
+		RESULTS:0 = マリス
+ENDSELECT
+
+
+@CARD_2173(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 900
+	CASE "守備力"
+		RETURN 300
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2173(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①③의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 덱에서 「M∀LICE」モンスター１体を제외한다。
+CALLFORM CARD_ABLE(0,攻紋章起動)
+PRINTL このターン、자신 필드의 「M∀LICE」モンスターの攻撃力は６００アップする。
+CALLFORM CARD_ABLE(2,지속효과)
+PRINTL ②：자신 필드에 存在する「M∀LICE」Ｌモンスターは효과では破壊されない。
+CALLFORM CARD_ABLE(3,제외時)
+PRINTL ③：このカードが제외された場合、３００ＬＰを払って발동できる。
+PRINTL このカードを특수소환する。
+PRINTL このターン、자신はＬ몬스터밖에 EX덱에서 특수 소환할 수 없다。
+	RESETCOLOR
+
+
+@CARDSUMMON_AA_2173
+
+
+@CARDCAN_2173(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2173)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,2173)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = マリス
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻紋章起動
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 제외時
+	SIF 발동済_3(듀얼리스트,2173)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 300
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,2173,"제외")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2173(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2173,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件行先플래그 = 제외行き
+		효과条件カテゴリ = マリス
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT
+			CALL CARD_RESERV(듀얼리스트,2173,攻紋章予約)
+	ENDIF
+ELSEIF 종류 == 攻紋章起動
+	CALL FULLRESET
+	효과条件カテゴリ = マリス
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",0,600)
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件종류 = 링크
+	효과条件カテゴリ = マリス
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+ELSEIF 종류 == 제외時
+	CALL CARD_CHOICE(듀얼리스트,종류,"제외",場所,2173,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",300)
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件名前 = M∀LICE＜P＞Dormouse
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+		EX소환可能종류 = 링크
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF
+

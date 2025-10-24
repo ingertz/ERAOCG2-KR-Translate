@@ -209,7 +209,7 @@ RETURN 0
 PRINTL 이 카드명의 카드는 듀얼 중 1장밖에 발동할 수 없다.
 CALLFORM CARD_ABLE(20,마함起動 ,손패起動)
 PRINTL ①: 자신 필드의 카드 전부를 패에 추가한다.
-PRINTL 그 후, 상대에게 [자신의 패의 매수 + 1] × 400 포인트의 데미지를 준다.
+PRINTL 그 후, 상대에게 ［자신의 패의 매수 + 1］× 400 포인트의 데미지를 준다.
 
 @CARDCAN_202780(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -224,15 +224,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0		
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 발동済_D1(듀얼리스트,202780)
 		RETURN 0
 	RETURN 1

@@ -1,0 +1,197 @@
+@CARDNAME_57872,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 석극정의 코스모스터
+	CASE "略称"
+		RESULTS = 석극정
+	CASE "カテゴリ"
+		RESULTS:0 = 코스모스터
+	CASE "検索用カテゴリ"
+		RESULTS:0 = 코스모스 공주
+ENDSELECT
+
+
+@CARD_57872(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1900
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251018
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_57872(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "코스모스터" 몬스터＋미확인족 몬스터 ×２장
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,특수소환時,EX소환時)
+PRINTL ①：이 카드가 특수 소환된 경우에 발동할 수 있다。
+PRINTL 자신의 패 / 묘지에서 레벨９ 이상의 미확인족 몬스터 １장을 특수 소환한다。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 덱에서 "코스모스터" 몬스터 １장을 패에 넣는다。
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ③：자신 필드의 미확인족 몬스터가 상대의 효과로 필드에서 벗어날경우、
+PRINTL 대신에 패 / 필드의 몬스터（융합이외）１장을 파괴할 수 있다。
+
+
+@CARDSUMMON_57872(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 코스모스터
+ELSEIF EX参照 >= 10
+	素材条件종족 = 미확인족
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,57872) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_57872(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,57872)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 특수소환時 || 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,57872)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件종족 = 미확인족
+	CALLFORM 효과条件レベル_ADV(9,"以上")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,57872)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 코스모스터
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	TRYCALLFORM CARD_{破壊대상ID}("종족")
+	SIF !MATCH(RESULT,미확인족)
+		RETURN 0
+	TRYCALLFORM CARD_{破壊대상ID}("종류")
+	SIF RESULT != 융합
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件종류 = 융합以外
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_57872(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 특수소환時 || 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57872,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件종족 = 미확인족
+		CALLFORM 효과条件レベル_ADV(9,"以上")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57872,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 코스모스터
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57872)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件종류 = 융합以外
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

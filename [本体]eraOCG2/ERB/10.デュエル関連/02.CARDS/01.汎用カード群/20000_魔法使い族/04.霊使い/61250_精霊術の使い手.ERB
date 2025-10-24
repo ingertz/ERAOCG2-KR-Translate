@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 정령술의 마스터
+		RESULTS = 정령술의 마스터
 	CASE "略称"
-RESULTS = 정령술의 마스터
+		RESULTS = 정령술의 마스터
 	CASE "カテゴリ"
-RESULTS:0 = 령사
+		RESULTS:0 = 령사
 ENDSELECT
 
 
@@ -23,8 +23,9 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 速攻마법
+	CASE "レア度"
+		RETURN ULR
 ENDSELECT
 
 RETURN 0
@@ -51,19 +52,16 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0		
-		SIF 손패数(듀얼리스트) == 1
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF 손패数(듀얼리스트) == 0
-			RETURN 0
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
 	SIF 발동済_1(듀얼리스트,61250)
 		RETURN 0
 	CALL FULLRESET
@@ -97,13 +95,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		IF RESULT == 1
 			;상대分の카드의 발동処理
 			CUSTOMDRAWLINE —
-PRINTL 패에 넣을 카드
+			PRINTL 패에 넣을 카드
 			CUSTOMDRAWLINE —
 			CALL FULLRESET
 			효과条件カテゴリ = 령사
 			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 			CUSTOMDRAWLINE —
-PRINTL 세트할 카드
+			PRINTL 세트할 카드
 			CUSTOMDRAWLINE —
 			CALL FULLRESET
 			효과条件カテゴリ = 령사
@@ -114,7 +112,7 @@ PRINTL 세트할 카드
 				IF RESULT >= 20
 					CALL CARD_DISPOSE(듀얼리스트,"덱",選択カード,4,1)
 				ELSE 
-PRINTL 공격 표시로 특수 소환하시겠습니까?
+					PRINTL 공격 표시로 특수 소환하시겠습니까?
 					CALL YN_CHOICE(듀얼리스트)
 					IF RESULT == 0
 						CALL FULLRESET

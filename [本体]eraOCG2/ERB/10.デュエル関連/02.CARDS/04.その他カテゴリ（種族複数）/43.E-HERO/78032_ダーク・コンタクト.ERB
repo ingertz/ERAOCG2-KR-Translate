@@ -93,8 +93,6 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択済カード
 ;융합소환
-VARSET 묘지送カード, 35
-VARSET 손패묘지送カード, 35
 
 IF 종류 == 마함起動 || 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78032)
@@ -105,17 +103,31 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		素材範囲묘지 = 1
 		素材範囲제외 = 1
 		CALL FULLRESET
+		효과範囲EX덱 = 1
 		효과条件종류 = 융합
 		효과条件カテゴリ = E-HERO
 		효과条件어둠융합 = 1
-		효과条件소환可 = 1
-		효과条件任意 = 1
-		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
-		選択カード = RESULT
-		IF 選択カード != 9999
-			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
-			CALL FUSSUMMON(듀얼리스트,選択カード,덱行き)
-			IF RESULT == 0
+		효과条件소환可 = 2
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件종류 = 융합
+			효과条件カテゴリ = E-HERO
+			효과条件어둠융합 = 1
+			효과条件소환可 = 2
+			효과条件任意 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+				CALL FUSSUMMON(듀얼리스트,選択カード,덱行き)
+				IF RESULT == 0
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과条件名前 = 다크 퓨전
+					CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+				ENDIF
+			ELSE
 				CALL FULLRESET
 				효과範囲덱 = 1
 				효과条件名前 = 다크 퓨전

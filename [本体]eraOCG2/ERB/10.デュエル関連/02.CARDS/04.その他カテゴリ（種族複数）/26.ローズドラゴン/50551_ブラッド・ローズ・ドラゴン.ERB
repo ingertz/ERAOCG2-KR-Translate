@@ -108,7 +108,7 @@ ELSEIF 종류 == 발동誘発
 	효과範囲EX덱 = 1
 	효과範囲묘지 = 1
 	효과範囲제외 = 1
-효과条件名前 = 블랙 로즈 드래곤
+	효과条件名前 = 블랙 로즈 드래곤
 	효과条件소환可 = 1
 	효과条件特不無視 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -132,16 +132,10 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == EX소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50551)
 	IF RESULT == 0
-		FOR カウンタ, 98, -1, -1
-			SIF GETVAR(@"%듀얼리스트%_묘지:カウンタ") == -1
-				CONTINUE
-			CALL CARD_DISPOSE(듀얼리스트,"묘지",カウンタ,1)
-		NEXT
-		FOR カウンタ, 98, -1, -1
-			SIF GETVAR(@"%対面者%_묘지:カウンタ") == -1
-				CONTINUE
-			CALL CARD_DISPOSE(対面者,"묘지",カウンタ,1)
-		NEXT
+		CALL FULLRESET
+		CALL CARD_HYPER_DISPOSE(듀얼리스트,"묘지",제외行き)
+		CALL FULLRESET
+		CALL CARD_HYPER_DISPOSE(듀얼리스트,"상대묘지",제외行き)
 
 		CALL FULLRESET
 		효과範囲제외 = 1
@@ -150,7 +144,7 @@ IF 종류 == EX소환時
 		효과条件종족 = 식물족
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
-PRINTL 이 카드 이외의 서로의 필드의 카드를 전부 파괴하시겠습니까?
+			PRINTL 이 카드 이외의 서로의 필드의 카드를 전부 파괴하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 		ELSE
 			RESULT = いいえ
@@ -171,7 +165,7 @@ ELSEIF 종류 == 발동誘発
 		효과範囲EX덱 = 1
 		효과範囲묘지 = 1
 		효과範囲제외 = 1
-효과条件名前 = 블랙 로즈 드래곤
+		효과条件名前 = 블랙 로즈 드래곤
 		효과条件任意 = 1
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF

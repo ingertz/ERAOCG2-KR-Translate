@@ -58,15 +58,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -141,7 +135,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 				条件달성:1 ++
 		NEXT
 		IF 条件달성:0 > 0 && 条件달성:1 > 0
-			CALL YN_CHOICE(듀얼리스트,"●상대 몬스터의 공격력을 ダウンさせる","●덱에서 「메가리스」의식몬스터를 의식 소환하는 ")
+			CALL YN_CHOICE(듀얼리스트,"●상대 몬스터의 공격력을 내린다","●덱에서 「메가리스」의식몬스터를 의식 소환한다")
 		ELSEIF 条件달성:0 > 0
 			RESULT = 0
 		ELSEIF 条件달성:1 > 0
@@ -169,7 +163,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 				TRYCALLFORM CARD_{RESULT:99},"レベル"
 				条件レベル = RESULT * 2
 				WHILE 条件レベル > 0
-					PRINTFORMW 必要レベル：{条件レベル}
+					PRINTFORMW 필요 레벨：{条件レベル}
 					CALL FULLRESET
 					효과範囲손패 = 1
 					효과範囲필드 = 1

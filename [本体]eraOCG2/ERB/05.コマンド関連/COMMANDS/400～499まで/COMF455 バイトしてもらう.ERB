@@ -161,10 +161,13 @@ CALL PTJ_SETTINGS(캐릭터_ID,"給与")
 バイト代 = RESULT
 IF バイト代 > 0
 	IF バイト종류 == PT_信徒
-		PRINTFORML 신도 %CALLNAME:캐릭터_ID%는 {バイト代}엔의 상납금을 거두었다。
+		PRINTFORML
+		PRINTFORML 음교의 신도 %CALLNAME:캐릭터_ID%는 {バイト代}엔의 상납금을 거두었다。
 	ELSEIF バイト종류 == PT_착유
+		PRINTFORML
 		PRINTFORML %CALLNAME:캐릭터_ID%는 암컷으로서 가슴을 짜여 번 돈 중、{バイト代}엔을 집에 보내주었다。
 	ELSE
+		PRINTFORML
 		CALL PTJ_SETTINGS(캐릭터_ID,"名前")
 		PRINTFORML %CALLNAME:캐릭터_ID%는 %RESULTS%으로서 일해 얻은 돈 중、{バイト代}엔을 집에 보내주었다。
 	ENDIF
@@ -193,7 +196,7 @@ SIF バイト종류 == 0
 SELECTCASE バイト종류
 CASE PT_바니
 	IF 参照先 == "名前"
-		RESULTS = 바니さん
+		RESULTS = 바니씨
 	ELSEIF 参照先 == "衣装"
 		CALL CLOTHES_SETTING(캐릭터_ID,500)
 		RETURN 1
@@ -214,7 +217,7 @@ CASE PT_바니
 	ENDIF
 CASE PT_메이드
 	IF 参照先 == "名前"
-		RESULTS = デュエル메이드
+		RESULTS = 듀얼 메이드
 	ELSEIF 参照先 == "衣装"
 		CALL CLOTHES_SETTING(캐릭터_ID,501)
 		RETURN 1
@@ -235,7 +238,7 @@ CASE PT_메이드
 	ENDIF
 CASE PT_巫女
 	IF 参照先 == "名前"
-		RESULTS = 巫女さん
+		RESULTS = 무녀씨
 	ELSEIF 参照先 == "衣装"
 		CALL CLOTHES_SETTING(캐릭터_ID,505)
 		RETURN 1
@@ -255,7 +258,7 @@ CASE PT_巫女
 	ENDIF
 CASE PT_편의점
 	IF 参照先 == "名前"
-		RESULTS = 편의점店員
+		RESULTS = 편의점 점원
 	ELSEIF 参照先 == "衣装"
 		CALL CLOTHES_SETTING(캐릭터_ID,506)
 		RETURN 1
@@ -275,7 +278,7 @@ CASE PT_편의점
 	ENDIF
 CASE PT_スーパー
 	IF 参照先 == "名前"
-		RESULTS = スーパー店員
+		RESULTS = 슈퍼 점원
 	ELSEIF 参照先 == "衣装"
 		CALL CLOTHES_SETTING(캐릭터_ID,510)
 		RETURN 1
@@ -295,7 +298,7 @@ CASE PT_スーパー
 	ENDIF
 CASE PT_ジム
 	IF 参照先 == "名前"
-		RESULTS = ジムインストラクター
+		RESULTS = 헬스 트레이너
 	ELSEIF 参照先 == "衣装"
 		;ジャージスタイル
 		CALL CLOTHES_SETTING(캐릭터_ID,406)
@@ -318,7 +321,7 @@ CASE PT_ジム
 	ENDIF
 CASE PT_ファミレス
 	IF 参照先 == "名前"
-		RESULTS = ファミレスバイト
+		RESULTS = 패밀리레스토랑 알바
 	ELSEIF 参照先 == "衣装"
 		;메이드セット
 		CALL CLOTHES_SETTING(캐릭터_ID,501)
@@ -340,9 +343,9 @@ CASE PT_ファミレス
 CASE PT_教会
 	IF 参照先 == "名前"
 		IF TALENT:캐릭터_ID:성별 == 2
-			RESULTS = 신父
+			RESULTS = 신부
 		ELSE
-			RESULTS = シスター
+			RESULTS = 수녀
 		ENDIF
 	ELSEIF 参照先 == "衣装"
 		;（엑소시스터共通）
@@ -365,7 +368,7 @@ CASE PT_教会
 CASE PT_使用人
 	IF 参照先 == "名前"
 		IF TALENT:캐릭터_ID:성별 == 2
-			RESULTS = 執事
+			RESULTS = 집사
 		ELSE
 			RESULTS = 메이드
 		ENDIF
@@ -390,7 +393,7 @@ CASE PT_使用人
 	ENDIF
 CASE PT_グラビア
 	IF 参照先 == "名前"
-		RESULTS = グラビアモデル
+		RESULTS = 그라비아 모델
 	ELSEIF 参照先 == "衣装"
 		;수영복セット欲しい
 		RETURN -1
@@ -442,7 +445,7 @@ CASE PT_착유
 	ENDIF
 CASE PT_信徒
 	IF 参照先 == "名前"
-		RESULTS = 음교의신도
+		RESULTS = 음교의 신도
 	ELSEIF 参照先 == "衣装"
 		CALL CLOTHES_SETTING(캐릭터_ID,114)
 		RETURN 1
@@ -460,7 +463,7 @@ CASE PT_信徒
 	ENDIF
 CASE PT_エロ配信者
 	IF 参照先 == "名前"
-		RESULTS = エロ配信者
+		RESULTS = 에로 방송인
 	ELSEIF 参照先 == "衣装"
 		RETURN -1
 	ELSEIF 参照先 == "行先"

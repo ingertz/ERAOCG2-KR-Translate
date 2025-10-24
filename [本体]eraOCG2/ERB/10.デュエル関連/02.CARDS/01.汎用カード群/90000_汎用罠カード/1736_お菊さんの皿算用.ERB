@@ -60,10 +60,11 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF ゾーン != "마함"
+	;ゾーン処理も설정済み
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 2
-		RETURN 0
+
 	RETURN 1
 
 ELSEIF 종류 == 발동誘発
@@ -121,7 +122,7 @@ ELSEIF 종류 == 발동誘発
 	IF RESULT == 0
 		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",効後_カウンタ)
 		PRINTL
-		PRINTFORML ──접시가{GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}장~……
+		PRINTFORML ──접시가 {GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}장~……
 		PRINTW
 		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"効済",0,1)
 	ENDIF

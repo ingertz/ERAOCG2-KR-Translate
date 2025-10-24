@@ -1,0 +1,160 @@
+﻿@CARDNAME_50852,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 크리스탈클리어윙 오버 싱크로 드래곤
+	CASE "略称"
+		RESULTS = ＣrsＣＷＳОＳＤ
+	CASE "カテゴリ"
+		RESULTS:0 = 싱크로 드래곤
+		RESULTS:1 = 싱크로
+ENDSELECT
+
+
+@CARD_50852(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 3500
+	CASE "守備力"
+		RETURN 3000
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251019
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50852(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 12
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件名前 = 클리어윙 싱크로 드래곤
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,50852) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50852(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 튜너＋"클리어윙 싱크로 드래곤"
+PRINTL 이 카드는 S소환으로밖에 특수 소환할 수 없다。
+
+CALLFORM CARD_ABLE(10,발동誘発)
+PRINTL ①：１턴에 １번、다른 효과가 발동했을 때에 발동할 수 있다。
+PRINTL 그 발동을 무효로 하고 파괴하고、이 카드의 공격력은 턴 종료시까지、３０００오른다。
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ②：S소환한 앞면 표시의 이 카드가 상대에 의해 필드에서 벗어난 경우에 발동할 수 있다。
+PRINTL EX덱에서 "클리어윙" S몬스터 １장을 S소환 취급으로 특수 소환한다。
+
+@CARDCAN_50852(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50852)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種EX덱
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+    효과条件カテゴリ = 클리어윙
+	효과条件종류 = 싱크로
+	효과条件소환可 = 2
+	효과条件特不無視 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_50852(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 戦闘カード
+#DIM DYNAMIC 対戦カード
+#DIM DYNAMIC 소환カード
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50852,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",3000)
+	ENDIF
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50852)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 클리어윙
+		효과条件종류 = 싱크로
+		효과条件特不無視 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		소환カード = RESULT
+		IF 소환カード != 9999
+			CALL FULLRESET
+			CALL CARD_EX_SUMMON(듀얼리스트, "EX덱", 소환カード)
+		ENDIF
+	ENDIF
+ENDIF

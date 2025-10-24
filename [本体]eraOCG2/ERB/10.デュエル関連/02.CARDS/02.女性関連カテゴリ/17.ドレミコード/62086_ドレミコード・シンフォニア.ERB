@@ -55,15 +55,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,62086)
 		RETURN 0
 	CALL FULLRESET
@@ -71,7 +65,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	효과範囲필드 = 1
 	효과条件종류 = モン全般
 	효과条件カテゴリ = 도레미코드
-	효과条件固名前起動 = 1
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
 	효과条件표시 = 表側표시
 	효과条件CNT = 1	
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -102,24 +96,24 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		도레미코드数 = RESULT
 		IF 도레미코드数 >= 3
-			PRINTFORMW 序章……
+			PRINTFORMW 서장……
 			PRINTFORMW """Solfachord Trio！"""
-			PRINTFORMW 도레미코드たちは楽器の妖精を呼び出し、각각 고무の演奏を始めた。
+			PRINTFORMW 도레미코드들은 악기의 요정을 불러내어、각각 고무의 연주를 시작했다.
 		ENDIF
 		IF 도레미코드数 >= 5
-			PRINTFORMW 第二章……！
+			PRINTFORMW 제 2장……！
 			PRINTFORMW """""Solfachord La Quintet""""""
-			PRINTFORMW 遅れてきた二人が合流し、５人組で浄化の演奏を奏でた。
+			PRINTFORMW 늦게온 두 사람이 합류하여 5인조로 정화의 연주를 시작했다.
 			CALL FULLRESET
 			효과範囲상대필드 = 1
-효과範囲상대마함 = 1
-CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 			CALL CARDDRAW_BASIC(듀얼리스트,1)
 		ENDIF
 		IF 도레미코드数 >= 7
-			PRINTFORMW 最終組曲……！！
+			PRINTFORMW 최종조곡……！！
 			PRINTFORMW """""""Solfachord... La Orchestra！！"""""""
-			PRINTFORMW 場にそろったドレミ界の天使たちが幸せの多重奏を奏でると、天上界の扉が開かれた！
+			PRINTFORMW 필드에 모인 도레미계의 천사들이 행복의 다중주를 연주하니、천상계의 문이 열렸다！
 			IF モンスター数(듀얼리스트) < 5
 				CALL FULLRESET
 				효과範囲EX덱 = 1
@@ -128,7 +122,7 @@ CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 			ELSE
 				PRINTFORML
-				PRINTFORMW （席に空きが無いことを知ると、扉は静かに閉じられた）
+				PRINTFORMW （자리에 빈자리가 없다는 것을 알게 되자、문은 조용히 닫혔다）
 			ENDIF
 		ENDIF
 		CALL FULLRESET

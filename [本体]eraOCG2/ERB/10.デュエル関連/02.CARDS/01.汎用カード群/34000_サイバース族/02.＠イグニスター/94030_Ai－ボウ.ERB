@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = Ai－보
+		RESULTS = Ai－보
 	CASE "略称"
-RESULTS = Ai－보
+		RESULTS = Ai－보
 	CASE "カテゴリ"
-RESULTS:0 = Ai
+		RESULTS:0 = Ai
 ENDSELECT
 
 
@@ -63,10 +63,11 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,94030)
 		RETURN 0
-	SIF ゾーン != "마함"
+	;ゾーン処理も설정済み
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 2
-		RETURN 0
+
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件元固攻撃力 = 2300
@@ -86,10 +87,11 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 ELSEIF 종류 == 발동誘発
 	SIF 발동済_1(듀얼리스트,94030)
 		RETURN 0
-	SIF ゾーン != "마함"
+	;ゾーン処理も설정済み
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 2
-		RETURN 0
+
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件元固攻撃力 = 2300

@@ -44,7 +44,7 @@ CALLFORM CARD_ABLE(2,묘지起動)
 PRINTL ②: 자신 메인 페이즈에 묘지의 이 카드를 제외하고,
 PRINTL 자신 필드의 앞면 표시 몬스터 1장을 대상으로 하여 발동할 수 있다.
 PRINTL 대상의 몬스터를 주박하고, 덱에서 "링크 조커" 마법 / 함정 카드 1장을 패에 더한다.
-
+CALL PRINT_VLOCKTEXT
 
 
 @CARDCAN_73871(듀얼리스트,종류,ゾーン,場所)
@@ -61,15 +61,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,73871)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
 	CALL FULLRESET

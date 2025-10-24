@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 에너미 컨트롤러
+		RESULTS = 에너미 컨트롤러
 	CASE "略称"
-RESULTS = 에네콘
+		RESULTS = 에네콘
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -56,15 +56,9 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	RETURN 1
 ENDIF
 
@@ -85,10 +79,10 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		IF 듀얼리스트 == "자신"
-PRINTL 손패를 1장 버리고 상대 필드의 몬스터의 컨트롤을 얻겠습니까?
-PRINTL [0] - 예
-PRINTL [1] - 아니요
-PRINTL [3] - 1000 라이프 지불, 커맨드 입력!
+			PRINTL 패를 1장 버리고 상대 필드의 몬스터의 컨트롤을 얻겠습니까?
+			PRINTL [0] - 예
+			PRINTL [1] - 아니요
+			PRINTL [3] - 1000 라이프 지불, 커맨드 입력!
 			INPUT
 		ELSE
 			RESULT = いいえ
@@ -153,13 +147,13 @@ PRINTL [3] - 1000 라이프 지불, 커맨드 입력!
 			PRINTBUTTON "(C)",7
 			PRINTL
 			PRINTL
-PRINTL [100] - 입력하지 않고 되돌아가기
+			PRINTL [100] - 입력하지 않고 되돌아가기
 			BINPUT
 			IF INRANGE(RESULT,1,9)
 				入力커맨드:入力カウンタ = RESULT
 				入力カウンタ ++
 				IF 入力カウンタ >= 11
-PRINTL 입력에 실패했습니다
+					PRINTL 입력에 실패했습니다
 					RETURN 0
 				ENDIF
 			ELSEIF RESULT == 10
@@ -169,11 +163,11 @@ PRINTL 입력에 실패했습니다
 				RETURN 0
 			ENDIF
 			IF 入力커맨드:0 == 2 && 入力커맨드:1 == 3 && 入力커맨드:2 == 5 && 入力커맨드:3 == 6
-				PRINTFORML この커맨드により！　상대 필드의 몬스터를 リリースする！
+				PRINTFORML 이 커맨드에 의해！　상대 필드의 몬스터를 릴리스 한다！
 				CALL FULLRESET
 				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"リリース")
 			ELSEIF 入力커맨드:0 == 1 && 入力커맨드:1 == 2 && 入力커맨드:2 == 4 && 入力커맨드:3 == 3 && 入力커맨드:4 == 5
-				PRINTFORML この커맨드により！　상대 필드의 몬스터를 破壊する！
+				PRINTFORML 이 커맨드에 의해！　상대 필드의 몬스터를 파괴한다！
 				CALL FULLRESET
 				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
 			ELSEIF 入力커맨드:0 == 5 && 入力커맨드:1 == 7 && 入力커맨드:2 == 3
@@ -182,7 +176,13 @@ PRINTL 입력에 실패했습니다
 				PRINTFORML 
 				PRINTFORML 
 			ELSEIF 入力커맨드:0 == 1 && 入力커맨드:1 == 1 && 入力커맨드:2 == 4 && 入力커맨드:3 == 4 && 入力커맨드:4 == 2 && 入力커맨드:5 == 3 && 入力커맨드:6 == 2 && 入力커맨드:7 == 3 && 入力커맨드:8 == 5 && 入力커맨드:9 == 6
-				PRINTFORML この커맨드により！　자신 필드의 몬스터 １장は完全な내성을 得る！
+				PRINTFORML 이 커맨드에 의해！　자신 필드의 몬스터 １장은 완전한 내성을……앗……
+				CALL FULLRESET
+				효과範囲필드 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"リリース")
+				PRINTFORML 마지막에 실패했다……
+			ELSEIF 入力커맨드:0 == 1 && 入力커맨드:1 == 1 && 入力커맨드:2 == 4 && 入力커맨드:3 == 4 && 入力커맨드:4 == 2 && 入力커맨드:5 == 3 && 入力커맨드:6 == 2 && 入力커맨드:7 == 3 && 入力커맨드:8 == 6 && 入力커맨드:9 == 5
+				PRINTFORML 이 커맨드에 의해！　자신 필드의 몬스터 １장은 완전한 내성을 얻는다！
 				CALL FULLRESET
 				CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)
 				選択カード = RESULT
@@ -192,7 +192,7 @@ PRINTL 입력에 실패했습니다
 					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"モ耐",2,1)
 				ENDIF
 			ELSEIF 入力커맨드:0 == 3 && 入力커맨드:1 == 2 && 入力커맨드:2 == 4 && 入力커맨드:3 == 1 && 入力커맨드:5 == 5  && 入力커맨드:6 == 6
-				PRINTFORML この커맨드により！　자신 필드의 몬스터 １장は残機が増える！
+				PRINTFORML 이 커맨드에 의해！　자신 필드의 몬스터 １장은 잔기가 늘어난다！
 				CALL FULLRESET
 				CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)
 				選択カード = RESULT
@@ -200,7 +200,7 @@ PRINTL 입력에 실패했습니다
 					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一破",2,1)
 				ENDIF
 			ELSEIF 入力커맨드:0 == 3 && 入力커맨드:1 == 4 && 入力커맨드:2 == 3 && 入力커맨드:3 == 7
-				PRINTFORML 昇룡拳！！　（자신의 몬스터 １장을 패로 되돌리고、상대 몬스터를 破壊する）
+				PRINTFORML 승룡권！！　（자신의 몬스터 １장을 패로 되돌리고、상대 몬스터를 파괴한다）
 				CALL FULLRESET
 				효과条件行先플래그 = 손패行き
 				CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)

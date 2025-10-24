@@ -23,6 +23,8 @@ NEXT
 IF 화상持ち < 100 && オプション_화상のみ >= 1
 	オプション_화상のみ = 0
 ENDIF
+SIF 禁止_등장작품:0 == ""
+	VARSET 禁止_등장작품, "NG"
 
 CUSTOMDRAWLINE ―
 PRINTL OPTION:부가기능
@@ -75,41 +77,46 @@ PRINTFORM [{9,2}] %"자연임신",40,LEFT%
 CALL OPTION_ON_OFF(オプション_自然임신)
 PRINTL
 
-PRINTFORM [{60,2}] %"외부 캐릭터가 방랑하지 않음",40,LEFT% 
+PRINTFORM [{10,2}] %"외부 캐릭터가 방랑하지 않음",40,LEFT% 
 CALL OPTION_ON_OFF(オプション_외부자放浪)
 PRINTL
-PRINTFORM [{61,2}] %"팩으로 캐릭터 입수를 중지",40,LEFT% 
+PRINTFORM [{11,2}] %"팩으로 캐릭터 입수를 중지",40,LEFT% 
 CALL OPTION_ON_OFF(オプション_パック취득止)
 PRINTL
 
-PRINTFORM [{62,2}] %"전자동으로 일/학교에 갈 시간",40,LEFT% 
+PRINTFORM [{12,2}] %"전자동으로 일/학교에 갈 시간",40,LEFT% 
 CALL OPTION_ON_OFF(オプション_自動通勤)
 PRINTL
 
 IF 화상持ち >= 100
-	PRINTFORM [{63,2}] %"화상을 가진 캐릭터만 나오도록 한다",40,LEFT% 
+	PRINTFORM [{13,2}] %"화상을 가진 캐릭터만 나오도록 한다",40,LEFT% 
 	CALL OPTION_ON_OFF(オプション_화상のみ)
 ELSE
 	SETCOLOR C_GRAY
-	PRINTFORM <{63,2}> %"화상을 가진 캐릭터만 나오도록 한다(화상이 100장 없기 때문에 자동 OFF)",40,LEFT% 
+	PRINTFORM <{13,2}> %"화상을 가진 캐릭터만 나오도록 한다(화상이 100장 없기 때문에 자동 OFF)",40,LEFT% 
 	RESETCOLOR
 ENDIF
 PRINTL
 
+PRINTFORM [{15,2}] %"외부작품의 제한",40,LEFT%
 PRINTL
+
+PRINTL
+PRINTL ――【듀얼계 옵션】――――――――――
+PRINTFORML [{40,2}] %"듀얼 옵션",40,LEFT% 
+PRINTL
+
 PRINTL ――【구상계설정】―――――――――――――――
-PRINTFORML [{10,2}] %"범용구상 설정 관리",40,LEFT% 
-PRINTFORM [{11,2}] %"첫대면 구상 설정",40,LEFT% 
+PRINTFORML [{50,2}] %"범용구상 설정 관리",40,LEFT% 
+PRINTFORM [{51,2}] %"첫대면 구상 설정",40,LEFT% 
 CALL OPTION_ON_OFF(オプション_初回구상설정)
 PRINTL
-PRINTFORML [{12,2}] %"텍스트 설정",40,LEFT%
-PRINTFORML [{13,2}] %"구상 디버깅",40,LEFT%
+PRINTFORML [{52,2}] %"텍스트 설정",40,LEFT%
+PRINTFORML [{53,2}] %"구상 디버깅",40,LEFT%
 PRINTL 
-PRINTL ――【듀얼 옵션】――――――――――
-PRINTFORML [{40,2}] %"듀얼 옵션",40,LEFT% 
-PRINTL 
+
 PRINTL ――【그 외 설정】―――――――――――――――
-PRINTFORML [{21,2}] %"명령 필터",40,LEFT%
+PRINTFORML [{21,2}] %"커맨드 필터",40,LEFT%
 PRINTFORM [{22,2}] %"소모품 자동 구매",40,LEFT% 
 CALL OPTION_ON_OFF(FLAG:2001)
 PRINTL
@@ -119,13 +126,18 @@ PRINTL
 PRINTFORM [{24,2}] %"TIPS 설정",40,LEFT% 
 CALL OPTION_ON_OFF(オプション_TIPS)
 PRINTL
+
+
+
 PRINTFORM [{26,2}] %"게임 모드 변경",40,LEFT% 
 IF FLAG:게임모드 == 0
 	PRINTL 【프리 모드】
 ELSEIF FLAG:게임모드 == 1
 	PRINTL 【스토리 모드】
 ENDIF
-PRINTFORM [{29,2}] %"개시시 업데이트",41,LEFT%
+PRINTL
+
+PRINTFORM [{30,2}] %"개시시 업데이트",40,LEFT%
 CALL OPTION_ON_OFF(オプション_開UPD)
 PRINTL 
 
@@ -134,17 +146,18 @@ PRINTL
 
 
 PRINTFORML [{90,2}] %"주인공 상세 설정",40,LEFT%
-PRINTFORML [{27,2}] %"캐릭터 CSV 생성",40,LEFT%
-PRINTFORML [{28,2}] %"캐릭터 소질 리셋",40,LEFT%
-PRINTFORML [{85,2}] %"업데이트",40,LEFT%
+PRINTFORML [{91,2}] %"캐릭터 CSV 생성",40,LEFT%
+PRINTFORML [{92,2}] %"캐릭터 소질 리셋",40,LEFT%
+PRINTL
+PRINTFORML [{95,2}] %"업데이트",40,LEFT%
 
 
 
 PRINTL 
 CUSTOMDRAWLINE ―
 PRINTL
-PRINTFORML [ 0] 결정한다　　　　　　　　　　　　　　[{91,2}] %"추천 설정으로 한다"%
-BINPUT
+PRINTFORML [ 0] 결정한다　　　　　　　　　　　　　　[{100,2}] %"추천 설정으로 한다"%
+INPUT
 SELECTCASE RESULT
 	CASE 0
 		PRINTW 돌아간다
@@ -222,10 +235,10 @@ SELECTCASE RESULT
 			INPUT
 			IF RESULT >= 500 && RESULT <= 9999 
 				限界値_尻AWS = (RESULT*10)
-				PRINTFORML 한계지를{(限界値_尻AWS)/10}mm로 설정했습니다
+				PRINTFORML 한계지를 {(限界値_尻AWS)/10}mm로 설정했습니다
 				GOTO INPUT_LOOP_BOOB2
 			ELSEIF RESULT == 0
-				PRINTW 엉덩이설정으로 돌아갑니다
+				PRINTW 엉덩이 설정으로 돌아갑니다
 				GOTO INPUT_LOOP_BOOB
 			ELSEIF RESULT == 1
 				限界値_尻AWS = 0　
@@ -267,25 +280,30 @@ SELECTCASE RESULT
 		PRINTFORMW 임신에 「영혼의 카드」를 필요로 하지 않고、하루가 끝날 때 자연스럽게 임신하게 됩니다。
 		オプション_自然임신 ^= 1
 
+	CASE 10
+		オプション_외부자放浪 ^= 1
+	CASE 11
+		オプション_パック취득止 ^= 1
+	CASE 12
+		オプション_自動通勤 ^= 1		
+	CASE 13
+		オプション_화상のみ ^= 1	
+	CASE 15
+		CALL RESTRICT_WORLD
+
+
 	CASE 40
 		CALL OPTION_DUEL
 
-	CASE 60
-		オプション_외부자放浪 ^= 1
-	CASE 61
-		オプション_パック취득止 ^= 1
-	CASE 62
-		オプション_自動通勤 ^= 1		
-	CASE 63
-		オプション_화상のみ ^= 1	
-	CASE 10
+	CASE 50
 		CALL MONSTER_LIST(30)
-	CASE 11
+	CASE 51
 		オプション_初回구상설정 ^= 1
-	CASE 12
+	CASE 52
 		CALL OPTION_TEXT_SETTING
-	CASE 13
+	CASE 53
 		CALL OPTION_KOJO_DEBUG
+
 
 	CASE 21
 		CALL OPTION_COMMAND_FILTER
@@ -298,20 +316,23 @@ SELECTCASE RESULT
 
 	CASE 26
 		FLAG:게임모드 ^= 1
-	CASE 27
-		CALL MONSTER_LIST(16)
-	CASE 28
-		CALL RESET_CHARA_TALENT
-	CASE 29
+	CASE 30
 		オプション_開UPD ^= 1
 
 
-	CASE 85
-		CALL UPDATE_CHARA
-		CALL UPDATES(FLAG:게임모드)
 	CASE 90
 		CALL MASTER_OPTION_SET
+
 	CASE 91
+		CALL MONSTER_LIST(16)
+	CASE 92
+		CALL RESET_CHARA_TALENT
+
+		CASE 95
+		CALL UPDATE_CHARA
+		CALL UPDATES(FLAG:게임모드)
+
+	CASE 100
 		CALL OPTION_OSUSUME
 
 	CASE 8888
@@ -382,6 +403,10 @@ PRINTL
 PRINTFORM [{11,2}] %"데스티니 드로우를 사용하지 않는다",40,LEFT%
 CALL OPTION_ON_OFF(オプション_運命引き)
 PRINTL
+;Anonym추가
+PRINTFORM [{12,2}] %"하루의 끝에 NPC의 레이트 변동을 확인",40,LEFT%
+CALL OPTION_ON_OFF(オプション_NPCレート戦)
+PRINTL
 
 CUSTOMDRAWLINE ―
 PRINTL
@@ -418,6 +443,8 @@ SELECTCASE RESULT
 		オプション_デュエル中待機メッセージ ^= 1
 	CASE 11
 		オプション_運命引き ^= 1
+	CASE 12
+		オプション_NPCレート戦 ^= 1
 
 ENDSELECT
 
@@ -465,24 +492,33 @@ ENDIF
 
 ;文字列変数に보존してみた
 @OPTION_COMMAND_FILTER
-VARSET LOCAL
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択データ
+#DIM DYNAMIC 설정コマンド,1000
+#DIMS DYNAMIC 確認数値
 
+VARSET 설정コマンド
 
-FOR COUNT,0,500
-	LOCALS = /{COUNT}/
-	SIF STRCOUNT(SAVESTR:0,LOCALS)
-		LOCAL:COUNT = 1
+FOR カウンタ,0,500
+	確認数値 = /{カウンタ}/
+	SIF STRCOUNT(SAVESTR:0,確認数値)
+		설정コマンド:カウンタ = 1
 NEXT
 SIF SAVESTR:0 == ""
 	SAVESTR:0 = /
+	
+;CUSTOMDRAWLINE —
+;PRINTFORML 確認数値 : %確認数値%
+;PRINTFORML SAVESTR: %SAVESTR:0%
 CUSTOMDRAWLINE —
 TFLAG:100 = 1
-FOR COUNT,0,500
-	LOCALS = /{COUNT}/
-	SIF STRCOUNT(SAVESTR:0,LOCALS)
+FOR カウンタ,0,500
+	確認数値 = /{カウンタ}/
+	SIF STRCOUNT(SAVESTR:0,確認数値)
 		SETCOLOR C_GRAY
-	SIF STRLENS(TRAINNAME:COUNT)
-		PRINTFORMC %TRAINNAME:COUNT%[{COUNT,3}]
+
+	SIF STRLENS(TRAINNAME:カウンタ)
+		PRINTFORMC %TRAINNAME:カウンタ%[{カウンタ,3}]
 	RESETCOLOR
 NEXT
 TFLAG:100 = 0
@@ -491,26 +527,28 @@ CUSTOMDRAWLINE —
 PRINTL 　[1000] - 결정　　　　　　　　　 　[1001] - 리셋
 PRINTL 　[1002] - 커맨드 필터 저장  　     [1003] - 커맨드 필터 로드
 PRINTL 　[1010] - SM필터   　　　　　　 　[1011] - Ｖ필터
-INPUT
+BINPUT
+
 IF RESULT == 1000
 	RETURN 0
 ELSEIF RESULT == 1001
 	SAVESTR:0 = 
 	RESTART
+;コマンド필터ーのセーブ
 ELSEIF RESULT == 1002
 	$INPUT_LOOP_SAVE
 	LOADGLOBAL
-	FOR LOCAL,0,3
-		PRINTFORM [{LOCAL}] - 
-		IF STRLENS(GLOBALS:(LOCAL * 2 + 1))
-			PRINTFORML [%GLOBALS:(LOCAL * 2 + 1)%]
+	FOR カウンタ,0,3
+		PRINTFORM [{カウンタ}] - 
+		IF STRLENS(GLOBALS:(カウンタ * 2 + 1))
+			PRINTFORML [%GLOBALS:(カウンタ * 2 + 1)%]
 		ELSE
 			PRINTL ----------
 		ENDIF
 	NEXT
 	PRINTL [100] - 돌아가다
 	INPUT
-	LOCAL = RESULT
+	選択データ = RESULT
 	IF RESULT == 100
 		RESTART
 	ELSEIF RESULT < 0 || RESULT > 2
@@ -520,18 +558,20 @@ ELSEIF RESULT == 1002
 		PRINTFORML 【%GLOBALS:(RESULT * 2 + 1)%】 이 데이터에 덮어씁니다
 	PRINTL 커맨드 필터의 이름을 등록해 주세요
 	INPUTS
-	GLOBALS:(LOCAL * 2 + 1) = %RESULTS%
-	GLOBALS:(LOCAL * 2) = %SAVESTR:0%
-	PRINTFORMW 커맨드 필터【%GLOBALS:(LOCAL * 2 + 1)%】을 등록했습니다
+	GLOBALS:(選択データ * 2 + 1) = %RESULTS%
+	GLOBALS:(選択データ * 2) = %SAVESTR:0%
+	PRINTFORMW 커맨드 필터【%GLOBALS:(選択データ * 2 + 1)%】을 등록했습니다
 	SAVEGLOBAL
 	RESTART
+
+	;コマンド필터ーのロード
 ELSEIF RESULT == 1003
 	$INPUT_LOOP_LOAD
 	LOADGLOBAL
-	FOR LOCAL,0,3
-		PRINTFORM [{LOCAL}] - 
-		IF STRLENS(GLOBALS:(LOCAL * 2 + 1))
-			PRINTFORML [%GLOBALS:(LOCAL * 2 + 1)%]
+	FOR カウンタ,0,3
+		PRINTFORM [{カウンタ}] - 
+		IF STRLENS(GLOBALS:(カウンタ * 2 + 1))
+			PRINTFORML [%GLOBALS:(カウンタ * 2 + 1)%]
 		ELSE
 			PRINTL ----------
 		ENDIF
@@ -548,30 +588,29 @@ ELSEIF RESULT == 1003
 	RESTART
 ;各種필터
 ELSEIF RESULT == 1010 || RESULT == 1011
-	FOR COUNT,0,500
+	FOR カウンタ,0,500
 		;SM
 		IF RESULT == 1010
-			SIF (COUNT >= 100 && COUNT < 120) || (COUNT >= 140 && COUNT < 160)
-				LOCAL:COUNT = 1
+			SIF (カウンタ >= 100 && カウンタ < 120) || (カウンタ >= 140 && カウンタ < 160)
+				설정コマンド:カウンタ = 1
 		;V
 		ELSEIF RESULT == 1011
-			SIF COUNT == 3 || COUNT == 44 || COUNT == 60 || COUNT == 61 || COUNT == 65 || COUNT == 67 || COUNT == 68 || COUNT == 71 || COUNT == 122|| COUNT == 141 || COUNT == 143 || COUNT == 185 || COUNT == 53 || COUNT == 54
-				LOCAL:COUNT = 1
+			SIF カウンタ == 3 || カウンタ == 44 || カウンタ == 60 || カウンタ == 61 || カウンタ == 65 || カウンタ == 67 || カウンタ == 68 || カウンタ == 71 || カウンタ == 122|| カウンタ == 141 || カウンタ == 143 || カウンタ == 185 || カウンタ == 53 || カウンタ == 54
+				설정コマンド:カウンタ = 1
 		ENDIF
 	NEXT
 ELSEIF STRLENS(TRAINNAME:RESULT)
-	;PRINTFORML RESULT:{RESULT}
-	LOCAL:RESULT = !LOCAL:RESULT
+	설정コマンド:RESULT = !설정コマンド:RESULT
 ELSE
 	RESTART
 ENDIF
 SAVESTR:0 = /
-FOR COUNT,0,500
-	SIF !LOCAL:COUNT
+FOR カウンタ,0,500
+	SIF !설정コマンド:カウンタ
 		CONTINUE
-	LOCALS = /{COUNT}/
-	SIF !STRCOUNT(SAVESTR:0,LOCALS)
-		SAVESTR:0 = %SAVESTR:0%{COUNT}/
+	確認数値 = /{カウンタ}/
+	SIF !STRCOUNT(SAVESTR:0,確認数値)
+		SAVESTR:0 = %SAVESTR:0%{カウンタ}/
 NEXT
 RESTART
 
@@ -978,20 +1017,25 @@ RESTART
 
 アップデート処理 = 1
 
-FOR カウンタ,0,100
-	IF 依頼_完了횟수:カウンタ >= 1 && 게임모드 == 1
-		TRYCALLFORM IRAI_REWARD_{カウンタ}
-	ELSEIF 게임모드 == 0
+FOR カウンタ,0,1000
+	IF 依頼_完了횟수:カウンタ >= 1
 		TRYCALLFORM IRAI_REWARD_{カウンタ}
 	ENDIF
 NEXT
 
-
-
-
-SIF 依頼_完了횟수:472 == 1 || 게임모드 == 1
-	CALL CARD_PACK_RELEASE(95)
 アップデート処理 = 0
+
+;不具合があったのでこちらを
+FOR 캐릭터_ID,1,CHARANUM
+	IF EXISTCSV(NO:캐릭터_ID)
+		CSTR:캐릭터_ID:등장작품 = %CSVCSTR(NO:캐릭터_ID,10)%
+	ELSE
+		CSTR:캐릭터_ID:등장작품 = 
+	ENDIF
+NEXT
+
+SIF 禁止_등장작품:0 == ""
+	VARSET 禁止_등장작품, "NG"
 
 ;Anonym추가
 FOR カウンタ,1000,100000
@@ -1030,8 +1074,6 @@ FOR 캐릭터_ID,0,CHARANUM
 		CONTINUE
 	SIF CFLAG:캐릭터_ID:신장초기치 < 1 || CFLAG:캐릭터_ID:가슴초기치 < 1 || CFLAG:캐릭터_ID:몸무게초기치 < 1 || CFLAG:캐릭터_ID:엉덩이초기치 < 1
 		CALL SET_BODYSIZE(캐릭터_ID)
-	SIF CFLAG:캐릭터_ID:듀얼레이트 == 0 && TALENT:캐릭터_ID:듀얼리스트 >= 1
-		CFLAG:캐릭터_ID:듀얼레이트 = 4000
 NEXT
 
 
@@ -1048,4 +1090,75 @@ NEXT
 게임진행度:4 = MAX(게임진행度_4, 게임진행度:4)
 게임진행度:5 = MAX(게임진행度_5, 게임진행度:5)
 
+
+@RESTRICT_WORLD
+#DIM DYNAMIC 설정オプション
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択データ
+#DIMS DYNAMIC 選択ワード,1000
+#DIMS DYNAMIC 確認数値
+#DIM DYNAMIC 選択数値
+#DIM DYNAMIC 설정数値
+
+SIF 禁止_등장작품:0 == ""
+	VARSET 禁止_등장작품, "NG"
+$INPUT_LOOP
+VARSET カウンタ
+VARSET 選択ワード
+CUSTOMDRAWLINE —
+PRINTFORML 　■ 작품 필터
+CUSTOMDRAWLINE —
+FOR 캐릭터_ID,0,CHARANUM
+	SIF GROUPMATCH(CSTR:캐릭터_ID:등장작품,"","/")
+		CONTINUE
+	SIF MATCH(選択ワード, CSTR:캐릭터_ID:등장작품)
+		CONTINUE	
+	SIF カウンタ == 0 && カウンタ % 3 == 1
+		PRINTL
+
+	選択ワード:カウンタ = %CSTR:캐릭터_ID:등장작품%
+
+	SIF MATCH(禁止_등장작품, 選択ワード:カウンタ)
+		SETCOLOR C_GRAY
+	PRINTFORM [{カウンタ,3}] - %選択ワード:カウンタ,40,LEFT%
+	RESETCOLOR
+	カウンタ ++
+NEXT
+PRINTL
+;CUSTOMDRAWLINE —
+FOR カウンタ,0,20
+	SIF 禁止_등장작품:カウンタ == ""
+		CONTINUE
+;	PRINTFORM 【{カウンタ,2}】%禁止_등장작품:カウンタ%,
+NEXT
+PRINTL
+설정数値 = FINDELEMENT(禁止_등장작품, "NG")
+;PRINTFORML FINDELEMENT설정数値:{설정数値}
+
+CUSTOMDRAWLINE —
+PRINTL 　[1000] - 결정　　　　　　　　　 　[1001] - 리셋
+PRINTL 
+
+BINPUT
+IF RESULT == 1000
+	RETURN 0
+ELSEIF RESULT == 1001
+	VARSET 禁止_등장작품, "NG"
+	GOTO INPUT_LOOP
+ELSE
+	選択数値 = RESULT
+	FOR カウンタ,0,200
+		SIF 禁止_등장작품:カウンタ != 選択ワード:選択数値
+			CONTINUE
+		ARRAYREMOVE 禁止_등장작품, カウンタ, 1
+		禁止_등장작품:(VARSIZE("禁止_등장작품")-1) = "NG"
+		GOTO INPUT_LOOP
+	NEXT
+
+	IF 설정数値 != -1
+		禁止_등장작품:설정数値 = %選択ワード:選択数値%
+	ENDIF
+	GOTO INPUT_LOOP
+ENDIF
 

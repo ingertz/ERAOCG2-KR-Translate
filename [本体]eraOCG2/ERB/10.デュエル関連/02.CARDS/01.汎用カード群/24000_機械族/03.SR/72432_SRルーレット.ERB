@@ -1,0 +1,126 @@
+﻿@CARDNAME_72432,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = SR 룰렛
+	CASE "略称"
+		RESULTS = SR 룰렛
+	CASE "カテゴリ"
+		RESULTS:0 = 스피드로이드
+ENDSELECT
+
+
+@CARD_72432(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251019
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_72432(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+;PRINTL ①：손패から바람속성モンスター１장을 묘지로 보내고 발동할 수 있다。
+PRINTL ①：패를 １장 버리고 발동할 수 있다。
+PRINTL 덱에서 레벨３ 이하의 "스피드로이드" 몬스터 １장을 특수 소환한다。
+PRINTL 자신 필드 / 묘지에 "클리어윙" 몬스터가 존재하는 경우、
+PRINTL 추가로 덱에서 "스피드로이드" 몬스터 １체를 특수 소환할 수 있다。
+PRINTL 이 효과의 발동 후、턴 종료 시까지 자신은 바람 속성 몬스터밖에 특수 소환할 수 없다。
+
+
+
+
+@CARDCAN_72432(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72432)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,72432)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 스피드로이드
+	CALL 효과条件レベル_ADV(3, "以下")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72432(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC 묘지送カード,10
+#DIM DYNAMIC 손패묘지送カード,10
+#DIM DYNAMIC 素材数
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択済カード
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72432,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			SS소환可能속성 = 바람속성
+			CALL CARD_SS_RESTRICTION(듀얼리스트)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 스피드로이드
+			CALL 효과条件レベル_ADV(3, "以下")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)		
+			IF RESULT == 1
+						
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과範囲묘지 = 1
+				효과条件カテゴリ = 클리어윙
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과条件カテゴリ = 스피드로이드
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)		
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

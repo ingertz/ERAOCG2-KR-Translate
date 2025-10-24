@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = RUM－팬텀 포스
+		RESULTS = RUM－팬텀 포스
 	CASE "略称"
-RESULTS = RUM 팬텀
+		RESULTS = RUM 팬텀
 	CASE "カテゴリ"
-RESULTS:0 = RUM
-RESULTS:1 = 팬텀
+		RESULTS:0 = RUM
+		RESULTS:1 = 팬텀
 ENDSELECT
 
 
@@ -58,15 +58,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
@@ -117,6 +111,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		CALL FULLRESET
 		효과条件속성 = 어둠속성
 		효과条件종류 = 엑시즈
+		효과条件重ねてＸ = 1
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
 		選択カード = RESULT
 		IF 選択カード != 9999

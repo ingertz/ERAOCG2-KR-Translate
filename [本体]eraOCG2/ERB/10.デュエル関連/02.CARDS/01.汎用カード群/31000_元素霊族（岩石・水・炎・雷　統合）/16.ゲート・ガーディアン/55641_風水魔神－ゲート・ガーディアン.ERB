@@ -1,0 +1,176 @@
+﻿@CARDNAME_55641,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 풍수 마신－게이트 가디언
+	CASE "略称"
+		RESULTS = 풍수 마신
+	CASE "カテゴリ"
+		RESULTS:0 = 게이트 가디언
+ENDSELECT
+
+
+@CARD_55641(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2450
+	CASE "守備力"
+		RETURN 2300
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251010
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_55641(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "풍 마신－휴가"＋"수 마신－스가"
+PRINTL 이 카드는 융합 소환으로밖에 특수 소환할 수 없다。
+PRINTL 자신 필드의 상기의 카드를 소재로 하고 제외하여、융합 소환할 수 있다。
+PRINTL 이 카드명의 ①의 효과는 １턴에 ２번까지 사용할 수 있다。
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ①：상대가 마법 / 함정 카드의 효과를 발동했을 때에 발동할 수 있다。
+PRINTL 그 발동을 무효로 한다。
+CALLFORM CARD_ABLE(0,필드→戦離)
+PRINTL ②：이 카드가 필드에서 벗어난 경우에 발동할 수 있다。
+PRINTL 자신의 제외 상태인、"풍 마신－휴가" 또는 "수 마신－스가" １장을 특수 소환한다。
+
+
+@CARDSUMMON_55641(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 풍 마신－휴가
+ELSEIF EX参照 >= 10
+	素材条件名前 = 수 마신－스가
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,55641) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_55641(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55641)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,55641)
+	SIF RESULT == 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
+	素材範囲마함 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件固定 = 場所
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,55641) && 발동済_2(듀얼리스트,55641)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"필드")
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드→戦離
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲제외 = 1
+	효과条件名前:0 = 수 마신－스가
+	효과条件名前:1 = 풍 마신－휴가
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_55641(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성,2
+
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55641)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲필드 = 1
+		素材範囲마함 = 1
+		CALL FULLRESET
+		TRYCALLFORM CARDSUMMON_55641(듀얼리스트,場所)
+		CALL FUSSUMMON(듀얼리스트,場所,제외行き)
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55641,15)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+	ENDIF
+ELSEIF 종류 == 필드→戦離
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55641)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件名前:0 = 수 마신－스가
+		효과条件名前:1 = 풍 마신－휴가
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+

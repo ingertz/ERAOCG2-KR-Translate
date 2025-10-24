@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 리미터 해제
+		RESULTS = 리미터 해제
 	CASE "略称"
-RESULTS = 리미터 해제
+		RESULTS = 리미터 해제
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -52,15 +52,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	IF 듀얼리스트 != "자신"
 		SIF バトルフェイズ != 1
 			RETURN 0
@@ -87,7 +81,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	ALIGNMENT CENTER
 	CUSTOMDRAWLINE ╱
 	CUSTOMDRAWLINE ╲
-PRINTL 경고 경고 경고 경고 경고 경고 경고 경고 경고
+	PRINTL WARNING　WARNING　WARNING　WARNING　WARNING　WARNING　WARNING　WARNING　WARNING고 경고 경고 경고 경고 경고 경고
 	CUSTOMDRAWLINE ╱
 	CUSTOMDRAWLINE ╲
 	ALIGNMENT LEFT

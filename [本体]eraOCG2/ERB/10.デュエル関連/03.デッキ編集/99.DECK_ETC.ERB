@@ -1675,9 +1675,9 @@ IF 필터条件攻撃力 > 0
 	SIF RESULT > 필터条件攻撃力
 		RETURN 0
 ENDIF
-IF 필터条件攻固撃力 > 0
+IF 필터条件固攻撃力 > 0
 	TRYCALLFORM CARD_{カードID}, "攻撃力"
-	SIF RESULT != 필터条件攻固撃力
+	SIF RESULT != 필터条件固攻撃力
 		RETURN 0
 ENDIF
 
@@ -1726,6 +1726,12 @@ IF 필터条件外部 > 0
 ENDIF
 
 
+IF 필터お気に入り > 0
+	IF カードID >= 1 && お気に入りカード설정:カードID == 0
+			RETURN 0
+	ENDIF
+ENDIF
+
 IF 필터条件レア度:0 > 0
 	CALL CARDPRICE(カードID,"レア度")
 	SIF !MATCH(필터条件レア度, RESULT)
@@ -1760,7 +1766,7 @@ VARSET 필터条件속성
 VARSET 필터条件종족
 VARSET 필터条件レベル
 VARSET 필터条件攻撃力
-VARSET 필터条件攻固撃力
+VARSET 필터条件固攻撃力
 
 VARSET 필터条件守備力
 VARSET 필터条件튜너
@@ -1787,7 +1793,7 @@ SIF 필터条件レベル != 0
 	RETURN 1
 SIF 필터条件攻撃力 != 0
 	RETURN 1
-SIF 필터条件攻固撃力 != 0
+SIF 필터条件固攻撃力 != 0
 	RETURN 1
 SIF 필터条件튜너 != 0
 	RETURN 1
@@ -1808,18 +1814,28 @@ RETURN 0
 ページ最大値 = 2
 
 $INPUT_LOOP
+SETCOLOR C_L_BLUE
 CUSTOMDRAWLINE ―
-PRINTFORML 　덱 선택
+PRINTFORML 　■【덱 선택】
 CUSTOMDRAWLINE ―
+RESETCOLOR
 FOR カウンタ,0 + (ページ開始 * 20) ,20 + (ページ開始 * 20)
+	IF カウンタ == 最終編集덱
+		SETCOLOR C_GOLD
+		PRINTFORM [★]
+	ELSE
+		PRINTFORM 　　
+	ENDIF
 	CALL DECK_ABLE_CHECK(カウンタ)
 	SIF RESULT == 0
 		SETCOLOR C_GRAY
 	IF 마이덱名:カウンタ != ""
-		PRINTFORM [{カウンタ,2,LEFT}] - 【%마이덱名:カウンタ%】
+		SUBSTRING 마이덱名:カウンタ,0,30
+		RESULTS = 【%RESULTS%】
 	ELSE
-		PRINTFORM [{カウンタ,2,LEFT}] - 【마이덱({カウンタ,2})】
+		RESULTS = 마이덱（{カウンタ,2}）
 	ENDIF
+	PRINTFORM [{カウンタ,2,LEFT}] - %RESULTS,35,LEFT%
 ;	PRINTL
 	CALL DECK_ABLE_CHECK(カウンタ)
 	IF RESULT == 0
@@ -1915,7 +1931,7 @@ RETURN 選択덱
 #DIMS DYNAMIC 収録상황
 #DIMS DYNAMIC CARDS_STR, 100000
 #DIMS DYNAMIC CARDS_STR2, 10000
-#DIMS DYNAMIC CARDS_STR3, 1000
+#DIMS DYNAMIC CARDS_STR3, 5000
 #DIMS DYNAMIC CARDS_STR4, 10000
 #DIMS DYNAMIC カテゴリ名, 10000
 #DIMS DYNAMIC 설정カテ, 10000
@@ -2175,7 +2191,7 @@ ELSEIF RESULT == 4
 	PRINTFORMW 「캐릭터리스트.txt」로 보존했습니다
 
 ELSEIF RESULT == 5
-	FOR カードID,0,CHARANUM
+	FOR カードID,1,CHARANUM
 
 		VARSET カード名前
 		VARSET 캐릭터実装
@@ -2187,6 +2203,10 @@ ELSEIF RESULT == 5
 		SIF RESULT != 0
 			カード実装 = 【D済】
 	
+
+		캐릭터実装 = 【듀얼리스트】
+		SIF TALENT:カードID:듀얼리스트 == 0
+		캐릭터実装 = 
 		カード名前 = %NAME:カードID%
 		IF カード名前 == ""
 			캐릭터実装 = 
@@ -2245,11 +2265,19 @@ ELSEIF RESULT == 7
 
 ELSEIF RESULT == 8
 	VARSET パック상황
-	FOR カウンタ,0,100
+	;パックの中身を査定
+	FOR カウンタ,0,1000
+		;パック名無ければNG
 		CALL CARD_PACK_NAME(カウンタ)
 		SIF RESULTS == ""
 			CONTINUE
+
+		;パック内容をロード
 		CALL SP_PACKPOOL_LOAD(カウンタ)
+		CALL CARD_PACK_NAME(カウンタ)
+		RESULTS = 《%RESULTS%》
+		PRINTFORML 【{カウンタ,3}】 - %RESULTS,60,LEFT% UR：{URプール最大値()} / SR：{SRプール最大値()} /  R：{Rプール最大値()} / CM：{CMプール最大値()},로드 완료
+
 		FOR カウンタB,0,URプール最大値()
 			SIF パック상황:(URプール:カウンタB) >= 1
 				CONTINUE
@@ -2260,7 +2288,8 @@ ELSEIF RESULT == 8
 				CONTINUE
 			パック상황:(SRプール:カウンタB) = カウンタ
 		NEXT
-		IF カウンタ <= 80
+		;ERA周りはR/CMはNG
+		IF カウンタ <= 800
 			FOR カウンタB,0,Rプール最大値()
 				SIF パック상황:(Rプール:カウンタB) >= 1
 					CONTINUE
@@ -2272,6 +2301,7 @@ ELSEIF RESULT == 8
 				パック상황:(CMプール:カウンタB) = カウンタ
 			NEXT
 		ENDIF
+
 	NEXT
 	VARSET カウンタ
 	FOR カードID,1000,100000
@@ -2284,6 +2314,7 @@ ELSEIF RESULT == 8
 		TRYCALLFORM CARDNAME_{カードID}, "名前"
 		IF RESULTS != ""		
 			カード名前 = %RESULTS%
+			;パック상황の第二変数にある数字が、
 			IF パック상황:カードID == 0
 				収録상황 = 収録無し
 			ELSE
@@ -2347,8 +2378,11 @@ PRINTW
 @DECK_LIST_GENERATE
 #DIM DYNAMIC LCOUNT
 #DIM DYNAMIC 読込덱
-#DIMS DYNAMIC DECK_STR, 300
-#DIM DYNAMIC DECK_INT, 300
+#DIMS DYNAMIC 덱名
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIMS DYNAMIC DECK_STR, 350
+#DIM DYNAMIC DECK_INT, 350
 
 PRINTL [0] - 덱 데이터를 출력（편집용 데이터 포함）
 PRINTL [1] - 덱 데이터를 읽어온다
@@ -2366,6 +2400,8 @@ IF RESULT == 0
 		PRINTL 돌아갑니다
 		RESTART
 	ENDIF
+	덱名 = %RESULTS%
+
 
 	ARRAYCOPY @"編集_덱", "DECK_INT"
 	FOR LCOUNT, 0, 60
@@ -2376,43 +2412,88 @@ IF RESULT == 0
 	FOR LCOUNT, 65, 80
 		DECK_STR:LCOUNT = %TOSTR(DECK_INT:(LCOUNT - 65))%
 	NEXT
+	LCOUNT = 84
 
-	DECK_STR:89 = 【カード취득】
+	DECK_STR:LCOUNT = 【編集用データ】
+
+	DECK_STR:(LCOUNT + 1) = %"@DUELDECK_XXXX(듀얼리스트)"%
+	DECK_STR:(LCOUNT + 2) = %"#DIMS DYNAMIC 듀얼리스트"%
+	DECK_STR:(LCOUNT + 3) = %"RESULTS = %덱名%"%
+	DECK_STR:(LCOUNT + 5) = %"SIF 듀얼리스트 == 存在確認"%
+	DECK_STR:(LCOUNT + 6) = %"   RETURN 1"%
+
+	LCOUNT += 7
+	VARSET カウンタB
 	ARRAYCOPY @"編集_덱", "DECK_INT"
-	FOR LCOUNT, 90, 150
-		SIF DECK_INT:(LCOUNT - 90) == -1
-			CONTINUE
-		DECK_STR:LCOUNT = ITEM:%TOSTR(DECK_INT:(LCOUNT - 90))% += 1
-	NEXT
-
-	ARRAYCOPY @"編集_EX덱", "DECK_INT"
-	FOR LCOUNT, 155, 170
-		SIF DECK_INT:(LCOUNT - 155) == -1
-			CONTINUE
-		DECK_STR:LCOUNT = ITEM:%TOSTR(DECK_INT:(LCOUNT - 155))% += 1
-	NEXT
-
-	DECK_STR:179 = 【編集用データ】
-	ARRAYCOPY @"編集_덱", "DECK_INT"
-	FOR LCOUNT, 180, 240
-		IF LCOUNT == 180
-			DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_덱:POOL_COUNT(1)", %TOSTR(DECK_INT:(LCOUNT - 180))%
-		ELSE
-			DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_덱:POOL_COUNT(0)", %TOSTR(DECK_INT:(LCOUNT - 180))%
+	FOR カウンタ, 0, 60
+		IF 編集_덱:カウンタ != -1
+			LCOUNT ++
+			IF カウンタB == 0
+				DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_덱:POOL_COUNT(1)",  {編集_덱:カウンタ}
+			ELSE
+				DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_덱:POOL_COUNT(0)",  {編集_덱:カウンタ}
+			ENDIF
+			カウンタB ++
 		ENDIF
 	NEXT
-
+	LCOUNT += 5
+	VARSET カウンタB
 	ARRAYCOPY @"編集_EX덱", "DECK_INT"
-	FOR LCOUNT, 245, 260
-		IF LCOUNT == 245
-			DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_EX덱:POOL_COUNT(1)", %TOSTR(DECK_INT:(LCOUNT - 245))%
-		ELSE
-			DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_EX덱:POOL_COUNT(0)", %TOSTR(DECK_INT:(LCOUNT - 245))%
+	FOR カウンタ, 0, 15		
+		IF 編集_EX덱:カウンタ != -1
+			LCOUNT ++
+			IF カウンタB == 0
+				DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_EX덱:POOL_COUNT(1)", {編集_EX덱:カウンタ}
+			ELSE
+				DECK_STR:LCOUNT = SETVAR @"\%듀얼리스트\%_EX덱:POOL_COUNT(0)", {編集_EX덱:カウンタ}
+			ENDIF
+			カウンタB ++
+		ENDIF
+	NEXT
+	LCOUNT += 5
+
+
+	DECK_STR:LCOUNT = 【카드취득】
+	ARRAYCOPY @"編集_덱", "DECK_INT"
+	FOR カウンタ, 0, 60
+		SIF DECK_INT:カウンタ == -1
+			CONTINUE
+		LCOUNT ++
+		DECK_STR:LCOUNT = ITEM:{DECK_INT:カウンタ} += 1
+	NEXT
+	LCOUNT += 5
+	ARRAYCOPY @"編集_EX덱", "DECK_INT"
+	FOR カウンタ, 0, 15
+		SIF DECK_INT:カウンタ == -1
+			CONTINUE
+		LCOUNT ++
+		DECK_STR:LCOUNT = ITEM:{DECK_INT:カウンタ} += 1
+	NEXT
+	LCOUNT += 5
+
+	DECK_STR:LCOUNT = ―――【덱리스트】―――
+	LCOUNT += 1
+	DECK_STR:LCOUNT = 【메인덱】
+	FOR カウンタ, 0, 60
+		IF 編集_덱:カウンタ != -1
+			LCOUNT ++
+			TRYCALLFORM CARDNAME_{編集_덱:カウンタ}("名前")
+			DECK_STR:LCOUNT = %RESULTS%
+		ENDIF
+	NEXT
+	LCOUNT += 5
+	DECK_STR:LCOUNT = 【EX덱】
+	VARSET カウンタ
+	FOR カウンタ, 0, 15
+		IF 編集_EX덱:カウンタ != -1
+			LCOUNT ++
+			TRYCALLFORM CARDNAME_{編集_EX덱:カウンタ}("名前")
+			DECK_STR:LCOUNT = %RESULTS%
 		ENDIF	
 	NEXT
 
-	SAVETEXT STRJOIN(DECK_STR, UNICODE(0xA)), @"Deck/덱_%RESULTS%.txt"
-	PRINTFORMW 「덱_%RESULTS%.txt」으로 보존했습니다
+	SAVETEXT STRJOIN(DECK_STR, UNICODE(0xA)), @"Deck/%덱名%.txt"
+	PRINTFORMW 「%덱名%.txt」으로 보존했습니다
 	RESTART
 ELSEIF RESULT == 1
 	PRINTL 어느 데이터를 읽어올까요？
@@ -3018,3 +3099,49 @@ FOR カウンタ,0,紙束最大値
 		CONTINUE
 	ITEM:カードID += 1
 NEXT
+
+
+
+@DECK_FILTER_ALT(選択덱)
+#DIM DYNAMIC 選択덱
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+VARSET RESULT
+CALLFORM DUELDECK_{選択덱}("仮組")
+
+IF 필터条件ワード_DK != ""
+	TRYCALLFORM DUELDECK_{選択덱}("存在確認")
+	IF STRFIND(RESULTS, 필터条件ワード_DK) != -1
+		RETURN 1
+	ENDIF
+	FOR カウンタ,0,60
+		SIF 仮組_덱:カウンタ <= -1
+			CONTINUE
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{仮組_덱:カウンタ}("名前")
+		SIF STRFIND(RESULTS, 필터条件ワード_DK) != -1
+			RETURN 1
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{仮組_덱:カウンタ}("略称")
+		SIF STRFIND(RESULTS, 필터条件ワード_DK) != -1
+			RETURN 1
+	NEXT
+	FOR カウンタ,0,15
+		SIF 仮組_EX덱:カウンタ <= -1
+			CONTINUE
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{仮組_EX덱:カウンタ}("名前")
+		SIF STRFIND(RESULTS, 필터条件ワード_DK) != -1
+			RETURN 1
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{仮組_EX덱:カウンタ}("略称")
+		SIF STRFIND(RESULTS, 필터条件ワード_DK) != -1
+			RETURN 1
+	NEXT
+ELSE
+
+	RETURN 1
+ENDIF
+
+RETURN 0

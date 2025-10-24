@@ -1,0 +1,856 @@
+﻿@CARDNAME_79530, 参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = E.R.A.ShadDOLL.Pulsate
+		;RESULTS = 魂源を呪縛し脈動する影牢
+	CASE "略称"
+		RESULTS = ERA영뢰의 주박
+	CASE "カテゴリ"
+		RESULTS:0 = 섀도르
+		RESULTS:1 = ShadDOLL
+		RESULTS:3 = E.R.A
+ENDSELECT
+
+
+@CARD_79530(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	;효과발동に텍스트を合わせた都合上、カード名が変になってるのでコメントアウト
+	;CASE "生成カード"
+	;	RETURN 179530
+	CASE "추가日"
+		RETURN 250101
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_79530(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ③④의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0, 지속효과)
+PRINTL ①：자신 필드는 "영뢰의 주박"이 되며、자신 필드의 "섀도르" 몬스터 이외의 몬스터중에서、
+PRINTL 암컷 몬스터는 효과와 이름을 박탈당해 "ShadDOLL"몬스터로서 취급당하며、그 외엔 효과무효화되고 공격력 / 수비력이 ０이 된다。
+;この효과で名前を書き換えられている牝性モンスターはお触り可能になる。
+;この효과によるShadDOLL扱いの「牝奴隷」が戦闘で상대プレイヤーにダメージを与えた場合、상대プレイヤーにデュエル조교효과を与える（拷問処理）
+;密かにMASTER（듀얼리스트 あなた）だけは、성별やカテゴリとは無関係に영뢰의 주박の悪影響をいっさい受け付けない。「流石はMASTERですわ」
+CALLFORM CARD_ABLE(0, 발동強制誘発)
+PRINTL ②：자신이 "섀도르" 몬스터 카드의 효과를 발동할때마다、이 카드에 마석 카운터를 １개 놓는다。（최대 ３０개까지）
+PRINTL 자신 필드의 암컷 "ShadDOLL" 몬스터의 공격력은、이 카드에 놓인 마석 카운터의 수×３００오른다。
+PRINTL （이 효과는、이 카드의 컨트롤러가 ■■■■인 경우에만 효과 처리를 한다。）
+CALLFORM CARD_ABLE(3, 마함起動)
+PRINTL ③：상대 플레이어가 ■■■■■■■■■■■■■인 경우、이 카드의 마석 카운터를 ３개 제거하고 발동할 수 있다。
+PRINTL 상대 플레이어 자신이 되는 몬스터 １장과、상대의 덱 / ＥＸ덱의 몬스터 １장을 완전 제외한다。
+PRINTL 그 후、상대의 묘지 / 제외상태인 암컷 몬스터 １장을 자신 필드에 공격 표시로 특수 소환할 수 있다。
+;상대の女の子デュエリストの心の闇をShadDOLLとして자신 필드에 呼び出して使役できる。
+;４８の悪堕ち技の１つ「ヒロイン自身の心の闇が敵となって襲ってくる」の表現。全연령でも描写できる便利な悪堕ち表現技法のひとつ。
+CALLFORM CARD_ABLE(4, ターン開始時)
+PRINTL ④：자신 턴 개시시에、자신의 묘지 / 제외 상태인 "섀도르" 카드를 ３장까지 대상으로 하고 발동할 수 있다。
+PRINTL 그 카드를 덱 / ＥＸ덱으로 되돌린다。그 후、상대의 묘지 / 제외 상태인 카드 １장을 골라 상대의 메인 덱 가장 위에 올려놓을 수 있다。
+CALL TEXT_DECORATION("ROGUE")
+
+
+;＜カードの解説：すっごい長いよ！＞
+;ShadDOLLに更なる섀도르的な悪堕ちエロスを提供するフィールド마법。単体ではアドを稼ぐ機能を持たず、展開で拾って後置きしても旨味少なめ。
+;デュエル조교の味付けが主目的な代物であり、攻撃力をパンプアップすることでより多くの고통（ダメージ）を상대プレイヤーに与えられるようになる。
+;普通のデュエルでの運用はあまり想定していないが、打点アップの上昇幅はまあまあ高いので「섀도르」が慢性的に抱える打点不足を補えるという見方も出来る。
+;パンプ대상はERAカードの「ShadDOLL」だけなので、通常のミドラちゃん（親の顔より見る）の打点は伸びないので注意。使うならがっつりERA寄せが必要。
+;
+;①は最悪クラスのセルフロックをかけるデメリット효과。자신 필드에 섀도르이외의 몬스터가 まともに置けなくなる。
+;「섀도르」自体は縛りが無くて出張性能が高い部分のしわ寄せを、このフィールド마법にかけている。牝以外は無能化。牝性モンスターも名前と효과を奪われて、
+;「영뢰주박의 암컷노예」という名称のShadDOLLカテゴリ扱いのモンスターになる。これはテーマ추가して名前を改名する処理（元々のカテゴリも失わせる）での実装。
+;ある程度캐릭터ごとに名称を変えるのもよさそうだが、処理の複雑化はさけたいのと、個性を剥奪されて単なる『牝奴隷』扱いになるのも一興かと思い区別はつけない。
+;牝奴隷は접촉可能だが、ミドラたちは牝奴隷候補である상대プレイヤーを조교する『奴隷조교師(ASSI)』の役割を持った人形なので、接可の대상から제외している。
+;융합素材にも使える想定だったが추가カテゴリは参照されないようなので、ShadDOLL융합体側にスーパー名前で지정して処理してる。（ちょっと怪しい処理）
+;
+;②は最大9000のパンプアップになる。実戦でそこまで카운터を乗せることはないが、デュエル조교を長く続ける用途を想定しているので上限は相応に高くしている。
+;섀도르展開で5-10個ぐらいは카운터乗せられるので、牝奴隷を奪ったうえでそれなりの打点に育てられる。상대が強いモンスターなら打点は更に増やせる。
+;元々の「영뢰의 주박」には카운터数の上限がないのだが、上限値を설정しないと표시崩れや不具合が怖いので常識の範囲内にリミットを설정。
+;
+;③は多少なり遊戯王の実戦レベルでの活用を想定ということで、상대の牝性モンスター強奪に一手間加えて상대の덱・ＥＸ破壊を兼ねた효과に。
+;とはいえ、캐릭터の덱はテーマモンスターを複数積みしてるものが多いので、１回발동で瓦解することはあまりなく、ちょっとあくどいムーブしてる感を演出するだけ。
+;使うには묘지送りガチャガチャして카운터貯める下準備が必要で、ちゃんと섀도르덱組まないと性能は発揮できないと思う。まあそこは「慣れてください」
+;CSV持ちの상대プレイヤーに対応するIDのカードデータが存在している事を前提としているので、カードデータを持たないモブ系には효과を十分に発揮できない仕様。
+;상대へのデュエル조교を長く続ける目的のカードであるため、LO回避で④にリソース循環효과を설정。상대のLOも回避しつつドロー固定にも使えるようになっている。
+;
+;ちなみに「Pulsate」という名称はPixivで見かけたカード風の섀도르悪堕ちイラスト（ありがたい）からの引用。「脈」とか「鼓動」とかのニュアンスのようだ。
+;イラストはミドラちゃんとウェンディゴちゃんの堕ち百合でドキドキって感じなんですが、このフィールドはティアキンの瘴気の動脈とかの『悪の中枢』な感じです。
+;余談だが、「ShadDOLL」のイメージのベースはPILという会社のエロゲー作品群を参考にしていて、特に『女郎蜘蛛～呪縛の牝奴隷達～』の雰囲気を意識しているらしい。
+
+
+@CARDCAN_79530(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 조교대상 = -1
+#DIM DYNAMIC EX条件달성
+#DIM DYNAMIC 戦闘場所
+#DIM DYNAMIC 戦闘モンスターID
+#DIMS DYNAMIC 戦闘モンスター改名
+
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 79530)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_3(듀얼리스트, 79530)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;상대があなた（MASTER）の場合は발동できない。
+		SIF 조교대상 == MASTER
+			RETURN 0
+		;상대がCSVデータ上で牝性（성별 == 1）でない場合は발동できない。
+		SIF TALENT:조교대상:성별 != 1
+			RETURN 0
+	ELSE
+		;상대が조교可能でない場合(CSVデータを持たない場合)발동できない。
+		RETURN 0
+	ENDIF
+	
+	;対戦상대自身の分身となるカード（カードデータ）が存在していないと발동できない。（要はモブ系が대상外となる）
+	;듀얼리스트系캐릭터も、基本的に対応するバニラカードのデータがあるため大丈夫なはず・・・대상外が存在する場合は추가が必要。
+	TRYCALLFORM CARDNAME_{NO:조교대상}, "名前"
+	SIF RESULTS == "" || RESULTS == "상대"
+		RETURN 0
+	CALL FULLRESET
+	;個Ｃが３個以上ないと발동できない。
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") < 3
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	SIF 듀얼리스트 != "자신"
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 섀도르
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트)
+	SIF RESULT != 1
+		RETURN 0
+	
+	;何かの手違いで30個を超過している場合、30個に修正
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") > 30
+		CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "個Ｃ", 30, 上書きモード)
+	
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 30
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 섀도르
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	;CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == ライフ変強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	SIF ダメージ受者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ダメージ종류, "戦闘", "直接戦闘")
+		RETURN 0
+	
+	;戦闘したモンスターが「영뢰주박의 암컷노예」に改名されてるモンスターではない場合は발동しない。
+	戦闘場所 = 戦闘場所(듀얼리스트)
+	戦闘モンスターID = GETVAR(@"%듀얼리스트%_MZ_ID:戦闘場所")
+	;戦闘モンスター改名 = %GETVARS(@"%듀얼리스트%_MZ_改名:戦闘場所")%
+	;PRINTFORMW %戦闘モンスター改名%　戦闘場所：{戦闘場所}
+	SIF GETVARS(@"%듀얼리스트%_MZ_改名:戦闘場所") != "영뢰주박의 암컷노예"
+		RETURN 0
+	
+	;戦闘したモンスターがカードデータ上で牝性でない場合は발동しない（念のため）
+	TRYCALLFORM CARD_{戦闘モンスターID}("성별")
+	SIF RESULT != 牝性
+		RETURN 0
+	
+	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;상대があなた（＝MASTER）の場合は발동불가、男性の場合も발동불가。それ以外の조교대상なら許可
+		SIF 조교대상 == MASTER
+			RETURN 0
+		SIF TALENT:조교대상:성별 == 2
+			RETURN 0
+	ELSE
+		;상대プレイヤーが조교대상でない場合は발동불가
+		RETURN 0
+	ENDIF
+	
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 常在無効
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 상황確認
+	;しれっとコントローラーがMASTER（자신）でなかったら소멸する処理を隠し효과として入れておく。
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 듀얼리스트 == "자신"
+		RETURN 0
+	;상대プレイヤーにあえて使わせる場合は、상대のEX덱に「ShadDOLL」を浸食させておくか、
+	;자신EX・フィールド・묘지に「ShadDOLL」カード5종류以上が必要
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = ShadDOLL
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대EX덱 = 1
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과範囲상대묘지 = 1
+	효과条件カテゴリ = ShadDOLL
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT >= 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79530(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 攻撃修正値
+#DIM DYNAMIC 대상カードID
+#DIM DYNAMIC 조교대상 = -1
+#DIM DYNAMIC 조교대상ID = -1
+#DIM DYNAMIC 強奪カードID = -1
+#DIMS DYNAMIC 強奪カード名称
+#DIM DYNAMIC 戦闘場所
+#DIM DYNAMIC 戦闘モンスターID
+#DIM DYNAMIC 戦闘モンスター所有者
+#DIMS DYNAMIC 戦闘モンスター改名
+#DIMS DYNAMIC 戦闘モンスター名称
+#DIM DYNAMIC 与ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 79530, 3)
+	IF RESULT == 0
+		;自身の個Ｃを３つ取り除いて、상대プレイヤー自身と상대の덱・ＥＸ덱のモンスター１体を完全제외한다。
+		IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 3
+			CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+			IF RESULT != -1
+				조교대상 = RESULT
+				조교대상ID = NO:조교대상
+				SETCOLOR C_D_PINK
+				PRINTFORMW 영뢰에 둘러쳐진 그림자 실이, 불길하게 맥동하기 시작했다……
+				PRINTFORMW 그림자 실의 무리가 물결치듯이 꿈틀거리며, %CALLNAME:조교 대상%와, 그녀의 듀얼디스크에 쇄도해 간다!!
+				CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "個Ｃ", -3)
+				RESETCOLOR
+				CALL CARD_GENERATE_BAN(対面者, 조교대상ID)
+				
+				CALL FULLRESET
+				효과範囲상대덱 = 1
+				효과範囲상대EX덱 = 1
+				효과条件종류 = モン全般
+				효과条件行先플래그 = 完全제외行き
+				CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+				
+				SETCOLOR C_D_PINK
+				CUSTOMDRAWLINE -
+				PRINTFORML ・・・그림자 실의 무리가, MASTER를 섬기기에 어울리는 "암컷 노예"를 탐색하고 있다.
+				CUSTOMDRAWLINE -
+				PRINTFORMW 
+				RESETCOLOR
+				;상대の묘지・제외状態の牝性モンスター１体を자신 필드에 攻撃표시で특수소환できる。
+				CALL FULLRESET
+				효과範囲상대묘지 = 1
+				효과範囲상대제외 = 1
+				효과条件종류 = モン全般
+				효과条件성별 = 牝性
+				효과条件任意 = 1
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트, ゾーン, 場所, "攻撃표시")
+				IF RESULT == 1
+					強奪カードID = RESULT:1
+					TRYCALLFORM CARDNAME_{強奪カードID}, "名前"
+					強奪カード名称 = %RESULTS%
+					IF 強奪カードID == 조교대상ID
+						;자신自身の心と向き合う（メタトロニオス！？）。まるで少年向けバトル漫画の修行シーンみたいだなあ・・・
+						;SETCOLOR C_D_PINK
+						PRINTFORML 
+						PRINTFORML 휘감긴 그림자 실이 %CALLNAME:조교 대상%의 가슴에서 무언가를 뽑아내자, 그대로 그림자 실이 덩어리가 되어 %CALLNAME:MASTER%의 발밑에 모인다.
+						PRINTFORML 덩어리는 흐물흐물 형태를 바꾸더니――"%강탈 카드 명칭%"와 꼭 닮은 모습으로 변화했다!
+						PRINTFORMW 
+						PRINTFORMW 하지만, 그 표정에는 사악한 미소가 달라붙어 있으며, 듀얼디스크를 다시 고쳐 잡는 %CALLNAME:조교 대상%을 경멸의 시선으로 바라보고 있다.
+						PRINTFORML %CALLNAME:MASTER%의 충실한 암컷 노예로서 적대하는 자기 자신의 모습을 보게 되어, %CALLNAME:조교 대상%은 동요하는 표정을 감추지 못했다……
+						PRINTFORMW 
+						RESETCOLOR
+					ELSE
+						;SETCOLOR C_D_PINK
+						PRINTFORML 
+						PRINTFORMW 휘감긴 그림자 실이 상대의 듀얼디스크에서 빼앗은 몬스터가, %CALLNAME:MASTER%의 곁으로 소환되었다!
+						PRINTFORML 소환된 "%강탈 카드 명칭%"는, 몸도 마음도 그림자 실에 휘감겨 %CALLNAME:MASTER%의 충실한 암컷 노예의 모습으로 변해 버렸다……
+						PRINTFORMW 
+						RESETCOLOR
+						;ラテックス生地の奴隷用の黒ボンテージとか着用してる事にしたいけど、표시されるイラストと食い違うので明言は避ける。心眼で対応してね
+					ENDIF
+					;Q.カードの所有権は奪わないんですか？
+					;A.奪わないよ。ShadDOLLの『TARGET』は常に상대デュエリスト。상대プレイヤーを조교して堕とすのが主目的だから。
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 발동強制誘発
+	CALL FULLRESET
+	CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "個Ｃ", 1)
+	
+	;何かの手違いで30以上の場合、30個に修正
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") > 30
+		CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "個Ｃ", 30, 上書きモード)
+	
+	SETCOLOR C_D_PINK
+	PRINTFORML "섀도르" 몬스터의 효과 발동에 호응하듯이、영뢰의 모습을 하고있는 그림자 실이 수상하게 맥동한다……！
+	PRINTFORM （현재 마석 카운터 ： 
+	SETCOLOR C_RED
+	PRINTFORM {GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}
+	SETCOLOR C_D_PINK
+	PRINTFORML 개）
+	RESETCOLOR
+	PRINTFORMW 
+ELSEIF 종류 == ターン開始時
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 79530, 4)
+	IF RESULT == 0
+		;자신の묘지・제외の「섀도르」カードを３枚まで選んで덱戻し。
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 섀도르
+		효과条件複数 = 97
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+		IF RESULT == 1
+			;CALL CARDDRAW_BASIC(듀얼리스트,1)
+			;IF RESULT != 0
+				;상대の묘지・제외の카드 １장을 상대の덱トップに置く。ＥＸモンスターは대상外（덱トップに戻すと処理がおかしくなる）
+				CALL FULLRESET
+				효과範囲상대묘지 = 1
+				효과範囲상대제외 = 1
+				효과条件종류 = EX以外全般
+				효과条件スーパー종류 = 마함全般
+				효과条件任意 = 1
+				CALL CARD_CHOOSE_ADV(듀얼리스트, ゾーン, 場所)
+				IF RESULT != 9999
+					CALL CARD_SELECT(듀얼리스트, RESULT)
+					CALL CARD_ADD_DECK_SPC(대상者（CS）, 参照先（CS）, 選択カード（CS）)
+				ENDIF
+			;ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == ライフ変強制誘発
+	;「영뢰주박의 암컷노예」が戦闘ダメージを与えた場合のデュエル조교処理。
+	;효과の발동名の표시を偽装するために、ファイルの一番下にあるダミーカードデータのIDを지정。
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 179530)
+	IF RESULT == 0
+		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+		IF RESULT != -1
+			조교대상 = RESULT
+			;MASTER상대だと何も起きない
+			SIF 조교대상 == MASTER
+				RETURN 0
+			;상대プレイヤーに戦闘ダメージに応じた강도の「拷問処理」を実施
+			;	DOWNBASE:조교대상:체력 += (80 * 実보정) / 100
+			;	DOWNBASE:조교대상:기력 += (50 * 実보정) / 100
+			;	CALL SOURCE_CALC_접촉(조교대상, 実行役대상, (50 * 実보정) / 100)
+			;	CALL SOURCE_CALC_고통(조교대상, 実行役대상, (200 * 実보정) / 100)
+			
+			与ダメージ量 = GETVAR(@"%対面者%_変動値_保")
+			SIF 与ダメージ量 == 0
+				RETURN 0
+			
+			조교대상ID = NO:조교대상
+			戦闘場所 = 戦闘場所(듀얼리스트)
+			戦闘モンスターID = GETVAR(@"%듀얼리스트%_MZ_ID:戦闘場所")
+			戦闘モンスター所有者 = GETVAR(@"%듀얼리스트%_MZ_所有:戦闘場所")
+			TRYCALLFORM CARDNAME_{戦闘モンスターID}, "名前"
+			戦闘モンスター名称 = %RESULTS%
+			
+			;PRINTFORMW 상대プレイヤー＝{상대プレイヤー}、조교대상＝{조교대상}、조교대상ID＝{조교대상ID}、戦闘モンスターID＝{戦闘モンスターID}、戦闘モンスター所有者＝{戦闘モンスター所有者}
+			;PRINTFORMW 戦闘モンスター名称＝%戦闘モンスター名称%、CALLNAME:조교대상＝%CALLNAME:조교대상%
+			;フレーバー텍스트
+			;戦闘ダメージを与えたのが「상대プレイヤー自身」「상대プレイヤーから強奪したモンスター」「자신のモンスター」の３종류で텍스트분기。
+			IF 조교대상ID == 戦闘モンスターID
+				;１．『悪堕ちしてMASTERの牝奴隷になった자신自身（恐らくそう遠くない未来のすがた）』による조교。
+				;　　「섀도르」悪堕ちのフィニッシュ・ホールドとして、ナチュルの森のフィニッシュ・ホールドの壁画に刻み込むのがよかろう。
+				PRINTFORML 
+				PRINTFORML %CALLNAME:조교대상%을 냉철하게 내려다보며, 지금 바로 검은 채찍을 휘두르려 하는, 그림자 실에 의해 혼원을 주박당한 암컷 노예.
+				PRINTFORMW 
+				PRINTFORML 그것은 %CALLNAME:조교대상% 자신의 모습이라고도 할 수 있는 "%戦闘モンスター名称%"의 변해버린 모습이었다.
+				PRINTFORML 이름마저 잃고 『MASTER』의 충실한 암컷 노예로 타락한 %CALLNAME:조교대상%의 꼭 닮은 모습은, %CALLNAME:조교대상%에게 사악한 미소를 지으며 검은 채찍을 휘둘렀다!
+				SETCOLOR C_RED
+				PRINTFORMW 
+				CALL FLASH(2)
+				PRINTFORML 피싯!　피싯!
+				PRINTFORMW 
+				RESETCOLOR
+				PRINTFORML 검은 채찍이 %CALLNAME:조교대상%의 피부에 내리쳐지는 마른 소리가, 맥동하는 그림자 감옥과, 그 주인인 %CALLNAME:MASTER%에게 바쳐져 간다.
+				PRINTFORMW 
+				PRINTFORMW 자기 자신에 의해 행해지는 노예 조교.
+				PRINTFORMW 암컷 노예의 자아(아이덴티티)를 근본부터 붕괴시키려는 악의에 찬 계략.
+				PRINTFORML 채찍질당하는 %CALLNAME:조교대상%은 심한 쇼크를 받은 것인지, 눈물을 흘리며 어린아이처럼 비명을 지르고 있었다……
+				PRINTFORMW 
+				RESETCOLOR
+				;拷問処理の조교강도はダメージ量4000相当が最低値として保証される。並の女性캐릭터はこの강도に耐えることはできない。ネーサン級でないとムリ
+				SIF 与ダメージ量 < 4000
+					与ダメージ量 = 4000
+				;ついでのお遊びとして、伝統と格式のある「異常경험＋１」の텍스트をプレゼント。文字色を赤色にするファンサービス
+				SETCOLOR C_RED
+				PRINTFORML 
+				PRINTFORML 이상경험+1
+				EXP:조교대상:53 += 1
+				PRINTFORMW 
+				RESETCOLOR
+			ELSEIF GETVAR(@"%듀얼리스트%_MZ_所有:戦闘場所") != GETVAR(@"%듀얼리스트%_魔_所有:場所")
+				;２．「상대プレイヤーから強奪したモンスター」
+				PRINTFORML 
+				PRINTFORML 그림자 실에 의해 주박당한 암컷 노예는, "%戦闘モンスター名称%"이었던 기억마저도 잃어버린 것인지,
+				PRINTFORML 『그림자 감옥에 주박당한 암컷 노예』에 어울리는 냉철한 시선을 보내며, 예전 주인이었던 %CALLNAME:조교대상%에게 검은 채찍을 휘두른다!
+				PRINTFORMW 
+				SETCOLOR C_RED
+				PRINTFORML 
+				PRINTFORML 채찍질당한 %CALLNAME:조교대상%은, 동료였을 상대에게서 행해지는 가혹한 고문에 비통한 비명을 지르고 있다……
+				RESETCOLOR
+			ELSE
+				;３．「자신のモンスター」
+				PRINTFORML 
+				PRINTFORML %CALLNAME:조교대상%에게 냉철한 시선을 보내는 "그림자 감옥 주박의 암컷 노예"는, 그림자 실에 조종당하는 대로 검은 채찍을 휘둘렀다!
+				PRINTFORMW 
+				SETCOLOR C_RED
+				PRINTFORML 
+				PRINTFORML 채찍질당한 %CALLNAME:조교대상%의 피부에는, 검붉은 채찍 자국이 새겨져 간다……
+				RESETCOLOR
+			ENDIF
+			
+			;いちおう念のためここでも텍스트の色リセット処理を入れておく。（丁寧なケア）
+			RESETCOLOR
+			
+			;상대が男の場合は조교강도が半分になる処理
+			SIF TALENT:조교대상:성별 == 2
+				TIMES 与ダメージ量, 0.50
+			
+			;もう一回半減処理(男は1/4、それ以外は1/2となる)
+			TIMES 与ダメージ量, 0.50
+			
+			CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 与ダメージ量)
+			
+			
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	;자신 필드의 牝性のShadDOLLモンスターの攻撃力を魔石카운터の数×３００アップする。
+	攻撃修正値 = GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") * 300
+	CALL FULLRESET
+	효과条件カテゴリ = ShadDOLL
+	효과条件성별 = 牝性
+	CALL STATCHANGE_BASIC(듀얼리스트, "필드", 場所, 攻撃修正値, 0)
+	
+	;자신 필드의 「섀도르」、「ShadDOLL」カテゴリを持たないモンスターは攻守０になる。（듀얼리스트あなた ID:9990は除く）
+	CALL FULLRESET
+	효과条件固カテゴリ:0 = 섀도르
+	효과条件固カテゴリ:1 = ShadDOLL
+	효과条件固ID = 9990
+	CALL STATCHANGE_BASIC(듀얼리스트, "필드", 場所, -999999, -999999)
+	
+	;きみは「듀얼리스트 あなた」を使う人類？　サービスで攻撃力めちゃくちゃパンプするね。「ShadDOLL」は徹底してMASTER第一主義なので
+	攻撃修正値 *= 3
+	CALL FULLRESET
+	효과条件ID = 9990
+	CALL STATCHANGE_BASIC(듀얼리스트, "필드", 場所, 攻撃修正値, 0)
+ELSEIF 종류 == 常在無効
+	;자신 필드의 「섀도르」カテゴリを持たないモンスターは효과無効となる。（듀얼리스트あなた ID:9990は除く）
+	CALL FULLRESET
+	효과条件固カテゴリ = 섀도르
+	효과条件固ID = 9990
+	CALL STATCHANGE_EFFECT(듀얼리스트, "필드", 場所, "無効")
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "영뢰의 주박")
+	;자신 필드의 「섀도르」モンスターではない牝性モンスターは名前が変わり、「ShadDOLL」カテゴリを추가する。（듀얼리스트あなた ID:9990は除く）
+	FOR カウンタ, 0, 5
+		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ") == 9990
+			CONTINUE
+		대상カードID = GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")
+		TRYCALLFORM CARDNAME_{대상カードID}("カテゴリ")
+		IF !GROUPMATCH(RESULTS, "섀도르", "ShadDOLL")
+			TRYCALLFORM CARD_{대상カードID}("성별")
+			IF RESULT == 牝性
+				;섀도르ではない牝性の場合、改名とカテゴリ추가の処理を行う。ついでに종족・속성も섀도르化のイメージで変化。
+				SETVAR @"%듀얼리스트%_MZ_改名:カウンタ", "영뢰주박의 암컷노예"
+				SETVAR @"%듀얼리스트%_MZ_追カテ:カウンタ", "ShadDOLL"
+				;SETVAR @"%듀얼리스트%_MZ_永属:カウンタ", 어둠속성
+				;SETVAR @"%듀얼리스트%_MZ_永種:カウンタ", 마법사족
+				;SETVAR @"%듀얼리스트%_MZ_永星:カウンタ", 4
+				CALL SET_FIELD_INFO(듀얼리스트, "필드", カウンタ, "永属", 어둠속성, 上書きモード)
+				CALL SET_FIELD_INFO(듀얼리스트, "필드", カウンタ, "永種", 마법사족, 上書きモード)
+				CALL SET_FIELD_INFO(듀얼리스트, "필드", カウンタ, "永星", 4, 上書きモード)
+			ENDIF
+		ENDIF
+	NEXT
+	;牝性モンスターはお触り可能、もともと「섀도르」がついてるものは触れない（듀얼리스트あなた ID:9990も触れない）
+	CALL FULLRESET
+	효과条件성별 = 牝性
+	효과条件固カテゴリ = 섀도르
+	효과条件固ID = 9990
+	CALL STATCHANGE_EFFECT(듀얼리스트, "필드", 場所, "接可")
+	
+	;攻撃力パンプアップ「８０００」ＯＶＥＲボーナス효과
+	;魔石카운터が２７以上の場合、자신 필드의 「ShadDOLL」モンスターが無敵になる。（듀얼리스트あなたも無敵になる）
+	IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 27
+		CALL FULLRESET
+		효과条件성별 = 牝性
+		효과条件カテゴリ = ShadDOLL
+		효과条件スーパー名前 = 듀얼리스트 %CALLNAME:MASTER%
+		CALL STATCHANGE_EFFECT(듀얼리스트, "필드", 場所, "モ耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트, "필드", 場所, "魔耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트, "필드", 場所, "함정耐")
+	ENDIF
+ELSEIF 종류 == リアクション효과
+	;フィールドの「영뢰주박의 암컷노예」に対して締め付け조교　亀甲縛り・拘束晒しを使用
+	FOR カウンタ, 0, 5
+		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+			CONTINUE
+		SIF GETVARS(@"%듀얼리스트%_MZ_改名:カウンタ") != "영뢰주박의 암컷노예"
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ") == 9990
+			CONTINUE
+		;そのターン中にリアクション효과が発生してリ数が加算されていたら行われない。
+		SIF GETVAR(@"%듀얼리스트%_MZ_リ数:カウンタ") >= 1
+			CONTINUE
+		CALL CARD_EROTICS_FIELD(듀얼리스트, "필드", カウンタ)
+		IF RESULT != -1
+			조교대상 = RESULT
+			戦闘モンスターID = GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")
+			TRYCALLFORM CARDNAME_{戦闘モンスターID}, "名前"
+			戦闘モンスター名称 = %RESULTS%
+			SETCOLOR C_D_PINK
+			PRINTFORML
+			PRINTFORML 영뢰에 주박된 "%戦闘モンスター名称%"은, 몸에 휘감기는 그림자 실에 의해 세게 조여져 간다……
+			PRINTFORML
+			RESETCOLOR
+			CALL EROTIC_MOVE("亀甲縛り", 조교대상, -1, 50)
+			CALL SET_FIELD_INFO(듀얼리스트, "필드", カウンタ, "リ数", 1)
+			
+			;조교대상이 상대 플레이어와 동일한 캐릭터인지 체크. 같은 경우에는 추가 효과가 발생
+			CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+			IF 조교대상 == RESULT
+				SETCOLOR C_D_PINK
+				PRINTFORML
+				PRINTFORML 그림자 실의 구속을 황홀한 표정으로 감수하는 "%戦闘モンスター名称%"의 모습을 보여주게 되어,
+				PRINTFORML %CALLNAME:조교대상%은 당황하면서도, 그 요염하면서도 매력적인 자기 자신의 자태에 눈을 뗄 수 없었다……
+				PRINTFORML
+				RESETCOLOR
+				CALL EROTIC_MOVE("拘束晒し", 조교대상, -1, 500)
+			ENDIF
+			;リアクション효과発生時、たまに魔石카운터が＋１される。
+			IF RAND:6 == 0
+				CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "個Ｃ", 1)
+				;何かの手違いで30以上の場合、30個に修正
+				SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") > 30
+					CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "個Ｃ", 30, 上書きモード)
+				SETCOLOR C_D_PINK
+				PRINTFORML
+				PRINTFORML "영뢰주박의 암컷노예"의 교성에 호응하듯、영뢰의 모습을 하고있는 그림자 실이 수상하게 맥동했다……！
+				PRINTFORM （현재 마석 카운터 ： 
+				SETCOLOR C_RED
+				PRINTFORM {GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}
+				SETCOLOR C_D_PINK
+				PRINTFORML 개）
+				RESETCOLOR
+				PRINTFORMW 
+			ENDIF
+		ENDIF
+	NEXT
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 79530)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 마함行き)
+	ENDIF
+ELSEIF 종류 == 상황確認
+	;自身のフィールドに対するロック性能があらゆるCPUの덱を必ず殺す極悪レベルなので、상대への送りつけもケア（丁寧オブ丁寧）
+	;조교済みの奴隷に握らせる덱に入れて愉しみたい타입のMASTERは、EXに「ShadDOLL」モンスターも一緒に忍ばせておくとよい。
+	SETCOLOR C_D_PINK
+	CUSTOMDRAWLINE -
+	PRINTFORML 『MASTER』이외의 듀얼리스트는、"영뢰"는 그 존재를 유지할수가 없다……
+	CUSTOMDRAWLINE -
+	PRINTFORMW 
+	RESETCOLOR
+	CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 소멸行き)
+ENDIF
+
+
+
+;---------------------------------------------------------------------------------------
+;影牢に呪縛されし牝奴隷のカードデータ部分（ダミーデータ）
+;---------------------------------------------------------------------------------------
+
+@CARDNAME_179530, 参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		;影牢呪縛のライフ変強制誘発（자신は마함から～～）に続けた表記で参照する用途で使うため、それに合わせた表記になっている。
+		RESULTS = 늘어난 그림자 실에 지배되고있는、「영뢰에 주박당한 암컷 노예」
+	CASE "略称"
+		RESULTS = 영뢰주박의 암컷노예
+	CASE "カテゴリ"
+		RESULTS:0 = ShadDOLL
+		RESULTS:1 = 섀도르
+		;RESULTS:2 = 『　　　　』
+		RESULTS:3 = E.R.A
+		;RESULTS:4 = ＊＊＊＊＊＊＊＊
+ENDSELECT
+
+
+@CARD_179530(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 의식
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+ENDSELECT
+
+
+@CARD_EXPLANATION_179530(종류)
+#DIM DYNAMIC 종류
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 이 카드명의 ②의 Ｐ효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0, 지속효과)
+PRINTL ①：이 카드가 Ｐ존에 존재하는 한、자신은 ＥＸ덱에서 "섀도르"몬스터밖에 특수 소환할 수 없다。
+;こ의 효과는 無効化されない。
+CALLFORM CARD_ABLE(2, 마함起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 이 카드를 파괴하고、자신의 덱 / 묘지에서 "＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊" １장을 패에 넣는다。
+PRINTL 상대 플레이어가 ■■■■■■■■■■■■■인 경우、대신에 "섀도르" 마법 카드 １장을 패에 넣을 수 있다。
+CALL TEXT_DECORATION("P_MAGIC_2")
+SETCOLOR C_D_PINK
+PRINTL "Re.Birth.Of.E.R.A.ShadDOLL"에 의해 강림
+RESETCOLOR
+PRINTL ---------------------------------------------------------------------------------------------------------------
+PRINTL 『영뢰의 주박』에서 솟아나는 그림자 실에, 그 몸과 마음을 얽매여 버린 가련한 희생자의 말로.
+PRINTL 
+PRINTL 그림자 실이 변화한, 라텍스 천처럼 요염하게 반짝이는 칠흑의 슬레이브 본디지에 의해 항상 온몸이 조여지고 있으며,
+PRINTL 몽롱한 황홀의 표정을 지으면서, 고통과 열락이 뒤섞인 신음 소리를 그림자 감옥에 스며들게 함으로써 그림자 실을 늘리고 있다.
+PRINT 그 텅 빈 눈동자 속에서는『
+SETCOLOR C_RED
+PRINT MASTER(지배해 주시는 주인님)
+RESETCOLOR
+PRINTL 』이 언젠가 자신을 맞이하러 와준다는 꿈을 영원히 계속 꾸고 있는 것 같다.
+PRINTL 
+SETCOLOR C_D_PINK
+PRINTL 『그릇』으로서의 소질을 인정받은 암컷 노예는, 보다 깊고 어두운 주박이 새겨져, 새로운 이름과 역할을 부여받고 『MASTER』를 섬기는 것이 허락되는 듯하다……
+RESETCOLOR
+PRINTL ---------------------------------------------------------------------------------------------------------------
+
+@CARDCAN_179530(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성 = 0
+#DIM DYNAMIC 조교대상 = -1
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 179530)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	SIF 발동済_2(듀얼리스트, 179530)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件名前 = ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	IF RESULT != 1
+		;상대プレイヤーが조교대상か確認。조교대상でない場合は발동できない。
+		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+		IF RESULT != -1
+			조교대상 = RESULT
+			;상대があなた（＝MASTER）の場合は추가条件を満たさない。
+			SIF 조교대상 == MASTER
+				RETURN 0
+		ELSE
+			RETURN 0
+		ENDIF
+		;代わりに섀도르마법が덱・묘지に存在するか確認
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 섀도르
+		효과条件종류 = 마법全般
+		CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_179530(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성 = 0
+#DIM DYNAMIC 조교대상 = -1
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 179530)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 마함行き)
+	ENDIF
+ELSEIF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 179530, 2)
+	IF RESULT == 0
+		;条件달성を確認
+		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+		IF RESULT != -1
+			조교대상 = RESULT
+			;상대があなた（＝MASTER）ではない場合は条件달성
+			SIF 조교대상 != MASTER
+				条件달성 = 1
+		ENDIF
+		
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 破壊行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件名前 = ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+		IF 条件달성 == 1
+			효과条件スーパーカテゴリ = 섀도르
+			효과条件スーパー종류 = 마법全般
+		ENDIF
+		CALL CARD_ADD_ADV(듀얼리스트, ゾーン, 場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_TMP_EX_RST_CAT(듀얼리스트, "섀도르")
+ENDIF
+
+

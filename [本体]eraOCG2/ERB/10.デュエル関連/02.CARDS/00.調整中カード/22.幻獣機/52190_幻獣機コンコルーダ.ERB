@@ -1,0 +1,170 @@
+﻿@CARDNAME_52190,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 환상수기 콩코르다
+	CASE "略称"
+		RESULTS = 콩코르다
+	CASE "カテゴリ"
+		RESULTS:0 = 환상수기
+		RESULTS:1 = 환상수
+ENDSELECT
+
+
+@CARD_52190(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 1200
+
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_52190(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 7
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,52190) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_52190(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 튜너＋튜너 이외의 몬스터 １장 이상
+PRINTL 이 카드명의 ①③의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
+;S時リクルート
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：이 카드가 Ｓ소환된 경우에 발동할 수 있다。
+PRINTL 덱에서 "환상수기" 몬스터 １장을 특수 소환한다。
+PRINTL 이 효과의 발동 후、자신은 턴 종료시까지 기계족 몬스터밖에 특수 소환할 수 없다。
+;耐性付与
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드가 몬스터 존에 존재하는 한、
+PRINTL 자신 필드의 토큰은 전투 / 효과로는 파괴되지 않는다。
+;破壊時蘇生
+CALLFORM CARD_ABLE(2,戦闘→묘지 ,破壊→묘지)
+PRINTL ③：이 카드가 전투 / 효과로 파괴된 경우에 발동할 수 있다。
+PRINTL 자신 묘지의 레벨４ 이하의 "환상수기" 몬스터 １장을 특수 소환한다。
+
+
+@CARDCAN_52190(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,52190)
+SIF RESULT == 1
+	RETURN 0
+;リクルート
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,52190)
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 환상수기
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;耐性付与
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+;破壊時蘇生
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	SIF 발동済_2(듀얼리스트,52190)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 환상수기
+	효과条件종류 = モン全般
+	CALL 효과条件レベル_ADV(4, "以下")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_52190(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;リクルート
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52190,1)
+	IF RESULT == 0
+		;参考：エレスケレタス
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 환상수기
+		효과条件종류 = モン全般
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,場所)
+		SS소환可能종족 = 기계족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+
+;耐性付与
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件종류 = トークン
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+;破壊時蘇生
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52190,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 환상수기
+		효과条件종류 = モン全般
+		CALL 효과条件レベル_ADV(4, "以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,場所)
+	ENDIF
+ENDIF
+

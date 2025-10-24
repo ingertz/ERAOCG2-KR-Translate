@@ -58,15 +58,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,71624)
 		RETURN 0
 	CALL FULLRESET
@@ -96,13 +90,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		IF バトルフェイズ == 1
-PRINTL 배틀 페이즈에 발동했습니다. 양쪽의 효과를 사용하시겠습니까?
+			PRINTL 배틀 페이즈에 발동했습니다. 양쪽의 효과를 사용하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 			SIF RESULT == はい
 				カウンタ = 2
 		ENDIF
 		IF カウンタ != 2
-			CALL YN_CHOICE(듀얼리스트,"●덱에서 레벨４ の바다생물족 몬스터 １장을 패에 넣는다。","●패에서 바다생물족 몬스터 １장을 특수 소환한다。")
+			CALL YN_CHOICE(듀얼리스트,"●덱에서 레벨４인 바다생물족 몬스터 １장을 패에 넣는다。","●패에서 바다생물족 몬스터 １장을 특수 소환한다。")
 			カウンタ = RESULT
 		ENDIF
 		IF カウンタ != 1

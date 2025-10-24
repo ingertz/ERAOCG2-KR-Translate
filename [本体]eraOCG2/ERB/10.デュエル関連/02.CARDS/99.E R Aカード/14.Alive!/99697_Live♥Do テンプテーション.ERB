@@ -62,7 +62,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動
 	SIF 발동済_1(듀얼리스트,99697)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 2
+	;ゾーン処理も설정済み
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -77,7 +79,7 @@ IF 종류 == 마함起動
 		RETURN 0	
 	RETURN 1
 ELSEIF 종류 == 손패起動
-	SIF GETVARS(@"%듀얼리스트%_フィールド名") != "AV T 채널"
+	SIF GETVARS(@"%듀얼리스트%_フィールド名") != "AliVe♡Twin 채널"
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
@@ -88,7 +90,7 @@ ELSEIF 종류 == 손패起動
 	RETURN 1
 ELSEIF 종류 == フリー誘発
 	IF ゾーン == "손패"
-		SIF GETVARS(@"%듀얼리스트%_フィールド名") != "AV T 채널"
+		SIF GETVARS(@"%듀얼리스트%_フィールド名") != "AliVe♡Twin 채널"
 			RETURN 0
 		CALL FULLRESET
 		효과範囲마함 = 1
@@ -160,7 +162,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	ENDIF
 ELSEIF 종류 == 攻撃時強制誘発
 	PRINTL 
-	PRINTL AliVe♡Twin 채널 시청료 징수！
+	PRINTL AliVe♡Twin 채널 시청료가 징수되었다！
 	CALL LIFE_CHANGE(対面者,"減少","コスト",200)
 	CALL LIFE_CHANGE(듀얼리스트,"増加","효과",200)
 	SELECTCASE 듀얼리스트

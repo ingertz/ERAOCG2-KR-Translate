@@ -54,15 +54,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,72403)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	CALL RESETAREA_MAT
 	素材範囲필드 = 1
 	素材範囲제외 = 1
@@ -90,8 +84,6 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択済カード
 ;융합소환
-VARSET 묘지送カード, 35
-VARSET 손패묘지送カード, 35
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72403,1)

@@ -590,7 +590,7 @@ IF 行先플래그 == 마함行き && 마함数(듀얼리스트) == 5 && ゾー�
 	行先플래그 = 0
 ENDIF
 
-IF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き) && GETVAR(@"%듀얼리스트%_제외置換") >= 1
+IF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き) && GETVAR(@"%듀얼리스트%_제외置換") >= 1 && ゾーン != "제외"
 	行先플래그 = 제외行き
 ENDIF
 
@@ -612,9 +612,14 @@ ENDIF
 
 
 選択カード_ID = GETVAR(@"%듀얼리스트%_%ゾーン%:場所")
-
 SIF 選択カード_ID == 使用불가ゾーン
 	行先플래그 = 소멸行き
+
+VARSET RESULT
+TRYCALLFORM CARD_{選択カード_ID}("自動소멸")
+SIF RESULT == 1
+行先플래그 = 소멸行き
+
 ;PRINTFORML 選択カード_ID:{選択カード_ID}
 TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 選択カード_名 = %RESULTS%
@@ -1050,6 +1055,7 @@ RETURN 1
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 @CARD_ADD_DECK_SPC(듀얼리스트,ゾーン,場所,行先플래그,不正隠し)
 #DIMS DYNAMIC 듀얼리스트
+
 #DIMS DYNAMIC 효과대상者
 #DIMS DYNAMIC ゾーン
 #DIMS DYNAMIC 이동カード名
@@ -1124,6 +1130,111 @@ CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과山送")
 CALL CARD_FIN_BIT_SET(듀얼리스트,ゾーン)
 RETURN 1
 
+@CARD_HYPER_DISPOSE(듀얼리스트,元参照先,行先플래그)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 実行者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 元参照先
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード,10000
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC サーチ範囲
+#DIM DYNAMIC 行先플래그
+
+;PRINTFORML 듀얼리스트 = %듀얼리스트%
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+SELECTCASE 元参照先
+	CASE "필드"
+		サーチ範囲 = 5
+		実行者 = %듀얼리스트%
+		参照先 = 필드
+	CASE "마함"
+		サーチ範囲 = 5
+		実行者 = %듀얼리스트%
+		参照先 = 마함
+	CASE "손패"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %듀얼리스트%
+		参照先 = 손패
+	CASE "묘지"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %듀얼리스트%
+		参照先 = 묘지
+	CASE "덱"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %듀얼리스트%
+		参照先 = 덱
+	CASE "EX덱"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %듀얼리스트%
+		参照先 = EX덱
+	CASE "제외"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %듀얼리스트%
+		参照先 = 제외
+
+	CASE "상대필드"
+		サーチ範囲 = 5
+		実行者 = %対面者%
+		参照先 = 필드
+	CASE "상대마함"
+		サーチ範囲 = 5
+		実行者 = %対面者%
+		参照先 = 마함
+	CASE "상대손패"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %対面者%
+		参照先 = 손패
+	CASE "상대묘지"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %対面者%
+		参照先 = 묘지
+	CASE "상대덱"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %対面者%
+		参照先 = 덱
+	CASE "상대EX덱"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %対面者%
+		参照先 = EX덱
+	CASE "상대제외"
+		サーチ範囲 = 紙束最大値 - 1
+		実行者 = %対面者%
+		参照先 = 제외
+ENDSELECT
+
+FOR カウンタ, サーチ範囲, -1, -1
+	VARSET 条件달성
+	CALL CARD_S_FILTER_SET(実行者,参照先,カウンタ,듀얼리스트)
+	SIF RESULT == 1
+		条件달성 = 1
+	CALL CARD_FILTER_SET(実行者,参照先,カウンタ,듀얼리스트)
+	SIF RESULT == 1
+		条件달성 = 1
+	SIF 条件달성 != 1
+		CONTINUE
+	選択カード:カウンタB = カウンタ
+	カウンタB ++
+NEXT
+
+FOR カウンタ, 0, カウンタB
+	場所 = 選択カード:カウンタ
+	SIF GETVAR(@"%実行者%_%参照先%:場所") <= -1
+		CONTINUE
+	CALL CARD_DISPOSE(実行者,参照先,場所,行先플래그)
+NEXT
+
+SIF カウンタB >= 1
+	RETURN 0
+
+RETURN 1
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
@@ -1199,7 +1310,7 @@ IF GETVAR(@"상대_%효과종류%_保_CT") >= 1
 ENDIF
 
 
-
+;「同名カードが자신の묘지に存在しない」타입の制限を見るときに使うプログラム。
 @SET_EXIST_CARDS(듀얼리스트,参照先지정)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン

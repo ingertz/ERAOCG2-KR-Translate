@@ -59,15 +59,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,71871)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과条件レベル = 9
@@ -101,7 +95,7 @@ ENDIF
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC 選択カード
-#DIMS DYNAMIC 選択カード名前
+#DIMS DYNAMIC 選択カード名
 #DIM DYNAMIC 효과발동불가,10
 
 IF 종류 == 마함起動 || 종류 == 손패起動
@@ -132,7 +126,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			효과발동불가:2 = 1
 
 		IF 효과발동불가:1 != 1 && 효과발동불가:2 != 1
-PRINTL 필드의 레벨 9 몬스터를 선택하시겠습니까?
+			PRINTL 필드의 레벨 9 몬스터를 선택하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 		ELSEIF 효과발동불가:1 != 1
 			RESULT = はい
@@ -146,14 +140,14 @@ PRINTL 필드의 레벨 9 몬스터를 선택하시겠습니까?
 			選択カード = RESULT
 			IF 選択カード != 9999
 				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:選択カード")}, "名前"
-				選択カード名前 = %RESULTS%
+				選択カード名 = %RESULTS%
 
 				CALL FULLRESET
 				효과範囲덱 = 1
 				효과条件レベル = 9
 				효과추가종류:0 = 6
 				효과추가종류:1 = 11
-				효과条件固名前 = %選択カード名前%	
+				효과条件固名前 = %選択カード名%	
 				효과条件複数 = 2			
 				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 			ENDIF

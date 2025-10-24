@@ -88,13 +88,14 @@ RETURN デュエル結果
 #DIM DYNAMIC 패배のロストバージン
 #DIM DYNAMIC 先攻플래그
 #DIM DYNAMIC ランダム値
+#DIM DYNAMIC 対戦상대
 SELECTCASE 選択モード
 ;TARGETと듀얼
 CASE 0
 	TFLAG:SELECTCOM분기 = 10
 	CALL KOJO_MESSAGE_SEND("COMMAND")
 ;レート戦/練習戦
-CASE 2,4
+CASE 2
 	TARGET = 0 
 ;その他
 CASE 3
@@ -218,7 +219,22 @@ CASE 3
 	ENDSELECT
 	;ザポルグ追記
 	TFLAG:SELECTCOM분기 = 10 + 賭け内容
-CASE 5
+CASE 4 ;オンラインレート戦
+	CALL ONLINE_RATEMATCHING
+	TARGET = RESULT
+	IF RESULT == -1
+		PRINTFORML 
+		PRINTFORML 매칭 상대는 익명의 사람이었다
+		PRINTFORMW 
+	ELSE
+		PRINTFORML 
+		PRINTFORML 매칭 상대는 %NAME:TARGET%였다
+		PRINTFORMW 
+		;CALL SYOTAIMEN(対戦상대)
+		CALL KOJO_MESSAGE_SEND("ENCOUNTER",TARGET)
+		CFLAG:TARGET:면식 = 1
+	ENDIF
+CASE 5 ;オフラインレート戦
 	TFLAG:SELECTCOM분기 = 10
 	CALL KOJO_MESSAGE_SEND("COMMAND")
 ENDSELECT
@@ -237,7 +253,7 @@ CASEELSE
 	;オンライン練習
 	IF 選択モード == 2
 		CALL DUEL_SYSTEM(2,,,先攻플래그설정)
-	;CFLAG:MASTER:듀얼레이트マッチ
+	;듀얼레이트マッチ
 	ELSEIF 選択モード == 4 || 選択モード == 5
 		CALL DUEL_SYSTEM(3)
 	;公式デュエル
@@ -253,6 +269,10 @@ FOR カウンタ,0,LTARGETNUM
 NEXT
 
 CALL DUEL_KAKE(デュエル結果,選択モード)
+;オンラインマッチングでターゲットになった상대をリセット
+IF 選択モード == 4 && TARGET != -1
+	TARGET = LOCAL
+ENDIF
 RETURN デュエル結果
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
@@ -290,27 +310,39 @@ IF 選択モード == 0
 ELSEIF 選択モード == 4 ;온라인レートマッチ
 	IF デュエル結果 == 結果_승리
 		PRINTFORML 승리해서 레이트가 올랐다！
-		PRINTFORMW 현재 온라인 레이트:{CFLAG:MASTER:듀얼레이트} + {レート増減}
+		PRINTFORML 현재 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} + {レート増減}
 		CFLAG:MASTER:듀얼레이트 += レート増減
+		IF TARGET > 0
+			PRINTFORML %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} - {レート増減}
+			CFLAG:TARGET:듀얼레이트 -= レート増減
+			SIF CFLAG:TARGET:듀얼레이트 == 0
+				CFLAG:TARGET:듀얼레이트 = -1
+		ENDIF
 	ELSEIF デュエル結果 == 結果_패배
-		PRINTFORML 패배해서 레이트가 내려갔다…
-		PRINTFORMW 현재 온라인 레이트:{CFLAG:MASTER:듀얼레이트} - {レート増減}
+		PRINTFORML 패배해서 듀얼 레이트가 내려갔다…
+		PRINTFORML 현재 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} - {レート増減 * 3}
 		CFLAG:MASTER:듀얼레이트 -= レート増減
+		IF TARGET > 0
+			PRINTFORML %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} + {レート増減 * 3}
+			CFLAG:TARGET:듀얼레이트 += レート増減 * 3
+			SIF CFLAG:MASTER:듀얼레이트 == 0
+				CFLAG:MASTER:듀얼레이트 = -1
+		ENDIF
 	ENDIF
 	VARSET レート増減 ;Anonym추가
 ELSEIF 選択モード == 5 && TALENT:TARGET:듀얼리스트 >= 1 ;オフラインレートマッチ
 	IF デュエル結果 == 結果_승리
 		PRINTFORML 승리해서 레이트가 올랐다！
 		PRINTFORML 현재 자신의 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} + {レート増減}
-		PRINTFORML 현재 %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} - {レート増減 * 3}
+		PRINTFORML 현재 %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} - {レート増減}
 		CFLAG:MASTER:듀얼레이트 += レート増減
-		CFLAG:TARGET:듀얼레이트 -= レート増減 * 3
+		CFLAG:TARGET:듀얼레이트 -= レート増減
 		SIF CFLAG:TARGET:듀얼레이트 == 0
 			CFLAG:TARGET:듀얼레이트 = -1
 	ELSEIF デュエル結果 == 結果_패배
 		PRINTFORML 패배해서 레이트가 내려갔다…
-		PRINTFORML 현재의 자신의 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} - {レート増減 * 3}
-		PRINTFORML 현재의 %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} + {レート増減 * 3}
+		PRINTFORML 현재 자신의 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} - {レート増減 * 3}
+		PRINTFORML %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} + {レート増減 * 3}
 		CFLAG:MASTER:듀얼레이트 -= レート増減
 		SIF CFLAG:MASTER:듀얼레이트 == 0
 			CFLAG:MASTER:듀얼레이트 = -1

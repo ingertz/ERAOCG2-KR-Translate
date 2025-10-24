@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 부유벚꽃
+		RESULTS = 부유벚꽃
 	CASE "略称"
-RESULTS = 벚꽃
+		RESULTS = 벚꽃
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -48,9 +48,9 @@ RETURN 0
 
 PRINTL 이 카드명의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,손패起動,フリー誘発)
-PRINTL ①: 자신 상대 턴에, 상대 필드의 몬스터 수가 자신 필드의 몬스터보다 많을 경우, 이 카드를 패에서 버리고 발동할 수 있다.
+PRINTL ①: 자신 / 상대 턴에, 상대 필드의 몬스터 수가 자신 필드의 몬스터보다 많을 경우, 이 카드를 패에서 버리고 발동할 수 있다.
 PRINTL 자신의 EX덱의 카드 1장을 선택하여 서로 확인한다.
-PRINTL 그 후, 상대의 EX덱을 확인하고, 선택한 카드의 동명 카드가 있을 경우, 그 상대의 동명 카드를 모두 제외한다.
+PRINTL 그 후, 상대의 EX덱을 확인하고, 선택한 카드의 같은 이름의 카드가 있을 경우, 그 상대의 같은 이름의 카드를 모두 제외한다.
 
 @CARDCAN_1261(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -107,13 +107,9 @@ IF 종류 == 손패起動 || 종류 == フリー誘発
 			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_EX덱:選択カード")}, "名前"
 			選択カード名前 = %RESULTS%
 			
-			FOR カウンタ,98, -1, -1
-				SIF GETVAR(@"%対面者%_EX덱:カウンタ") == -1
-					CONTINUE
-				TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_EX덱:カウンタ")}, "名前"
-				SIF RESULTS == 選択カード名前
-					CALL CARD_DISPOSE(対面者,"EX덱",カウンタ,제외行き)
-			NEXT
+			CALL FULLRESET
+			효과条件名前 = %選択カード名前%
+			CALL CARD_HYPER_DISPOSE(듀얼리스트,"상대EX덱",제외行き)
 		ENDIF
 	ENDIF
 ENDIF

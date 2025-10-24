@@ -164,15 +164,34 @@ ELSE
 	덱モード = 1
 ENDIF
 
+필터条件ワード_DK = 
+
+$INPUT_LOOP_RESETLIST
+VARSET 덱リスト2
+VARSET 덱リスト5
+VARSET 덱リスト6
+
+VARSET MODE2ページ最大値
+VARSET MODE5ページ最大値
+VARSET MODE6ページ最大値
+
+VARSET カウンタB
+VARSET カウンタC
+VARSET カウンタD
+
+;PRINTFORML リセットIN
 FOR カウンタ,1,2000
 	VARSET RESULT
 	TRYCALLFORM DUELDECK_{10000 + カウンタ}("存在確認")
 	SIF RESULT != 1
 		CONTINUE
+	TRYCALLFORM DECK_FILTER_ALT(10000 + カウンタ)
+	SIF RESULT != 1
+		CONTINUE
 	덱リスト2:カウンタB = 10000 + カウンタ
-	カウンタB ++
-	SIF カウンタB % 60 == 0
+	SIF カウンタB % 60 == 0 && カウンタ != 1
 		MODE2ページ最大値 ++
+	カウンタB ++
 NEXT
 
 FOR カウンタ,0,2000
@@ -180,10 +199,13 @@ FOR カウンタ,0,2000
 	TRYCALLFORM DUELDECK_{70000 + カウンタ}("存在確認")
 	SIF RESULT != 1
 		CONTINUE
+	TRYCALLFORM DECK_FILTER_ALT(70000 + カウンタ)
+	SIF RESULT != 1
+		CONTINUE
 	덱リスト5:カウンタC = 70000 + カウンタ
-	カウンタC ++
-	SIF カウンタC % 60 == 0
+	SIF カウンタC % 60 == 0 && カウンタ != 0
 		MODE5ページ最大値 ++
+	カウンタC ++
 NEXT
 
 FOR カウンタ,0,2000
@@ -191,10 +213,13 @@ FOR カウンタ,0,2000
 	TRYCALLFORM DUELDECK_{60000 + カウンタ}("存在確認")
 	SIF RESULT != 1
 		CONTINUE
+	TRYCALLFORM DECK_FILTER_ALT(60000 + カウンタ)
+	SIF RESULT != 1
+		CONTINUE
 	덱リスト6:カウンタD = 60000 + カウンタ
-	カウンタD ++
-	SIF カウンタC % 60 == 0
+	SIF カウンタC % 60 == 0 && カウンタ != 0
 		MODE6ページ最大値 ++
+	カウンタD ++
 NEXT
 
 
@@ -214,35 +239,53 @@ ENDIF
 IF 설정 == 2
 	SETCOLOR C_L_RED
 	CUSTOMDRAWLINE ―
-	PRINTFORML 　【상대 덱 선택】
+	PRINTFORML 　■【상대 덱 선택】
 	CUSTOMDRAWLINE ―
 ELSE
 	SETCOLOR C_L_BLUE
 	CUSTOMDRAWLINE ―
-	PRINTFORML 　【덱 선택】
+	PRINTFORM 　■【덱 선택】
+	;PRINTFORM ページ最大値:{ページ最大値}　/　MODE2ページ最大値：{MODE2ページ最大値}
+	PRINTFORML 
 	CUSTOMDRAWLINE ―
 ENDIF
 RESETCOLOR
 
 IF 덱モード == 1
 	FOR カウンタ,0 + (ページ開始 * 20) ,20 + (ページ開始 * 20)
+		IF カウンタ == 最終編集덱
+			SETCOLOR C_GOLD
+			PRINTFORM [★]
+		ELSE
+			PRINTFORM 　　
+		ENDIF
 		CALL DECK_ABLE_CHECK(カウンタ)
 		IF RESULT == 0 && 설정 != 3
 			SETCOLOR C_GRAY
 			IF 마이덱名:カウンタ != ""
-				PRINTFORM <{カウンタ,2,LEFT}> - 【%마이덱名:カウンタ%】
+				SUBSTRING 마이덱名:カウンタ,0,30
+				RESULTS = 【%RESULTS%】
 			ELSE
-				PRINTFORM <{カウンタ,2,LEFT}> - 마이덱({カウンタ,2})
+				RESULTS = 마이덱（{カウンタ,2}）
 			ENDIF
-			PRINT [사용불가]
-			RESETCOLOR
+			PRINTFORM <{カウンタ,2,LEFT}> - %RESULTS,35,LEFT%
 		ELSE
 			IF 마이덱名:カウンタ != ""
-				PRINTFORM [{カウンタ,2,LEFT}] - 【%마이덱名:カウンタ%】
+				SUBSTRING 마이덱名:カウンタ,0,30
+				RESULTS = 【%RESULTS%】
 			ELSE
-				PRINTFORM [{カウンタ,2,LEFT}] - 마이덱({カウンタ,2})
+				RESULTS = 마이덱（{カウンタ,2}）
 			ENDIF
+			PRINTFORM [{カウンタ,2,LEFT}] - %RESULTS,35,LEFT%
 		ENDIF
+
+		CALL DECK_ABLE_CHECK(カウンタ)
+		IF RESULT == 0
+			PRINT [듀얼사용불가]
+		ELSE
+			PRINT [ 대표 카드 ]
+		ENDIF
+
 		VARSET RESULTS
 		IF 마이덱_エース:カウンタ > 0
 			TRYCALLFORM CARDNAME_{마이덱_エース:カウンタ}, "略称"
@@ -268,6 +311,8 @@ IF 덱モード == 1
 		ENDIF
 		SIF RESULTS != ""
 			PRINTFORM 　[%RESULTS,18,LEFT%]	
+
+		RESETCOLOR
 		PRINTL
 	NEXT
 	PRINTFORML PAGES（{ページ開始 + 1,2}/{ページ最大値 + 1,2}）―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
@@ -283,6 +328,16 @@ IF 덱モード == 1
 
 
 ELSEIF GROUPMATCH(덱モード,2,5,6)
+	PRINTPLAIN 　[키워드 검색]
+	SUBSTRING 필터条件ワード_DK, 0, 28
+	PRINTBUTTON @"【%RESULTS,28,LEFT%】", 9985
+	SIF 필터条件ワード_DK != ""
+		SETCOLOR C_GREEN
+	PRINTBUTTON @"[x]",9986
+	RESETCOLOR
+	PRINTL
+	CUSTOMDRAWLINE ―
+
 	VARSET カウンタB
 	FOR カウンタ,0 + (ページ開始 * 60),60 + (ページ開始 * 60)
 		VARSET RESULT
@@ -322,6 +377,7 @@ ELSEIF 덱モード == 3
 			CONTINUE
 
 		VARSET RESULT
+		VARSET RESULTS
 		TRYCALLFORM DUELDECK_{15000 + カウンタ}("存在確認")
 		SIF RESULT != 1
 			CONTINUE
@@ -401,26 +457,29 @@ ELSEIF RESULT == 7777
 ELSEIF RESULT == 6666
 	덱モード = 1
 	ページ開始 = 0
-	GOTO INPUT_LOOP
+	GOTO INPUT_LOOP_RESETLIST
 ELSEIF RESULT == 6667
 	덱モード = 2
 	ページ開始 = 0
-	GOTO INPUT_LOOP
+	VARSET 필터条件ワード_DK
+	GOTO INPUT_LOOP_RESETLIST
 ELSEIF RESULT == 6668
 	덱モード = 3
 	CALL CHECK_STRUC_GET
-	GOTO INPUT_LOOP
+	GOTO INPUT_LOOP_RESETLIST
 ELSEIF RESULT == 6669
 	덱モード = 4
-	GOTO INPUT_LOOP
+	GOTO INPUT_LOOP_RESETLIST
 ELSEIF RESULT == 6670
 	덱モード = 5
 	ページ開始 = 0
-	GOTO INPUT_LOOP
+	VARSET 필터条件ワード_DK
+	GOTO INPUT_LOOP_RESETLIST
 ELSEIF RESULT == 6671
 	덱モード = 6
 	ページ開始 = 0
-	GOTO INPUT_LOOP
+	VARSET 필터条件ワード_DK
+	GOTO INPUT_LOOP_RESETLIST
 ELSEIF RESULT == 8500
 	ページ開始 --
 	SIF ページ開始 <= 0
@@ -434,6 +493,24 @@ ELSEIF RESULT == 8501
 ELSEIF RESULT == 8600
 	CALL CHOOSE_DECK_RANDOM
 	RETURN RESULT
+ELSEIF RESULT == 9985
+	PRINTL 
+	PRINT 카드 이름을 입력해주세요：
+	PRINTBUTTON @"【돌아간다】", ""
+	PRINTL 
+	PRINTL 
+	INPUTS
+	IF RESULTS == ""
+		필터条件ワード_DK = 
+	ELSE
+		필터条件ワード_DK = %RESULTS%
+	ENDIF
+	ページ開始 = 0
+	GOTO INPUT_LOOP_RESETLIST
+ELSEIF RESULT == 9986
+	필터条件ワード_DK = 
+	ページ開始 = 0
+	GOTO INPUT_LOOP_RESETLIST
 ELSEIF RESULT == 8888
 	RETURN 8888
 ELSEIF RESULT == 9999

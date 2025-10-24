@@ -39,7 +39,7 @@ PRINTL 각 문장을 자연스러운 한국어로 번역했습니다.
 PRINTL 대상의 몬스터 위에 겹쳐서 X소환 취급으로 EX덱에서 특수 소환한다。
 PRINTL 그 후、상대 필드의 카드 １장을 파괴할 수 있다。
 CALLFORM CARD_ABLE(2,攻撃後誘発)
-PRINTL 
+PRINTL ②：자신의 "K9" 몬스터가 전투를 실행한 배틀 종료시에 발동할 수 있다.
 PRINTL 묘지의 이 카드를 자신 필드에 세트한다。
 
 
@@ -61,15 +61,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,62193)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF メインフェイズ != 1
 		RETURN 0
 	CALL FULLRESET

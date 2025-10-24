@@ -22,6 +22,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
 	CASE "종류"
 		RETURN 通常함정
 	CASE "추가日"
@@ -146,7 +148,7 @@ IF 종류 == 효과後誘発
 			選択カード = カード소환先
 			IF RESULT == 1
 				설정レベル = GETVAR(@"%듀얼리스트%_MZ_星:選択カード")
-				CALL YN_CHOICE(듀얼리스트,"특수 소환한 Ｘ몬스터와 同じランクの「메탈 블러드」Ｘ몬스터를 重ねてＸ소환する","특수 소환한 Ｘ몬스터보다 랭크가 ３つ高い「메탈 블러드」Ｘ몬스터를 重ねてＸ소환する")
+				CALL YN_CHOICE(듀얼리스트,"특수 소환한 Ｘ몬스터와 같은 랭크의「메탈 블러드」Ｘ몬스터를 겹쳐서Ｘ소환한다","특수 소환한 Ｘ몬스터보다 랭크가 ３개 높은「메탈 블러드」Ｘ몬스터를 겹쳐서Ｘ소환한다")
 				IF RESULT == いいえ
 					설정レベル += 3
 				ENDIF
@@ -171,7 +173,7 @@ IF 종류 == 효과後誘発
 ELSEIF 종류 == 묘지起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84845,2)
 	IF RESULT == 0
-		PRINTFORML Ｘ소재를 １개 제거할Ｘ몬스터를 選択してください。
+		PRINTFORML Ｘ소재를 １개 제거할Ｘ몬스터를 선택해주세요。
 		CALL FULLRESET
 		효과範囲필드 = 1
 		효과条件カテゴリ = 메탈 블러드
@@ -184,7 +186,7 @@ ELSEIF 종류 == 묘지起動
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"Ｘ",-1)
 			CALL FULLRESET
 			효과範囲묘지 = 1
-효과条件名前 = 쾌락을 욕망하는 멸렵의 추격
+			효과条件名前 = 쾌락을 욕망하는 멸렵의 추격
 			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
 		ENDIF
 	ENDIF

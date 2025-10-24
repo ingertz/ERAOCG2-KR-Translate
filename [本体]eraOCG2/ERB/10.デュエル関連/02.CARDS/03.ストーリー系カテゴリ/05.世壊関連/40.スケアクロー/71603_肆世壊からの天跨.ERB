@@ -59,15 +59,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,71603)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件カテゴリ = 스케어클로
@@ -95,7 +89,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		SETCOLOR C_YELLOW
 		SIF 듀얼리스트 == "자신"
-PRINTL 공격력을 올리는 몬스터를 선택해 주세요
+			PRINTL 공격력을 올릴 몬스터를 선택해 주세요
 		PRINTL
 		RESETCOLOR
 		CALL FULLRESET
@@ -117,7 +111,7 @@ PRINTL 공격력을 올리는 몬스터를 선택해 주세요
 				IF ステータス修正:0 >= ステータス修正:1
 					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:0,"永攻",ステータス修正:0)
 					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:0,"永守",ステータス修正:0)
-				ELSEIF ステータス修正:0 <= ステータス修正:1
+				ELSEIF ステータス修正:0 < ステータス修正:1
 					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:0,"永攻",ステータス修正:1)
 					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:0,"永守",ステータス修正:1)
 				ENDIF
@@ -126,7 +120,7 @@ PRINTL 공격력을 올리는 몬스터를 선택해 주세요
 		PRINTL
 		SETCOLOR C_YELLOW
 		SIF 듀얼리스트 == "자신"
-PRINTL 내성을 부여하는 몬스터를 선택해 주세요
+			PRINTL 내성을 부여할 몬스터를 선택해 주세요
 		PRINTL
 		RESETCOLOR
 		CALL FULLRESET

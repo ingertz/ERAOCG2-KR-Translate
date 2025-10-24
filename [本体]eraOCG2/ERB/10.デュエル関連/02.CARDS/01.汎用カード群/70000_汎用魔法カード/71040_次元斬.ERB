@@ -7,9 +7,9 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 차원 참
+		RESULTS = 차원참
 	CASE "略称"
-		RESULTS = 차원 참
+		RESULTS = 차원참
 	CASE "カテゴリ"
 		RESULTS:0 = 이차원
 		RESULTS:1 = 게임 오리지널
@@ -33,7 +33,7 @@ RETURN 0
 @CARD_EXPLANATION_71040(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의  ②의 효과는 1턴에 1번밖에 사용할 수 없다。
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,마함起動,손패起動,フリー誘発)
 PRINTL ①：자신의 패를 1장 제외하고, 상대 필드의 카드 1장을 대상으로 발동할 수 있다。
 PRINTL 그 카드를 제외한다。
@@ -52,24 +52,21 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF 손패数(듀얼리스트) == 1
-			RETURN 0
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-		SIF 손패数(듀얼리스트) == 0
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
 	효과範囲상대마함 = 1
+	효과条件除去種 = 제외
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

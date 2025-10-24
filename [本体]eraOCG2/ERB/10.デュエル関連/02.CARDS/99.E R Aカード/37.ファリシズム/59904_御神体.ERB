@@ -166,9 +166,9 @@ IF 종류 == 지속효과
 	;포트리스状態での지속효과
 
 	CALL SET_TMP_EX_RST_CAT(듀얼리스트,"퍼실리즘")
-;	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"直無")
-	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"直無")
-	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+;	CALL CARD_EX_RESTRICTION(듀얼리스트,"퍼실리즘")
+	CALL SET_PLAYER_INFO(듀얼리스트,"直接無効",3)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
 
 ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
 	;마법面の磔효과
@@ -388,7 +388,12 @@ ENDIF
 #DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC カード추가先
 #DIM DYNAMIC 조교대상
+#DIM DYNAMIC 조교효과
 #DIMS DYNAMIC 元カード名
+#DIMS DYNAMIC 퍼실리즘_조교内容
+#DIMS DYNAMIC 퍼실리즘一覧, 7
+#DIMS DYNAMIC 조교内容, 7
+#DIM DYNAMIC 퍼실리즘ID, 7
 
 
 IF 종류 == 지속효과
@@ -401,12 +406,67 @@ ELSEIF 종류 == ターン終了時
 	CALL CARD_HOSTAGE_MONSTER_59904(듀얼리스트,종류,ゾーン,場所)
 	ダメージ量 = 2000
 	CALL CARD_DAMAGE_59904(듀얼리스트,종류,ゾーン,場所,ダメージ量)
+	;텍스트
+	PRINTFORML 
+	PRINTFORMW 격렬한 섹스를 보고 몸이 달아오른 퍼실리즘들이, 대전 상대를 더욱 조교했다！
+	PRINTFORML 
+	;조교횟수の決定
+	조교효과 = 100
+	CALL DECIDE_NUMBEROFLESSON_SYMMETRIA(듀얼리스트,종류,ゾーン,場所,조교효과)
+	조교효과 = RESULT
+	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;퍼실리즘一覧の宣言
+		퍼실리즘一覧:0 = 퍼실리즘 마뉴아
+		퍼실리즘一覧:1 = 퍼실리즘 블로우
+		퍼실리즘一覧:2 = 퍼실리즘 이즈리
+		퍼실리즘一覧:3 = 퍼실리즘 세라프
+		퍼실리즘一覧:4 = 퍼실리즘 마하메나
+		퍼실리즘一覧:5 = 퍼실리즘 렉텀
+		퍼실리즘一覧:6 = 퍼실리즘 이스크
+
+		;プレイ内容の宣言
+		조교内容:0 = 수음
+		조교内容:1 = 펠라치오
+		조교内容:2 = 파이즈리
+		조교内容:3 = 자위
+		조교内容:4 = 前穴凌辱
+		조교内容:5 = 後穴凌辱
+		조교内容:6 = 딥키스
+
+		;IDの配列（これ要る？）
+		퍼실리즘ID:0 = 59900
+		퍼실리즘ID:1 = 59901
+		퍼실리즘ID:2 = 59902
+		퍼실리즘ID:3 = 59903
+		퍼실리즘ID:4 = 59909
+		퍼실리즘ID:5 = 59910
+		퍼실리즘ID:6 = 59911
+		
+
+		;フィールド・묘지に퍼실리즘が居ればそれに対応した조교を行う
+		FOR カウンタ,0,7
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲묘지 = 1
+			효과条件名前 = %퍼실리즘一覧:カウンタ%
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT != 0
+				IF 발동済_3(듀얼리스트,퍼실리즘ID:カウンタ) == 0
+					퍼실리즘_조교内容 = %조교内容:カウンタ%
+					PRINTFORMW %퍼실리즘一覧:カウンタ%의 조교！
+					CALL EROTIC_MOVE(퍼실리즘_조교内容,조교대상,MASTER,조교효과)
+				ENDIF
+			ENDIF
+		NEXT
+	ENDIF
 ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	;モンスター面の磔효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,159904,3)
 		IF RESULT == 0
 			;텍스트
-			PRINTFORMW 늠늠하게 서있는"어신체"가、필드를 완전히 지배하고있다。
+			PRINTFORMW 늠름하게 서있는"어신체"가、필드를 완전히 지배하고있다。
 			;カードを置く位置の情報を취득
 			カード추가先 = 現마함(듀얼리스트)
 			;상대のカードを置く

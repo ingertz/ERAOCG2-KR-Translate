@@ -53,15 +53,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,71150)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	CALL CARD_DRAW_CHECK
 	RETURN 1
 ENDIF
@@ -99,21 +93,21 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 			条件달성:1 = 1
 
 		IF 듀얼리스트 == "자신"
-PRINTL 효과를 선택해 주십시오
+			PRINTL 효과를 선택해 주십시오
 			PRINTL 
-PRINTL [1] - "투기염참검"을 제외한 "화염의 검사", "사라만도라" 카드 1장을 덱에서 패에 추가한다.
+			PRINTL [1] - "투기염참검"을 제외한 "화염의 검사", "사라만도라" 카드 1장을 덱에서 패에 추가한다.
 			IF 条件달성:0 == 1
-PRINTL [2] - 상대 필드의 카드 1장을 파괴한다.
+				PRINTL [2] - 상대 필드의 카드 1장을 파괴한다.
 			ELSE
 				SETCOLOR C_GRAY
-PRINTL [X] - 자신 필드에 전사족 화염속성 몬스터가 없습니다.
+				PRINTL ［X］- 자신 필드에 전사족 화염속성 몬스터가 없습니다.
 				RESETCOLOR
 			ENDIF
 			IF 条件달성:1 == 1
-PRINTL [3] - 자신 필드에 있는 "화염의 검사" 몬스터 1장에 대상 내성을 부여한다.
+				PRINTL [3] - 자신 필드에 있는 "화염의 검사" 몬스터 1장에 대상 내성을 부여한다.
 			ELSE
 				SETCOLOR C_GRAY
-PRINTL [X] - 자신 필드에 "화염의 검사" 몬스터가 없습니다.
+				PRINTL ［X］ - 자신 필드에 "화염의 검사" 몬스터가 없습니다.
 				RESETCOLOR
 			ENDIF
 			BINPUT

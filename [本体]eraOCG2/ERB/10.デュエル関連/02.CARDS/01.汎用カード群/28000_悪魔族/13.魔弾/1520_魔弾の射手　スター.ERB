@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 마탄환의 사수 스타
+		RESULTS = 마탄환의 사수 스타
 	CASE "略称"
-RESULTS = 사수 스타
+		RESULTS = 사수 스타
 	CASE "カテゴリ"
-RESULTS:0 = 마탄환
-RESULTS:4 = 마탄환의 사수
+		RESULTS:0 = 마탄환
+		RESULTS:4 = 마탄환의 사수
 ENDSELECT
 
 
@@ -48,7 +48,6 @@ PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①: 이 카드가 몬스터 존에 존재하는 한,
 PRINTL 자신 또는 상대 턴에 자신은 "마탄환" 마법 / 함정 카드를 패에서 발동할 수 있다.
-PRINTL 이 효과는 무효화되지 않는다.
 CALLFORM CARD_ABLE(1,효과後誘発)
 PRINTL ②: 마법 / 함정 카드의 효과가 발동했을 경우에 발동할 수 있다.
 PRINTL 자신의 덱에서 레벨 4 이하의 "마탄환" 몬스터 1장을 수비 표시로 특수 소환한다.
@@ -87,6 +86,10 @@ IF 종류 == 효과後誘発
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_1520(듀얼리스트,종류,ゾーン,場所)
@@ -110,4 +113,9 @@ IF 종류 == 효과後誘発
 		CALL 효과条件レベル_ADV(4, "以下")
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 마탄환
+	효과条件종류 = 마함全般
+	CALL STATCHANGE_HAND(듀얼리스트,"全体",場所,"発可")
 ENDIF

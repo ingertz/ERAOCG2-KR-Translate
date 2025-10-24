@@ -25,7 +25,7 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "外部者"
+	CASE "외부자"
 		RETURN 1
 	CASE "종류"
 		RETURN 초차원
@@ -45,8 +45,6 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "連動ID"
 		RETURN 2795
-	CASE "추가日"
-		RETURN 251010
 ENDSELECT
 
 RETURN 0
@@ -73,14 +71,7 @@ ENDIF
 @CARD_EXPLANATION_55070(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 『초월』"그레도라" 몬스터
-SETCOLOR C_L_GRAY
-PRINTL （자신의 패에서 몬스터 １장을 제외하고 발동할 수 있다。
-PRINTL 　EX덱의 이 카드를、자신 필드의 지정된 몬스터 １장 위에 겹쳐서 『초월』한다。
-PRINTL  『초월』한 이 카드의 이름은 겹친 몬스터와 같은 이름으로 취급하며、
-PRINTL 　겹친 몬스터의 공겨격력 / 수비력 만큼、이 카드의 공격력 / 수비력을 올린다。
-PRINTL  『초월』은 １턴에 １번밖에 할 수 없으며、선공 １턴째엔 사용할 수 없다）
-RESETCOLOR
+CALL PRINT_STRIDETEXT("그레도라")
 PRINTL 이 카드명의 ②③의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
 CALL CARD_ABLE(0,지속효과,攻守変動)
 PRINTL ①：상대 필드의 악성 카운터가 놓인 몬스터는 발동 무효를 얻는다。
@@ -90,14 +81,13 @@ PRINTL ＥＸ덱의 "길티 엠프레스 다크페이스 그레도라" １장을
 PRINTL 다음 상대의 턴 종료시까지 이하의 효과 전부를 적용한다。
 CALL CARD_ABLE(0,短紋章起動)
 PRINTL ●상대 필드에 악성 카운터가 놓인 몬스터가 있는 한、자신 필드의 곤충족 몬스터는 대상 내성을 얻는다。
-CALL CARD_ABLE(0,攻紋章起動)
+CALL CARD_ABLE(0,短紋章起動,攻紋章起動)
 PRINTL ●상대 필드의 악성 카운터가 놓인 몬스터는 공격력이 원래 공격력만큼 내리고、발동 무효 / 소재 불가를 얻는다。
-PRINTL 
-PRINTL 그 후、상대는 덱에서 몬스터 １장을 악성 카운터가 １개 놓인 상태로 특수 소환한다。
 CALL CARD_ABLE(2,필드起動,フリー誘発)
-PRINTL ③：자신 턴에 발동할 수 있다。
-PRINTL 덱 / 묘지에서 레벨８ 이하의 곤충족 몬스터 １장을 특수 소환한다。
-PRINTL 그 후、상대의 악성 카운터가 놓인 몬스터 １장을 완전 제외할 수 있다。
+PRINTL ③：자신 턴에, 상대의 악성 카운터가 놓여있는 몬스터 1장을 대상으로 하고 발동할 수 있다。
+PRINTL 대상 몬스터를 완전 제외한다.
+PRINTL 그 후, 덱 / 묘지에서 레벨８ 이하의 곤충족 몬스터 １장을 특수 소환한다。
+PRINTL 이 효과로 특수 소환한 몬스터는, 이 효과로 제외한 몬스터와 같은 이름의 카드로도 취급한다。
 
 @CARDCAN_55070(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -134,6 +124,14 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	SIF ゾーン != "필드"
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	효과条件悪Ｃ所持 = 999
+	효과条件除去種 = 제외
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
@@ -181,10 +179,6 @@ IF 종류 == EX소환時
 		효과条件行先플래그 = 제외行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			CALL CARD_RESERV(듀얼리스트,55070,短紋章予約)
-			CALL CARD_RESERV(듀얼리스트,55070,攻紋章予約)
-			CALL CARD_RESERV(듀얼리스트,55070,スタン予約)
-
 			IF モンスター数(対面者) < 5
 				CALL FULLRESET
 				효과範囲덱 = 1
@@ -193,51 +187,65 @@ IF 종류 == EX소환時
 					CALL SET_FIELD_INFO(対面者,"필드",カード소환先,"悪Ｃ",1)
 				ENDIF
 			ENDIF
+
+			CALL CARD_RESERV(듀얼리스트,55070,短紋章予約)
+			CALL CARD_RESERV(듀얼리스트,55070,攻紋章予約)
+			CALL CARD_RESERV(듀얼리스트,55070,スタン予約)
+			CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止묘지",1,1)
+			CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止덱",1,1)
+			CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止EX덱",1,1)
+			CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止제외",1,1)
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55070,2)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과範囲덱 = 1
-		효과範囲묘지 = 1
-		효과条件종족 = 곤충족
-		CALL 효과条件レベル_ADV(8,"以下")
-		효과条件종류 = レベル持ち
-		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		효과条件悪Ｃ所持 = 999
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"完全제외")
 		IF RESULT == 1
+			選択カードID = RESULT:2
 			CALL FULLRESET
-			효과範囲상대필드 = 1
-			효과条件悪Ｃ所持 = 999
-			효과条件行先플래그 = 完全제외行き
-			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			효과範囲덱 = 1
+			효과範囲묘지 = 1
+			효과条件종족 = 곤충족
+			CALL 효과条件レベル_ADV(8,"以下")
+			효과条件종류 = レベル持ち
+			효과추가종류 = 1000000 + 選択カードID
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
 	효과条件悪Ｃ所持 = 999
 	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無")
+ELSEIF 종류 == 攻守変動
+	FOR カウンタ, 0, 5
+		選択カードID = GETVAR(@"%対面者%_필드:カウンタ")
+		SIF 選択カードID < 1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_悪Ｃ:カウンタ") < 1
+			CONTINUE
+		TRYCALLFORM CARD_{選択カードID}("攻撃力")
+		攻撃力修正 = RESULT
+		SIF 攻撃力修正 > 0
+			CALL STATCHANGE_BASIC(対面者,"自身",カウンタ,-(攻撃力修正))
+	NEXT
 ELSEIF 종류 == ターン開始時予約
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55070,0)
 	IF RESULT == 0
 		CALL CARD_RESERV(듀얼리스트,55070,短紋章予約)
 		CALL CARD_RESERV(듀얼리스트,55070,攻紋章予約)
+		CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止묘지",1,1)
+		CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止덱",1,1)
+		CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止EX덱",1,1)
+		CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止제외",1,1)
 	ENDIF
 ELSEIF 종류 == 短紋章起動
 	CALL FULLRESET
 	효과条件悪Ｃ所持 = 999
 	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無")
 	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"不材")
-
-	CALL FULLRESET
-	효과範囲상대필드 = 1
-	효과条件悪Ｃ所持 = 999
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT == 1
-		CALL FULLRESET
-		효과条件종족 = 곤충족
-		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
-	ENDIF
 ELSEIF 종류 == 攻紋章起動
 	FOR カウンタ, 0, 5
 		選択カードID = GETVAR(@"%対面者%_필드:カウンタ")

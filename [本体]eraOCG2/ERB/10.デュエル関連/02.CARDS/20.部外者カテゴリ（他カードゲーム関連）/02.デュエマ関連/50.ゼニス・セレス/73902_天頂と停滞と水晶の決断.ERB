@@ -57,14 +57,13 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73902)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF ゾーン == "손패"
-		PRINT
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
 	SIF 발동済_1(듀얼리스트,73902)
 		RETURN 0
 	CALL FULLRESET
@@ -79,12 +78,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	효과範囲덱 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
-		RETURN 0
-
-
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 攻撃時誘発
@@ -143,7 +136,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == 攻撃時誘発
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1
 				PRINTL
-PRINTL 수정이 다시 빛을 발한다!
+				PRINTL 수정이 다시 빛을 발한다!
 				PRINTL
 				CALL CARDEFFECT_73902_0(듀얼리스트,종류,ゾーン,場所)
 			ENDIF
@@ -183,18 +176,18 @@ SIF 現山札数(듀얼리스트) < 2
 
 IF 듀얼리스트 == "자신"
 	PRINTL
-PRINTL 어떤 결단을 기동하시겠습니까?
+	PRINTL 어떤 결단을 기동하시겠습니까?
 	PRINTL
-PRINTL [ 1] - 천정 - "제니스""언노운""셀레스" 회수
+	PRINTL [ 1] - 천정 - "제니스""언노운""셀레스" 회수
 	IF 효과使用불가:1 == 0
-PRINTL [ 2] - 정체 - 상대 필드의 카드를 덱 맨 아래로 보낸다
+		PRINTL [ 2] - 정체 - 상대 필드의 카드를 덱 맨 아래로 보낸다
 	ELSE 
-PRINTL      - 정체 - 기동불가
+		PRINTL      - 정체 - 기동불가
 	ENDIF
 	IF 효과使用불가:2 == 0
-PRINTL [ 3] - 수정 - 덱 위의 카드를 발동불가 상태로 세트
+		PRINTL [ 3] - 수정 - 덱 위의 카드를 발동불가 상태로 세트
 	ELSE
-PRINTL      - 수정 - 기동불가
+		PRINTL      - 수정 - 기동불가
 	ENDIF
 	BINPUT
 

@@ -59,7 +59,7 @@ IF CFLAG:캐릭터_ID:우후후 == 1
 ENDIF
 ;만족したら放す
 IF 全力押倒モード == 0
-	IF 행동順 == 1 && CFLAG:캐릭터_ID:우후후 == 2 && BASE:캐릭터_ID:만족 == MAXBASE:캐릭터_ID:만족
+	IF 행동順 == 1 && CFLAG:캐릭터_ID:우후후 == 2 && BASE:캐릭터_ID:만족 == MAXBASE:캐릭터_ID:만족 && 듀얼モード == 0
 		RESETCOLOR
 		PRINTFORMW %CALLNAME:캐릭터_ID%는 만족한 것 같다。
 		IF TFLAG:섹스승부
@@ -304,10 +304,13 @@ CALL CLOTHES_SETTING_TRAIN(캐릭터_ID)
 
 
 
-@RESET_SEXVARIENT()
+@RESET_SEXVARIENT(ARG)
 
+SIF ARG == 0
+	듀얼モード = 0
 TFLAG:섹스승부 = 0
 TFLAG:철저학대모드 = 0
+停止状態 = 0
 SIF 全力押倒モード == 1
 	全力押倒モード = 0
 CALL TOUCH_SET(0,0,0,1)

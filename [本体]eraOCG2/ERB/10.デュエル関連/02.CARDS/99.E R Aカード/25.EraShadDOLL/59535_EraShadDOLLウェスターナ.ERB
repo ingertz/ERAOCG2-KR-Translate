@@ -1,0 +1,456 @@
+﻿@CARDNAME_59535, 参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = E.R.A.ShadDOLL.Vestarna
+	CASE "略称"
+		RESULTS = ERA베스타나
+	CASE "カテゴリ"
+		RESULTS:0 = 섀도르
+		RESULTS:1 = ShadDOLL
+		;RESULTS:2 = 히티아
+		RESULTS:3 = E.R.A
+ENDSELECT
+
+
+@CARD_59535(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1850
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		;カード所持してないと連動しない설정に（入手前はALT화상に설정できない処置）
+		;IF ITEM:59535 >= 1
+		;	RETURN 1835
+		;ENDIF
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_59535(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 「섀도르」몬스터＋「영뢰주박의 암컷노예」또는 마법사족 / 어둠속성 몬스터
+PRINTL 이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
+;PRINTL このカードは융합소환でのみEX덱에서 특수소환できる。
+CALLFORM CARD_ABLE(0, 攻守変動)
+PRINTL ①：이 카드의 공격력은、자신 필드 / 묘지의 "섀도르" 카드의 종류×２００ 오른다。
+PRINTL 또한、상대 플레이어가 ■■■■■■■■■■■■■인 경우、이하의 효과를 적용한다。
+CALLFORM CARD_ABLE(0, 常在無効)
+PRINTL ●이 몬스터가 필드에 존재하는 한、상대 플레이어는 "배틀 페이즈중에 몬스터의 효과를 발동할 권리"를 빼앗긴다。
+CALLFORM CARD_ABLE(0, 지속효과)
+PRINTL ②：필드의 이 카드는 연속전투와 관통공격을 갖는다。
+CALLFORM CARD_ABLE(0, ライフ変強制誘発)
+PRINT 또한、상대 플레이어가 ■■■■■■■■■■■■■인 한、이 카드가 상대에게 전투 데미지를 주었을 때、상대 플레이어에게
+SETCOLOR C_FIRE_T
+PRINT 사염 데미지
+RESETCOLOR
+PRINTL 를 준다。
+CALLFORM CARD_ABLE(3, 필드起動, 묘지起動)
+PRINTL ③：자신 메인 페이즈 및 배틀 페이즈에 필드 / 묘지의 이 카드를 제외하고 발동할 수 있다。
+PRINTL 서로의 플레이어는 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■가 된다。
+;起動효과で、자신と상대プレイヤーのeraの조교システム上での체력・기력を完全회복する。
+CALL TEXT_DECORATION("ROGUE")
+
+;ERA섀도르융합体の추가。カチコミ担当。主に後攻で出してバトルで상대フィールドのモンスターを片付ける使い方を想定。
+;その性能の多くが「소환獣プルガトリオ」と似ており、あの소환獣と力の源泉は非常に近いのではないかと考えられる。（ただの妄想）
+;화염속성つながりでメテオバースト相当の효과で상대プレイヤーの権利剥奪も持つが、これは상대プレイヤーが조교대상である場合に限られる。
+;「CARD_ABLE(0, 常在無効)」の記載は、ERAミドラと同様に상대プレイヤー依存の효과適用상황を可視化するための記述。なので処理は空白。
+;체력・기력を회복させる聖なる炎の能力は、本来こんなE.R.Aカードでの牝奴隷조교の目的で使うものではないが、だからこそ使わせて尊厳破壊していく。
+
+
+;以下、まったく読む必要のない、ふわふわShadDOLL설정（こいつ誰やねん編：１）
+;
+;ターミナルワールドには霊使いのウィンとエリアのそっくりさん（ウィンダとエリアル）がいる。
+;ということは、いまだ姿はないけれど、アウスとヒータのそっくりさんも端末世界のどこかに居るのではないか、というのが最初の着想。
+;화염속성の部族（ジュラックorフレムベル）の人間として戦って死亡したヒータのそっくりさん（仮称：ヒーティア）のエル섀도르化が「베스타나」
+;そして更にE.R.Aカード化してE.R.A.ShadDOLLとなったのがこのカード。という、五階ぐらいから飛び降りて三段ひねったぐらいの全身複雑骨折したカードである。
+;手に蝋燭のようなものを持っている화상だが、実はお菓子用のかき混ぜ器（kitchen whisk）である。「ヒータちゃん家事の天才」概念でera世界に挑んでいく。
+;牝奴隷の候補となる対戦상대プレイヤーへの炎で灼く타입の責め苦を担当している。炎鞭プレイ・蝋燭プレイ・焼印プレイ・焦熱地獄プレイの担当。
+
+
+@CARDSUMMON_59535(듀얼리스트, 소환カード, EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 섀도르
+ELSEIF EX参照 >= 10
+	素材条件종족 = 마법사족
+	素材条件속성 = 어둠속성
+	素材条件スーパー名前 = 영뢰주박의 암컷노예
+ENDIF
+
+IF EX参照 == 1
+	;PRINTL サモンまでは言ってるよ
+	CALL FUSCAN(듀얼리스트, 소환カード, 59535) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_59535(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 조교대상 = -1
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 59535)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트, 59535)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン, "필드", "묘지")
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	SIF メインフェイズ != 1 && バトルフェイズ != 1
+			RETURN 0
+	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;상대があなた（＝MASTER）または男性の場合は발동불가、それ以外の조교대상なら許可
+		SIF 조교대상 == MASTER
+			RETURN 0
+		SIF TALENT:조교대상:성별 == 2
+			RETURN 0
+	ELSE
+		;상대プレイヤーが조교대상でない場合は발동불가
+		RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == ライフ変強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ダメージ受者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ダメージ종류, "戦闘", "直接戦闘")
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;상대があなた（＝MASTER）または男性の場合は발동불가、それ以外の조교대상なら許可
+		SIF 조교대상 == MASTER
+			RETURN 0
+		SIF TALENT:조교대상:성별 == 2
+			RETURN 0
+	ELSE
+		;상대プレイヤーが조교대상でない場合は適用されない。
+		RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 常在無効
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;상대があなた（＝MASTER）または男性の場合は適用しない、それ以外の조교대상なら適用される
+		SIF 조교대상 == MASTER
+			RETURN 0
+		SIF TALENT:조교대상:성별 == 2
+			RETURN 0
+	ELSE
+		;상대プレイヤーが조교대상でない場合は適用されない。
+		RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59535(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 조교대상 = -1
+#DIM DYNAMIC 無効カード
+#DIM DYNAMIC 条件合致数
+#DIM DYNAMIC 与ダメージ量
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == 묘지起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 59535, 1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 제외行き)
+		
+		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+		IF RESULT != -1
+			조교대상 = RESULT
+			
+			;お互いのプレイヤーの체력・기력を完全회복する『不死鳥（ポニクス）の聖炎』
+			BASE:MASTER:체력 = MAXBASE:MASTER:체력
+			BASE:조교대상:체력 = MAXBASE:조교대상:체력
+			
+			BASE:MASTER:기력 = MAXBASE:MASTER:기력
+			BASE:조교대상:기력 = MAXBASE:조교대상:기력
+			
+			BASE:MASTER:정력 = MAXBASE:MASTER:정력
+			BASE:조교대상:정력 = MAXBASE:조교대상:정력
+			
+			;ついでに분노状態も解除
+			CFLAG:조교대상:극대노 = 0
+			CFLAG:조교대상:기분나쁨 = 0
+			TCVAR:조교대상:기분나쁨 = 0
+			BASE:조교대상:분노 = 0
+			
+			
+			;フレーバー텍스트
+			PRINTFORML 베스타나의 모습이 그림자 실로 변해 서로의 플레이어를 구속하자, 주박하는 그림자 실은 흔들거리면서 검은 불꽃으로 변했다!
+			PRINTFORMW 갑작스러운 일에 놀라 불꽃을 뿌리치려 한 %CALLNAME:조교대상%이지만, 살아있는 생물처럼 휘감겨오는 불꽃의 소용돌이에 휩싸여버렸다……
+			PRINTFORML 
+			PRINTFORMW 하지만, 그 흑염은 자신을 불태우기는커녕, 오히려 기분 나쁠 정도로 따뜻한 감촉을 준다는 것을 깨달았다.
+			PRINTFORML 베스타나의 불꽃은 두 사람의 아픔이나 피로를 순식간에 치유하고 있었다. 그것은 불꽃 마법의 극치. 『재생』의 마력을 품은 염환의 권능.
+			PRINTFORMW 온몸을 치유받고 해방된 %CALLNAME:조교대상%은, 의아한 듯이 경계하는 눈초리를 이쪽으로 향하면서 결투를 재개했다……
+			
+		ENDIF
+	ENDIF
+ELSEIF 종류 == ライフ変強制誘発
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 59535)
+	IF RESULT == 0
+		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+		IF RESULT != -1
+			조교대상 = RESULT
+			;MASTER상대だと何も起きない
+			SIF 조교대상 == MASTER
+				RETURN 0
+			;상대プレイヤーに戦闘ダメージに応じた강도の「拷問処理」を実施
+			;	DOWNBASE:조교대상:체력 += (80 * 実보정) / 100
+			;	DOWNBASE:조교대상:기력 += (50 * 実보정) / 100
+			;	CALL SOURCE_CALC_접촉(조교대상, 実行役대상, (50 * 実보정) / 100)
+			;	CALL SOURCE_CALC_고통(조교대상, 実行役대상, (200 * 実보정) / 100)
+			
+			与ダメージ量 = GETVAR(@"%対面者%_変動値_保")
+			SIF 与ダメージ量 == 0
+				RETURN 0
+			
+			;フレーバー텍스트(４段階：ダメージ500未満、500-2000、2000-8000、8000以上)
+			;炎鞭プレイ・蝋燭プレイ・焼印プレイ・焦熱地獄プレイ
+			IF 与ダメージ量 < 500
+				PRINTFORMW 베스타나는 그림자 실을 끌어당겨 노예 조교용 채찍을 만들어내자, %CALLNAME:조교대상%를 내리쳤다!
+				SETCOLOR C_RED
+				PRINTFORML 불꽃을 두른 채찍이 두 번, 세 번 휘둘러지자, 고통스러운 소리를 지르는 %CALLNAME:조교대상%의 피부가 타는 역한 냄새가 주변을 감싼다……
+				PRINTFORMW 
+				RESETCOLOR
+			ELSEIF 与ダメージ量 < 2000
+				PRINTFORMW 베스타나가 구속한 %CALLNAME:조교대상%의 눈앞에서 그림자 실을 꼬아 만들어낸 보라색 다발에 불을 붙였다.
+				SETCOLOR C_RED
+				PRINTFORML 마치 양초처럼 열에 녹아내리는 그림자 실이, 구속되어 옴짝달싹 못 하는 %CALLNAME:조교대상%의 피부에 뚝 하고 떨어졌다.
+				PRINTFORML 뜨거움에 고통스러운 표정을 짓는 %CALLNAME:조교대상%를 보고, 베스타나는 가학적인 미소로 사냥감의 피부를 보라색 밀랍으로 화장했다……
+				PRINTFORMW 
+				RESETCOLOR
+			ELSEIF 与ダメージ量 < 8000
+				;ちょい長いので名称ターン１の표시扱いに（효과番号④を利用）
+				IF 발동済_4(듀얼리스트, 59535) != 1
+					PRINTFORMW 베스타나가 조종하는 그림자 실이 %CALLNAME:조교대상%의 몸을 묶어, 옴짝달싹 못 하도록 양손 양발을 구속한다.
+					PRINTFORML 이제부터 행해질 조교라는 이름의 고문에 떠는 %CALLNAME:조교대상%에게, 베스타나는 놋쇠로 만든 인두를 과시하듯 보여주었다.
+					PRINTFORML 차가운 금속의 용도를 이해하고 공포에 떠는 %CALLNAME:조교대상%를 비웃는 베스타나가, 불꽃의 마력을 인두에 전달하여 새빨갛게 달구어 간다.
+					PRINTFORMW 
+					SETCOLOR C_RED
+					PRINTFORMW 가축에게 찍는 낙인(브랜딩)은커녕, 소유자가 노예에게 새기는 각인조차 아닌, 전혀 아무런 의미도 없는 낙인이 혁혁하게 빛난다.
+					PRINTFORML 그저 순수하게 고통받는 모습을 보여 주인을 즐겁게 해주기 위해서만, %CALLNAME:조교대상%에게 낙인이 찍히려 하고 있다.
+					PRINTFORML 상상하는 것만으로도 끔찍한 고통에서 벗어나려 발버둥 치는 %CALLNAME:조교대상%의 모습에, 베스타나는 가학적으로 입꼬리를 비틀었다.
+					PRINTFORMW 
+					SETCOLOR C_D_RED
+					PRINTFORMW 지이이이이익……
+					PRINTFORML 인두에서 희미한 연기와 살이 타는 냄새가 피어오르고, 눈을 부릅뜬 채 절규하는 %CALLNAME:조교대상%의 비명이 주인에게 바쳐졌다……
+					PRINTFORMW 
+					RESETCOLOR
+					CALL CARD_EFFECT_USE(듀얼리스트, 59535, 4)
+				ENDIF
+			ELSE
+				;クッソ長いのでデュエル１の표시扱いに（D1を利用）
+				;『죽음의 체감』feat.베스타나　"화장"의 이미지. 제정신으로 읽을 것이 못 된다.
+				IF 발동済_D1(듀얼리스트, 59535) != 1
+					CUSTOMDRAWLINE —
+					PRINTFORMW 베스타나가, 이제는 결투(듀얼)로서는 결판이 났을 %CALLNAME:조교대상%의 곁으로 구둣소리를 울리며 다가간다.
+					PRINTFORML 감소해가는 자신의 라이프 포인트를 분한 듯이 보고 있던 %CALLNAME:조교대상%는, 자신을 내려다보는 인형을 겨우 알아차리고 얼굴을 들었다.
+					PRINTFORMW 그 인형과 시선이 마주친 %CALLNAME:조교대상%의 얼굴에서 핏기가 싹 가시며, 그야말로 창백한 표정으로 %CALLNAME:MASTER%에게 도움을 청하려던――
+					PRINTFORML 그 찰나에, 베스타나의 몸이 전부 그림자 실로 변해 %CALLNAME:조교대상%의 온몸을 순식간에 감싸고, 꿈틀거리는 그림자 실 덩어리가 땅속으로 가라앉아 갔다……
+					PRINTFORMW 
+					PRINTFORML ・・・
+					PRINTFORML ・・
+					PRINTFORMW ・
+					CUSTOMDRAWLINE —
+					SETCOLOR C_D_PINK
+					PRINTFORMW 의식을 되찾은 %CALLNAME:조교대상%의 주위는, 그림자 실 색을 한 사막이 펼쳐져 있었다.
+					PRINTFORML 사막을 비추는 보라색의 기괴한 항성이 내뿜는 빛에 눈을 뜬 %CALLNAME:조교대상%는, 금속제 구속복을 입고 있었다.
+					PRINTFORMW 
+					PRINTFORMW 몸을 움직이기도 힘든 무거운 구속복은, %CALLNAME:조교대상%의 구멍이란 구멍을 막대 모양의 물체로 막고 있다.
+					PRINTFORML 금속성의 기분 나쁜 맛과 냄새에 마비될 듯한 감각에 채찍질하며, 소리 없는 사막에서 혹시 도움이 없을까 찾으려 기어가기 시작했다.
+					PRINTFORMW 
+					PRINTFORMW 이글이글, 지글지글 보라색 태양이 구속복을 달구고, 열이 통증이 되어 피부로부터 전해져 온다.
+					PRINTFORMW 애벌레처럼 기어서 몇 미터 이동하는 것만으로, 온몸의 피로와 통증이 견디기 힘든 괴로움을 안겨준다.
+					PRINTFORMW 어딘가에 구원이 있다고 알고 있는 것은 아니다. 하지만, 어설프게 몸을 움직일 수 있는 탓에 모든 것을 포기할 수도 없다.
+					PRINTFORML 그런 비장한 마음으로, 간신히 몸을 쉬게 하면서 기력을 쥐어짜듯이, %CALLNAME:조교대상%는 보라색 사막을 꼴사납게 계속해서 기었다.
+					PRINTFORMW 
+					PRINTFORMW 얼마나 계속 기었을까.
+					PRINTFORMW 얼마나 계속 기었을까.
+					PRINTFORMW 얼마나 계속 기었을까.
+					CLEARLINE 1
+					PRINTFORMW 얼마나 계속 기었을까. 시간 감각 따위 없는 세계에서 던진 질문은, 누구에게도 받아들여지지 못하고 허공으로 사라져 간다.
+					PRINTFORMW 어딘가에 도착하면 살 수 있는 걸까?
+					PRINTFORMW 눈을 부수고 싶을 정도로 넓은 사막에서 던진 질문도, 누구에게도 주워지지 못하고 풍화되어 간다.
+					PRINTFORMW 차라리 미쳐버리면 얼마나 편할까……
+					PRINTFORML %CALLNAME:조교대상%에게 떠오르는 갈망이, 그 마음을 검디검게 칠해간다……
+					PRINTFORMW
+					PRINTFORMW 그리고……드디어 %CALLNAME:조교대상%는 기는 것마저 멈춰버렸다.
+					PRINTFORMW 도저히 살 가망 따위는 없으니, 살려고 발버둥 치는 노력에도 아무런 의미가 없다.
+					PRINTFORML 그렇게 생각하는, 자신의 마음에 져버린 것이다.
+					PRINTFORMW 
+					PRINTFORMW 모든 것을 포기해 버리니, 자신을 죽음에 가깝게 해주는 보랏빛이 가져오는 고열도 차라리 기분 좋게 느껴진다.
+					PRINTFORMW 그런 마음을 알아주었는지, 움직일 수 없게 된 애벌레의 구속복에서도 불길이 뿜어져 나왔다.
+					PRINTFORMW 목구멍에 박혀 있던 막대가 새빨갛게 달아오르고, 그와 함께 다른 구멍을 막고 있던 막대도 살을 태워버릴 듯한 뜨거움이 되어갔다.
+					PRINTFORMW %CALLNAME:조교대상%가 불태워져 간다.
+					PRINTFORMW 살이 타고, 뼈가 타들어간다.
+					PRINTFORMW 몸은 죽음에서 벗어나려 있는 힘껏 고통을 신경에 전달한다.
+					PRINTFORMW 하지만, 그것을 받아들이는 %CALLNAME:조교대상%의 마음은, 이미 사는 것을 포기해버렸다.
+					PRINTFORMW 몸의 열기와는 대조적으로, 포기한 마음이 한없이 차가워지는 감각.
+					PRINTFORMW 불가사의한 경지에 이른 의식이, 숯검정이 된 육체를 떠나간다.
+					PRINTFORMW 더러운 숯이 된 애벌레를, 육체의 속박에서 풀려나 자유로워진 마음이 내려다보고 있었다.
+					PRINTFORMW ――어째서 저런 것을 지키려고 발버둥 치고 있었던 걸까.
+					PRINTFORMW 그런 생각이 자신에게서 나왔다는 것이, %CALLNAME:조교대상%에게는 왠지 우스웠다.
+					PRINTFORML 한바탕 웃고, 그리고, 모든 것에서 해방된 %CALLNAME:조교대상%는,
+					PRINTFORMW 자신의 마음이 이렇게나 약했다는 것을 가르쳐준 보라색 빛을 향해 날아가, 빛과 하나 되어 녹아들었다……
+					RESETCOLOR
+					CUSTOMDRAWLINE —
+					PRINTFORML 
+					PRINTFORMW ・
+					PRINTFORMW ・・
+					PRINTFORMW ・・・
+					PRINTFORMW 그림자 실이 땅에 가라앉고 나서 수 초 후. 스르르르륵 하고 다시 땅에서 얼룩 같은 것이 번지며 그림자 실 덩어리가 기어 나왔다.
+					PRINTFORML 그러고 보니 섀도르에는 "그림자 감옥의 주박"이라는 카드가 있었지. 라고 생각하고 있었더니, 둥글게 말려 있던 그림자 실 덩어리가 스르르 풀렸다.
+					PRINTFORMW 사뿐히 풀린 그림자 실에서 원래의 인형 모습으로 돌아온 베스타나는, MASTER인 %CALLNAME:MASTER%에게 공손히 인사하고 있다.
+					PRINTFORML 그 발밑에는, 무슨 일이 있었던 것인지 %CALLNAME:조교대상%가 미동도 없이 쓰러져 있었다.
+					PRINTFORMW 
+					CUSTOMDRAWLINE —
+					
+					;デュエル１での표시のため、このカードのD1효과を利用した扱いに
+					CALL CARD_EFFECT_D1USE(듀얼리스트, 59535)
+				ENDIF
+				
+				;상대の精神にショックを与える・・・ERAミドラの제외효과と同等の효과
+				;MARK:조교대상:반발각인 = 0
+				;TCVAR:조교대상:반발각인취득 = 0
+				CFLAG:조교대상:극대노 = 0
+				CFLAG:조교대상:기분나쁨 = 0
+				TCVAR:조교대상:기분나쁨 = 0
+				BASE:조교대상:분노 = 0
+				PALAM:조교대상:반감 = 0
+				PALAM:조교대상:불쾌 = 0
+				PALAM:조교대상:억울 = 0
+				PALAM:조교대상:부정 = 0
+				
+				;一応ダメージのリミットは10000までにしておくね（あまり意味の無いやさしさ）
+				SIF 与ダメージ量 >= 10000
+					与ダメージ量 = 10000
+			ENDIF
+			
+			;いちおう念のためここでも텍스트の色リセット処理を入れておく。（丁寧なケア）
+			RESETCOLOR
+			
+			;与ダメージ8000以上であれば、素質を剥奪する処理を入れる。（ネフィリム以外の最大효과の텍스트を見る数値に설정）
+			IF 与ダメージ量 >= 8000
+				;さらに[자제심]と[회복遅い]を持っている女性캐릭터クターであれば、それを剥奪する。精神への深刻な後遺症と怪我の功名。
+				IF TALENT:조교대상:자제심 == 1 && TALENT:조교대상:성별 == 1
+					PRINTFORML 
+					SETCOLOR C_RED
+					PRINTFORMW 가혹한 고문을 받은 %CALLNAME:조교대상%의 마음이 금가 버렸다……
+					PRINTFORMW %CALLNAME:조교대상%는 [자제심]을 잃었다.
+					TALENT:조교대상:자제심 = 0
+					RESETCOLOR
+				ENDIF
+				
+				IF TALENT:조교대상:회복속도 == -1 && TALENT:조교대상:성별 == 1
+					PRINTFORMW 격렬한 조교의 뜻밖의 효과로, %CALLNAME:조교대상%의 신체의 회복력이 단련되었다.
+					PRINTFORMW %CALLNAME:조교대상%의 [회복느림]이 극복되었다.
+					TALENT:조교대상:회복속도 = 0
+				ENDIF
+			ENDIF
+			
+			;상대が男の場合は조교강도が半分になる処理
+			SIF TALENT:조교대상:성별 == 2
+				TIMES 与ダメージ量, 0.50
+			
+			;もう一回半減処理(男は1/4、それ以外は1/2となる)
+			TIMES 与ダメージ量, 0.50
+			
+			CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 与ダメージ量)
+			
+			
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "連戦")
+	CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "貫通")
+	
+	IF バトルフェイズ == 1
+		CALL SET_PLAYER_INFO(듀얼리스트, "モン효과無効", 3, 1)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 섀도르
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	条件合致数 = RESULT
+	攻撃力修正 = 条件合致数 * 200
+	CALL STATCHANGE_BASIC(듀얼리스트, "自身", 場所, 攻撃力修正)
+ELSEIF 종류 == 常在無効
+	;空白
+ENDIF

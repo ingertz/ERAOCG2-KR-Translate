@@ -113,6 +113,7 @@ RETURN 1
 #DIM DYNAMIC ソート種
 #DIM DYNAMIC L_캐릭터_ID
 #DIM DYNAMIC 調整池 = 2
+#DIMS DYNAMIC CHARA_STR,1500
 ;使用場所(1):最初の캐릭터クター3体選択画面
 ;使用場所(2):カードの구입
 ;使用場所(3):캐릭터クター改造
@@ -213,7 +214,7 @@ VARSET カウンタB
 
 PRINT ―【캐릭터 리스트】—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-PRINTPLAIN 　　　　　[이름 검색]
+PRINTPLAIN 　　　[키워드 검색]
 SUBSTRING 필터_名前, 0, 28
 PRINTBUTTON @"【%RESULTS,28,LEFT%】", 9985
 SIF 필터_名前 != ""
@@ -387,7 +388,9 @@ RESETCOLOR
 
 
 PRINTL
-PRINT ―【필터】—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PRINT ―【필터】————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PRINTBUTTON "—",3000
+PRINTL
 SIF 필터_속성 >= 1
 	SETCOLOR C_GREEN
 PRINTBUTTON "【　　속성　　】", 9987
@@ -430,10 +433,11 @@ ENDIF
 
 
 PRINTL 
-PRINT [1000] - 확정
+PRINT [1000] - 돌아간다
 PRINT 　　　　　　　　　　
 PRINT [2000] - 리스트 업데이트
 
+;PRINT [3000] - リスト出力
 
 BINPUT
 IF RESULT == 1000
@@ -442,10 +446,13 @@ ELSEIF RESULT == 2000
 	CALL UPDATE_CHARA
 	GOTO INPUT_LOOP_RESETLIST
 
-
-
-
-
+ELSEIF RESULT == 3000
+	FOR カウンタ,0,1000
+		캐릭터_ID = 소환_リスト:カウンタ
+		CHARA_STR:カウンタ = [{カウンタ + 1,4}]:%NAME:캐릭터_ID% {NO:캐릭터_ID}
+	NEXT
+	SAVETEXT STRJOIN(CHARA_STR, UNICODE(0xA)), @"Deck/듀얼리스트_리스트.txt"
+	PRINTFORMW 「듀얼리스트_리스트.txt」로 저장했습니다
 ELSEIF RESULT == 7776
 	リストスタート -= (リスト표시 * 2)
 	SIF リストスタート <= 0
@@ -528,7 +535,17 @@ ELSEIF RESULT == 9984
 	GOTO INPUT_LOOP_RESETLIST
 
 ELSEIF RESULT == 9985
-	CALL SUMMON_FILTER_NAME
+	PRINTL 
+	PRINT 카드명을 입력해주세요：
+	PRINTBUTTON @"【돌아가기】", ""
+	PRINTL 
+	PRINTL 
+	INPUTS
+	IF RESULTS == ""
+		필터_名前 = 
+	ELSE
+		필터_名前 = %RESULTS%
+	ENDIF
 	リストスタート = 0
 	GOTO INPUT_LOOP_RESETLIST
 

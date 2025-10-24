@@ -1,0 +1,172 @@
+﻿@CARDNAME_36113,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹정의 에우어스
+	CASE "略称"
+		RESULTS = 혹정의 지구
+	CASE "カテゴリ"
+		RESULTS:0 = 코스모스터
+	CASE "検索用カテゴリ"
+		RESULTS:0 = 코스모스 공주
+ENDSELECT
+
+
+@CARD_36113(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 900
+	CASE "守備力"
+		RETURN 1600
+	CASE "추가日"
+		RETURN 251018
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_36113(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。
+PRINTL 이 카드 이외의 패 / 필드의 몬스터 １장을 파괴하고、
+PRINTL 덱에서 이 카드명 이외의 "코스모스터" 몬스터 １장을 묘지로 보낸다。
+PRINTL 그 후、이 카드를 파괴하는것으로 이하의 효과를 적용할 수 있다。
+PRINTL ●패 / 묘지에서 이 카드명 이외의、이 효과로 파괴한 몬스터와는 속성이 다른 "코스모스터" 몬스터 １장을 특수 소환한다。
+CALLFORM CARD_ABLE(2,戦闘→묘지,破壊→묘지)
+PRINTL ②：이 카드가 전투 / 효과로 파괴된 경우에 발동할 수 있다。
+PRINTL 자신 묘지의 미확인족 몬스터 １장을 패에 넣는다。
+
+
+@CARDCAN_36113(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,36113)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,36113)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件종류 = モン全般
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 코스모스터
+	효과条件종류 = モン全般
+	효과条件固名前 = 혹정의 에우어스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	SIF 발동済_2(듀얼리스트,36113)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 미확인족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_36113(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード속성
+#DIM DYNAMIC 条件달성
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,36113,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件종류 = モン全般
+		효과条件他所 = 1
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			TRYCALLFORM CARD_{RESULT:1},"속성"
+			選択カード속성 = RESULT
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 코스모스터
+			효과条件종류 = モン全般
+			효과条件固名前 = 혹정의 에우어스
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 코스모스터
+			효과条件固名前 = 혹정의 에우어스
+			CALLFORM 효과条件속성_ADV(選択カード속성,"以外")
+			효과条件소환可 = 2
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				RETURN 0
+			SIF 듀얼리스트 == "자신"
+				PRINTL 이 카드를 파괴하시겠습니까？
+			CALL YN_CHOICE(듀얼리스트)
+			IF RESULT == はい
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲묘지 = 1
+					효과範囲덱 = 1
+				효과条件カテゴリ = 코스모스터
+				효과条件固名前 = 혹정의 에우어스
+				CALLFORM 효과条件속성_ADV(選択カード속성,"以外")
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,36113,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 미확인족
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

@@ -19,19 +19,22 @@ VARSET カウンタB
 SELECTCASE 설정종류
 CASE 3
 	スタート数 = 1
-	エンド数 = 100
+	エンド数 = 1000
 CASE 2
-	スタート数 = 90
-	エンド数 = 100
+	スタート数 = 900
+	エンド数 = 1000
 CASE 1
 	スタート数 = 1
-	エンド数 = 80
+	エンド数 = 800
 ENDSELECT
 
 FOR カウンタ,スタート数,エンド数
 	VARSET RESULT
 	VARSET RESULTS
+
 	CALL CARD_PACK_NAME(カウンタ)
+;	PRINTFORM 【{カウンタ,3}】 パック_解放:{パック_解放:カウンタ,2}
+
 	SELECTCASE 설정종류
 	CASE 3
 		IF RESULTS != ""
@@ -45,7 +48,7 @@ FOR カウンタ,スタート数,エンド数
 		ENDIF
 	ENDSELECT
 NEXT
-
+;PRINTL 
 FOR カウンタ,0,カウンタB
 	VARSET RESULTS
 	CALL CARD_PACK_NAME(パックセット:カウンタ)
@@ -85,7 +88,7 @@ ELSEIF INRANGE(RESULT,5000,6000)
 	SETCOLOR C_ROYAL_BLUE
 	PRINTFORML ―【울트라 레어】―――――――――――――――――――――――――――――――――――――――――――
 	FOR カウンタ,0,URプール最大値()
-		CALLFORM CARDNAME_{URプール:カウンタ}("略称")
+		TRYCALLFORM CARDNAME_{URプール:カウンタ}("略称")
 		PRINT 　
 		PRINTBUTTON @"[ULR]-%RESULTS,16,LEFT%",URプール:カウンタ
 		PRINT 　
@@ -100,7 +103,7 @@ ELSEIF INRANGE(RESULT,5000,6000)
 	SETCOLOR C_GOLD
 	PRINTFORML ―【슈퍼 레어】―――――――――――――――――――――――――――――――――――――――――――
 	FOR カウンタ,0,SRプール最大値()
-		CALLFORM CARDNAME_{SRプール:カウンタ}("略称")
+		TRYCALLFORM CARDNAME_{SRプール:カウンタ}("略称")
 		PRINT 　
 		PRINTBUTTON @"[SPR]-%RESULTS,16,LEFT%",SRプール:カウンタ
 		PRINT 　
@@ -116,7 +119,7 @@ ELSEIF INRANGE(RESULT,5000,6000)
 		SETCOLOR C_SILVER
 		PRINTFORML ―【레어】―――――――――――――――――――――――――――――――――――――――――――――――
 		FOR カウンタ,0,Rプール最大値()
-			CALLFORM CARDNAME_{Rプール:カウンタ}("略称")
+			TRYCALLFORM CARDNAME_{Rプール:カウンタ}("略称")
 			PRINT 　
 			PRINTBUTTON @"[ R ]-%RESULTS,16,LEFT%",Rプール:カウンタ
 			PRINT 　
@@ -132,7 +135,7 @@ ELSEIF INRANGE(RESULT,5000,6000)
 		PRINTFORML ―【커먼】――――――――――――――――――――――――――――――――――――――――――――――
 
 		FOR カウンタ,0,CMプール最大値()
-			CALLFORM CARDNAME_{CMプール:カウンタ}("略称")
+			TRYCALLFORM CARDNAME_{CMプール:カウンタ}("略称")
 			PRINT 　
 			PRINTBUTTON @"[CMN]-%RESULTS,16,LEFT%", CMプール:カウンタ
 			PRINT 　

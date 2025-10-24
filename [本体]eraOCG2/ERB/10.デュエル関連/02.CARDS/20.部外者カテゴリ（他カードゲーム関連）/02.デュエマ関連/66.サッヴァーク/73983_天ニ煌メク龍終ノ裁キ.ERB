@@ -1,0 +1,173 @@
+@CARDNAME_73983,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 하늘에 빛나는 용종의 심판
+	CASE "略称"
+		RESULTS = 용종의 심판
+	CASE "カテゴリ"
+		RESULTS:0 = 심판의 문장
+		RESULTS:4 = DUEL MASTERS
+	CASE "検索カテゴリ"
+		RESULTS:0 = 메탈리카
+ENDSELECT
+
+
+@CARD_73983(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 지속마법
+	CASE "추가日"
+		RETURN 251018
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_73983(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 １턴에 １번밖에 발동할 수 없으며、이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：이 카드의 발동시의 효과 처리로서、이하의 효과를 각각 적용한다。
+PRINTL ●상대 필드 위의 몬스터를 전부 뒷면 수비 표시로 한다。
+PRINTL ●자신 필드 위의 드래곤족인 "메탈리카" 몬스터는、이 턴 ３번까지 공격할 수 있다。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：이 카드가 패에 존재하고、"하늘에 빛나는 용종의 심판" 이외의 "심판의 문장" 카드가 드로우 이외의 방법으로 패에 넣어진 경우、
+PRINTL 패의 "하늘에 빛나는 용종의 심판" 이외의 "심판의 문장" 카드 １장을 묘지로 보내고 발동할 수 있다。
+PRINTL 이 카드의 ①의 효과를 적용하고、가능하면 이 카드를 마법&함정 존에 앞면 표시로 놓고、놓지 못하는 경우엔 묘지로 보낸다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：자신 필드 위의 "메탈리카" 몬스터의 공격은 관통한다。
+
+
+@CARDCAN_73983(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성,2
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73983)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF 발동済_1(듀얼리스트,73983)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件달성:0 = 1
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 드래곤족
+	효과条件カテゴリ = 메탈리카
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件달성:1 = 1
+	SIF 条件달성:0 != 1 && 条件달성:1 != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,73983)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 심판의 문장
+	효과条件固ID = 73983
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과手送")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件달성:0 = 1
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 드래곤족
+	효과条件カテゴリ = 메탈리카
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件달성:1 = 1
+	SIF 条件달성:0 != 1 && 条件달성:1 != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 短紋章起動
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+
+@CARDEFFECT_73983(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73983,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"표시변경")
+		CALL CARD_RESERV(듀얼리스트,73983,短紋章予約)
+	ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73983,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 심판의 문장
+		효과条件固ID = 73983
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"표시변경")
+
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과条件종족 = 드래곤족
+	효과条件カテゴリ = 메탈리카
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"追戦",3)
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 메탈리카
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"貫通")
+ENDIF

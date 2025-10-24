@@ -7,7 +7,7 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 기술카드"봉마의 화살"
+		RESULTS = 기술카드 "봉마의 화살"
 	CASE "略称"
 		RESULTS = 기술 봉마의화살
 	CASE "カテゴリ"
@@ -66,17 +66,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		IF GETVARS(@"%듀얼리스트%_フィールド名") !=  "P.M.G쇼 타임♪"
-			SIF ターンプレイヤー != 듀얼리스트
-				RETURN 0
-		ENDIF
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,79582)
 		RETURN 0
 	SIF 발동済_2(듀얼리스트,79582)
@@ -116,6 +108,12 @@ ELSEIF 종류 == 묘지起動
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF GETVARS(@"%듀얼리스트%_フィールド名") !=  "P.M.G쇼 타임♪"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 
@@ -153,7 +151,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 					CALL FULLRESET
 					효과範囲묘지 = 1
 					효과条件カテゴリ = 기술
-					효과条件固名前 = 기술카드"봉마의 화살"
+					효과条件固名前 = 기술카드 "봉마의 화살"
 					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 					IF RESULT == 1
 						;상대 필드의 카드 、자신묘지의 카드 両方の条件を満たしているなら、추가효과를 使うか聞く
@@ -171,7 +169,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 							효과範囲묘지 = 1
 							효과範囲제외 = 1
 							효과条件カテゴリ = 기술
-							효과条件固名前 = 기술카드"봉마의 화살"
+							효과条件固名前 = 기술카드 "봉마의 화살"
 							효과条件行先플래그 = 덱行き
 							CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 							IF RESULT == 1
@@ -193,9 +191,12 @@ ELSEIF 종류 == 묘지起動
 		효과範囲제외 = 1
 		효과条件カテゴリ = 기술
 		효과条件종류 = 마함全般
-		효과条件固名前 = 기술카드"봉마의 화살"
+		효과条件固名前 = 기술카드 "봉마의 화살"
 		효과추가종류 = 500
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_HAND(듀얼리스트,"지정",場所,"発可")
 ENDIF
 

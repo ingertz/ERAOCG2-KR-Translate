@@ -69,10 +69,12 @@ IF 종류 == 효과後誘発
 	SIF RESULT != 1
 		RETURN 0
 	IF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		;ゾーン処理も설정済み
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
 			RETURN 0
 	ELSEIF ゾーン == "손패"
-		SIF GETVARS(@"%듀얼리스트%_フィールド名") != "AV T 채널"
+		SIF GETVARS(@"%듀얼리스트%_フィールド名") != "AliVe♡Twin 채널"
 			RETURN 0
 	ELSE
 		RETURN 0
@@ -85,6 +87,11 @@ ELSEIF 종류 == 攻撃時強制誘発
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트,1) == 5
 		RETURN 0
+	場所 = 戦闘場所(듀얼리스트,1)
+	SIF GETVAR(@"%対面者%_MZ_함정耐:場所") >= 1
+		RETURN 0
+	SIF GETVAR(@"%対面者%_MZ_破耐:場所") >= 1
+		RETURN 0
 	RETURN 1
 ENDIF
 
@@ -95,6 +102,8 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 회복量
 #DIMS DYNAMIC 対面者
 
 CALL 対面者판정(듀얼리스트)
@@ -106,22 +115,37 @@ IF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99696,1)
 	IF RESULT == 0
 		選択カード = 戦闘場所(듀얼리스트,1)
+		選択カード_ID = 戦闘カードID(듀얼리스트,1)
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"묘지")
 		IF RESULT == 1
 			PRINTFORML
-			PRINTFORML 《 터치 금지！》
-			PRINTFORMW 공격한 몬스터는 악성 바이러스에 감염되어 파괴되었다！
-			PRINTFORML
+			PRINTFORML 《터치 금지！》
+			PRINTFORML 공격한 몬스터는 악성 바이러스에 감염되어 파괴되었다！
+			PRINTFORMW 추가로 상대의 정보단말을 해킹해서, 멋대로 도네를 넣었다！
+			TRYCALLFORM CARD_{選択カード_ID},"攻撃力"
+			회복量 = RESULT
 			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",1000,1)
-			CALL CARD_SS_RESTRICTION(듀얼리스트,"Live☆Twin")
-			CALL CARD_EX_RESTRICTION(듀얼리스트,"Live☆Twin")
+			CALL LIFE_CHANGE(듀얼리스트,"増加","효과",회복量)
+			SELECTCASE 듀얼리스트
+				CASE "자신"
+				CALL MONEY_GET(회복量)
+				CASE "상대"
+				CALL MONEY_GET(-회복量)
+			ENDSELECT
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 攻撃時強制誘発
+	PRINTL 
 	PRINTL AliVe♡Twin 채널 시청료 징수！
 	CALL LIFE_CHANGE(対面者,"減少","コスト",200)
 	CALL LIFE_CHANGE(듀얼리스트,"増加","효과",200)
+	SELECTCASE 듀얼리스트
+		CASE "자신"
+		CALL MONEY_GET(200)
+		CASE "상대"
+		CALL MONEY_GET(-200)
+	ENDSELECT
 ENDIF
 

@@ -391,6 +391,8 @@ FOR カウンタ,0,5
 		SETVAR @"%듀얼리스트%_魔_接可:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_魔_発無:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_魔_発無:カウンタ", 0
+	SIF GETVAR(@"%듀얼리스트%_魔_発可:カウンタ") == 1
+		SETVAR @"%듀얼리스트%_魔_発可:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_魔_T1汎数:カウンタ") >= 1
 		SETVAR @"%듀얼리스트%_魔_T1汎数:カウンタ", 0
 
@@ -407,6 +409,8 @@ NEXT
 FOR カウンタ,0,紙束最大値
 	SIF GETVAR(@"%듀얼리스트%_手_召可:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_手_召可:カウンタ", 0
+	SIF GETVAR(@"%듀얼리스트%_手_発可:カウンタ") == 1
+		SETVAR @"%듀얼리스트%_手_発可:カウンタ", 0
 NEXT
 
 
@@ -490,7 +494,7 @@ IF GETVAR(@"%ターンプレイヤー%_ドロースキップ") >= 1
 	GOTO DRAW_SKIP
 ENDIF
 
-PRINTL 『드로우 페이즈』
+PRINTL ＞『드로우 페이즈』
 ドローフェイズ = 1
 IF ターン数 != 1		
 	IF ターンプレイヤー == "자신"
@@ -574,7 +578,7 @@ CALL CARD_LOADUP
 $DRAW_SKIP
 ドローフェイズ = 0
 
-PRINTL 『스탠바이 페이즈』
+PRINTL ＞『스탠바이 페이즈』
 スタンバイフェイズ = 1
 CALL RESET_FIELD_CONDITION(ターンプレイヤー,5,1)
 
@@ -600,7 +604,7 @@ IF GETVAR(@"%ターンプレイヤー%_バトルスキップ２") >= 1
 ENDIF
 
 ;Anonym추가
-PRINTL 『메인 페이즈』
+PRINTL ＞『메인 페이즈』
 メインフェイズ = 1
 CUSTOMDRAWLINE ━
 CALL CARD_LOADUP
@@ -629,7 +633,7 @@ ENDIF
 CALL 対面者판정(ターンプレイヤー)
 非ターンプレイヤー = %RESULTS%
 
-PRINTFORMW 『엔드 페이즈』
+PRINTFORMW ＞『엔드 페이즈』
 CALL RESET_FIELD_CONDITION(ターンプレイヤー,5,1)
 エンドフェイズ = 1
 ;予約효과발동
@@ -873,7 +877,7 @@ VARSET 상대_MZ_一Ｔ
 IF ターンプレイヤー == "자신"
 	VARSET 자신_MZ_二攻
 ELSE
-	VARSET 자신_MZ_二攻
+	VARSET 상대_MZ_二攻
 ENDIF
 CALL CARD_LOADUP
 VARSET 상대ターン終了

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 크림즌 헬가이아
+		RESULTS = 크림즌 헬가이아
 	CASE "略称"
-RESULTS = Crs 헬가이아
+		RESULTS = Crs 헬가이아
 	CASE "カテゴリ"
-RESULTS:0 = 레드 데몬
+		RESULTS:0 = 레드 데몬
 ENDSELECT
 
 
@@ -92,6 +92,9 @@ ELSEIF 종류 == 攻撃時誘発
 	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)},"カテゴリ"
 	SIF !MATCH(RESULTS, "레드 데몬")
 		RETURN 0
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)},"종류"
+	SIF !MATCH(RESULT, 싱크로)
+		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
 	효과条件표시 = 表側표시
@@ -161,7 +164,7 @@ ELSEIF 종류 == 攻撃時誘発
 	IF RESULT == 0
 		CALL FULLRESET
 		효과条件표시 = 表側표시
-		효과추가종류 = 1
+		효과추가종류 = -1
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"표시변경")
 	ENDIF
 ELSEIF 종류 == 효과後誘発

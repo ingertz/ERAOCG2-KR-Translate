@@ -1,0 +1,159 @@
+﻿@CARDNAME_24345,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 환상수기 그리핀
+	CASE "略称"
+		RESULTS = 그리핀
+	CASE "カテゴリ"
+		RESULTS:0 = 환상수기
+		RESULTS:1 = 환상수
+ENDSELECT
+
+
+@CARD_24345(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 2500
+	CASE "生成カード"
+		RETURN 124210
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_24345(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 1턴에 1번밖에 사용할 수 없다。
+;손패SS
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신 필드에 토큰이 존재하는 경우에 발동할 수 있다。
+PRINTL 이 카드를 패에서 특수 소환한다。
+;トークン生成
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：덱에서 "환상수기 그리핀" 이외의 "환상수기" 카드 １장을 묘지로 보내고 발동할 수 있다。
+PRINTL 자신 필드에 "환상수기 토큰" １장을 특수 소환한다。
+;共通戦破耐性
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：：자신 필드에 토큰이 존재하는 한、이 카드는 전투 / 효과로는 파괴되지 않는다。
+
+
+
+@CARDCAN_24345(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24345)
+SIF RESULT == 1
+	RETURN 0
+;손패SS
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,24345)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,24345,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = トークン
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;トークン生成
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,24345)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,124210,"")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 환상수기
+	효과条件固名前 = 환상수기 그리핀
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;耐性
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = トークン
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_24345(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;손패SS
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24345,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+	ENDIF
+;トークン生成
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24345,2)
+	IF RESULT == 0
+		;参考：サーキュラー
+		CALL FULLRESET
+		효과条件カテゴリ = 환상수기
+		효과条件固名前 = 환상수기 그리핀
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_GENERATE(듀얼리스트,124210)
+		ENDIF
+	ENDIF
+;耐性
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
+ENDIF
+

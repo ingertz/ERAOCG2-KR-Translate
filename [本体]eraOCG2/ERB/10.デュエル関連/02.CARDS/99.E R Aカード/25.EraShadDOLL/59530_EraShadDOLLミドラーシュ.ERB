@@ -7,13 +7,13 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = E.R.A.ShadDOLL.Winda
+		RESULTS = E.R.A.ShadDOLL.Midrash
 	CASE "略称"
 		RESULTS = ERA 미도라시
 	CASE "カテゴリ"
 		RESULTS:0 = 섀도르
 		RESULTS:1 = ShadDOLL
-		RESULTS:2 = 윈다
+		;RESULTS:2 = 윈다
 		RESULTS:3 = E.R.A
 ENDSELECT
 
@@ -26,24 +26,24 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-	
 		RETURN 융합
 	CASE "속성"
 		RETURN 어둠속성
 	CASE "종족"
 		RETURN 마법사족
 	CASE "レベル"
-		RETURN 5
+		RETURN 6
 	CASE "攻撃力"
 		RETURN 1850
 	CASE "守備力"
 		RETURN 1500
-	CASE "튜너"
-		RETURN 0
 	CASE "성별"
 		RETURN 牝性
 	CASE "連動ID"
-		RETURN 1830
+		;カード所持してないと連動しない설정に（入手前はALT화상に설정できない処置）
+		IF ITEM:59530 >= 1
+			RETURN 1830
+		ENDIF
 ENDSELECT
 
 RETURN 0
@@ -52,17 +52,57 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL "섀도르" 몬스터 ×２
+PRINTL "섀도르" 몬스터 ＋"영뢰주박의 암컷노예" 또는 "ShadDOLL" 몬스터
+PRINTL 이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
 ;PRINTL 이 카드는 융합소환으로만 엑스트라 덱에서 특수 소환할 수 있다。
 CALLFORM CARD_ABLE(0, 지속효과)
-PRINTL ①：이 카드가 몬스터 존에 존재하고 상대 플레이어가 ■■■■■■■■■■■■■인한,
-PRINTL 이 카드는 전투 / 효과로 파괴되지 않고, 상대 플레이어는 특수 소환할 수 없다。
-CALLFORM CARD_ABLE(1, 필드起動, 묘지起動)
-PRINTL ②：자신 메인 페이즈에 필드 묘지의 이 카드를 제외하고 발동할 수 있다.。
+PRINTL ①：フィールドのこのカードは효과では破壊されない。
+PRINTL また、상대プレイヤーが■■■■■■■■■■■■■である場合、以下の효과も適用される。
+CALLFORM CARD_ABLE(0, 攻守変動)
+PRINTL ●このモンスターがフィールドに存在する限り、その間は상대プレイヤーは「특수소환権」を奪われ、１ターンに１度しかモンスターを특수 소환할 수 없다。
+CALLFORM CARD_ABLE(0, 攻撃時誘発)
+PRINTL ②：このカードが戦闘を行う攻撃宣言時、상대フィールドの카드 １장을 대상にして발동できる。そのカードを손패に戻す。
+PRINT また、상대プレイヤーが■■■■■■■■■■■■■である限り、このカードが상대に戦闘ダメージを与えた時、상대プレイヤーに
+SETCOLOR C_WIND_T
+PRINT 烈風ダメージ
+RESETCOLOR
+PRINTL を与える。
+CALLFORM CARD_ABLE(3, 필드起動, 묘지起動)
+PRINTL ②：자신 메인 페이즈 및 배틀 페이즈에 필드 / 묘지의 이 카드를 제외하고 발동할 수 있다.。
 PRINTL 상대 플레이어는■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■가 된다。
 CALL TEXT_DECORATION("ROGUE")
+
+;CALL XON_FONT_DEMO()
+
 ;상대 플레이어가 조교 가능하고 MASTER가 아닌 경우, 특수 소환 봉인+파괴 내성 떡
 ;기동 효과로 상대 플레이어의 반발계의 ERA 파라미터를 모두 리셋 한다
+
+;2025/8/23 能力修正
+;名称をWindaからMidrashにし、完全にウィンダとは別の存在として扱うようにする。レベルを５→６に。융합素材条件も手直しして出しにくくする。
+;③は起動효과が使えるタイミングでいつでも撃てるようになっていたのを条件修正。OCG本家にはない挙動だが、자신バトルフェイズ中も起動효과で撃てる。
+;상대だけSS封じは元のミドラと同じく１回許容というほんのり이성的に（欺瞞でしかない）。戦闘耐性もなくして、효과破壊耐性のみに변경。
+;１ターンに１度という本来のミドラの挙動に近づける（やりたくてやってるだけ）ために、T1汎数を入れている。자신への適用もいつでも可能にしておく。
+;「CARD_ABLE(0, 攻守変動)」の記載は、カード閲覧時にミドラのＳＳ封じが適用されているか視認しやすくするために추가している。
+;→SS封じの条件を満たしてると、このカードの攻守変動が適用中になる条件を入れる仕組みが入っている。攻守変動の処理は空白で何も適用されない。
+;②の효과で바람속성の面影を宿した攻撃宣言時のバウンス효과を추가。戦闘に関連した효과を付与することで、このカードに戦闘させる意味合いを多少補強する。
+;素の攻撃力は低めなのがネックだが、バウンスのために攻撃する機会が出れば多少このカードでダメージを与える機会も増えるだろう。
+;また、女性캐릭터に戦闘ダメージを与えると상대プレイヤーに바람속성に関連した責め苦を行うようにしてテーマに一貫性を持たせる方針に。（これが重要）
+;男캐릭터を대상から外しちゃったのは、文章텍스트を記述するうえで改めて自己を見つめ直した結果、男への조교がそもそも趣味じゃないなと悟ったため。
+;성별で限定しないほうがいいのだが、男상대でも流れる事を意識した文章にするのが難しいため발동条件で足切りした。ShadDOLLはそういうもんだと思ってください。
+
+
+;以下、まったく読む必要のない、ふわふわShadDOLL설정（結局のところ、このERAバージョンのミドラはなんなんだ編）
+;
+;ミドラはターミナルワールドの時間軸では基本的に存在が소멸しており、正しい歴史では精霊獣使いウィンダが普通に生きている。
+;ただシャドールのデータの残骸はどこか（撤去されて打ち棄てられたDuelTerminalのアーケード筐体の片隅とか）に残っており、それがeraOCG2の世界に流れ着いた。
+;再生されたミドラは作戦目的も未설정（元々は神星樹の探索が目的）の状態であり、何らかの使命を帯びて産み出された存在であると自己を認識しているものの、
+;行動原理となる命令が無いため何をすればいいか分からず、とりあえずカードの精霊の本能としてカードの持ち主である「あなた」に仕える状態になっている。
+;普通のエルシャドール・ミドラーシュは一般的な遊戯王プレイヤーの考えるミドラ像を反映しており、とりあえず상대プレイヤーのＳＳ封じをしてくれる。
+;それだけだったらそんなに害はない（対戦상대はムカつくでしょうけど）存在なのだが、「あなた」がE.R.Aカードによる조교に興味があった場合、
+;ミドラは作戦目的を「女性の상대プレイヤーを牝奴隷に조교してMASTERに献上すること」と설정し、それに相応しい能力と姿を持った存在として自己を定義し直す。
+;それがE.R.A.ShadDOLL体の存在。人の形をした牝奴隷조교用の조교道具。人形なので加減も知らず、生きものは死ぬまで痛めつければ굴복するという情報で動いている。
+;牝奴隷の候補となる対戦상대プレイヤーへの風を操る타입の責め苦を担当している。風鞭プレイ・窒息プレイ・鳥葬プレイ・等活地獄プレイの担当。
+
 
 @CARDSUMMON_59530(듀얼리스트, 소환カード, EX参照)
 #DIMS DYNAMIC 듀얼리스트
@@ -72,10 +112,16 @@ CALL TEXT_DECORATION("ROGUE")
 
 CALL RESETCONDITION_MAT
 必要素材数 = 2
-素材条件カテゴリ = 섀도르
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 섀도르
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = ShadDOLL
+	素材条件スーパー名前 = 영뢰주박의 암컷노예
+ENDIF
 
 IF EX参照 == 1
-	;PRINTL 분명 소환되는 장면까지 보고 있었다
+	;PRINTL サモンまでは言ってるよ
 	CALL FUSCAN(듀얼리스트, 소환カード, 59530) 
 	RETURN RESULT
 ENDIF
@@ -99,28 +145,102 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 필드起動 || 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트, 59530)
+		RETURN 0
 	SIF !GROUPMATCH(ゾーン, "필드", "묘지")
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
-	CALL FULLRESET
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1 && バトルフェイズ != 1
+		RETURN 0
+	
 	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
 	IF RESULT != -1
 		조교대상 = RESULT
-		;상대가 あなた（＝MASTER）の場合は발동불가、それ 이외의 조교대상なら許可
+		;상대があなた（＝MASTER）の場合は발동불가。
 		SIF 조교대상 == MASTER
 			RETURN 0
-		RETURN 1
 	ELSE
-		;대전상대가 -1(조교대상じゃない캐릭터？)の場合も효과발동불가
+		;상대プレイヤーが조교대상でない場合は발동불가
 		RETURN 0
 	ENDIF
-	;よくわからんがとりま발동불가で
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 손패
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ライフ変強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ダメージ受者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ダメージ종류, "戦闘", "直接戦闘")
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	
+	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;상대があなた（＝MASTER）の場合は발동불가、男性の場合も발동불가。
+		SIF 조교대상 == MASTER
+			RETURN 0
+		SIF TALENT:조교대상:성별 == 2
+			RETURN 0
+	ELSE
+		;상대プレイヤーが조교대상でない場合は발동불가
+		RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	;SIF GETVAR(@"%듀얼리스트%_最召場所") == 場所
+	;	RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") == 3
+		RETURN 0
+	;ミドラちゃんスペシャル　（효과後強制誘発のチェックが走るタイミングでSSチェックして、そのままMZのミドラの場所のT1汎数に数字を代入しちゃう）
+	;こういう想定しない箇所での想定外の処理は、簡単な動作でも入念にデバッグ確認出来ない場合やるべきではない
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트, "특수소환",1)
+	IF RESULT == 1
+		IF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") & 2
+			SETVAR @"%듀얼리스트%_MZ_T1汎数:場所", 3
+		ELSE
+			SETVAR @"%듀얼리스트%_MZ_T1汎数:場所", 1
+		ENDIF
+	ENDIF
+	CALL FULLRESET
+	효과条件固名前 = E.R.A.ShadDOLL.Midrash
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트, "특수소환")
+	IF RESULT == 1
+		IF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") & 1
+			SETVAR @"%듀얼리스트%_MZ_T1汎数:場所", 3
+		ELSE
+			SETVAR @"%듀얼리스트%_MZ_T1汎数:場所", 2
+		ENDIF
+	ENDIF
 	RETURN 0
 ELSEIF 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
-		CALL FULLRESET
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
 	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
 	IF RESULT != -1
 		조교대상 = RESULT
@@ -128,7 +248,7 @@ ELSEIF 종류 == 지속효과
 		SIF 조교대상 == MASTER
 			RETURN 0
 	ELSE
-		;대전상대가 -1(조교대상じゃない캐릭터？)の場合も지속無効
+		;상대プレイヤーが조교대상でない場合は발동불가
 		RETURN 0
 	ENDIF
 	RETURN 1
@@ -136,23 +256,22 @@ ENDIF
 
 @CARDEFFECT_59530(듀얼리스트, 종류, ゾーン, 場所)
 #DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
+#DIM DYNAMIC 与ダメージ量
 #DIM DYNAMIC 조교대상 = -1
-#DIMS DYNAMIC 対面者
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 필드起動 || 종류 == 묘지起動
 	;カード발동確認
-	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 59530, 1)
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 59530, 3)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 제외行き)
-		CALL FULLRESET
-		
 		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
 		IF RESULT != -1
 			조교대상 = RESULT
@@ -178,15 +297,209 @@ IF 종류 == 필드起動 || 종류 == 묘지起動
 			;CFLAG:조교대상:빙의중 = 1
 
 			;フレ-バ-텍스트
-			PRINTFORML 미도라시는 그림자의 실로  %CALLNAME:조교대상%마음을 붙잡아 버렸다！
-			PRINTFORML 불퀘감에 고민하는 표정을 짓고 있던 %CALLNAME:조교대상%이지만, 서서히 감정이 사라져 인형처럼 움직임을 멈추었다
-			PRINTFORML 잠시후, 초점이 맞지 않는 공허한 눈동자로 이쪽을 향하던 %CALLNAME:조교대상%의 어깨 거나하게 취한듯 어깨를 떨구었다
+			PRINTFORML 미도라시의 모습이 그림자 실로 변해, %CALLNAME:조교대상%의 몸과 마음을 붙잡아 버렸다！
+			PRINTFORML 그림자 실에 구속되어 불쾌감에 고뇌의 표정을 짓고 있던 %CALLNAME:조교대상%였지만,
+			PRINTFORMW 질척질척 %CALLNAME:조교대상%의 피부에 그림자 실이 스며듦에 따라, 고뇌하던 얼굴에서도 서서히 감정이 사라져가고, 인형처럼 움직임을 멈췄다……
+			PRINTFORML 
+			PRINTFORML ・
+			PRINTFORML ・・
+			PRINTFORMW ・・・
+			PRINTFORML 잠시동안 초점이 맞지 않는 공허한 눈동자로 이쪽을 향하던 %CALLNAME:조교대상%가, 움찔거리며 크게 어깨를 떨었다.
 			PRINTFORMW 갑자기 표정이 돌아온 %CALLNAME:조교대상%는 방금까지의 사건이 기억에서 빠진 것처럼 듀얼을 재개했다……
+
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 59530)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트, "単体除去", 場所, "손패")
+	ENDIF
+	ELSEIF 종류 == ライフ変強制誘発
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 59530)
+	IF RESULT == 0
+		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+		IF RESULT != -1
+			조교대상 = RESULT
+			;MASTER상대だと何も起きない
+			SIF 조교대상 == MASTER
+				RETURN 0
+			;상대プレイヤーに戦闘ダメージに応じた강도の「拷問処理」を実施
+			;	DOWNBASE:조교대상:체력 += (80 * 実보정) / 100
+			;	DOWNBASE:조교대상:기력 += (50 * 実보정) / 100
+			;	CALL SOURCE_CALC_접촉(조교대상, 実行役대상, (50 * 実보정) / 100)
+			;	CALL SOURCE_CALC_고통(조교대상, 実行役대상, (200 * 実보정) / 100)
 			
+			与ダメージ量 = GETVAR(@"%対面者%_変動値_保")
+			SIF 与ダメージ量 == 0
+				RETURN 0
+			
+			;フレーバー텍스트(４段階：ダメージ500未満、500-2000、2000-8000、8000以上)
+			;風鞭プレイ・窒息プレイ・鳥葬プレイ・等活地獄プレイ
+			IF 与ダメージ量 < 500
+				PRINTFORMW 미도라시는 그림자 실을 끌어당겨 노예 조교용 채찍을 만들어내자, %CALLNAME:조교대상%를 내리쳤다!
+				SETCOLOR C_RED
+				PRINTFORML 바람을 가르는 채찍이 두 번, 세 번 휘둘러지자, %CALLNAME:조교대상%의 피부에 새겨진 열상에서 선혈이 흘러내린다……
+				PRINTFORMW 
+				RESETCOLOR
+			ELSEIF 与ダメージ量 < 2000
+				PRINTFORMW 미도라시가 그림자 실과 함께 조종하는 대기의 급류가, %CALLNAME:조교대상%의 안면에 휘감긴다!
+				SETCOLOR C_RED
+				PRINTFORML 제대로 호흡할 수 없도록 바람을 두른 그림자 실로 입이 막힌 채, 목이 꽉 조여져 가는 %CALLNAME:조교대상%.
+				PRINTFORML 목이 졸려 죽을 것 같은 공포에, %CALLNAME:조교대상%는 호흡 곤란으로 괴로워하면서도 누군가의 도움을 구하려는 듯 발버둥치고 있다……
+				PRINTFORMW 
+				RESETCOLOR
+			ELSEIF 与ダメージ量 < 8000
+				;ちょい長いので名称ターン１の표시扱いに（효과番号④を利用）
+				IF 발동済_4(듀얼리스트, 59530) != 1
+					PRINTFORMW 미도라시가 조종하는 그림자 실이 %CALLNAME:조교대상%의 몸을 묶어 가고, 몸을 움직일 수 없도록 양손발을 구속했다.
+					PRINTFORML 이제부터 행해질 조교라는 이름의 고문에 떠는 %CALLNAME:조교대상%에게 다가간 미도라시는 흉악한 미소를 띠고,
+					PRINTFORML 불쌍한 노예에게 과시하는 듯한 몸짓으로 그림자 실을 끌어당겨 늠름한 맹금을 창조하자, 주인에게서 명을 받은 그림자 실의 맹금은 날개를 퍼덕였다.
+					PRINTFORMW 
+					;こういう形で「ガスタ」の面影を垣間見せるのはとても趣味が悪いと思います。
+					SETCOLOR C_RED
+					PRINTFORMW 그림자 실의 맹금이, %CALLNAME:조교대상%의 구속된 몸을 횃대로 선택했다. 날카로운 발톱이, %CALLNAME:조교대상%의 피부에 파고든다!
+					PRINTFORML 고통에 몸부림치려는 %CALLNAME:조교대상%의 피부를, 그림자 실의 맹금은 날카로운 부리를 박아 넣어 파헤치기 시작했다!!
+					PRINTFORML 그야말로 글자 그대로 산 제물이 되어 쪼아 먹히는 %CALLNAME:조교대상%. 그 육체가 파헤쳐지고는 맹금에게 저작되어 삼켜져 간다.
+					PRINTFORMW 
+					SETCOLOR C_D_RED
+					PRINTFORMW 『포식』
+					PRINTFORML 생물의 근원적인 공포를 불러일으켜, 이젠 고통마저 잊고 광란한 채로 절규하는 %CALLNAME:조교대상%의 비통한 목소리가 울려 퍼졌다……
+					PRINTFORMW 
+					RESETCOLOR
+					CALL CARD_EFFECT_USE(듀얼리스트, 59530, 4)
+				ENDIF
+			ELSE
+				;クッソ長いのでデュエル１の표시扱いに（D1を利用）
+				;普通のプレイヤーが通過する想定は最初からしていないので、好きに書くしエグい後遺症も残す。
+				;『死の体感』feat.ミドラーシュ　　罰ゲームで『死の体感』だなんて、こいつは遊戯王だな。間違いない。
+				IF 발동済_D1(듀얼리스트, 59530) != 1
+					CUSTOMDRAWLINE —
+					PRINTFORMW 미도라시가, 이제는 결투(듀얼)로서는 결착이 났을 %CALLNAME:조교대상%의 곁으로 구둣소리를 내며 다가간다.
+					PRINTFORML 감소해 가는 자신의 라이프 포인트를 분한 듯이 보고 있던 %CALLNAME:조교대상%는, 자신을 내려다보는 인형을 겨우 알아차리고 고개를 들었다.
+					PRINTFORMW 그 인형과 시선이 마주친 %CALLNAME:조교대상%의 얼굴에서 핏기가 싹 가시더니, 그야말로 창백한 표정으로 %CALLNAME:MASTER%에게 도움을 요청하려――
+					PRINTFORML 그 찰나에, 미도라시의 몸이 전부 그림자 실로 변해 %CALLNAME:조교대상%의 온몸을 순식간에 감싸고, 꿈틀거리는 그림자 실 덩어리가 지면으로 가라앉아 갔다……
+					PRINTFORMW 
+					PRINTFORML ・・・
+					PRINTFORML ・・
+					PRINTFORMW ・
+					CUSTOMDRAWLINE —
+					SETCOLOR C_D_PINK
+					PRINTFORML 의식을 되찾은 %CALLNAME:조교대상%의 주위는, 그림자 실 색을 띤 공간이 영원히 펼쳐져 있는 듯했다.
+					PRINTFORMW 천지의 감각도 알 수 없는 기묘한 공간에 내던져진 %CALLNAME:조교대상%가, 적어도 일어서려고 몸을 움직이자――
+					PRINTFORML 
+					PRINTFORML 휙
+					PRINTFORMW 
+					PRINTFORMW 폐쇄된 공간 내에 울리는 불가사의한 바람 가르는 소리를 인식한 순간, 몸을 지탱하려던 %CALLNAME:조교대상%의 왼손이, 툭 하고 떨어졌다.
+					PRINTFORMW 이해하기까지 수 초.
+					PRINTFORMW 이해한 %CALLNAME:조교대상%가 자신의 팔과 분리된 왼손을 보고 절규의 소리를 지르기 위해 입을 연 순간――
+					PRINTFORML 
+					PRINTFORMW 휙
+					PRINTFORML 뚝
+					PRINTFORMW 
+					PRINTFORMW %CALLNAME:조교대상%의 머리가 몸통과 떨어졌다.
+					PRINTFORMW 그러나, 신기하게도 %CALLNAME:조교대상%의 의식은 명료한 상태였다.
+					PRINTFORML 목만 남게 된 %CALLNAME:조교대상%의 눈앞에서, 원래는 자신의 것이었던 %CALLNAME:조교대상%의 몸이,
+					PRINTFORMW 바람 가르는 소리와 함께 산산조각으로 잘게 잘려 나간다.
+					PRINTFORML 주위가 피투성이가 되는 감촉에서조차 벗어날 수 없는, 목만 남게 된 %CALLNAME:조교대상%는,
+					PRINTFORMW 이제는 어떤 생물이었는지도 알 수 없는 크기까지 잘게 잘려 나가는 자신의 몸통을 명료한 의식으로 봐야만 했다……
+					PRINTFORMW 죽음을 실감하고 공포에 흐느끼는, 고깃덩어리 곁에 남겨진 %CALLNAME:조교대상%의 머리도, 드디어 바람 가르는 소리와 함께 해체되어 간다.
+					PRINTFORML 고통 속에서 의식이 희미해져 가는 것만이, %CALLNAME:조교대상%에게 있어 유일한 구원이었다……
+					PRINTFORMW 
+					PRINTFORML ・・・
+					PRINTFORML ・・
+					PRINTFORMW ・
+					RESETCOLOR
+					PRINTFORMW 의식을 되찾은 %CALLNAME:조교대상%의 주위는……
+					SETCOLOR C_D_PINK
+					CLEARLINE 1
+					PRINTFORMW 의식을 되찾은 %CALLNAME:조교대상%의 주위는…… 그림자 실 색을 띤 공간이 영원히 펼쳐져 있는 듯했다.
+					PRINTFORMW %CALLNAME:조교대상%는 이제부터 무슨 일이 일어날지를 "이해"하고, 『절망』이 어떤 의미의 단어인지를 뼈저리게 깨닫게 되었다――
+					PRINTFORML 
+					PRINTFORMW 휙
+					PRINTFORMW 
+					RESETCOLOR
+					CUSTOMDRAWLINE —
+					PRINTFORML 
+					PRINTFORMW ・
+					PRINTFORMW ・・
+					PRINTFORMW ・・・
+					PRINTFORMW 그림자 실이 지면에 가라앉고 수 초 후. 스르르르륵 하고 다시 지면에서 얼룩 같은 것이 번져 그림자 실 덩어리가 기어 나왔다.
+					PRINTFORML 그러고 보니 섀도르에는 "영뢰의 주박"이라는 카드가 있었지. 라고 생각했더니, 둥글게 말려 있던 그림자 실 덩어리가 스르르 풀렸다.
+					PRINTFORMW 사뿐히 풀린 그림자 실에서 원래의 인형 모습으로 돌아온 미도라시는, MASTER인 %CALLNAME:MASTER%에게 공손히 고개를 숙이고 있다.
+					PRINTFORML 그 발밑에는, 무언가 행해졌을 %CALLNAME:조교대상%가, 미동도 없이 쓰러져 있었다.
+					PRINTFORMW 
+					CUSTOMDRAWLINE —
+					
+					;デュエル１での표시のため、このカードのD1효과を利用した扱いに
+					CALL CARD_EFFECT_D1USE(듀얼리스트, 59530)
+				ENDIF
+				
+				;상대の精神にショックを与える・・・ERAミドラの제외효과と同等の효과
+				;MARK:조교대상:반발각인 = 0
+				;TCVAR:조교대상:반발각인취득 = 0
+				CFLAG:조교대상:극대노 = 0
+				CFLAG:조교대상:기분나쁨 = 0
+				TCVAR:조교대상:기분나쁨 = 0
+				BASE:조교대상:분노 = 0
+				PALAM:조교대상:반감 = 0
+				PALAM:조교대상:불쾌 = 0
+				PALAM:조교대상:억울 = 0
+				PALAM:조교대상:부정 = 0
+				
+				;一応ダメージのリミットは10000までにしておくね（あまり意味の無いやさしさ）
+				SIF 与ダメージ量 >= 10000
+					与ダメージ量 = 10000
+			ENDIF
+			
+			;いちおう念のためここでも텍스트の色リセット処理を入れておく。（丁寧なケア）
+			RESETCOLOR
+			
+			;与ダメージ8000以上であれば、素質を剥奪する処理を入れる。（ネフィリム以外の最大효과の텍스트を見る数値に설정）
+			IF 与ダメージ量 >= 8000
+				;さらに[気丈]を持っている女性캐릭터クターであれば、それを剥奪する。精神への深刻な後遺症。
+				IF TALENT:조교대상:배짱 == 1 && TALENT:조교대상:성별 == 1
+					PRINTFORML 
+					SETCOLOR C_RED
+					PRINTFORMW 가혹한 괴로움을 받은 %CALLNAME:조교대상%의 마음이 갈라져 버렸다……
+					PRINTFORMW %CALLNAME:조교대상%는 [기장]을 잃었다.
+					TALENT:조교대상:배짱 = 0
+					RESETCOLOR
+				ENDIF
+			ENDIF
+			
+			;상대が男の場合は조교강도が半分になる処理
+			SIF TALENT:조교대상:성별 == 2
+				TIMES 与ダメージ量, 0.50
+			
+			;もう一回半減処理(男は1/4、それ以外は1/2となる)
+			TIMES 与ダメージ量, 0.50
+			
+			CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 与ダメージ量)
+
+
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 지속효과
-	CALL SET_PLAYER_INFO(듀얼리스트, "SS阻害状態", 3, 1)
-	CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "戦耐")
 	CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "破耐")
+
+	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+	IF RESULT != -1
+		조교대상 = RESULT
+		;MASTER상대だと何も起きない
+		SIF 조교대상 == MASTER
+			RETURN 0
+		
+		IF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") & 1
+			CALL SET_PLAYER_INFO(듀얼리스트, "SS阻害状態", 3, 1)
+			;CALL SET_TMP_EX_RST(듀얼리스트,"全般",,1)　;・・・EX封じ
+		ENDIF
+		;IF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") & 2
+		;	CALL SET_PLAYER_INFO(듀얼리스트,"SS阻害状態",3)
+		;ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	;空白
 ENDIF

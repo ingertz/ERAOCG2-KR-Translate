@@ -97,10 +97,10 @@ ENDIF
 #DIM DYNAMIC 속성数
 
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92000,1)
 	IF RESULT == 0
-
+		$USE_EFFECT
 		CALL FULLRESET
 		효과範囲손패 = 1
 		효과範囲묘지 = 1
@@ -108,7 +108,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		효과条件名前:1 = 용기사 블랙 매지션
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
-			PRINTL 블랙 매지션을 특수소환하시겠습니까?
+			PRINTL 블랙 매지션을 특수 소환하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 		ELSE
 			RESULT = いいえ
@@ -126,10 +126,20 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 		ENDIF	
 	ENDIF
-ELSEIF 종류 == 마함起動
+;ELSEIF 종류 == 마함起動
+ELSEIF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 2
 	;カード발동＆설치まで
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92000)
 	IF RESULT == 0
+		TRYCALLFORM CARDCAN_92000(듀얼리스트,마함起動,"마함",場所)
+		IF RESULT == 1
+			PRINTFORML 
+			PRINTFORML 지금、효과를 사용하시겠습니까？
+			PRINTFORML 
+			CALL YN_CHOICE(듀얼리스트)
+			SIF RESULT == 0
+				GOTO USE_EFFECT
+		ENDIF
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET

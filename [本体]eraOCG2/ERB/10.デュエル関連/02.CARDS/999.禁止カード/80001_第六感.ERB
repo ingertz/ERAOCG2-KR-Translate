@@ -1,0 +1,125 @@
+@CARDNAME_80001,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 제육감
+	CASE "略称"
+		RESULTS = 제육감
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_80001(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "制限"
+		RETURN 禁止
+	CASE "レア度"
+		RETURN ULR
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_80001(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,마함起動,フリー誘発)
+PRINTL ①：자신은 １에서 ６까지의 숫자를 ２개 선언한다。
+PRINTL 주사위를 １번 굴려、선언한 숫자중 어느쪽인가 １개가 나온 경우、그 수 만큼 자신은 드로우한다。
+PRINTL 꽝이었을 경우、나온 눈의 수 만큼 덱위에서 카드를 묘지로 보낸다。
+PRINTL 
+PRINTL 
+
+@CARDCAN_80001(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,80001)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_80001(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 宣言数字,2
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,80001)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF 듀얼리스트 == "자신"
+			PRINTL 【１번째 숫자를 선언해주세요】
+			PRINTL
+			FOR カウンタ,1,7
+				PRINTFORM [{カウンタ}]　
+			NEXT
+			PRINTL
+			BINPUT
+			宣言数字:0 = RESULT
+
+			PRINTL 【２번째 숫자를 선언해주세요】
+			PRINTL
+			FOR カウンタ,1,7
+				IF 宣言数字:0 != カウンタ
+					PRINTFORM [{カウンタ}]　
+				ELSE
+					PRINTFORM "{カウンタ}"
+				ENDIF
+			NEXT
+			PRINTL
+			BINPUT
+			宣言数字:1 = RESULT
+
+		ELSE
+			宣言数字:0 = 5
+			宣言数字:1 = 6
+		ENDIF
+
+		PRINTFORMW %듀얼리스트%는 {宣言数字:0}와 {宣言数字:1}를 선언했습니다。
+		PRINTL
+		CALL DICE_ROLL(듀얼리스트,1)
+		IF GROUPMATCH(RESULT,宣言数字:0,宣言数字:1)
+			PRINTW 대성공！
+			CALL CARDDRAW_BASIC(듀얼리스트,RESULT)
+		ELSE
+			PRINTW 유감！　꽝！
+			CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",RESULT)
+		ENDIF
+	ENDIF
+ENDIF

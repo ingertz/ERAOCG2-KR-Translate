@@ -122,6 +122,7 @@ NEXT
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 初期値
 #DIM DYNAMIC 終結値
+#DIMS DYNAMIC 素質名
 IF 필터_所持 == 1
 	SIF CFLAG:캐릭터_ID:소유함 == 0
 		RETURN 0
@@ -136,10 +137,31 @@ IF 필터_名前 != ""
 		条件달성 ++
 	SIF STRFIND(CALLNAME:캐릭터_ID, 필터_名前)  != -1
 		条件달성 ++
+	IF 필터_덱所持 > 0
+		CALL ENEMYDECK_CHECK(캐릭터_ID)
+		素質名 = %RESULTS:1%
+		SIF STRFIND(素質名, 필터_名前)  != -1
+			条件달성 ++
+	ENDIF
+	FOR カウンタ,0,200
+		素質名 = %GET_TALENTNAME(カウンタ,TALENT:캐릭터_ID:カウンタ)%
+		SIF STRFIND(素質名, 필터_名前)  != -1
+			条件달성 ++
+	NEXT
+	FOR カウンタ,0,10
+		IF MARK:캐릭터_ID:カウンタ >= 1
+			素質名 = %MARKNAME:カウンタ%
+			SIF STRFIND(素質名, 필터_名前)  != -1
+				条件달성 ++
+		ENDIF
+	NEXT
 	SIF 条件달성 == 0
 		RETURN 0
 ENDIF
 
+IF MATCH(禁止_등장작품,CSTR:캐릭터_ID:등장작품)
+	RETURN 0
+ENDIF
 
 IF 필터_속성 > 0
 	SIF TALENT:캐릭터_ID:속성 != 필터_속성
@@ -254,6 +276,7 @@ IF 필터_仲良し
 	SIF 条件달성 == 0
 		RETURN 0
 ENDIF
+
 
 VARSET 필터_素質_ACT
 FOR カウンタ,0,200
@@ -1212,7 +1235,7 @@ SELECTCASE 使用場所
 					TALENT:캐릭터_ID:체형 = 3
 					PRINTFORMW %CALLNAME:캐릭터_ID%는 거인이 되었습니다
 				ENDIF
-				CALL SET_BODYSIZE(캐릭터_ID,0b01,1)
+				CALL SET_BODYSIZE(캐릭터_ID,0,1)
 				CALL MONEY_GET(-ITEMPRICE:79)
 				RETURN 1
 			ENDIF

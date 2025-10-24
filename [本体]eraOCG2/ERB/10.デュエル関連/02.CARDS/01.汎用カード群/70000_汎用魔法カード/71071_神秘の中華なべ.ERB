@@ -51,15 +51,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	CALL FULLRESET
 	효과範囲필드 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -121,29 +115,29 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 
 				PRINTL 　  ∧ ,, ∧
 				PRINTFORML 　(；`・ω・）　｡･ﾟ･⌒）　%요리名% 시작！！
-PRINTL /　　 ｏ━ヽニニフ ))
-PRINTL しー-Ｊ
+				PRINTL 　/　　 ｏ━ヽニニフ ))
+				PRINTL 　しー-Ｊ
 				WAIT
 				CLEARLINE 4
 
 				PRINTL 　　　　　　　어라！　｡･ﾟ･
-PRINTL ∧ ,, ∧ て　　　｡･ﾟ･｡･ﾟ･
-PRINTL (；´ﾟωﾟ）て　　／／
-PRINTL /　　 ｏ━ヽニニフ
-PRINTL しー-Ｊ　　 　彡
+				PRINTL 　 ∧ ,, ∧ て　　　｡･ﾟ･｡･ﾟ･
+				PRINTL 　(；´ﾟωﾟ）て　　／／
+				PRINTL 　/　　 ｏ━ヽニニフ
+				PRINTL 　しー-Ｊ　　 　彡
 				WAIT
 				CLEARLINE 5
 				IF RAND:10 == 0
-PRINTL 아차차！　　　 ｡･ﾟ･ 彡
-PRINTL ＿─＝∧,,∧　　ミ｡･ﾟ･｡･ﾟ･))
-PRINTL ─≡三c(,＿⊃`・ω・）⊃━ヽニニフ
+					PRINTL 　　　　　　　아차차！　　　 ｡･ﾟ･ 彡
+					PRINTL 　　　　　　＿─＝∧,,∧　　ミ｡･ﾟ･｡･ﾟ･))
+					PRINTL 　　─≡三c(,＿⊃`・ω・）⊃━ヽニニフ
 					PRINTL 
 					WAIT
 					CLEARLINE 4
 
 					PRINTL 　　　　 ∧ ,,∧　　샥샥!!
 					PRINTL 　　　（`・ω・´）｡･ﾟ･
-PRINTL c(,＿＿Ｕ━ヽニニフ
+					PRINTL 　　 c(,＿＿Ｕ━ヽニニフ
 					PRINTL 
 					WAIT
 					CLEARLINE 4
@@ -151,20 +145,20 @@ PRINTL c(,＿＿Ｕ━ヽニニフ
 					PRINTL 　　 ∧ ,, ∧　　　　이런
 					PRINTL 　 （´・ω・）
 					PRINTL 　c(,＿Ｕ_Ｕ　　　　　　･ﾟ･｡･ ﾟ･｡･ﾟ･ ｡･ﾟ･
-PRINTL ━ヽニニフ
+					PRINTL 　　　　━ヽニニフ
 					WAIT
 					CLEARLINE 4
 
 					PRINTL 　　　　　　　　　　　　3초 룰이니깐
-					PRINTL 　　　　　　 허겁　∧ ,, ∧
-PRINTL ﾐ（・ω・´)つ　지겁
-PRINTL c（ Ｕ･ ﾟＵ｡彡･ ｡･ﾟ･
-PRINTL ━ヽニニフ
+					PRINTL 　　　　　　　 허겁　∧ ,, ∧
+					PRINTL 　　　　　　　 　ﾐ（・ω・´)つ　지겁
+					PRINTL 　　 　　　　　　c（ Ｕ･ ﾟＵ｡彡･ ｡･ﾟ･
+					PRINTL 　━ヽニニフ
 					WAIT
 					CLEARLINE 5
 				ENDIF
 				PRINTL 　∧ ,, ∧　　 ｡･｡ﾟ･｡ ﾟ･｡ﾟ･　짜란～
-PRINTL （´・ω・）つ＼･ﾟ･ ｡･ﾟ･･／
+				PRINTL （´・ω・）つ＼･ﾟ･ ｡･ﾟ･･／
 				WAIT
 				PRINTL
 				PRINTL
@@ -188,7 +182,7 @@ PRINTL （´・ω・）つ＼･ﾟ･ ｡･ﾟ･･／
 
 				SELECTCASE 材料
 					CASE 마법사족
-						PRINT 마법의
+						PRINT 매지컬
 					CASE 드래곤족
 						PRINT 드래곤
 					CASE 언데드족
@@ -222,7 +216,7 @@ PRINTL （´・ω・）つ＼･ﾟ･ ｡･ﾟ･･／
 					CASE 미확인족
 						PRINT 암흑전골
 					CASE 환신야수족
-						PRINT 고추기름을 넣은
+						PRINT 라유
 				ENDSELECT
 
 				PRINTFORMW %요리名%다！
@@ -239,7 +233,7 @@ PRINTL （´・ω・）つ＼･ﾟ･ ｡･ﾟ･･／
 					요리名 = 필라프
 					회복量 = カロリー:1
 				ENDIF
-				PRINTFORMW 상대는%요리名%를 만든 거 같습니다
+				PRINTFORMW 상대는 %요리名%를 만든 거 같습니다
 			ENDIF
 			CALL LIFE_CHANGE(듀얼리스트,"増加","효과",회복量)
 			CALL RECOVER_PERMIL(MASTER,회복量,"체력",1)

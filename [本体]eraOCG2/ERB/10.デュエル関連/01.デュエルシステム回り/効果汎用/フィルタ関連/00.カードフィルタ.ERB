@@ -835,11 +835,11 @@ IF GROUPMATCH(チェック플래그,2,7)
 		SIF RESULT == 1
 			RETURN 戻り値
 		IF チェック플래그 == 2
-		CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先) ;Anonym修正
+		CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 		SIF RESULT == 1
 			RETURN 戻り値
 	ELSE
-		CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先) ;Anonym修正
+		CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
 		SIF RESULT == 1
 			RETURN 戻り値
 		ENDIF
@@ -972,7 +972,8 @@ IF 参照先 == "필드" || 参照先 == "마함"
 	ENDIF
 
 	IF 효과条件装備先 >= 0 && 参照先 == "마함"
-		SIF GETVAR(@"%実行者%_魔_装:カウンタ") != 場所
+;		PRINTFORMW　カウンタ:{カウンタ}/ 효과条件装備先:{효과条件装備先} / 
+		SIF GETVAR(@"%実行者%_魔_装:カウンタ") != 효과条件装備先
 			RETURN 戻り値
 	ENDIF
 
@@ -1013,7 +1014,7 @@ IF 参照先 == "필드" || 参照先 == "마함"
 		ENDIF
 	ENDIF
 ENDIF
-
+;PRINTFORML ここ通過８ /参照先　=%参照先%
 
 IF 参照先 == "필드"
 	IF 효과条件重ねてＸ >= 1
@@ -1129,6 +1130,7 @@ IF 参照先 == "필드"
 		ENDIF
 	ENDIF
 	;ここまで
+	;PRINTFORML ここ通過９　효과条件攻撃力 = {효과条件攻撃力}　효과条件固攻撃力 = {효과条件固攻撃力}
 	IF 효과条件攻撃力 > 0
 		SIF GETVAR(@"%実行者%_MZ_攻:カウンタ") > 효과条件攻撃力
 			RETURN 戻り値
@@ -1137,10 +1139,13 @@ IF 参照先 == "필드"
 		SIF GETVAR(@"%実行者%_MZ_攻:カウンタ") != 효과条件固攻撃力
 			RETURN 戻り値
 	ENDIF
+
+	;PRINTFORML ここ通過１０　효과条件以攻撃力 = {효과条件以攻撃力}　カウンタ = {カウンタ}
 	IF 효과条件以攻撃力 > 0
 		SIF GETVAR(@"%実行者%_MZ_攻:カウンタ") < 효과条件以攻撃力
 			RETURN 戻り値
 	ENDIF
+	;PRINTFORML ここ通過１１　효과条件以攻撃力 = {효과条件以攻撃力}　カウンタ = {カウンタ}
 	IF 효과条件元固攻撃力 >= 0
 		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
 		SIF RESULT != 효과条件元固攻撃力
@@ -1193,8 +1198,7 @@ IF 参照先 == "필드"
 				RETURN 戻り値
 		ENDIF
 	ENDIF
-
-
+	;PRINTFORML ここ通過１２
 	IF 효과条件성별 >= 0
 		성별판정 = GETVAR(@"%実行者%_MZ_性:カウンタ")
 		IF 효과条件성별 == 牝性
@@ -1223,6 +1227,7 @@ IF 参照先 == "필드"
 				RETURN 戻り値
 		ENDIF
 	ENDIF
+
 ELSE
 	IF 효과条件튜너 > 0
 		TRYCALLFORM CARD_{설정カードID}, "튜너"
@@ -1293,7 +1298,7 @@ ELSE
 		SIF 条件달성 == 0		
 			RETURN 戻り値
 	ENDIF
-	;	PRINTFORML 효과条件固レベル = {효과条件固レベル}/효과条件固レベル:1 = {효과条件固レベル:1}
+	
 	IF 효과条件固レベル > 0
 		VARSET 条件달성
 		TRYCALLFORM CARD_{설정カードID}, "レベル"
@@ -1316,6 +1321,7 @@ ELSE
 		SIF RESULT != 효과条件固攻撃力
 			RETURN 戻り値
 	ENDIF
+	
 	IF 효과条件以攻撃力 > 0
 		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
 		SIF RESULT < 효과条件以攻撃力

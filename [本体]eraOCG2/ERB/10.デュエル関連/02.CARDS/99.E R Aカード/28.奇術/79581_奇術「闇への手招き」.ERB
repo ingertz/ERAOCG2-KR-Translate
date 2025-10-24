@@ -7,7 +7,7 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 기술카드"어둠으로의 초대"
+		RESULTS = 기술카드 "어둠으로의 초대"
 	CASE "略称"
 		RESULTS = 어둠으로의 초대
 	CASE "カテゴリ"
@@ -36,7 +36,7 @@ RETURN 0
 
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ①②의 효과는 １턴에 １번、어느쪽이든 １개밖에 사용할 수 없다。
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느쪽이든 １개밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
 PRINTL ①：자신 필드에 앞면 표시의 마법사족 몬스터가 존재하는 경우에、
 PRINTL 상대 필드의 몬스터 １장을 대상으로 하고 발동할 수 있다。
@@ -67,17 +67,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		IF GETVARS(@"%듀얼리스트%_フィールド名") !=  "P.M.G쇼 타임♪"
-			SIF ターンプレイヤー != 듀얼리스트
-				RETURN 0
-		ENDIF
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,79581)
 		RETURN 0
 	SIF 발동済_2(듀얼리스트,79581)
@@ -117,6 +109,12 @@ ELSEIF 종류 == 묘지起動
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF GETVARS(@"%듀얼리스트%_フィールド名") !=  "P.M.G쇼 타임♪"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 
@@ -154,7 +152,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 					CALL FULLRESET
 					효과範囲묘지 = 1
 					효과条件カテゴリ = 기술
-					효과条件固名前 = 기술카드"어둠으로의 초대"
+					효과条件固名前 = 기술카드 "어둠으로의 초대"
 					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 					IF RESULT == 1
 						;상대 필드의 카드 、자신묘지의 카드 両方の条件を満たしているなら、추가효과를 使うか聞く
@@ -171,7 +169,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 							CALL FULLRESET
 							효과範囲묘지 = 1
 							효과条件カテゴリ = 기술
-							효과条件固名前 = 기술카드"어둠으로의 초대"
+							효과条件固名前 = 기술카드 "어둠으로의 초대"
 							효과条件行先플래그 = 제외行き
 							CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 							IF RESULT == 1
@@ -194,9 +192,12 @@ ELSEIF 종류 == 묘지起動
 		효과範囲제외 = 1
 		효과条件カテゴリ = 기술
 		효과条件종류 = 마함全般
-		효과条件固名前 = 기술카드"어둠으로의 초대"
+		효과条件固名前 = 기술카드 "어둠으로의 초대"
 		효과추가종류 = 500
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_HAND(듀얼리스트,"지정",場所,"発可")
 ENDIF
 

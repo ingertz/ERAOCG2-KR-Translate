@@ -13,7 +13,7 @@ SELECTCASE 参照先
 	CASE "カテゴリ"
 		RESULTS:0 = 섀도르
 		RESULTS:1 = ShadDOLL
-		RESULTS:2 = 
+		;RESULTS:2 = 젬나이트 라피스
 		RESULTS:3 = E.R.A
 ENDSELECT
 
@@ -25,8 +25,7 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "종류"
-	
+	CASE "종류"	
 		RETURN 융합
 	CASE "속성"
 		RETURN 어둠속성
@@ -38,10 +37,14 @@ SELECTCASE 参照先
 		RETURN 0
 	CASE "守備力"
 		RETURN 2500
-	CASE "튜너"
-		RETURN 0
 	CASE "성별"
 		RETURN 牝性
+	CASE "連動ID"
+		;カード所持してないと連動しない설정に（入手前はALT화상に설정できない処置）
+		;※ネフィリムのデータとの連動は封鎖中
+		;IF ITEM:59532 >= 1
+		;	RETURN 1832
+		;ENDIF
 ENDSELECT
 
 RETURN 0
@@ -50,25 +53,26 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL "엘섀도르 네피림"＋융합 / 싱크로 / 엑시즈 / 링크 몬스터
+PRINTL "엘섀도르 네피림"＋"영뢰주박의 암컷노예" 또는 융합 / 싱크로 / 엑시즈 / 링크 몬스터
 ;PRINTL 이 카드는 융합 소환으로만 엑스트라 덱에서 특수 소환할 수 있다。
 CALL CARD_ABLE(0, 지속효과)
-PRINTL ①：이 카드는 상대 효과의 대상이 되지 않고 수비 표시 몬스터를 공격했을 경우, 그 수비력을 공격력이 넘은 만큼만 상대에게 전투 데미지를 준다。
+PRINTL ①：이 카드가 필드에 존재하는 한, 상대 플레이어는 배틀 페이즈동안, ""섀도르" 카드를 대상으로 할 권리"를 빼앗긴다。
 CALL CARD_ABLE(0, 攻守変動)
-PRINTL ②：배틀 페이즈 동안, 이 카드의 공격력은 자신의 묘지 / 제외 상태의"섀도르" 몬스터 ×５００만큼 올린다。
+PRINTL ②：이 카드는 관통 공격을 가지며,
+PRINTL 배틀 페이즈 동안, 이 카드의 공격력은 자신의 묘지 / 제외 상태의"섀도르" 몬스터 ×５００만큼 올린다。
 CALL CARD_ABLE(3, EX소환時強制)
 PRINTL ③：이 카드가 융합 소환된 턴, 이 카드는 통상의 공격에 더해
 PRINTL 자신 묘지 / 제외 상태의 「섀도르」 마법 / 함정 카드의 종류의 수까지 추가로 공격할 수 있다。
-CALL CARD_ABLE(4, ライフ変強制誘発)
+CALL CARD_ABLE(0, ライフ変強制誘発)
 PRINT ④：
 SETCOLOR C_D_PINK
 FONTSTYLE 4
 PRINT 상대 플레이어가 ■■■■■■■■■■■■■인 한
 FONTSTYLE 0
 RESETCOLOR
-PRINTL 이 카드가 상대에게 전투 데미지를 주었을 때에 발동한다。
-PRINTL 상대 플레이어에게 고통 데미지를 준다。
+PRINTL 이 카드가 상대에게 전투 데미지를 주었을 때, 상대 플레이어에게 고통 데미지를 준다。
 CALL TEXT_DECORATION("ROGUE")
+
 ;대상 내성과 관통을 가지고, 배틀 페이즈중은 공격력이 상승한다
 ;전투 데미지 유발 효과로 상대 플레이어에게 준 전투 데미지에 상응하는 리얼 데미지를 준다。（어둠의 마리크인가？）
 ;대략 4000LP를 깎고 여성은 체력 1500정도 깎으면 기절하고. 남자는 8000LP 깎고 체력 1500소모 정도는 버텨서 디기 쉽다
@@ -77,6 +81,24 @@ CALL TEXT_DECORATION("ROGUE")
 ;A.그 편이 검고 사악한 감정을 상기시켜 야하니까
 ;　그리고, 시리즈 주인공등의 메인캐릭터가 간단하게 듀얼 도중에 기절하는 것은
 ;　조금 해석이 틀리므로, 남자캐릭터는 그럭저럭 견뎌줬으면 하는 마음도 있기 때문에
+
+
+;2025/10 텍스트加筆修正
+;ネフィリムという個体として従来のネフィリムと同一の存在として扱う方針にするか熟慮が必要なため、一旦連動IDは入れない方針に。화상の問題もあるため。
+;
+;ネフィリムLora作られる見込みも薄いしどうやって화상を用意するべきものか考えながら天使・有翼캐릭터を色々と触って生成出力していたところ、
+;「BASTARD!!」のガブリエルのLoraで出した天使から、この世のすべての可愛い女の子を殴り殺してくれそうな感じの凄みを感じたのでDUEL화상として採用。
+;あまりにもOCG本家のネフィリムとはかけ離れたビジュアルだが、エロカワイイという一点だけで貫き通せるものだろうか？　まあ文句あるならネフィリム화상の提出を求める。
+;結構な期間（화상自体は텍스트加筆の数ヶ月前に作成済み）この絵でERAネフィリムやってたから、制作者はもうこれでいいんじゃないかなとなっているようだ。
+
+;ビジュアルに沿ったイメージで、ステゴロで殴ったりするシンプルな暴力や고통で女の子の心を折る、ストロングな物理系の責め苦担当で텍스트を書くようにする。
+;牝奴隷の候補とか関係なく対戦상대プレイヤーへの純粋な暴力による責め苦として、顔面殴打プレイ・腹パン連打プレイ・통각直接刺激プレイ・無間地獄プレイの担当。
+
+;まじでビジュアルこれでもいいのか？　という疑問の中でやってるので、このERAネフィリムの설정はそんなに詰めていない。
+;섀도르のボスとして『ネフィリム』という堕ちた天使たちの忌み子の名を冠した存在がいなければならないために産み出された。という程度のイメージ。
+;なぜかMASTERかどうか区別する판정が機能していない。なんなら상대プレイヤーの성별판정も行ってない。ひたすら듀얼리스트に危害を加えるERAカード。
+;遊戯王OCGのカードとしては、原作たる初代遊戯王の闇のゲーム（牙を持つカード）への「プル섀도르・アイオーン」であり、
+;eraとしてはerakanonで「あゆ」を鞭でしばいて공포の珠1000個と고통각인Lv3を稼ぐ行為への「魂源への影劫回帰」である。
 
 
 @CARDSUMMON_59532(듀얼리스트, 소환カード, EX参照)
@@ -92,10 +114,12 @@ IF EX参照 == 0 || EX参照 == 1
 	素材条件名前 = 엘섀도르 네피림
 ELSEIF EX参照 >= 10
 	素材条件종류 = EXモン全般
+	素材条件종류:1 = 의식
+	素材条件スーパー名前 = 영뢰주박의 암컷노예
 ENDIF
 
 IF EX参照 == 1
-	;PRINTL 분명 소환되는 장면까지 보고 있었다
+	;PRINTL サモンまでは言ってるよ
 	CALL FUSCAN(듀얼리스트, 소환カード, 59532) 
 	RETURN RESULT
 ENDIF
@@ -131,20 +155,19 @@ ELSEIF 종류 == ライフ変強制誘発
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트) != 場所
 		RETURN 0
-	CALL FULLRESET
 	CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
 	IF RESULT != -1
 		조교대상 = RESULT
 		;상대가 あなた（＝MASTER）の場合は발동불가、それ 이외의 조교대상なら許可
 		;SIF 조교대상 == MASTER
 		;	RETURN 0
-		RETURN 1
+		;SIF TALENT:조교대상:성별 == 2
+		;	RETURN 0
 	ELSE
-		;대전상대가 -1(조교대상じゃない캐릭터？)の場合も효과발동불가
+		;상대プレイヤーが조교대상でない場合は適用されない。
 		RETURN 0
 	ENDIF
-	;よくわからんがとりま발동불가で
-	RETURN 0
+	RETURN 1
 ELSEIF 종류 == 攻守変動
 	SIF ゾーン != "필드"
 		RETURN 0
@@ -182,24 +205,23 @@ IF 종류 == EX소환時強制
 		효과条件カテゴリ = 섀도르
 		효과条件固名前起動 = 1
 		효과条件CNT = 1
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
 		条件合致数 = RESULT
 		IF 条件合致数 != 0
 			CALL FULLRESET
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦",条件合致数)
+			CALL SET_FIELD_INFO(듀얼리스트, "필드", 場所, "戦", 条件合致数)
 		ENDIF
 	ENDIF
 ELSEIF 종류 == ライフ変強制誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59532)
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 59532)
 	IF RESULT == 0
-		CALL FULLRESET
-		
 		CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
 		IF RESULT != -1
 			조교대상 = RESULT
 			;MASTER상대だと何も起きない
 			;SIF 조교대상 == MASTER
 			;	RETURN 0
+
 			;상대プレイヤーに戦闘ダメージに応じた강도の"拷問処理"を実施
 			;	DOWNBASE:조교대상:체력 += (80 * 実보정) / 100
 			;	DOWNBASE:조교대상:기력 += (50 * 実보정) / 100
@@ -209,20 +231,214 @@ ELSEIF 종류 == ライフ変強制誘発
 			与ダメージ量 = GETVAR(@"%対面者%_変動値_保")
 			SIF 与ダメージ量 == 0
 				RETURN 0
-			;상대가 男の場合は조교강도が절반이 된다処理
-			SIF TALENT:조교대상:성별 == 2
+
+
+			;MASTERが殴られる場合の処理は、色々텍스트をすっ飛ばして특수処理に入る。
+			IF 조교대상 == MASTER
+				TRYCALL ERASHADDOLL(듀얼리스트, 59532, 조교대상, 与ダメージ量)
+			ELSE
+				;フレーバー텍스트(４段階：ダメージ2000未満、2000-6000、6000-15000、15000以上)
+				;顔面殴打プレイ・腹パン連打プレイ・통각直接刺激プレイ・無間地獄プレイ
+				IF 与ダメージ量 < 2000
+					PRINTFORML 백익의 검은 천사(네피림)가, %CALLNAME:조교대상%의 얼굴에 그 주먹을 내리꽂았다!!
+					PRINTFORMW 
+					SETCOLOR C_RED
+					CALL FLASH(1)
+					PRINTFORML 퍼억!!!
+					PRINTFORMW 
+					RESETCOLOR
+					PRINTFORMW 가차 없이 안면에 내리꽂힌 일격에, %CALLNAME:조교대상%은 고통에 신음하며, 몸부림쳤다……
+					RESETCOLOR
+				ELSEIF 与ダメージ量 < 6000
+					PRINTFORMW 백익의 검은 천사(네피림)은 부드러운 미소를 상대에게 향하더니, 날개를 퍼덕이며 도약했다.
+					PRINTFORML 그 거구에 어울리지 않는 민첩한 움직임으로, 순식간에 %CALLNAME:조교대상%의 바로 코앞으로 이동해――
+					PRINTFORMW 
+					SETCOLOR C_RED
+					CALL FLASH(1)
+					PRINTFORM 콰직!!
+					RESETCOLOR
+					PRINTFORMW 　하고 움켜쥐는 소리가 들린 듯한 악력으로, %CALLNAME:조교대상%의 얼굴을 으드득하고 움켜쥐고 들어 올린다……
+					PRINTFORML 두개골을 쥐어짜는 고통에 신음하면서도, %CALLNAME:조교대상%은 천사의 마수에서 벗어나려 버둥거렸지만――
+					SETCOLOR C_RED
+					CALL FLASH(2)
+					PRINTFORM 퍽!!!
+					CALL FLASH(2)
+					PRINTFORM 　퍽!!!
+					CALL FLASH(2)
+					PRINTFORMW 　퍽!!!
+					PRINTFORML 
+					PRINTFORMW 검은 천사(네피림)은 두개골을 쥐어짜면서, %CALLNAME:조교대상%의 무방비하게 드러난 복부를 때렸다!!
+					PRINTFORMW 제대로 버티지도 못한 채 내리꽂힌 주먹은, 이제 "복부 펀치" 따위로 가볍게 부를 수 없을 정도의 가혹한 폭력.
+					PRINTFORML 몇 번이고, 몇 번이고――몇 번이고 얻어맞고, 마침내 해방된 %CALLNAME:조교대상%의 복부는, 고통스러운 검은 멍으로 뒤덮여 있었다……
+					PRINTFORMW 
+					RESETCOLOR
+				ELSEIF 与ダメージ量 < 15000
+					;ちょい長いので名称ターン１の표시扱いに（효과番号④を利用）
+					IF 발동済_4(듀얼리스트, 59532) != 1
+						$NORMAL_DUELTRAIN59532
+						PRINTFORMW 백익의 검은 천사(네피림)은 부드러운 미소를 머금은 채, 그 순백의 날개를 뒤집었다!
+						PRINTFORML 그늘 한 점 없는 하얀 날개가, 순식간에 불길한 그림자 실타래 무리로 돌변하여 %CALLNAME:조교대상%의 온몸으로 쇄도해 간다.
+						PRINTFORMW 
+						PRINTFORMW %CALLNAME:조교대상%의 온몸을 구속하고 조여오는 그림자 실타래의 대군은, %CALLNAME:조교대상%의 등을 꿰뚫어――
+						SETCOLOR C_RED
+						CALL FLASH(4)
+						PRINTFORML 꿰뚫린 %CALLNAME:조교대상%에게서, 도저히 생물이 내는 것이라고는 생각할 수 없는 절규가 터져 나왔다!!
+						PRINTFORMW 
+						PRINTFORMW 그 비명은, 그림자 실타래가 사냥감의 척수를 통하는 신경계에 직접 『고통』의 신호를 보내고 있다는 것에 대한 외침.
+						PRINTFORML 순도 100％――순수무구한 『고통』을 주입받고, 도망칠 곳 없는 %CALLNAME:조교대상%은 목이 찢어질 듯한 날카로운 비명의 독창을 연주했다.
+						PRINTFORMW 
+						PRINTFORMW ・
+						PRINTFORMW ・・
+						PRINTFORMW ・・・
+						SETCOLOR C_D_RED
+						PRINTFORMW ――시끄럽네.
+						PRINTFORMW %CALLNAME:조교대상%의 비명도 처음에는 기분 좋았지만, 목이 망가진 후에는 더럽고 귀에 거슬리는 소음이 되었다.
+						PRINTFORMW 그 감정이 전해진 것인지, %CALLNAME:조교대상%에게 『고통』을 계속 가하고 있는 죽음의 천사는, 휙 돌아보며 이쪽을 향해 미소를 보였다.
+						PRINTFORML 
+						RESETCOLOR
+						PRINTFORMW MASTER가 보내는 시선의 의도를 알아차린 것이겠지
+						CLEARLINE 1
+						SETCOLOR C_D_RED
+						PRINTFORMW MASTER가 보내는 시선의 의도를 알아차린 것이겠지, 천사는 그림자 실타래 무리를 더욱 늘려 %CALLNAME:조교대상%의 망가진 입을 틀어막아 갔다.
+						PRINTFORML ・
+						PRINTFORML ・・
+						PRINTFORMW ・・・
+						PRINTFORML 
+						;あえぎ声のような何か（新텍스트フォントをここで使ってみる）
+						TRYCALL XON_FONTW("「,中中1,中中5,中上2,ッ！　,上上2,上上2,上中2,中下2,下下2,下上1,ッ！！！　,上上5,上上5,上中5,中下4,下下5,下下5,下下6,下下E,」",C_D_RED)
+						PRINTFORMW 
+						SETCOLOR C_D_RED
+						PRINTFORMW 완전히 구속된 %CALLNAME:조교대상%은, 추가적인 『고통』을 받아 온몸을 뒤틀며 신음하고 있었지만, 이내 움직이지 않게 되었다.
+						PRINTFORMW 스르륵하고 그림자 실타래의 구속이 풀린 %CALLNAME:조교대상%은, 온갖 체액으로 엉망진창이 된 몽롱한 표정으로 허공을 바라보고 있었다……
+						RESETCOLOR
+						CALL CARD_EFFECT_USE(듀얼리스트, 59532, 4)
+					ENDIF
+				ELSEIF 与ダメージ量 >= 15000
+					
+					;ERBを開いてここまで確認しに来た人向けの情報：デバッグモードで起動して、もう一度チャレンジしてみよう
+					[IF_NDEBUG]
+						与ダメージ量 = 10000
+						GOTO NORMAL_DUELTRAIN59532
+					[ENDIF]
+					
+					;男캐릭터が상대だとこの특수処理にはなりません。
+					IF TALENT:조교대상:성별 == 2
+						与ダメージ量 = 10000
+						GOTO NORMAL_DUELTRAIN59532
+					ENDIF
+					
+					;クッソ長いのでデュエル１の표시扱いに（D1を利用）。つーか本当に長すぎるから適当に省略もできるようにしておく。あえて懐古したい人はどうぞ。
+					;ちなみに、画面イメージはマジもんのeramakerの最初期のやつを見ながら画面調整した。流石にキー入力オンリーまでは再現しない（技術力不足）。
+					;『死の体感』feat.ネフィリム　「era」のイメージ。ちなみにこの画面ぐらいのeraは奴隷の체력がゼロになったら캐릭터死亡でゲームオーバーになってたのじゃ。
+					IF 발동済_D1(듀얼리스트, 59532) != 1
+						CUSTOMDRAWLINE —
+						PRINTFORML 이제는 결투(듀얼)로서는 결착이 났을 터인 %CALLNAME:조교대상%의 앞에, 백익의 검은 천사(네피림)가 어느샌가 접근해 있었다.
+						PRINTFORML 감소해가는 자신의 라이프 포인트를 분한 듯이 보고 있던 %CALLNAME:조교대상%는, 자신을 내려다보는 인형을 마침내 눈치채고 얼굴을 들었다.
+						PRINTFORMW 그 인형과 시선이 마주친 %CALLNAME:조교대상%의 얼굴에서 핏기가 싹 가시고, 그야말로 창백한 표정으로 %CALLNAME:MASTER%에게 도움을 청하려던――
+						PRINTFORMW 그 찰나에, 검은 천사(네피림)의 몸이 전부 그림자 실로 변해 %CALLNAME:조교대상%의 온몸을 순식간에 감싸고, 꿈틀거리는 그림자 실 덩어리가 지면으로 가라앉아 갔다……
+						PRINTFORML ・・・
+						PRINTFORML ・・
+						PRINTFORMW ・
+						CUSTOMDRAWLINE —
+						;대상の체력が既に0以下だと、地面に沈んだ以降のメッセージは표시されず、추가조교の処置も行わない。
+						IF BASE:조교대상:체력 > 0
+							;楽しい"era"のはじまり。ありえんレベルでものすごーく面倒な作業ゲーになるんで、最初に飛ばせるようにしておく。
+							CUSTOMDRAWLINE —
+							CUSTOMDRAWLINE —
+							PRINTFORML 
+							TRYCALL XON_FONT(" ,注意,警告,注意, ",C_RED)
+							SETCOLOR C_RED
+							PRINTFORML 　매우 길고 지루한 처리를 수행해야 합니다만, 스킵하시겠습니까?
+							RESETCOLOR
+							PRINTL [0] - 스킵한다
+							PRINTL [1] - 스킵하지 않는다
+							PRINTL [2] - I Don't Read Japanese...
+							BINPUT
+							IF RESULT == 0
+								PRINTFORML 
+								PRINTFORML ・・・무섭고도 지루한 행위가 뒤에서 행해진 것 같지만, "%CALLNAME:MASTER%"는 보지 않은 것으로 했다.
+								PRINTFORMW 
+								;残り체력と기력を0にして、체력に応じて[고통]と[공포]に適当に代入
+								PALAM:조교대상:고통 = BASE:조교대상:체력 * 4
+								PALAM:조교대상:공포 = BASE:조교대상:체력 * 2
+								BASE:조교대상:체력 = 0
+								BASE:조교대상:기력 = 0
+							ELSEIF RESULT == 1
+								TRYCALL ERASHADDOLL(듀얼리스트, 59532, 조교대상, 与ダメージ量)
+							ELSE
+								;日本語が読めないと「意☆味☆不☆明」なera조교処理に入ってて抜け出せなくなる可能性をケア
+								PRINTFORML 
+								PRINTFORML ...sorry
+								PRINTFORMW 
+								;残り체력と기력を0にして、체력に応じて[고통]と[공포]に適当に代入
+								PALAM:조교대상:고통 = BASE:조교대상:체력 * 4
+								PALAM:조교대상:공포 = BASE:조교대상:체력 * 2
+								BASE:조교대상:체력 = 0
+								BASE:조교대상:기력 = 0
+							ENDIF
+						ENDIF
+						CUSTOMDRAWLINE —
+						PRINTFORML 
+						PRINTFORML ・
+						PRINTFORML ・・
+						PRINTFORMW ・・・
+						PRINTFORMW 그림자 실이 지면에 가라앉고 나서 수 초 후. 스으으으으 하고 다시 지면에서 얼룩 같은 것이 퍼져나가 그림자 실 덩어리가 기어 나왔다.
+						PRINTFORML 그러고 보니 섀도르에는 "그림자 감옥의 주박"이라는 카드가 있었지. 라고 생각했더니, 둥글게 뭉쳐 있던 그림자 실 덩어리가 스르르륵 하고 풀렸다.
+						PRINTFORMW 사뿐히 풀린 그림자 실에서 원래의 인형 모습으로 돌아온 백익의 검은 천사 (네피림)은, MASTER인 %CALLNAME:MASTER%에게 공손하게 절을 하고 있다.
+						PRINTFORMW 그 발밑에는, 무슨 일이 있었던 것인지 %CALLNAME:조교대상%가 미동도 없이 쓰러져 있었다.
+						PRINTFORML 
+						CUSTOMDRAWLINE —
+						
+						;デュエル１での표시のため、このカードのD1효과を利用した扱いに
+						CALL CARD_EFFECT_D1USE(듀얼리스트, 59532)
+					ENDIF
+					
+					;상대の精神にショックを与える・・・ERAミドラの제외효과と同等の효과
+					;MARK:조교대상:반발각인 = 0
+					;TCVAR:조교대상:반발각인취득 = 0
+					CFLAG:조교대상:극대노 = 0
+					CFLAG:조교대상:기분나쁨 = 0
+					TCVAR:조교대상:기분나쁨 = 0
+					BASE:조교대상:분노 = 0
+					PALAM:조교대상:반감 = 0
+					PALAM:조교대상:불쾌 = 0
+					PALAM:조교대상:억울 = 0
+					PALAM:조교대상:부정 = 0
+					
+					
+					;一応ダメージのリミットは10000までにしておくね（あまり意味の無いやさしさ）
+					;SIF 与ダメージ量 >= 10000
+					;	与ダメージ量 = 10000
+				ELSE
+					;旧フレーバー텍스트
+					PRINTFORML 네피림의 전신에서 엄청난 수의 그림자 실이 꿈틀거리며 기어 나와, %CALLNAME:조교대상%에게 쇄도했다!
+					PRINTFORML 이제는 결투(듀얼)라고도 조교라고도 부를 수 없는, 그저 상대를 부수기 위한 순수한 고문이 펼쳐진다……
+				ENDIF
+				;いちおう念のためここでも텍스트の色リセット処理を入れておく。（丁寧なケア）
+				RESETCOLOR
+				;与ダメージ8000以上であれば、素質を剥奪する処理を入れる。（ネフィリム以外の最大효과の텍스트を見る数値に설정）
+				IF 与ダメージ量 >= 8000
+					;さらに[痛みに強い]を持っている女性캐릭터クターであれば、それを剥奪する。精神への深刻な後遺症。
+					IF TALENT:조교대상:통각 == -1 && TALENT:조교대상:성별 & 1
+						PRINTFORML 
+						SETCOLOR C_RED
+						PRINTFORMW 가혹한 고문을 받은 %CALLNAME:조교대상%의 마음이 금이 가버렸다……
+						PRINTFORMW %CALLNAME:조교대상%은 [통각에 강함]을 잃었다.
+						TALENT:조교대상:통각 = 0
+						RESETCOLOR
+					ENDIF
+				ENDIF
+
+				;상대が男の場合は조교강도が半分になる処理
+				SIF TALENT:조교대상:성별 == 2
+					TIMES 与ダメージ量, 0.50
+			
+				;もう一回半減処理(男は1/4、それ以外は1/2となる)
 				TIMES 与ダメージ量, 0.50
 			
-			;もう一回半減処理(男は1/4、それ以外は1/2となる)
-			TIMES 与ダメージ量, 0.50
-			
-			;フレ-バ-텍스트
-			PRINTFORML 네피림의 전신에서 엄청난 수의 그림자 실이 넘쳐 나오며 %CALLNAME:조교대상%향해 쇄도했다！
-			PRINTFORML 더 이상 듀얼이라고도 조교라고도 부를 수 없는, 단지 상대를 부수기 위한 순수한 비난이 펼쳐지고 있다……
-			
-			CALL EROTIC_MOVE("拷問処理",조교대상,-1,与ダメージ量)
-			
-			
+				CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 与ダメージ量)
+
+			ENDIF
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 攻守変動
@@ -232,11 +448,361 @@ ELSEIF 종류 == 攻守変動
 	효과条件종류 = モン全般
 	효과条件カテゴリ = 섀도르
 	효과条件CNT = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
 	条件合致数 = RESULT
 	攻撃力修正 = 条件合致数 * 500
-	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
+	CALL STATCHANGE_BASIC(듀얼리스트, "自身", 場所, 攻撃力修正)
+
+	;ちょっとテスト。強制続行モードに限り色々な枷が外れて無限に殴れるとかもできるのでは？
+	;IF ERA起動 == 2
+	;	CALL SET_FIELD_INFO(듀얼리스트, "필드", 場所, "戦", 99, 上書きモード)
+	;	CALL STATCHANGE_BASIC(듀얼리스트, "自身", 場所, 攻撃力修正*20)
+	;ENDIF
 ELSEIF 종류 == 지속효과
-	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
-	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"貫通")
+	CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "貫通")
+	
+	IF バトルフェイズ == 1
+		CALL FULLRESET
+		효과条件カテゴリ = 섀도르
+		CALL STATCHANGE_EFFECT(듀얼리스트, "필드", 場所, "対耐")
+		CALL FULLRESET
+		효과条件カテゴリ = 섀도르
+		CALL STATCHANGE_EFFECT(듀얼리스트, "마함", 場所, "対耐")
+	ENDIF
 ENDIF
+	
+	;---------------------------------------------------------------------------------------
+;E.R.A.ShadDOLL.Constructのデュエル조교の효과のための処理部分（era行為の実行処理部分）
+;---------------------------------------------------------------------------------------
+
+
+@ERASHADDOLL(듀얼리스트, 参照カードID, 조교대상, 与ダメージ量)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 参照カードID
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 与ダメージ量
+#DIM DYNAMIC 現在체력
+#DIM DYNAMIC 現在기력
+#DIM DYNAMIC 만족度 = 0
+#DIM DYNAMIC 표시列数
+#DIM DYNAMIC 改行カウンタ
+#DIM DYNAMIC コマンド数カウンタ
+#DIM DYNAMIC ゴア行為消費체력
+#DIM DYNAMIC オートモード = 0
+
+IF 参照カードID == 59532
+	IF 조교대상 == MASTER
+		;상대プレイヤー側のネフィリムに殴られてここまできた人向けの処理部分（テスト以外で絶対通過することないと思うが）
+		PRINTFORML ・・・백익의 검은 천사(네피림)가, 싱글벙글 웃는 얼굴을 이쪽으로 향하며 다가온다.
+		PRINTFORMW 
+		PRINTFORML 준 데미지에 따른 고통을 상대 플레이어에게 준다고 하는, 무시무시한 효과 텍스트.
+		PRINTFORML 카드 텍스트에서는, 분명 상대 플레이어의 조건이 있었던 것 같은데・・・
+		PRINTFORMW 
+		PRINTFORMW 짙은 보라색의 그림자 실에 의해 카드 텍스트에 가로선이 그어져 있던 것은, 디스플레이의 이상이나 착각이 아니었을 것이다.
+		PRINTFORMW 눈앞에 다가오는 살육의 천사는, 상대 플레이어에게는 누구에게나 똑같이 고통을 선사한다.
+		PRINTFORML 설령 그것이 『ShadDOLL』을 거느릴 수 있었던 인간이었다고 해도.
+		PRINTFORMW 
+		PRINTFORML ・
+		PRINTFORML ・・
+		PRINTFORMW ・・・
+		PRINTFORMW 
+		PRINTL [0] - 점핑 도게자를 한다 (닥터 와●리 같은 도약력으로)
+		PRINTL [1] - "와라 천사(네피림)! 네놈 따위! 네놈 따위 무섭지 않다고오오오!" (주: 죽어버린다구요?)
+		BINPUT
+		IF RESULT == 0
+			PRINTFORMW 
+			PRINTFORML ・
+			PRINTFORML ・・
+			PRINTFORMW ・・・
+			PRINTFORMW ・・・우오오오오오오오오오오오오오오오오오!!!!!
+			PRINTFORMW 이것이, 이것이, 이것이 점핑 도게자다아아아아아아아아아아아아!!!!!!!!!!!!!!
+			PRINTFORML 
+			PRINTFORML 
+			PRINTFORMW 꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅꾸벅
+			PRINTFORML 
+			PRINTFORMW 땅을 박살 낼 기세로 이마를 내리찍어 "성의"를 보이고 보이고 또 보여준다.
+			PRINTFORMW 프라이드? 체면? 그런 것보다 소중한 게 여기 있잖냐!! 목숨을 소중히!! 목숨을 소중히!!!
+			PRINTFORML ・
+			PRINTFORML ・・
+			PRINTFORMW ・・・
+			PRINTFORMW 주먹을 내리치는 거리까지 다가온 살육의 천사가, 재패니즈 큰절 포즈와 같은 시선까지 웅크린 얼굴과 눈이 마주쳤다.
+			PRINTFORML 
+			PRINTFORMW 생긋
+			PRINTFORML 
+			PRINTFORML ・
+			PRINTFORML ・・
+			PRINTFORMW ・・・
+			PRINTFORMW (해치웠나?)
+			PRINTFORML ・
+			PRINTFORML ・・
+			PRINTFORMW ・・・
+			PRINTFORML 
+			SETCOLOR C_RED
+			CALL FLASH(2)
+			PRINTFORML 핑!!
+			PRINTFORMW 
+			RESETCOLOR
+			PRINTFORMW 상냥하게 웃는 얼굴인 채로, 딱밤을 먹여왔다!
+			PRINTFORMW 검은 천사(네피림)의 엄청난 파워를 집약한 딱밤!! 그 위력은 "{与ダメージ量}" 데미지에 해당한다!!
+			PRINTFORMW 큰절하던 몸이 힘껏 공중으로 날아올라 뒤쪽으로 내동댕이쳐졌다!! 아파!! 너무 아파!!!
+			CUSTOMDRAWLINE —
+			CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 与ダメージ量)
+			CUSTOMDRAWLINE —
+			PRINTFORML ・
+			PRINTFORML ・・
+			PRINTFORMW ・・・
+			PRINTFORMW 아픔과 충격으로 나뒹굴며 몸부림치지만…… 하지만, 살아있다! 살아남았다!!!
+			PRINTFORMW 땡큐! 닥터 와●리! 인간, 큰절만 하면 어떻게든 되는구나.
+			PRINTFORMW 터벅터벅 필드로 돌아가는 살육하지 않은 살육의 천사의 뒷모습을 보고, %CALLNAME:MASTER%는 자신의 목숨이 이어졌다는 것에 안도했다.
+		ELSE
+			PRINTFORMW 
+			PRINTFORML ・
+			PRINTFORML ・・
+			PRINTFORMW ・・・
+			PRINTFORMW ・・・좋겠지. 지금까지 실컷 저질러 온 일의 "업보"를 받을 때가 왔다. 그저, 그뿐이다.
+			PRINTFORMW 저 아름다운 날개를 가진 살육의 천사의 손에 최후를 맞는다면, 그것도 나쁘지 않을지도 모르겠군.
+			PRINTFORMW 그렇게 생각하니, 조금 유쾌한 감정이 솟아올라 무심코 가벼운 미소가 흘러나왔다.
+			PRINTFORML 
+			PRINTL [0] - (앞으로도 온갖 포악한 짓을 다해다오.)
+			BINPUT
+			PRINTFORML 
+			PRINTFORMW ・・・
+			PRINTFORMW ・・
+			PRINTFORMW ・
+			PRINTFORML 
+			SETCOLOR C_YELLOW
+			CUSTOMDRAWLINE ―
+			ALIGNMENT CENTER
+			PRINTL
+			CALL CHARA_CUTIN(""," GAME OVER")
+			PRINTL
+			RESETCOLOR
+			ALIGNMENT LEFT
+			CUSTOMDRAWLINE ―
+			;げーむおーばー（ガチ）
+			CALL GAME_OVER
+		ENDIF
+	ELSE
+		;「era」の世界。こいつeraの中で遊戯王始めたと思ったら、その中でera始めましたよ。（黒い艦こ●漫画の艦●れ編[136話～148話]が好きなんですねぇ）
+		$ERALOOP59532
+		
+		REPEAT 120
+			PRINTFORML 
+		REND
+		CLEARLINE 60
+		CUSTOMDRAWLINE —
+		
+		;ループ終了処理の都合上、체력の確認は先に実行する。
+		現在체력 = BASE:조교대상:체력
+		IF 現在체력 <= 0
+			BASE:조교대상:체력 = 0
+			現在체력 = 0
+			;체력を0にしたらメッセージを出力してRETURNしてこの地獄から抜け出せる。※テストした人はお疲れ様だ。
+			TRYCALL ERASHADDOLLSTR_PRINT(59532, 조교대상)
+			RETURN 1
+		ENDIF
+		
+		
+		PRINTFORM {DAY}일째　
+		IF (TIME/60) > 12
+			PRINTL 오후
+		ELSE
+			PRINTL 오전
+		ENDIF
+		
+		PRINTFORML %CALLNAME:조교대상% 조교중
+		PRINT 체력
+		BAR 現在체력, MAXBASE:조교대상:체력, 32
+		PRINTFORML ({現在체력}/{MAXBASE:조교대상:체력})
+		PRINT 기력
+		現在기력 = BASE:조교대상:기력
+		SIF 現在기력 < 0
+			現在기력 = 0
+		BAR 現在기력, MAXBASE:조교대상:기력, 32
+		PRINTFORML ({現在기력}/{MAXBASE:조교대상:기력})
+		
+		;いにしえの呪文！？
+		PRINT_PALAM 조교대상
+		
+		;사정ゲージの代わりに만족度[0-1000]なる謎の概念を표시（とくにいみはないし決してMAXにならない、チーム만족とも無関係）・・・とても長いバー표시
+		;文字の色が変わっていくファンサービス(100-300:黄色　300-999:赤色　1000:黒赤色)
+		IF 만족度 >= 1000
+			SETCOLOR C_D_RED
+		ELSEIF 만족度 >= 300
+			SETCOLOR C_RED
+		ELSEIF 만족度 >= 100
+			SETCOLOR C_YELLOW
+		ELSE
+			;SETCOLOR C_RED
+		ENDIF
+			PRINTFORML 
+		PRINT 만족도
+		SIF 만족度 > 1000
+			만족度 = 1000
+		BAR 만족度, 1024, 64
+		PRINTFORML ({만족度}/1024)
+			PRINTFORML 
+		RESETCOLOR
+		
+		;コマンド何個ごとに並べる？　誰もそんなレガシー설정は気にしてない？　それはそう
+		PRINTCPERLINE
+		표시列数 = RESULT
+		
+		FOR コマンド数カウンタ, 19, 24
+			PRINT 　　　
+			TRYCALL ERASHADDOLLCOM_PRINT(コマンド数カウンタ)
+			
+			改行カウンタ ++
+			IF 改行カウンタ == 표시列数
+				PRINTL 
+				改行カウンタ = 0
+			ENDIF
+		NEXT
+		改行カウンタ = 0
+		
+		PRINTFORML 
+		PRINTL 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　오토모드[102]
+		
+		PRINTL 
+		IF オートモード != 1
+			BINPUT
+		ELSE
+			;オートモードだとボタンインプットを飛ばしてくれる。
+			PRINTFORML ・・・오토모드 중입니다。（%CALLNAME:MASTER%님이 조작할 필요는 없습니다）
+			RESULT = RAND:4 + 20
+			TWAIT 3, 0
+		ENDIF
+		
+		;조교メニューの選択後まで
+		$ERALOOP59532_TARINCOM
+		IF RESULT == 102
+			PRINTFORMW ・・・오토모드로 전환합니다。（%CALLNAME:MASTER%님은 잠시 구경해 주세요）
+			オートモード = 1
+			RESULT = RAND:4 + 20
+		ENDIF
+		
+		SELECTCASE RESULT
+			CASE 19
+				;スパンキング
+				CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 300)
+				만족度　+= 50
+			CASE 20
+				;鞭
+				CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 600)
+				만족度　+= 120
+			CASE 21
+				;針
+				CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 1200)
+				만족度　+= 250
+			CASE 22
+				;ナイフ
+				;체력そのものを割合で削る処理を入れる（조교대상の체력が莫大な数値の場合でもループを終えるためのコマンド）
+				ゴア行為消費체력 = MAXBASE:조교대상:체력
+				TIMES ゴア行為消費체력 , 0.1
+				BASE:조교대상:체력 -= ゴア行為消費체력
+				CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 1500)
+				만족度　+= 50
+			CASE 23
+				;鉈
+				;체력そのものを割合で削る処理を入れる（조교대상の체력が莫大な数値の場合でもループを終えるためのコマンド）
+				ゴア行為消費체력 = MAXBASE:조교대상:체력
+				TIMES ゴア行為消費체력 , 0.5
+				BASE:조교대상:체력 -= ゴア行為消費체력
+				CALL EROTIC_MOVE("拷問処理", 조교대상, -1, 3000)
+				만족度　+= 50
+			CASEELSE
+				PRINTFORMW ・・・부정한 커맨드가 입력되었습니다。시스템을 정지합니다。
+				RETURN 0
+		ENDSELECT
+		
+		;無限ループ（！？）　조교대상の체력を０にするまで止めることはできません。
+		GOTO ERALOOP59532
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@ERASHADDOLLCOM_PRINT(COM番号)
+#DIM DYNAMIC COM番号
+
+;[19]スパンキング [20]鞭 [21]針 [22]ナイフ [23]鉈　の5つだけ。全部「拷問処理」で計算
+SELECTCASE COM番号
+	CASE 19
+		PRINT 스팽킹[ 19]
+	CASE 20
+		PRINT 　채찍[ 20]
+	CASE 21
+		PRINT 　바늘[ 21]
+	CASE 22
+		PRINT 나이프[ 22]
+	CASE 23
+		PRINT 　나대[ 23]
+	CASEELSE
+		;PRINT この地獄を終わらせる[XXX]
+		RETURN 0
+ENDSELECT
+
+RETURN 1
+
+@ERASHADDOLLSTR_PRINT(STR番号, 조교대상)
+#DIM DYNAMIC STR番号
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 조교대상名前文字数
+#DIMS DYNAMIC マスク名前 = ""
+
+STRLENFORMU %CALLNAME:조교대상%
+조교대상名前文字数 = RESULT
+REPEAT 조교대상名前文字数
+	マスク名前 '= マスク名前 + "■"
+REND
+
+;STR番号で呼べるようにしているが、実際は1個しか표시しない。
+SELECTCASE STR番号
+	CASE 59532
+		;「あなた」は、このメッセージがどんな世界にあったものを模倣しているか、知っているだろうか？
+		PRINTFORML 
+		PRINTFORMW ・・・・・・・・・
+		PRINTFORMW ・・・・・・
+		PRINTFORMW ・・・
+		PRINTFORMW ---%CALLNAME:조교대상%은 ■■했습니다.
+		PRINTFORML 
+		PRINTFORMW 아ー, 또 실패해 버렸네.
+		PRINTFORMW "이런이런 %マスク名前%. 또 ■해 버린 게냐?"
+		PRINTFORMW 갑자기 뒤에서 목소리가 들려왔다.
+		PRINTFORMW 뒤돌아본 목소리의 주인은, 엄청나게 큰 마녀 모자에 마이크로 비키니를 입은 백발 갈색 피부의 빈유 로리바바다.
+		PRINTFORMW "……꽤 비싸단다, 그 인형은"
+		PRINTFORMW 비싸다고?　그렇다기엔 몇 번이고 몇 번이고 꺼내 주잖아.
+		PRINTFORMW 방구석에 대량으로 버려져 있는, %CALLNAME:조교대상%『이었던』 인형의 산을 가리킨다.
+		PRINTFORML 
+		PRINTFORMW "뭐, 그렇지. %マスク名前%, 여기는 네가 즐기기 위한 세계니까……"
+		PRINTFORMW 그렇게 투덜거리면서도, 새로운 %CALLNAME:조교대상%을 꺼내 주었다.
+		PRINTFORML 여느 때처럼 신선한 곤혹스러움을 보이는 %CALLNAME:조교대상%의 모습에, 나도 모르게 입맛을 다셨다.
+		PRINTFORMW 
+		SETCOLOR C_RED
+		PRINTFORMW 이번에는 어떻게 "부숴서" 놀아볼까……
+		RESETCOLOR
+		PRINTFORML 
+		PRINTFORML 
+		PRINTFORMW "슬슬 조교도 끝이 보이는구나……%マスク名前%여, 마음껏 즐기는 게 좋을 게다"
+		CALL FLASH(1)
+		WAIT
+		CALL FLASH(2)
+		WAIT
+		CALL FLASH(4)
+		CLEARLINE 1
+		;グラデーションフォントにしようかしらん
+		PRINTFORM "슬슬 조교도 끝이 보이는구나……
+		SETCOLOR C_RED
+		PRINTFORM %CALLNAME:조교대상%
+		SETCOLOR C_D_PINK
+		PRINTFORMW 여, 마음껏 즐기는 게 좋을 게다"
+		PRINTFORMW 
+		RESETCOLOR
+	CASEELSE
+		;PRINT この地獄を終わらせる[XXX]
+		RETURN 0
+ENDSELECT
+
+RETURN 1
+
+

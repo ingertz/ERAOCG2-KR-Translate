@@ -49,6 +49,10 @@ CALLFORM CARD_ABLE(1,효과後誘発,攻撃時誘発)
 PRINTL ①: 마법 카드가 발동했을 경우, 또는 이 카드가 공격 대상으로 선택되었을 때에 발동할 수 있다.
 PRINTL 자신의 패 / 덱 / 묘지에서 "푸른 눈의 백룡" 1장을 골라 특수 소환할 수 있다.
 PRINTL 공격 대상으로 선택되었을 경우, 그 공격을 무효로 하고, 이 카드의 표시 형식을 변경한다.
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 자신의 패 / 덱 / 필드（앞면표시） / 묘지의 "푸른 눈의 백룡" ３장을 골라、서로가 확인한다。
+PRINTL 그 후、자신의 패 / 덱 / 묘지에서 "푸른 눈의 백룡" １장을 특수 소환한다。
 
 @CARDSUMMON_AA_1020
 
@@ -105,6 +109,35 @@ ELSEIF 종류 == 攻撃時誘発
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,1020)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
+	효과条件名前 = 푸른 눈의 백룡
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件名前 = 푸른 눈의 백룡
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
 ENDIF
 
 
@@ -135,6 +168,28 @@ IF 종류 == 발동誘発 || 종류 == 攻撃時誘発
 		IF 종류 == 攻撃時誘発
 			CALL EVADE_ATTACK(듀얼리스트)
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"表",2,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1020,2)
+	IF RESULT == 0
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲묘지 = 1
+		효과条件名前 = 푸른 눈의 백룡
+		효과条件複数 = 3
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			효과範囲묘지 = 1
+			효과条件名前 = 푸른 눈의 백룡
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
 ENDIF

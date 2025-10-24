@@ -52,9 +52,9 @@ RETURN 0
 
 PRINTL 이 카드명의 ①②의 효과는 １턴에 １번밖에 사용할 수 없다。
 ;テンション高いメルラン
-CALLFORM CARD_ABLE(1,소환時,특수소환時)
-PRINTL ①：이 카드가 드로우 이외의 방법으로 패에 넣어진 경우에 발동할 수 있다。
-PRINTL 이 카드를 특수 소환한다。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：몬스터 카드가 상대의 패 / 덱에서 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL 패의 이 카드를 특수 소환한다。
 ;なんかテンション下がる효과
 CALLFORM CARD_ABLE(2,소환時,특수소환時)
 PRINTL ②：이 카드가 소환 / 특수 소환에 성공한 경우、상대 필드의 앞면 표시 몬스터 １체를 대상으로 발동할 수 있다。
@@ -78,14 +78,12 @@ SIF RESULT == 1
 IF 종류 == 효과後誘発
 	SIF 발동済_1(듀얼리스트,15522)
 		RETURN 0
-	SIF ゾーン != "손패"
-		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,15522,"손패")
 	SIF RESULT == 1
 		RETURN 0
 	CALL FULLRESET
-	효과条件名前 = 프리즘리버 유령악단
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득")
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패덱",1)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1

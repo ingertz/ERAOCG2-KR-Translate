@@ -849,17 +849,14 @@ IF 参照先 == "필드"
 		SIF 条件달성 == 0		
 			RETURN 0
 	ENDIF
-	IF 素材条件링크 > 0
+	IF 素材条件L数制限 >= 2
 		VARSET 条件달성
-		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "종류"
+		TRYCALLFORM CARD_{설정カードID}, "종류"
 		IF RESULT == 링크
-			SIF MATCH(素材条件링크, GETVAR(@"%実行者%_MZ_星:カウンタ"))
+			SIF GETVAR(@"%実行者%_MZ_星:カウンタ") <= 2
+				条件달성 ++
+		ELSE
 			条件달성 ++
-		SIF 素材条件링크 == 1 ;Anonym추가
-				条件달성 ++
-		ELSE ;Anonym추가
-			SIF 素材条件링크 == 1
-				条件달성 ++
 		ENDIF
 		SIF 条件달성 == 0		
 			RETURN 0

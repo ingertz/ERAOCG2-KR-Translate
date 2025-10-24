@@ -77,7 +77,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과範囲묘지 = 1
-	효과条件固名前起動 = 1
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
 	효과条件カテゴリ = 잭나이츠
 	효과条件CNT = 1	
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -132,7 +132,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과範囲묘지 = 1
-	효과条件固名前起動 = 1
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
 	효과条件カテゴリ = 잭나이츠
 	효과条件CNT = 1	
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -143,14 +143,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	IF 효과使用불가:0 == 0 && 효과使用불가:1 == 0
 		SETCOLOR C_RED
 		CUSTOMDRAWLINE —
-PRINTL ＞반란 분자의 억제를 개시합니까?
+		PRINTL ＞반란 분자의 억제를 개시합니까?
 		CUSTOMDRAWLINE —
 		RESETCOLOR
 		CALL YN_CHOICE(듀얼리스트)
 	ELSEIF 효과使用불가:0 == 1
 		SETCOLOR C_RED
 		CUSTOMDRAWLINE —
-PRINTL ＞반란 분자의 억제를 개시합니다.
+		PRINTL ＞반란 분자의 억제를 개시합니다.
 		CUSTOMDRAWLINE —
 		RESETCOLOR
 		WAIT
@@ -182,18 +182,11 @@ PRINTL ＞반란 분자의 억제를 개시합니다.
 			효과条件行先플래그 = 제외行き
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 			IF RESULT == 1
-				FOR カウンタ,98,-1, -1
-					IF GETVAR(@"%対面者%_EX덱:{カウンタ}") == -1
-						CONTINUE
-					ENDIF
-					CALL CARD_DISPOSE(対面者,"EX덱",カウンタ)
-				NEXT
-				FOR カウンタ,98,-1, -1
-					IF GETVAR(@"%対面者%_손패:{カウンタ}") == -1
-						CONTINUE
-					ENDIF
-					CALL CARD_DISPOSE(対面者,"손패",カウンタ)
-				NEXT
+				CALL FULLRESET
+				CALL CARD_HYPER_DISPOSE(듀얼리스트,"상대손패",묘지行き)
+
+				CALL FULLRESET
+				CALL CARD_HYPER_DISPOSE(듀얼리스트,"상대EX덱",묘지行き)
 			ENDIF
 		ENDIF
 	ENDIF

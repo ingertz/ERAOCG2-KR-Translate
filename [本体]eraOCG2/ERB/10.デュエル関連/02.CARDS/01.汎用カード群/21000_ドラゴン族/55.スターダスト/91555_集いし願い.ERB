@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 하나된 소망
+		RESULTS = 하나된 소망
 	CASE "略称"
-RESULTS = 하나된 소망
+		RESULTS = 하나된 소망
 	CASE "カテゴリ"
-RESULTS:0 = 스타더스트
+		RESULTS:0 = 스타더스트
 ENDSELECT
 
 
@@ -75,7 +75,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 	효과範囲묘지 = 1
 	효과条件종류 = 싱크로
 	효과条件종족 = 드래곤족
-	효과条件固名前起動 = 1
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT < 5
@@ -83,7 +83,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 	RETURN 1
 	CALL FULLRESET
 	효과範囲EX덱 = 1
-효과条件名前 = 스타더스트 드래곤
+	효과条件名前 = 스타더스트 드래곤
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -108,23 +108,14 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91555)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
-		FOR カウンタ, 98, -1, -1
-			IF GETVAR(@"%듀얼리스트%_묘지:{カウンタ}") == -1
-				CONTINUE
-			ENDIF
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_묘지:カウンタ")}, "종류"
-			IF RESULT != 싱크로
-				CONTINUE
-			ENDIF
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_묘지:カウンタ")}, "종족"
-			IF RESULT != 드래곤족
-				CONTINUE
-			ENDIF
-			CALL CARD_DISPOSE(듀얼리스트,"묘지",カウンタ,1)
-		NEXT
+		CALL FULLRESET
+		효과条件종류 = 싱크로
+		효과条件종족 = 드래곤족
+		CALL CARD_HYPER_DISPOSE(듀얼리스트,"묘지",제외行き)
+
 		CALL FULLRESET
 		효과範囲EX덱 = 1
-효과条件名前 = 스타더스트 드래곤
+		효과条件名前 = 스타더스트 드래곤
 		효과추가종류 = 10 + 제외行き
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		효과範囲필드 = 1
