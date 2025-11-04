@@ -31,12 +31,12 @@ RETURN 0
 @CARD_EXPLANATION_72142(종류)
 #DIM DYNAMIC 종류
 
-PRINTL '드래그니티' 몬스터에게만 장착 가능.
+PRINTL "드래그니티" 몬스터에게만 장착 가능.
 PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(0,攻守変動 ,지속효과)
 PRINTL ①: 장착 몬스터는, 공격력이 장착 몬스터의 레벨 × 100 오르고, 함정 내성을 얻는다.
 CALLFORM CARD_ABLE(1,마함起動)
-PRINTL ②: 자신 메인 페이즈에 발동할 수 있다. 덱에서 드래곤족의 '드래그니티' 튜너 1장을 고르고,
+PRINTL ②: 자신 메인 페이즈에 발동할 수 있다. 덱에서 드래곤족의 "드래그니티" 튜너 1장을 고르고,
 PRINTL 이 카드의 장착 몬스터에게 장착 카드로서 장착한다.
 
 @CARDCAN_72142(듀얼리스트,종류,ゾーン,場所)
@@ -78,18 +78,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_필드:装備先") != -1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 손패起動
-		SIF 마함数(듀얼리스트) == 5
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件カテゴリ = 드래그니티
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -140,7 +136,7 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 	ENDIF
 
 ELSEIF 종류 == 攻守変動
-	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}, "レベル" 
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("レベル" ) 
 	攻撃力修正 = RESULT * 100
 	CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,攻撃力修正)
 

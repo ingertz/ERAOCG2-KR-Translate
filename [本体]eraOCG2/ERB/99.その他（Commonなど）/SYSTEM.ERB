@@ -20,7 +20,8 @@ PBAND = 12
 
 CALL DEFAULT_OPTION
 
-
+SIF 禁止_등장작품:0 == ""
+	VARSET 禁止_등장작품, "NG"
 
 ;캐릭터生成【캐릭터を추가しやすくなるよう軽く改造】
 FOR 캐릭터_ID,1,9000
@@ -57,7 +58,7 @@ SAVESTR:10 = /
 
 FOR 캐릭터_ID,0,CHARANUM
 	CALL SET_BODYSIZE(캐릭터_ID,0,2)
-	;服装
+	;복장
 	CALL CLOTHES_SETTING(캐릭터_ID)
 	;시작위치
 	CFLAG:캐릭터_ID:현재위치 = CFLAG:캐릭터_ID:시작위치
@@ -241,7 +242,6 @@ ENDIF
 
 
 CALL HENSHU_RELOAD
-
 FOR カウンタ,0,30
 	FOR カウンタB,0,紙束最大値
 		마이덱:カウンタ:カウンタB = -1
@@ -395,16 +395,22 @@ ELSE
 	ENDIF
 ENDIF
 
-
+PRINTL 유희왕 작품 이외의 등장작품을 제한하시겠습니까？（이후 옵션에서 설정 가능합니다）
+PRINTL [0] - 제한한다
+PRINTL [1] - 뭐든 OK
+BINPUT
+IF RESULT == 0
+	CALL RESTRICT_WORLD
+ENDIF
 
 
 
 ;カード所持
 PRINTL 처음 시작할 때 몇 장의 카드를 소지한 상태로 시작하시겠습니까?
-PRINTL [0] 3장까지 선택해서 소지한다
-PRINTL [1] 20장을 랜덤으로 소지한다
-PRINTL [2] 모든 카드를 소지한 상태로 시작한다(듀얼리스트 포함)
-PRINTL [3] 0에서 시작한다
+PRINTL [0] - 3장까지 선택해서 소지한다
+PRINTL [1] - 20장을 랜덤으로 소지한다
+PRINTL [2] - 모든 카드를 소지한 상태로 시작한다(듀얼리스트 포함)
+PRINTL [3] - 0부터 시작한다
 BINPUT
 IF RESULT == 0
 	$INPUT_LOOP_LIST

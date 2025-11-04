@@ -1,0 +1,133 @@
+﻿@CARDNAME_62126,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미캉코의 유혹하는 론도
+	CASE "略称"
+		RESULTS = 유혹하는 론도
+	CASE "カテゴリ"
+		RESULTS:0 = 미캉코
+ENDSELECT
+
+
+@CARD_62126(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "単一存在"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62126(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL 자신 필드에 "미캉코" 몬스터가 존재할 경우에 발동할 수 있다.
+PRINTL 이 카드는 상대 필드의 몬스터에게 장착할 수 있다.
+PRINTL 이 방법으로 장착 했을 경우, 그 몬스터의 컨트롤을 얻는다.
+PRINTL 이 카드명의 카드는 1턴에 1장 밖에 발동할 수 없다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①："미캉코의 유혹하는 론도"는 자신 필드에 1장밖에 앞면 표시로 존재할 수 있다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：장착 몬스터의 효과는 무효화된다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드가 필드에서 벗어났을 때에 장착 몬스터는 묘지로 보내진다.
+
+@CARDCAN_62126(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62126)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,62126)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件표시 = 表側표시
+	효과条件名前 = 미캉코의 유혹하는 론도
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 0
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 미캉코
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_62126(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC セット先
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62126,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		IF 종류 == 손패起動
+			セット先 = カード설치先
+		ELSE
+			セット先 = 場所
+		ENDIF
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		효과추가종류 = 130 + セット先
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"強奪")
+		CALL SET_FIELD_INFO(듀얼리스트,"마함",セット先,"装",コントロール先,1)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"無効")
+ENDIF

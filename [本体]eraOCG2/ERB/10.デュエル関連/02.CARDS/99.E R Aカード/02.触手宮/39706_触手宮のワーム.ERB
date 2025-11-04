@@ -46,7 +46,7 @@ RETURN 0
 ; 카드의 텍스트はここに書く
 #DIM DYNAMIC 종류
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ③④의 효과는 각각 1턴에 1번 밖에 사용할 수 없다。
+PRINTL 이 카드명의 ③④의 효과는 각각 1턴에 1번 밖에 사용할 수 없다。
 CALL CARD_ABLE(1,묘지起動)
 PRINTL ①：필드가 "촉수궁"일 경우에, 묘지의 이 카드를 덱으로 돌릴 수 있다。※②의 효과가 발동한 경우 강제로 발동한다
 CALL CARD_ABLE(2,戦破壊→묘지)
@@ -232,7 +232,7 @@ IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
 		選択カード = RESULT
 		IF 選択カード != 9999
 			;選択カード(場所)から名称を취득。あえて모든몬스터를 대상。
-			TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:選択カード")},"名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:選択カード")}("名前")
 			選択カード名前 = %RESULTS%
 			SETCOLOR C_PINK
 			PRINTFORML
@@ -285,12 +285,12 @@ ELSEIF 종류 == ターン開始時
 		IF RESULT != 9999
 			カードID = RESULT:1
 			;カードIDから名称を취득
-			TRYCALLFORM CARDNAME_{カードID}, "名前"
+			TRYCALLFORM CARDNAME_{カードID}("名前")
 			選択カード名前 = %RESULTS%
 			PRINTFORMW %選択カード名前%의 발밑에 어디서나 작은 윔들이 흩어져 다가오고 있다...
 			PRINTFORML 
 			;カードIDから元々の수비력을 취득
-			TRYCALLFORM CARD_{カードID}, "守備力"
+			TRYCALLFORM CARD_{カードID}("守備力")
 			IF RESULT <= 200
 				PRINTFORML 전방에 공격에 대해서만 의식이 향해 있던 %選択カード名前%은 발밑에 마법 생물등을 눈치채지 못하고 있었다 。
 			ELSE 
@@ -330,7 +330,7 @@ ELSEIF 종류 == 마함起動
 		選択カード = RESULT
 		IF 選択カード != 9999
 			;カードIDから名称を취득
-			TRYCALLFORM CARDNAME_{RESULT:99},"名前"
+			TRYCALLFORM CARDNAME_{RESULT:99}("名前")
 			選択カード名前 = %RESULTS%
 			;装備先 몬스터의 공격력을 취득して추가する엑시즈 소재를 설정
 			X消費 = GETVAR(@"%装備者%_MZ_攻:装備先")

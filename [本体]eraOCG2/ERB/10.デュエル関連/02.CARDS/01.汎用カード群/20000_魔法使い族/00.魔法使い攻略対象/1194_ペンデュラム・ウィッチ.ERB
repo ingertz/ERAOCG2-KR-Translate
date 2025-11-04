@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 펜듈럼 위치
+		RESULTS = 펜듈럼 위치
 	CASE "略称"
-RESULTS = P 위치
+		RESULTS = P 위치
 	CASE "カテゴリ"
-RESULTS:0 = 펜듈럼
+		RESULTS:0 = 펜듈럼
 ENDSELECT
 
 
@@ -78,14 +78,10 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-
-
-
 ELSEIF 종류 == 효과後誘発
 	SIF 발동済_1(듀얼리스트,1194)
 		RETURN 0
@@ -205,7 +201,7 @@ ELSEIF 종류 == 戦破壊→묘지
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1194)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = 펜듈럼 위치
+		효과条件名前 = 펜듈럼 위치
 		CALL CARD_SET_BASIC(듀얼리스트,"EX덱",ゾーン,場所,"表側표시")
 	ENDIF
 ENDIF

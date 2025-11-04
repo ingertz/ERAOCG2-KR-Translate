@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 매지컬 자지
+		RESULTS = 매지컬 자지
 	CASE "略称"
-RESULTS = 매직자지
+		RESULTS = 매직자지
 	CASE "カテゴリ"
-RESULTS:0 = 당신
-RESULTS:1 = E.R.A
+		RESULTS:0 = 당신
+		RESULTS:1 = E.R.A
 	CASE "生産불가"
 		RETURN 1
 	CASE "추가日"
@@ -45,10 +45,11 @@ SETCOLOR C_GRAY
 PRINTL 마스터가 매지컬자지를 갖고있을 경우、장착몬스터의 공격력은 원래 공격력의 ３배가 된다。
 RESETCOLOR
 CALL CARD_ABLE(2,지속효과)
-PRINTL ②：장착몬스터는 관통공격과 완전내성을 얻는다。
 IF TALENT:MASTER:매지컬자지 == 1
+	PRINTL ②：장착몬스터는 관통공격과 완전내성을 얻는다。
 	PRINTFORML ③：자신 필드에"듀얼리스트 %CALLNAME:MASTER%"가 존재하는 한、이 카드는 상대의 효과로는 파괴되지 않는다。
 ELSE
+	PRINTL ②：장착몬스터는 관통공격을 얻는다。
 	SETCOLOR C_GRAY
 	PRINTFORML %CALLNAME:MASTER%가 매지컬자지를 갖고있을 때、진정한 효과가 나타난다…
 	RESETCOLOR
@@ -78,23 +79,18 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79882)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-효과条件名前 = 듀얼리스트 %CALLNAME:MASTER%
+	효과条件名前 = 듀얼리스트 %CALLNAME:MASTER%
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲마함 = 1
-효과条件名前 = 매지컬 자지
+	효과条件名前 = 매지컬 자지
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
 		RETURN 0
@@ -141,7 +137,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		CALL FULLRESET
 		효과範囲필드 = 1
 		;효과範囲상대필드 = 1
-효과条件名前 = 듀얼리스트 %CALLNAME:MASTER%
+		효과条件名前 = 듀얼리스트 %CALLNAME:MASTER%
 		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
 	ENDIF
 
@@ -154,14 +150,16 @@ ELSEIF 종류 == 攻守変動
 
 ELSEIF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"貫通")
-	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"モ耐")
-	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"魔耐")
-	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"함정耐")
+	IF TALENT:MASTER:매지컬자지 == 1
+		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"モ耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"魔耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"함정耐")
+	ENDIF
 
 	IF TALENT:MASTER:매지컬자지 == 1
 		CALL FULLRESET
 		효과範囲필드 = 1
-효과条件名前 = 듀얼리스트 %CALLNAME:MASTER%
+		효과条件名前 = 듀얼리스트 %CALLNAME:MASTER%
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT == 1
 			CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")

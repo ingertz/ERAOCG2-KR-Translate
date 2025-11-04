@@ -1,0 +1,152 @@
+@CARDNAME_1491,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = SPYGAL–미스티
+	CASE "略称"
+		RESULTS = SPY 미스티
+	CASE "カテゴリ"
+		RESULTS:0 = SPYRAL
+ENDSELECT
+
+
+@CARD_1491(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1600
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 250420
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1491(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 1턴에 1번밖에 사용할 수 없다.
+PRINTL 이 카드가 필드에 존재하는 한, 'SPYGAL–미스티'로 취급하며, 모든 카테고리를 잃는다.
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①: 이 카드가 소환 / 특수 소환에 성공했을 경우, 카드의 종류(몬스터/마법 / 함정)를 선언하고 발동할 수 있다.
+PRINTL 상대 덱의 맨 위의 카드를 서로 확인하고, 선언한 종류의 카드였을 경우, 자신은 덱에서 1장 드로우한다.
+CALLFORM CARD_ABLE(2,戦破壊→묘지)
+PRINTL ②: 서로의 턴에 자신 필드의 'SPYRAL–댄디' 1장과 상대 필드의 몬스터 1장을 대상으로 하여 발동할 수 있다.
+PRINTL 그 몬스터 2장을 주인의 패로 되돌린다.
+
+@CARDCAN_1491(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1491)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,1491)
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,1491)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = SPYRAL－댄디
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 손패
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_1491(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択효과
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1491,1)
+	IF RESULT == 0
+		IF GETVAR(@"%対面者%_덱:0") != -1
+			IF 듀얼리스트 == "자신"
+				PRINTFORML [1] - 몬스터 카드 
+				PRINTFORML [2] - 마법 카드
+				PRINTFORML [3] -  함정 카드 
+				BINPUT
+			ELSE
+				RESULT = RAND:3 + 1
+			ENDIF
+			選択효과 = RESULT
+
+			TRYCALLFORM CARD_UI(GETVAR(@"%対面者%_덱:0"))
+			PRINTW
+			CALLFORM CARD_{GETVAR(@"%対面者%_덱:0")}("종류")
+			IF RESULT < 10 && 選択효과 == 1
+				CALL CARDDRAW_BASIC(듀얼리스트,1)
+			ELSEIF RESULT > 30 && 選択효과 == 3
+				CALL CARDDRAW_BASIC(듀얼리스트,1)
+			ELSEIF INRANGE(RESULT,20,29) && 選択효과 == 2
+				CALL CARDDRAW_BASIC(듀얼리스트,1)
+			ELSE
+				RETURN 0
+			ENDIF
+		ELSE
+			RETURN 0
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1491,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = SPYRAL－댄디
+		효과条件行先플래그 = 손패行き
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"손패")
+	ENDIF	
+ELSEIF 종류 == 지속효과
+	SETVAR @"%듀얼리스트%_MZ_改名:場所", "SPYGAL－ミスティ"
+ENDIF

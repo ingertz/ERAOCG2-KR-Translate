@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 메탈 리플렉트 슬라임
+		RESULTS = 메탈 리플렉트 슬라임
 	CASE "略称"
-RESULTS = 메탈 R 슬라임
+		RESULTS = 메탈 R 슬라임
 	CASE "カテゴリ"
-RESULTS:0 = 슬라임
+		RESULTS:0 = 슬라임
 ENDSELECT
 
 
@@ -44,7 +44,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALLFORM CARD_ABLE(0,마함起動)
-PRINTL ①: 이 카드는 발동 후, 효과 몬스터(물족 물 속성 레벨 10 공격력 0 / 수비력 3000)가 되어,
+PRINTL ①: 이 카드는 발동 후, 효과 몬스터(물족 물 속성 레벨 10 공격력 0 / 수비력 3000)가 되며,
 PRINTL 몬스터 존에 수비 표시로 특수 소환한다. 이 카드는 함정 카드로서도 취급한다.
 CALLFORM CARD_ABLE(0,지속효과)
 ;PRINTL ②：이 카드의 효과로 특수소환された이 카드는 攻撃할 수 없다。 
@@ -66,7 +66,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動
 	SIF 발동済_1(듀얼리스트,91077)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,91077,"마함")
 	SIF RESULT == 1

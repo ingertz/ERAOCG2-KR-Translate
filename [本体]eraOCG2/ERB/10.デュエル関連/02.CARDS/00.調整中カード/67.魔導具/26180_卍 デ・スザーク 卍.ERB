@@ -12,6 +12,8 @@ SELECTCASE 参照先
 	CASE "カテゴリ"
 		RESULTS:0 = 돌스자크
 		RESULTS:4 = DUEL MASTERS
+	CASE "検索カテゴリ"
+		RESULTS:0 = 魔導具
 ENDSELECT
 
 
@@ -38,6 +40,8 @@ SELECTCASE 参照先
 		RETURN 2700
 	CASE "レア度"
 		RETURN ULR
+	CASE "추가日"
+		RETURN 251022
 ENDSELECT
 
 RETURN 0
@@ -45,7 +49,7 @@ RETURN 0
 @CARD_EXPLANATION_26180(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
+;PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,효과後誘発)
 PRINTL ①：자신 필드에 "마도구" 몬스터가 소환 / 특수 소환 된 경우에 발동할 수 있다。
 PRINTL 자신의 필드 / 묘지의 "마도구" 카드를 합계 ４장 제외하고、이 카드를 패 / 묘지에서 특수 소환한다。
@@ -53,7 +57,7 @@ CALLFORM CARD_ABLE(0,특수소환時)
 PRINTL ②：이 카드가 특수 소환된 경우에 발동할 수 있다。
 PRINTL 상대 필드의 카드를 １장 파괴한다。
 CALLFORM CARD_ABLE(0,攻守変動)
-PRINTL ③：이 카드가 몬스터 존에 존재하는 한、상대 필드의 몬스터의 공격력은 ０이 된다。
+PRINTL ③：이 카드가 몬스터 존에 존재하는 한、상대의 링크 이외의 몬스터는 소환/ 특수 소환될 때 수비표시가 된다。
 CALLFORM CARD_ABLE(0,필드→묘지)
 PRINTL ④：이 카드가 필드에서 벗어난 경우에 발동할 수 있다。
 PRINTL 자신의 제외 상태인 카드를 무작위로 ４장 묘지로 되돌린다。
@@ -69,11 +73,13 @@ PRINTL 자신의 제외 상태인 카드를 무작위로 ４장 묘지로 되돌
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,26180)
+SIF RESULT == 1
+	RETURN 0
 
 IF 종류 == 효과後誘発
-	SIF 발동済_1(듀얼리스트,26180)
-		RETURN 0
+	;SIF 발동済_1(듀얼리스트,26180)
+		;RETURN 0
 	SIF ゾーン != "묘지" && ゾーン != "손패"
 		RETURN 0
 	CALL FULLRESET
@@ -81,7 +87,7 @@ IF 종류 == 효과後誘発
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
 	SIF RESULT != 1
 		RETURN 0
-	CALL CARD_SS_CHECK(듀얼리스트,26180)
+	CALL CARD_SS_CHECK(듀얼리스트,26180,ゾーン,1)
 	SIF RESULT == 1
 		RETURN 0
 	CALL FULLRESET
@@ -107,12 +113,22 @@ ELSEIF 종류 == 攻守変動
 	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 3
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 소환強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 3
+		RETURN 0
+	SIF 最終소환決者 == 듀얼리스트
+	RETURN 0
+	CALLFORM CARD_{最終소환ID}("종류") 
+	SIF MATCH(RESULTS, "링크")
+		RETURN 0
+	RETURN 1
 ELSEIF 종류 == 戦破壊→묘지
 	CALL FULLRESET
 	효과範囲제외 = 1
-	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT < 4
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -145,9 +161,7 @@ IF 종류 == 효과後誘発
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
-			효과範囲묘지 = 1
-			효과条件名前 = 卍 데 스자크 卍
-			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン, 場所)
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 특수소환時
@@ -158,9 +172,12 @@ ELSEIF 종류 == 특수소환時
 		효과範囲상대마함 = 1
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 	ENDIF
-ELSEIF 종류 == 攻守変動
+ELSEIF 종류 == 소환強制誘発
+	IF 最終소환場所 != 5
 	CALL FULLRESET
-	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-999999,0,26180)
+	CALL SET_FIELD_INFO(対面者,"필드",最終소환場所,"表",2,1)
+ENDIF
+
 ELSEIF 종류 == 戦破壊→묘지
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,26180)
 	IF RESULT == 0

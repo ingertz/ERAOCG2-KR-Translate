@@ -1,0 +1,225 @@
+﻿@CARDNAME_28950,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 悪魔右神ダフトパンク
+	CASE "略称"
+		RESULTS = ダフトパンク
+	CASE "カテゴリ"
+		RESULTS:0 = オラクル
+		RESULTS:1 = ゴッド
+		RESULTS:2 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_28950(参照先)
+;名前専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+	
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1000
+	CASE "分割"
+		RETURN ペンデュラム
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28950(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL このカード名の①のP効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(3,魔罠起動)
+PRINTL ①：自分の魔法＆罠ゾーンに他の「ゴッド・ノヴァ」Pモンスターが存在する場合に発動できる。
+PRINTL 自分の手札・EXデッキからレベル６以下の「オラクル」モンスター１体を特殊召喚する。
+CALL TEXT_DECORATION("P_MAGIC_2")
+
+PRINTL このカード名の①②のモンスター効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：このカードが手札に存在し、自分の魔法＆罠ゾーンに「悪魔右神ダフトパンク」が存在せず、
+PRINTL 自分の魔法＆罠ゾーンにPモンスターが２枚以下の場合に発動できる。
+PRINTL このカードを自分の魔法＆罠ゾーンに表側表示で置く。
+PRINTL その後、自分の魔法＆罠ゾーンに「ゴッド・ノヴァ」Pモンスターが１枚以下の場合、
+PRINTL 手札を１枚捨てる事で、
+PRINTL デッキから「悪魔右神ダフトパンク」以外の「ゴッド・ノヴァ」Pモンスター１体を自分の魔法＆罠ゾーンに表側表示で置くことができる。
+CALLFORM CARD_ABLE(2,戦場起動)
+PRINTL ②：自分メインフェイズに発動できる。
+PRINTL 自分の墓地からレベル６以下の「オラクル」モンスター１体を特殊召喚する。
+
+
+
+@CARDCAN_28950(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,28950)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,28950)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 魔罠数(決闘者) >= 5
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 悪魔右神ダフトパンク
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件分割 = ペンデュラム
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT >= 2
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_2(決闘者,28950)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = オラクル
+	効果条件種類 = レベル持ち
+	CALLFORM 効果条件レベル_ADV(6,"以下")
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	SIF 発動済_3(決闘者,28950)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件他所 = 1
+	効果条件カテゴリ = ゴッド・ノヴァ
+	効果条件分割 = ペンデュラム
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果範囲EXデッキ = 1
+	効果条件カテゴリ = オラクル
+	効果条件種類 = レベル持ち
+	CALL 効果条件レベル_ADV(6, "以下")
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28950(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 手札起動
+	;カード発動＆設置まで
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28950,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+		SIF 手札数(決闘者) <= 0
+			RETURN 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件固名前 = 悪魔右神ダフトパンク
+		効果条件カテゴリ = ゴッド・ノヴァ
+		効果条件分割 = ペンデュラム
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件カテゴリ = ゴッド・ノヴァ
+		効果条件分割 = ペンデュラム
+		効果条件CNT = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT >= 2
+			RETURN 0
+		CALL FULLRESET
+		効果条件任意 = 1
+		CALL CARD_ADD_GY_BASIC(決闘者,"手札",ゾーン,場所)
+		IF RESULT == 1
+		CALL FULLRESET
+			効果範囲デッキ = 1
+			効果条件固名前 = 悪魔右神ダフトパンク
+			効果条件カテゴリ = ゴッド・ノヴァ
+			効果条件分割 = ペンデュラム
+			CALL CARD_SET_ADV(決闘者,ゾーン,場所,"表側表示",28950)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28950,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件カテゴリ = オラクル
+		効果条件種類 = レベル持ち
+		CALL 効果条件レベル_ADV(6, "以下")
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28950,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果範囲EXデッキ = 1
+		効果条件カテゴリ = オラクル
+		効果条件種類 = レベル持ち
+		CALL 効果条件レベル_ADV(6, "以下")
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ENDIF
+
+

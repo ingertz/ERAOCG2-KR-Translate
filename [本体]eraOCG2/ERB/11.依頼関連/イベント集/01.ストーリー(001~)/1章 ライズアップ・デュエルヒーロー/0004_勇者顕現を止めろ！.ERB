@@ -31,10 +31,13 @@ RETURN 0
 @IRAI_ACT_4(参照)
 #DIM DYNAMIC 参照
 #DIM DYNAMIC 획득モンスター
-#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 이벤트主,3
 
 ;いったんターゲットを非難させる（バグ回避用）
 
+이벤트主:0 = NO_TO_CHARANUM(2241)
+이벤트主:1 = NO_TO_CHARANUM(1310)
+이벤트主:2 = NO_TO_CHARANUM(1630)
 
 IF 依頼_달성상황 == 0
 	PRINTFORMW 덱 조정도 좋은 느낌이다. 일단 내 몬스터들한테는 지지 않게 되었다.
@@ -89,7 +92,7 @@ ELSEIF 依頼_달성상황 == 1
 			RETURN 1
 		ENDIF
 	ENDIF
-	이벤트主 = NO_TO_CHARANUM(2241)
+
 	PRINTFORMW 조용한 교회……청색으로 빛나는 촛불에 둘러싸여 마법사가 주문을 외운다.
 	PRINTFORMW 아아, 용사님……제 목소리에 응답해 주십시오……지금이야말로 그 모습을 이 세계에……
 	PRINTFORMW 이 세계의 어느 곳에도 없는 말로 주문을 중얼거리며 계속한다.
@@ -230,6 +233,8 @@ ELSEIF 依頼_달성상황 == 1
 
 		CALL EVENT_TIMER(60)
 		CALL EVENT_MOVE(MASTER,場所_寝室)
+		CALL EVENT_MOVE(이벤트主:1,CFLAG:MASTER:현재위치)
+		CALL EVENT_MOVE(이벤트主:2,CFLAG:MASTER:현재위치)
 		CALL RECOVER_PERMIL(MASTER,-100,"체력")
 		CALL RECOVER_PERMIL(MASTER,-200,"기력")
 		RETURN 5

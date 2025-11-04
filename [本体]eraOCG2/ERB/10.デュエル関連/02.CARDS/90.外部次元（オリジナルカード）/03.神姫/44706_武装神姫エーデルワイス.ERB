@@ -1,0 +1,185 @@
+﻿@CARDNAME_44706,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 무장신희 에델바이스
+	CASE "略称"
+		RESULTS = AP 에델바이스
+	CASE "カテゴリ"
+		RESULTS:0 = 신희
+		RESULTS:1 = 차세대형 신희
+ENDSELECT
+
+
+@CARD_44706(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+
+		RETURN 초차원
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_44706(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("INVASION")
+PRINTL 이 카드명의 ①③의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,攻撃時誘発)
+PRINTL ①: 초차원 몬스터 이외의 자신의 "신희 에델바이스"가 공격할 경우에 발동할 수 있다.
+PRINTL 자신의 EX덱의 이 카드를 그 위에 겹쳐도 좋다. (공격은 계속된다)
+PRINTL 그 후, 자신의 패의 매수까지 상대 필드의 카드를 선택하고 그 효과를 무효로 한다.
+CALLFORM CARD_ABLE(11,발동誘発)
+PRINTL ②: 이 카드가 필드에 앞면 표시로 존재하는 한 1번만, 마법 / 함정 / 몬스터의 효과를 상대가 발동했을 때에 발동할 수 있다.
+PRINTL 그 발동을 무효로 하고 파괴하고, 자신은 1000 LP를 잃는다.
+CALLFORM CARD_ABLE(3,필드起動,フリー誘発)
+PRINTL ③: 자신 / 상대 턴에 발동할 수 있다.
+PRINTL 필드의 이 카드를 게임에서 EX덱으로 되돌린다 (겹쳐져 있던 몬스터는 필드에 남는다).
+PRINTL 그 후, 자신은 2000 LP를 회복한다.
+PRINTL 
+CALL TEXT_DECORATION("INVASION")
+
+@CARDSUMMON_44706(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+RETURN 0
+
+
+@CARDCAN_44706(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,44706)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻撃時誘発
+	SIF ゾーン != "EX덱"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,44706)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) == 5
+		RETURN 0
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:戦闘場所(듀얼리스트)")}("종류")
+	SIF RESULT == 초차원
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:戦闘場所(듀얼리스트)")}("名前")
+	SIF RESULTS != "신희 에델바이스"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 1000
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,44706)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+효과条件名前 = 신희 에델바이스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_44706(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カード추가先
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 無効化횟수
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44706,1)
+	IF RESULT == 0
+		CALL INVASION(듀얼리스트,ゾーン,場所,1)
+	ENDIF
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44706,11)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",1000)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+		RETURN 1
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44706,3)
+	IF RESULT == 0
+		選択カードID = GETVAR(@"%듀얼리스트%_MZ_変化元ID:場所")
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件ID = 選択カードID
+		효과条件行先플래그 = 소멸行き
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+
+		カード추가先 = 現EX山札数("자신")
+		CALL CARD_RECONSTRUCT(듀얼리스트,"EX덱",カード추가先,44706)
+
+		PRINTFORMW 에델바이스는 무장을 퍼지했다！
+
+		CALL CARD_RECONSTRUCT(듀얼리스트,"필드",場所,選択カードID)
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",2000)
+	ENDIF
+ENDIF

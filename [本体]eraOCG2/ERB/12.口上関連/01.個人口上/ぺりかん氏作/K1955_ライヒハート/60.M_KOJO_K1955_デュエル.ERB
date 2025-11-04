@@ -1,0 +1,909 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;DUEL用구상
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;カードID == (カードの番号)　でそのカード専用の구상が流せる
+;カード番号は 10.デュエル関連/02.CARDS 内に入っているため、必要に応じて参照するように
+;例：
+;		IF カードID == 1000
+;			PRINTFORMW 「ブラックマジシャンガールを소환！」
+;		ENDIF
+
+;==================================================
+;0,デュエルスタート！
+;==================================================
+@M_KOJO_DUEL_K1955_0(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「ヒャッハァ、殺し合いの時間だァ！！」
+		CASE 2
+			PRINTFORMW 「オイオイオイオイ、頭が高いぜ？　『恐怖の大王』様に傅けよ？」
+		CASE 3
+			PRINTFORMW 「ハッ！　殺意は充分かよ？　……いいねェ、いい目をしてるじゃねェか兄弟！！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;1,モンスター소환
+;例：%カード名%を소환！
+;==================================================
+@M_KOJO_DUEL_K1955_1(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF カードID == 1955
+		PRINTFORM 「先鋒は当然オレ様！　
+		SETCOLOR C_WOODS_G
+		PRINTFORM 『%カード名%』
+		SETCOLOR C_FUSE_PUR
+		PRINTFORMW のお通りだァ！！」
+	ELSEIF GROUPMATCH(カードID,25600,25601,25602)
+		PRINTFORM 「下僕共、喧嘩の時間だァ！　こいよ『%カード名%』！」
+	ELSEIF カードID == 31031
+		PRINTFORM 「背中に気をつけなナヨ野郎！　また刺されるんじゃねェぞ！　
+		SETCOLOR C_WATER_T
+		PRINTFORM 『%カード名%』
+		SETCOLOR C_FUSE_PUR
+		PRINTFORMW 소환だァ!」
+	ELSEIF カードID == 33333
+		PRINTFORM 「よくもやってくれたな분노の大将！　今度はオレ様がこき使ってやらァ！　
+		SETCOLOR C_D_RED
+		PRINTFORM 『%カード名%』
+		SETCOLOR C_FUSE_PUR
+		PRINTFORMW 소환だァ!」
+	ELSEIF カードID == 29250
+		PRINTFORM 「……オウ、涼しい顔して中々やるじゃねェの！　その実力、見せてみろやァ！　
+		SETCOLOR C_YELLOW_2
+		PRINTFORM 『%カード名%』
+		SETCOLOR C_FUSE_PUR
+		PRINTFORMW 소환だァ!」
+	ELSE
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「まずはコイツだァ！　%カード名%소환！」
+		CASE 2
+			PRINTFORMW 「おらいけェ！　%カード名%！！」
+		CASE 3
+			PRINTFORMW 「손패から소환！　%カード名%！！」
+	ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;2,モンスター특수소환
+;==================================================
+@M_KOJO_DUEL_K1955_2(カードID,소환出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 소환出処
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE 소환出処
+		;손패から
+		CASE 召種손패
+			IF カードID == 1955
+				PRINTFORM 「オレ様の出番だァ！　道を空けな！
+				SETCOLOR C_WOODS_G
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW 특수소환！！」
+			ELSEIF GROUPMATCH(カードID,25600,25601,25602)
+				PRINTFORM 「下僕共、喧嘩の時間だァ！　こいよ『%カード名%』！」
+			ELSEIF カードID == 33335
+				PRINTFORMW 「ハッ！　侵略者共、便利なもん作ってんじゃねェか！　『%カード名%』、オレ様が使い倒してやるよォ！」
+		ELSEIF カードID == 31031
+			PRINTFORM 「背中に気をつけなナヨ野郎！　また刺されるんじゃねェぞ！　
+			SETCOLOR C_WATER_T
+			PRINTFORM 『%カード名%』
+			SETCOLOR C_FUSE_PUR
+			PRINTFORMW 소환だァ!」
+		ELSEIF カードID == 33333
+			PRINTFORM 「よくもやってくれたな분노の大将！　今度はオレ様がこき使ってやらァ！　
+			SETCOLOR C_D_RED
+			PRINTFORM 『%カード名%』
+			SETCOLOR C_FUSE_PUR
+			PRINTFORMW 소환だァ!」
+		ELSEIF カードID == 29250
+			PRINTFORM 「……オウ、涼しい顔して中々やるじゃねェの！　その実力、見せてみろやァ！　
+			SETCOLOR C_YELLOW_2
+			PRINTFORM 『%カード名%』
+			SETCOLOR C_FUSE_PUR
+			PRINTFORMW 소환だァ!」
+		ELSEIF カードID == 1949
+			PRINTFORM 「来いよ、相棒……！　トチるんじゃねェぞォ！　
+			SETCOLOR C_SILVER
+			PRINTFORM 『%カード名%』
+			SETCOLOR C_FUSE_PUR
+			PRINTFORMW 共闘の時間だァ！！」
+		ELSE
+			SELECTCASE RAND:3 + 1
+				CASE 1
+					PRINTFORMW 「まずはコイツだァ！　%カード名%소환！」
+				CASE 2
+					PRINTFORMW 「おらいけェ！　%カード名%！！」
+				CASE 3
+					PRINTFORMW 「손패から소환！　%カード名%！！」
+			ENDSELECT
+			ENDIF
+		;마법함정ゾーンから。　キリ番・シェイプシスターなどを出す場合
+		CASE 召種마함
+			PRINTFORMW 「伏兵ドォーン！　마법함정ゾーンから%カード名%소환だァ！」
+		;덱から
+		CASE 召種덱
+			PRINTFORMW 「サッサと来な！　덱から%カード名%を소환！」
+		;EX덱から
+		CASE 召種EX덱
+			IF カードID == 1949
+			PRINTFORML 「……今度はオレ様もいるんだ、呑まれるんじゃねェぞ相棒ォ！！」
+			PRINTFORM 「いくぜ！　 
+			SETCOLOR C_SILVER
+			PRINTFORM 『%カード名%』
+			SETCOLOR C_FUSE_PUR
+			PRINTFORM 敵に目にもの、
+			SETCOLOR C_WOODS_G
+			PRINTFORM 見せて
+			SETCOLOR C_SILVER
+			PRINTFORM やんよォ！！
+			SETCOLOR C_FUSE_PUR
+			PRINTFORMW 」
+			ELSE
+			PRINTFORMW 「ハッ！　EX덱から%カード名%を소환するぜェ！」
+			ENDIF
+		;묘지から
+		CASE 召種묘지
+			IF カードID == 1955
+				PRINTFORM 「オレ様、再登場ォ！　
+				SETCOLOR C_WOODS_G
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW が来てやったぜェ！！」
+			ELSEIF GROUPMATCH(カードID,25600,25601,25602,33335)
+				PRINTFORM 「ネボスケ共、サッサと起きやがれ！　『%カード名%』묘지から来なァ！」
+			ELSE
+			PRINTFORMW 「묘지から来いよォ！　%カード名%！」
+			ENDIF
+		;제외状態から
+		CASE 召種제외
+			PRINTFORMW 「제외ィ……？　知るかよサッサときやがれ%カード名%！！」
+		;主にトークン生成
+		CASE 10
+			PRINTFORMW 「おゥ！　トークン소환だァ！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;3,특수モンスター소환
+;==================================================
+@M_KOJO_DUEL_K1955_3(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC カード種
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+
+TRYCALLFORM CARD_{カードID}("종류")
+カード種 = RESULT
+
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE カード種
+		CASE 의식
+			PRINTFORMW 「まだるっこしいなァ……さっさと来やがれ%カード名%！！」
+		CASE 융합
+			IF GROUPMATCH(カードID,1950,41950)
+				PRINTFORM 「ハン、あの時の礼を返してもらうかァ！　융합소환、
+				SETCOLOR C_WATER_T
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW ！！」
+				PRINTFORMW 「……へへ、なんでェ、いい顔になりやがったじゃねェか嬢ちゃんよォ！」
+			ELSEIF カードID == 54013
+				PRINTFORM 「いい加減本気になりやがれよナヨナヨタコスケ！　융합소환、
+				SETCOLOR C_WATER_T
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW ！！」
+				PRINTFORMW 「……ハン！　頼りにさせてもらおうかねェ……！」
+			ELSEIF カードID == 41951
+				PRINTFORMW 「……ップ！　ダァッハッハッハ！！　レイノハートの野郎、力取られてやがるじゃねェか！！」
+				PRINTFORM 「っとォ、笑って悪かったな嬢ちゃん！　융합소환、
+				SETCOLOR C_WATER_T
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW ！！」
+			ELSEIF カードID == 1949
+				PRINTFORML 「……今度はオレ様もいるんだ、呑まれるんじゃねェぞ相棒ォ！！」
+				PRINTFORM 「いくぜ！　 
+				SETCOLOR C_SILVER
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORM 敵に目にもの、
+				SETCOLOR C_WOODS_G
+				PRINTFORM 見せて
+				SETCOLOR C_SILVER
+				PRINTFORM やんよォ！！
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW 」
+			ELSE
+				PRINTFORMW 「융합소환！　起きやがれ、%カード名%！！」
+			ENDIF
+		CASE 싱크로
+			IF カードID == 54555
+				PRINTFORM 「ソイツがテメェの本気の姿か……！　当然ハッタリじゃあねェだろうなァ！　싱크로소환！
+				SETCOLOR C_YELLOW_2
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW ！！」
+				PRINTFORMW 「……さァ、ぶちかましてやりなァ！」
+			ELSEIF カードID == 41949
+				PRINTFORM 「オレ様の知らねェ相棒……か。……싱크로소환！！
+				SETCOLOR C_SILVER
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW ！！」
+				PRINTFORMW 「……見せてくれよ、相棒！　オレ様に、オマエの本気をよォ……！！！」
+			ELSE
+				PRINTFORMW 「集いしナンチャラがナンチャラナンチャラ！　싱크로소환！　%カード名%！！」
+			ENDIF
+		CASE 엑시즈
+			IF カードID == 52071
+				PRINTFORM 「オレ様を吸収したっていうその姿！　コケオドシだったら承知しねェぞ！　엑시즈소환！
+				SETCOLOR C_D_RED
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW ！！」
+				PRINTFORMW 「……クックック、相変わらずブチギレてやがんなァ……！」
+			ELSE
+				PRINTFORMW	「엑시즈소환！　現れろ%カード名%！！」
+			ENDIF 
+		CASE 링크
+			IF カードID == 11955
+				PRINTFORM 「今から此処は
+				SETCOLOR C_WOODS_G
+				PRINTFORM 『ライフォビア』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORM だァ！！　링크소환、
+				SETCOLOR C_WOODS_G
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW ！！」
+				PRINTFORMW 「……へっへ、見た目で判断するんじゃねェぞォ……！」
+			ELSEIF カードID == 41955
+				PRINTFORM 「링크소환！　……三ツ首揃えた恐怖の王が、雁首揃えて落としにきたぜェ……！　
+				SETCOLOR C_WOODS_G
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW 堂々登場！！」
+				PRINTFORMW 「……さァて、恐怖に震えて怯えてなァ……！！」
+			ELSE
+				PRINTFORMW 「링크소환！　%カード名%！　まァオレ様より弱えだろうが、せいぜい気張りなァ！！」
+			ENDIF
+		;초차원モンスター（デュエマ）
+		CASE 초차원
+			PRINTFORMW 「お、おう……？　まァオレ様の味方するなら歓迎するぜェ！　こいよ%カード名%！！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;4,효과使用宣言
+;==================================================
+@M_KOJO_DUEL_K1955_4(カードID,발동出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 발동出処
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE 발동出処
+		CASE 1
+			;손패발동
+			IF カードID == 71600
+				PRINTFORM 「今から此処は
+				SETCOLOR C_WOODS_G
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW だァ！！」
+			ELSEIF カードID == 61951
+				PRINTFORM 「今から此処は
+				SETCOLOR C_WATER_T
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW だァ！！」
+			ELSEIF カードID == 71330
+				PRINTFORM 「……チッ、此処は『ライフォビア』だって言ってんだろうが……。へいへい、
+				SETCOLOR C_D_RED
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW 발동するぜェ」
+			ELSEIF カードID == 61951
+				PRINTFORM 「今から此処は
+				SETCOLOR C_YELLOW_2
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW だァ！！」
+			ELSEIF カードID == 71601
+				PRINTFORMW 「オマエラ、オレ様の号令だァ！　%カード名%발동！」
+			ELSEIF カードID == 71603
+				PRINTFORMW 「甘ェよ！　%カード名%발동だァ！」
+			ELSE
+			PRINTFORMW 「손패から！　%カード名%を使うぜ！」
+			ENDIF
+		CASE 2
+			;필드발동
+		IF カードID == 1955
+			PRINTFORMW 「オレ様の最強효과발동！　さァ通せよ！」
+		ELSEIF GROUPMATCH(カードID,25600,25601,25602)
+			PRINTFORMW 「下僕共、オレ様に力を貸せ！」
+		ELSEIF カードID == 41955
+			PRINTFORMW 「寝てんじゃねェぞ下僕共！　今からカチコミに行くんだからよォ！」
+			PRINTFORM 「最強オレ様
+			SETCOLOR C_WOODS_G
+			PRINTFORM 『%カード名%』
+			SETCOLOR C_FUSE_PUR
+			PRINTFORMW  の最強효과발동！　乗り遅れんじゃねェぞォ！！」
+		ELSEIF カードID == 11955
+			PRINTFORMW 「小さくなっても最強のオレ様の효과！　さァ通せよ！」
+		ELSE
+			PRINTFORMW 「おらァ！　효과발동ォ！」
+		ENDIF
+		CASE 3
+			;마함발동
+			IF カードID == 71600
+				PRINTFORM 「今から此処は
+				SETCOLOR C_WOODS_G
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW だァ！！」
+			ELSEIF カードID == 61951
+				PRINTFORM 「今から此処は
+				SETCOLOR C_WATER_T
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW だァ！！」
+			ELSEIF カードID == 71330
+				PRINTFORM 「……チッ、此処は『ライフォビア』だって言ってんだろうが……。へいへい、
+				SETCOLOR C_D_RED
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW 발동するぜェ」
+			ELSEIF カードID == 61951
+				PRINTFORM 「今から此処は
+				SETCOLOR C_YELLOW_2
+				PRINTFORM 『%カード名%』
+				SETCOLOR C_FUSE_PUR
+				PRINTFORMW だァ！！」
+			ELSEIF カードID == 71603
+				PRINTFORMW 「甘ェよ！　%カード名%발동だァ！」
+			ELSEIF カードID == 91600
+				PRINTFORMW 「食らいな！　%カード名%！！」
+			ELSE
+			PRINTFORMW 「伏せていた%カード名%を使うぜェ！」
+			ENDIF
+		CASE 4
+			;묘지발동
+			IF カードID == 91600
+				PRINTFORML 「링크モンスター？　オレ様が弱点をそのままにしとくかよォ！」
+				PRINTFORMW 「묘지の%カード名%を발동するぜェ！」
+			ELSE
+			PRINTFORMW 「묘지のコイツを발동だァ！」
+			ENDIF
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;5,효과발동
+;==================================================
+@M_KOJO_DUEL_K1955_5(カードID,효과종류)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 효과종류
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;無効にされた場合
+	IF 효과종류 == -1
+		PRINTFORMW 「んなッ……！？　オレ様に楯突こうってのかァ！？」
+	;それ以外
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「シャア！　最強효과が通ったぜ！」
+			CASE 2			
+				PRINTFORMW 「ハッ！　いつもコレぐらい素直に通せよ！」
+			CASE 3
+				PRINTFORMW 「なんだ？　エライ素直に通すじゃねェか……」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+;==================================================
+;6,カードセット
+;==================================================
+@M_KOJO_DUEL_K1955_6(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「カードを伏せる！」
+		CASE 2			
+			PRINTFORMW 「オレ様の最強トラップをセットだ！」
+		CASE 3
+			PRINTFORMW 「へっへ、コイツがブラフだと思うかい兄弟？　恐れないならかかってきなァ！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;7,カードドロー
+;==================================================
+@M_KOJO_DUEL_K1955_7(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF ライフ_상대 < 3000
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「おらよォ！　逆転の最強ドロォォ！！」
+		CASE 2			
+			PRINTFORMW 「どうせドローしねェと始まらねェんだ、ドローするぜェ！」
+		CASE 3
+			PRINTFORMW 「ハッ！　オレ様が恐怖に怯えるかよ！　ドロォォォ！！」
+	ENDSELECT	
+	ELSEIF ライフ_자신 < 3000
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「確実に仕留めねェとな……ドロー！」
+		CASE 2			
+			PRINTFORMW 「逆転は許さねェ……追撃の最強ドロー！」
+		CASE 3
+			PRINTFORMW 「このターンで決着をつけてやる……ドロォォォ！！」
+	ENDSELECT	
+	ELSE
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「さァて、どう殺すかな……？　ドロー！」
+		CASE 2			
+			PRINTFORMW 「さっ、もう終盤だな？　ドロー！」
+		CASE 3
+			PRINTFORMW 「最強のオレ様ならドローも最強よォ！」
+	ENDSELECT
+	ENDIF
+ENDIF
+
+;==================================================
+;10,ダメージ反応！（ダメージ）
+;==================================================
+@M_KOJO_DUEL_K1955_10(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE ダメージ量
+		;ダメージなし
+		CASE 0
+			PRINTFORMW 「ハッ、ビビってんのかァ！？」
+		;１～１９９９の時、小ダメージ
+		CASE 1 TO 1999
+			IF ライフ_상대 < 0
+				PRINTFORMW 「チィ、カスリ傷でも死は死、だな……」
+			ELSEIF ライフ_상대 < 4000
+				PRINTFORMW 「ハッ！　蜂の一刺しでもここまで迫れるか！」
+			ELSE
+				PRINTFORMW 「オイオイ……随分と涙ぐましいダメージだなァ！　そんなんじゃ日が暮れちまうぞォ？」
+			ENDIF
+		;２０００～３９９９の時、結構なダメージ
+		CASE 2000 TO 3999
+			IF ライフ_상대 < 0
+				PRINTFORMW 「くぁあ！　オレ様の負け、かぁ！？」
+			ELSEIF ライフ_상대 < 4000
+				PRINTFORMW 「チィ、油断してたか……？　もう半分切ってやがる……！」
+			ELSE
+				PRINTFORMW 「ヘェ、そこそこいいパンチじゃネェか」
+			ENDIF
+		;４０００～７９９９の時、超大ダメージ
+		CASE 4000 TO 7999
+			IF ライフ_상대 < 0
+				PRINTFORMW 「……ハ！　見事だよ、テメェはなァ！！」
+			ELSE
+				PRINTFORMW 「……コレがァ、どうしたァ！？　オレ様はまだ、立っているぞォ！！」
+			ENDIF
+		;８０００以上、基本即死
+		CASEELSE
+			PRINTFORMW 「……へ、渾身の一撃……、真正面から受けてやったぜ……！　流石、だなァ兄弟……！！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;11,ダメージ反応！(회복)
+;==================================================
+@M_KOJO_DUEL_K1955_11(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	PRINTFORMW 「傷を癒やして、次の喧嘩の準備だァ！」
+ENDIF
+
+
+;==================================================
+;50,モンスター攻撃
+;==================================================
+@M_KOJO_DUEL_K1955_50(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF カードID == 41955
+		PRINTFORML 「コイツが本家本元、オレ様の斬撃ダァ！！」
+		PRINTFORM 「沈みな、
+		SETCOLOR C_WOODS_G
+		PRINTFORM 『スケアクロー・トリプル・ソー』
+		SETCOLOR C_FUSE_PUR
+		PRINTFORMW ！！」
+	ELSEIF カードID == 46949
+		PRINTFORM 「
+		SETCOLOR C_SILVER
+		PRINTFORM %カード名%！　
+		SETCOLOR C_WOODS_G
+		PRINTFORM 恐怖と
+		SETCOLOR C_WATER_T
+		PRINTFORM 哀しみと
+		SETCOLOR C_D_RED
+		PRINTFORM 분노の
+		SETCOLOR C_FUSE_PUR
+		PRINTFORMW こもった一撃、食らわしてやりなァ！！」
+	ELSEIF カードID == 1949
+		PRINTFORMW 「いけ！　相棒！　オレ様の大剣で、目の前の有象無象を薙ぎ払いなァ！！」
+	ELSE
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「オラァ！　喧嘩の時間だァ！」
+		CASE 2
+			PRINTFORMW 「ぶっ殺せ！　%カード名%で攻撃！」
+		CASE 3
+			PRINTFORMW 「死ねェェ！！　%カード名%でアタックだァ！！」
+	ENDSELECT
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;51,モンスター攻撃結果
+;==================================================
+@M_KOJO_DUEL_K1955_51(상황판정,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 상황판정
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;トドメ
+	SIF ARG:1 == 1
+		PRINTFORMW 
+
+	SELECTCASE 상황판정
+		;상대モンスター撃破
+		CASE 1
+			IF ライフ_상대 < 3000
+				PRINTFORMW 「おらァ！　足掻けるうちは足掻いてやらァ！」
+			ELSEIF ライフ_자신 < 3000
+				PRINTFORMW 「テメェの手駒がいっちまったなァ！　さァどうするよオイ！？」
+			ELSE
+				PRINTFORMW 「オラッ死ねェ！！」
+			ENDIF
+		;자신にダメージ
+		CASE 2
+			IF ライフ_상대 < 3000
+				PRINTFORMW 「チィ、もう余裕はねェなァ……！」
+			ELSEIF ライフ_자신 < 3000
+				PRINTFORMW 「ハッ！　ぬるいんだよ！　オレ様はまだ立っているぞォ！？」
+			ELSE
+				PRINTFORMW 「その程度、受けてやらァ！」
+			ENDIF
+		;相打ち
+		CASE 3
+			PRINTFORMW 「チィ、相討ちか……！　テメェもやるなァ……！」
+		;효과で戦闘前に除去
+		CASE 4
+			PRINTFORMW 
+		;ダイレクトアタック
+		CASE 5
+			IF ライフ_상대 < 3000
+				PRINTFORMW 「食らえやオラァ！　オレ様が死ぬ前にテメェを殺してやらァ！！」
+			ELSEIF ライフ_자신 < 3000
+				PRINTFORMW 「喉笛掻っ切るまであと僅かだなァ……！」
+			ELSE
+				PRINTFORMW 「ダイレクトは痛てェぞ！！」
+			ENDIF
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;100,メインフェイズ移行
+;==================================================
+@M_KOJO_DUEL_K1955_100(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF ライフ_상대 < 3000
+	SELECTCASE RAND:2 + 1
+		CASE 1
+			PRINTFORMW 「さァて、ライフが尽きる前に殺しきれるかねェ……メインフェイズ！」
+		CASE 2			
+			PRINTFORMW 「……さて、どう切り崩すか。まァなんとかなるだろ！」
+	ENDSELECT	
+	ELSEIF ライフ_자신 < 3000
+	SELECTCASE RAND:2 + 1
+		CASE 1
+			PRINTFORMW 「今のうちに遺言は用意しとけよォ？」
+		CASE 2			
+			PRINTFORMW 「詰めの時こそ慎重にいくさ……手負いの恐ろしさは何より知ってるからなァ！！」
+	ENDSELECT	
+	ELSE
+	SELECTCASE RAND:2 + 1
+		CASE 1
+			PRINTFORMW 「さて殺す準備をするか、メインフェイズに入るぜ？」
+		CASE 2			
+			PRINTFORMW 「っとォ、メインフェイズに入るぜ！」
+	ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;101,ターン終了
+;==================================================
+@M_KOJO_DUEL_K1955_101(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		IF ライフ_자신 < 3000 
+			PRINTFORMW 「クソが、殺しきれなかったか……ターンエンド」
+		ELSE
+			PRINTFORMW 「ハッ！　ターンエンドだァ！」
+		ENDIF
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		IF ライフ_자신 < 3000 
+			PRINTFORMW 「……コイツは、殺しきれなかったオレ様のミス、だわな……ターンエンド」
+		ELSE
+			PRINTFORMW 「……ヘッ！　どうせ殺すなら一番強いムーヴで頼むわ！　ターンエンド！！」
+		ENDIF
+	;それ以外
+	ELSE
+		PRINTFORMW 「おゥ、ターンを終了するぜェ……！」
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;102,メインフェイズ２に移行（バトル終了）
+;==================================================
+@M_KOJO_DUEL_K1955_102(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF ライフ_상대 < 3000
+		PRINTFORMW 「……ははッ！！　凌ぐかよオレ様の猛攻を！　……バトルフェイズを終了！」
+	ELSEIF ライフ_자신 < 3000
+		PRINTFORMW 「オイオイオイオイ、随分粘るじゃねェか……！　こりゃあオレ様、マズイか……？」
+	ELSE
+	SELECTCASE RAND:2 + 1
+		CASE 1
+			PRINTFORMW 「チィ、戦闘はこれ以上は無理だな……」
+		CASE 2			
+			PRINTFORMW 「だらしねェなァ！　もう戦闘はできねェか！？　んじゃバトルフェイズを終わるぜェ」
+	ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;103,バトルフェイズに移行
+;==================================================
+@M_KOJO_DUEL_K1955_103(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF ライフ_상대 < 3000
+		PRINTFORMW 「……さァ！　最期の攻防の時間だァ！！」
+	ELSEIF ライフ_자신 < 3000
+		PRINTFORMW 「ここで仕留める……！　バトルフェイズにはいる！」
+	ELSE
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「楽しい楽しい喧嘩の時間だァ！」
+		CASE 2			
+			PRINTFORMW 「さァバトルだ！　簡単に死ぬなよォ……？」
+		CASE 3
+			PRINTFORMW 「じゃあ殺し合いといくかァ！！」
+	ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;104,ターン開始時
+;==================================================
+@M_KOJO_DUEL_K1955_104(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		IF ライフ_자신 <= 3000
+			PRINTFORMW 「さァて、お祈りは済ませとけよォ！」
+		ELSE
+			PRINTFORMW 「ヘッ、多少の劣勢ぐらい捲ってみせらァ！」
+		ENDIF
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		IF ライフ_자신 <= 3000
+			PRINTFORMW 「……ハッ！　殺しきれなかったコトを後悔するんだなァ！」
+		ELSEIF ライフ_자신 >= 8000
+			PRINTFORMW 「圧倒的劣勢……！　ハン！　こうなったらヤることは逆に単純だわなァ！！」
+		ELSE
+			PRINTFORMW 「オイオイオイ！　オレ様まだ生き残ってるぜェいいのかよォ！」
+		ENDIF
+	;それ以外
+	ELSE
+		PRINTFORMW 「さぁオレ様のターンだな！！」
+	ENDIF
+ENDIF
+
+;==================================================
+;999,EROTICS関連
+;実行コマンドは数が多いのでテンプレートにはよく使われてそうな物だけ書いておきます
+;추가したい場合は ERB/10.デュエル関連/01.デュエルシステム回り/효과汎用/エロ行動関連/02.カード조교
+;を参照してください
+;==================================================
+@M_KOJO_DUEL_K1955_999(ARG,ARG:1,実行コマンド)
+#DIM DYNAMIC 호감도修正
+#DIMS DYNAMIC 実行コマンド
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE 実行コマンド
+		CASE "Ｃ単発"
+			PRINTFORMW 
+		CASE "묘상捕縛"
+			PRINTFORMW 
+		CASE "全身愛撫"
+			PRINTFORMW 
+		CASE "前穴凌辱"
+			PRINTFORMW 
+		CASE "全身凌辱"
+			PRINTFORMW 
+		CASE "疑似출산"
+			PRINTFORMW 
+		;その他全部
+		CASEELSE
+			PRINTFORMW 
+	ENDSELECT
+ENDIF

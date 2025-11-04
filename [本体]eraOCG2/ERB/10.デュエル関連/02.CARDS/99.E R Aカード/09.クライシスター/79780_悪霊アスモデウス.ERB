@@ -30,7 +30,7 @@ SELECTCASE 参照先
 	CASE "종족"
 		RETURN 악마족
 	CASE "レベル"
-		RETURN 2
+		RETURN 4
 	CASE "攻撃力"
 		RETURN 900
 	CASE "守備力"
@@ -52,7 +52,7 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드의 ①의 효과는 1턴에 1번만 사용할 수 있다。
 CALL CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：발동한 이카드를 몬스터로 몬스터 존에 수비표시로 특수소환하고、상대는 ８００ＬＰ회복한다。
-PRINTL （악마족 빛속성 레벨２ 공격력８００ 수비력９００ 튜너 남성）
+PRINTL （악마족 / 빛속성 / 레벨４ / 공격력８００ / 수비력９００ / 튜너 / 수컷）
 PRINTL 그 후、패에서 마법사족 빛속성 몬스터 1장을 덱 맨 아래로 되돌리고、 자신은 2장 드로우 할 수 있다。
 PRINTL 이 턴、자신은 빛 속성 몬스터만 EX덱에서 특수 소환할 수 있다。
 CALL CARD_ABLE(2,지속효과)
@@ -84,9 +84,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
 	ENDIF
 	CALL CARD_SS_CHECK(듀얼리스트,79780,ゾーン)
@@ -131,6 +130,18 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		PRINTFORML 
 		CALL LIFE_CHANGE(対面者,"増加","효과",800)
 		
+		EX소환可能속성:0 = 빛속성
+		EX소환可能속성:1 = 어둠속성
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+		
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件속성 = 빛속성
+		효과条件종족 = 마법사족
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET	
 		IF 듀얼리스트 == "자신"
 			CUSTOMDRAWLINE —
 			PRINTFORML 【2장 드로우 하기 위해서 덱으로 되돌릴 카드를 선택할 수 있습니다】
@@ -147,9 +158,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			CALL CARD_ADD(듀얼리스트, "손패", "덱", 選択カード)
 			CALL CARDDRAW_BASIC(듀얼리스트,2)
 		ENDIF
-		CALL FULLRESET
-		EX소환可能속성 = 빛속성
-		CAll CARD_EX_RESTRICTION(듀얼리스트)
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
@@ -160,18 +168,18 @@ ELSEIF 종류 == 지속효과
 	;효과条件종류 = 싱크로
 	;효과条件カテゴリ = 카타르시스터
 	;CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"一星",6)
-	CALL FULLRESET
-	FOR カウンタ,0,5
-		SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
-			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")},"カテゴリ"
-		SIF !MATCH(RESULTS, "카타르시스터")
-			CONTINUE
-		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")},"종류"
-		SIF RESULT != 싱크로
-			CONTINUE
-		CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"一星",6,1)
-	NEXT
+	; CALL FULLRESET
+	; FOR カウンタ,0,5
+	; 	SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
+	; 		CONTINUE
+	; 	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}("カテゴリ")
+	; 	SIF !MATCH(RESULTS, "카타르시스터")
+	; 		CONTINUE
+	; 	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}("종류")
+	; 	SIF RESULT != 싱크로
+	; 		CONTINUE
+	; 	CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"一星",6,1)
+	; NEXT
 ENDIF
 
 

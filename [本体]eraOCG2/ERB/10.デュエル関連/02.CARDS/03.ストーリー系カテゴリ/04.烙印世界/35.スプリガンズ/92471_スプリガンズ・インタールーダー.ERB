@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -54,9 +53,8 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92471)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 발동誘発
@@ -128,8 +126,8 @@ IF 종류 == 발동誘発
 				条件달성:1 = 1
 
 			IF 条件달성:1 != 1
-PRINTL 발동할 효과를 선택해 주십시오.
-				CALL YN_CHOICE(듀얼리스트,"그 효과를 無効にする","묘지의 레벨 ８몬스터를 특수 소환한다")
+				PRINTL 발동할 효과를 선택해 주십시오.
+				CALL YN_CHOICE(듀얼리스트,"그 효과를 무효로 한다","묘지의 레벨 ８몬스터를 특수 소환한다")
 			ELSEIF 条件달성:1 == 1
 				RESULT = 0
 			ENDIF

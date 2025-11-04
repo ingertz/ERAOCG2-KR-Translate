@@ -1,0 +1,312 @@
+﻿@CARDNAME_64511,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 요정 원탁 영역 아발론 르 페이
+	CASE "略称"
+		RESULTS = 아발론 르 페이
+	CASE "カテゴリ"
+		RESULTS:0 = 요정
+		RESULTS:1 = 이문대
+		RESULTS:2 = FATE
+ENDSELECT
+
+
+@CARD_64511(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN フィールド
+	CASE "生成カード"
+		RETURN 164511
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_64511(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신 필드는 "요정 원탁 영역"이 된다.
+PRINTL 이 카드명의 카드는 1턴에 1번, EX덱에서 "요성의 마녀 모르간 르 페이" 1장을 공개하는 것으로 발동할 수 있다.
+
+CALLFORM CARD_ABLE(0,소환強制誘発)
+PRINTL ①: 자신의 패가 3장 이하일 경우, 자신 필드에 "요정" 몬스터가 일반 소환 / 특수 소환될 때마다,
+PRINTL 자신은 1장 드로우한다.
+
+CALLFORM CARD_ABLE(0,마함起動)
+PRINTL ②: 1턴에 3번까지, 자신 메인 페이즈에 발동할 수 있다.
+PRINTL 자신 묘지의 "요정" 몬스터 1장을 제외하고, 이하의 효과를 각각 적용한다.
+PRINTL ● "모르간 르 페이" 토큰 1장을 특수 소환한다.
+PRINTL ● 상대 필드의 마법 / 함정 카드 1장을 파괴한다.
+
+CALLFORM CARD_ABLE(0,ターン終了時強制)
+PRINTL ③: 자신 엔드 페이즈에,
+PRINTL 자신의 "요성의 마녀 모르간 르 페이"와 "요정 기사 바반 시"가 제외되어 있을 경우에 발동한다.
+PRINTL 필드의 이 카드와, 자신 / 상대 필드의 몬스터를 전부 파괴하고,
+PRINTL 게임 외에서 "저주받은 재앙 케르눈노스" 1장을 특수 소환한다.
+
+@CARDCAN_64511(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과使用불가,3
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,64511)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF GETVAR(@"%듀얼리스트%_魔_T1汎数:場所") >= 3
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 요정
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件名前 = 요성의 마녀 모르간 르 페이
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 손패数(듀얼리스트) > 3
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") >= 2
+		RETURN 0
+	SIF 最終소환決者 != 듀얼리스트
+		RETURN 0
+	SIF 最終소환타입 == ""
+		RETURN 0
+	CALLFORM CARDNAME_{最終소환ID}("カテゴリ") 
+	SIF !MATCH(RESULTS, "요정")
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件名前 = 요성의 마녀 모르간 르 페이
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件名前 = 요정 기사 바반 시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_64511(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 攻撃力修正
+
+
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,64511,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 요정
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT == 1
+			CALL CARD_SS_CHECK(듀얼리스트,104511,ゾーン)
+			IF RESULT != 1
+				CALL FULLRESET
+				CALL CARD_GENERATE(듀얼리스트,104511)
+			ENDIF
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"마함単体",場所,"묘지")
+		ENDIF
+		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"T1汎数",1)
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,64511,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件名前 = 요성의 마녀 모르간 르 페이
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT != 9999
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 소환強制誘発
+	CALL CARDDRAW_BASIC(듀얼리스트,1)
+ELSEIF 종류 == ターン終了時強制
+	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+	CALL FULLRESET
+	CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"묘지")
+	CALL FULLRESET
+	CALL CARD_GENERATE(듀얼리스트,164511)
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"妖精円卓領域")
+ENDIF
+
+
+@CARDNAME_164511,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 저주받은 재앙 케르눈노스
+	CASE "略称"
+		RESULTS = 케르눈노스
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = 영령
+ENDSELECT
+
+
+@CARD_164511(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 3800
+	CASE "守備力"
+		RETURN 3800
+ENDSELECT
+
+
+@CARD_EXPLANATION_164511(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,ターン終了時強制,攻撃後強制誘発)
+PRINTL ①: 이 카드의 공격 후, 또는 상대의 엔드 페이즈에 발동한다.
+PRINTL 상대에게 1200 데미지를 준다.
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ②: 이 카드가 파괴될 경우, 대신에 이 몬스터의 공격력 / 수비력을 500 내릴 수 있다.
+
+@CARDCAN_164511(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+
+
+IF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상ゾーン != "마함"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"효과","戦闘")
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_永攻:場所") < 500
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_永守:場所") < 500
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_164511(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+IF 종류 == 攻撃後強制誘発 || 종류 == ターン終了時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,164511)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",1200,1)
+	ENDIF
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,164511)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",-500)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",-500)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

@@ -1,0 +1,223 @@
+@CARDNAME_4717,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 칠흑의여왕 올가
+	CASE "略称"
+		RESULTS = 올가
+	CASE "カテゴリ"
+		RESULTS:0 = 쿠로이누
+ENDSELECT
+
+@CARD_4717(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 2800
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "単一存在"
+		RETURN 1
+	CASE "추가日"
+		RETURN 250707
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4717(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 자신 필드에 어둠속성 이외의 몬스터 카드가 존재할 경우, 이 카드는 지속마법 취급으로 발동할 수 없다.
+PRINTL 이 카드명의 ② P효과는 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ①：자신의 어둠속성 몬스터는 공격력이 300 오른다.
+CALL CARD_ABLE(1,마함起動)
+PRINTL ②：자신 메인 페이즈에 발동할 수 있다.
+PRINTL 이 카드를 EX덱에 보내고, 덱에서 레벨4 이하의 어둠속성 몬스터 1장을 묘지로 보낸다.
+PRINTL 이 효과 발동 후, 이 듀얼 중에 자신은 어둠속성 이외의 몬스터의 효과를 발동할 수 없다.
+CALL TEXT_DECORATION("P_MAGIC_2")
+PRINTL 이 카드명의 카드는 자신 필드에 1체만 앞면 표시로 존재할 수 있다.
+PRINTL 이 카드명의 몬스터 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(2,ターン開始時)
+PRINTL ①：서로의 스탠바이 페이즈에, 상대 필드의 몬스터 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 자신 필드의 어둠속성 몬스터 1장을 묘지로 보내고, EX덱에서 이 몬스터 카드를 자신의 마법&함정존에 앞면 표시로 놓는다.
+PRINTL 그 후, 대상 카드를 파괴한다.
+
+@CARDCAN_4717(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4717)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	CALLFORM 효과条件속성_ADV(어둠속성,"以外")
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前 = 칠흑의여왕 올가
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,4717)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 어둠속성
+	효과条件종류 = モン全般
+	CALLFORM 효과条件レベル_ADV(4,"以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") > 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF !GROUPMATCH(ゾーン,"필드","마함")
+	RETURN 1
+ELSEIF 종류 == ターン開始時
+	SIF 발동済_2(듀얼리스트,4717)
+		RETURN 0
+	SIF ゾーン != "EX덱"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 選択
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件속성 = 어둠속성
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4717,"EX덱",1)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4717(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 상대選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4717)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4717,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,EX덱行き)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件속성 = 어둠속성
+			효과条件종류 = モン全般
+			CALLFORM 효과条件レベル_ADV(4,"以下")
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL SET_PLAYER_INFO(듀얼리스트,"빛속성효과無効",10)
+		CALL SET_PLAYER_INFO(듀얼리스트,"땅속성효과無効",10)
+		CALL SET_PLAYER_INFO(듀얼리스트,"물속성효과無効",10)
+		CALL SET_PLAYER_INFO(듀얼리스트,"화염속성효과無効",10)
+		CALL SET_PLAYER_INFO(듀얼리스트,"바람속성효과無効",10)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件속성 = 어둠속성
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300)
+ELSEIF 종류 == ターン開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4717,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			상대選択カード = 選択カード（CS）
+			
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件속성 = 어둠속성
+			효과条件종류 = モン全般
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과条件名前 = 칠흑의여왕 올가
+				CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+				IF RESULT == 1
+					CALL CARD_SELECT(듀얼리스트,選択カード)
+					CALL CARD_DISPOSE(対面者,"필드",選択カード（CS）,破壊行き)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

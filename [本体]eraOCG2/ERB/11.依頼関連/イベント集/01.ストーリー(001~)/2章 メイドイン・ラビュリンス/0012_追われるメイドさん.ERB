@@ -42,8 +42,17 @@ RETURN 0
 이벤트主:0 = NO_TO_CHARANUM(2112)
 이벤트主:1 = NO_TO_CHARANUM(2111)
 
+이벤트主:2 = NO_TO_CHARANUM(2241)
+이벤트主:3 = NO_TO_CHARANUM(1310)
+이벤트主:4 = NO_TO_CHARANUM(1630)
+
 
 IF 依頼_달성상황 == 0
+	CALL EVENT_MOVE(이벤트主:0,CFLAG:MASTER:현재위치)
+	CALL EVENT_MOVE(이벤트主:2,CFLAG:MASTER:현재위치)
+	CALL EVENT_MOVE(이벤트主:3,CFLAG:MASTER:현재위치)
+	CALL EVENT_MOVE(이벤트主:4,CFLAG:MASTER:현재위치)
+
 	PRINTFORMW 수견사의 의식을 멈춘 보상으로 백은 성의 하녀 아리안나가 메이드가 되어주었다.
 	PRINTL
 	PRINTFORMW "편해, 모든 것이 그 엄청 큰 성에 비하면 편하네요……휴식에 들어갈게요."
@@ -206,7 +215,7 @@ ELSEIF 依頼_달성상황 == 1
 		CALL EVENT_FAVUP(이벤트主:0,250)
 		CALL EVENT_FAVUP(이벤트主:1,250)
 		CALL SOURCE_CALC_환락((이벤트主:1), MASTER, 2000)
-
+		CALL EVENT_MOVE(이벤트主:1,CFLAG:MASTER:현재위치)
 		RETURN 2
 	ELSE
 		;（負けた경우、夢オチ）
@@ -236,9 +245,7 @@ ELSEIF 依頼_달성상황 == 1
 		PRINTFORMW 다만, 함정 카드 대책을 늘려 덱을 조정하거나, 선공을 비는 소원빌기를 하는 게 나을지도 모르겠다.
 		PRINTFORMW 하지만 묘하게 몸이 지친 것 같다…… .
 
-		CALL EVENT_FAVUP(이벤트主:0,250)
-		CALL EVENT_FAVUP(이벤트主:1,250)
-		CALL SOURCE_CALC_환락((이벤트主:1), MASTER, 2000)
+		CALL EVENT_FAVUP(이벤트主:0,50)
 		CALL EVENT_MOVE(MASTER,場所_寝室)
 		CALL RECOVER_PERMIL(MASTER,-500,"체력")
 		CALL RECOVER_PERMIL(MASTER,-2000,"기력")

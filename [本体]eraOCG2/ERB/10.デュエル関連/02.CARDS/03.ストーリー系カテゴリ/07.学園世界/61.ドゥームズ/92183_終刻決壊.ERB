@@ -65,9 +65,8 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,92183)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -182,7 +181,7 @@ ELSEIF 종류 == 破壊→묘지
 					出処 = 덱
 				ENDIF
 				CALL CARD_EQUIP_MONSTER(대상者,選択カード,出処,選択カードB)
-				TRYCALLFORM CARDNAME_{選択カードB_ID},"名前"
+				TRYCALLFORM CARDNAME_{選択カードB_ID}("名前")
 				SETCOLOR C_YELLOW
 				PRINTFORMW 【%RESULTS%가 장착되었습니다】
 				RESETCOLOR

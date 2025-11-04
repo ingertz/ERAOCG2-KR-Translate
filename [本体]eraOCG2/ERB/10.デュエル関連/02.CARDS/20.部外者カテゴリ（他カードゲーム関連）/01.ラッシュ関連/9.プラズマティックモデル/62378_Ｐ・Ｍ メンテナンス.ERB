@@ -35,7 +35,7 @@ RETURN 0
 @CARD_EXPLANATION_62378(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 필드의 몬스터(빛 속성/원소정령족) 1체에 장착할 수 있다.
+PRINTL 자신 필드의 몬스터(빛 속성/원소정령족) 1체에 장착할 수 있다.
 CALLFORM CARD_ABLE(0,攻守変動)
 PRINTL ①: 장착 몬스터의 공격력은 500 증가하고, 레벨은 4 올라간다.
 CALLFORM CARD_ABLE(0,지속효과)
@@ -62,13 +62,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 
 	CALL FULLRESET
@@ -87,7 +82,7 @@ ELSEIF 종류 == 효과後誘発
 	SIF 마함数(듀얼리스트) >= 5
 		RETURN 0
 	CALL FULLRESET
-효과条件カテゴリ = 플라즈마틱 모델
+	효과条件カテゴリ = 플라즈마틱 모델
 	효과条件종류 = 초차원
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
 	SIF RESULT != 1
@@ -135,13 +130,13 @@ ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62378)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = PM 메인터넌스
+		효과条件名前 = PM 메인터넌스
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
 		IF RESULT != 9999
 			選択カード = RESULT
 			CALL FULLRESET
 			효과範囲필드 = 1
-효과条件カテゴリ = 플라즈마틱 모델
+			효과条件カテゴリ = 플라즈마틱 모델
 			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,ゾーン)
 		ENDIF
 	ENDIF
@@ -151,7 +146,7 @@ ELSEIF 종류 == 攻守変動
 	CALL STATCHANGE_OTHER(듀얼리스트,"装備",場所,"星",4)
 
 ELSEIF 종류 == 지속효과
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:装備先")},"カテゴリ"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:装備先")}("カテゴリ")
 	SIF MATCH(RESULTS,"리추얼")
 		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",装備先,"貫通")
 ENDIF

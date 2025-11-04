@@ -56,9 +56,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_DRAW_CHECK
 	RETURN 1
@@ -82,10 +81,10 @@ ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 短紋章起動
-	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
 	SIF !MATCH(RESULTS,"원석")
 		RETURN 1
-	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}, "종류"
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("종류")
 	SIF !MATCH(RESULT,通常モン)
 		RETURN 1
 ENDIF
@@ -131,7 +130,7 @@ ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘
 		IF 参照先（CS） == "필드"
 			攻撃力보존 = GETVAR(@"%듀얼리스트%_MZ_攻:{RESULT}")
 		ELSEIF 参照先（CS） == "묘지"
-			TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"
+			TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
 			攻撃力보존 = RESULT
 		ENDIF
 		CALL FULLRESET

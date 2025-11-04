@@ -76,17 +76,12 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,79893)
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -177,7 +172,7 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 		효과条件行先플래그 = 제외行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			TRYCALLFORM CARD_{RESULT:1},"レベル"
+			TRYCALLFORM CARD_{RESULT:1}("レベル")
 			選択カードレベル = RESULT
 			CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",選択カードレベル)
 		ENDIF
@@ -238,20 +233,20 @@ ELSEIF 종류 == 攻撃時強制誘発
 
 	IF 조교대상 > -1
 		SELECTCASE RAND:3
-		CASE 0
-			PRINTFORML %CALLNAME:조교대상%의 두 다리가 기계의 촉수에 휘감겨 움직일 수 없게 된다.
-			CALL MADORGASM_MACHINE_VIOLATE_TXT(1,0)
-			CALL MADORGASM_RAND_ROB_TXT(1,1)
-		CASE 1
-			PRINTFORML %CALLNAME:조교대상%에게 조준을 맞추고, 강제로 쾌락을 주입해 절정시키는 광선이 발사된다. %CALLNAME:조교대상%는
-			PRINTFORML …그것을 받은 %CALLNAME:조교대상%는,
-			CALL MADORGASM_MACHINE_VIOLATE_TXT(1,1)
-			CALL MADORGASM_RAND_ROB_TXT(1,4)
-		CASE 2
-			PRINTFORML %CALLNAME:조교대상%는 갑자기 몸의 움직임을 멈춘다.
-			PRINTFORML 그리고 어느새 멍한 눈이 되어버린 %CALLNAME:조교대상%는,
-			CALL MADORGASM_MACHINE_VIOLATE_TXT(1,2)
-			CALL MADORGASM_HYPNOSIS_OPERATION_TXT(1,0)
+			CASE 0
+				PRINTFORML %CALLNAME:조교대상%의 두 다리가 기계의 촉수에 휘감겨 움직일 수 없게 된다.
+				CALL MADORGASM_MACHINE_VIOLATE_TXT(1,0)
+				CALL MADORGASM_RAND_ROB_TXT(1,1)
+			CASE 1
+				PRINTFORML %CALLNAME:조교대상%에게 조준을 맞추고, 강제로 쾌락을 주입해 절정시키는 광선이 발사된다. %CALLNAME:조교대상%는
+				PRINTFORML …그것을 받은 %CALLNAME:조교대상%는,
+				CALL MADORGASM_MACHINE_VIOLATE_TXT(1,1)
+				CALL MADORGASM_RAND_ROB_TXT(1,4)
+			CASE 2
+				PRINTFORML %CALLNAME:조교대상%는 갑자기 몸의 움직임을 멈춘다.
+				PRINTFORML 그리고 어느새 멍한 눈이 되어버린 %CALLNAME:조교대상%는,
+				CALL MADORGASM_MACHINE_VIOLATE_TXT(1,2)
+				CALL MADORGASM_HYPNOSIS_OPERATION_TXT(1,0)
 		ENDSELECT
 		PRINTFORML ……
 		PRINTFORML …………

@@ -1,0 +1,156 @@
+﻿@CARDNAME_29948,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = イズモ
+	CASE "略称"
+		RESULTS = イズモ
+	CASE "カテゴリ"
+		RESULTS:0 = オラクル
+		RESULTS:1 = ゴッド
+		RESULTS:2 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_29948(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1200
+	CASE "性別"
+		RETURN 雄性
+
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_29948(種類)
+#DIM DYNAMIC 種類
+
+
+PRINTL このカード名の②③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。
+PRINTL デッキから「イズモ」以外の「ゴッド・ノヴァ」カード１枚を手札に加える。
+CALLFORM CARD_ABLE(2,戦場→墓地 ,手札→墓地 ,デッキ→墓地 ,破壊→墓地 ,戦闘→墓地)
+PRINTL ②：このカードが墓地へ送られた場合、自分の魔法＆罠ゾーンに表側表示の「ゴッド・ノヴァ」カードが２枚以上存在していれば発動できる。
+PRINTL このカードを手札に加える。
+CALLFORM CARD_ABLE(3,戦場起動)
+PRINTL ③：デッキから「イズモ」以外の「ゴッド」モンスター１体を墓地へ送って発動できる。
+PRINTL このカードは墓地へ送ったモンスターと同名カードとして扱う。
+
+
+@CARDCAN_29948(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,29948)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,29948)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = ゴッド・ノヴァ
+	効果条件固名前 = イズモ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場→墓地 || 種類 == 手札→墓地 || 種類 == デッキ→墓地 || 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	SIF 発動済_2(決闘者,29948)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = ゴッド・ノヴァ
+	効果条件表示 = 表側表示
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_3(決闘者,29948)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = ゴッド
+	効果条件種類 = モン全般
+	効果条件固名前 = イズモ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_29948(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,29948,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = ゴッド・ノヴァ
+		効果条件固名前 = イズモ
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 戦場→墓地 || 種類 == 手札→墓地 || 種類 == デッキ→墓地 || 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,29948,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果条件名前 = イズモ
+		CALL CARD_ADD_BASIC(決闘者,"墓地",ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,29948,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果条件カテゴリ = ゴッド
+		効果条件種類 = モン全般
+		CALL CARD_ADD_GY_BASIC(決闘者,"デッキ",ゾーン,場所)
+		IF RESULT == 1
+			CALL SET_FIELD_INFO(決闘者,"戦場",場所,"変化元ID",RESULT:1,1)
+		ENDIF
+	ENDIF
+ENDIF

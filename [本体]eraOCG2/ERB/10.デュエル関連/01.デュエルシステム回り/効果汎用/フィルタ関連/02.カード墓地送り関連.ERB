@@ -42,10 +42,12 @@ CALL 対面者판정(듀얼리스트)
 
 IF GROUPMATCH(元参照先,"묘지","상대묘지") && 효과条件行先플래그 == 0 && GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 	PRINTFORML 카드를 제외할 수 없습니다。
+	CUSTOMDRAWLINE —
 	RETURN 0
 ENDIF
 IF GROUPMATCH(효과条件行先플래그,제외行き,一時제외行き) && GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 	PRINTFORML 카드를 제외할 수 없습니다。
+	CUSTOMDRAWLINE —
 	RETURN 0
 ENDIF
 
@@ -93,6 +95,7 @@ IF 参照先 == "덱" && 효과条件行先플래그 == 0
 	CALL URARA_CHANCE(듀얼리스트,カードID,"묘지")
 	IF RESULT == 1
 		CALL SHUFFLE(듀얼리스트)
+		CUSTOMDRAWLINE —
 		RETURN 0
 	ENDIF
 ENDIF
@@ -100,6 +103,7 @@ ENDIF
 IF 参照先 == "묘지" && (효과条件行先플래그 == 0 || 효과条件行先플래그 == 제외行き)
 	CALL WARASHI_CHANCE(듀얼리스트,カードID,"雑多")
 	IF RESULT == 1
+	CUSTOMDRAWLINE —
 		RETURN 0
 	ENDIF
 ENDIF
@@ -176,6 +180,7 @@ ELSEIF 듀얼리스트 == "상대"
 ENDIF
 IF 選択カード:複数カウンタ == 9999
 	PRINTFORMW 돌아갑니다。
+	CUSTOMDRAWLINE —
 	RETURN 0
 ELSEIF 選択カード:複数カウンタ == 8888
 	選択カード:複数カウンタ = -1
@@ -193,11 +198,11 @@ ENDIF
 IF 효과条件複数 != 0
 	IF 효과条件複数 > (複数カウンタ + 1)
 		IF 효과条件固名前選択
-			CALLFORM CARDNAME_{GETVAR(@"%대상者%_%参照先%:{選択カード:複数カウンタ}")},"名前"
+			CALLFORM CARDNAME_{GETVAR(@"%대상者%_%参照先%:{選択カード:複数カウンタ}")}("名前")
 			효과条件固名前:複数カウンタ = %RESULTS%
 		ENDIF
 		IF 효과条件固レベル選択
-			CALLFORM CARD_{GETVAR(@"%대상者%_%参照先%:{選択カード:複数カウンタ}")},"レベル"
+			CALLFORM CARD_{GETVAR(@"%대상者%_%参照先%:{選択カード:複数カウンタ}")}("レベル")
 			효과条件固レベル:複数カウンタ = RESULT
 		ENDIF
 		複数カウンタ ++
@@ -260,7 +265,7 @@ RESULT:10 = 対面カード使用
 RESULT:98 = 守備力合計
 RESULT:99 = 攻撃力合計
 RESULT:200 = レベル合計
-
+CUSTOMDRAWLINE —
 RETURN 1
 
 
@@ -306,10 +311,12 @@ SIF 효과条件複数 == 100
 
 IF (효과範囲묘지 == 1 || 효과範囲상대묘지 == 1) && 효과条件行先플래그 == 0 && GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 	PRINTFORML 카드를 제외할 수 없습니다。
+	CUSTOMDRAWLINE —
 	RETURN 0
 ENDIF
 IF GROUPMATCH(효과条件行先플래그,제외行き) && GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 	PRINTFORML 카드를 제외할 수 없습니다。
+	CUSTOMDRAWLINE —
 	RETURN 0
 ENDIF
 
@@ -317,6 +324,7 @@ IF 효과範囲덱 == 1 && 효과条件行先플래그 == 0
 	CALL URARA_CHANCE(듀얼리스트,カードID,"묘지")
 	IF RESULT == 1
 		CALL SHUFFLE(듀얼리스트)
+		CUSTOMDRAWLINE —
 		RETURN 0
 	ENDIF
 ENDIF
@@ -324,6 +332,7 @@ ENDIF
 IF (효과範囲묘지 == 1 || 효과範囲상대묘지 == 1) && 효과条件行先플래그 == 0
 	CALL WARASHI_CHANCE(듀얼리스트,カードID,"雑多")
 	IF RESULT == 1
+		CUSTOMDRAWLINE —
 		RETURN 0
 	ENDIF
 ENDIF
@@ -407,6 +416,7 @@ ELSEIF 듀얼리스트 == "상대"
 ENDIF
 IF 選択カード:複数カウンタ == 9999
 	PRINTFORMW 돌아갑니다。
+	CUSTOMDRAWLINE —
 	RETURN 0
 
 ELSEIF 選択カード:複数カウンタ == 8888
@@ -432,12 +442,12 @@ IF 효과条件複数 != 0
 	IF 효과条件複数 > (複数カウンタ + 1)
 		IF 효과条件固名前選択
 			CALL CARD_SELECT(듀얼리스트,選択カード:複数カウンタ)
-			CALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")},"名前"
+			CALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}("名前")
 			효과条件固名前:複数カウンタ = %RESULTS%
 		ENDIF
 		IF 효과条件固レベル選択
 			CALL CARD_SELECT(듀얼리스트,選択カード:複数カウンタ)
-			CALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")},"レベル"
+			CALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}("レベル")
 			효과条件固レベル:複数カウンタ = RESULT
 		ENDIF
 		複数カウンタ ++
@@ -510,6 +520,7 @@ RESULT:98 = 守備力合計
 RESULT:99 = 攻撃力合計
 RESULT:200 = レベル合計
 
+CUSTOMDRAWLINE —
 RETURN 1
 
 
@@ -1072,7 +1083,7 @@ SIF GETVAR(@"%듀얼리스트%_%ゾーン%:場所") == -1
 
 選択カード_ID = GETVAR(@"%듀얼리스트%_%ゾーン%:場所")
 
-CALLFORM CARDNAME_{選択カード_ID}, "名前"
+CALLFORM CARDNAME_{選択カード_ID}("名前")
 이동カード名 = %RESULTS%
 SELECTCASE 듀얼리스트
 	CASE "자신"
@@ -1383,7 +1394,7 @@ FOR カウンタ,0,サーチ範囲
 		CONTINUE
 	カウンタC ++
 	VARSET RESULTS
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%参照先%:カウンタ")},"名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%参照先%:カウンタ")}("名前")
 	효과条件固名前:カウンタC = %RESULTS%
 NEXT
 

@@ -56,9 +56,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -109,7 +108,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		효과条件표시 = 表側표시
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			TRYCALLFORM CARDNAME_{RESULT:1},"名前"
+			TRYCALLFORM CARDNAME_{RESULT:1}("名前")
 			選択カード名前 = %RESULTS%
 
 			CALL FULLRESET
@@ -126,7 +125,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				IF 조교대상:0 != -1
 					조교대상名前:0 = %CALLNAME:(조교대상:0)%
 				ELSE
-					TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+					TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 					조교대상名前:0 = %RESULTS%
 				ENDIF
 
@@ -144,7 +143,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				IF 조교대상:1 != -1
 					조교대상名前:1 = %CALLNAME:(조교대상:1)%
 				ELSE
-					TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+					TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 					조교대상名前:1 = %RESULTS%
 				ENDIF
 

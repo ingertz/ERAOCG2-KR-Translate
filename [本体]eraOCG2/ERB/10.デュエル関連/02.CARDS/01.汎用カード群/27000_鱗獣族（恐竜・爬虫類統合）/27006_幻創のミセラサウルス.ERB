@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 환창의 미세라사우루스
+		RESULTS = 환창의 미세라사우루스
 	CASE "略称"
-RESULTS = 미세라사우루스
+		RESULTS = 미세라사우루스
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -117,6 +117,7 @@ ENDIF
 #DIM DYNAMIC 最大レベル
 #DIM DYNAMIC 제외数
 #DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID
 #DIMS DYNAMIC 対面者
 
 CALL 対面者판정(듀얼리스트)
@@ -138,7 +139,6 @@ ELSEIF 종류 == 短紋章起動
 ELSEIF 종류 == 묘지起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27006,2)
 	IF RESULT == 0
-		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
 		효과範囲묘지 = 1
 		효과条件종족 = 비늘야수족
@@ -151,20 +151,34 @@ ELSEIF 종류 == 묘지起動
 		효과条件종족 = 비늘야수족
 		효과추가종류 = 10 + 破壊行き
 		CALL 효과条件レベル_ADV(最大レベル, "以下")
-		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			選択カード_ID = RESULT:99
+			CALLFORM CARD_{選択カード_ID}("レベル")
+			제외数 = RESULT - 1
 
-		CALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カード소환先")}, "レベル"
-		제외数 = RESULT
-		REPEAT 제외数 - 1
+			IF 제외数 >= 1
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件종류 = モン全般
+				효과条件종족 = 비늘야수족
+				효과条件複数 = 100 - 제외数
+				효과条件行先플래그 = 제외行き
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)	
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과条件ID = 選択カード_ID
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+				ENDIF
+			ELSE
 			CALL FULLRESET
-			효과条件종류 = モン全般
-			효과条件종족 = 비늘야수족
-			
-			CALL CARD_CHOOSE_BASIC(듀얼리스트, "묘지",ゾーン,場所)	
-			選択カード = RESULT
-			IF 選択カード != 9999
-				CALL CARD_DISPOSE(듀얼리스트,"묘지",選択カード)
+			효과範囲덱 = 1
+				효과条件ID = 選択カード_ID
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
 			ENDIF
-		REND
+		ENDIF
 	ENDIF
 ENDIF

@@ -1,0 +1,126 @@
+@CARDNAME_72564,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = デストーイ・マーチ
+	CASE "略称"
+		RESULTS = 魔玩具行進
+	CASE "カテゴリ"
+		RESULTS:0 = デストーイ
+ENDSELECT
+
+
+@CARD_72564(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常罠
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72564(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(1,発動誘発)
+PRINTL ①：相手のモンスターの効果・魔法・罠カードを相手が発動した時に発動できる。
+PRINTL その発動を無効にし破壊する。
+PRINTL その後、以下の効果を適用できる。
+PRINTL ●自分フィールドの「デストーイ」モンスター１体を墓地へ送り、
+PRINTL レベル８以上の「デストーイ」融合モンスター１体を
+PRINTL 融合召喚扱いとしてエクストラデッキから特殊召喚する。
+;PRINTL この効果で特殊召喚したモンスターは、次の自分エンドフェイズに除外される。
+
+@CARDCAN_72564(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,72564)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 発動誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;相手が効果を発動したかチェック
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(決闘者,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72564(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 発動誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,72564,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(決闘者,"発動無効",場所,"破壊")
+
+		;追加効果：デストーイを墓地へ送って融合召喚
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = デストーイ
+		効果条件種類 = モン全般
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 1
+		CALL FULLRESET
+		効果範囲EXデッキ = 1
+		効果条件カテゴリ = デストーイ
+		効果条件種類 = 融合
+		CALL 効果条件レベル_ADV(8, "以上")
+		効果条件召喚可 = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 1
+		PRINTFORMW デストーイを墓地へ送って融合召喚しますか？
+		CALL YN_CHOICE(決闘者)
+		IF RESULT == はい
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件カテゴリ = デストーイ
+			効果条件種類 = モン全般
+			CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				効果範囲EXデッキ = 1
+				効果条件カテゴリ = デストーイ
+				効果条件種類 = 融合
+				CALL 効果条件レベル_ADV(8, "以上")
+				CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+			ENDIF
+		ENDIF
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

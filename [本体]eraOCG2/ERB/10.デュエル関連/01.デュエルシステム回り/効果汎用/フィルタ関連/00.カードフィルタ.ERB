@@ -240,7 +240,7 @@ FOR カウンタ,0,サーチ範囲
 				CONTINUE
 		ENDIF
 	ENDIF
-	IF 듀얼리스트 != "編集"
+	IF GROUPMATCH(듀얼리스트,"자신","상대")
 		IF GETVAR(@"%듀얼리스트%_アザミナ呪") >= 1 && ゾーン != "어드밴스"
 			IF 元参照先 == "묘지" || 元参照先 == "제외" || 元参照先 == "필드"
 				CONTINUE
@@ -264,7 +264,7 @@ FOR カウンタ,0,サーチ範囲
 			CONTINUE
 	ENDIF
 	IF 효과条件固名前起動 == 1
-		TRYCALLFORM CARDNAME_{대상カードID}, "名前"
+		TRYCALLFORM CARDNAME_{대상カードID}("名前")
 		효과条件固名前:カウンタD = %RESULTS%
 		カウンタD ++
 	ENDIF
@@ -300,44 +300,26 @@ FOR カウンタ,0,サーチ範囲
 				ENDIF
 			ELSE
 				VARSET RESULT
-				TRYCALLFORM CARD_{대상カードID}, "攻撃力"
+				TRYCALLFORM CARD_{대상カードID}("攻撃力")
 				IF RESULT < 現在最小攻撃力
 					現在最小攻撃力 = RESULT
 					選択カード = カウンタ + 上級値
 				ENDIF
 			ENDIF
 		ELSE
-			IF 実行者 != 듀얼리스트
-				IF 参照先 == "필드"
-					IF GETVAR(@"%実行者%_MZ_攻:カウンタ") + 99999 > 現在最大攻撃力
-						;Anonym修正
-						現在最大攻撃力 = GETVAR(@"%実行者%_MZ_攻:カウンタ") + 99999
+			IF 효과条件大小反転 == 1
+					VARSET RESULT
+					CALL ENEMY_PRIORITY_FILTER(대상カードID,元参照先,カウンタ)
+				IF RESULT < 現在最小攻撃力
+					現在最小攻撃力 = RESULT
 						選択カード = カウンタ + 上級値
 					ENDIF
 				ELSE
 					VARSET RESULT
-					TRYCALLFORM CARD_{대상カードID}, "攻撃力"
-					IF  RESULT + 99999 > 現在最大攻撃力
-						;Anonym修正
-						現在最大攻撃力 = RESULT + 99999
-						選択カード = カウンタ + 上級値
-					ENDIF
-				ENDIF
-			ELSE
-				IF 参照先 == "필드"
-					IF GETVAR(@"%実行者%_MZ_攻:カウンタ") > 現在最大攻撃力
-						選択カード = カウンタ + 上級値
-					ENDIF
-				ELSE
-					VARSET RESULT
-					TRYCALLFORM CARD_{대상カードID}, "攻撃力"
-					攻撃力설정 = RESULT
-					CALL ENEMY_PRIORITY_FILTER(대상カードID,攻撃力설정)	
-					;PRINTFORML リザルト：{RESULT}/대상カードID:{대상カードID}
+					CALL ENEMY_PRIORITY_FILTER(대상カードID,元参照先,カウンタ)
 					IF RESULT > 現在最大攻撃力
 						現在最大攻撃力 = RESULT
 						選択カード = カウンタ + 上級値
-					ENDIF
 				ENDIF
 			ENDIF
 		ENDIF
@@ -356,11 +338,11 @@ FOR カウンタ,0,サーチ範囲
 		条件合致悪性Ｃ数 += GETVAR(@"%実行者%_MZ_悪Ｃ:カウンタ")
 		条件合致薬毒Ｃ数 += GETVAR(@"%実行者%_MZ_薬Ｃ:カウンタ")
 	ELSE
-		TRYCALLFORM CARD_{대상カードID}, "レベル"
+		TRYCALLFORM CARD_{대상カードID}("レベル")
 		条件合致レベル数 += RESULT
-		TRYCALLFORM CARD_{대상カードID}, "攻撃力"
+		TRYCALLFORM CARD_{대상カードID}("攻撃力")
 		条件合致攻撃力数 += RESULT
-		TRYCALLFORM CARD_{대상カードID}, "守備力"
+		TRYCALLFORM CARD_{대상カードID}("守備力")
 		条件合致守備力数 += RESULT
 
 		IF 参照先 == "마함"
@@ -478,7 +460,7 @@ ENDIF
 
 IF 효과条件ID > -1
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "別途ID"
+	TRYCALLFORM CARD_{설정カードID}("別途ID")
 	IF RESULT >= 1
 		SIF MATCH(효과条件ID, RESULT)
 			条件달성 ++
@@ -495,7 +477,7 @@ IF 효과条件ID > -1
 		IF GETVARS(@"%実行者%_MZ_改名:カウンタ") != ""
 			VARSET 条件달성
 			カード改名 = %GETVARS(@"%実行者%_MZ_改名:カウンタ")%
-			TRYCALLFORM CARDNAME_{효과条件ID}, "名前"
+			TRYCALLFORM CARDNAME_{효과条件ID}("名前")
 			SIF MATCH(RESULTS, カード改名)
 				条件달성 ++
 		ENDIF
@@ -504,7 +486,7 @@ IF 효과条件ID > -1
 		IF GETVARS(@"%実行者%_魔_改名:カウンタ") != ""
 			VARSET 条件달성
 			カード改名 = %GETVARS(@"%実行者%_魔_改名:カウンタ")%
-			TRYCALLFORM CARDNAME_{효과条件ID}, "名前"
+			TRYCALLFORM CARDNAME_{효과条件ID}("名前")
 			SIF MATCH(RESULTS, カード改名)
 				条件달성 ++
 		ENDIF
@@ -517,7 +499,7 @@ ENDIF
 
 IF 효과条件固ID > -1
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "別途ID"
+	TRYCALLFORM CARD_{설정カードID}("別途ID")
 	IF RESULT >= 1
 		SIF MATCH(효과条件固ID, RESULT)
 			条件달성 ++
@@ -534,7 +516,7 @@ IF 효과条件固ID > -1
 		IF GETVARS(@"%実行者%_MZ_改名:カウンタ") != ""
 			VARSET 条件달성
 			カード改名 = %GETVARS(@"%実行者%_MZ_改名:カウンタ")%
-			TRYCALLFORM CARDNAME_{효과条件固ID}, "名前"
+			TRYCALLFORM CARDNAME_{효과条件固ID}("名前")
 			SIF MATCH(RESULTS, カード改名)
 				条件달성 ++
 		ENDIF
@@ -543,7 +525,7 @@ IF 효과条件固ID > -1
 		IF GETVARS(@"%実行者%_魔_改名:カウンタ") != ""
 			VARSET 条件달성
 			カード改名 = %GETVARS(@"%実行者%_魔_改名:カウンタ")%
-			TRYCALLFORM CARDNAME_{효과条件固ID}, "名前"
+			TRYCALLFORM CARDNAME_{효과条件固ID}("名前")
 			SIF MATCH(RESULTS, カード改名)
 				条件달성 ++
 		ENDIF
@@ -556,18 +538,18 @@ ENDIF
 ;PRINTFORML ここ通過１
 IF 효과条件名前 != ""
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "別途ID"
+	TRYCALLFORM CARD_{설정カードID}("別途ID")
 	IF RESULT >= 1
-		TRYCALLFORM CARDNAME_{RESULT}, "名前"
+		TRYCALLFORM CARDNAME_{RESULT}("名前")
 	ELSE
-		TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+		TRYCALLFORM CARDNAME_{설정カードID}("名前")
 	ENDIF
 	SIF MATCH(효과条件名前, RESULTS)
 		条件달성 ++
 
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("名前")
 			SIF MATCH(효과条件名前, RESULTS)
 				条件달성 ++
 		ENDIF
@@ -593,12 +575,12 @@ IF 효과条件名前 != ""
 ENDIF
 IF 효과条件固名前 != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+	TRYCALLFORM CARDNAME_{설정カードID}("名前")
 	SIF MATCH(효과条件固名前, RESULTS)
 		条件달성 ++
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("名前")
 			SIF MATCH(효과条件固名前, RESULTS)
 				条件달성 ++
 		ENDIF
@@ -625,7 +607,7 @@ ENDIF
 
 IF 효과条件カテゴリ != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
 	FOR カウンタB,0,5
 		IF RESULTS:カウンタB != ""
 			SIF MATCH(RESULTS:カウンタB, 효과条件カテゴリ)
@@ -639,7 +621,7 @@ IF 효과条件カテゴリ != ""
 	IF 参照先 == "필드" && 효과条件元々 == 0
 		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			SIF MATCH(효과条件カテゴリ, RESULTS)
 				条件달성 ++
 			SIF MATCH(RESULTS, 효과条件カテゴリ)
@@ -684,7 +666,7 @@ ENDIF
 ;PRINTFORML ここ通過３
 IF 효과条件固カテゴリ != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
 	IF MATCH(RESULTS, 효과条件固カテゴリ)
 		条件달성 ++
 	ENDIF
@@ -693,7 +675,7 @@ IF 효과条件固カテゴリ != ""
 	ENDIF
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			SIF MATCH(효과条件固カテゴリ, RESULTS)
 				条件달성 ++
 			SIF MATCH(RESULTS, 효과条件固カテゴリ)
@@ -739,7 +721,7 @@ ENDIF
 
 ;PRINTFORML ここ通過４
 IF 효과条件分割 > 0
-	TRYCALLFORM CARD_{설정カードID}, "分割"
+	TRYCALLFORM CARD_{설정カードID}("分割")
 	IF 효과条件分割 == 分割在り
 		SIF RESULT == 0
 			RETURN 戻り値
@@ -759,16 +741,16 @@ ENDIF
 
 IF 효과条件종류  > 0
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "종류"
+	TRYCALLFORM CARD_{설정カードID}("종류")
 	IF 효과条件종류 == モン全般
 		SIF RESULT < モン全般
 			条件달성 ++
 	ELSEIF 효과条件종류 == トークン
-		TRYCALLFORM CARD_{설정カードID}, "トークン"
+		TRYCALLFORM CARD_{설정カードID}("トークン")
 		SIF RESULT == 1
 			条件달성 ++
 	ELSEIF 효과条件종류 == トークン以外
-		TRYCALLFORM CARD_{설정カードID}, "トークン"
+		TRYCALLFORM CARD_{설정カードID}("トークン")
 		SIF RESULT == 0
 			条件달성 ++
 	ELSEIF 효과条件종류  == EXモン全般
@@ -786,14 +768,14 @@ IF 효과条件종류  > 0
 	ELSEIF 효과条件종류  == 효과全般
 		SIF GROUPMATCH(RESULT, 효과モン, 융합, 의식, 싱크로, 엑시즈, 링크, 초차원)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT == 通常モン
 			VARSET 条件달성
 
 	ELSEIF 효과条件종류  == 효과無し全般
 		SIF RESULT == 通常モン
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT == 通常モン
 			条件달성 ++
 
@@ -801,7 +783,7 @@ IF 효과条件종류  > 0
 		SIF INRANGE(RESULT, 20, 29) 
 			条件달성 ++
 		IF チェック플래그 == 4 && 開始_효과種 == 손패起動
-			TRYCALLFORM CARD_{설정カードID}, "分割"
+			TRYCALLFORM CARD_{설정カードID}("分割")
 			SIF RESULT == 펜듈럼
 				条件달성 ++
 		ENDIF
@@ -823,15 +805,15 @@ IF 효과条件종류  > 0
 	SIF 条件달성 == 0		
 		RETURN 戻り値
 ENDIF
-
+;PRINTFORML ここ通過６
 IF GROUPMATCH(チェック플래그,2,7)
-	TRYCALLFORM CARD_{설정カードID}, "종류"
+	TRYCALLFORM CARD_{설정カードID}("종류")
 	SIF RESULT > 10
 		RETURN 戻り値
 	IF 효과条件特不無視 == 0
 		SIF RESULT == 3
 			RETURN 戻り値
-		TRYCALLFORM CARD_{설정カードID}, "특수불가"
+		TRYCALLFORM CARD_{설정カードID}("특수불가")
 		SIF RESULT == 1
 			RETURN 戻り値
 		IF チェック플래그 == 2
@@ -854,7 +836,7 @@ ENDIF
 
 
 
-
+;PRINTFORML ここ通過７
 
 IF 参照先 == "필드" || 参照先 == "마함"
 	IF 参照先 == "필드"
@@ -1052,7 +1034,7 @@ IF 参照先 == "필드"
 		SIF MATCH(효과条件속성, GETVAR(@"%実行者%_MZ_属:カウンタ"))
 			条件달성 ++
 		;複数속성チェック
-		TRYCALLFORM CARD_{설정カードID}, "속성"
+		TRYCALLFORM CARD_{설정カードID}("속성")
 		IF RESULT:1 >= 1
 			VARSET 検出속성, -1
 			FOR カウンタB,0,10
@@ -1077,7 +1059,7 @@ IF 参照先 == "필드"
 		SIF MATCH(효과条件종족, GETVAR(@"%実行者%_MZ_種:カウンタ"))
 			条件달성 ++
 		;複数종족チェック
-		TRYCALLFORM CARD_{설정カードID}, "종족"
+		TRYCALLFORM CARD_{설정カードID}("종족")
 		IF RESULT:1 >= 1
 			VARSET 検出종족, -1
 			FOR カウンタB,0,10
@@ -1115,7 +1097,7 @@ IF 参照先 == "필드"
 
 	;ザポルグ追記20250102
 	IF 효과条件変レベル > 0
-		TRYCALLFORM CARD_{설정カードID}, "レベル"
+		TRYCALLFORM CARD_{설정カードID}("レベル")
 		元レベル = RESULT
 		現レベル = GETVAR(@"%듀얼리스트%_MZ_星:カウンタ")
 		IF 효과条件変レベル == 1
@@ -1147,7 +1129,7 @@ IF 参照先 == "필드"
 	ENDIF
 	;PRINTFORML ここ通過１１　효과条件以攻撃力 = {효과条件以攻撃力}　カウンタ = {カウンタ}
 	IF 효과条件元固攻撃力 >= 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT != 효과条件元固攻撃力
 			RETURN 戻り値
 	ENDIF
@@ -1164,7 +1146,7 @@ IF 参照先 == "필드"
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件元固守備力 >= 0
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		SIF RESULT != 효과条件元固守備力
 			RETURN 戻り値
 	ENDIF
@@ -1230,11 +1212,11 @@ IF 参照先 == "필드"
 
 ELSE
 	IF 효과条件튜너 > 0
-		TRYCALLFORM CARD_{설정カードID}, "튜너"
+		TRYCALLFORM CARD_{설정カードID}("튜너")
 		SIF RESULT == 0
 			RETURN 戻り値
 	ELSEIF 효과条件튜너 == -1
-		TRYCALLFORM CARD_{설정カードID}, "튜너"
+		TRYCALLFORM CARD_{설정カードID}("튜너")
 		SIF RESULT != 0
 			RETURN 戻り値
 	ENDIF
@@ -1243,8 +1225,7 @@ ELSE
 	IF 효과条件속성 > 0
 		VARSET 条件달성
 		;複数속성チェック
-		TRYCALLFORM CARD_{설정カードID}, "속성"
-		
+		TRYCALLFORM CARD_{설정カードID}("속성")
 		VARSET 検出속성, -1
 		FOR カウンタB,0,10
 			SIF RESULT:カウンタB <= 0
@@ -1259,13 +1240,19 @@ ELSE
 					条件달성 ++
 			ENDIF
 		NEXT
+		IF 参照先 == "묘지"
+			VARSET RESULT
+			TRYCALLFORM CARD_{설정カードID}("霊신속성")
+			SIF RESULT == 1
+				条件달성 ++
+		ENDIF
 		SIF 条件달성 == 0	
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件종족 > 0
 		VARSET 条件달성
 		;複数속성チェック
-		TRYCALLFORM CARD_{설정カードID}, "종족"
+		TRYCALLFORM CARD_{설정カードID}("종족")
 		
 		VARSET 検出종족, -1
 		FOR カウンタB,0,10
@@ -1289,10 +1276,10 @@ ELSE
 
 	IF 효과条件レベル > 0
 		VARSET 条件달성
-		TRYCALLFORM CARD_{설정カードID}, "レベル"
+		TRYCALLFORM CARD_{설정カードID}("レベル")
 		SIF MATCH(효과条件レベル, RESULT)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "コスト"
+		TRYCALLFORM CARD_{설정カードID}("コスト")
 		SIF MATCH(효과条件レベル, RESULT)
 			条件달성 ++
 		SIF 条件달성 == 0		
@@ -1301,10 +1288,10 @@ ELSE
 	
 	IF 효과条件固レベル > 0
 		VARSET 条件달성
-		TRYCALLFORM CARD_{설정カードID}, "レベル"
+		TRYCALLFORM CARD_{설정カードID}("レベル")
 		SIF MATCH(효과条件固レベル, RESULT)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "コスト"
+		TRYCALLFORM CARD_{설정カードID}("コスト")
 		SIF MATCH(효과条件固レベル, RESULT)
 			条件달성 ++
 		SIF 条件달성 != 0		
@@ -1312,52 +1299,52 @@ ELSE
 	ENDIF
 
 	IF 효과条件攻撃力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT > 효과条件攻撃力
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件固攻撃力 >= 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT != 효과条件固攻撃力
 			RETURN 戻り値
 	ENDIF
 	
 	IF 효과条件以攻撃力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT < 효과条件以攻撃力
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件元固攻撃力 >= 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT != 효과条件元固攻撃力
 			RETURN 戻り値
 	ENDIF
 
 	IF 효과条件守備力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		SIF RESULT > 효과条件守備力
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件固守備力 >= 0
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		SIF RESULT != 효과条件固守備力
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件以守備力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		SIF RESULT < 효과条件以守備力
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件元固守備力 >= 0
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		SIF RESULT != 효과条件元固守備力
 			RETURN 戻り値
 	ENDIF
 
 	IF 효과条件同攻守 > 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		攻撃力설정 = RESULT
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		守備力설정 = RESULT
 		SIF 攻撃力설정 != 守備力설정
 			RETURN 戻り値
@@ -1365,7 +1352,7 @@ ELSE
 
 	IF 효과条件성별 >= 0
 		;Anonym修正
-		TRYCALLFORM CARD_{설정カードID}, "성별"
+		TRYCALLFORM CARD_{설정カードID}("성별")
 		성별판정 = RESULT
 		캐릭터番号 = NO_TO_CHARANUM(설정カードID)
 		IF 캐릭터番号 >= 1 && オプション_성별
@@ -1422,7 +1409,7 @@ ELSE
 
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
-			TRYCALLFORM CARD_{설정カードID}, "종류"
+			TRYCALLFORM CARD_{설정カードID}("종류")
 			IF RESULT < 3 || RESULT == 초차원
 				IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 					CALL CARD_SS_CHECK(実行者,설정カードID,参照先)
@@ -1539,24 +1526,24 @@ ENDIF
 
 IF 효과条件スーパー名前 != ""
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "別途ID"
+	TRYCALLFORM CARD_{설정カードID}("別途ID")
 	IF RESULT >= 1
-		TRYCALLFORM CARDNAME_{RESULT}, "名前"
+		TRYCALLFORM CARDNAME_{RESULT}("名前")
 	ELSE
-		TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+		TRYCALLFORM CARDNAME_{설정カードID}("名前")
 	ENDIF
 	SIF MATCH(효과条件スーパー名前, RESULTS)
 		条件달성 ++
 
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("名前")
 			SIF MATCH(효과条件スーパー名前, RESULTS)
 				条件달성 ++
 		ENDIF
 	ELSEIF 参照先 == "마함"
 		IF GETVAR(@"%実行者%_魔_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_魔_変化元ID:カウンタ")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_魔_変化元ID:カウンタ")}("名前")
 			SIF MATCH(효과条件スーパー名前, RESULTS)
 				条件달성 ++
 		ENDIF
@@ -1567,7 +1554,7 @@ ENDIF
 
 IF 효과条件スーパーカテゴリ != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
 	FOR カウンタB,0,5
 		IF RESULTS:カウンタB != ""
 			SIF MATCH(RESULTS:カウンタB, 효과条件スーパーカテゴリ)
@@ -1590,7 +1577,7 @@ IF 효과条件スーパーカテゴリ != ""
 		ENDIF
 
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			IF MATCH(RESULTS, 효과条件スーパーカテゴリ)
 				条件달성 ++
 			ENDIF
@@ -1616,7 +1603,7 @@ ENDIF
 
 IF 효과条件スーパー종류 > 0
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "종류"
+	TRYCALLFORM CARD_{설정カードID}("종류")
 	IF 효과条件スーパー종류 == モン全般
 		SIF RESULT < モン全般
 			条件달성 ++
@@ -1634,13 +1621,13 @@ IF 효과条件スーパー종류 > 0
 	ELSEIF 효과条件スーパー종류 == 효과全般
 		SIF GROUPMATCH(RESULT, 효과モン, 융합, 의식, 싱크로, 엑시즈, 링크, 초차원)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT != 通常モン
 			条件달성 ++
 	ELSEIF 효과条件スーパー종류 == 효과無し全般
 		SIF RESULT == 通常モン
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT == 通常モン
 			条件달성 ++
 
@@ -1669,7 +1656,7 @@ IF 효과条件スーパー속성 > 0
 		SIF MATCH(효과条件スーパー속성, GETVAR(@"%実行者%_MZ_属:カウンタ"))
 			条件달성 ++
 		;複数속성チェック
-		TRYCALLFORM CARD_{설정カードID}, "속성"
+		TRYCALLFORM CARD_{설정カードID}("속성")
 		IF RESULT:1 >= 1
 			VARSET 検出속성, -1
 			FOR カウンタB,0,10
@@ -1688,7 +1675,7 @@ IF 효과条件スーパー속성 > 0
 		ENDIF
 	ELSE
 		;複数속성チェック
-		TRYCALLFORM CARD_{설정カードID}, "속성"
+		TRYCALLFORM CARD_{설정カードID}("속성")
 		VARSET 検出속성, -1
 		FOR カウンタB,0,10
 			SIF RESULT:カウンタB <= 0
@@ -1714,7 +1701,7 @@ IF 효과条件スーパー종족 > 0
 		SIF MATCH(효과条件スーパー종족, GETVAR(@"%実行者%_MZ_種:カウンタ"))
 			条件달성 ++
 		;複数종족チェック
-		TRYCALLFORM CARD_{설정カードID}, "종족"
+		TRYCALLFORM CARD_{설정カードID}("종족")
 		IF RESULT:1 >= 1
 			VARSET 検出종족, -1
 			FOR カウンタB,0,10
@@ -1735,7 +1722,7 @@ IF 효과条件スーパー종족 > 0
 			RETURN 0
 	ELSE
 		;複数종족チェック
-		TRYCALLFORM CARD_{설정カードID}, "종족"
+		TRYCALLFORM CARD_{설정カードID}("종족")
 		VARSET 検出종족, -1
 		FOR カウンタB,0,10
 			SIF RESULT:カウンタB <= 0
@@ -1760,14 +1747,14 @@ IF 효과条件スーパーレベル > 0
 	IF 参照先 == "필드"
 		SIF MATCH(효과条件スーパーレベル, GETVAR(@"%実行者%_MZ_星:カウンタ"))
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "コスト"
+		TRYCALLFORM CARD_{설정カードID}("コスト")
 		SIF MATCH(효과条件スーパーレベル, RESULT)
 			条件달성 ++
 	ELSE
-		TRYCALLFORM CARD_{설정カードID}, "レベル"
+		TRYCALLFORM CARD_{설정カードID}("レベル")
 		SIF MATCH(효과条件スーパーレベル, RESULT)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "コスト"
+		TRYCALLFORM CARD_{설정カードID}("コスト")
 		SIF MATCH(효과条件スーパーレベル, RESULT)
 			条件달성 ++
 	ENDIF
@@ -1777,11 +1764,11 @@ ENDIF
 
 VARSET RESULT
 IF 효과条件スーパー튜너 > 0
-	TRYCALLFORM CARD_{설정カードID}, "튜너"
+	TRYCALLFORM CARD_{설정カードID}("튜너")
 	SIF RESULT == 0
 		RETURN 0
 ELSEIF 효과条件スーパー튜너 == -1
-	TRYCALLFORM CARD_{설정カードID}, "튜너"
+	TRYCALLFORM CARD_{설정カードID}("튜너")
 	SIF RESULT != 0
 		RETURN 0
 ENDIF
@@ -1850,10 +1837,10 @@ ENDIF
 ;ザポルグ追記20240929
 IF 효과条件スーパー攻撃力 > 0
 	VARSET RESULT
-	TRYCALLFORM CARD_{설정カードID}, "종류"
+	TRYCALLFORM CARD_{설정カードID}("종류")
 	IF RESULT < モン全般
 		VARSET RESULT
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT > 효과条件攻撃力
 			RETURN 0
 	ENDIF
@@ -1863,13 +1850,13 @@ ENDIF
 IF チェック플래그 == 2
 	VARSET RESULT
 	IF 효과条件特不無視 != 2
-		TRYCALLFORM CARD_{설정カードID}, "종류"
+		TRYCALLFORM CARD_{설정カードID}("종류")
 		SIF RESULT > 10
 			RETURN 0
 		IF 효과条件特不無視 == 0
 			SIF RESULT == 3
 				RETURN 0
-			TRYCALLFORM CARD_{설정カードID}, "특수불가"
+			TRYCALLFORM CARD_{설정カードID}("특수불가")
 			SIF RESULT == 1
 				RETURN 0
 			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
@@ -1891,7 +1878,7 @@ SIF RESULT == 0
 IF 参照先 != "필드"
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
-			TRYCALLFORM CARD_{설정カードID}, "종류"
+			TRYCALLFORM CARD_{설정カードID}("종류")
 			IF RESULT < 3 || RESULT == 초차원
 				IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
@@ -2091,6 +2078,9 @@ IF GROUPMATCH(설정타입,1,2,3,4,5,6,7,11,12) && 実行者 == "자신"
 ELSE
 	TRYCALLFORM CARD_UI(選択カード_ID,2)
 ENDIF
+SIF 설정타입 == 99
+	RETURN 0
+
 IF 実行者 == "자신"
 	PRINTL
 	CUSTOMDRAWLINE —

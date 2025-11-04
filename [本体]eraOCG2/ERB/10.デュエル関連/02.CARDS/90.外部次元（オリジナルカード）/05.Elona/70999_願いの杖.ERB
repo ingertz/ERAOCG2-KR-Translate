@@ -1,0 +1,146 @@
+@CARDNAME_70999,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 소원의 마법봉
+	CASE "略称"
+		RESULTS = 소원의 마법봉
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = 게임 오리지널
+		RESULTS:2 = Elona
+ENDSELECT
+
+
+@CARD_70999(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_70999(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(20,마함起動,손패起動)
+PRINTL "소원의 마법봉"는 듀얼 중 1번밖에 발동할 수 없다.
+PRINTL ①: 자신의 손패, 필드에서 카드 5장을 묘지로 보내고, 6000 LP를 지불하여 발동할 수 있다.
+PRINTL 자신의 덱 EX덱에서 카드 1장을 선택하여, 패에 추가하거나 소환 조건을 무시하고 특수 소환한다.
+PRINTL 
+
+
+@CARDCAN_70999(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,70999)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_D1(듀얼리스트,)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 6000
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件他所 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲EX덱 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_70999(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 選択カード名前
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,70999,20)
+	IF RESULT == 0
+		;通常마법汎用발동後묘지送り処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件複数 = 5
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",6000)
+			PRINTL
+			SETCOLOR C_YELLOW
+PRINTL 무엇을 바라세요?
+			WAIT
+			RESETCOLOR
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲EX덱 = 1
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				選択カード = RESULT
+				選択カード_ID = RESULT:99
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+				選択カード名前 = %RESULTS%
+				TRYCALLFORM CARD_{選択カード_ID}("종류")
+				IF RESULT >= 효과モン && RESULT <= 의식
+					SETCOLOR C_YELLOW
+					SIF 듀얼리스트 == "자신"
+PRINTL 특수 소환하시겠습니까?
+					RESETCOLOR
+					CALL YN_CHOICE(듀얼리스트)
+				ELSEIF RESULT >= 융합 && RESULT <= 초차원
+					RESULT = はい
+				ELSE
+					RESULT = いいえ
+				ENDIF
+				IF RESULT == はい
+					CALL CARD_SELECT(듀얼리스트,選択カード)
+					CALL FULLRESET
+					CALL CARD_SP_SUMMON(듀얼리스트,参照先（CS）,選択カード（CS）)
+				ELSEIF RESULT == いいえ
+					CALL CARD_SELECT(듀얼리스트,選択カード)
+					PRINTFORML %듀얼리스트%の足元に%選択カード名前%が転がって来た。
+					SETCOLOR 255,255,255
+					CALL CARD_DISPOSE(듀얼리스트,参照先（CS）,選択カード（CS）,손패行き)
+					RESETCOLOR
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

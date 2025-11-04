@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 패왕권룡 라이트브룸
+		RESULTS = 패왕권룡 라이트브룸
 	CASE "略称"
-RESULTS = 라이트브룸
+		RESULTS = 라이트브룸
 	CASE "カテゴリ"
-RESULTS:0 = 패왕권룡
-RESULTS:1 = 패왕룡 즈아크
+		RESULTS:0 = 패왕권룡
+		RESULTS:1 = 패왕룡 즈아크
 ENDSELECT
 
 
@@ -76,9 +76,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時
@@ -169,7 +168,7 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 		효과条件소환可 = 1
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1 && 듀얼리스트 == "자신"
-PRINTL 싱크로 또는 엑시즈 소환을 실행합니까?
+			PRINTL 싱크로 또는 엑시즈 소환을 실행합니까?
 			CALL YN_CHOICE(듀얼리스트)
 			SIF RESULT == いいえ
 				RETURN 0

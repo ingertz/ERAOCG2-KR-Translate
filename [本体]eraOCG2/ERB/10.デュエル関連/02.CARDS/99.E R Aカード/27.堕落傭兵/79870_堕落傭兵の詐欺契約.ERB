@@ -35,7 +35,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 
-PRINTL 이 카드명의  카드는 １턴에 １장밖에 발동할 수 없다。
+PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없다。
 CALLFORM CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：이 카드의 발동 시 효과처리로서、덱에서 "타락용병" 몬스터 1장을 패로 가져올 수 있다.
 CALLFORM CARD_ABLE(0,지속효과)
@@ -60,13 +60,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,79870)
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_DRAW_CHECK
 	RETURN 1

@@ -1,0 +1,169 @@
+﻿@CARDNAME_36116,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹정의 새턴카모밀
+	CASE "略称"
+		RESULTS = 혹정의 토성
+	CASE "カテゴリ"
+		RESULTS:0 = 코스모스터
+	CASE "検索用カテゴリ"
+		RESULTS:0 = 코스모스 공주
+ENDSELECT
+
+
+@CARD_36116(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 900
+	CASE "守備力"
+		RETURN 1600
+	CASE "추가日"
+		RETURN 251018
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_36116(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。
+PRINTL 자신의 패 / 필드의 몬스터를 융합 소재로서 파괴하고、
+PRINTL ＥＸ덱에서 "코스모스터" 융합 몬스터 １장을 융합 소환한다。
+CALLFORM CARD_ABLE(2,戦闘→묘지,破壊→묘지)
+PRINTL ②：이 카드가 전투 / 효과로 파괴된 경우、또는 융합 소재가 된 경우에、
+PRINTL 자신 필드의 미확인족 몬스터를 ２장까지 대상으로 하고 발동할 수 있다。
+PRINTL 다음 자신 스탠바이 페이즈까지、그 몬스터의 공격력은［자신의 묘지 / 제외상태인 몬스터의 속성의 종류］×２００오르고
+PRINTL 턴 종료시까지 소재 불가를 얻는다。
+
+
+@CARDCAN_36116(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,36116)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,36116)
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲손패 = 1
+	素材範囲필드 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
+	효과条件カテゴリ = 코스모스터
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지 || 종류 == F素材時효과
+	SIF 발동済_2(듀얼리스트,36116)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 미확인족
+	효과条件표시 = 表側표시
+	SIF 듀얼리스트 != "자신"
+		효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_36116(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード,2
+#DIM DYNAMIC 攻撃力修正
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,36116,1)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종류 = 융합
+		효과条件カテゴリ = 코스모스터
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+			CALL FUSSUMMON(듀얼리스트, 選択カード,破壊行き)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지 || 종류 == F素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,36116,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종족 = 미확인족
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード:0 = RESULT
+			CALL FULLRESET
+			효과条件종족 = 미확인족
+			효과条件표시 = 表側표시
+			효과条件他所 = 1
+			효과条件任意 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드","필드",選択カード)
+			選択カード:1 = RESULT
+
+			FOR カウンタ,1,8
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과範囲제외 = 1
+				효과条件속성 = カウンタ
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+					攻撃力修正 ++
+			NEXT
+			攻撃力修正 = 攻撃力修正 * 200
+
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:0,"不材",1)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:0,"二攻",攻撃力修正)
+
+			IF 選択カード:1 != 9999
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:1,"不材",1)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:1,"二攻",攻撃力修正)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

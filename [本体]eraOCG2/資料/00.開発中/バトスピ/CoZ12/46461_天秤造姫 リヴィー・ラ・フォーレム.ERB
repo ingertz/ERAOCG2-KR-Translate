@@ -1,0 +1,206 @@
+; ============================================================
+; 46461_天秤造姫 リヴィー・ラ・フォーレム
+; ============================================================
+
+@CARDNAME_46461,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 天秤造姫 リヴィー・ラ・フォーレム
+	CASE "略称"
+		RESULTS = リブラ
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+@CARD_46461(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RETURN サイキック族
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2400
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46461(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,効果召喚)
+PRINTL 自分フィールドの「光導の創界神帝 レピィ・アーズ」のコアカウンターを１つ取り除くことで、
+PRINTL このカードはリリースなしで召喚できる。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。
+PRINTL デッキの上からカードを２枚めくる。
+PRINTL その中の「光導」カードを全て手札に加える。
+PRINTL 残ったカードはデッキに戻す。
+CALLFORM CARD_ABLE(2,発動誘発)
+PRINTL ②：相手が墓地のカードの効果を発動した時に発動できる。
+PRINTL 相手のデッキの上からカードを５枚墓地へ送る。
+PRINTL その後、このカードの攻撃回数を＋１する。
+CALLFORM CARD_ABLE(3,攻撃時誘発)
+PRINTL ③：このカードの攻撃宣言時に発動できる。
+PRINTL 自分フィールドの「CoZ12」モンスター１体につき、相手のデッキの上からカードを２枚墓地へ送る。
+RETURN 0
+
+@CARDCAN_46461(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46461)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 効果召喚
+    SIF モンスター数(決闘者) == 5
+        RETURN 0
+
+    CALL FULLRESET
+    効果範囲魔罠 = 1
+    効果条件名前   = 光導の創界神帝 レピィ・アーズ
+    効果条件個Ｃ所持 = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT < 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,46461)
+		RETURN 0
+	SIF 現山札数(決闘者) < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+IF 種類 == 発動誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	CALL CARD_CHECK_START_DATA(決闘者,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+IF 種類 == 攻撃時誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+RETURN 0
+
+@CARDEFFECT_46461(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 体数
+#DIM  DYNAMIC 送数
+#DIM  DYNAMIC カウンタ
+#DIM  DYNAMIC 選択カードID
+#DIM  DYNAMIC 回数
+
+IF 種類 == 効果召喚
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前   = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHOOSE_ADV(決闘者, ゾーン, 場所) 
+	IF RESULT != 9999
+		CALL CARD_SELECT(決闘者,RESULT)
+		CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46461,1)
+    IF RESULT == 0
+        ; 山上3枚を「光導」だけ任意数で手札に加える（UI表示あり・山切り無し）
+        CALL FULLRESET
+        効果範囲デッキ       = 1
+        効果条件カテゴリ     = 光導
+        効果条件山切り無し   = 1
+        効果条件行先フラグ   = 手札行き
+        CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所,2)
+        IF RESULT == 1
+            CALL FULLRESET
+            効果範囲デッキ     = 1
+            効果条件カテゴリ   = 光導
+            効果条件山切り無し = 1
+            効果条件行先フラグ = 手札行き
+            CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所,1)
+        ENDIF
+    ENDIF
+    RETURN 0
+ENDIF
+
+IF 種類 == 発動誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46461,2)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(決闘者,"デッキ",5,効果墓地行き,1)
+		CALL SET_FIELD_INFO(決闘者, "戦場", 場所, "戦", 1)
+	ENDIF
+	RETURN 0
+ENDIF
+IF 種類 == 攻撃時誘発
+
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46461,3)
+	IF RESULT == 0
+		; --- CoZ12体数を1体ずつ数える ---
+		体数 = 0
+		FOR カウンタ, 0, 5
+			選択カードID = GETVAR(@"%決闘者%_戦場:カウンタ")
+ 		   	SIF 選択カードID <= 0
+ 		       CONTINUE
+
+		    CALL FULLRESET
+			効果範囲戦場   = 1
+			効果条件種類   = モン全般
+			効果条件表示   = 0
+			効果条件スーパーカテゴリ = CoZ12
+			効果条件ID     = 選択カードID
+			CALL CARD_CHECK_ADV(決闘者, 種類, ゾーン, 場所)
+			SIF RESULT == 0
+				CONTINUE
+
+			体数 += 1
+		NEXT
+
+		SIF 体数 <= 0
+		    RETURN 0
+
+			送数 = 体数 * 2
+			SIF 送数 > 0
+				CALL CARD_DECK_DISPOSE(決闘者, "デッキ", 送数, 効果墓地行き, 1) 
+	ENDIF
+	RETURN 0
+ENDIF
+RETURN 0

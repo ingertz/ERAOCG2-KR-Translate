@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 뱀파이어 제국
+		RESULTS = 뱀파이어 제국
 	CASE "略称"
-RESULTS = 뱀파이어 제국
+		RESULTS = Vmp 제국
 	CASE "カテゴリ"
-RESULTS:0 = 뱀파이어
+		RESULTS:0 = 뱀파이어
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN フィールド
 ENDSELECT
 
@@ -32,7 +31,7 @@ RETURN 0
 @CARD_EXPLANATION_62020(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 자신 필드는 "흡혈귀제국"이 된다.
+PRINTL 자신 필드는 "뱀파이어 제국"이 된다.
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,마함起動)
 PRINTL ①: 500 LP를 지불하고, 덱에서 "뱀파이어" 몬스터 1장을 묘지로 보내는 것으로 발동할 수 있다.
@@ -71,13 +70,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 

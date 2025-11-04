@@ -56,11 +56,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ELSEIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 2
-		RETURN 1
-	ENDIF
 
 	SIF 발동済_1(듀얼리스트,92580)
 		RETURN 0
@@ -84,10 +82,10 @@ ELSEIF 종류 == 효과後誘発
 		RETURN 0
 	SIF 直前戦闘破壊ID(듀얼리스트) == 0
 		RETURN 0
-	TRYCALLFORM CARD_{直前戦闘破壊ID(듀얼리스트)}, "종류"
+	TRYCALLFORM CARD_{直前戦闘破壊ID(듀얼리스트)}("종류")
 	SIF RESULT != 싱크로
 		RETURN 0
-	TRYCALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트)}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트)}("カテゴリ")
 	SIF RESULTS != "베어루크티"
 		RETURN 0
 	RETURN 1

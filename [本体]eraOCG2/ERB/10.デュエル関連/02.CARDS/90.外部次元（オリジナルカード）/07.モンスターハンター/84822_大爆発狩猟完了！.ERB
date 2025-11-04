@@ -1,0 +1,232 @@
+﻿@CARDNAME_84822,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 헌터즈 익스플로전!
+	CASE "略称"
+		RESULTS = 대G 폭발수렵!
+	CASE "カテゴリ"
+		RESULTS:0 = 헌터
+		RESULTS:2 = 몬스터 헌터
+ENDSELECT
+
+
+@CARD_84822(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+	CASE "生成カード"
+		RETURN 184822
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_84822(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①②의 효과는 1턴에 1번, 어느 한 쪽밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①: 자신 필드에 "헌터" 카드가 존재하고, 상대 필드에 수비 표시의 『렵수』가 존재할 경우에 발동할 수 있다.
+PRINTL 상대 필드의 몬스터를 전부 파괴하고, 파괴한 횟수× 1000 데미지를 상대에게 준다.
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②: 자신 메인 페이즈에 묘지의 이 카드를 제외하고 발동할 수 있다. (체인 1에서만 발동 가능)
+PRINTL "오토모 아이루" 1장을 수비 표시로 특수 소환한다.
+PRINTL 
+PRINTL "오토모 아이루"
+PRINTL 전사족 땅 레벨 1 공격력 1200 / 수비력 200
+PRINTL ①: 자신 턴 종료시에 발동할 수 있다.
+PRINTL 덱에서 "헌터" 함정 카드 1장을 뒷면 표시로 세트한다.
+
+
+@CARDCAN_84822(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,84822)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,84822)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,84822)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL SET_MONSTER_HUNTER
+	효과条件표시 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 헌터
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,84822)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,84822)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,184822,"")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_84822(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84822)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과추가종류 = 3
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지",1000)
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84822)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,184822)
+	ENDIF
+ENDIF
+
+
+
+;─────────────────────────────────────────────────────────────────────────
+@CARDNAME_184822,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 오토모 아이루
+	CASE "略称"
+		RESULTS = 오토모 아이루
+	CASE "カテゴリ"
+		RESULTS:0 = 헌터
+ENDSELECT
+
+
+@CARD_184822(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 200
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+
+@CARD_EXPLANATION_184822(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+PRINTL 
+PRINTL 냐오냥냐냐마오냐
+PRINTL (주인님을 위해 함정을 준비합니다냥)
+
+@CARDCAN_184822(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,184822)
+SIF RESULT == 1
+	RETURN 0
+
+
+
+IF 종류 == ターン終了時
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 헌터
+	효과条件종류 = 함정全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+RETURN 0
+
+@CARDEFFECT_184822(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+
+IF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,184822)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 헌터
+		효과条件종류 = 함정全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+	ENDIF
+ENDIF

@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -34,7 +33,7 @@ RETURN 0
 
 ;現状だと破壊がトリガ-では無くなっているので、②의 효과를 簡略化
 ;같은 이름의 카드는 １장까지 の縛りが本来は付いているが、既存の処理で参考になりそうな物が見つからなかったので削除
-PRINTL 이 카드명의  ②의 효과는 1턴에 1번밖에 사용할 수 없다.。
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.。
 CALLFORM CARD_ABLE(0,마함起動,フリー誘発)
 PRINTL ①：자신 필드의 몬스터 1장을 대상으로 하여 발동할 수 있다。
 PRINTL 이 카드를 공격력 500 올리는 장착카드로 취급하여 그 몬스터에게 장착한다。
@@ -85,9 +84,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1

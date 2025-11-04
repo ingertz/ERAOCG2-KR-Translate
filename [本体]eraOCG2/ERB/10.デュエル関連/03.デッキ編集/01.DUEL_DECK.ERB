@@ -1,6 +1,4 @@
-
-
-; 덱편집
+;덱편집
 @EDIT_DECK_EX(덱플래그)
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
@@ -41,6 +39,8 @@
 #DIM DYNAMIC カードID
 #DIM DYNAMIC 구입カード,999
 
+#DIMS DYNAMIC 選択カード名前
+#DIM DYNAMIC 설정色
 
 CALL HENSHU_RELOAD
 $SELECTDECK_LOOP
@@ -93,7 +93,7 @@ FOR カウンタ,1000,100000
 	SIF ITEM:カウンタ >= 1
 		所持カード数 ++ 
 	VARSET RESULTS
-	TRYCALLFORM CARDNAME_{カウンタ}, "名前"
+	TRYCALLFORM CARDNAME_{カウンタ}("名前")
 	SIF RESULTS != ""
 		実装カード数 ++ 
 NEXT
@@ -252,7 +252,7 @@ FOR カウンタ,0,30
 	ELSEIF カウンタ == 1
 		FONTSTYLE 8
 		VARSET RESULTS
-		TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+		TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 		STRLENS RESULTS
 		IF RESULT >= 34
 			カード名 = %RESULTS%
@@ -276,7 +276,7 @@ FOR カウンタ,0,30
 
 	ELSEIF カウンタ == 2
 		IF 選択カード_ID > 1
-			TRYCALLFORM CARD_{選択カード_ID}, "속성"
+			TRYCALLFORM CARD_{選択カード_ID}("속성")
 			;〇属と出るのが余計だったので個別作製
 			IF RESULT == 1
 				RESULTS =（빛）
@@ -291,7 +291,7 @@ FOR カウンタ,0,30
 			ELSEIF RESULT == 6
 				RESULTS = (바람)
 			ELSE
-				TRYCALLFORM CARD_{選択カード_ID}, "종류"
+				TRYCALLFORM CARD_{選択カード_ID}("종류")
 				IF RESULT >= 30
 					RESULTS = (함정)
 				ELSE 
@@ -305,7 +305,7 @@ FOR カウンタ,0,30
 			ENDIF
 
 			VARSET RESULT
-			TRYCALLFORM CARD_{選択カード_ID}, "レベル"
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
 			IF RESULT >= 1 && RESULT < 10
 				PRINTBUTTON @"（★）× {RESULT,2,RIGHT}",97000
 			ELSEIF RESULT > 9
@@ -314,14 +314,14 @@ FOR カウンタ,0,30
 				PRINTFORM  %RESULTS,10,LEFT%
 			ENDIF
 			VARSET RESULT
-			TRYCALLFORM CARD_{選択カード_ID}, "튜너"
+			TRYCALLFORM CARD_{選択カード_ID}("튜너")
 			IF RESULT >= 1
 				PRINTBUTTON @"（Ｔ）",97001
 			ELSE
 				PRINTFORM %RESULTS,6,LEFT%
 			ENDIF
 			VARSET RESULT
-			TRYCALLFORM CARD_{選択カード_ID}, "외부자"
+			TRYCALLFORM CARD_{選択カード_ID}("외부자")
 			IF RESULT >= 1
 				PRINTBUTTON @"（외）",97002
 			ELSE
@@ -335,13 +335,13 @@ FOR カウンタ,0,30
 		IF 選択カード_ID > 1
 			PRINTPLAIN 【
 			VARSET RESULT
-			TRYCALLFORM CARD_{選択カード_ID}, "종족"	
+			TRYCALLFORM CARD_{選択カード_ID}("종족")	
 			IF RESULT
 				PRINTBUTTON @"%GET_TALENTNAME(191,RESULT),12,LEFT%",95000
 				PRINT /
 			ELSE
 				VARSET RESULT
-				TRYCALLFORM CARD_{選択カード_ID}, "종류"
+				TRYCALLFORM CARD_{選択カード_ID}("종류")
 				IF RESULT == 通常마법
 					RESULTS = 일반마법
 				ELSEIF RESULT == 装備마법
@@ -363,7 +363,7 @@ FOR カウンタ,0,30
 			ENDIF
 			
 			VARSET RESULT
-			TRYCALLFORM CARD_{選択カード_ID}, "종류"
+			TRYCALLFORM CARD_{選択カード_ID}("종류")
 			IF RESULT == 1
 				RESULTS = 효과
 			ELSEIF RESULT == 2
@@ -394,11 +394,11 @@ FOR カウンタ,0,30
 		ENDIF
 	ELSEIF カウンタ == 4
 		VARSET RESULT
-		TRYCALLFORM CARD_{選択カード_ID}, "종류"
+		TRYCALLFORM CARD_{選択カード_ID}("종류")
 		IF RESULT < 10 && RESULT != 0
-			TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"
+			TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
 			PRINTFORM （공）　{(RESULT),6,RIGHT}
-			TRYCALLFORM CARD_{選択カード_ID}, "守備力"	
+			TRYCALLFORM CARD_{選択カード_ID}("守備力")	
 			PRINTFORM （수）　{(RESULT),6,RIGHT}
 			PRINTFORM %"",12,LEFT%
 		ELSE
@@ -416,7 +416,7 @@ FOR カウンタ,0,30
 		IF 選択カード_ID > 0
 			PRINT 【
 			VARSET RESULTS
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 			IF RESULTS:0 != ""
 				PRINTBUTTON @"%RESULTS:0,36,LEFT%", 93400
 			ELSE
@@ -431,7 +431,7 @@ FOR カウンタ,0,30
 		IF 選択カード_ID > 0
 
 			PRINT 【
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 			IF RESULTS:1 != ""
 				PRINTBUTTON @"%RESULTS:1,36,LEFT%", 93401
 			ELSE
@@ -444,7 +444,7 @@ FOR カウンタ,0,30
 	ELSEIF カウンタ == 9
 		IF 選択カード_ID > 0
 			PRINT 【
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 			IF RESULTS:2 != ""
 				PRINTBUTTON @"%RESULTS:2,36,LEFT%", 93402
 			ELSE
@@ -458,7 +458,7 @@ FOR カウンタ,0,30
 	ELSEIF カウンタ == 10
 		IF 選択カード_ID > 0
 			PRINT 【
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 			IF RESULTS:3 != ""
 				PRINTBUTTON @"%RESULTS:3,36,LEFT%", 93403
 			ELSE
@@ -471,9 +471,9 @@ FOR カウンタ,0,30
 	ELSEIF カウンタ == 11
 		IF 選択カード_ID > 0
 			PRINT 【
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 			IF RESULTS:4 != ""
-				PRINTBUTTON @"%RESULTS:4,36,LEFT%", 93403
+				PRINTBUTTON @"%RESULTS:4,36,LEFT%", 93404
 			ELSE
 				PRINTFORM %"",36,LEFT%
 			ENDIF
@@ -600,9 +600,14 @@ FOR カウンタ,0,30
 
 	IF EX切り替え == 0
 		CALL CARD_SETCOLOR("編集","덱",カウンタ + カウンタD)
-		TRYCALLFORM CARDNAME_{編集_덱:(カウンタ + カウンタD)}, "略称"
+		GETCOLOR
+		설정色 = RESULT:0
+		TRYCALLFORM CARDNAME_{編集_덱:(カウンタ + カウンタD)}("名前")
+		選択カード名前 = %RESULTS%
+		TRYCALLFORM CARDNAME_{編集_덱:(カウンタ + カウンタD)}("略称")
 		덱側ボタン = %RESULTS,16,LEFT%
-		PRINTBUTTON @"[{カウンタ + 1 + カウンタD,2}]　%덱側ボタン,16,LEFT%", カウンタ + カウンタD
+		HTML_PRINT @"<button value='{カウンタ + カウンタD}' title='%HTML_ESCAPE(選択カード名前)%'><font color='#%TOSTR(설정色,"X6")%'>[{カウンタ + 1 + カウンタD,2}]　%HTML_ESCAPE(덱側ボタン),16,LEFT%</font></button>",1
+		;PRINTBUTTON @"[{カウンタ + 1 + カウンタD,2}]　%덱側ボタン,16,LEFT%", カウンタ + カウンタD
 		RESETCOLOR
 		IF 編集_덱:(カウンタ + カウンタD) > 0
 			IF 編集_덱:(カウンタ + カウンタD) == 編集_切り札
@@ -623,9 +628,14 @@ FOR カウンタ,0,30
 	ELSE
 		IF カウンタ < 15
 			CALL CARD_SETCOLOR("編集","EX덱",カウンタ)
-			TRYCALLFORM CARDNAME_{編集_EX덱:カウンタ}, "略称"
+			GETCOLOR
+			설정色 = RESULT:0
+			TRYCALLFORM CARDNAME_{編集_EX덱:カウンタ}("名前")
+			選択カード名前 = %RESULTS%
+			TRYCALLFORM CARDNAME_{編集_EX덱:カウンタ}("略称")
 			덱側ボタン = %RESULTS,16,LEFT%	
-			PRINTBUTTON @"[{カウンタ + 1,2}]　%덱側ボタン,16,LEFT%", カウンタ
+			HTML_PRINT @"<button value='{カウンタ}' title='%HTML_ESCAPE(選択カード名前)%'><font color='#%TOSTR(설정色,"X6")%'>[{カウンタ + 1,2}]　%HTML_ESCAPE(덱側ボタン),16,LEFT%</font></button>",1
+			;PRINTBUTTON @"[{カウンタ + 1,2}]　%덱側ボタン,16,LEFT%", カウンタ
 			RESETCOLOR
 			IF 編集_EX덱:カウンタ > 0
 				IF 編集_EX덱:カウンタ == 編集_切り札
@@ -723,7 +733,8 @@ FOR カウンタ,0,30
 		IF カードID == -1
 			PRINT
 		ELSEIF ITEM:カードID == 0
-				SETCOLOR C_GRAY
+			설정色 = C_GRAY
+			SETCOLOR C_GRAY
 		ELSE
 			IF EX切り替え == 0
 				CALL CARD_SETCOLOR("컬렉션","編集",リストスタート + カウンタB)
@@ -735,12 +746,15 @@ FOR カウンタ,0,30
 					CALL CARD_SETCOLOR("EX컬렉션","編集",リストスタート + カウンタB,,1)
 			ENDIF
 		ENDIF
+		GETCOLOR
+		설정色 = RESULT:0
 
-
-
-		TRYCALLFORM CARDNAME_{カードID}, "略称"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
+		選択カード名前 = %RESULTS%
+		TRYCALLFORM CARDNAME_{カードID}("略称")
 		컬렉션ボタン = %RESULTS,16,LEFT%
-		PRINTBUTTON @"%컬렉션ボタン,1,LEFT%", (リストスタート + カウンタB) + 100
+		HTML_PRINT @"<button value='{(リストスタート + カウンタB) + 100}' title='%HTML_ESCAPE(選択カード名前)%'><font color='#%TOSTR(설정色,"X6")%'>%HTML_ESCAPE(コレクションボタン),16,LEFT%</font></button>",1
+		;PRINTBUTTON @"%컬렉션ボタン,1,LEFT%", (リストスタート + カウンタB) + 100
 		RESETCOLOR
 		VARSET 아이템数
 		SIF カードID != -1
@@ -1043,13 +1057,13 @@ ELSEIF RESULT == 91300
 
 ELSEIF RESULT == 91400
 	代表カード_ID = 選択カード_ID
-	TRYCALLFORM CARDNAME_{代表カード_ID}, "名前"
+	TRYCALLFORM CARDNAME_{代表カード_ID}("名前")
 	PRINTFORML 《%RESULTS%》를 어떤 대표로 설정하시겠습니까？
 
 	VARSET RESULTS
 	SETCOLOR C_GOLD
 	PRINTFORM 비장의 수단　：
-	TRYCALLFORM CARDNAME_{編集_切り札}, "名前"
+	TRYCALLFORM CARDNAME_{編集_切り札}("名前")
 	PRINTBUTTON @"【%RESULTS,40,LEFT%】", 1
 	PRINTFORML 
 	PRINTFORM 기술명
@@ -1063,7 +1077,7 @@ ELSEIF RESULT == 91400
 	VARSET RESULTS
 	SETCOLOR C_ROYAL_BLUE
 	PRINTFORM 에이스　：
-	TRYCALLFORM CARDNAME_{編集_エース}, "名前"
+	TRYCALLFORM CARDNAME_{編集_エース}("名前")
 	PRINTBUTTON @"【%RESULTS,40,LEFT%】", 2
 	PRINTFORML 
 	PRINTFORM 기술명
@@ -1077,7 +1091,7 @@ ELSEIF RESULT == 91400
 	VARSET RESULTS
 	SETCOLOR C_H_PINK
 	PRINTFORM 아이돌：
-	TRYCALLFORM CARDNAME_{編集_アイドル}, "名前"
+	TRYCALLFORM CARDNAME_{編集_アイドル}("名前")
 	PRINTBUTTON @"【%RESULTS,40,LEFT%】", 3
 	PRINTFORML 
 	PRINTFORM 기술명
@@ -1724,7 +1738,7 @@ ELSEIF RESULT == 92601
 	CUSTOMDRAWLINE —
 	FOR カウンタ,0,カウンタE
 		現在カードID = 구입カード:カウンタ
-		TRYCALLFORM CARDNAME_{現在カードID}, "名前"
+		TRYCALLFORM CARDNAME_{現在カードID}("名前")
 		RESULTS = 《%RESULTS%》
 		PRINTFORM %RESULTS,50,LEFT%
 		CALL CARDPRICE(現在カードID,"レア度")
@@ -1871,29 +1885,34 @@ ELSEIF INRANGE(RESULT,93310,93314)
 
 ;カテゴリ필터설정――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 93400
-	TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 	필터条件カテゴリ = %RESULTS:0%
 	リストスタート = 0
 	GOTO FILTER_LOOP
 ELSEIF RESULT == 93401
-	TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 	필터条件カテゴリ = %RESULTS:1%
 	リストスタート = 0
 	GOTO FILTER_LOOP
 ELSEIF RESULT == 93402
-	TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 	필터条件カテゴリ = %RESULTS:2%
 	リストスタート = 0
 	GOTO FILTER_LOOP
 ELSEIF RESULT == 93403
-	TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 	필터条件カテゴリ = %RESULTS:3%
 	リストスタート = 0
 	GOTO FILTER_LOOP
 
+ELSEIF RESULT == 93404
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+	필터条件カテゴリ = %RESULTS:4%
+	リストスタート = 0
+	GOTO FILTER_LOOP
 ;カテゴリ필터설정――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 94000
-	TRYCALLFORM CARD_{選択カード_ID}, "속성"
+	TRYCALLFORM CARD_{選択カード_ID}("속성")
 	필터条件속성 = RESULT
 	リストスタート = 0
 	GOTO FILTER_LOOP
@@ -1901,21 +1920,21 @@ ELSEIF RESULT == 94000
 
 ;カテゴリ필터설정――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 95000
-	TRYCALLFORM CARD_{選択カード_ID}, "종족"
+	TRYCALLFORM CARD_{選択カード_ID}("종족")
 	필터条件종족 = RESULT
 	リストスタート = 0
 	GOTO FILTER_LOOP
 
 ;カテゴリ필터설정――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 99600
-	TRYCALLFORM CARD_{選択カード_ID}, "종류"
+	TRYCALLFORM CARD_{選択カード_ID}("종류")
 	필터条件종류 = RESULT
 	リストスタート = 0
 	GOTO FILTER_LOOP
 
 ;カテゴリ필터설정――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 97000
-	TRYCALLFORM CARD_{選択カード_ID}, "レベル"
+	TRYCALLFORM CARD_{選択カード_ID}("レベル")
 	VARSET 필터条件レベル
 	필터条件レベル:RESULT = RESULT
 	필터条件レベル:0 = 999

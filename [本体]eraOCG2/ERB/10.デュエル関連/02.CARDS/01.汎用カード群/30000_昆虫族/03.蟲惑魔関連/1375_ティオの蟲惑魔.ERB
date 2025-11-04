@@ -1,0 +1,127 @@
+﻿@CARDNAME_1375,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 티오의 충혹마
+	CASE "略称"
+		RESULTS = 티오
+	CASE "カテゴリ"
+		RESULTS:0 = 충혹마
+ENDSELECT
+
+
+@CARD_1375(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 식물족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1700
+	CASE "守備力"
+		RETURN 1100
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1375(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(0,소환時)
+PRINTL ①：이 카드를 일반 소환했을 경우, 자신 묘지의 「충혹마」 몬스터 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 그 몬스터를 수비 표시로 특수 소환한다.
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ②：이 카드를 특수 소환했을 경우, 자신 묘지의 「함정 속으로」 일반 함정 카드 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 그 카드를 자신 필드에 세트한다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드는 함정 내성을 가진다.
+
+
+@CARDCAN_1375(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1375)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時
+	SIF モンスター数(듀얼리스트) == 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 충혹마
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0	
+
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 마함数(듀얼리스트) == 5
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,1375)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 함정 속으로
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+	
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1375(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1375)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 충혹마
+		효과条件종류 = モン全般
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+	ENDIF
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1375,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 함정 속으로
+		효과条件종류 = 通常함정
+		CALL CARD_SET_BASIC(듀얼리스트,"묘지",ゾーン,場所,"裏側표시")
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
+ENDIF
+

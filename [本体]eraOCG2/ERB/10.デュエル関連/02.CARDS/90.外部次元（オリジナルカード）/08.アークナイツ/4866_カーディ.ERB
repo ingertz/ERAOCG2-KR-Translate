@@ -1,0 +1,145 @@
+﻿@CARDNAME_4866,参照先
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 카디건
+	CASE "略称"
+		RESULTS = Cardigan
+	CASE "カテゴリ"
+		RESULTS:0 = 로도스 아일랜드
+		RESULTS:1 = Defender
+		RESULTS:2 = 오퍼레이터
+		RESULTS:4 = 명일방주
+ENDSELECT
+
+
+@CARD_4866(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1100
+	CASE "守備力"
+		RETURN 2100
+	CASE "성별"
+		RETURN 牝性
+	CASE "単一存在"
+		RETURN 1
+	CASE "추가日"
+		RETURN 250406
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4866(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "카디건"는 자신 필드에 1장밖에 존재할 수 없으며,
+PRINTL 그 ①③의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①: 자신 필드에 오퍼레이터가 존재할 경우, 1600 LP를 지불하고 발동할 수 있다.
+PRINTL 이 카드를 패에서 특수 소환한다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②: 상대는 자신 필드의 수비력 2000 미만의 "오퍼레이터"를 효과의 대상으로 할 수 없다.
+CALLFORM CARD_ABLE(3,攻撃時誘発)
+PRINTL ③: 상대의 공격 선언 시에 발동할 수 있다.
+PRINTL 공격 대상을 이 카드로 옮긴다.
+
+
+@CARDCAN_4866(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4866)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,4866)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4866,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 1600
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 오퍼레이터
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,4866)
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) == 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4866(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4866,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",3200)
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 오퍼레이터
+	효과条件守備力 = 1999
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4866,3)
+	IF RESULT == 0
+		CALL COVER_ATTACK(듀얼리스트,場所)
+	ENDIF
+ENDIF

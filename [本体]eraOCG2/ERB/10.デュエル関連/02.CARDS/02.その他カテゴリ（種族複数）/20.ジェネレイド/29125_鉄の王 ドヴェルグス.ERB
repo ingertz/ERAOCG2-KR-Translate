@@ -1,0 +1,209 @@
+﻿@CARDNAME_29125,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 철의 제너레이드 도벨구스
+	CASE "略称"
+		RESULTS = 철왕 도벨구스
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_29125(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_29125(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL ①："철의 제너레이드 도벨구스"는 자신 필드에 １장밖에 앞면 표시로 존재할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動 ,フリー誘発)
+PRINTL ②：자신 / 상대 턴에、
+PRINTL 자신 필드의 "제너레이드" 몬스터 또는 기계족 몬스터를 임의의 수 만큼 릴리스하고 발동할 수 있다。
+PRINTL 릴리스 한 수 만큼、
+PRINTL "제너레이드" 몬스터 또는 기계족 몬스터를 패에서 수비 표시로 특수 소환한다（같은 이름의 카드 １장까지）。
+
+@CARDCAN_29125(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29125)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,29125)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件スーパーカテゴリ = 제너레이드
+	효과条件종족 = 기계족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件スーパーカテゴリ = 제너레이드
+	효과条件종족 = 기계족
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_29125(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC チェック数
+#DIM DYNAMIC 소환可能数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29125,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件スーパーカテゴリ = 제너레이드
+		효과条件종족 = 기계족
+		효과条件固名前起動 = 1
+		효과条件소환可 = 2
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		チェック数 = RESULT
+
+		IF チェック数 >= 5
+			IF  듀얼리스트 == "자신"
+				チェック数 = 5
+			ELSE
+				チェック数 = 4
+			ENDIF
+		ENDIF
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件スーパーカテゴリ = 제너레이드
+		효과条件종족 = 기계족
+		효과条件複数 = 100 - チェック数
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			소환可能数 = RESULT:2
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件スーパーカテゴリ = 제너레이드
+			효과条件종족 = 기계족
+			효과条件複数 = 소환可能数
+			효과条件固名前選択 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+
+;----------------------------------------------------------------------------------------------------------------
+
+@CARDNAME_129125,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 철기왕의 자기
+	CASE "略称"
+		RESULTS = 철왕병
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_129125(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1500
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+@CARD_EXPLANATION_129125(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+
+
+@CARDCAN_129125(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+RETURN 0

@@ -1,0 +1,198 @@
+﻿@CARDNAME_54553,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 요정 씨
+	CASE "略称"
+		RESULTS = 요정 씨
+	CASE "カテゴリ"
+		RESULTS:0 = 신의 화신
+		RESULTS:2 = Elona
+ENDSELECT
+
+
+@CARD_54553(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 1300
+	CASE "守備力"
+		RETURN 800
+	CASE "성별"
+		RETURN 雄性
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_54553(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 99
+素材条件レベル = 1
+素材条件数自由 = 1
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,54553) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54553(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨 1 몬스터 2장 이상
+PRINTL 이 카드명의 ③ 효과는 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(0,필드起動)
+PRINTL ①: 이 카드의 엑시즈 소재 2개를 제거하고 발동할 수 있다.
+PRINTL 자신 묘지에서 코스트 1 몬스터 4장을 제외하고, EX덱에서 "수확의 쿠미로미" 1장을 이 카드 위에 겹쳐 엑시즈 소환한다.
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ②: 이 카드의 공격력은 [자신 패의 수와 필드의 엑시즈 소재의 합계] × 100 올린다.
+CALL CARD_ABLE(3,戦破壊→묘지)
+PRINTL ③: 이 카드가 필드에서 묘지로 보내졌을 경우에 발동할 수 있다.
+PRINTL ・상대 제외 상태의 카드 1장을 패에 넣는다.
+
+
+@CARDCAN_54553(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54553)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= 0
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件レベル = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 4
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+효과条件名前 = 수확의 쿠미로미
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_3(듀얼리스트,20450)
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"リリース","破壊","戦闘破壊")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과範囲상대제외 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_54553(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54553,0,X消費2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件レベル = 1
+		효과条件複数 = 4
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件名前 = 수확의 쿠미로미
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALL FULLRESET
+				CALL RESETCONDITION_MAT
+				必要素材数 = 1
+				重ねてＸ = 1
+				素材条件固定 = 場所
+				TRYCALLFORM XYZSUMMON(듀얼리스트,選択カード)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54553,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과範囲상대제외 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+			CONTINUE
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("종류")
+		SIF RESULT == 엑시즈
+			条件달성 = 1
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("分割")
+		SIF MATCH(RESULT,디스펙터)
+			条件달성 = 1
+		SIF 条件달성 != 1
+			CONTINUE
+		
+		攻撃力修正 += GETVAR(@"%듀얼리스트%_MZ_Ｘ:カウンタ") + 1
+	NEXT
+	攻撃力修正 = (攻撃力修正 + 손패数(듀얼리스트)) * 100
+
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
+ENDIF

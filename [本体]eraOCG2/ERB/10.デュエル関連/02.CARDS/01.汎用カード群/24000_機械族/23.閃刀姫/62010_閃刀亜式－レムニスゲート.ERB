@@ -1,0 +1,206 @@
+﻿@CARDNAME_62010,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 섬도아식－렘니스게이트
+	CASE "略称"
+		RESULTS = 섬아 LEMNISGATE
+	CASE "カテゴリ"
+		RESULTS:0 = 섬도
+ENDSELECT
+
+
+@CARD_62010(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 250426
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62010(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：자신 묘지의 "섬도희" 몬스터와 "섬도" 마법 카드를 각각 같은 수만큼 대상으로 하고 발동할 수 있다 .
+PRINTL .그 카드를 덱으로 되돌린다. 그 후, 되돌린 카드 3장당 1장까지, 필드의 카드를 패로 되돌릴 수 있다.
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：이 카드가 묘지에 존재하는 상태에서,
+PRINTL 자신 필드에 "섬도" 몬스터가 특수 소환되었을 경우,
+PRINTL 이 카드를 제외하고 발동할 수 있다.
+PRINTL "섬도희" 링크 몬스터 1장의 링크 소환을 실행한다.
+
+
+@CARDCAN_62010(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62010)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,62010)
+		RETURN 0
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 섬도희
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 섬도
+	효과条件종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	IF 듀얼리스트 == "자신"
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+	ENDIF
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,62010)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 섬도희
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 섬도희
+	효과条件종류 = 링크
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_62010(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC モン数
+#DIM DYNAMIC 魔数
+#DIM DYNAMIC 효과횟수
+#DIM DYNAMIC 효과횟수B
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62010,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 섬도희
+		효과条件종류 = モン全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		モン数 = RESULT
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 섬도
+		효과条件종류 = 마법全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		魔数 = RESULT
+		IF モン数 > 魔数
+			효과횟수 = 魔数
+		ELSE
+			효과횟수 = モン数
+		ENDIF
+
+		FOR カウンタ,0,효과횟수
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 섬도희
+			효과条件종류 = モン全般
+			효과条件行先플래그 = 덱行き
+			SIF カウンタ != 0
+				효과条件任意 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			SIF RESULT == 1
+				条件달성++
+			SIF RESULT != 1
+				BREAK
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 섬도
+			효과条件종류 = 마법全般
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			SIF RESULT == 1
+				条件달성++
+			SIF RESULT != 1
+				BREAK
+		NEXT
+
+		효과횟수B = 条件달성 / 3
+
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		FOR カウンタ,0,효과횟수B
+			CALL FULLRESET
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場単体",場所,"손패")
+			SIF RESULT != 1
+				BREAK
+		NEXT
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62010,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL RESETAREA_MAT
+		CALL FULLRESET
+		효과条件カテゴリ = 섬도희
+		효과条件종류 = 링크
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+			CALL LINSUMMON(듀얼리스트,選択カード)
+		ENDIF
+	ENDIF
+ENDIF
+

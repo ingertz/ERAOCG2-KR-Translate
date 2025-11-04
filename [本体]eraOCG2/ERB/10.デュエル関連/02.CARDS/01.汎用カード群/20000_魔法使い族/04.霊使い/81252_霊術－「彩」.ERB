@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 령술－"채"
+		RESULTS = 령술－"채"
 	CASE "略称"
-RESULTS = 령술－"채"
+		RESULTS = 령술－"채"
 	CASE "カテゴリ"
-RESULTS:0 = 령사
+		RESULTS:0 = 령사
 		RESULTS:1 = 게임 오리지널
 ENDSELECT
 
@@ -75,7 +75,7 @@ FOR カウンタ, 0, 5
 		ENDIF
 	ENDIF
 	IF 検出속성:화염속성 == 1
-		CALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "攻撃力"
+		CALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("攻撃力")
 		IF RESULT > 0
 			条達속성:화염속성 = 1
 			CONTINUE
@@ -99,9 +99,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0	
 
 	CALL 条件달성속성検出_령술彩(듀얼리스트,종류,ゾーン,場所,条達속성)
@@ -120,7 +119,7 @@ ELSEIF 종류 == 묘지起動
 	효과条件속성:0 = 빛속성
 	효과条件속성:1 = 땅속성
 	효과条件속성:2 = 바람속성
-효과条件カテゴリ = 령사
+	효과条件カテゴリ = 령사
 	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -173,7 +172,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				ENDIF
 			ENDIF
 			IF 検出속성:화염속성 == 1
-				CALLFORM CARD_{選択カード_ID}, "攻撃力"
+				CALLFORM CARD_{選択カード_ID}("攻撃力")
 				IF RESULT > 0
 					CALL LIFE_CHANGE(듀얼리스트,"減少","효과",RESULT,1)
 					RETURN 1
@@ -190,7 +189,7 @@ ELSEIF 종류 == 묘지起動
 		효과条件속성:0 = 빛속성
 		효과条件속성:1 = 땅속성
 		효과条件속성:2 = 바람속성
-효과条件カテゴリ = 령사
+		효과条件カテゴリ = 령사
 		효과条件종류 = モン全般
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 	ENDIF

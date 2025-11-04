@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 마계극단－커튼 라이저
+		RESULTS = 마계극단－커튼 라이저
 	CASE "略称"
-RESULTS = 커튼 라이저
+		RESULTS = 커튼 라이저
 	CASE "カテゴリ"
-RESULTS:0 = 마계극단
+		RESULTS:0 = 마계극단
 ENDSELECT
 
 
@@ -80,20 +80,9 @@ SIF RESULT == 1
 
 ;P
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	IF 듀얼리스트 != "자신"
-		CALL FULLRESET
-		효과範囲마함 = 1
-효과条件名前 = 마계극단－커튼 라이저
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT == 1
-			RETURN 0
-	ENDIF
 	RETURN 1
 
 ELSEIF 종류 == 마함起動
@@ -122,6 +111,7 @@ ELSEIF 종류 == 마함起動
 	효과範囲EX덱 = 1
 	효과条件カテゴリ = 마계극단
 	효과条件分割 = 펜듈럼
+	효과条件종류 = EX以外全般
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -152,6 +142,7 @@ ELSEIF 종류 == 필드起動
 	효과範囲EX덱 = 1
 	효과条件カテゴリ = 마계극단
 	효과条件分割 = 펜듈럼
+	효과条件종류 = EX以外全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -215,6 +206,7 @@ ELSEIF 종류 == 마함起動
 	효과範囲손패 = 1
 	효과範囲EX덱 = 1
 	효과条件カテゴリ = 마계극단
+	효과条件종류 = EX以外全般
 	효과条件分割 = 펜듈럼
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -247,6 +239,7 @@ PRINTL 효과를 선택해 주세요
 			효과範囲손패 = 1
 			효과範囲EX덱 = 1
 			효과条件カテゴリ = 마계극단
+			효과条件종류 = EX以外全般
 			효과条件分割 = 펜듈럼
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
@@ -255,7 +248,7 @@ PRINTL 효과를 선택해 주세요
 		IF RESULT == 0
 			CALL FULLRESET
 			효과範囲마함 = 1
-효과条件名前 = 마계극단－커튼 라이저
+			효과条件名前 = 마계극단－커튼 라이저
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
@@ -275,6 +268,7 @@ ELSEIF 종류 == 필드起動
 			효과範囲EX덱 = 1
 			효과条件カテゴリ = 마계극단
 			효과条件分割 = 펜듈럼
+			효과条件종류 = EX以外全般
 			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF

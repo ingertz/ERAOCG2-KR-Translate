@@ -1,0 +1,302 @@
+﻿@CARDSHOP_UNEI
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC カードコスト,10
+#DIM DYNAMIC 절정BASE計算
+#DIM DYNAMIC 절정BASE基礎
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 選択파츠
+
+
+$CHOICE_LOOP
+CUSTOMDRAWLINE —
+PRINTFORML "카드샵"
+CUSTOMDRAWLINE —
+PRINTFORML 
+PRINTFORML [1] - 팩의 보충을 한다
+PRINTFORML [2] - 싱글 카드를 놓는다
+PRINTFORML [3] - 알바를 파견한다
+IF ショップ運営中 == 0
+	PRINTFORML [4] - 샵을 재개한다
+ELSE
+	PRINTFORML [4] - 샵을 휴업한다
+ENDIF
+CUSTOMDRAWLINE —
+PRINTL
+PRINTL [100] - 돌아간다
+BINPUT
+;戻る
+IF RESULT == 100
+	RETURN 0
+ELSEIF RESULT == 1
+	CALL CARDSHOP_UNEI_PACKS
+ELSEIF RESULT == 2
+	CALL CARDSHOP_SET_SINGLES
+ELSEIF RESULT == 3
+	CALL MONSTER_LIST(22)
+ELSEIF RESULT == 4
+	ショップ運営中 ^= 1
+ENDIF
+GOTO CHOICE_LOOP
+
+@CARDSHOP_UNEI_PACKS
+#DIM DYNAMIC 初回カウンタ
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択덱
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC スタート数
+#DIM DYNAMIC エンド数
+
+#DIM DYNAMIC パックセット,1000
+#DIM DYNAMIC 설정종류
+
+#DIM DYNAMIC 選択パック_ID
+#DIM DYNAMIC パック_ID
+#DIM DYNAMIC 選択モード
+$PACK_LOOP
+CUSTOMDRAWLINE ―
+PRINTFORML 　■팩을 골라주세요
+CUSTOMDRAWLINE ―
+VARSET カウンタB
+
+FOR カウンタ,0,1000
+	VARSET RESULT
+	VARSET RESULTS
+	CALL CARD_PACK_NAME(カウンタ)
+	IF RESULT == 1
+		パックセット:カウンタB = カウンタ
+		カウンタB ++
+	ENDIF
+NEXT
+
+FOR カウンタ,0,カウンタB
+	SIF カウンタ % 2 == 0 && カウンタ != 0
+		PRINTL
+	パック_ID = パックセット:カウンタ
+	VARSET RESULTS
+	CALL CARD_PACK_NAME(パック_ID)
+	IF RESULTS != ""
+		PRINTFORM 　　[{カウンタ,3}] %RESULTS,50,LEFT%　
+		PRINTFORM 「{残BOX数:パック_ID,3}/{補充BOX数:パック_ID,3}」
+	ENDIF
+NEXT
+PRINTL
+CUSTOMDRAWLINE ―
+PRINTFORM [8888] - 설정모드
+IF 選択モード == 0
+	PRINTFORM 「매번선택」
+ELSEIF 選択モード == 1
+	PRINTFORM 「조금보충」　（20 Box）
+ELSEIF 選択モード == 2
+	PRINTFORM 「충분히 보충」（50 Box）
+ELSEIF 選択モード == 3
+	PRINTFORM 「많이 보충」（100 Box）
+ENDIF
+PRINTL
+CUSTOMDRAWLINE ―
+PRINTL [9999] - 돌아간다
+BINPUT
+IF RESULT == 9999
+	RETURN 0
+
+ELSEIF RESULT == 8888
+	選択モード ++
+	SIF 選択モード > 3
+		選択モード = 0
+ELSEIF INRANGE(RESULT,0,1000)
+	選択パック_ID = パックセット:RESULT
+	SELECTCASE 選択モード
+		CASE 0
+			CUSTOMDRAWLINE ―
+			PRINTFORML 보충할 수를 선택해주세요（제２/제４ 일요일에 보충） 
+			CUSTOMDRAWLINE ―
+			PRINTFORML 
+			PRINTFORML [1] - 조금 보충　（ 20박스까지 보충）
+			PRINTFORML [2] - 충분히 보충（ 50박스까지 보충）
+			PRINTFORML [3] - 많이 보충（100박스까지 보충）
+			PRINTFORML 
+			PRINTFORML [9999] - 돌아간다
+			BINPUT
+			IF RESULT == 1
+				補充BOX数:選択パック_ID = 20
+			ELSEIF RESULT == 2
+				補充BOX数:選択パック_ID = 50
+			ELSEIF RESULT == 3
+				補充BOX数:選択パック_ID = 100
+			ENDIF
+		CASE 1
+			補充BOX数:選択パック_ID = 20
+		CASE 2
+			補充BOX数:選択パック_ID = 50
+		CASE 3
+			補充BOX数:選択パック_ID = 100
+	ENDSELECT
+	GOTO PACK_LOOP
+ENDIF
+
+@CARDSHOP_SET_SINGLES
+#DIM DYNAMIC 初回カウンタ
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択덱
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC スタート数
+#DIM DYNAMIC エンド数
+
+#DIM DYNAMIC パックセット,1000
+#DIM DYNAMIC 설정종류
+
+#DIM DYNAMIC 選択パック_ID
+
+#DIM DYNAMIC カード_ID
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択位置
+
+$DECK_LOOP
+CUSTOMDRAWLINE ―
+PRINTFORML 　■ 설정할 싱글 카드를 골라주세요
+CUSTOMDRAWLINE ―
+FOR カウンタ,0,30
+	SIF カウンタ % 3 == 0 && カウンタ != 0
+		PRINTL
+	カード_ID = 売出カード:カウンタ
+	IF カード_ID <= 0
+		SETCOLOR C_GRAY
+		PRINTFORM [{カウンタ,3}] %"《　빈 칸　》",45,LEFT%
+		RESETCOLOR
+	ELSE
+		CALLFORM CARDNAME_{カード_ID}("名前")
+		STRLENS RESULTS
+		IF RESULT >= 41
+			SUBSTRING RESULTS, 0, 39
+			RESULTS = 《%RESULTS%…》
+			PRINTFORM [{カウンタ,3}] %RESULTS,45,LEFT%
+		ELSE
+			RESULTS = 《%RESULTS%》
+			PRINTFORM [{カウンタ,3}] %RESULTS,45,LEFT%
+		ENDIF
+	ENDIF
+NEXT
+PRINTL
+CUSTOMDRAWLINE ―
+PRINTL [9999] - 戻る
+BINPUT
+IF RESULT == 9999
+	RETURN 0
+ELSE
+	選択位置 = RESULT
+	;選択位置にカードが存在していたら、そのカードを置く。
+	IF 売出カード:選択位置 >= 1
+		選択カードID = 売出カード:選択位置
+		売出カード:選択位置 = -1
+		ITEM:選択カードID ++
+	ENDIF
+	CUSTOMDRAWLINE ―
+	PRINTFORML 싱글로서 팔릴 카드를 １장 골라주세요(SR / UR 카드만)
+	CUSTOMDRAWLINE ―
+	PRINTFORML
+	CALL EDIT_DECK_COLLECTION(1)
+	IF RESULT > 0
+		;選択位置にカードが存在していたら、そのカードを置く。
+		選択カードID = RESULT
+		売出カード:選択位置 = 選択カードID
+		ITEM:選択カードID --
+		GOTO DECK_LOOP
+	ELSE
+		PRINTFORMW 돌아갑니다.
+		GOTO DECK_LOOP
+	ENDIF
+ENDIF
+
+
+
+
+
+@CARDSHOP_UNEI_SALES
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC カードコスト,10
+#DIM DYNAMIC 절정BASE計算
+#DIM DYNAMIC 절정BASE基礎
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
+#DIM DYNAMIC 既存パック,2000
+#DIM DYNAMIC 所持パック,2000
+#DIM DYNAMIC 購入BOX数
+#DIM DYNAMIC 支払金額
+#DIM DYNAMIC 支払予定金額
+#DIM DYNAMIC 売却変動値
+#DIM DYNAMIC パック_ID
+#DIM DYNAMIC 実売却数
+#DIM DYNAMIC 売却金額
+
+IF ショップ運営中 == 1
+	FOR パック_ID,0,1000
+		SIF 残BOX数:パック_ID <= 0
+			RETURN 0
+		IF RAND:3 == 0
+			売却変動値 = 20
+		ELSEIF RAND:2 == 0
+			売却変動値 = 10
+		ELSE
+			売却変動値 = 5
+		ENDIF
+
+		IF 売れ筋パック:パック_ID >= 1
+			売却変動値 = 売却変動値 * 2
+		ENDIF
+		実売却数 = RAND:売却変動値
+		SIF 実売却数 <= 残BOX数:パック_ID
+			実売却数 = 残BOX数:パック_ID
+		売却金額 += 実売却数 * 1500
+		残BOX数:パック_ID -= 実売却数
+		SIF 残BOX数:パック_ID <= 0
+			残BOX数:パック_ID = 0
+	NEXT
+ENDIF
+
+
+;売れ筋パック설정
+IF DAY:3 == 30
+	FOR パック_ID,0,1000
+		CALL CARD_PACK_NAME(パック_ID)
+		IF RESULTS != ""
+			既存パック:カウンタB = パック_ID
+			カウンタB ++
+		ENDIF
+		IF RESULT == 1
+			所持パック:カウンタC = パック_ID
+			カウンタC ++
+		ENDIF
+	NEXT
+	FOR カウンタ,0,3
+		売れ筋パック:カウンタ = 既存パック:(RAND:カウンタB)
+	NEXT
+ENDIF
+
+IF ショップ運営中 == 1
+	IF DAY:3 == 15 || DAY:3 == 29
+		FOR パック_ID,0,1000
+			購入BOX数 = 補充BOX数:パック_ID - 残BOX数:パック_ID
+			SIF 購入BOX数 <= 0
+				CONTINUE
+			
+			支払予定金額 += 購入BOX数 * 1000
+			IF MONEY < 支払予定金額
+				BREAK
+			ENDIF
+			支払金額 += 購入BOX数 * 1000
+			残BOX数:パック_ID = 補充BOX数:パック_ID
+		NEXT
+		PRINTFORML 샵 운영비:{支払金額}
+	ENDIF
+ENDIF
+IF ショップ運営中 == 1
+	PRINTFORML 샵 이익:{売却金額}
+	CALL MONEY_GET(売却金額)
+
+	PRINTFORML 샵 운영비:{支払金額}
+	CALL MONEY_GET(-支払金額)
+ENDIF
+
+RETURN 1

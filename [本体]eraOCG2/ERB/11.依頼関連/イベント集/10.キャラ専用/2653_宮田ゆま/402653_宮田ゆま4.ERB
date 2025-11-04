@@ -1,0 +1,102 @@
+;だんだん長くなるんで3つのファイルに分けた…
+;前回と比べれば雑魚だけの最終回。一休みしてください。
+;4Aルートは復讐劇と救済教の徹底打倒
+;4Bルートは過去の破壊と現在の再生がテーマ。
+;どちらかと言うと4Bの方が好きですね。罪を背負って共犯として進む感じ。
+
+@IRAI_EVENT_402653(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2653-04)君だけのヒーロー
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_川沿い
+	CASE "詳細"
+		PRINTL 事件後、자신の犯した過ちの重さに苦しみ、デュエルから離れようとする宮田ゆま。
+		PRINTL 
+		PRINTL 報酬：5000DP、お金20000、カードパック×30
+	CASE "条件"
+		SIF 依頼_完了횟수:302653 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:이벤트主:호감도 < 2000 && TALENT:이벤트主:연모 == 0
+			RESULTS = 호감도/条件が不足しています。
+			RETURN 1
+		ENDIF
+		IF MARK:이벤트主:반발각인 > 0
+			RESULTS = 彼女はあなたを信じたいと思っているようだが、まだ心の整理がついていないようだ。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_402653(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+;開始時、연모플래그を記録する。
+IF !GETBIT(依頼_進行보존:402653, 0)
+	SETBIT 依頼_進行보존:402653, 0
+	IF TALENT:이벤트主:연모 < 1
+		CLEARBIT 依頼_進行보존:402653, 12
+	ELSE
+		SETBIT 依頼_進行보존:402653, 12
+	ENDIF
+ENDIF
+
+IF !GETBIT(依頼_進行보존:402653, 12)
+	CALL IRAI_ACT_402653_A(参照)
+	RETURN RESULT
+ELSE
+	CALL IRAI_ACT_402653_B(参照)
+	RETURN RESULT
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_402653
+IF !GETBIT(依頼_進行보존:402653, 12)
+	CALL IRAI_REWARD_402653_A
+	RETURN RESULT
+ELSE
+	CALL IRAI_REWARD_402653_B
+	RETURN RESULT
+ENDIF
+
+@IRAI_DECK_402653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+  IF !GETBIT(依頼_進行보존:402653, 12)
+    CALL IRAI_DECK_402653_A(듀얼리스트)
+	RETURN RESULT
+  ELSE
+    CALL IRAI_DECK_402653_B(듀얼리스트)
+	RETURN RESULT
+  ENDIF
+ENDIF
+RETURN 0
+
+@IRAI_DUEL_INTRO_402653
+IF !GETBIT(依頼_進行보존:402653, 12)
+	TRYCALL IRAI_DUEL_INTRO_402653_A
+ELSE
+	TRYCALL IRAI_DUEL_INTRO_402653_B
+ENDIF

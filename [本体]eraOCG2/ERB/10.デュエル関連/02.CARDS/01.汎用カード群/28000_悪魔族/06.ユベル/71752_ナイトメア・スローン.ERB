@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 나이트메어 쓰론
+		RESULTS = 나이트메어 쓰론
 	CASE "略称"
-RESULTS = 악몽의 옥좌
+		RESULTS = 악몽의 옥좌
 	CASE "カテゴリ"
-RESULTS:0 = 유벨
+		RESULTS:0 = 유벨
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN フィールド
 ENDSELECT
 
@@ -53,15 +52,10 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71752)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,71752)
 		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 효과後誘発
@@ -110,7 +104,7 @@ IF 종류 == 효과後誘発
 		CALLFORM 효과条件レベル_ADV(9,"以上")
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		選択カード_ID = RESULT:1
-		TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+		TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 		選択カード名前 = %RESULTS%
 		IF 選択カード  != 9999
 			CALL FULLRESET

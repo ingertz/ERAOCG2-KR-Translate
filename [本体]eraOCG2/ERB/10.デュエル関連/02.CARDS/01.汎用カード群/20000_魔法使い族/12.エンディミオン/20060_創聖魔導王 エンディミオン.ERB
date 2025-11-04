@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 창성마도왕 엔디미온
+		RESULTS = 창성마도왕 엔디미온
 	CASE "略称"
-RESULTS = 엔디미온
+		RESULTS = 엔디미온
 	CASE "カテゴリ"
-RESULTS:0 = 엔디미온
-RESULTS:1 = 마력카운터
+		RESULTS:0 = 엔디미온
+		RESULTS:1 = 마력카운터
 ENDSELECT
 
 
@@ -86,11 +86,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -195,7 +192,7 @@ ELSEIF 종류 == 마함起動
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 		CALL SET_FIELD_INFO(듀얼리스트,"필드",カード위치,"魔Ｃ",RESULT:1)		
 	ENDIF
-;モンスター효과-------------------------
+;モンスター효과ーーーーーーーーーーーーーーーーーーーーーーーーー
 ELSEIF 종류 == 발동誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20060)
 	IF RESULT == 0

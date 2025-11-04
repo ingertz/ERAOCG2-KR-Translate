@@ -41,10 +41,10 @@ RETURN 0
 #DIM DYNAMIC 種類
 
 CALLFORM CARD_ABLE(0,手札起動)
-PRINTL ①：자신 필드의 モンスター２体を릴리스 하고 발동할 수 있다。
-PRINTL このカードを手札から特殊소환する。
-CALLFORM CARD_ABLE(0,소환時 ,特殊소환時)
-PRINTL ②：このカードが소환・特殊소환した場合に発動できる。
+PRINTL ①：自分フィールドのモンスター２体をリリースして発動できる。
+PRINTL このカードを手札から特殊召喚する。
+CALLFORM CARD_ABLE(0,召喚時 ,特殊召喚時)
+PRINTL ②：このカードが召喚・特殊召喚した場合に発動できる。
 PRINTL 相手フィールドにセットされたカードを全て破壊する。
 
 @CARDCAN_23188(決闘者,種類,ゾーン,場所)
@@ -73,7 +73,7 @@ IF 種類 == 手札起動
 	SIF RESULT <= 1
 		RETURN 0
 	RETURN 1
-ELSEIF 種類 == 소환時 || 種類 == 特殊소환時
+ELSEIF 種類 == 召喚時 || 種類 == 特殊召喚時
 	CALL FULLRESET
 	効果範囲相手戦場 = 1
 	効果範囲相手魔罠 = 1
@@ -109,7 +109,7 @@ IF 種類 == 手札起動
 			CALL CARD_SP_SUMMON(決闘者, "手札", 場所)
 		ENDIF
 	ENDIF
-ELSEIF 種類 == 소환時 || 種類 == 特殊소환時
+ELSEIF 種類 == 召喚時 || 種類 == 特殊召喚時
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,23188)
 	IF RESULT == 0
 		CALL FULLRESET

@@ -1,0 +1,151 @@
+﻿@CARDNAME_75010,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미미구르 던전
+	CASE "略称"
+		RESULTS = Mmgl던전
+	CASE "カテゴリ"
+		RESULTS:0 = 미미구르
+ENDSELECT
+
+
+@CARD_75010(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_75010(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドは「미미구르 던전」となる。
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：자신フィールドの「미미구르」モンスターの攻撃力は、自身の元々の守備力分アップする。
+;このターンに소환・특수소환されていない、はカット（仕様限界）
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：お互いはそれぞれ、自身のフィールドに裏側표시モンスターが存在する限り、
+PRINTL このターンに특수소환されたモンスターでは攻撃宣言できない。
+;モンスターを소환できず、はカット（仕様限界）
+CALLFORM CARD_ABLE(3,마함起動)
+PRINTL ③：자신メインフェイズに발동できる。
+PRINTL 자신の덱・묘지から「미미구르」モンスター１体を손패に加える。
+
+
+@CARDCAN_75010(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,75010)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_3(듀얼리스트,75010)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 미미구르
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_75010(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75010,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 미미구르
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75010)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+			CONTINUE
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
+		SIF !MATCH(RESULTS,"미미구르")
+			CONTINUE
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("守備力")
+		攻撃力修正 = RESULT
+		CALL FULLRESET
+		CALL STATCHANGE_BASIC(듀얼리스트,"自身",カウンタ,攻撃力修正)
+	NEXT
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"미미구르 던전")
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 裏側守備표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과条件T1召種 = 召種全특수
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦無")
+	ENDIF
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 裏側守備표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과条件T1召種 = 召種全특수
+		CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"戦無")
+	ENDIF
+ENDIF

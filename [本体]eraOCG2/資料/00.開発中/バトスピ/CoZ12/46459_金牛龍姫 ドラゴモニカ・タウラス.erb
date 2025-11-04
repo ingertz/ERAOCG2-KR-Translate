@@ -1,0 +1,141 @@
+; ============================================================
+; 46459_金牛龍姫 ドラゴモニカ・タウラス
+; ============================================================
+
+@CARDNAME_46459,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 金牛龍姫 ドラゴモニカ・タウラス
+	CASE "略称"
+		RESULTS = タウラス
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46459(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 炎属性
+	CASE "種族"
+		RETURN 獣族
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1800
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46459(種類)
+#DIM DYNAMIC 種類
+CALLFORM CARD_ABLE(0,効果召喚)
+PRINTL 自分フィールドの「光導の創界神帝 レピィ・アーズ」のコアカウンターを１つ取り除くことで、
+PRINTL このカードはリリースなしで召喚できる。
+CALLFORM CARD_ABLE(1,攻守変動)
+PRINTL ①：このカードの攻撃力は自分の墓地の「CoZ12」カードの枚数×５００アップする。
+CALLFORM CARD_ABLE(2,永続効果)
+PRINTL ②：このカードが守備表示モンスターを攻撃した場合、その守備力を攻撃力が超えた分だけ相手に戦闘ダメージを与える。
+RETURN 0
+
+
+@CARDCAN_46459(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIM  DYNAMIC 種類
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46459)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 効果召喚
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 召喚権 == 0
+		RETURN 0
+	SIF モンスター数(決闘者) == 5
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠=1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 攻守変動
+    SIF ゾーン != "戦場"
+        RETURN 0
+    RETURN 1
+ELSEIF 種類 == 永続効果
+    SIF ゾーン != "戦場"
+        RETURN 0
+    RETURN 1
+ENDIF
+RETURN 0
+
+
+@CARDEFFECT_46459(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIM  DYNAMIC 種類
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 体数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 効果召喚
+	CALL FULLRESET
+	効果範囲魔罠=1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）, 参照先（CS）, 選択カード（CS）, "個Ｃ", -1)
+	RETURN 1
+
+ELSEIF 種類 == 攻守変動
+    CALL FULLRESET
+    効果範囲墓地     = 1
+    効果条件カテゴリ = CoZ12
+    効果条件CNT     = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    CALL STATCHANGE_BASIC(決闘者, "自身", 場所, RESULT * 500)
+    RETURN 0
+
+ELSEIF 種類 == 永続効果
+    CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"貫通")
+    RETURN 0
+ENDIF
+RETURN 0

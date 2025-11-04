@@ -28,7 +28,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 효과モン
 	CASE "속성"
 		RESULT:1 = 땅속성
@@ -190,12 +189,12 @@ ELSEIF 종류 == 필드起動
 				選択カード = RESULT
 				選択カード_ID = RESULT:99
 				CALL FULLRESET
-				TRYCALLFORM CARD_{選択カード_ID},"종족"
+				TRYCALLFORM CARD_{選択カード_ID}("종족")
 				효과추가종류 = 効追永種 + RESULT:0
 				CALL CARD_GENERATE(듀얼리스트,104072)
 
 				CALL FULLRESET
-				TRYCALLFORM CARD_{選択カード_ID},"종족"
+				TRYCALLFORM CARD_{選択カード_ID}("종족")
 				효과추가종류 = 効追永種 + RESULT:1
 				CALL CARD_GENERATE(듀얼리스트,104072)
 			ENDIF
@@ -241,7 +240,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 通常モン
 	CASE "トークン"
 		RETURN 1
@@ -255,8 +253,15 @@ SELECTCASE 参照先
 		RETURN 0
 	CASE "守備力"
 		RETURN 0
+	CASE "自動소멸"
+		RETURN 1
 ENDSELECT
 
+@CARD_EXPLANATION_104072(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
 
 @CARDCAN_104072(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트

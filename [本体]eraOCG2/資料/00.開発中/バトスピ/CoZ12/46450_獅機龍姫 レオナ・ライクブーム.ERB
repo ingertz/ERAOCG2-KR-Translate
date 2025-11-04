@@ -1,0 +1,413 @@
+; ============================================================
+; 46450_獅機龍姫 レオナ・ライクブーム
+; ============================================================
+
+@CARDNAME_46450,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 獅機龍姫 レオナ・ライクブーム
+	CASE "略称"
+		RESULTS = レオヴルム
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:3 = 超星
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+@CARD_46450(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 獣族
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 500
+	CASE "守備力"
+		RETURN 900
+	CASE "性別"
+		RETURN 牝性
+	CASE "生成カード"
+		RETURN 46451
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46450(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：自分フィールドにモンスターが存在しない場合、
+PRINTL または自分フィールドのモンスターが全て「CoZ12」である場合に発動できる。
+PRINTL このカードを手札から特殊召喚する。
+PRINTL その後、デッキから「CoZ12」モンスター１体を手札に加える。
+CALLFORM CARD_ABLE(2,戦場起動)
+PRINTL ②：自分メインフェイズに発動できる。
+PRINTL 自分フィールドの「光導の創界神帝 レピィ・アーズ」１枚を選び、その上のコアカウンターを２つ取り除き、
+PRINTL 手札の「CoZ12」モンスター１体を召喚できる。
+PRINTL その後、ターン終了時まで自分は「光導」モンスターしか特殊召喚できない。
+CALLFORM CARD_ABLE(3,攻撃後誘発)
+PRINTL ③：このモンスターが戦闘を行ったダメージステップ終了時に発動できる。
+PRINTL 自分フィールドの「創界神」のうち、カウントカウンターが３つ以下の１枚を対象として発動できる。
+PRINTL そのカードのコアカウンターを２つ取り除き、
+PRINTL このカードを裏返し「月光獅機 レオナ・ライクブーム・サテライト」に転醒する。
+PRINTL その後、対象とした「創界神」にカウントカウンターを１つ置く。
+
+
+@CARDCAN_46450(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 総体数
+#DIM  DYNAMIC CoZ体数
+VARSET RESULT
+VARSET RESULTS
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46450)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF メインフェイズ != 1 || ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 発動済_1(決闘者,46450)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	総体数 = RESULT
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = CoZ12
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	CoZ体数 = RESULT
+	SIF !(総体数 == 0 || 総体数 == CoZ体数)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = CoZ12
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,46450,"手札")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 戦場起動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46450)
+		RETURN 0
+	SIF メインフェイズ != 1 || ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 2
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = CoZ12
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 攻撃後誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_3(決闘者,46450)
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠   = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHECK_ADV(決闘者, 種類, ゾーン, 場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 短紋章起動
+   RETURN 1
+ENDIF
+
+RETURN 0
+
+@CARDEFFECT_46450(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 条件達成
+#DIM  DYNAMIC 現在カウント
+VARSET RESULT
+VARSET RESULTS
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46450,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲デッキ = 1
+			効果条件種類 = モン全般
+			効果条件カテゴリ = CoZ12
+			効果条件行先フラグ = 手札行き
+			CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46450,2)
+	IF RESULT == 0
+
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件名前 = 光導の創界神帝 レピィ・アーズ
+		効果条件個Ｃ所持 = 2
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_SELECT(決闘者,RESULT)
+			CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-2)
+			CALL FULLRESET
+			CALL CARD_RESERV(決闘者, 46450, 短紋章予約)
+			CALL CARD_SS_RESTRICTION(決闘者,"光導")
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 短紋章起動
+   CALL FULLRESET
+   効果範囲手札   = 1
+   効果条件種類   = モン全般
+   効果条件カテゴリ = CoZ12
+   CALL STATCHANGE_HAND(決闘者, "全体", 場所, "召可")
+   RETURN 0
+ELSEIF 種類 == 攻撃後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46450,3)
+	IF RESULT == 0
+		PRINTL コアカウンターを取り除く「創界神」を選択してください
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件カテゴリ:0 = 創界神
+		効果条件個Ｃ所持 = 2
+		効果条件任意 = 1
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 9999
+			RETURN 0
+		ENDIF
+		CALL CARD_SELECT(決闘者,RESULT)
+		現在カウント = GETVAR(@"%対象者（CS）%_魔_悪Ｃ:選択カード（CS）")
+		SIF 現在カウント > 3
+			RETURN 0
+		REPEAT 2
+			CALL SET_FIELD_INFO(対象者（CS）,"魔罠",選択カード（CS）,"個Ｃ",-1)
+			条件達成 ++
+		REND
+		SIF 条件達成 < 2
+			RETURN 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(決闘者,"戦場",場所,消滅行き)
+		CALL FULLRESET
+		CALL CARD_GENERATE(決闘者,46451)
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件カテゴリ:0 = 創界神
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		IF RESULT >= 1
+			CALL FULLRESET
+			効果範囲魔罠 = 1
+			効果条件カテゴリ:0 = 創界神
+			CALL CARD_CHOOSE_ADV(決闘者, ゾーン, 場所)
+			CALL CARD_SELECT(決闘者, RESULT)
+			CALL SET_FIELD_INFO(決闘者,"魔罠",選択カード（CS）,"悪Ｃ",1)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+
+; ============================================================
+; 46451_月光獅機 レオナ・ライクブーム－サテライト
+; ============================================================
+
+@CARDNAME_46451,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 月光獅機 レオナ・ライクブーム－サテライト
+	CASE "略称"
+		RESULTS = 月光獅機
+	CASE "カテゴリ"
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:3 = 超星
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46451(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 儀式
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 獣族
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2200
+	CASE "性別"
+		RETURN 牝性
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46451(種類)
+#DIM DYNAMIC 種類
+CALLFORM CARD_ABLE(1,永続効果)
+PRINTL ①：このカードは直接攻撃でき、相手のカードの効果を受けない。
+PRINTL また、相手モンスターはこのカード以外の他のモンスターを攻撃対象に選択できない。
+CALLFORM CARD_ABLE(2,攻撃時誘発)
+PRINTL ②：このカードの攻撃宣言時に発動できる。
+PRINTL 自分フィールドのモンスター１体を守備表示にして、このカードの攻撃回数を＋１する。
+CALLFORM CARD_ABLE(0,戦場→墓地)
+CALLFORM CARD_ABLE(0,戦闘→墓地)
+CALLFORM CARD_ABLE(0,破壊→墓地)
+CALLFORM CARD_ABLE(0,除外時)
+CALLFORM CARD_ABLE(0,デッキ行き)
+CALLFORM CARD_ABLE(0,手札行き)
+PRINTL ■転醒体■
+PRINTL このカードがフィールドを離れる場合、
+PRINTL このカードを表面の「獅機龍姫 レオナ・ライクブーム」に戻し、フィールドに残る。
+RETURN 0
+
+
+@CARDCAN_46451(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+VARSET RESULT
+VARSET RESULTS
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46451)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 攻撃時誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件表示 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+    	RETURN 0
+	RETURN 1
+ENDIF
+
+IF GROUPMATCH(種類,戦場→墓地,戦闘→墓地,破壊→墓地,除外時,デッキ行き,手札行き)
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46451(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+VARSET RESULT
+VARSET RESULTS
+
+IF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"直攻")
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"モ耐")
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"魔耐")
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"罠耐")
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"攻誘")
+	RETURN 0
+ENDIF
+
+IF 種類 == 攻撃時誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46451,2)
+	PRINTL 守備表示にする自分モンスターを選択してください
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件表示 = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"表",2,1)
+	CALL SET_FIELD_INFO(決闘者,"戦場",場所,"戦",1)
+	RETURN 0
+ENDIF
+
+IF GROUPMATCH(種類,戦場→墓地,戦闘→墓地,破壊→墓地,除外時,デッキ行き,手札行き)
+	CALL FULLRESET
+	CALL CARD_GENERATE(決闘者,46450)
+	CALL CARD_DISPOSE(決闘者, ゾーン, 場所, 消滅行き)
+	RETURN 0
+ENDIF
+
+RETURN 0

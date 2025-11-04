@@ -1,0 +1,118 @@
+﻿@CARDNAME_53543,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 기가노트
+	CASE "略称"
+		RESULTS = Ｊ 기가노트
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_53543(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 無性
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN RARE
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_53543(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+CALL RESETCONDITION_MAT
+必要レベル数 = 7
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+	素材条件종족 = 비늘야수족
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,53543) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_53543(종류)
+#DIM DYNAMIC 종류
+CALL CARD_ABLE(0,攻守変動)
+PRINTL 튜너＋튜너以外の비늘야수족モンスター１体以上
+PRINTL ①：このカードがモンスターゾーンに存在する限り、
+PRINTL 자신フィールドの「쥬락」モンスターの攻撃力は、
+PRINTL 자신の묘지の「쥬락」モンスターの数×２００アップする。
+
+
+@CARDCAN_53543(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,53543)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_53543(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 強化値
+
+;PRINTFORMW 종류:{종류}
+
+IF  종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 쥬락
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT >= 1
+		強化値 = RESULT * 200
+	CALL FULLRESET
+	효과条件カテゴリ = 쥬락
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,強化値,0,53543)
+ENDIF

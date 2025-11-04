@@ -1,0 +1,653 @@
+@IRAI_ACT_402653_A(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 信奉者
+
+이벤트主 = NO_TO_CHARANUM(2653)
+信奉者 = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 川沿いの遊歩道に、夕暮れの光が優しく差し込んでいる。
+	PRINTFORML 穏やかな水の流れる音が、静かな空気を満たしている。
+	PRINTFORMW あなたは、ベンチに座る%CALLNAME:이벤트主%の姿を見つけた。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は자신の덱を見つめている。
+	PRINTFORML その表情は、深い悲しみに沈んでいる。
+	PRINTFORMW 「私には…もう、ヒーローを使う資格なんてありません…」
+	PRINTFORML
+	PRINTFORML 彼女の呟きが、風に乗って聞こえてくる。
+	PRINTFORML あなたは彼女の隣に座り、優しく声をかけることにした。
+	PRINTFORMW %CALLNAME:이벤트主%は、あなたに気づいて顔を上げる。
+	PRINTFORML
+	PRINTFORML 「%CALLNAME:MASTER%…」
+	PRINTFORML %CALLNAME:이벤트主%の瞳には、まだ迷いの色が残っている。
+	PRINTFORMW 「どうして…私のところに…」
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「資格なんて関係ない。君がヒーローを愛しているなら、それで十分だ」
+	PRINTL [1] - 「もう一度デュエルしよう。俺の本当の気持ちを、カードで伝える」
+	PRINTL [2] - 「君が道を間違えるなら、俺が全力で止める。何度でもだ」
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは%CALLNAME:이벤트主%の手を取り、真剣な眼差しで語りかけた。
+		PRINTFORML 「資格なんて関係ない。君がヒーローを愛しているなら、それで十分だ」
+		PRINTFORMW 温かい言葉が、彼女の心に染み込んでいく。
+		PRINTFORML
+		PRINTFORML 「でも…私は…」
+		PRINTFORML %CALLNAME:이벤트主%は俯く。
+		PRINTFORMW 「あんなことをしてしまって…」
+		PRINTFORML
+		PRINTFORML あなたは彼女の肩に手を置く。
+		PRINTFORML その温もりが、%CALLNAME:이벤트主%の震える心を包み込む。
+		PRINTFORMW 彼女は少しだけ、表情を和らげた。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは%CALLNAME:이벤트主%の前に立ち、デュエルディスクを構えた。
+		PRINTFORML 「もう一度デュエルしよう。俺の本当の気持ちを、カードで伝える」
+		PRINTFORMW その言葉に、%CALLNAME:이벤트主%は驚いて目を見開く。
+		PRINTFORML
+		PRINTFORML 「本当の…気持ち…？」
+		PRINTFORML %CALLNAME:이벤트主%はあなたを見つめる。
+		PRINTFORMW その瞳には、戸惑いと期待が入り混じっている。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%の…気持ち…」
+		PRINTFORML %CALLNAME:이벤트主%は胸に手を当てる。
+		PRINTFORMW 彼女の心臓が、激しく鼓動しているのが分かる。
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:302653, 4) == 1
+			PRINTFORML 「あの時も…そう言ってくれましたね…」
+			PRINTFORML %CALLNAME:이벤트主%は小さく微笑む。
+			PRINTFORMW 「あなたの言葉を、信じてもいいんですか…？」
+			CALL EVENT_FAVUP(이벤트主,200)
+		ELSE
+			CALL EVENT_FAVUP(이벤트主,100)
+		ENDIF
+
+		SETBIT 依頼_進行보존:402653, 2
+
+	ELSE
+		PRINTFORML あなたは%CALLNAME:이벤트主%の目をまっすぐ見つめて宣言した。
+		PRINTFORMW 力強い言葉が、彼女の心に響く。
+		PRINTFORML
+		PRINTFORML 「どうして…そこまで…」
+		PRINTFORML %CALLNAME:이벤트主%の目から、涙がこぼれ落ちる。
+		PRINTFORMW 「私は…あんなことをしたのに…」
+		PRINTFORML
+		PRINTFORML あなたは彼女の涙を優しく拭う。
+		PRINTFORML その仕草に、%CALLNAME:이벤트主%は声を詰まらせる。
+		PRINTFORMW 「%CALLNAME:MASTER%…」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,120)
+	ENDIF
+
+	PRINTFORML その時、背後から荒々しい足音が近づいてくる。
+	PRINTFORML 「見つけたぞ！」
+	PRINTFORMW 振り返ると、複数の人影が迫ってきていた。
+	PRINTFORML
+	PRINTFORML かつて倒した救済教の信奉者たちだ。
+	PRINTFORML 彼らは憎悪に満ちた目で、あなたと%CALLNAME:이벤트主%を睨みつけている。
+	PRINTFORMW 「よくも聖女様を！聖女様を誑かした罪、デュエルで償え！」
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は怯えた表情で、あなたの後ろに隠れる。
+	PRINTFORML 彼女の体が、小刻みに震えている。
+	PRINTFORMW あなたは、彼女を守るように前に立った。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「指一本触れさせない」
+	PRINTL [1] - 「ゆま、俺を信じてくれ」
+	PRINTL [2] - 「彼女の笑顔を奪うやつは、俺が許さない」
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは%CALLNAME:이벤트主%を庇うように、腕を広げた。
+		PRINTFORMW その言葉に、信奉者たちが嘲笑う。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%…」
+		PRINTFORML %CALLNAME:이벤트主%はあなたの背中を見つめる。
+		PRINTFORMW その表情には、安心の色が浮かんでいる。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは%CALLNAME:이벤트主%に振り返り、優しく声をかけた。
+		PRINTFORML 「ゆま、俺を信じてくれ」
+		PRINTFORMW その言葉に、%CALLNAME:이벤트主%は力強く頷く。
+		PRINTFORML
+		PRINTFORML 「はい！あなたを信じています！」
+		PRINTFORML %CALLNAME:이벤트主%の声には、迷いがない。
+		PRINTFORMW 彼女の瞳には、あなたへの信頼が輝いている。
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:402653, 2) == 1
+			PRINTFORML 「あなたが…私のヒーローですから…！」
+			PRINTFORML %CALLNAME:이벤트主%は涙を浮かべながら微笑む。
+			PRINTFORMW その笑顔が、あなたに力を与えてくれる。
+			CALL EVENT_FAVUP(이벤트主,200)
+		ELSE
+			CALL EVENT_FAVUP(이벤트主,150)
+		ENDIF
+
+		SETBIT 依頼_進行보존:402653, 3
+
+	ELSE
+		PRINTFORML あなたは信奉者たちを睨みつけて宣言した。
+		PRINTFORMW その言葉に、%CALLNAME:이벤트主%は驚いて顔を上げる。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%…」
+		PRINTFORML %CALLNAME:이벤트主%の心に、勇気が湧き上がってくる。
+		PRINTFORMW 彼女は、あなたの隣に立つ決意をした。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,120)
+	ENDIF
+
+	PRINTFORML 信奉者のリーダー格が、デュエルディスクを構える。
+	PRINTFORML 「ふん！口だけでないことを証明してもらおうか！」
+	PRINTFORMW あなたは、デュエルディスクを起動させた。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%があなたの手を握る。
+	PRINTFORML 「お願いします…勝ってください…！」
+	PRINTFORMW その温もりが、あなたに力を与えてくれる。
+	PRINTFORML
+	TARGET = 信奉者
+	CALL CHOICE_DUEL_TYPE(402653)
+
+	IF RESULT == 1
+		CALL FLASH(3)
+
+		PRINTFORML デュエルに승리した。
+		PRINTFORML 信奉者のリーダーは패배し、膝をついて倒れる。
+		PRINTFORMW 「馬鹿な…こんなはずでは…！」
+		PRINTFORML
+		PRINTFORML しかし、残りの信奉者たちが「まだだ！」と叫びながら襲いかかってくる。
+		PRINTFORML 彼らは次々とデュエルディスクを構える。
+		PRINTFORMW あなたは、再び戦いの構えを取った。
+		PRINTFORML
+		PRINTL
+		PRINTL [0] - 「ゆま、下がっていて！」
+		PRINTL [1] - 「一緒に戦おう。君の力が必要だ」
+		PRINTL [2] - 「君を守るためなら、何度でも戦う」
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたは%CALLNAME:이벤트主%を後ろに下がらせようとした。
+			PRINTFORML 「ゆま、下がっていて！」
+			PRINTFORMW しかし、彼女は首を横に振る。
+			PRINTFORML
+			PRINTFORML 「でも…！」
+			PRINTFORML %CALLNAME:이벤트主%は心配そうにあなたを見つめる。
+			PRINTFORMW 「一人で戦わせるなんて…できません…！」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,100)
+
+		ELSEIF RESULT == 1
+			PRINTFORML あなたは%CALLNAME:이벤트主%の手を取り、彼女を信頼する言葉をかけた。
+			PRINTFORML 「一緒に戦おう。君の力が必要だ」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は驚いて目を見開く。
+			PRINTFORML
+			PRINTFORML 「私の…力…？」
+			PRINTFORML %CALLNAME:이벤트主%は자신の手を見つめる。
+			PRINTFORMW 「私に…できることが…あるんですか…？」
+			PRINTFORML
+			PRINTFORML あなたは力強く頷く。
+			PRINTFORML その眼差しに、%CALLNAME:이벤트主%は勇気をもらう。
+			PRINTFORMW 「はい…！一緒に…戦います…！」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,150)
+			SETBIT 依頼_進行보존:402653, 4
+
+		ELSE
+			PRINTFORML あなたは決意を込めて宣言した。
+			PRINTFORML 「君を守るためなら、何度でも戦う」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は涙を浮かべる。
+			PRINTFORML
+			PRINTFORML 「ありがとうございます…！」
+			PRINTFORML %CALLNAME:이벤트主%は感謝の言葉を口にする。
+			PRINTFORMW あなたの言葉が、彼女の心を温めている。
+			PRINTFORML
+			IF GETBIT(依頼_進行보존:402653, 3) == 1
+				PRINTFORML 「あなたは…本当に私のヒーローです…！」
+				PRINTFORML %CALLNAME:이벤트主%は涙を流しながら微笑む。
+				PRINTFORMW その笑顔が、あなたに無限の力を与えてくれる。
+				CALL EVENT_FAVUP(이벤트主,250)
+			ELSE
+				CALL EVENT_FAVUP(이벤트主,200)
+			ENDIF
+		ENDIF
+
+		PRINTFORML 残りの信奉者たちが、一斉に襲いかかってくる。
+		PRINTFORML あなたは、彼らを迎え撃つ準備を整えた。
+		PRINTFORMW %CALLNAME:이벤트主%も、あなたの隣で決意の表情を見せている。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,150)
+		依頼_달성상황++
+		RETURN 1
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、信奉者たちに囲まれる。
+		PRINTFORMW 「ハハハ！これで終わりだ！」
+		PRINTFORML
+		PRINTFORML 「やめて！お願い、彼を傷つけないで！」
+		PRINTFORML %CALLNAME:이벤트主%は必死に懇願する。
+		PRINTFORMW しかし、信奉者たちは聞く耳を持たない。
+		PRINTFORML
+		PRINTFORML あなたは、%CALLNAME:이벤트主%の悲痛な叫び声を聞きながら、意識を失っていく。
+		PRINTFORML 最後に見えたのは、彼女の涙に濡れた顔だった。
+		PRINTFORMW 「%CALLNAME:MASTER%…！」
+		PRINTFORML
+		SETCOLOR C_RED
+		PRINTFORMW 愛する人一人、守れなかった…
+		RESETCOLOR
+
+		RETURN 6
+	ENDIF
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML 連続する戦いの中、あなたは次々と信奉者たちを打ち倒していく。
+	PRINTFORML %CALLNAME:이벤트主%も、あなたを信じて応援し続けている。
+	PRINTFORMW 「頑張ってください、%CALLNAME:MASTER%…！」
+	PRINTFORML
+	TARGET = 信奉者
+	CALL CHOICE_DUEL_TYPE(402653)
+
+	IF RESULT == 1
+		CALL FLASH(3, 0xFFD700)
+
+		PRINTFORML デュエルに승리した。
+		PRINTFORML 最後の信奉者も패배し、残党たちは逃走していく。
+		PRINTFORMW 「覚えていろ…！」
+		PRINTFORML
+		PRINTFORML 戦いが終わり、静寂が戻ってくる。
+		PRINTFORML %CALLNAME:이벤트主%は、あなたに駆け寄ってくる。
+		PRINTFORMW 「%CALLNAME:MASTER%…！」
+		PRINTFORML
+		PRINTFORML 彼女は安堵の表情を浮かべるが、まだ자신の過去に苦しんでいる様子が見える。
+		PRINTFORML あなたは彼女の手を取り、もう一度デュエルを申し込むことにした。
+		PRINTFORMW 「ゆま、最後にもう一度だけ、俺とデュエルしてくれ」
+		PRINTFORML
+		PRINTFORML 「どうして…？」
+		PRINTFORML %CALLNAME:이벤트主%は戸惑いの表情を見せる。
+		PRINTFORMW その瞳には、不安と期待が入り混じっている。
+		PRINTFORML
+		PRINTL
+		PRINTL [0] - 「君の全てを受け入れたい。それを証明させてくれ」
+		PRINTL [1] - 「君が本当に前に進めるか、確かめたいんだ」
+		PRINTL [2] - 「俺の本当の気持ちを、カードで伝えたい」
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたは%CALLNAME:이벤트主%の両手を取り、真剣に告げた。
+			PRINTFORML 「君の全てを受け入れたい。それを証明させてくれ」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は涙を浮かべる。
+			PRINTFORML
+			PRINTFORML 「私の…全て…」
+			PRINTFORML %CALLNAME:이벤트主%は震える声で呟く。
+			PRINTFORMW 「分かりました…受け止めてください…私の全てを…」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,150)
+			SETBIT 依頼_進行보존:402653, 5
+
+		ELSEIF RESULT == 1
+			PRINTFORML あなたは率直に伝えた。
+			PRINTFORML 「君が本当に前に進めるか、確かめたいんだ」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は少し寂しそうな表情を見せる。
+			PRINTFORML
+			PRINTFORML 「そう…ですか…」
+			PRINTFORML %CALLNAME:이벤트主%は덱を構える。
+			PRINTFORMW 「分かりました…私の覚悟、見てください…」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,100)
+
+		ELSE
+			PRINTFORML あなたは告白の意を込めて言った。
+			PRINTFORML 「俺の本当の気持ちを、カードで伝えたい」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は頬を赤らめる。
+			PRINTFORML
+			PRINTFORML 「本当の…気持ち…」
+			PRINTFORML %CALLNAME:이벤트主%は胸に手を当てる。
+			PRINTFORMW 「はい…受け取ります…あなたの気持ち…」
+			PRINTFORML
+			IF GETBIT(依頼_進行보존:402653, 2) == 1
+				PRINTFORML 「あの時も…そう言ってくれましたね…」
+				PRINTFORML %CALLNAME:이벤트主%は涙を浮かべながら微笑む。
+				PRINTFORMW 「今度こそ…ちゃんと受け取ります…」
+				CALL EVENT_FAVUP(이벤트主,250)
+			ELSE
+				CALL EVENT_FAVUP(이벤트主,200)
+			ENDIF
+
+			SETBIT 依頼_進行보존:402653, 6
+		ENDIF
+
+		PRINTFORML 二人は向かい合い、デュエルディスクを構える。
+		PRINTFORML 夕日が、二人を優しく照らしている。
+		PRINTFORMW これが、最後のデュエルだ。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,200)
+		依頼_달성상황++
+		RETURN 1
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、信奉者たちに囲まれる。
+		PRINTFORMW 「ハハハ！これで終わりだ！」
+		PRINTFORML
+		PRINTFORML 「やめて！お願い、彼を傷つけないで！」
+		PRINTFORML %CALLNAME:이벤트主%は必死に懇願する。
+		PRINTFORMW しかし、信奉者たちは聞く耳を持たない。
+		PRINTFORML
+		PRINTFORML 信奉者たちはあなたに襲いかかり、容赦なく攻撃を加える。
+		PRINTFORML %CALLNAME:이벤트主%の悲痛な叫び声が、川沿いに響き渡る。
+		PRINTFORMW 「%CALLNAME:MASTER%…！ %CALLNAME:MASTER%…！」
+		PRINTFORML
+		PRINTFORML あなたの意識は徐々に遠のいていく。
+		PRINTFORML 最後に見えたのは、彼女の涙に濡れた顔だった。
+		PRINTFORMW そして、全てが暗闇に包まれた。
+		PRINTFORML
+		SETCOLOR C_RED
+		PRINTFORMW 愛する人一人、守れなかった…
+		RESETCOLOR
+
+		RETURN 6
+	ENDIF
+
+ELSEIF 依頼_달성상황 == 2
+	PRINTFORML 夕日に照らされた川沿いで、最後のデュエルが始まる。
+	PRINTFORML %CALLNAME:이벤트主%は、真剣な表情で덱を構えている。
+	PRINTFORMW あなたも、全力でこのデュエルに臨む覚悟を決めた。
+	PRINTFORML
+	TARGET = 이벤트主
+	CALL CHOICE_DUEL_TYPE(402653)
+
+	IF RESULT == 1
+		CALL FLASH(3, 0xFFFFFF)
+
+		PRINTFORML デュエルに승리した。
+		PRINTFORML %CALLNAME:이벤트主%のライフポイントがゼロになり、彼女は膝をつく。
+		PRINTFORMW しかし、その表情には、どこか安堵の色が浮かんでいる。
+		PRINTFORML
+		PRINTFORML デュエル後、あなたは猛攻を仕掛けた자신のプレイを振り返りながら、ゆまに語りかけた。
+		PRINTFORML 「君が道を間違えるなら、俺が全力で止める」
+		PRINTFORMW 「君が闇に染まるなら、俺が光で照らす。何度でもだ」
+		PRINTFORML
+		PRINTFORML 「どうして…そこまで…」
+		PRINTFORML %CALLNAME:이벤트主%は涙を流しながら問いかける。
+		PRINTFORMW 「私は…あんなことをしたのに…」
+		PRINTFORML
+		PRINTFORML あなたは彼女の両手を取り、真剣な眼差しで告白する。
+		PRINTFORML 夕日が、二人を優しく包み込んでいる。
+		PRINTFORMW これが、あなたの答えだ。
+		PRINTFORML
+		PRINTL
+		PRINTL [0] - 「俺は完璧なヒーローじゃない。でも、君だけのヒーローにならせてほしい」
+		PRINTL [1] - 「君が迷うなら、世界中の誰を敵に回しても、俺だけは君の味方だ」
+		PRINTL [2] - 「愛してる、ゆま。これからもずっと、君を守りたい」
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたは彼女の手を強く握りしめて告げた。
+			PRINTFORML 「俺は完璧なヒーローじゃない。でも、君だけのヒーローにならせてほしい」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は涙を流しながら頷く。
+			PRINTFORML
+			PRINTFORML 「はい…！」
+			PRINTFORML %CALLNAME:이벤트主%は声を震わせながら答える。
+			PRINTFORMW 「あなたは…私だけのヒーローです…！」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,200)
+			SETBIT 依頼_進行보존:402653, 7
+
+		ELSEIF RESULT == 1
+			PRINTFORML あなたは力強く宣言した。
+			PRINTFORML 「君が迷うなら、世界中の誰を敵に回しても、俺だけは君の味方だ」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は声を上げて泣き、あなたに抱きつく。
+			PRINTFORML
+			PRINTFORML 「%CALLNAME:MASTER%…！」
+			PRINTFORML %CALLNAME:이벤트主%はあなたの胸で泣き続ける。
+			PRINTFORMW 「ありがとうございます…ありがとうございます…！」
+			PRINTFORML
+			IF GETBIT(依頼_進行보존:402653, 6) == 1
+				PRINTFORML あなたは彼女の頭を優しく撫でる。
+				PRINTFORML %CALLNAME:이벤트主%は、あなたの温もりに包まれて安心している。
+				PRINTFORMW 「もう大丈夫だ。俺がいる」
+				CALL EVENT_FAVUP(이벤트主,300)
+			ELSE
+				CALL EVENT_FAVUP(이벤트主,250)
+			ENDIF
+
+			SETBIT 依頼_進行보존:402653, 8
+
+		ELSE
+			PRINTFORML あなたは彼女の瞳を見つめて、心からの言葉を告げた。
+			PRINTFORML 「愛してる、ゆま。これからもずっと、君を守りたい」
+			PRINTFORMW その言葉に、%CALLNAME:이벤트主%は涙を流しながら微笑む。
+			PRINTFORML
+			PRINTFORML 「私も…愛しています…%CALLNAME:MASTER%…」
+			PRINTFORML %CALLNAME:이벤트主%は震える声で答える。
+			PRINTFORMW 「ずっと…ずっと一緒にいてください…」
+			PRINTFORML
+			IF GETBIT(依頼_進行보존:402653, 5) == 1 || GETBIT(依頼_進行보존:402653, 6) == 1
+				PRINTFORML あなたは彼女を優しく抱きしめる。
+				PRINTFORML %CALLNAME:이벤트主%も、あなたに強く抱きつく。
+				PRINTFORMW 二人の心が、一つになった瞬間だった。
+				CALL EVENT_FAVUP(이벤트主,350)
+			ELSE
+				CALL EVENT_FAVUP(이벤트主,300)
+			ENDIF
+
+			SETBIT 依頼_進行보존:402653, 9
+		ENDIF
+
+		PRINTFORML しばらくして、%CALLNAME:이벤트主%は涙を拭いて顔を上げる。
+		PRINTFORML 彼女の瞳には、もう迷いはない。
+		PRINTFORMW 「私…もう一度、ヒーローと一緒に歩いていけますか？」
+		PRINTFORML
+		PRINTFORML あなたは彼女の手を取り、優しく微笑む。
+		PRINTFORML 「当然だ。今度は俺も一緒だ」
+		PRINTFORMW その言葉に、%CALLNAME:이벤트主%は幸せそうに微笑んだ。
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:402653, 5) == 1
+			PRINTFORML %CALLNAME:이벤트主%は涙を拭い、決意を込めて言う。
+			PRINTFORML 「はい…！今度は二人で…新しい未来へ…！」
+			PRINTFORMW あなたは力強く頷き、彼女の手を握りしめた。
+			CALL EVENT_FAVUP(이벤트主,150)
+		ENDIF
+
+		PRINTFORML 二人は手を繋ぎ、川沿いの道をゆっくりと歩き始める。
+		PRINTFORML 夕日が、二人の未来を照らしている。
+		PRINTFORMW 新しい物語が、ここから始まる。
+		PRINTFORML
+		PRINTFORML しばらくして帰った%CALLNAME:이벤트主%は、カードパックの束をあなたに差し出す。
+		PRINTFORML 「これからは…二人で集めましょう」
+		PRINTFORMW 彼女は恥ずかしそうに微笑む。
+		PRINTFORML
+		PRINTFORML あなたはカードパックを受け取り、彼女の頭を優しく撫でる。
+		PRINTFORML %CALLNAME:이벤트主%は嬉しそうに目を細める。
+		PRINTFORMW 「一緒に…デュエルを楽しみましょう」
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%…本当にありがとうございました」
+		PRINTFORML %CALLNAME:이벤트主%は真剣な表情であなたを見つめる。
+		PRINTFORMW 「これからも…よろしくお願いします」
+		PRINTFORML
+		PRINTFORML あなたは彼女の手を取り、力強く頷いた。
+		PRINTFORML 夕日が沈み、夜の帳が降りてくる。
+		PRINTFORMW 二人は手を繋ぎながら、新しい未来へと歩き出す。
+		PRINTFORML
+		SETCOLOR C_PINK
+		PRINTFORML %CALLNAME:이벤트主%は、彼女だけのヒーローを見つけた。
+		PRINTFORMW %CALLNAME:이벤트主%は【연모】を得た
+		RESETCOLOR
+		TALENT:이벤트主:연모 = 1
+
+		CALL EVENT_FAVUP(이벤트主,300)
+		CALL EVENT_TIMER(180)
+
+		RETURN 2
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、膝をつく。
+		PRINTFORMW %CALLNAME:이벤트主%は、あなたに駆け寄ってくる。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%…！」
+		PRINTFORML %CALLNAME:이벤트主%は心配そうにあなたを見つめる。
+		PRINTFORMW しかし、その瞳には深い失望の色が浮かんでいる。
+		PRINTFORML
+		PRINTFORML 「やっぱり…私には…」
+		PRINTFORML %CALLNAME:이벤트主%は자신を責め始める。
+		PRINTFORMW 「私には…もう…デュエルをする資格なんて…」
+		PRINTFORML
+		PRINTFORML あなたは彼女を止めようとするが、言葉が出てこない。
+		PRINTFORML %CALLNAME:이벤트主%は涙を流しながら、その場を去っていく。
+		PRINTFORMW あなたは、彼女の最後の心の壁を打ち破れなかった。
+		PRINTFORML
+		PRINTFORML その後、%CALLNAME:이벤트主%は完全にデュエルから離れてしまった。
+		PRINTFORML 彼女は二度と、덱を手に取ることはなかった。
+		PRINTFORMW あなたは、彼女を救うことができなかった。
+		PRINTFORML
+		SETCOLOR C_RED
+		PRINTFORMW 彼女の最後の心の壁を、打ち破れなかった…
+		RESETCOLOR
+
+		RETURN 6
+	ENDIF
+
+ENDIF
+
+RETURN 1
+@IRAI_DECK_402653_A(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 依頼_달성상황 == 1
+	RETURN 402653
+ELSEIF 依頼_달성상황 == 2
+	RETURN 412653
+ELSEIF 依頼_달성상황 == 3
+	RETURN 2653 ;캐릭터덱を起用
+ENDIF
+RETURN 0
+
+@IRAI_DUEL_INTRO_402653_A
+PRINTFORML 
+IF 依頼_달성상황 == 1
+	PRINTFORML リーダー「聖女様を誑かした罪、その身で償え！」
+ELSEIF 依頼_달성상황 == 2
+	PRINTFORML 信奉者「まだだ！まだ終わらせない！」
+ELSEIF 依頼_달성상황 == 3
+	PRINTFORML %CALLNAME:NO_TO_CHARANUM(2653)%「お願いします…全力で来てください…！」
+ENDIF
+PRINTFORMW 
+
+@IRAI_REWARD_402653_A
+CALL DP_GET(5000)
+CALL MONEY_GET(20000)
+CALL CARD_PACK_SHORI(30)
+
+;精神操作系덱
+@DUELDECK_402653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1262
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1265
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1647
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1647
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70016
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72040
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70028
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70028
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70028
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70029
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70029
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 54002
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+
+@DUELDECK_412653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1260
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1263
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1262
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1265
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1647
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1647
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70005
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70016
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72040
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+

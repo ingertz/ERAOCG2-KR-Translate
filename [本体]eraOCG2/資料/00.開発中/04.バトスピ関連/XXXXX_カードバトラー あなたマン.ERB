@@ -102,20 +102,20 @@ RETURN 0
 @CARD_EXPLANATION_XXXXX(種類)
 #DIM DYNAMIC 種類
 
-PRINTL このカードはこのカードの効果でのみ特殊소환できる。
+PRINTL このカードはこのカードの効果でのみ特殊召喚できる。
 CALLFORM CARD_ABLE(20,ターン開始時強制)
 PRINTL ①：デュエル開始時に自分の手札に「契約」カードが存在せず、自分のデッキに「契約」カードが１種類のみの場合に発動する。
-PRINTL 덱에서 「契約」カード １장을 패에 넣는다。その後、手札１枚をデッキに加えてシャッフルする。
+PRINTL デッキから「契約」カード１枚を手札に加える。その後、手札１枚をデッキに加えてシャッフルする。
 CALLFORM CARD_ABLE(0,EXデッキ起動)
 PRINTL ②：自分のEXデッキに「創界神」が１種類のみで、
-PRINTL 자신 필드에 「創界神」が存在しない場合に発動できる。
-PRINTL 手札１枚をデッキに加え、EXデッキのこのカードを自分の마법&함정 존に表側表示でセットする。
-CALLFORM CARD_ABLE(0,소환強制誘発)
+PRINTL 自分フィールドに「創界神」が存在しない場合に発動できる。
+PRINTL 手札１枚をデッキに加え、EXデッキのこのカードを自分の魔法＆罠ゾーンに表側表示でセットする。
+CALLFORM CARD_ABLE(0,召喚強制誘発)
 PRINTL ③：このカードが魔法・罠ゾーンに存在する限り、
-PRINTL 自分のモンスターがEX덱에서 特殊소환される度、このカードにコアカウンターを１つ置く。
+PRINTL 自分のモンスターがEXデッキから特殊召喚される度、このカードにコアカウンターを１つ置く。
 CALLFORM CARD_ABLE(0,魔罠起動)
 PRINTL ④：このカードにコアカウンターが４つ以上乗っている場合に発動できる。
-PRINTL このカードのコアカウンターを全て取り除き、このカードをターン終了時まで魔法・罠ゾーンから特殊소환する。
+PRINTL このカードのコアカウンターを全て取り除き、このカードをターン終了時まで魔法・罠ゾーンから特殊召喚する。
 CALLFORM CARD_ABLE(0,永続効果)
 PRINTL ⑤：フィールドのこのカードは対象耐性・破壊耐性を持ち、
 PRINTL このカードがモンスターゾーンに存在する限り、カード名をマスターとしても扱う。
@@ -124,9 +124,9 @@ PRINTL このカードがモンスターゾーンに存在する限り、カー�
 
 
 
-@CARDSUMMON_XXXXX(決闘者,소환カード,EX参照)
+@CARDSUMMON_XXXXX(決闘者,召喚カード,EX参照)
 #DIMS DYNAMIC 決闘者
-#DIM DYNAMIC 소환カード
+#DIM DYNAMIC 召喚カード
 #DIM DYNAMIC EX参照
 #DIM DYNAMIC カウンタ
 
@@ -206,16 +206,16 @@ ELSEIF 種類 == EXデッキ起動
 	SIF RESULT == 1
 		RETURN 0
 	RETURN 1
-ELSEIF 種類 == 소환強制誘発
+ELSEIF 種類 == 召喚強制誘発
 	SIF ゾーン != "魔罠"
 		RETURN 0
 	SIF GETVAR(@"%決闘者%_魔_表:場所") >= 2
 		RETURN 0
-	SIF 最終소환決者 != 決闘者
+	SIF 最終召喚決者 != 決闘者
 		RETURN 0
-	SIF 最終소환タイプ == ""
+	SIF 最終召喚タイプ == ""
 		RETURN 0
-	SIF 最終소환出処 != "EXデッキ"
+	SIF 最終召喚出処 != "EXデッキ"
 		RETURN 0
 	RETURN 1
 ELSEIF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
@@ -283,7 +283,7 @@ ELSEIF 種類 == EXデッキ起動
 			CALL CARD_ADD(決闘者,"EXデッキ", "魔罠", 場所,"表側表示")
 		ENDIF
 	ENDIF
-ELSEIF 種類 == 소환強制誘発
+ELSEIF 種類 == 召喚強制誘発
 	PRINTFORML コアチャージ！あなたにコアカウンターが１つ乗りました。
 	CALL SET_FIELD_INFO(決闘者,"魔罠",場所,"個Ｃ",1)
 ELSEIF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1

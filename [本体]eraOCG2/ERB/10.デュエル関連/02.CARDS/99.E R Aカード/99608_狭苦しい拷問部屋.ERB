@@ -63,9 +63,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -134,7 +133,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				대상呼称A = %CALLNAME:RESULT%
 			ELSE
 				대상A = -1
-				TRYCALLFORM CARDNAME_{選択カードID（CS）}, "名前"
+				TRYCALLFORM CARDNAME_{選択カードID（CS）}("名前")
 				대상呼称A = %RESULTS%
 			ENDIF
 			カード성별A = GETVAR(@"%대상者（CS）%_MZ_性:選択カード（CS）")
@@ -153,7 +152,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				대상呼称B = %CALLNAME:RESULT%
 			ELSE
 				대상B = -1
-				TRYCALLFORM CARDNAME_{選択カードID（CS）}, "名前"
+				TRYCALLFORM CARDNAME_{選択カードID（CS）}("名前")
 				대상呼称B = %RESULTS%
 			ENDIF
 			カード성별B = GETVAR(@"%대상者（CS）%_MZ_性:選択カード（CS）")

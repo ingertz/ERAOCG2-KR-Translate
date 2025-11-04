@@ -1,0 +1,191 @@
+; ============================================================
+; 46463_光り輝く銀河舞台
+; ============================================================
+
+@CARDNAME_46463,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 光り輝く銀河舞台
+	CASE "略称"
+		RESULTS = 銀河舞台
+	CASE "カテゴリ"
+		RESULTS:0 = 光導
+		RESULTS:1 = 神星
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46463(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN フィールド
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46463(種類)
+#DIM DYNAMIC 種類
+PRINTL 自分フィールドは「銀河舞台」となる。
+PRINTL このカード名の①②③の効果は１ターンに１度しか使用できない。
+
+CALLFORM CARD_ABLE(1,魔罠起動,手札起動)
+PRINTL ①：このカードの発動時の効果処理として発動できる。
+PRINTL デッキから「光導」カード１枚を手札に加える。
+
+CALLFORM CARD_ABLE(2,魔罠起動,フリー誘発)
+PRINTL ②：自分・相手のメインフェイズに、自分フィールドの「光導」モンスター１体を対象として発動できる。
+PRINTL そのモンスターをターン終了時までチューナーとして扱う。
+PRINTL その後、自分の手札・フィールドのモンスターを融合素材とし、
+PRINTL 「光導」か「神星」融合モンスター１体を融合召喚する。
+
+CALLFORM CARD_ABLE(3,攻撃時誘発)
+PRINTL ③：自分の「光導」モンスターが戦闘を行う場合、自分の墓地の「光導」カードを３枚対象として発動できる。
+PRINTL そのカードをデッキに戻し、
+PRINTL 自分フィールドの「光導」モンスターの攻撃力をターン終了時まで１０００アップする。
+RETURN 0
+
+
+@CARDCAN_46463(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 枚数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46463)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	SIF 発動済_2(決闘者,46463)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = 光導
+	効果条件種類   = レベル持ち
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF 発動済_1(決闘者,46463)
+		RETURN 0
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 種類 == 戦場起動
+    SIF メインフェイズ != 1
+        RETURN 0
+    SIF ターンプレイヤー != 決闘者
+        RETURN 0
+    SIF 発動済_3(決闘者,46463)
+		RETURN 0
+    CALL FULLRESET
+    効果範囲墓地       = 1
+    効果条件種類       = モン全般
+    効果条件カテゴリ   = 超星
+    効果条件カテゴリ:1 = 光導
+    効果条件CNT        = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT < 3
+        RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46463(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46463,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = 光導
+		効果条件種類 = レベル持ち
+		CALL CARD_GRANT_ADV(決闘者,ゾーン,場所,"一Ｔ",1)
+
+		CALL RESETAREA_MAT
+		素材範囲戦場 = 1
+		素材範囲手札 = 1
+		CALL FULLRESET
+		効果範囲EXデッキ = 1
+		効果条件種類 = 融合
+		効果条件召喚可 = 1
+		効果条件カテゴリ = 光導
+		効果条件スーパーカテゴリ = 神星
+		効果条件任意 = 1
+		CALL CARD_CHOOSE_BASIC(決闘者,"EXデッキ",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%決闘者%_EXデッキ:{選択カード}")}(決闘者,選択カード)
+			CALL FUSSUMMON(決闘者, 選択カード)
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46463,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = 光導
+		効果条件任意 = 1
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+	ENDIF
+
+ELSEIF 種類 == 戦場起動
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46463,3)
+    IF RESULT == 0
+        CALL FULLRESET
+        効果範囲墓地       = 1
+        効果条件種類       = モン全般
+        効果条件カテゴリ   = 超星
+        効果条件カテゴリ:1 = 光導
+        効果条件複数       = 3
+        効果条件行先フラグ = 2
+        CALL CARD_ADD_GY_BASIC(決闘者,"墓地",ゾーン,場所)
+        SIF RESULT != 1
+            RETURN 0
+		CALL FULLRESET
+		効果範囲戦場     = 1
+		効果条件カテゴリ = 光導
+		効果条件種類     = モン全般
+		CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"一攻",1000)
+	ENDIF
+
+ELSEIF 種類 == 永続効果
+	CALL SET_FIELD_MAGIC_INFO(決闘者, "銀河舞台")
+ENDIF
+
+RETURN 0

@@ -1,0 +1,180 @@
+﻿@CARDNAME_4110,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 초신성 아폴로누스 드래게리온
+	CASE "略称"
+		RESULTS = 아폴로누스
+	CASE "カテゴリ"
+		RESULTS:0 = 피닉스
+		RESULTS:1 = 아폴로
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_4110(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 4000
+	CASE "守備力"
+		RETURN 4000
+	CASE "특수불가"
+		RETURN 1
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4110(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 드래곤족モンスター×３
+PRINTL このカードは융합소환及び以下の方法でのみ특수소환できる。
+PRINTL ●자신フィールドの上記のカードをリリースした場合にEX덱から특수소환できる。
+CALLFORM CARD_ABLE(0,EX소환時強制,특수소환時強制)
+PRINTL ①：このカードはX素材を持つことができ、X素材を３つ持った状態で특수소환される。
+CALL CARD_ABLE(0,戦破壊→묘지)
+PRINTL ②：このカードがフィールドから離れた場合に발동できる。
+PRINTL 상대フィールドの마법・함정カードを全て破壊する。
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ③：このカードの攻撃宣言時に、このカードのX素材を３つ取り除いて발동できる。
+PRINTL 상대のＬＰを１にする。
+
+
+@CARDSUMMON_4110(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件종족:0 = 드래곤족
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,4110) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARDCAN_4110(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4110)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,4110)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족:0 = 드래곤족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時強制 || 종류 == 특수소환時強制
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	CALL FULLRESET
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%対面者%") <= 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_4110(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4110)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종족:0 = 드래곤족
+		효과条件複数 = 3
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트, "EX덱", 場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == EX소환時強制 || 종류 == 특수소환時強制
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"Ｘ",3)
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4110,0)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"마함全体",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4110,0,3)
+	IF RESULT == 0
+		CALL LIFE_SET(対面者,1)
+	ENDIF
+ENDIF
+
+

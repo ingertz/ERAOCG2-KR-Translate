@@ -1,0 +1,163 @@
+;========================================================
+; 46499 ソウルクランチ
+;========================================================
+
+@CARDNAME_46499,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ソウルクランチ
+	CASE "略称"
+		RESULTS = ソウルクランチ
+	CASE "カテゴリ"
+		RESULTS:0 = 超星
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46499(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常罠
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46499(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか発動できない。
+
+CALLFORM CARD_ABLE(1,墓地起動)
+PRINTL ①：このカードがカードの効果でデッキから墓地に送られた場合に発動できる。
+PRINTL このカードを手札に加える。
+
+CALLFORM CARD_ABLE(2,魔罠起動)
+PRINTL ②：相手フィールドのカードを２枚対象として発動できる。
+PRINTL 自分の「創界神」からコアカウンターを１つ取り除くことで、そのカードを破壊する。
+PRINTL その後、自分フィールドのモンスター１体にコアカウンターを１つ置く。
+RETURN 0
+
+@CARDCAN_46499(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC カウンタ
+#DIM  DYNAMIC 枚数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46499)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == デッキ→墓地
+	SIF ゾーン != "墓地"
+		RETURN 0
+	SIF 発動済_1(決闘者,46499)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 魔罠起動
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF 発動済_2(決闘者,46499)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠     = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+RETURN 0
+
+@CARDEFFECT_46499(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 選択カード
+#DIM  DYNAMIC 破壊数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == デッキ→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46499,1)
+	IF RESULT == 0
+	CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件名前 = ソウルクランチ
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		CALL CARD_EFFECT_USE(決闘者,46499,1)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 魔罠起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46499,2)
+    IF RESULT == 0
+        ; ── コスト：創界神から個Ｃ－１
+        CALL FULLRESET
+        効果範囲魔罠     = 1
+        効果条件カテゴリ = 創界神
+        効果条件個Ｃ所持 = 1
+        PRINTL コアカウンターを１つ取り除く「創界神」を選んでください。
+        CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+        SIF RESULT == 9999
+            RETURN 0
+        CALL CARD_SELECT(決闘者,RESULT)
+        CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+        ; ── 破壊対象を２枚まで（各選択は任意）
+        FOR 破壊数,0,1
+            CALL FULLRESET
+            効果範囲相手戦場 = 1
+            効果範囲相手魔罠 = 1
+            効果条件任意     = 1
+            PRINTL 【対象%破壊数+1%】破壊する相手のカードを選んでください。
+            CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+            SIF RESULT == 9999
+                CONTINUE
+            CALL CARD_SELECT(決闘者,RESULT)
+            CALL CARD_DISPOSE(対面者,参照先（CS）,選択カード（CS）,破壊行き)
+        NEXT
+
+        ; ── 自分モンスター１体に個Ｃ＋１（任意）
+        CALL FULLRESET
+        効果範囲戦場 = 1
+        効果条件自分 = 1
+        効果条件種類 = モン全般
+        効果条件任意 = 1
+        PRINTL 【任意】コアカウンターを置く自分モンスターを選んでください。
+        CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+        IF RESULT != 9999
+            CALL CARD_SELECT(決闘者,RESULT)
+            CALL SET_FIELD_INFO(決闘者,"戦場",選択カード（CS）,"個Ｃ",1)
+        ENDIF
+
+        CALL CARD_EFFECT_USE(決闘者,46499,2)
+    ENDIF
+	RETURN 0
+ENDIF
+
+RETURN 0

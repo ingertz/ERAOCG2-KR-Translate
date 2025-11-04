@@ -1,0 +1,292 @@
+; ============================================================
+; 46473_煌凛天秤 リヴィー・ラ・フォーレム
+; ============================================================
+
+@CARDNAME_46473,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 煌凛天秤 リヴィー・ラ・フォーレム
+	CASE "略称"
+		RESULTS = 煌凛リブラ
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46473(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RETURN サイキック族
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3300
+	CASE "守備力"
+		RETURN 2400
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46473(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「CoZ12」モンスター×３
+PRINTL このカードはF召喚及び以下の方法でのみ特殊召喚できる。
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+
+CALLFORM CARD_ABLE(0,EXデッキ起動)
+PRINTL ●『煌臨』「天秤造姫 リヴィー・ラ・フォーレム」
+PRINTL 自分ターンに、自分フィールドの「創界神」のコアカウンターを１つ取り除いて発動できる。
+PRINTL 上記モンスターをリリースし、このカードをＥＸデッキから特殊召喚する。
+
+CALLFORM CARD_ABLE(1,効果後誘発)
+PRINTL ①：相手がドローフェイズ以外でデッキからカードを手札に加えた場合に発動できる。
+PRINTL 自分の「創界神」からコアカウンターを１つ取り除き、相手の手札をランダムに１枚選んで捨てる。
+PRINTL その後、相手のデッキの上からカードを５枚墓地へ送る。
+
+CALLFORM CARD_ABLE(2,発動誘発)
+PRINTL ②：相手が魔法・罠・モンスターの効果を発動した時に発動できる。
+PRINTL 自分の「創界神」からコアカウンターを１つ取り除く事で、その発動を無効にし破壊する。
+PRINTL その後、相手のデッキの上からカードを５枚墓地へ送る。
+
+CALLFORM CARD_ABLE(3,破壊→墓地)
+PRINTL ③：このカードが破壊された場合に発動する。
+PRINTL 自分の魔法＆罠ゾーンに存在する「光導」カード１枚につき、相手のデッキの上からカードを３枚墓地へ送る。
+RETURN 0
+
+
+@CARDSUMMON_46473(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM  DYNAMIC 召喚カード
+#DIM  DYNAMIC EX参照
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件カテゴリ = CoZ12
+
+IF EX参照 == 1
+	CALL FUSCAN(決闘者,召喚カード,46473)
+	RETURN RESULT
+ENDIF
+
+@CARDSUMMON_AA_46473
+
+@CARDCAN_46473(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46473)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF ゾーン != "EXデッキ"
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者 || メインフェイズ != 1
+		RETURN 0
+	SIF モンスター数(決闘者) == 5
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件名前 = 天秤造姫 リヴィー・ラ・フォーレム
+	効果条件CNT  = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	効果条件CNT      = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ── ①：効果後誘発（相手がドローフェイズ以外でサーチ／加える）
+IF 種類 == 効果後誘発
+	CALL FULLRESET
+    SIF 発動済_1(決闘者,46473)
+	    RETURN 0
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	効果条件CNT      = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_FILTER_BASIC(決闘者,"相手手札",ゾーン,場所,0)
+	SIF RESULT:1 <= 0
+		RETURN 0
+	CALL CARD_FILTER_BASIC(決闘者,"相手デッキ",ゾーン,場所,0)
+	SIF RESULT:1 <= 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ── ②：相手発動時（無効破壊）
+IF 種類 == 発動誘発
+	CALL FULLRESET
+    SIF 発動済_2(決闘者,46473)
+	    RETURN 0
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	効果条件CNT      = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    CALL FULLRESET
+    効果条件種類 = 魔罠全般
+    CALL CARD_CHECK_START_DATA(決闘者,1)
+    SIF RESULT != 1
+        RETURN 0
+	RETURN 1
+ENDIF
+
+; ── ③：破壊時（墓地肥やし枚数＝自分魔罠の「光導」数×3）
+IF 種類 == 破壊→墓地 || 種類 == 戦破壊→墓地
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 光導
+	CALL CARD_FILTER_BASIC(決闘者,"魔罠",ゾーン,場所,0)
+	SIF RESULT:1 <= 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46473(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC カウンタ
+#DIM  DYNAMIC カウンタB
+#DIM  DYNAMIC 手札枚数
+#DIM  DYNAMIC 選択カード
+#DIM  DYNAMIC 枚数
+#DIM  DYNAMIC 実手札セット,1000
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+; ── EXデッキ起動（『煌臨』）
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46473,0)
+
+	; 1) 創界神から個Ｃ -2
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	SIF RESULT == 9999
+		RETURN 0
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+	; 2) 自分戦場の「天秤造姫 リヴィー・ラ・フォーレム」をリリース
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = モン全般
+	効果条件名前 = 天秤造姫 リヴィー・ラ・フォーレム
+	効果条件任意 = 1
+	CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+	SIF RESULT != 1
+    RETURN 0
+
+	; 3) EXからこのカードを特殊召喚
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件固ID     = 46473
+	CALL CARD_SP_SUMMON(決闘者,"EXデッキ",場所)
+	RETURN 0
+ENDIF
+
+IF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46473,1)
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	SIF RESULT == 9999
+		RETURN 0
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+	VARSET 手札枚数
+	FOR カウンタB,0,紙束最大値
+		SIF GETVAR(@"%対面者%_手札:カウンタB") == -1
+			CONTINUE
+		実手札セット:手札枚数 = カウンタB
+		手札枚数 ++
+	NEXT
+
+	SIF 手札枚数 <= 0
+		RETURN 0
+
+	選択カード = RAND:手札枚数
+	CALL CARD_DISPOSE(対面者,"手札",実手札セット:選択カード)
+
+	CALL CARD_DECK_DISPOSE(決闘者,"デッキ",5,効果墓地行き,1)
+	RETURN 0
+ENDIF
+
+IF 種類 == 発動誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46473,2)
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	SIF RESULT == 9999
+		RETURN 0
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+	CALL FULLRESET
+	CALL CARD_REMOVAL_BASIC(決闘者,"発動無効",場所,"墓地")
+
+	CALL CARD_DECK_DISPOSE(決闘者,"デッキ",5,効果墓地行き,1)
+	RETURN 0
+ENDIF
+
+IF 種類 == 破壊→墓地 || 種類 == 戦破壊→墓地
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46473,3)
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 光導
+	CALL CARD_FILTER_BASIC(決闘者,"魔罠",ゾーン,場所,0)
+	枚数 = RESULT:1 * 3
+	SIF 枚数 <= 0
+		RETURN 0
+
+	CALL CARD_ADD_GY_BASIC(決闘者,"相手デッキ",ゾーン,場所,枚数)
+	RETURN 0
+ENDIF
+
+RETURN 0

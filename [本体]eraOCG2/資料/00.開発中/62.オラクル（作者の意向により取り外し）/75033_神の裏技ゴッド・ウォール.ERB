@@ -1,0 +1,99 @@
+﻿@CARDNAME_75033,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 神の裏技ゴッド・ウォール
+	CASE "略称"
+		RESULTS = ゴッドウォール
+	CASE "カテゴリ"
+		RESULTS:0 = ゴッド
+ENDSELECT
+
+
+@CARD_75033(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 速攻魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_75033(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(1,魔罠起動,手札起動,フリー誘発)
+PRINTL ①：自分フィールドのモンスター１体を対象として発動できる。
+PRINTL このターン、そのモンスターは戦闘耐性を得る。
+PRINTL 自分のフィールドに「ゴッド」モンスター存在する場合、さらにこのターン、そのモンスターは完全耐性を得る。
+
+
+@CARDCAN_75033(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,75033)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動 || 種類 == フリー誘発
+	CALL CARD_QUICK_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_75033(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,75033)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+
+		CALL CARD_CHOOSE_BASIC(決闘者, "戦場",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL SET_FIELD_INFO(決闘者,"戦場",選択カード,"戦耐",1,1)
+		ENDIF
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果範囲魔罠 = 1
+		効果条件カテゴリ = ゴッド
+		効果条件種類 = モン全般
+		効果条件CNT = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		IF RESULT >= 1
+			CALL SET_FIELD_INFO(決闘者,"戦場",選択カード,"モ耐",1,1)
+			CALL SET_FIELD_INFO(決闘者,"戦場",選択カード,"魔耐",1,1)
+			CALL SET_FIELD_INFO(決闘者,"戦場",選択カード,"罠耐",1,1)
+		ENDIF
+	ENDIF
+ENDIF

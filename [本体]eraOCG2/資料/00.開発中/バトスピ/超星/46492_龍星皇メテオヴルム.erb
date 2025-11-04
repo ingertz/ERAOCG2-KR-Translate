@@ -1,0 +1,178 @@
+;========================================================
+; 46492 龍星皇メテオヴルム（リリース必須版）
+;========================================================
+
+@CARDNAME_46492,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 龍星皇メテオヴルム
+	CASE "略称"
+		RESULTS = メテオヴルム
+	CASE "カテゴリ"
+		RESULTS:0 = 星竜
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46492(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 炎属性
+	CASE "種族"
+		RETURN ドラゴン族
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46492(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：自分メインフェイズまたは相手バトルフェイズに発動できる。
+PRINTL 自分フィールドの「星竜」モンスター１体をリリースし、
+PRINTL 手札のこのカードを特殊召喚する。
+CALLFORM CARD_ABLE(2,特殊召喚時)
+PRINTL ②：このモンスターが特殊召喚した場合に発動できる。
+PRINTL 相手フィールドの最も攻撃力が高いモンスター１体を墓地に送る。
+PRINTL その後、このターンの間、相手はバトルフェイズ中に効果を発動できない。
+CALLFORM CARD_ABLE(3,攻撃後誘発)
+PRINTL ③：このモンスターが戦闘で相手モンスターを破壊した場合に発動できる。
+PRINTL 相手のＬＰを半分にする。
+RETURN 0
+
+
+@CARDCAN_46492(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46492)
+SIF RESULT == 1
+	RETURN 0
+
+; ① 手札起動（自分メイン / 相手バトル）
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,46492)
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,46492,"手札")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場   = 1
+	効果条件カテゴリ = 星竜
+	効果条件種類   = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	IF メインフェイズ == 1 && ターンプレイヤー == 決闘者
+		RETURN 1
+	ENDIF
+	IF バトルフェイズ == 1 && ターンプレイヤー == 対面者
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 特殊召喚時
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46492)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 攻撃後誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(決闘者,1) == 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46492(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC カウンタ
+#DIM  DYNAMIC 枚数
+#DIM  DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46492,1)
+	CALL FULLRESET
+	効果範囲戦場   = 1
+	効果条件カテゴリ = 星竜
+	効果条件種類   = モン全般
+	効果条件複数   = 1
+	効果条件任意   = 1
+	CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	RETURN 0
+ENDIF
+
+; ② SS時：対面者の最強ATKモンスター1体を墓地へ → このターン中、相手はバトルフェイズで効果発動不可
+IF 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46492,2)
+
+	選択カード = -1
+	枚数 = -999999
+	FOR カウンタ,0,紙束最大値
+		SIF GETVAR(@"%対面者%_MZ:カウンタ") == -1
+			CONTINUE
+		IF GETVAR(@"%対面者%_MZ_攻:カウンタ") > 枚数
+			枚数 = GETVAR(@"%対面者%_MZ_攻:カウンタ")
+			選択カード = カウンタ
+		ENDIF
+	NEXT
+
+	IF 選択カード != -1
+		CALL CARD_DISPOSE(対面者,"戦場",選択カード,墓地行き)
+	ENDIF
+	
+	CALL SET_PLAYER_INFO(対面者,"モン効果無効",3)
+	CALL SET_PLAYER_INFO(対面者,"魔罠無効",3)
+	RETURN 0
+ENDIF
+
+IF 種類 == 攻撃後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46492,3)
+	CALL LIFE_CHANGE(決闘者,"半分","変更",0,1)
+	RETURN 0
+ENDIF
+
+RETURN 0

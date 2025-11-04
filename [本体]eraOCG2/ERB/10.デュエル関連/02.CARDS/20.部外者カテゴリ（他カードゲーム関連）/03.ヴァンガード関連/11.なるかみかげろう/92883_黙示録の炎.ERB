@@ -27,7 +27,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -88,9 +87,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 지속효과
@@ -108,7 +106,7 @@ ELSEIF 종류 == 攻撃後誘発
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트) == 5
 		RETURN 0
-	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)},"カテゴリ"
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
 	SIF !MATCH(RESULTS,"오버로드")
 		RETURN 0
 	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0

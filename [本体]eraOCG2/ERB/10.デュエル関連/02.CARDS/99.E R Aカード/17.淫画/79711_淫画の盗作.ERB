@@ -33,7 +33,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：자신 필드의 「음화」 몬스터 1장을 대상으로 발동할 수 있다.
 PRINTL 그 몬스터가 이름을 복제한 카드의 카테고리를 가진 마법 / 함정 카드 1장을 상대 덱 / 묘지에서 자신의 패에 넣는다.
@@ -70,7 +70,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			CONTINUE
 		SIF GETVAR(@"%듀얼리스트%_MZ_変化元ID:{カウンタ}") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}("カテゴリ")
 		SIF !MATCH(RESULTS, "음화")
 			CONTINUE
 		条件달성++
@@ -107,12 +107,12 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
 				CONTINUE
 			選択カード_ID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
-			TRYCALLFORM CARDNAME_{選択カード_ID},"カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 			SIF !MATCH(RESULTS,"음화")
 				CONTINUE
 			SIF GETVAR(@"%듀얼리스트%_MZ_変化元ID:{カウンタ}") == -1
 				CONTINUE
-			TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 			IF RESULTS != ""
 				条件달성カード名:カウンタ = %RESULTS%
 			ENDIF
@@ -135,7 +135,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		IF RESULT != 9999
 			選択カード_ID = GETVAR(@"%듀얼리스트%_MZ_変化元ID:RESULT")
 			IF 選択カード_ID != -1
-				TRYCALLFORM CARDNAME_{選択カード_ID},"カテゴリ"
+				TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 				복제カテゴリ:0 = %RESULTS:0%
 				복제カテゴリ:1 = %RESULTS:1%
 				복제カテゴリ:2 = %RESULTS:2%
@@ -155,7 +155,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 				IF RESULT != 9999
 					選択カード_ID = RESULT:99
 					選択カード = RESULT
-					TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+					TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 					이동カード名 = %RESULTS%
 					CALL CARD_SELECT(듀얼리스트,選択カード)
 					IF 本参照先（CS） == "상대덱"

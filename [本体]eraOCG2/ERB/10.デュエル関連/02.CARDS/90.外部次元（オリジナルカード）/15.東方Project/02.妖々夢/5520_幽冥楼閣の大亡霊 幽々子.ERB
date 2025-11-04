@@ -1,0 +1,383 @@
+﻿@CARDNAME_5520,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 저승누각의 대망령 유유코
+	CASE "略称"
+		RESULTS = 사이교우지유유코
+	CASE "カテゴリ"
+		RESULTS:0 = 백옥루
+		RESULTS:1 = 환상소녀
+		RESULTS:4 = 동방 Project
+ENDSELECT
+
+
+@CARD_5520(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+
+	CASE "추가日"
+		RETURN 250808
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5520(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 언데드족 튜너＋튜너 이외의 몬스터 １장 이상
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+;死者を操る能力
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：이 카드가 S소환된 경우에 발동할 수 있다。
+PRINTL 자신 덱에서 "백옥루" 카드 １장을 묘지로 보내고、상대 덱에서 몬스터 １장을 묘지로 보낸다。
+;死者を使役する효과
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 묘지에 언데드족 몬스터가 존재하는 플레이어의 수 만큼 덱에서 "백옥루" 카드를 패에 넣는다。
+PRINTL （같은 이름의 카드는 １장 까지）
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：서로는 묘지의 몬스터의 효과를 발동할 수 없다。
+
+@CARDSUMMON_5520(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 8
+
+;1体目の条件
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+	素材条件종족 = 언데드족
+ELSEIF EX参照 >= 10
+	素材条件튜너 = 0
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,5520) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_5520(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5520)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,5520)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 白玉楼
+
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,5520)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과条件종족 = 언데드족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 백옥루
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_5520(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5520,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 白玉楼
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT
+			CALL FULLRESET
+			효과範囲상대덱 = 1
+			효과条件종류 = モン全般
+			효과条件任意 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5520,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 언데드족
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 += 1
+
+		CALL FULLRESET
+		효과範囲상대묘지 = 1
+		효과条件종족 = 언데드족
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 += 1
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 백옥루
+		효과条件複数 = 100 - 条件달성
+		효과条件固名前選択 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_PLAYER_INFO(듀얼리스트,"묘지_モン無効",3,2)
+ENDIF
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+
+@CARDNAME_105520,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 사이교우아야카시와 공주의 망해
+	CASE "略称"
+		RESULTS = 서행가성의 영애
+	CASE "カテゴリ"
+		RESULTS:0 = 백옥루
+		RESULTS:1 = 이변
+		RESULTS:4 = 동방 Project
+ENDSELECT
+
+
+@CARD_105520(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "トークン"
+		RETURN 1
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_105520(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+;죽은 자를 조종하는 능력
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：서로의 턴에 발동할 수 있다。상대 필드의 카드 １장을 파괴한다。
+PRINTL 이렇게 파괴한 카드가 몬스터인 경우、상대의 묘지에서 같은 이름의 몬스터를 골라、
+PRINTL 언데드족 몬스터로서 자신 필드에 특수 소환한다。
+CALLFORM CARD_ABLE(0,효과後強制誘発)
+PRINTL ②：이 카드가 필드 / 묘지에 존재하는 한
+PRINTL 상대가 카드의 효과를 발동할 때마다、상대는 덱의 위에서 3장을 묘지로 보낸다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드가 필드 / 묘지에 존재하는 한、상대는 묘지의 카드의 효과를 발동할 수 없으며、
+PRINTL 상대의 덱이 ０장인 경우、상대는 게임에 패배한다。
+
+
+@CARDSUMMON_105520(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 8
+
+;1体目の条件
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = 0
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,105520) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_105520(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,105520)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,105520)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대마함 = 1
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後強制誘発
+	SIF !GROUPMATCH(ゾーン,"필드","묘지")
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF !GROUPMATCH(ゾーン,"필드","묘지")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_105520(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード_ID
+
+#DIMS DYNAMIC 選択カード名
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,105520,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		IF RESULT == 1
+			選択カード_ID = RESULT:2
+			TRYCALLFORM CARD_{選択カード_ID}("종류")
+			IF RESULT <= 10
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+				選択カード名 = %RESULTS%
+
+				CALL FULLRESET
+				효과範囲상대묘지 = 1
+				효과条件名前 = %選択カード名%
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,105520)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",3,0,1)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_PLAYER_INFO(듀얼리스트,"묘지_モン無効",3,1)
+	CALL FULLRESET
+	효과範囲덱 = 1
+	CALL CARD_CHECK_ADV(対面者,종류,ゾーン,場所)
+	IF RESULT <= 0
+
+		SETCOLOR C_RED
+		PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+		PRINTL
+		PRINTFORMW 「꽃 아래에서……
+		PRINTFORMW 　　잠들까요？」
+		PRINTL
+		CUSTOMDRAWLINE ―
+
+		CALL SET_PLAYER_INFO(듀얼리스트,"듀얼패배플래그",4,1)
+	ENDIF
+ENDIF
+

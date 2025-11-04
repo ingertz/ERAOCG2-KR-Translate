@@ -1,0 +1,148 @@
+﻿@CARDNAME_58033,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = No.33 오파츠 마추 마크
+	CASE "略称"
+		RESULTS = #33 마추 마크
+	CASE "カテゴリ"
+		RESULTS:0 = 넘버즈
+		RESULTS:1 = 오파츠
+ENDSELECT
+
+
+@CARD_58033(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 1500
+	CASE "추가日"
+		RETURN 250613
+ENDSELECT
+
+RETURN 0
+@CARDSUMMON_58033(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 5
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,58033) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_58033(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨 5 몬스터 x 2
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ①: 1턴에 1번, 이 카드의 엑시즈 소재를 1개 제거하고,
+PRINTL 상대 필드의 몬스터 1장을 대상으로 하여 발동할 수 있다.
+PRINTL 이 카드의 공격력은 그 몬스터의 원래 공격력의 절반만큼 올린다.
+PRINTL 대상으로 한 몬스터의 공격력이 원래 공격력과 다를 경우,
+PRINTL 또한 그 차이만큼의 데미지를 상대에게 준다.
+
+@CARDCAN_58033(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58033)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 選択
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_58033(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC ダメージ修正
+#DIM DYNAMIC 攻撃力修正
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58033,10,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			選択カード_ID = RESULT:99
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = 選択カード（CS）
+			
+			TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
+			攻撃力修正 = RESULT
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",攻撃力修正 / 2)
+
+			SIF 攻撃力修正 == GETVAR(@"%対面者%_MZ_攻:選択カード")
+				RETURN 0
+			IF RESULT > GETVAR(@"%対面者%_MZ_攻:選択カード")
+				ダメージ修正 = RESULT - GETVAR(@"%対面者%_MZ_攻:選択カード")
+				CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ修正,1)
+			ELSEIF RESULT < GETVAR(@"%対面者%_MZ_攻:選択カード")
+				ダメージ修正 = GETVAR(@"%対面者%_MZ_攻:選択カード") - 攻撃力修正
+				CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ修正,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

@@ -32,7 +32,7 @@ SIF GETVAR(@"%듀얼리스트%_単体攻撃") >= 1
 
 攻撃カードID = GETVAR(@"%듀얼리스트%_필드:攻撃元")
 CALL SET_FIELD_INFO(듀얼리스트,"필드",攻撃元,"戦",-1)
-TRYCALLFORM CARDNAME_{攻撃カードID}, "名前"
+TRYCALLFORM CARDNAME_{攻撃カードID}("名前")
 攻撃元カード名 = %RESULTS%
 
 IF 듀얼리스트 == "상대"
@@ -51,7 +51,7 @@ IF GETVAR(@"%듀얼리스트%_戦闘カード") != 5 && 攻撃先 == 99
 	PRINTFORMW %攻撃元カード名%으로 다이렉트 어택！！！
 	CALL PRINT_STATE_DUEL(攻撃カードID)
 ELSE
-	TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:攻撃先")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:攻撃先")}("名前")
 	攻撃先カード名 = %RESULTS%
 	SIF GETVAR(@"%対面者%_MZ_表:攻撃先") == 3
 	攻撃先カード名 = 裏側표시モンスター
@@ -125,7 +125,7 @@ IF バトル強制終了 == 1
 ENDIF
 
 IF GETVAR(@"%듀얼리스트%_戦闘カード") != 5 && 攻撃先 == 99 && GETVAR(@"%듀얼리스트%_攻撃無効_保") != 1
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:攻撃元")}, "종류"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:攻撃元")}("종류")
 	SIF RESULT == 엑시즈
 		SETVAR @"%듀얼리스트%_AAZEUS",1
 
@@ -166,15 +166,15 @@ ELSEIF GETVAR(@"%対面者%_戦闘カード") == 5
 	PRINTFORMW 전투 중의 %対面者% 몬스터가 전투에서 제외되었습니다。
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,51,4)
 ELSE
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:攻撃元")}, "종류"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:攻撃元")}("종류")
 	SIF RESULT == 엑시즈
 		SETVAR @"%듀얼리스트%_AAZEUS",1
-	TRYCALLFORM CARD_{GETVAR(@"%対面者%_필드:攻撃先")}, "종류"
+	TRYCALLFORM CARD_{GETVAR(@"%対面者%_필드:攻撃先")}("종류")
 	SIF RESULT == 엑시즈
 		SETVAR @"%듀얼리스트%_AAZEUS",1
 
 
-	TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:攻撃先")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:攻撃先")}("名前")
 	攻撃先カード名 = %RESULTS%
 
 

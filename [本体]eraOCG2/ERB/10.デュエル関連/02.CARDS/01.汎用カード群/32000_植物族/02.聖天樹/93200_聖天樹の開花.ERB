@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 생아발론 블루밍
+		RESULTS = 생아발론 블루밍
 	CASE "略称"
-RESULTS = 성천수의 개화
+		RESULTS = 성천수의 개화
 	CASE "カテゴリ"
-RESULTS:0 = 생아발론
+		RESULTS:0 = 생아발론
 ENDSELECT
 
 
@@ -63,17 +63,16 @@ IF 종류 == 攻撃時誘発
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
 		RETURN 0
-	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}, "종족"
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("종족")
 	SIF RESULT != 식물족
 		RETURN 0
-	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}, "종류"
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("종류")
 	SIF RESULT != 링크
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,93200)
 		RETURN 0

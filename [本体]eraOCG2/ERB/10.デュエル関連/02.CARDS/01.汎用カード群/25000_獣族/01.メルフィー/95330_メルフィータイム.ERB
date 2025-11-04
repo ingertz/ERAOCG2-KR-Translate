@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 메르피타임
+		RESULTS = 메르피타임
 	CASE "略称"
-RESULTS = 메르피타임
+		RESULTS = 메르피타임
 	CASE "カテゴリ"
-RESULTS:0 = 메르피
+		RESULTS:0 = 메르피
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -55,9 +54,8 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,95330)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	;야수족Xがいる
 	CALL FULLRESET
@@ -113,7 +111,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 			RETURN 1
 		X素材数 = GETVAR(@"%듀얼리스트%_MZ_Ｘ:選択カード") + 1
 		IF 듀얼리스트 == "자신"
-PRINTL 몇 장 제거합니까?
+			PRINTL 몇 장 제거합니까?
 			PRINT [1] 
 			SIF X素材数 >= 2
 				PRINT [2] 

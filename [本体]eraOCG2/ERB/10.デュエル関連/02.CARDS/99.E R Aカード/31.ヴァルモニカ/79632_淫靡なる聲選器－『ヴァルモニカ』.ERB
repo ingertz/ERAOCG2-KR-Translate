@@ -33,7 +33,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  카드는 1턴에 1번 밖에 발동할 수 없으며, 이 카드명의  ②의 효과는 1턴에 1번 밖에 사용 할 수 없다.
+PRINTL 이 카드명의 카드는 1턴에 1번 밖에 발동할 수 없으며, 이 카드명의 ②의 효과는 1턴에 1번 밖에 사용 할 수 없다.
 CALLFORM CARD_ABLE(1, 마함起動, 손패起動)
 PRINTL ①：이 카드의 발동시 처리효과로서、덱 / ＥＸ덱（앞면표시)에서
 PRINTL "바르모니카"펜듈렘 몬스터 1장을 패로 가져올 수 있다.
@@ -112,9 +112,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트, 79632)
 		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	;덱에 바르모니카が존재하는 かチェック
 	;효과処理で"できる"텍스트はサーチ先の空打ちOKなのでSIFの先もRETURN 1
@@ -234,7 +233,7 @@ ENDIF
 
 IF 条件달성 == 1
 	
-	TRYCALLFORM CARDNAME_{コントロール選択カード}, "名前"
+	TRYCALLFORM CARDNAME_{コントロール選択カード}("名前")
 	조교대상名称 = %RESULTS%
 	
 	

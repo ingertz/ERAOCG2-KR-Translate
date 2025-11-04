@@ -1,0 +1,139 @@
+﻿@CARDNAME_64865,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 특수작전 재현 장치
+	CASE "略称"
+		RESULTS = 특수작전재현장치
+	CASE "カテゴリ"
+		RESULTS:0 = 전술 장비
+		RESULTS:4 = 명일방주
+ENDSELECT
+
+
+@CARD_64865(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 250421
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_64865(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 1턴에 1장만 사용할 수 있다.
+CALLFORM CARD_ABLE(1,손패起動,마함起動,フリー誘発)
+PRINTL ①：자신 필드에 "오퍼레이터"가 3체 이상 존재할 경우 발동할 수 있다.
+PRINTL 자신의 패 마법 & 함정 존에서 "스나이퍼""메딕""캐스터""서포터" 오퍼레이터 1장을 특수 소환한다.
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ②：자신 필드의 "스나이퍼""메딕""캐스터""서포터" 오퍼레이터가 파괴될 경우,
+PRINTL 대신 묘지의 이 카드를 제외하고, 그 오퍼레이터를 패에 넣을 수 있다.
+
+
+@CARDCAN_64865(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,64865)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動  || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,64865)
+		RETURN 0
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 오퍼레이터
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ:0 = Sniper
+	효과条件カテゴリ:1 = Caster
+	효과条件カテゴリ:2 = Medic
+	효과条件カテゴリ:3 = Supporter
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"효과","戦闘")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{破壊대상ID}("カテゴリ")
+	SIF !GROUPMATCH(RESULTS,"Sniper","Caster","Medic","Supporter")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_64865(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動  || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,64865,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲마함 = 1
+		효과条件カテゴリ:0 = Sniper
+		효과条件カテゴリ:1 = Caster
+		효과条件カテゴリ:2 = Medic
+		효과条件カテゴリ:3 = Supporter
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,64865)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL CARD_DISPOSE(듀얼리스트,"필드",破壊대상場所,손패行き)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

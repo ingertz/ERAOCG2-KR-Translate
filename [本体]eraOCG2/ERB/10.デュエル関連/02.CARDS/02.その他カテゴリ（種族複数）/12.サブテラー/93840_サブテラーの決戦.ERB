@@ -1,0 +1,99 @@
+@CARDNAME_93840,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 서브테러의 결전
+	CASE "略称"
+		RESULTS = 서브테러의 결전
+	CASE "カテゴリ"
+		RESULTS:0 = 서브테러
+ENDSELECT
+
+
+@CARD_93840(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93840(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,마함起動 ,フリー誘発)
+PRINTL ①: 이하의 효과 중에서 하나를 선택하여 발동할 수 있다. 발동 후 이 카드는 묘지로 보내지 않고, 그대로 세트한다.
+PRINTL ●: "서브테러" 몬스터 1장을 선택하여, 그 표시 형식을 변경한다.
+PRINTL ●: "서브테러" 몬스터 1장을 선택하여, 그 공격력과 수비력은 턴 종료 시까지 2000 업한다.
+PRINTL 
+
+@CARDCAN_93840(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93840)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 서브테러
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_93840(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93840)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"表",3,1)
+		CALL FULLRESET
+		효과条件カテゴリ = 서브테러
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL YN_CHOICE(듀얼리스트,"●그 표시형식을 변경한다。","●그 공격력과 수비력은 턴 종료시까지 ２０００오른다。")
+			IF RESULT == 0
+				IF GETVAR(@"%듀얼리스트%_MZ_表:選択カード") != 1
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"表",1,上書きモード)
+				ELSEIF GETVAR(@"%듀얼리스트%_MZ_表:選択カード") == 1
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"表",2,上書きモード)
+				ENDIF
+			ELSE
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一攻",2000)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

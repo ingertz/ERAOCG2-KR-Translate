@@ -1,0 +1,208 @@
+﻿@CARDNAME_77510,参照先
+;ココで指定卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 惑乱魔狩猟園
+	CASE "略称"
+		RESULTS = 惑乱魔狩猟園
+	CASE "カテゴリ"
+		RESULTS:0 = 惑乱魔
+		RESULTS:1 = 惑乱魔狩猟園
+		RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_77510(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN フィールド
+	CASE "唯一存在"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_77510(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 「惑乱魔狩猟園」は自分フィールドに１枚しか表側表示で存在できない。
+PRINTL このカード名の①③の効果はそれぞれ１ターンに１度使用できる。
+PRINTL 自分フィールドは「惑乱魔狩猟園」となる。
+CALL CARD_ABLE(1,手札起動)
+PRINTL ①：このカードの発動時の効果処理として。
+PRINTL デッキから「惑乱魔」モンスター１体を手札に加える。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ②：自分フィールドの「惑乱魔」モンスターは相手が発動した罠カードの効果を受けない。
+CALLFORM CARD_ABLE(2,ターン終了時)
+PRINTL ③：ターン終了時、自分フィールドの「惑乱魔」エクシーズモンスター１体と相手フィールドの表側表示モンスター１体を対象として発動できる。
+PRINTL 対象の相手モンスターに自分フィールドの「惑乱魔」モンスター全ての蟲紋カウンターをそれぞれ１つずつ置く。
+PRINTL その後、対象の相手モンスターに置かれている蟲紋カウンターが４種類以上の場合、
+PRINTL そのモンスターは自分フィールドのエクシーズモンスターの"蜜壺"となる。
+CALL TEXT_DECORATION("ROGUE")
+
+;"蜜壺":対象のモンスターを自分モンスターのエクシーズ素材とする。ただし、墓地へは送らず“消滅”させる。
+
+
+@CARDCAN_77510(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,77510)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	IF 種類 == 魔罠起動
+		SIF GETVAR(@"%決闘者%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF 発動済_1(決闘者,77510)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件表示 = 表側表示
+	効果条件名前 = 惑乱魔狩猟園
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == ターン終了時 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	SIF 発動済_2(決闘者,77510)
+		RETURN 0
+	SIF ゾーン != "魔罠"
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件表示 = 表側表示
+	効果条件カテゴリ = 惑乱魔
+	効果条件種類 = エクシーズ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_77510(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 选择卡片,2
+#DIM DYNAMIC 选择卡片_ID
+#DIM DYNAMIC 调教对象,2
+#DIM DYNAMIC 蟲纹種類
+#DIM DYNAMIC 追加蟲纹種類
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,77510,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+		CALL FULLRESET
+		効果条件カテゴリ = 惑乱魔
+		効果条件種類 = モン全般
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+	ENDIF
+
+ELSEIF 種類 == ターン終了時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,77510,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件表示 = 表側表示
+		CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+		选择卡片:0 = RESULT
+		IF 选择卡片:0 != 9999
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件表示 = 表側表示
+			効果条件カテゴリ = 惑乱魔
+			効果条件種類 = エクシーズ
+			CALL CARD_CHOOSE_BASIC(決闘者,"戦場",ゾーン,場所)
+			选择卡片:1 = RESULT
+			IF 选择卡片:1 != 9999
+				追加蟲纹種類 = 0
+				FOR カウンタ,0,5
+					SIF GETVAR(@"%決闘者%_戦場:カウンタ") == -1
+						CONTINUE
+					SIF GETVAR(@"%決闘者%_MZ_リ数:カウンタ") >= 10
+						CONTINUE
+					SIF GETVAR(@"%決闘者%_MZ_表:カウンタ") == 3
+						CONTINUE
+
+					选择卡片_ID = GETVAR(@"%決闘者%_戦場:カウンタ")
+					CALL TRAPSEX_FACETIRON3(決闘者,ゾーン,種類,場所,选择卡片:0,选择卡片_ID)
+					追加蟲纹種類++
+				NEXT
+
+				调教对象:0 = GETVAR(@"%対面者%_戦場:(选择卡片:0)")
+				调教对象:1 = GETVAR(@"%決闘者%_戦場:(选择卡片:1)")
+				CALL SEXTEXT_77510_1_1(決闘者,追加蟲纹種類,调教对象:1,调教对象:0)
+
+				CALL TRAPSEX_FACETIRON1(対面者,选择卡片:0)
+				蟲纹種類 = RESULT
+				IF 蟲纹種類 >= 4
+					调教对象 = GETVAR(@"%対面者%_戦場:(选择卡片:0)")
+					CALL SEXTEXT_77510_1_2(決闘者,调教对象:1,调教对象:0)
+
+					CALL CARD_DISPOSE(対面者,"戦場",选择卡片:0,消滅行き)
+					CALL SET_FIELD_INFO(決闘者,"戦場",选择卡片:1,"Ｘ",1)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 永続効果
+	CALL FULLRESET
+	CALL SET_FIELD_MAGIC_INFO(決闘者, "惑乱魔狩猟園")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"罠耐")
+ENDIF
+
+
+
+

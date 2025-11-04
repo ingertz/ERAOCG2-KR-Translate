@@ -16,6 +16,7 @@
 #DIM DYNAMIC 上級値
 #DIM DYNAMIC 選択カード,99
 #DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 選択カード_ID_保
 #DIM DYNAMIC 素材行先플래그
 #DIM DYNAMIC 속성의식플래그
 #DIMS DYNAMIC カテゴリ의식플래그 ;ザポルグ追記
@@ -53,7 +54,7 @@ VARSET 選択カード, -1
 VARSET 使用素材名前
 
 IF 条件無視 == 1
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("名前")
 	PRINTFORML 의식 소환、%RESULTS%！
 	CALL CARD_EX_SUMMON(듀얼리스트,出処,소환カード)
 	VARSET ALT条件
@@ -62,19 +63,19 @@ ENDIF
 
 
 $CHOICE_LOOP
-TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "속성"
+TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("속성")
 속성의식플래그 = RESULT
-TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "カテゴリ"
+TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("カテゴリ")
 カテゴリ의식플래그 = RESULT
 IF 룡輝巧의식 == 1
 
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "攻撃力"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("攻撃力")
 	必要レベル数 = RESULT
 	素材条件종족 = 기계족
 ENDIF
 
 IF 듀얼리스트 == "자신"
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("名前")
 	カード名 = %RESULTS%
 	PRINTFORML 소환 카드：《%カード名%》
 
@@ -116,13 +117,22 @@ IF 選択カード:素材数 == 9999
 	VARSET ALT条件
 	RETURN 0
 ELSE
+	CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
+	選択カード_ID_保 = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")
+	CALL SELECT_UI_SET(듀얼리스트,選択カード_ID_保,1)
+	IF RESULT == 1
+		選択カード:素材数 = -1
+		GOTO CHOICE_LOOP
+	ENDIF
+
+
 	IF INRANGE (選択カード:素材数, 0, 5)
-		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{選択カード:素材数}")}, "의식代用"
+		TRYCALLFORM CARD_{選択カード_ID_保}("의식代用")
 		IF RESULT == 속성의식플래그
 			レベル合計 = 9999					
 		ELSE
 			;ザポルグ追記
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{選択カード:素材数}")}, "의식代用カテゴリ"
+			TRYCALLFORM CARD_{選択カード_ID_保}("의식代用カテゴリ")
 			IF RESULTS == カテゴリ의식플래그
 				レベル合計 = 9999	
 			ELSE
@@ -135,23 +145,20 @@ ELSE
 			;ここまで
 		ENDIF
 	ELSE
-		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "의식代用"
+		TRYCALLFORM CARD_{選択カード_ID_保}("의식代用")
 		IF RESULT == 속성의식플래그
 			レベル合計 = 9999					
 		ELSE
 			;ザポルグ追記
-			CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-			TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "의식代用カテゴリ"
+			TRYCALLFORM CARD_{選択カード_ID_保}("의식代用カテゴリ")
 			IF RESULTS == カテゴリ의식플래그
 				レベル合計 = 9999
 			ELSE
-				CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
 				IF 룡輝巧의식 == 1
-					TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "攻撃力"
+					TRYCALLFORM CARD_{選択カード_ID_保}("攻撃力")
 					レベル合計 = レベル合計 + RESULT
 				ELSE
-					TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "レベル"
+					TRYCALLFORM CARD_{選択カード_ID_保}("レベル")
 					レベル合計 = レベル合計 + RESULT
 				ENDIF
 			ENDIF
@@ -163,9 +170,9 @@ ENDIF
 
 ;Anonym追記ここから
 CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "名前"
+TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}("名前")
 使用素材名前:素材数 = %RESULTS%
-PRINTFORMW %使用素材名前:素材数%를 소재로합니다({素材数+1}체째)
+PRINTFORMW %使用素材名前:素材数%를 소재로합니다({素材数+1}장째)
 
 ;현재의 소재의 수と、素材条件素材ID起動で지정した数が同じなら起動
 IF 素材ID起動 == 素材数 + 1
@@ -224,7 +231,7 @@ IF レベル合計 >= 必要レベル数
 		ENDIF
 	NEXT
 
-	TRYCALLFORM CARDNAME_{소환カード_ID}, "名前"
+	TRYCALLFORM CARDNAME_{소환カード_ID}("名前")
 	カード名 = %RESULTS%
 	PRINTFORML 몬스터들을 릴리스！
 
@@ -264,7 +271,7 @@ ENDIF
 #DIM DYNAMIC カウンタB
 #DIM DYNAMIC EX参照
 #DIM DYNAMIC 選択カード,99
-#DIM DYNAMIC 選択カード_ID,10
+#DIM DYNAMIC 選択カード_ID,99
 #DIM DYNAMIC 소환カード
 #DIM DYNAMIC 소환カード_ID
 #DIM DYNAMIC 素材数
@@ -297,7 +304,7 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 룡輝巧의식 == 1
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "攻撃力"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("攻撃力")
 	必要レベル数 = RESULT
 	素材条件종족 = 기계족
 ENDIF

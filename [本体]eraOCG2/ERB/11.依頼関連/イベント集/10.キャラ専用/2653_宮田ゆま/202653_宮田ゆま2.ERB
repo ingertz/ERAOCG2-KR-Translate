@@ -1,0 +1,963 @@
+@IRAI_EVENT_202653(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2653-02)偽りの救済
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_教会
+	CASE "詳細"
+		PRINTL 宮田ゆまから「デュエルを通じて人々に安らぎを与える活動をしているグループに参加した」と連絡があった。
+		PRINTL しかし、その活動内容を聞くと、どこか違和感を覚える。
+		PRINTL 
+		PRINTL 報酬：2000DP、カードパック×10
+	CASE "条件"
+		SIF 依頼_完了횟수:102653 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:이벤트主:호감도 < 500
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:이벤트主:반발각인 > 0
+			RESULTS = 彼女はあなたを信じたいと思っているようだが、まだ心の整理がついていないようだ。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_202653(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 教祖
+#DIM DYNAMIC 信奉者A
+#DIM DYNAMIC 信奉者B
+
+이벤트主 = NO_TO_CHARANUM(2653)
+教祖 = -1
+信奉者A = -1
+信奉者B = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 数日前、%CALLNAME:이벤트主%から一通のメッセージが届いた。
+	PRINTFORML 「素敵な方々に出会いました！デュエルを通じて人々に安らぎを与える活動をしているんです」
+	PRINTFORMW 彼女の言葉は、いつもの純粋さに満ちていた。
+	PRINTFORML
+	PRINTFORML しかし、その後の説明を聞いて、あなたは違和感を覚えた。
+	PRINTFORML 「상대の心の弱さを見抜いて、一度絶望させてから導くんです」
+	PRINTFORML 「そうすることで、本当の救いを与えられるって…」
+	PRINTFORMW %CALLNAME:이벤트主%の言葉には、どこか不自然な響きがあった。
+	PRINTFORML
+	PRINTFORML あなたは心配になり、彼女が参加している「救済教」の集会を見学することにした。
+	PRINTFORML 教会の扉を開けると、中には十数人の人々が集まっている。
+	PRINTFORMW 彼らは皆、熱心に誰かの話を聞いていた。
+	PRINTFORML
+	PRINTFORML 壇上には、白い衣装を纏った男が立っている。
+	PRINTFORML 彼の周りには、まるで聖人のような雰囲気が漂っている。
+	PRINTFORMW しかし、その瞳には冷たい光が宿っていた。
+	PRINTFORML
+	PRINTFORML 「皆さん、覚えておいてください」
+	PRINTFORML 教祖は穏やかな声で語りかける。
+	PRINTFORML 「真の救済とは、상대を一度絶望の淵に突き落とすことから始まるのです」
+	PRINTFORMW 「そうして初めて、彼らは我々の導きを受け入れる準備が整うのです」
+	PRINTFORML
+	PRINTFORML 周囲の信奉者たちは、深く頷きながら教祖の言葉を聞いている。
+	PRINTFORML その中に、%CALLNAME:이벤트主%の姿があった。
+	PRINTFORMW 彼女も真剣な表情で、教祖の話に聞き入っている。
+	PRINTFORML
+	PRINTFORML 「デュエルは、상대の心の弱さを暴く最高の手段です」
+	PRINTFORML 教祖は続ける。
+	PRINTFORML 「상대のトラウマ、恐怖、劣等感…それらを徹底的に突き、打ちのめす」
+	PRINTFORMW 「そして、泣き崩れた彼らに手を差し伸べる。これこそが真の慈悲なのです」
+	PRINTFORML
+	PRINTFORML あなたは眉をひそめる。
+	PRINTFORML これは救済ではない。明らかに人を操る手法だ。
+	PRINTFORMW しかし、%CALLNAME:이벤트主%は疑問を抱いている様子がない。
+	PRINTFORML
+	PRINTFORML 集会が終わると、信奉者たちは三々五々と散っていく。
+	PRINTFORML %CALLNAME:이벤트主%もその場を離れようとしている。
+	PRINTFORMW あなたは彼女に声をかけることにした。
+	PRINTFORML
+	PRINTFORML 彼女は驚いたように振り返る。
+	PRINTFORMW 「%CALLNAME:MASTER%…！来てくださったんですか？」
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は嬉しそうに微笑む。
+	PRINTFORML 「どうでしたか？素晴らしい活動でしょう？」
+	PRINTFORMW 彼女の瞳は、純粋な期待に満ちている。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「この救済教、大丈夫？ なんか怪しい気がするんだけど」
+	PRINTL [1] - 「ゆまさんがそう思うなら、きっと良い活動なんだろうね」
+	PRINTL [2] - 「もう少し詳しく教えてくれる？ 君が大切にしていることだから、俺も知りたい」
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは率直に疑問を伝えた。
+		PRINTFORMW %CALLNAME:이벤트主%の表情が曇る。
+		PRINTFORML
+		PRINTFORML 「そんなことありません！」
+		PRINTFORMW 彼女は強い口調で反論する。
+		PRINTFORML
+		PRINTFORML 「皆さん、真剣に人を救おうとしているんです」
+		PRINTFORMW 「%CALLNAME:MASTER%は、何も分かってないです…」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%の瞳には、失望の色が浮かんでいる。
+		PRINTFORML 彼女はあなたから視線を逸らし、小さく呟く。
+		PRINTFORMW 「私、間違ったことしてないのに…」
+		PRINTFORML
+		PRINTFORML あなたの言葉は、彼女の心に届かなかったようだ。
+		PRINTFORML むしろ、彼女をグループに近づけてしまったかもしれない。
+		PRINTFORMW その背中は、どこか頑なに見えた。
+    
+		CALL EVENT_TIMER(20)
+		CALL EVENT_FAVUP(이벤트主,-50)
+		SETBIT 依頼_進行보존:202653, 0
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは様子を見ることにした。
+		PRINTFORMW %CALLNAME:이벤트主%は安心したように微笑む。
+		PRINTFORML
+		PRINTFORML 「ありがとうございます」
+		PRINTFORML 彼女は嬉しそうに頷く。
+		PRINTFORMW 「%CALLNAME:MASTER%が理解してくれて、本当に良かったです」
+		PRINTFORML
+		PRINTFORML しかし、あなたの心配は消えない。
+		PRINTFORML 彼女の純粋さが、誰かに利用されているのではないか。
+		PRINTFORMW 不安が胸の奥で静かに膨らんでいくまま、あなたは教会から出た。
+		CALL EVENT_TIMER(20)
+    RETURN 1
+
+	ELSE
+		PRINTFORML あなたは優しく、しかし真剣な口調で尋ねた。
+		PRINTFORMW %CALLNAME:이벤트主%の表情が明るくなる。
+		PRINTFORML
+		PRINTFORML 「本当ですか！？」
+		PRINTFORML 彼女は嬉しそうに目を輝かせる。
+		PRINTFORML 「実はですね、このグループは『心の救済』を目的としていて…」
+		PRINTFORMW %CALLNAME:이벤트主%は熱心に説明し始める。
+		PRINTFORML
+		PRINTFORML 「デュエルを通じて、상대の心の傷を見つけ出すんです」
+		PRINTFORML 「そして、その傷を癒すために、まず絶望を与えて…」
+		PRINTFORMW 彼女の言葉は、どこか洗脳されたような響きがある。
+		PRINTFORML
+		PRINTFORML しかし、%CALLNAME:이벤트主%自身は疑問を抱いていない。
+		PRINTFORML 彼女は本気で、これが正しい救済だと信じているようだ。
+		PRINTFORMW あなたは慎重に、彼女の話を聞き続ける。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+		SETBIT 依頼_進行보존:202653, 1
+	ENDIF
+
+	PRINTFORML その時、背後から声が聞こえた。
+	PRINTFORML 「おや、これは珍しい」
+	PRINTFORMW 振り返ると、先ほどの白い衣装の教祖が立っている。
+	PRINTFORML
+	PRINTFORML 教祖は穏やかな笑みを浮かべながら、あなたに近づいてくる。
+	PRINTFORML 「君が噂の友人か」
+	PRINTFORMW 「彼女からよく話を聞いているよ」
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は少し緊張した様子で、教祖を見上げる。
+	PRINTFORML 「先生…」
+	PRINTFORMW 彼女の声には、明らかな敬意が込められている。
+	PRINTFORML
+	PRINTFORML 教祖はあなたを値踏みするような視線で見つめる。
+	PRINTFORML 「彼女は我々の『聖女』となるべき存在だ」
+	PRINTFORML 「その純粋さ、その優しさ…まさに理想的な導き手だ」
+	PRINTFORMW 教祖の言葉には、どこか所有欲のような響きがある。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は少し照れたように頬を染める。
+	PRINTFORML 「先生、そんな…私なんて、まだまだです」
+	PRINTFORMW 彼女は謙遜するが、その表情には喜びが浮かんでいる。
+	PRINTFORML
+	PRINTFORML あなたは男の言葉に違和感を覚える。
+	PRINTFORML 「聖女」という表現、そして%CALLNAME:이벤트主%を利用しようとする意図。
+	PRINTFORMW このまま大丈夫なのか。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「ゆまさんを利用するつもりなら、俺が許さない」
+	PRINTL [1] - 「あなたの理論、実際に見せてもらえますか？」
+	PRINTL [2] - 「ゆまさん、少し二人で話せないかな？」
+	PRINTL [3] - 何も言わない
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは教祖を睨みつけながら、警告する。
+		PRINTFORMW 教祖は一瞬、驚いたような表情を見せる。
+		PRINTFORML
+		PRINTFORML 「なんと野蛮な…」
+		PRINTFORML 教祖は眉をひそめる。
+		PRINTFORMW 「暴力的な思考こそが、人々を苦しめるのですよ」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%が慌てて間に入る。
+		PRINTFORML 「%CALLNAME:MASTER%、待ってください！」
+		PRINTFORML 「教祖は悪い人じゃないんです。誤解です」
+		PRINTFORMW 彼女の声には、懇願するような響きがある。
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:102653, 0)
+			PRINTFORML しかし、%CALLNAME:이벤트主%の表情には、わずかな安心の色も浮かんでいる。
+			PRINTFORML あの時、あなたが彼女を守ってくれたことを思い出しているのだろう。
+			PRINTFORMW 「でも…%CALLNAME:MASTER%が心配してくれるのは、嬉しいです」
+			CALL EVENT_FAVUP(이벤트主,80)
+		ELSE
+			PRINTFORML %CALLNAME:이벤트主%は困惑した表情であなたを見る。
+			PRINTFORML 「どうして、そんなこと言うんですか…」
+			PRINTFORMW 彼女の声には、悲しみが滲んでいる。
+		ENDIF
+
+		SETBIT 依頼_進行보존:202653, 2
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは挑発的に言った。
+		PRINTFORMW 教祖は興味深そうに微笑む。
+		PRINTFORML
+		PRINTFORML 「ほう…君は疑っているのか」
+		PRINTFORML 教祖は穏やかな口調で続ける。
+		PRINTFORMW 「ならば、実際に体験してもらおう」
+		PRINTFORML
+		PRINTFORML 「私のデュエルを通じて、君の心の闇を暴き出してあげよう」
+		PRINTFORML 教祖はデュエルディスクを構える。
+		PRINTFORMW 「そして、真の救済とは何かを教えてあげる」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%が不安そうにあなたを見る。
+		PRINTFORML 「%CALLNAME:MASTER%…大丈夫ですか？」
+		PRINTFORMW 彼女の声には、心配の色が滲んでいる。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,50)
+		SETBIT 依頼_進行보존:202653, 3
+
+	ELSEIF RESULT == 2
+		PRINTFORML あなたは%CALLNAME:이벤트主%に優しく声をかけた。
+		PRINTFORMW 彼女は少し戸惑ったような表情を見せる。
+		PRINTFORML
+		PRINTFORML 「二人で…ですか？」
+		PRINTFORML %CALLNAME:이벤트主%は教祖の方を見る。
+		PRINTFORMW 教祖は穏やかに頷いた。
+		PRINTFORML
+		PRINTFORML 「構いませんよ。友人との時間は大切ですからね」
+		PRINTFORML 教祖は微笑む。
+		PRINTFORMW 「ただし、彼女を惑わすような真似はしないでくださいね」
+		PRINTFORML
+		PRINTFORML その言葉には、明確な警告の意味が込められている。
+		PRINTFORML %CALLNAME:이벤트主%は小さく頷き、あなたについてくる。
+		PRINTFORMW 二人は教会の外に出た。
+		PRINTFORML
+		SETBIT 依頼_進行보존:202653, 4
+	ELSE
+		PRINTFORML ゆまが大丈夫だと思っているし、大丈夫…でしょう。
+		PRINTFORMW あなたは何も言わないまま、教会から出た。
+	ENDIF
+  
+  CALL EVENT_TIMER(20)
+	依頼_달성상황++
+	依頼_場所:0 = 場所_教会
+
+ELSEIF 依頼_달성상황 == 1
+	IF GETBIT(依頼_進行보존:202653, 4)
+		;選択肢Cを選んだ場合：二人で話す
+		PRINTFORML 教会の外、静かな庭園のベンチに二人で座る。
+		PRINTFORML 夕日が%CALLNAME:이벤트主%の横顔を照らしている。
+		PRINTFORMW 彼女は少し緊張した様子で、あなたを見つめている。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%…何か、聞きたいことがあるんですか？」
+		PRINTFORML %CALLNAME:이벤트主%は小さく首を傾げる。
+		PRINTFORMW その仕草は、いつもの彼女らしい純粋さに満ちている。
+		PRINTFORML
+		PRINTFORML あなたは慎重に言葉を選ぶ。
+		PRINTFORML ここで間違えれば、彼女を完全に失ってしまうかもしれない。
+		PRINTFORMW しかし、真実を伝えなければ、彼女は危険な道を進んでしまう。
+		PRINTFORML
+		PRINTL
+		PRINTL [0] - 「あのグループ、本当に人を救っていると思う？」
+		PRINTL [1] - 「君が幸せなら、それでいいんだ」
+		PRINTL [2] - 「君の優しさを、悪用されてる気がするんだ」
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたは真剣な表情で尋ねた。
+			PRINTFORMW %CALLNAME:이벤트主%は少し考え込む。
+			PRINTFORML
+			PRINTFORML 「それは…」
+			PRINTFORML 彼女は言葉に詰まる。
+			PRINTFORML 「教祖は、人を絶望させてから救うって言ってました」
+			PRINTFORMW 「でも、それって本当に正しいのかな…」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%の声には、初めて疑問の色が滲んでいる。
+			PRINTFORML 「私、ずっと信じてたんです。どんな人も、話し合えば分かり合えるって」
+			PRINTFORMW 「でも、確かに不安を感じれるというか…」
+			PRINTFORML
+			PRINTFORML 彼女は俯き、小さく呟く。
+			PRINTFORML 「でも、なぜかみんな私のこと『聖女』って呼んでるようで…」
+			PRINTFORML 「자신が誰かの役に立ててるかなって思えたんです」
+			PRINTFORMW %CALLNAME:이벤트主%の瞳には、涙が浮かんでいる。
+			PRINTFORML
+			PRINTFORML 「%CALLNAME:MASTER%は、私のこと…どう思いますか？」
+			PRINTFORML 彼女は不安そうにあなたを見つめる。
+			PRINTFORMW その瞳は、答えを求めて揺れている。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,100)
+			SETBIT 依頼_進行보존:202653, 5
+
+		ELSEIF RESULT == 1
+			PRINTFORML あなたは優しく微笑んだ。
+			PRINTFORMW %CALLNAME:이벤트主%は少しホッとした表情を見せる。
+			PRINTFORML
+			PRINTFORML 「ありがとうございます…」
+			PRINTFORML 彼女は小さく微笑む。
+			PRINTFORMW 「でも、本当に幸せなのかな…」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%は空を見上げる。
+			PRINTFORML 「教祖の言うことは正しいって思うんです」
+			PRINTFORML 「でも、時々…何か違和感を覚えるんです」
+			PRINTFORMW 彼女の声には、わずかな迷いが滲んでいる。
+			PRINTFORML
+			PRINTFORML 「%CALLNAME:MASTER%は、私が間違ってると思いますか？」
+			PRINTFORML %CALLNAME:이벤트主%はあなたを見つめる。
+			PRINTFORMW その瞳には、助けを求める色が浮かんでいる。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,50)
+
+		ELSE
+			PRINTFORML あなたは真剣な表情で伝えた。
+			PRINTFORMW %CALLNAME:이벤트主%は驚いたように目を見開く。
+			PRINTFORML
+			PRINTFORML 「悪用…？」
+			PRINTFORML 彼女は信じられないという表情を浮かべる。
+			PRINTFORML 「そんな…教祖は、私を『聖女』って…」
+			PRINTFORMW %CALLNAME:이벤트主%の声が震えている。
+			PRINTFORML
+			PRINTFORML 「でも…」
+			PRINTFORML 彼女は俯き、小さく呟く。
+			PRINTFORML 「確かに、先生の言うことを聞いてると、何か変な感じがして…」
+			PRINTFORMW 「자신じゃない誰かになってるみたいで…」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%は涙を浮かべながら、あなたを見つめる。
+			PRINTFORML 「私、どうしたらいいんですか…」
+			PRINTFORML 「誰かの役に立ちたいだけなのに…」
+			PRINTFORMW 彼女の声は、悲しみに満ちている。
+			PRINTFORML
+			SETBIT 依頼_進行보존:202653, 6
+		ENDIF
+
+		PRINTFORML その時、教会の扉が開く音が聞こえた。
+		PRINTFORML 教祖が、こちらを見ている。
+		PRINTFORMW 「そろそろ、お時間でしょう」
+		PRINTFORML
+		PRINTFORML 教祖の声には、どこか冷たい響きがある。
+		PRINTFORML %CALLNAME:이벤트主%は立ち上がり、教祖の方へ歩き出す。
+		PRINTFORMW しかし、その足取りは、どこか重い。
+		PRINTFORML
+    	GOTO START_DUEL
+
+	ELSEIF GETBIT(依頼_進行보존:202653, 3)
+  
+		PRINTFORML 教会の中央に、デュエルの場が設けられる。
+		PRINTFORML 周囲の信奉者たちが、興味深そうに見守っている。
+		PRINTFORMW %CALLNAME:이벤트主%も、不安そうな表情で立っている。
+		PRINTFORML
+		PRINTFORML 教祖は穏やかな笑みを浮かべながら、デュエルディスクを構える。
+		PRINTFORML 「さあ、君の心の闇を暴き出してあげよう」
+		PRINTFORMW 「そして、真の救済とは何かを教えてあげる」
+		PRINTFORML
+		PRINTFORML 教祖の瞳が、鋭く光る。
+		PRINTFORML 「デュエル！」
+		PRINTFORMW 二人の声が、教会に響き渡る。
+		PRINTFORML
+		TARGET = 教祖
+		CALL CHOICE_DUEL_TYPE(202653)
+
+		IF RESULT == 1
+			PRINTFORML デュエルに승리した。
+			PRINTFORML 教祖のライフポイントがゼロになり、周囲から驚きの声が上がる。
+			PRINTFORMW 教祖は信じられないという表情で立ち尽くしている。
+			PRINTFORML
+			PRINTFORML 「馬鹿な…私の完璧な戦術が…」
+			PRINTFORML 教祖は震える声で呟く。
+			PRINTFORMW 「こんなはずでは…」
+			PRINTFORML
+			PRINTFORML あなたは冷静に言い放つ。
+			PRINTL 
+			PRINTL [0] - 「本当に人を救っていると思う？」
+			PRINTL 
+			BINPUT
+			PRINTL 
+			PRINTL [0] - 「あなたの戦術は、상대の心の弱さにつけ込むだけだ」
+			PRINTL 
+			BINPUT
+			PRINTL 
+			PRINTL [0] - 「これは救済じゃなく、ただの支配だ」
+			PRINTL 
+			BINPUT
+			PRINTFORMW 教祖の表情が、분노に歪む。
+			PRINTFORML
+			PRINTFORML 「黙れ…！」
+			PRINTFORML 教祖は叫ぶ。
+			PRINTFORML 「お前に何が分かる！私は人々を救っているんだ！」
+			PRINTFORMW しかし、その声には、もう説得力がない。
+			PRINTFORML
+			PRINTFORML 周囲の信奉者たちが、ざわめき始める。
+			PRINTFORML 「教祖が…負けた？」
+			PRINTFORML 「本当に、教祖の言うことは正しかったのか…？」
+			PRINTFORMW 疑念の声が、次々と上がっていく。
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%が、あなたの元に駆け寄ってくる。
+			PRINTFORML 「%CALLNAME:MASTER%…」
+			PRINTFORMW 彼女の瞳には、涙が浮かんでいる。
+			PRINTFORML
+			PRINTFORML 「私、間違ってたんですね…」
+			PRINTFORML %CALLNAME:이벤트主%は俯く。
+			PRINTFORML 「教祖の言うことを信じて、人を傷つけようとしてた…」
+			PRINTFORMW 彼女の声は、悲しみに満ちている。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,100)
+			SETBIT 依頼_進行보존:202653, 7
+
+			依頼_달성상황 = 2
+			依頼_場所:0 = 場所_教会
+
+		ELSE
+			PRINTFORML デュエルに패배してしまった。
+			PRINTFORML あなたのライフポイントがゼロになり、教祖は勝ち誇ったように笑う。
+			PRINTFORMW 「ふふふ…やはり、君も私の掌の上だったようだ」
+			PRINTFORML
+			PRINTFORML 教祖はあなたに近づき、冷たい声で囁く。
+			PRINTFORML 「さあ、君の心の闇を見せてもらおう」
+			PRINTFORMW 「そして、真の救済を受け入れるがいい」
+			PRINTFORML
+			PRINTFORML 教祖の言葉が、あなたの心に侵入してくる。
+			PRINTFORML 過去のトラウマ、恐怖、劣等感…それらが次々と蘇ってくる。
+			PRINTFORMW あなたは膝をつき、苦しみに顔を歪める。
+			PRINTFORML
+			PRINTFORML 「%CALLNAME:MASTER%！」
+			PRINTFORML %CALLNAME:이벤트主%が駆け寄ってくる。
+			PRINTFORMW しかし、教祖が彼女を制止する。
+			PRINTFORML
+			PRINTFORML 「待ちなさい。これは彼のためなのです」
+			PRINTFORML 教祖は穏やかな声で言う。
+			PRINTFORMW 「絶望の後にこそ、真の救済が訪れるのですから」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%は涙を流しながら、あなたを見つめる。
+			PRINTFORML 「こんなの…こんなの…」
+			PRINTFORMW 彼女の声は、震えている。
+			PRINTFORML
+			PRINTFORML しかし、もう遅かった。
+			CALL EVENT_FAVUP(이벤트主,-CFLAG:이벤트主:호감도)
+			PRINTFORML あなたの意識は、闇の中に沈んでいく。
+			PRINTFORMW ――GAME OVER――
+			PRINTFORML
+			RETURN 6
+		ENDIF
+
+    	CALL EVENT_TIMER(60)
+
+	ELSEIF GETBIT(依頼_進行보존:202653, 2)
+		;選択肢Aを選んだ場合：直接対決
+		PRINTFORML 教祖は冷たい笑みを浮かべる。
+		PRINTFORML 「なるほど…君は彼女の『守護者』を気取っているのか」
+		PRINTFORMW 「ならば、その資格があるか試させてもらおう」
+		PRINTFORML
+		PRINTFORML 教祖はデュエルディスクを構える。
+		PRINTFORML 「私とデュエルをしてもらう。勝てば、彼女を連れて行くがいい」
+		PRINTFORML 「しかし、負ければ…君も我々の一員となってもらう」
+		PRINTFORMW 教祖の瞳には、絶対的な自信が宿っている。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%が慌てて叫ぶ。
+		PRINTFORML 「待ってください！そんなの、おかしいじゃないですか！」
+		PRINTFORMW しかし、教祖は彼女を無視する。
+		PRINTFORML
+		PRINTFORML 「どうする？逃げるかね？」
+		PRINTFORML 教祖は挑発的に笑う。
+		PRINTFORMW あなたはデュエルディスクを構えた。
+		PRINTFORML
+		PRINTFORML 「いいだろう。受けて立つ」
+		PRINTFORML 周囲の信奉者たちが、緊張した面持ちで見守る。
+		PRINTFORMW %CALLNAME:이벤트主%は、祈るような表情であなたを見つめている。
+		PRINTFORML
+		TARGET = 教祖
+		CALL CHOICE_DUEL_TYPE(202653)
+
+		IF RESULT == 1
+			PRINTFORML デュエルに승리した。
+			PRINTFORML 教祖のライフポイントがゼロになり、信じられないという表情で立ち尽くす。
+			PRINTFORMW 「馬鹿な…私の『心理支配덱』が…」
+			PRINTFORML
+			PRINTFORML あなたは冷静に言い放つ。
+			PRINTL 
+			PRINTL [0] - 「人の心を操ろうとする者は、자신の心が見えていない」
+			PRINTL 
+			BINPUT
+			PRINTL 
+			PRINTL [0] - 「あんたの負けだ」
+			PRINTL 
+			BINPUT
+
+			PRINTFORML 教祖は悔しそうに歯噛みする。
+			PRINTFORML しかし、約束は約束だ。
+			PRINTFORMW 彼は渋々と頷いた。
+			PRINTFORML
+			PRINTFORML 「…分かった。連れて行くがいい」
+			PRINTFORML 教祖は背を向ける。
+			PRINTFORMW 「だが、彼女はいずれ戻ってくる。私の元に」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%が、あなたの元に駆け寄ってくる。
+			PRINTFORML 「%CALLNAME:MASTER%…！」
+			PRINTFORML 彼女は涙を浮かべながら、あなたを一礼する。
+			PRINTFORMW 「ありがとうございます…本当に、ありがとうございます…」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%の体は小刻みに震えている。
+			PRINTFORML 「私、怖かったんです…でも、認めたくなくて…」
+			PRINTFORMW 「%CALLNAME:MASTER%が来てくれて、本当に良かった…」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,150)
+			SETBIT 依頼_進行보존:202653, 8
+
+			依頼_달성상황 = 2
+			依頼_場所:0 = 場所_教会
+
+		ELSE
+			PRINTFORML デュエルに패배してしまった。
+			PRINTFORML あなたのライフポイントがゼロになり、教祖は勝ち誇ったように笑う。
+			PRINTFORMW 「ふははは！所詮、この程度か」
+			PRINTFORML
+			PRINTFORML 教祖はあなたに近づき、冷たい声で囁く。
+			PRINTFORML 「さあ、約束通り…君も我々の一員だ」
+			PRINTFORMW 「彼女と共に、永遠に私に仕えるがいい」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%が叫ぶ。
+			PRINTFORML 「やめてください！%CALLNAME:MASTER%は関係ないです！」
+			PRINTFORMW しかし、教祖は聞く耳を持たない。
+			CALL EVENT_FAVUP(이벤트主,-CFLAG:이벤트主:호감도)
+
+			PRINTFORML 教祖の手が、あなたの頭に触れる。
+			PRINTFORML その瞬間、意識が遠のいていく。
+			PRINTFORMW ――GAME OVER――
+			PRINTFORML
+			RETURN 6
+		ENDIF
+
+    	CALL EVENT_TIMER(60)
+	ELSE
+  
+		$START_DUEL
+		PRINTFORML どうしても気になるあなたは再び教会を訪れた。
+		PRINTFORML %CALLNAME:이벤트主%の様子が気になって仕方がない。
+		PRINTFORMW 教会の扉を開けると、中から声が聞こえてくる。
+		PRINTFORML
+		PRINTFORML 「さあ、聖女ゆま。あなたの番です」
+		PRINTFORML 教祖の声だ。
+		PRINTFORMW あなたは急いで中に入る。
+		PRINTFORML
+		PRINTFORML 教会の中央で、%CALLNAME:이벤트主%が一人の女性とデュエルをしている。
+		PRINTFORML 女性は泣き崩れており、%CALLNAME:이벤트主%は困惑した表情を浮かべている。
+		PRINTFORMW 「これで…救われるんですよね…？」
+		PRINTFORML
+		PRINTFORML 教祖は만족そうに頷く。
+		PRINTFORML 「そうです。素晴らしい。あなたは完璧な『聖女』です」
+		PRINTFORMW しかし、%CALLNAME:이벤트主%の表情には、喜びがない。
+		PRINTFORML
+		PRINTFORML あなたは思わず叫んだ。
+		PRINTFORML 「ゆまさん！」
+		PRINTFORMW %CALLNAME:이벤트主%は驚いて振り返る。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%…」
+		PRINTFORML 彼女の瞳には、涙が浮かんでいる。
+		PRINTFORML 「私…これで、本当に人を救えてるんでしょうか…」
+		PRINTFORMW 彼女の声は、震えている。
+		PRINTFORML
+		PRINTFORML 教祖が割って入る。
+		PRINTFORML 「邪魔をしないでもらおうか」
+		PRINTFORMW 「彼女は今、重要な修行の最中なのだ」
+		PRINTFORML
+		PRINTFORML あなたは教祖を睨みつける。
+		PRINTL 
+		PRINTL [0] - 「これは修行じゃない。洗脳だ」
+		PRINTL 
+		BINPUT
+		PRINTL 
+		PRINTL [0] - 「人の心を操って楽しいのか？ならお前の番もいずれ来るだろうよ」
+		PRINTL 
+		BINPUT
+		PRINTFORMW 教祖の表情が険しくなる。
+		PRINTFORML
+		PRINTFORML 「…何言っているかはわからんが、実力で示してもらおうか」
+		PRINTFORML 教祖はデュエルディスクを構える。
+		PRINTFORMW 「君が勝てば、彼女を連れて行くがいい」
+		PRINTFORML
+		TARGET = 教祖
+		CALL CHOICE_DUEL_TYPE(202653)
+
+		IF RESULT == 1
+			PRINTFORML デュエルに승리した。
+			PRINTFORML 教祖のライフポイントがゼロになり、周囲から驚きの声が上がる。
+			PRINTFORMW 教祖は信じられないという表情で立ち尽くしている。
+			PRINTFORML
+			PRINTFORML 「そんな…私の理論が…」
+			PRINTFORML 教祖は震える声で呟く。
+			PRINTFORMW 「完璧だったはずなのに…」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%が、あなたの元に駆け寄ってくる。
+			PRINTFORML 「%CALLNAME:MASTER%…」
+			PRINTFORMW 彼女は泣き崩れる。
+			PRINTFORML
+			PRINTFORML 「ごめんなさい…ごめんなさい…」
+			PRINTFORML %CALLNAME:이벤트主%は何度も謝る。
+			PRINTFORML 「私、間違ってました…人を傷つけてました…」
+			PRINTFORMW 彼女の体は、小刻みに震えている。
+			PRINTFORML
+			PRINTFORML あなたは優しく彼女を抱きしめる。
+			PRINTL 
+			PRINTL [0] - 「今、気づけて良かった」
+			PRINTL 
+			BINPUT
+
+			PRINTFORML %CALLNAME:이벤트主%は涙を流しながら頷く。
+			PRINTFORML 「ありがとうございます…%CALLNAME:MASTER%」
+			PRINTFORMW 彼女の声は、安堵に満ちている。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,100)
+			SETBIT 依頼_進行보존:202653, 9
+
+			依頼_달성상황 = 2
+			依頼_場所:0 = 場所_教会
+
+		ELSE
+			PRINTFORML デュエルに패배してしまった。
+			PRINTFORML あなたのライフポイントがゼロになり、教祖は冷たく笑う。
+			PRINTFORMW 「やはり、君では私には勝てない」
+			PRINTFORML
+			PRINTFORML 教祖はあなたに近づく。
+			PRINTFORML 「さあ、%CALLNAME:이벤트主%。見ていなさい」
+			PRINTFORMW 「これが、救済を妨げる者の末路です」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%が叫ぶ。
+			PRINTFORML 「やめてください！お願いします！」
+			PRINTFORMW しかし、教祖は容赦しない。
+			PRINTFORML
+			PRINTFORML 教祖の手が、あなたの頭に触れる。
+			PRINTFORML 意識が遠のいていく。
+			CALL EVENT_FAVUP(이벤트主,-CFLAG:이벤트主:호감도)
+			PRINTFORMW ――GAME OVER――
+			PRINTFORML
+			RETURN 6
+		ENDIF
+
+    CALL EVENT_TIMER(60)
+
+	ENDIF
+ELSEIF 依頼_달성상황 == 2
+	;エンディング분기
+	;全部正しい選択肢を選択した特典
+	IF GETBIT(依頼_進行보존:202653, 1) && GETBIT(依頼_進行보존:202653, 4) && GETBIT(依頼_進行보존:202653, 6)
+		PRINTFORML 教会を出ると、夕日が二人を照らしている。
+		PRINTFORML %CALLNAME:이벤트主%は、まだ涙の跡が残る顔で空を見上げる。
+		PRINTFORMW 「綺麗ですね…」
+		PRINTFORML
+		PRINTFORML 彼女は小さく微笑む。
+		PRINTFORML 「私、ずっと誰かの役に立ちたいって思ってました」
+		PRINTFORML 「でも、間違った方法で役に立とうとしてたんですね」
+		PRINTFORMW %CALLNAME:이벤트主%の声は、どこか寂しげだ。
+		PRINTFORML
+		PRINTFORML あなたは優しく声をかける。
+		PRINTL 
+		PRINTL [0] - 「君の優しさは本物だ。ただ、利用されそうになっただけだ」
+		PRINTL 
+		BINPUT
+		PRINTFORMW %CALLNAME:이벤트主%は嬉しそうに微笑む。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%…ありがとうございます」
+		PRINTFORML 彼女は深く頭を下げる。
+		PRINTFORMW 「これからは、もっと慎重に…でも、諦めずに人を信じていきます」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%はあなたの手を握る。
+		PRINTFORML 「%CALLNAME:MASTER%がいてくれて、本当に良かった」
+		PRINTFORML 「これからも、私を見守っていてくれますか？」
+		PRINTFORMW 彼女の瞳は、希望に満ちている。
+		PRINTFORML
+		PRINTFORML あなたは力強く頷いた。
+		PRINTFORML %CALLNAME:이벤트主%は嬉しそうに微笑み、あなたの手を強く握り返す。
+		PRINTFORMW 二人の絆は、より深まったようだ。
+		PRINTFORML
+    	CALL EVENT_FAVUP(이벤트主,100)
+
+		PRINTFORML その後、あの救済教は解散したと聞いた。
+		PRINTFORML 教祖は姿を消し、信奉者たちも元の生活に戻っていった。
+		PRINTFORMW %CALLNAME:이벤트主%は、再び자신らしい優しさを取り戻したようだ。
+		PRINTFORML
+		PRINTFORML 数日後、%CALLNAME:이벤트主%から連絡があった。
+		PRINTFORML 「あの時、教会の人たちからカードパックをもらったんです」
+		PRINTFORMW 「%CALLNAME:MASTER%に、お礼として渡したいです」
+		PRINTFORML
+		PRINTFORML 彼女は少し照れたように微笑む。
+		PRINTFORML 「本当は、もっと大きなお礼をしたいんですけど…」
+		PRINTFORMW 「今の私には、これくらいしかできなくて…」
+		PRINTFORML
+		PRINTFORML あなたは彼女の頭を優しく撫でる。
+		PRINTFORMW %CALLNAME:이벤트主%は嬉しそうに微笑んだ。
+		PRINTFORML
+		PRINTFORML だが、教祖からもらった闇のカード。
+    	PRINTFORML それがゆまの덱に残っていたこと。
+		PRINTFORMW あなたも、ゆまも、気づかなかった…
+		PRINTFORML
+    	CALL EVENT_TIMER(20)
+    
+		RETURN 2
+
+	ELSE
+		;その他の場合
+		PRINTFORML 教会を出ると、%CALLNAME:이벤트主%は安堵の表情を浮かべる。
+		PRINTFORML 「助けてくれて、ありがとうございました」
+		PRINTFORMW 彼女は深く頭を下げる。
+		PRINTFORML
+		PRINTFORML 「私、もう少しで取り返しのつかないことをするところでした」
+		PRINTFORML %CALLNAME:이벤트主%は俯く。
+		PRINTFORMW 「これからは、もっと慎重に行動します」
+		PRINTFORML
+		PRINTFORML あなたは彼女の肩に手を置く。
+		PRINTFORML 「大丈夫。君なら、きっと本当に人を救える方法を見つけられる」
+		PRINTFORMW %CALLNAME:이벤트主%は小さく微笑んだ。
+		PRINTFORML
+		PRINTFORML その後、教会のグループは解散したと聞いた。
+		PRINTFORML %CALLNAME:이벤트主%は、元の生活に戻っていったようだ。
+		PRINTFORMW 彼女の純粋さは、まだ失われていない。
+		PRINTFORML
+		PRINTFORML 「あの時、教会の人たちから感謝の印として、カードパックをもらったんです」
+		PRINTFORMW 「%CALLNAME:MASTER%に、お礼として渡したいです」
+		PRINTFORML
+		PRINTFORML 彼女は少し照れたように微笑む。
+		PRINTFORMW 「受け取ってください」
+		PRINTFORML
+		PRINTFORMW これで一件落着です。
+		PRINTFORML
+		PRINTFORML だが、教祖からもらった闇のカード。
+    PRINTFORML それがゆまの덱に残っていたこと。
+		PRINTFORMW あなたも、ゆまも、気づかなかった…
+		PRINTFORML
+    CALL EVENT_TIMER(20)
+    
+		RETURN 2
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_202653()
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+CALL DP_GET(2000)
+CALL CARD_PACK_SHORI(10)
+
+PRINTFORML %CALLNAME:이벤트主%から、カードパックを受け取った。
+PRINTFORMW 彼女の笑顔は、以前よりも明るく見える。
+
+RETURN 1
+
+
+@IRAI_DECK_202653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 202653
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_202653
+
+PRINTFORML 
+PRINTFORML 教祖「あなたにも…救済を！！」
+PRINTFORMW 
+
+;精神操作系덱
+@DUELDECK_202653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1007
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 202653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1262
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1265
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1647
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1647
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70016
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72040
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70027
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70028
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70028
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70028
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70029
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70029
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 54002
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+
+@CARDNAME_202653,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 救済の聖人形
+	CASE "略称"
+		RESULTS = 救済の聖人形
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+
+@CARD_202653(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 400
+	CASE "守備力"
+		RETURN 300
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_202653(종류)
+#DIM DYNAMIC 종류
+
+PRINTL ①：このカードは戦闘耐性と攻撃誘導を持て、융합・Ｓ・Ｘ・Ｌ소환の素材にできない。
+PRINTL このカードが攻撃표시じゃない場合は攻撃표시になる。
+PRINTL このカードは救済の心を持たない人間に持たされる場合は、자신がデュエルに패배する。
+CALLFORM CARD_ABLE(1,지속효과)
+PRINTL ②：このカードと戦闘するモンスターはダメージ計算終了時まで戦闘耐性を得て、
+PRINTL ダメージステップ終了後に자신はそのモンスターのコントロールを得る。
+CALL CARD_ABLE(2, 필드→戦離)
+PRINTL ③：このカードがフィールドから離れた時に발동する。자신がデュエルに승리する。
+
+@CARDCAN_202653(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,202653)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:{場所}") != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트,1)}("성별")
+	SIF RESULT != 雄性
+		RETURN 0
+	RETURN 1
+ELSE
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_202653(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 所有者
+#DIM DYNAMIC 合計攻撃力
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻誘")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
+  	CALL STATCHANGE_EFFECT(対面者,"自身",戦闘場所(듀얼리스트,1),"戦耐")
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") != 1
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"表",1)
+	IF 듀얼리스트 == "자신"
+		PRINTL 救済の心がないマスターを持つ救済の人形によって、
+		PRINTL 巨大な虚無がデュエル場を吞み込んでゆく……
+		CALL SET_PLAYER_INFO(듀얼리스트,"듀얼패배플래그",4)
+	ENDIF
+ELSEIF 종류 == 攻撃後強制誘発
+	選択カード = 戦闘場所(듀얼리스트,1)
+	CALL FULLRESET
+	CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"強奪")
+ELSEIF 종류 == 필드→戦離
+  PRINTL 救済の人形の破壊によって、
+  PRINTL 巨大な虚無がデュエル場を吞み込んでゆく……
+  PRINTL
+  CALL SET_PLAYER_INFO(듀얼리스트,"듀얼패배플래그",4,1)
+ENDIF

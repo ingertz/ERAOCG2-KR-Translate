@@ -65,7 +65,8 @@ IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함"
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,82076)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF モンスター数(듀얼리스트) >= 5
 		RETURN 0
@@ -176,7 +177,19 @@ SELECTCASE 参照先
 		RETURN 0
 	CASE "守備力"
 		RETURN 1200
+	CASE "自動소멸"
+		RETURN 1
 ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_182076(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+CALLFORM CARD_ABLE(0,戦闘→묘지, 破壊→묘지)
+PRINTL ①：이 카드가 파괴될 경우 강제적으로 발동한다。
+PRINTL 자신은 １１００데미지를 받고、상대는 １１００LP 회복한다。
 
 
 @CARDCAN_182076(듀얼리스트,종류,ゾーン,場所)
@@ -189,7 +202,19 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,182076)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 破壊→묘지
+
+IF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	RETURN 1
+ENDIF
+
+@CARDFORCE_182076(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+VARSET RESULT
+IF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
 	RETURN 1
 ENDIF
 

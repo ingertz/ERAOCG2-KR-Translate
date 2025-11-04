@@ -1,0 +1,200 @@
+;============================================================
+; 46455_巨蟹武姫 キャンディ・サード
+; ============================================================
+
+@CARDNAME_46455,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 巨蟹武姫 キャンディ・サード
+	CASE "略称"
+		RESULTS = キャンサード
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46455(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 戦士族
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 1400
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46455(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：自分メインフェイズに発動できる。
+PRINTL 自分フィールドの「光導の創界神帝 レピィ・アーズ」１枚を選び、その上のコアカウンターを１つ取り除く。
+PRINTL その後、このカードを手札から特殊召喚する。
+CALLFORM CARD_ABLE(2,永続効果)
+PRINTL ②：このカードが存在する限り、自分フィールドの「CoZ12」モンスターは戦闘では破壊されず、
+PRINTL また自分の「CoZ12」モンスターが戦闘を行う場合、相手はカードの効果を発動できない。
+CALLFORM CARD_ABLE(3,攻撃時強制誘発)
+PRINTL ③：自分の「CoZ12」モンスターの攻撃宣言時に発動する。
+PRINTL 相手は自身のフィールドのモンスター１体を選んでエンドフェイズまで除外しなければならない。
+RETURN 0
+
+
+@CARDCAN_46455(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 攻撃カードID
+
+; ① 手札起動
+IF 種類 == 手札起動
+    SIF モンスター数(決闘者) == 5
+        RETURN 0
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF メインフェイズ != 1 || ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 発動済_1(決闘者,46455)
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+
+	; 自身の手札SS可否（既存：CARD_SS_CHECK）
+	CALL CARD_SS_CHECK(決闘者,46455,"手札")
+	SIF RESULT == 1
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+; ② 永続（場にあれば適用）
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 攻撃時強制誘発
+    SIF ゾーン != "戦場"
+        RETURN 0
+    ; いま攻撃宣言したのが自分側か
+    SIF ターンプレイヤー != 決闘者
+        RETURN 0
+    ; 攻撃側・守備側のスロットが存在するか
+    SIF 戦闘場所(決闘者) == 5
+        RETURN 0
+    SIF 戦闘場所(決闘者,1) == 5
+        RETURN 0
+
+    ; 攻撃している自分側カードのID
+    攻撃カードID = 戦闘カードID(決闘者)
+    SIF 攻撃カードID <= 0
+        RETURN 0
+
+    ; CoZ12判定はスーパーカテゴリ優先（保険でカテゴリにもフォールバック）
+    TRYCALLFORM CARDNAME_{攻撃カードID}("スーパーカテゴリ")
+    IF MATCH(RESULTS,"CoZ12") == 0
+        TRYCALLFORM CARDNAME_{攻撃カードID}("カテゴリ")
+        SIF MATCH(RESULTS,"CoZ12") == 0
+            RETURN 0
+    ENDIF
+    RETURN 1
+ENDIF
+
+
+@CARDEFFECT_46455(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 個数
+#DIM  DYNAMIC 選択カードID
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46455,1)
+
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件固ID = 46455
+	CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	RETURN 0
+ENDIF
+
+IF 種類 == 永続効果
+	CALL FULLRESET
+	効果範囲戦場    = 1
+	効果条件カテゴリ = CoZ12
+	効果条件種類    = モン全般
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"戦耐")
+
+	CALL FULLRESET
+	効果範囲戦場    = 1
+	効果条件カテゴリ = CoZ12
+	効果条件種類    = モン全般
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"戦阻")
+	RETURN 0
+ENDIF
+
+IF 種類 == 攻撃時強制誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46455,3)
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件種類 = モン全般
+		効果条件CNT = 1
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_SELECT(決闘者,RESULT)
+			選択カードID = GETVAR(@"%対象者（CS）%_%参照先（CS）%:{選択カード（CS）}")
+			CALL FULLRESET
+			効果範囲相手戦場 = 1
+			効果条件ID = 選択カードID
+			効果条件行先フラグ = 除外行き
+			効果条件追加フラグ = 1
+			CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		ENDIF
+	RETURN 0
+ENDIF
+
+RETURN 0

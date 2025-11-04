@@ -1,0 +1,410 @@
+;ゆま이벤트。
+;純粋さ随一の캐릭터なので、全이벤트が승리しないとGAME OVERになる。
+;後半이벤트はリトライを防ぐために、호감도クリアのコードも入っている。
+;汚い手段で向き合うな！というところです。
+
+@IRAI_EVENT_102653(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2653-01)裏通りの正義
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_裏通り
+	CASE "詳細"
+		PRINTL 裏通りで初心者をカモにしているデュエリストがいるらしい。
+		PRINTL 
+		PRINTL 報酬：1500DP、お金5000
+	CASE "条件"
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:이벤트主:호감도 < 100
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:이벤트主:반발각인 > 0
+			RESULTS = 彼女はあなたを信じたいと思っているようだが、まだ心の整理がついていないようだ。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_102653(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC チンピラ
+
+이벤트主 = NO_TO_CHARANUM(2653)
+チンピラ = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 最近、裏通りで初心者デュエリストを狙った悪質なカード強奪事件が多発しているという噂を耳にした。
+	PRINTFORML 被害者たちは皆、「話し合いに応じてくれると思ったら、いきなりデュエルを仕掛けられた」と証言している。
+
+	IF FLAG:악랄치 < 30
+		PRINTFORMW あなたは正義感から、現場の確認に向かうことにした。
+	ELSE
+		PRINTFORMW 面白そうだから、現場の確認に向かうことにした。
+	ENDIF
+
+	PRINTFORML
+	PRINTFORML 裏通りに到着すると、予想通りの光景が目に飛び込んできた。
+	PRINTFORML 派手な복장の男が、明らかに怯えている初心者デュエリストたちを壁際に追い詰めている。
+	PRINTFORMW 「へへっ、お前らのレアカード、全部いただくぜ！」
+	PRINTFORML
+	PRINTFORML しかし、その光景の前に――
+	PRINTFORML 見覚えのある少女が立ちはだかっていた。
+	PRINTFORMW %CALLNAME:이벤트主%だ。
+	PRINTFORML
+	PRINTFORML 「待ってください！」
+	PRINTFORML %CALLNAME:이벤트主%は両手を広げ、チンピラと初心者たちの間に割って入っている。
+	PRINTFORMW 「話し合えば、きっと分かり合えるはずです！」
+	PRINTFORML
+	PRINTFORML その純粋すぎる瞳と真っ直ぐな言葉に、チンピラは一瞬動きを止める。
+	PRINTFORML しかし、すぐに鼻で笑った。
+	PRINTFORMW 「はあ!? 何だこのお嬢ちゃん。頭お花畑か?」
+	PRINTFORML
+	PRINTFORML 「そんなことありません！」
+	PRINTFORML %CALLNAME:이벤트主%は必死に訴える。
+	PRINTFORML 「あなただって、本当は悪い人じゃないはずです。何か事情があるんですよね？」
+	PRINTFORMW 「お話を聞かせてください。きっと、他に解決方法が――」
+	PRINTFORML
+	PRINTFORML 「うっせえんだよ！」
+	PRINTFORML チンピラが怒鳴り声を上げた。
+	PRINTFORML %CALLNAME:이벤트主%の肩を乱暴に掴む。
+	PRINTFORMW 「邪魔すんなら、お前もカモにしてやるぞ！」
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は怯えた表情を見せるが、それでも引こうとしない。
+	PRINTFORML 「で、でも…！話し合えば――」
+	PRINTFORMW 상황は一触即発だ。
+	PRINTFORML
+	PRINTFORMW このまま放置すれば、%CALLNAME:이벤트主%が危険に巻き込まれてしまう。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「ゆまさん、危ない！」
+	PRINTL [1] - 「話し合いで解決できる상대じゃない」
+	PRINTL [2] - 黙ってゆまの隣に立ち、彼女を守る姿勢を見せる
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは咄嗟に駆け寄り、%CALLNAME:이벤트主%の腕を掴んだ。
+		PRINTFORMW チンピラの手から彼女を引き離す。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は驚いたように目を見開く。
+		PRINTFORML 「%CALLNAME:MASTER%…！？」
+		PRINTFORMW 彼女の声には戸惑いと、わずかな安堵が混じっている。
+		PRINTFORML
+		PRINTFORML 「こんな危険なこと、一人でするもんじゃない」
+		PRINTFORML あなたは%CALLNAME:이벤트主%を자신の後ろに庇う。
+		PRINTFORMW 「心配したよ」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は少し頬を赤らめ、小さく頷いた。
+		PRINTFORML 「…ありがとうございます」
+		PRINTFORMW その声は、いつもより少し震えている。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,30)
+		SETBIT 依頼_進行보존:102653, 0
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは冷静に、しかし明確な声で、
+		PRINTFORMW %CALLNAME:이벤트主%に下がってもらった。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は少し悲しそうな表情を浮かべる。
+		PRINTFORML 「でも…話し合えば、きっと…」
+		PRINTFORMW 彼女の声は次第に小さくなっていく。
+		PRINTFORML
+		PRINTFORML あなたは%CALLNAME:이벤트主%の肩に手を置く。
+		PRINTL
+		PRINTL [0] - 「君の優しさは素晴らしい。でも、今は現実を見るべきだ」
+		PRINTL
+		BINPUT
+
+		PRINTFORML %CALLNAME:이벤트主%はしばらく逡巡した後、小さく頷いた。
+		PRINTFORML 「…分かりました」
+		PRINTFORMW その表情には、まだ納得しきれない様子が残っている。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-20)
+
+	ELSE
+		PRINTFORML あなたは何も言わず、静かに%CALLNAME:이벤트主%の隣に立った。
+		PRINTFORMW 彼女を守るように、チンピラと向き合う。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は驚いたように横を見る。
+		PRINTFORML 「%CALLNAME:MASTER%…」
+		PRINTFORMW その瞳には、驚きと感謝の色が浮かんでいる。
+		PRINTFORML
+		PRINTFORML あなたは無言で頷く。
+		PRINTFORML その姿勢が、「君を守る」という意思を雄弁に語っていた。
+		PRINTFORMW %CALLNAME:이벤트主%の表情が、安心したように和らぐ。
+		PRINTFORML
+		PRINTFORML 「…一緒にいてくれるんですね」
+		PRINTFORML %CALLNAME:이벤트主%は小さく微笑む。
+		PRINTFORMW その笑顔には、深い信頼が込められていた。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,50)
+		SETBIT 依頼_進行보존:102653, 1
+	ENDIF
+
+	PRINTFORML チンピラはあなたに気づき、혀打ちする。
+	PRINTFORML 「ちっ、また邪魔が入ったか」
+	PRINTFORMW 「いいぜ、お前もまとめてカモにしてやる！」
+	PRINTFORML
+	PRINTFORML チンピラはデュエルディスクを構える。
+	PRINTFORML 周囲の初心者デュエリストたちは怯えた表情で見守っている。
+	PRINTFORMW %CALLNAME:이벤트主%も、不安そうにあなたを見つめている。
+	PRINTFORML
+	PRINTFORML 「へへっ、俺の덱は強いぜ？」
+	PRINTFORML チンピラは不敵に笑う。
+	PRINTFORMW 「後悔すんなよ！」
+	PRINTFORML
+	TARGET = チンピラ
+	CALL CHOICE_DUEL_TYPE(102653)
+
+	IF RESULT == 1
+		PRINTFORML デュエルに승리した。
+		PRINTFORML チンピラのライフポイントがゼロになり、彼は信じられないという表情で立ち尽くす。
+		PRINTFORMW 「く、くそっ…！」
+		PRINTFORML
+		PRINTFORML 「お前ら、覚えてろよ！」
+		PRINTFORML チンピラは捨て台詞を吐いて逃げ出した。
+		PRINTFORMW 地面には、彼が奪ったカードの束が散乱している。
+		PRINTFORML
+		PRINTFORML あなたはカードを拾い集め、初心者デュエリストたちに返す。
+		PRINTFORML 「ありがとうございます！」
+		PRINTFORML 「助かりました！」
+		PRINTFORMW 彼らは涙を流しながら感謝の言葉を口にする。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%が駆け寄ってくる。
+		PRINTFORML 「すごいです…！」
+		PRINTFORML 彼女の瞳は輝いている。
+		PRINTFORMW 「まるで本物のヒーローみたいです！」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+
+		PRINTL
+		PRINTL [0] - 「でも、話し合いじゃ解決できなかったね」
+		PRINTL [1] - 「ヒーローなんて大げさだよ」
+		PRINTL [2] - 「君も無茶しないでね。心配したよ」
+		PRINTL
+		BINPUT
+
+		IF RESULT == 1
+			PRINTFORML あなたは少し照れくさそうに頭を掻く。
+			PRINTFORMW %CALLNAME:이벤트主%は首を横に振る。
+			PRINTFORML
+			PRINTFORML 「そんなことありません」
+			PRINTFORML 彼女は真剣な表情で言う。
+			PRINTFORML 「困っている人を助ける…それができる人は、本当のヒーローです」
+			PRINTFORMW 「そういうところが、素敵です」
+			PRINTFORML
+			PRINTFORML %CALLNAME:이벤트主%は微笑む。
+			PRINTFORML その笑顔は、心からの尊敬と好意に満ちていた。
+			PRINTFORMW あなたは少し気恥ずかしくなり、視線を逸らす。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,20)
+
+		ELSEIF RESULT == 0
+
+			PRINTFORML %CALLNAME:이벤트主%の表情が曇る。
+			PRINTFORML 「それは…そうかもしれませんが…」
+			PRINTFORMW 彼女は少し落ち込んだ様子で俯く。
+			PRINTFORML
+			PRINTFORML しかし、すぐに顔を上げた。
+			PRINTFORML 「でも、私は信じたいんです」
+			PRINTFORML %CALLNAME:이벤트主%の瞳には、揺るぎない信念が宿っている。
+			PRINTFORMW 「どんな人でも、心の奥底には優しさがあるって」
+			PRINTFORML
+			PRINTFORML あなたはその純粋すぎる言葉に、複雑な思いを抱く。
+			PRINTFORML その優しさは美しいが、同時に危うい。
+			PRINTFORMW いつか、彼女が傷つかないか――そんな不安が胸をよぎる。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,-30)
+			SETBIT 依頼_進行보존:102653, 2
+
+		ELSE
+			PRINTFORML あなたは優しく、しかし真剣な口調で言った。
+			PRINTFORML 「君も無茶しないでね。心配したよ」
+			PRINTFORMW %CALLNAME:이벤트主%の頬が、ほんのりと赤く染まる。
+			PRINTFORML
+			PRINTFORML 「…ありがとうございます」
+			PRINTFORML 彼女は恥ずかしそうに視線を逸らす。
+			PRINTFORMW 「気をつけます」
+			PRINTFORML
+			PRINTFORML しばらくの沈黙の後、%CALLNAME:이벤트主%が小さく呟く。
+			PRINTFORML 「でも…%CALLNAME:MASTER%が来てくれて、本当に良かったです」
+			PRINTFORMW その声は、安堵と感謝に満ちていた。
+			PRINTFORML
+			IF GETBIT(依頼_進行보존:102653, 1)
+				PRINTFORML 「隣に立ってくれた時…すごく心強かったです」
+				PRINTFORML %CALLNAME:이벤트主%は微笑む。
+				PRINTFORMW 「一緒にいてくれて、ありがとうございました」
+				CALL EVENT_FAVUP(이벤트主,50)
+			ELSE
+				CALL EVENT_FAVUP(이벤트主,25)
+			ENDIF
+		ENDIF
+
+		PRINTFORML %CALLNAME:이벤트主%は続ける。
+		PRINTFORML 「でも、きっとあの人たちも、本当は悪い人じゃないはずです」
+		PRINTFORMW 彼女は逃げていったチンピラの方を見つめる。
+		PRINTFORML
+		PRINTFORML 「何か事情があったのかもしれません…」
+		PRINTFORML 「生活に困っていたとか、誰かに脅されていたとか…」
+		PRINTFORMW %CALLNAME:이벤트主%の言葉は、あまりにも純粋だ。
+		PRINTFORML
+		PRINTFORML あなたはその危ういほどの優しさに、強い興味と一抹の不安を覚える。
+		PRINTFORML この少女は、いつか誰かに利用されてしまうのではないか。
+		PRINTFORMW しかし同時に、その純粋さこそが彼女の魅力なのだと気づく。
+		PRINTFORML
+		PRINTFORML 初心者デュエリストの一人が、カードの束を持ってくる。
+		PRINTFORML 「あの…せっかく取り戻してくれたけど、僕たち、もう新しいカードを買っちゃったんです」
+		PRINTFORMW 「だから、これは受け取ってください。お礼です」
+		PRINTFORML
+		PRINTFORML あなたはカードを受け取った。
+		PRINTFORML これを売れば、それなりの金額になるだろう。
+		PRINTFORMW %CALLNAME:이벤트主%も嬉しそうに微笑んでいる。
+		PRINTFORML
+		PRINTFORML 「みんなのカードが戻って、本当に良かったです」
+		PRINTFORML %CALLNAME:이벤트主%は만족そうに頷く。
+		PRINTFORMW 「%CALLNAME:MASTER%のおかげです」
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:102653, 2)
+			PRINTFORML しかし、彼女の表情には少し寂しさが残っている。
+			PRINTFORML 先ほどのあなたの言葉が、まだ心に引っかかっているようだ。
+			PRINTFORMW あなたは少し後悔する。もう少し優しく言えば良かったと。
+		ENDIF
+
+		PRINTFORML 初心者デュエリストたちは深々と頭を下げ、去っていく。
+		PRINTFORML 裏通りに、再び静寂が戻った。
+		PRINTFORMW %CALLNAME:이벤트主%があなたの方を向く。
+		PRINTFORML
+		PRINTFORML 「今日は、本当にありがとうございました」
+		PRINTFORML 彼女は丁寧にお辞儀をする。
+		PRINTFORMW 「また、困っている人がいたら…一緒に助けてくれますか？」
+		PRINTFORML
+		PRINTFORML その言葉に、あなたは頷いた。
+		PRINTFORML %CALLNAME:이벤트主%は嬉しそうに微笑む。
+		PRINTFORMW 「それじゃあ、また会いましょう！」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は手を振りながら去っていく。
+		PRINTFORML あなたは彼女の背中を見送りながら、複雑な思いを抱く。
+		PRINTFORMW あの純粋さは、守られるべきものなのか、それとも――
+		PRINTFORML
+		CALL EVENT_TIMER(60)
+		RETURN 2
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、チンピラは勝ち誇ったように笑う。
+		PRINTFORMW 「ははっ、ざまあみろ！」
+		PRINTFORML
+		PRINTFORML 「正義の味方気取りが！所詮はこんなもんか！」
+		PRINTFORML チンピラはあなたを見下ろす。
+		PRINTFORMW そして、突然拳を振り上げた。
+		PRINTFORML
+		PRINTFORML 「調子乗ってんじゃねえよ！」
+		PRINTFORML 次々と鈍い音と共に、強烈な衝撃があなたを襲う。
+		PRINTFORMW 視界が暗転していく。
+		PRINTFORML
+		PRINTFORML 「%CALLNAME:MASTER%！！」
+		PRINTFORML %CALLNAME:이벤트主%の悲鳴が聞こえる。
+		PRINTFORMW しかし、もう遅かった。
+		PRINTFORML
+		PRINTFORML 意識が遠のいていく。
+		PRINTFORML 最後に見えたのは、涙を流しながら駆け寄る%CALLNAME:이벤트主%の姿だった。
+		PRINTFORMW 「大丈夫ですか！？ お願い、目を開けて…！」
+		PRINTFORML
+		PRINTFORML 彼女の声は次第に遠くなっていく。
+		PRINTFORML あなたは자신の無力さを呪いながら、意識を失った。
+		PRINTFORMW ――GAME OVER――
+		RETURN 6
+    
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_102653
+CALL DP_GET(1500)
+CALL MONEY_GET(5000)
+
+@IRAI_DECK_102653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 112653 ;102653は他のミッションより使用されたので、112653を使用
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_112653
+
+PRINTFORML 
+PRINTFORML チンピラデュエリスト「へへっ、後悔すんなよ！」
+PRINTFORMW 
+
+;暗黒界雑魚版
+;闇の誘惑で自爆するんじゃない？いや知るか。
+@DUELDECK_112653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 28100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28104
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28104
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28106
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 28106
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72810
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72810
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72810
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72811
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72811
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72811
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72812
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72812
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72813
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72813
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72813
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70032
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70032
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70032
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 1335
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2155
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41816
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41255
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41877
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50530
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54005
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58038
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58038
+

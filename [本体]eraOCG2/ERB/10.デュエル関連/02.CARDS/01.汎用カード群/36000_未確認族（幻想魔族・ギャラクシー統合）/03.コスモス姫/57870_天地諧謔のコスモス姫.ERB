@@ -1,0 +1,218 @@
+@CARDNAME_57870,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 천지해학의 코스모스 공주
+	CASE "略称"
+		RESULTS = 천해코스모스 공주
+	CASE "カテゴリ"
+		RESULTS:0 = 코스모스 공주
+ENDSELECT
+
+
+@CARD_57870(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2600
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 2314
+	CASE "추가日"
+		RETURN 251018
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_57870(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 융합 이외의 "코스모스 공주" 몬스터＋미확인족 몬스터１장 이상
+PRINTL 이 카드명의 ②③의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드의 공격력은、［이 카드의 융합 소재가 된 몬스터의 수］×１００오른다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신 / 상대 턴에 발동할 수 있다。
+PRINTL 이 카드 이외의 필드의 카드 １장을 파괴한다。
+PRINTL 이 카드가 몬스터 ９장 이상을 소재로 융합 소환된 경우、
+PRINTL 추가로 이 카드 이외의 필드의 카드를 전부 파괴할 수 있다。
+CALLFORM CARD_ABLE(3,ターン終了時)
+PRINTL ③：엔드 페이즈에 발동할 수 있다。
+PRINTL 이 카드의 융합 소재로 한 몬스터 ４장당 １장、
+PRINTL 자신의 덱 / 묘지에서 카드명이 다른 "코스모스 공주" 마법 / 함정 카드를 세트한다（최대 ２장）。
+
+
+@CARDSUMMON_57870(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 99
+素材条件数自由 = 1
+素材条件素材数起動 = 1
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 코스모스 공주
+	素材条件종류 = 효과モン
+ELSEIF EX参照 >= 10
+	素材条件종족 = 미확인족
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,57870) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_57870(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,57870)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,57870)
+		RETURN 0
+	CALL FULLRESET
+	IF 듀얼리스트 == "자신"
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+	ENDIF
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,57870)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") < 4
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 코스모스 공주
+	효과条件종류 = 마함全般
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_57870(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC セット枚数
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57870,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件他所 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+
+		IF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") >= 9
+			SIF 듀얼리스트 == "자신"
+				PRINTL 필드의 카드를 전부 파괴하시겠습니까？
+			CALL YN_CHOICE(듀얼리스트)
+			SIF RESULT == いいえ
+				RETURN 0
+
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲마함 = 1
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件他所 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57870,3)
+	IF RESULT == 0
+		SIF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") >= 4
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 코스모스 공주
+		효과条件종류 = 마함全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		IF RESULT == 1 && 마함数(듀얼리스트) < 5 && GETVAR(@"%듀얼리스트%_MZ_汎数:場所") >= 8
+			TRYCALLFORM CARDNAME_{RESULT:1}("名前")
+			選択カード名前 = %RESULTS%
+
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 코스모스 공주
+			효과条件종류 = 마함全般
+			효과条件固名前 = %選択カード名前%
+			효과条件任意 = 1
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_汎数:場所") * 100
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
+ENDIF

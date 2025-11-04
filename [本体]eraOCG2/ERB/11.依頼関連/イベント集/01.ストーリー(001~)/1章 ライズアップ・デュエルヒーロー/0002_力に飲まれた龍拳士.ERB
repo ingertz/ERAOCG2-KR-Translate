@@ -33,10 +33,12 @@ RETURN 0
 @IRAI_ACT_2(参照)
 #DIM DYNAMIC 参照
 #DIM DYNAMIC 획득モンスター
-#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 이벤트主,2
 #DIM DYNAMIC 이벤트起動
 ;いったんターゲットを非難させる（バグ回避用）
 
+이벤트主:0 = NO_TO_CHARANUM(1630)
+이벤트主:1 = NO_TO_CHARANUM(1310)
 
 IF 依頼_달성상황 == 0
     PRINTFORMW 그래서 그 후에도 여러 일이 있었지만… 결국 의문만 남는다.
@@ -133,7 +135,7 @@ ELSEIF 依頼_달성상황 == 1
     依頼_달성상황 += 1
     依頼_場所 = 場所_ジム
 ELSEIF 依頼_달성상황 == 2
-    이벤트主 = NO_TO_CHARANUM(1630)
+
     IF TIME < KANTAN_TIME(6,00)
         PRINTFORMW 체육관이 닫혀 있다.
         PRINTFORMW "역시 밤 늦게 돌아다니면 그런가요. 정보에 따르면 언제나 있을 것 같으니까 다음에 다시 가보죠!"
@@ -202,11 +204,11 @@ ELSEIF 依頼_달성상황 == 2
 		PRINTFORMW 균형을 잃은 용선녀를 받아내자, 디스크에서 빠직거리는 소리와 함께 전기 충격이 울려 퍼졌다……。
 		PRINTFORMW "아아아아ーーーーー앗！？"
 		PRINTFORMW 용선녀는 무사히 카드의 모습으로 돌아갔다.
-		PRINTFORMW 		
+		PRINTFORML 		
 		PRINTFORMW "……어? 뭐야? 나…… 어라? 어? 데스가이드 씨？"
 		PRINTFORMW 그리고, 클리셰지만 제대로 기억을 되찾아, 아마도 원래의 용선녀로 돌아간 것 같다.
 		PRINTFORMW "휴, 어떻게든 됐네요!"
-		PRINTFORMW
+		PRINTFORML
         PRINTL
         PRINTL [0] - 가이드씨에게 감사한다
         PRINTL [1] - 가이드씨를 걱정한다
@@ -235,6 +237,8 @@ ELSEIF 依頼_달성상황 == 2
 		PRINTFORMW 그 후드 쓴 소녀는 어느틈에 사라져버렸다……。
 		CALL EVENT_TIMER(60)
 		CALL EVENT_MOVE(MASTER,場所_寝室)
+        CALL EVENT_MOVE(이벤트主:0,CFLAG:MASTER:현재위치)
+		CALL EVENT_MOVE(이벤트主:1,CFLAG:MASTER:현재위치)
 		CALL RECOVER_PERMIL(MASTER,-100,"체력")
 		CALL RECOVER_PERMIL(MASTER,-200,"기력")
 		RETURN 2

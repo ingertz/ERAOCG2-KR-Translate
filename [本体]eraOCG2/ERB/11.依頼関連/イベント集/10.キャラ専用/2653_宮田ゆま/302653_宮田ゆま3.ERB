@@ -1,0 +1,801 @@
+;委員長と同じく、実質最終ボス戦。
+;初期草案の虚無ネオスは恒常制限5だが、やりすぎたかなと思って弱体化。
+;특수승리は認めない。正面でぶつけ合え。
+;難易度＝캐릭터人気度と思ってもいいかもしれないので、
+;ツァンディレや恵の時はどうなるんだろう、と思う今日のところ。
+
+@IRAI_EVENT_302653(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2653-03)破滅の女神
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_工場
+	CASE "詳細"
+		PRINTL 街のデュエリストを襲撃する「破滅の女神」の噂が広まっている。
+		PRINTL 
+		PRINTL 報酬：3000DP、金銭20000
+	CASE "条件"
+		SIF 依頼_完了횟수:202653 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:이벤트主:호감도 < 1000
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:이벤트主:반발각인 > 0
+			RESULTS = 彼女はあなたを信じたいと思っているようだが、まだ心の整理がついていないようだ。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_302653(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 主催者
+
+이벤트主 = NO_TO_CHARANUM(2653)
+主催者 = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 最近、街では不穏な噂が流れていた。
+	PRINTFORML 「破滅の女神」と名乗る謎のデュエリストが、夜な夜な街のデュエリストを襲撃しているという。
+	PRINTFORMW 패배した者たちは、恐怖に怯え、二度とデュエルができなくなるほどの精神的ダメージを受けているらしい。
+	PRINTFORML
+	PRINTFORML 「E・HERO덱を使う女性デュエリスト」
+	PRINTFORML 嫌な予感がする。
+	PRINTFORMW まさか、と思いながらも、あなたは廃工場へと向かった。
+	PRINTFORML
+	PRINTFORML 廃工場の中は、薄暗く、静寂に包まれている。
+	PRINTFORML しかし、その奥から、微かにカードをシャッフルする音が聞こえてくる。
+	PRINTFORMW あなたは、その音の方へと歩を進めた。
+	PRINTFORML
+	PRINTFORML そこには、デュエルディスクを構えた%CALLNAME:이벤트主%が立っていた。
+	PRINTFORML しかし、その瞳は、以前のような優しさを失い、冷たく光っている。
+	PRINTFORML 彼女の手には、見覚えのない闇のカードが握られていた。
+	PRINTFORMW 「虚無のネオス」――その名前が、カードから滲み出る闇のオーラと共に、あなたの脳裏に浮かぶ。
+	PRINTFORML
+	PRINTFORML 「来ましたね…%CALLNAME:MASTER%」
+	PRINTFORML %CALLNAME:이벤트主%は、感情のない声で告げる。
+	PRINTFORML 「でも、もう遅いです。私は真の力を手に入れました」
+	PRINTFORMW 彼女の声は、まるで別人のように冷たく、機械的だった。
+	PRINTFORML
+	PRINTFORML あなたは、彼女を取り戻すため、必死に言葉を探す。
+	PRINTFORML 前の이벤트で、덱に残されていた闇のカード。
+	PRINTFORML それが、彼女を支配してしまったのだ。
+	PRINTFORMW あなたは、彼女に呼びかける。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「やめろゆま！こんなのデュエルじゃない！」
+	PRINTL [1] - 「君のヒーローは、そんな顔で戦わない」
+	PRINTL [2] - 「力だけが正義じゃない。君はそれを知っているはずだ」
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは、彼女の名前を叫んだ。
+		PRINTFORMW しかし、%CALLNAME:이벤트主%の表情は変わらない。
+		PRINTFORML
+		PRINTFORML 「ゆま…？」
+		PRINTFORML 彼女は、一瞬だけ表情を歪める。
+		PRINTFORML しかし、すぐに冷酷な顔に戻ってしまう。
+		PRINTFORMW 「その名前は、もう必要ありません」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-100)
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは、彼女が大切にしていたものを思い出させようとした。
+		PRINTFORMW %CALLNAME:이벤트主%は、一瞬、動揺したような表情を見せる。
+		PRINTFORML
+		PRINTFORML 「私の…ヒーロー…？」
+		PRINTFORML 彼女は、小さく呟く。
+		PRINTFORML しかし、すぐに首を振り、その迷いを振り払う。
+		PRINTFORMW 「もう…そんなものは…必要ありません」
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:202653, 3)
+			PRINTFORML しかし、彼女の瞳には、わずかな迷いが残っている。
+			PRINTFORMW あの時、あなたが彼女とデュエルで対峙したことを、彼女は覚えているのかもしれない。
+			CALL EVENT_FAVUP(이벤트主,150)
+		ELSE
+			CALL EVENT_FAVUP(이벤트主,50)
+		ENDIF
+
+		SETBIT 依頼_進行보존:302653, 0
+
+	ELSE
+		PRINTFORML あなたは、彼女の心に訴えかけた。
+		PRINTFORMW %CALLNAME:이벤트主%は、少しだけ迷いを見せる。
+		PRINTFORML
+		PRINTFORML 「力だけが…正義じゃない…？」
+		PRINTFORML 彼女は、小さく呟く。
+		PRINTFORML しかし、すぐに首を振る。
+		PRINTFORMW 「もう…戻れません。私は、もう…」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+	ENDIF
+
+	PRINTFORML %CALLNAME:이벤트主%は、デュエルディスクを構える。
+	PRINTFORML 「邪魔をするなら、あなたから消します」
+	PRINTFORML 彼女の声は、冷酷で、容赦がない。
+	PRINTFORMW あなたは、彼女を取り戻すため、デュエルディスクを構えた。
+	PRINTFORML
+  	SETBIT 依頼_進行보존:302653, 5
+	TARGET = 이벤트主
+	CALL CHOICE_DUEL_TYPE(302653)
+
+	IF RESULT == 1
+		PRINTFORML デュエルに승리した。
+		PRINTFORML %CALLNAME:이벤트主%のライフポイントがゼロになり、彼女は膝をつく。
+		PRINTFORMW 闇のカードの支配が、一時的に弱まったようだ。
+		PRINTFORML
+		PRINTFORML 「なぜ…私が…負ける…？」
+		PRINTFORML %CALLNAME:이벤트主%は、信じられないという表情で呟く。
+		PRINTFORML 彼女の瞳には、わずかに光が戻ってきている。
+		PRINTFORMW しかし、その時、背後から拍手の音が聞こえた。
+		PRINTFORML
+		PRINTFORML 「素晴らしい！ 素晴らしいデュエルだ！」
+		PRINTFORMW 白いスーツを着た男が、ゆっくりと姿を現す。
+    
+		PRINTL
+		PRINTL [0] - 「…教祖！？教祖が何故ここに……逃げたのか？監獄から自力で脱出を？」
+		PRINTL
+    	BINPUT
+    
+		PRINTFORML 「彼女こそ、新時代のデュエルの象徴だ！」
+		PRINTFORMW 教祖の瞳には、狂気じみた光が宿っている。
+		PRINTFORML
+		PRINTFORML 教祖は、%CALLNAME:이벤트主%に近づき、彼女の肩に手を置く。
+		PRINTFORML 「さあ、立ちなさい。あなたはまだ、本当の力を見せていない」
+		PRINTFORML 「私からもらった救済のカードを出して、この方を救済しなさい」
+		PRINTFORML 教祖の声には、不気味な優しさが込められている。
+		PRINTFORMW %CALLNAME:이벤트主%の瞳が、再び闇に染まり始める。
+		PRINTFORML
+		PRINTFORML あなたは、男の前に立ち、言葉を投げかける。
+
+		PRINTL
+		PRINTL [0] - 「ゆまを利用するな！」
+		PRINTL [1] - 「お前の野望はここで終わりだ」
+		PRINTL [2] - 「ゆま、俺を信じてくれ！」
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたは、분노を込めて男を睨みつけた。
+			PRINTFORMW 男は、不敵に笑う。
+			PRINTFORML
+			PRINTFORML 「利用？ 解放と言ってくださいよ！」
+			PRINTFORML 教祖は、大げさに両手を広げる。
+			PRINTFORML 「彼女は、자신の本当の力を解放しただけだ」
+			PRINTFORMW 「それを邪魔する君こそが、彼女の敵なのだよ」
+			PRINTFORML
+		ELSEIF RESULT == 1
+			PRINTFORML あなたは、冷静に教祖を見据えた。
+			PRINTFORMW 教祖は、興味深そうにあなたを見つめる。
+			PRINTFORML
+			PRINTFORML 「ほう、自信があるようだな」
+			PRINTFORML 不敵に笑う教祖。
+			PRINTFORML 「ならば、その力を見せてもらおうか」
+			PRINTFORMW 教祖は、デュエルディスクを構える。
+			PRINTFORML
+			SETBIT 依頼_進行보존:302653, 1
+
+		ELSE
+			PRINTFORML あなたは、%CALLNAME:이벤트主%に向かって叫んだ。
+			PRINTFORMW 彼女は苦しそうに顔を歪める。
+			PRINTFORML
+			PRINTFORML 「信じ…たい…でも…」
+			PRINTFORML %CALLNAME:이벤트主%は、頭を抱える。
+			PRINTFORML 闇のカードの支配とあなたへの信頼が、彼女の中で激しくせめぎ合っている。
+			PRINTFORMW 「私…どうすれば…」
+			PRINTFORML
+			IF GETBIT(依頼_進行보존:302653, 0)
+				PRINTFORML しかし、彼女の瞳には、わずかな希望の光が宿っている。
+				PRINTFORML あなたが彼女のヒーローを思い出させたことが、彼女の心に届いているのだ。
+				PRINTFORMW 「%CALLNAME:MASTER%…」
+				CALL EVENT_FAVUP(이벤트主,100)
+			ELSE
+				CALL EVENT_FAVUP(이벤트主,150)
+			ENDIF
+
+			SETBIT 依頼_進行보존:302653, 2
+		ENDIF
+
+		PRINTFORML 教祖は、あなたを排除しようと、デュエルディスクを構える。
+		PRINTFORML 「邪魔者は消えてもらおう」
+		PRINTFORML 教祖の瞳には、冷酷な光が宿っている。
+		PRINTFORMW あなたは、教祖とのデュエルを覚悟した。
+		PRINTFORML
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、膝をつく。
+		PRINTFORMW %CALLNAME:이벤트主%は、冷たい瞳であなたを見下ろしている。
+		PRINTFORML
+		PRINTFORML 「やはり…あなたも、この程度でしたか」
+		PRINTFORML 彼女は、感情のない声で告げる。
+		PRINTFORML 「もう、誰も私を止められません」
+		PRINTFORMW %CALLNAME:이벤트主%は、あなたに背を向け、闇の中へと消えていく。
+		PRINTFORML
+		PRINTFORML あなたは、彼女を止めることができなかった。
+		PRINTFORML 덱を奪われ、力を失ったあなたは、ただ立ち尽くすことしかできない。
+		PRINTFORMW ――世界は、破滅の女神の恐怖に包まれていく――
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-CFLAG:이벤트主:호감도)
+
+		RETURN 6
+	ENDIF
+
+	CALL EVENT_TIMER(30)
+	依頼_달성상황++
+	依頼_場所:0 = 場所_工場
+
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML 教祖とのデュエルが始まる。
+	PRINTFORMW %CALLNAME:이벤트主%を…取り戻す！
+	PRINTFORML
+  	SETBIT 依頼_進行보존:302653, 6
+	TARGET = 主催者
+	CALL CHOICE_DUEL_TYPE(302653)
+
+	IF RESULT == 1
+		PRINTFORML デュエルに승리した。
+		PRINTFORML ライフポイントがゼロになり、教祖は倒れる。
+		PRINTFORMW 「馬鹿な…また私の完璧な計画を…」
+		PRINTFORML
+		PRINTFORML 教祖は、悔しそうに歯噛みする。
+		PRINTFORML しかし、その時、%CALLNAME:이벤트主%の体から、強大な闇のオーラが溢れ出す。
+    	CALL FLASH(3,0xFF00000)
+		PRINTFORMW 「もう…誰も…信じない…！」
+	  
+		PRINTFORML %CALLNAME:이벤트主%は、全ての光を拒絶し、「破滅の女神」として完全に覚醒する。
+		PRINTFORMW 彼女の瞳は、完全に闇に染まり、その力は暴走し始めている。
+		PRINTFORML
+		PRINTFORML 教祖でさえも、その力に恐怖を覚え、後ずさる。
+		PRINTFORMW 「な、なんだこの力は…！」
+		PRINTFORML
+		PRINTFORMW あなたは、最後の戦いを覚悟する。
+		PRINTFORML
+    	;「現実を示した」플래그の回収
+		IF GETBIT(依頼_進行보존:102653, 2) && GETBIT(依頼_進行보존:202653, 2)
+			PRINTFORML あなたは、彼女が何度も現実に傷ついてきたことを思い出す。
+			PRINTFORML そして、あなたが彼女を守ろうとしたことを。
+			PRINTL
+			PRINTL [0] - 「現実がどんなに辛くても、君の優しさを諦めさせたくない！」
+			PRINTL
+			BINPUT
+			PRINTFORMW 彼女の心に届くことを信じて、あなたは叫んだ。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,300)
+		ENDIF
+
+		PRINTFORML %CALLNAME:이벤트主%は、あなたに向かって歩み寄る。
+		PRINTFORML 「%CALLNAME:MASTER%…あなたも…消えてください…」
+		PRINTFORMW 彼女の声は、悲しみと絶望に満ちている。
+		PRINTFORML
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、男は勝ち誇ったように笑う。
+		PRINTFORMW 「ふははは！ 所詮、この程度か！」
+		PRINTFORML
+		PRINTFORML 教祖は、あなたの덱を奪い取る。
+		PRINTFORML そして、%CALLNAME:이벤트主%に向かって命令する。
+		PRINTFORML 「さあ、彼を始末しなさい」
+		PRINTFORMW %CALLNAME:이벤트主%は、感情のない瞳であなたを見つめる。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-CFLAG:이벤트主:호감도)
+
+		PRINTFORML あなたは、彼女を止めることができなかった。
+		PRINTFORML 世界は、破滅の女神の恐怖に包まれていく。
+		PRINTFORMW ――GAME OVER――
+		PRINTFORML
+		RETURN 6
+	ENDIF
+
+	CALL EVENT_TIMER(30)
+  
+  	$RETRY_DUEL
+	BASE:이벤트主:체력 = MAXBASE:이벤트主:체력
+	BASE:이벤트主:기력 = MAXBASE:이벤트主:기력
+	PRINTFORML %CALLNAME:이벤트主%との最後のデュエルが始まる。
+	PRINTFORML 彼女の力は完全に暴走し、周囲の空間さえも歪めている。
+	PRINTFORMW しかし、大切な人を取り戻すため、決して諦めてはいけない…！
+	PRINTFORML
+	CALLFORM ANIME_TEST("破　滅　の　女　神","　ダークネスゆま　","Darkness Yuma")
+
+  	SETBIT 依頼_進行보존:302653, 7
+	TARGET = 이벤트主
+	CALL CHOICE_DUEL_TYPE(302653)
+
+	IF RESULT == 1
+		PRINTFORML デュエルに승리した。
+      
+		IF ライフ_상대 > 0
+			PRINTFORML だがその時、%CALLNAME:이벤트主%の덱から闇の雲が広がる。
+			PRINTFORMW 闇のカードの효과で時間が巻き戻される…！
+			CALL FLASH(5)
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			PRINTFORML
+			GOTO RETRY_DUEL
+		ELSE
+			PRINTFORML %CALLNAME:이벤트主%のライフポイントがゼロになり、彼女は膝をつく。
+		ENDIF
+
+		PRINTFORMW あなたの想いが、ついに彼女の心に届いた。
+		PRINTFORML
+		CALL FLASH(3)
+
+		PRINTFORML 闇のオーラが消え去り、%CALLNAME:이벤트主%の瞳に光が戻る。
+		PRINTFORML 彼女は、자신が犯したことの恐ろしさに気づき、泣き崩れる。
+		PRINTFORML 「私…何を…！」
+		PRINTFORMW 「ごめんなさい…ごめんなさい…！」
+		PRINTFORML
+		PRINTFORML あなたは、彼女を抱きしめる。
+		PRINTL
+		PRINTL [0] - 「大丈夫だ。もう終わったんだ」
+		PRINTL
+    	BINPUT
+		PRINTFORML あなたの優しい声が、彼女の心を包み込む。
+		PRINTFORMW %CALLNAME:이벤트主%は、あなたの胸で意識を失った。
+		PRINTFORML
+		PRINTFORML あなたは、彼女を抱きかかえ、廃工場を後にする。
+		PRINTFORML 倒れた男は、警察に引き渡すことにした。
+		PRINTFORMW そして、あなたは、%CALLNAME:이벤트主%を安全な場所へと運んだ。
+		PRINTFORML
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、膝をつく。
+		PRINTFORMW %CALLNAME:이벤트主%は、冷たい瞳であなたを見下ろしている。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-CFLAG:이벤트主:호감도)
+
+		PRINTFORML 「やはり…あなたも…私を止められませんでしたね…」
+		PRINTFORML 彼女の声は、悲しみに満ちている。
+		PRINTFORML しかし、その瞳には、もう光は戻らない。
+		PRINTFORMW 世界は、破滅の女神の恐怖に包まれていく。
+		PRINTFORML
+		RETURN 6
+	ENDIF
+
+	CALL EVENT_TIMER(60)
+	依頼_달성상황++
+	依頼_場所:0 = 場所_듀얼場
+
+ELSEIF 依頼_달성상황 == 2
+	PRINTFORML 場所を듀얼場に移し、あなたは%CALLNAME:이벤트主%を介抱する。
+	PRINTFORML しばらくして、彼女はゆっくりと目を覚ました。
+	PRINTFORMW 彼女は、あなたの顔を見て、涙を流す。
+	PRINTFORML
+	PRINTFORML 「%CALLNAME:MASTER%…」
+	PRINTFORML %CALLNAME:이벤트主%は、小さく呟く。
+	PRINTFORML 「私…本当に…ごめんなさい…」
+	PRINTFORMW 彼女の声は、後悔と悲しみに満ちている。
+	PRINTFORML
+	PRINTFORML あなたは、彼女にどう声をかけるか考える。
+	PRINTFORMW 彼女の心は、まだ深く傷ついているのだ。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「もう大丈夫だよ」
+	PRINTL [1] - 「これからどうするかは、ゆっくり考えよう」
+	PRINTL [2] - 「君は一人じゃない。それだけは忘れないで」
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは、優しく微笑んだ。
+		PRINTFORMW %CALLNAME:이벤트主%は、安堵の表情を見せる。
+		PRINTFORML
+		PRINTFORML 「ありがとうございます…」
+		PRINTFORML 彼女は、小さく頷く。
+		PRINTFORML 「%CALLNAME:MASTER%がいてくれて…本当に良かった…」
+		PRINTFORMW %CALLNAME:이벤트主%は、あなたの手を握る。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,50)
+		SETBIT 依頼_進行보존:302653, 3
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは、%CALLNAME:이벤트主%に寄り添った。
+		PRINTFORMW %CALLNAME:이벤트主%は、小さく頷く。
+		PRINTFORML
+		PRINTFORML 「はい…一緒に…考えてください」
+		PRINTFORML %CALLNAME:이벤트主%は、あなたを見つめる。
+		PRINTFORML 「私、まだ…どうすればいいか分からなくて…」
+		PRINTFORMW 「でも、%CALLNAME:MASTER%がいてくれるなら…大丈夫です」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,50)
+
+	ELSE
+		PRINTFORML あなたは、%CALLNAME:이벤트主%の手を握った。
+		PRINTFORMW %CALLNAME:이벤트主%は、驚いたように目を見開く。
+		PRINTFORML
+		PRINTFORML 「絶対に…忘れません」
+		PRINTFORML %CALLNAME:이벤트主%は、あなたの手を強く握り返す。
+		PRINTFORML 「%CALLNAME:MASTER%が…私を信じてくれるなら…」
+		PRINTFORMW 「私も…もう一度、人を信じてみます」
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:302653, 2)
+			PRINTFORML %CALLNAME:이벤트主%の瞳には、希望の光が宿っている。
+			PRINTFORML あなたが信じ続けたことが、%CALLNAME:이벤트主%の心を救ったのだ。
+			PRINTFORMW 「ありがとうございます…本当に…」
+			CALL EVENT_FAVUP(이벤트主,100)
+		ENDIF
+
+		SETBIT 依頼_進行보존:302653, 4
+	ENDIF
+
+	PRINTFORML 事件は解決した。
+	PRINTFORML しかし、%CALLNAME:이벤트主%の心の傷は深く、%CALLNAME:이벤트主%の未来はまだ不透明なままだ。
+	PRINTFORML それでも、あなたは%CALLNAME:이벤트主%を支え続けることを誓う。
+	PRINTFORMW %CALLNAME:이벤트主%は、あなたの優しさに、小さく微笑んだ。
+	PRINTFORML
+	CALL EVENT_TIMER(30)
+
+	RETURN 2
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_302653
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+CALL DP_GET(3000)
+PRINTFORML 脱獄犯を捕まったので、警察から賞金をもらった。
+CALL MONEY_GET(20000)
+
+RETURN 1
+
+@IRAI_DECK_302653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+  SIF GETBIT(依頼_進行보존:302653, 7)
+	  RETURN 312653
+  SIF GETBIT(依頼_進行보존:302653, 6)
+	  RETURN 202653
+  SIF GETBIT(依頼_進行보존:302653, 5)
+	  RETURN 302653
+ENDIF
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_302653
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2653)
+
+PRINTFORML 
+SIF GETBIT(依頼_進行보존:302653, 7)
+  PRINTFORML %CALLNAME:이벤트主%「すべてを…虚無に…」
+SIF GETBIT(依頼_進行보존:302653, 6)
+  PRINTFORML 教祖「救済の邪魔をするな！」
+SIF GETBIT(依頼_進行보존:302653, 5)
+  PRINTFORML %CALLNAME:이벤트主%「邪魔をするなら…消す…」
+PRINTFORMW 
+
+;ダークネスゆま덱（第一形態）
+@DUELDECK_302653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 38000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1445
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1445
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38033
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38033
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38033
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38034
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38036
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38036
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 38037
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 78030
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 78030
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 78031
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 78032
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 78032
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 78033
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 81445
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 98030
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 98030
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 41445
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41445
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41446
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41446
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58530
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58530
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58535
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58535
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58536
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58536
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58039
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41447
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41447
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41448
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41449
+
+;ダークネスゆま덱（最終形態）
+@DUELDECK_312653(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302653
+;EX不要
+
+@CARDNAME_302653,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 虚無のネオス
+	CASE "略称"
+		RESULTS = 虚無のネオス
+	CASE "カテゴリ"
+		RESULTS:0 = ネオス
+	CASE "生産불가"
+		RESULTS = 1
+ENDSELECT
+
+@CARD_302653(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_302653(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードの효과は、闇に侵された人しか操れない。このカードの효과は無効化されない。
+PRINTL ①：자신の場のモンスターがN体以下の場合、このカードを손패から상대プレイヤーに見せて발동できる。
+PRINTL 덱外からランダムでHEROモンスター１体を자신の필드へ攻撃표시で置く。
+PRINTL Nの数はターン1・2なら5、ターン3・4なら4、その以降は3になる。
+PRINTL ②：상대プレイヤーが승리した場合、자신のライフが０以下でないと발동する。
+PRINTL 世界をデュエル前に巻き戻す。
+
+@CARDCAN_302653(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 소환制限_302653 = 3
+SIF ターン数 < 5
+  소환制限_302653++
+SIF ターン数 < 3
+  소환制限_302653++
+;仕様です。
+;CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,302653)
+;SIF RESULT == 1
+;	RETURN 0
+IF 종류 == 손패起動
+	SIF 듀얼리스트 == "자신"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 소환制限_302653
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_302653(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 소환カード
+
+IF 종류 == 손패起動
+  SIF モンスター数(듀얼리스트) >= 5
+    RETURN 0
+  SELECTCASE RAND:40
+    CASE 0
+      소환カード = 58565
+    CASE 1
+      소환カード = 58564
+    CASE 2
+      소환カード = 58563
+    CASE 3
+      소환カード = 58562
+    CASE 4
+      소환カード = 58561
+    CASE 5
+      소환カード = 58560
+    CASE 6
+      소환カード = 58559
+    CASE 7
+      소환カード = 58558
+    CASE 8
+      소환カード = 58557
+    CASE 9
+      소환カード = 58556
+    CASE 10
+      소환カード = 58555
+    CASE 11
+      소환カード = 58513
+    CASE 12
+      소환カード = 58512
+    CASE 13
+      소환カード = 58511
+    CASE 14
+      소환カード = 58510
+    CASE 15
+      소환カード = 58506
+    CASE 16
+      소환カード = 58505
+    CASE 17
+      소환カード = 58504
+    CASE 18
+      소환カード = 58503
+    CASE 19
+      소환カード = 58502
+    CASE 20
+      소환カード = 58501
+    CASE 21
+      소환カード = 8003
+    CASE 22
+      소환カード = 58545
+    CASE 23
+      소환カード = 58544
+    CASE 24
+      소환カード = 58542
+    CASE 25
+      소환カード = 58540
+    CASE 26
+      소환カード = 58551
+    CASE 27
+      소환カード = 58550
+    CASE 28
+      소환カード = 58536
+    CASE 29
+      소환カード = 58535
+    CASE 30
+      소환カード = 58534
+    CASE 31
+      소환カード = 58533
+    CASE 32
+      소환カード = 58532
+    CASE 33
+      소환カード = 58531
+    CASE 34
+      소환カード = 58530
+    CASE 35
+      소환カード = 58522
+    CASE 36
+      소환カード = 58521
+    CASE 37
+      소환カード = 51843
+    CASE 38
+      소환カード = 51842
+    CASE 39
+      소환カード = 51840
+  ENDSELECT
+  CALL CARD_GENERATE(듀얼리스트,소환カード,"攻撃표시")
+ENDIF

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 스타라이트 로드
+		RESULTS = 스타라이트 로드
 	CASE "略称"
-RESULTS = 스타로드
+		RESULTS = 스타로드
 	CASE "カテゴリ"
-RESULTS:0 = 스타더스트
+		RESULTS:0 = 스타더스트
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -53,9 +52,8 @@ SIF RESULT == 1
 IF 종류 == 발동誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -67,7 +65,7 @@ IF 종류 == 발동誘発
 
 	CALL FULLRESET
 	효과範囲EX덱 = 1
-효과条件名前 = 스타더스트 드래곤
+	효과条件名前 = 스타더스트 드래곤
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -107,7 +105,7 @@ IF 종류 == 발동誘発
 
 		CALL FULLRESET
 		효과範囲EX덱 = 1
-효과条件名前 = 스타더스트 드래곤
+		효과条件名前 = 스타더스트 드래곤
 		효과条件任意 = 1
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF

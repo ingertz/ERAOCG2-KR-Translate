@@ -1,0 +1,198 @@
+﻿@CARDNAME_27600,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 스티고
+	CASE "略称"
+		RESULTS = Ｊ 스티고
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_27600(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1700
+	CASE "守備力"
+		RETURN 900
+	CASE "성별"
+		RETURN 無性
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN SPR
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27600(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,필드起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 자신フィールドのカード１枚を破壊し、덱から비늘야수족モンスター１体を묘지へ送る。
+PRINTL その後、レベルの合計が덱から묘지へ送ったモンスター以下になるように、
+;その後、レベルの合計が덱から묘지へ送ったモンスターと同じになるように、（うまくルーチンを組めないので변경しました）
+PRINTL 손패・덱から「쥬락 스티고」以外の「쥬락」モンスターを可能な限り소환条件を無視して특수소환する。
+; 손패・덱から「쥬락 스티고」以外の「쥬락」モンスターを소환条件を無視して특수소환できる。（上記변경に伴い"できる"だと１体のみ특수소환できてしまうので변경）
+PRINTL このターン、자신は비늘야수족モンスターしか특수소환できない。
+CALL CARD_ABLE(2,戦闘→묘지)
+PRINTL ②：このカードが戦闘で破壊され、묘지へ送られた場合に발동できる。
+; このカードが戦闘で破壊された場合に발동できる。（処理の都合でこちらは微妙に弱体化。有り余る효과破壊からの能動的なコンボを防ぐため類例同様にフィールドから離れた場合処理はしたくない。）
+PRINTL フィールドの表側표시カード１枚を손패に戻す。
+
+@CARDCAN_27600(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27600)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,27600)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 비늘야수족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)	
+	SIF RESULT < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과条件カテゴリ = 쥬락
+	효과条件固名前 = 쥬락 스티고
+	효과条件소환可 = 2
+	효과条件特不無視 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)	
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦闘→묘지
+	CALL FULLRESET
+    효과範囲필드 = 1
+    효과範囲마함 = 1
+    효과範囲상대필드 = 1
+    효과範囲상대마함 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_27600(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタ最大
+#DIM DYNAMIC 묘지送りレベル
+#DIM DYNAMIC 残りレベル
+#DIM DYNAMIC 選択カードレベル
+#DIM DYNAMIC 選択カード場所,5
+
+IF  종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27600,1)
+	IF RESULT == 0
+		PRINTFORML 【破壊するフィールド上のモンスターを選択】
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			PRINTFORML 【묘지へ送るモンスターを選択】
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件종족 = 비늘야수족
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)	
+			IF RESULT == 1
+				CALLFORM CARD_{RESULT:1}, "レベル"
+				묘지送りレベル = RESULT
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件CNT = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				カウンタ最大 = 5 - RESULT
+				カウンタ = 0
+				残りレベル = 묘지送りレベル
+				WHILE 残りレベル > 0;ここから条件を満たす限りループ
+					PRINTFORML 
+					PRINTFORML 【특수소환するモンスターを選択】소환可能レベル：{残りレベル}以下
+					PRINTFORML 
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과範囲손패 = 1
+					효과条件カテゴリ = 쥬락
+					효과条件固名前 = 쥬락 스티고
+					효과条件特不無視 = 1
+					CALLFORM 효과条件レベル_ADV(残りレベル,"以下")
+					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+					IF RESULT == 1;該当カードが손패・덱に残っている場合
+						CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+						IF RESULT == 1
+							CALLFORM CARD_{RESULT:1}, "レベル"
+							選択カードレベル = RESULT
+							残りレベル -= 選択カードレベル
+							カウンタ += 1
+							IF カウンタ == カウンタ最大;盤面に특수소환できる最大値を超える場合
+								BREAK
+							ENDIF
+						ENDIF
+					ELSE
+						BREAK
+					ENDIF
+				SIF 残りレベル == 0
+					BREAK
+				WEND
+			ENDIF
+		ENDIF
+		CALL FULLRESET
+		EX소환可能종족 = 비늘야수족
+		CALL CARD_EX_RESTRICTION(듀얼리스트)	
+	ENDIF
+ELSEIF 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27600,2)
+	IF RESULT == 0
+		CALL FULLRESET
+	    효과範囲필드 = 1
+   		효과範囲마함 = 1
+    	효과範囲상대필드 = 1
+    	효과範囲상대마함 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場単体",場所,"손패")
+	ENDIF
+ENDIF

@@ -48,9 +48,9 @@ CALL TEXT_DECORATION("ROGUE")
 CALL CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：이 카드는 발동 후、상대 플레이어에게 장착된다。
 CALL CARD_ABLE(2,攻守変動)
-PRINTL ②：자신 몬스터 존에 「봉음구」효과몬스터가 존재 할 경우、
+PRINTL ②：자신 몬스터 존에 "봉음구" 효과몬스터가 존재 할 경우、
 PRINTL 상대 필드의 몬스터의 공격력 수비력은、
-PRINTL 자신 필드의"봉음구"장착마법카드 １종류마다 ３００씩 내려간다。
+PRINTL 자신 필드의 "봉음구" 장착마법카드 １종류마다 ３００씩 내려간다。
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDCAN_79641(듀얼리스트,종류,ゾーン,場所)
@@ -67,13 +67,8 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79641)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF 마함数(듀얼리스트) >= 5
 		RETURN 0

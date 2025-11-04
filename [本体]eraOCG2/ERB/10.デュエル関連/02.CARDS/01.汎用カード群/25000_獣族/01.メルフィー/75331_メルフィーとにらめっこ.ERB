@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 메르피와 눈싸움
+		RESULTS = 메르피와 눈싸움
 	CASE "略称"
-RESULTS = 메르피와 눈싸움
+		RESULTS = 메르피와 눈싸움
 	CASE "カテゴリ"
-RESULTS:0 = 메르피
+		RESULTS:0 = 메르피
 ENDSELECT
 
 
@@ -58,9 +58,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	SIF 발동済_1(듀얼리스트,75331)
 		RETURN 0
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
     SIF メインフェイズ != 1
 		RETURN 0
@@ -83,20 +82,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
 ELSEIF 종류 == バトル開始時
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
     SIF バトルフェイズ != 1
 		RETURN 0
@@ -140,7 +133,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		選択カード = RESULT
 		;ラスタ-Pから
 		選択カードID = RESULT:99
-		TRYCALLFORM CARDNAME_{選択カードID}, "名前"
+		TRYCALLFORM CARDNAME_{選択カードID}("名前")
 		選択カード名前 = %RESULTS%
 		IF 選択カード != 9999
 			;咥える
@@ -155,7 +148,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			IF RESULT != 9999
 				CALL FULLRESET
 				효과条件行先플래그 = 덱行き
-효과条件名前 = %選択カード名前%
+				효과条件名前 = %選択カード名前%
 				CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
 			ENDIF
 		ENDIF

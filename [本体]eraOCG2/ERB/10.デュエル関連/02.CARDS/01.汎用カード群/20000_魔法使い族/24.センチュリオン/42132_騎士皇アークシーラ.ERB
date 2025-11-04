@@ -1,0 +1,164 @@
+@CARDNAME_42132,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 센츄리온 아크실라
+	CASE "略称"
+		RESULTS = 아크실라
+	CASE "カテゴリ"
+		RESULTS:0 = 센츄리온
+ENDSELECT
+
+
+@CARD_42132(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 3000
+	CASE "튜너"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 2132
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_42132(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 튜너 ＋ 튜너 이외의 몬스터 1장 이상
+PRINTL 이 카드명의 ①③의 효과는 각각 1턴에 1번밖에 사용할 수 없다.。
+CALLFORM CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ①: 이 카드를 특수 소환했을 경우에 발동할 수 있다。
+PRINTL 덱에서 「센츄리온」 카드 1장을 패에 넣는다。
+CALLFORM CARD_ABLE(2,지속효과)
+PRINTL ②: 이 카드가 몬스터 존에 존재하는 한,
+PRINTL 자신의 마법 & 함정 존의 앞면 표시 카드는 효과로는 파괴되지 않는다。
+CALLFORM CARD_ABLE(3,ターン終了時)
+PRINTL ③: 자신 / 상대의 엔드 페이즈에 발동할 수 있다。
+PRINTL 싱크로 몬스터 이외의 자신의 묘지 / 제외 상태인 "센츄리온" 몬스터 1장을 지속 함정 카드로 취급하고、
+PRINTL 자신의 마법 & 함정 존에 앞면 표시로 놓는다。
+
+
+@CARDSUMMON_42132(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 12
+IF EX参照 == 0 || EX参照 == 1
+	CALLFORM 素材条件レベル_ADV(12, "以下")
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+ENDIF
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,42132) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_42132(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,42132)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,42132)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 센츄리온
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF 발동済_3(듀얼리스트,42132)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 센츄리온
+	효과条件종류:0 = 효과モン
+	효과条件종류:1 = 싱크로以外
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0	
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_42132(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,42132,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 센츄리온
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件표시 = 表側표시
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐")
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,42132,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 센츄리온
+		효과条件종류:0 = 효과モン
+		효과条件종류:1 = 싱크로以外
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+	ENDIF
+ENDIF
+
+

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 초중승병 빅벤－K
+		RESULTS = 초중승병 빅벤－K
 	CASE "略称"
-RESULTS = 승병 벤K
+		RESULTS = 승병 벤K
 	CASE "カテゴリ"
-RESULTS:0 = 초중무사
+		RESULTS:0 = 초중무사
 ENDSELECT
 
 
@@ -73,11 +73,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -182,7 +179,7 @@ ELSEIF 종류 == 효과後誘発
 	        CALL FULLRESET
 	        효과範囲손패 = 1
 	        효과範囲덱 = 1
-효과条件名前 = 초중승병 빅벤－K
+			효과条件名前 = 초중승병 빅벤－K
 	        CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 	        IF RESULT == 1
 		        CALL FULLRESET
@@ -193,7 +190,7 @@ ELSEIF 종류 == 효과後誘発
 	    CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24531,3)
 	    IF RESULT == 0
 		    CALL FULLRESET
-효과条件名前 = 초중승병 빅벤－K
+			효과条件名前 = 초중승병 빅벤－K
 		    CALL CARD_SET_BASIC(듀얼리스트,"EX덱",ゾーン,場所,"表側표시")
 	    ENDIF
 	ENDIF

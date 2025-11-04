@@ -1,0 +1,140 @@
+; ============================================================
+; 46464_アドベントファーストスター
+; ============================================================
+
+@CARDNAME_46464,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = アドベントファーストスター
+	CASE "略称"
+		RESULTS = アドベント
+	CASE "カテゴリ"
+		RESULTS:0 = 光導
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46464(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常魔法
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46464(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②の効果は１ターンに１度しか使用できない。
+
+CALLFORM CARD_ABLE(1,魔罠起動,手札起動)
+PRINTL ①：デッキから「CoZ12」モンスター１体を特殊召喚する。
+PRINTL そのモンスターはこのターン、戦闘・効果では破壊されない。
+
+CALLFORM CARD_ABLE(2,攻撃時誘発)
+PRINTL ②：自分のモンスターが戦闘を行うダメージ計算時に、墓地のこのカードを除外して発動できる。
+PRINTL そのバトルフェイズを終了する。
+PRINTL その後、自分の「創界神」にコアカウンターを１つ置く。
+RETURN 0
+
+
+@CARDCAN_46464(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46464)
+SIF RESULT == 1
+	RETURN 0
+
+; ① 通常魔法の発動
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF 発動済_1(決闘者,46464)
+		RETURN 0
+	IF ゾーン == "手札"
+		SIF ターンプレイヤー != 決闘者
+			RETURN 0
+		SIF メインフェイズ != 1
+			RETURN 0
+	ELSEIF ゾーン == "魔罠"
+		CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	RETURN 1
+	ENDIF
+
+ELSEIF 種類 == 攻撃時誘発
+	SIF ゾーン != "墓地"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	SIF 戦闘カードID(決闘者) <= 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46464(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 選択カード
+#DIM  DYNAMIC 効果先
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46464,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲デッキ   = 1
+		効果条件カテゴリ = CoZ12
+		効果条件種類     = モン全般
+		効果条件召喚可   = 1
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		IF 最終召喚決者 == 決闘者
+			効果先 = 最終召喚場所
+			CALL SET_FIELD_INFO(決闘者,"戦場",効果先,"戦耐",1,1)
+			CALL SET_FIELD_INFO(決闘者,"戦場",効果先,"破耐",1,1)
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 攻撃時誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46464,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,完全除外行き) 
+		CALL EVADE_ATTACK(決闘者)
+		バトル強制終了 = 1
+
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果範囲魔罠 = 1
+		効果条件カテゴリ = 創界神
+		CALL CARD_CHOOSE_ADV(決闘者,"全場",場所)
+		IF RESULT != 9999
+			CALL CARD_SELECT(決闘者,RESULT)
+			CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",1)
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN 0

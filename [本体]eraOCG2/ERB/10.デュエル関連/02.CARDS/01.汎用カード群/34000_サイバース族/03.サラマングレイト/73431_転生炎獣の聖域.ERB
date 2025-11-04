@@ -75,7 +75,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			CONTINUE
 		カウンタB ++
 		VARSET RESULTS
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("名前")
 		효과条件보존:カウンタB = %RESULTS%
 	NEXT
 
@@ -94,13 +94,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 지속효과
@@ -155,7 +150,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		選択カード = RESULT
 		IF 選択カード != 9999
 			選択カード_ID = RESULT:99
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 			選択カード名前 = %RESULTS%
 
 			CALL FULLRESET

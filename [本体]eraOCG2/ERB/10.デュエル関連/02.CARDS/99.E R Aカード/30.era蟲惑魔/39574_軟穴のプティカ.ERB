@@ -47,7 +47,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ①②의 효과는 각각 １턴에 1번밖에 사용할 수 없다。
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 1번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,소환時)
 PRINTL ①：이 카드가 소환에 성공했을 때 발동할 수 있다。덱에서"충혹마" 마법 / 함정 카드 １장을 패에 넣는다。
 CALLFORM CARD_ABLE(2,특수소환時)
@@ -91,7 +91,8 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -207,7 +208,7 @@ ELSEIF 종류 == ターン終了時強制
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
 			SIF !MATCH(RESULTS, "충혹마")
 				CONTINUE
 		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",カウンタ)

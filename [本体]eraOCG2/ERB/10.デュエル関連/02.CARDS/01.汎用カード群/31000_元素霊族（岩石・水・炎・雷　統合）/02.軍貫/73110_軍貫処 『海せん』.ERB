@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 군관처『카이센』
+		RESULTS = 군관처『카이센』
 	CASE "略称"
-RESULTS = 『카이센』
+		RESULTS = 『카이센』
 	CASE "カテゴリ"
-RESULTS:0 = 군관
+		RESULTS:0 = 군관
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN フィールド
 ENDSELECT
 
@@ -32,7 +31,7 @@ RETURN 0
 @CARD_EXPLANATION_73110(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 자신 필드는 "『해선』"이 된다.
+PRINTL 자신 필드는 "『카이센』"이 된다.
 PRINTL 이 카드명의 ①② 효과는 각각 １턴에 １번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,효과後誘発)
 PRINTL ①：자신이 "군관" 몬스터의 소환 / 특수 소환에 성공했을 경우 발동할 수 있다.
@@ -58,13 +57,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 
 	RETURN 1
@@ -123,10 +117,10 @@ ELSEIF 종류 == 攻撃後誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	TRYCALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트)}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트)}("カテゴリ")
 	SIF !MATCH(RESULTS, "군관")
 		RETURN 0
-	TRYCALLFORM CARD_{直前戦闘破壊ID(듀얼리스트)}, "종류"
+	TRYCALLFORM CARD_{直前戦闘破壊ID(듀얼리스트)}("종류")
 	SIF !MATCH(RESULT,엑시즈)
 		RETURN 0
 	RETURN 1
@@ -249,5 +243,5 @@ ELSEIF 종류 == 攻撃後誘発
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 지속효과
-	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "『해선』")
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "『카이센』")
 ENDIF

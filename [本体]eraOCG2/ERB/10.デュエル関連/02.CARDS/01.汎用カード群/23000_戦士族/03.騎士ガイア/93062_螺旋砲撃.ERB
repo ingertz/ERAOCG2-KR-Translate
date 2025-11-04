@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 스파이럴 디스차지
+		RESULTS = 스파이럴 디스차지
 	CASE "略称"
-RESULTS = 나선포격
+		RESULTS = 나선포격
 	CASE "カテゴリ"
-RESULTS:0 = 기사 가이아
+		RESULTS:0 = 기사 가이아
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -33,10 +32,10 @@ RETURN 0
 #DIM DYNAMIC 종류
 PRINTL 이 카드명의 ②의 효과는 한 턴에 한 번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ①: 자신의 몬스터 존에 '기사 가이아' 몬스터가 존재하는 한,
-PRINTL 상대는 '기사 가이아' 몬스터밖에 공격 대상으로 선택할 수 없다.
+PRINTL ①: 자신의 몬스터 존에 "기사 가이아" 몬스터가 존재하는 한,
+PRINTL 상대는 "기사 가이아" 몬스터밖에 공격 대상으로 선택할 수 없다.
 CALLFORM CARD_ABLE(2,攻撃時誘発)
-PRINTL ②: 자신의 '기사 가이아' 융합 S X L 몬스터가 전투를 실행하는 공격 선언 시에,
+PRINTL ②: 자신의 "기사 가이아" 융합 / S / X / L 몬스터가 전투를 실행하는 공격 선언 시에,
 PRINTL 필드의 카드 1장을 대상으로 하여 발동할 수 있다.
 PRINTL 그 카드를 파괴한다.
 
@@ -54,9 +53,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -81,7 +79,7 @@ ELSEIF 종류 == 攻撃時誘発
 	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
 	SIF RESULTS != "기사 가이아"
 		RETURN 0
-	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)},"종류"
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("종류")
 	SIF !GROUPMATCH(RESULT,융합,싱크로,엑시즈,링크)
 		RETURN 0
 	IF 듀얼리스트 != "자신"

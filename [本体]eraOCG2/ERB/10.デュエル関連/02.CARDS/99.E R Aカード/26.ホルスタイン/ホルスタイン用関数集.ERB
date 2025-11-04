@@ -359,7 +359,7 @@ CALL CARD_EROTICS(参照カードID)
 IF 암소대상 != -1
 	암소名称 = %CALLNAME:암소대상%
 ELSE
-	TRYCALLFORM CARDNAME_{参照カードID},"略称"
+	TRYCALLFORM CARDNAME_{参照カードID}("略称")
 	암소名称 = %RESULTS%
 ENDIF
 
@@ -454,11 +454,11 @@ RETURN 紋章場所
 CALL CARD_EROTICS(参照カードID)
 암소대상 = RESULT
 
-TRYCALLFORM CARD_{参照カードID},"攻撃力"
+TRYCALLFORM CARD_{参照カードID}("攻撃力")
 乳攻撃力 = RESULT
-TRYCALLFORM CARD_{参照カードID},"守備力"
+TRYCALLFORM CARD_{参照カードID}("守備力")
 乳守備力 = RESULT
-TRYCALLFORM CARD_{参照カードID},"속성"
+TRYCALLFORM CARD_{参照カードID}("속성")
 乳속성 = RESULT * 250
 
 ;元の乳サイズを취득
@@ -664,7 +664,7 @@ CUSTOMDRAWLINE —
 
 IF 암소대상 == -1 || 화상표시 == 2
 	;CSV無
-	TRYCALLFORM CARDNAME_{参照カードID},"名前"
+	TRYCALLFORM CARDNAME_{参照カードID}("名前")
 	PRINTFORM 【%RESULTS%】
 	SETCOLOR C_PINK
 	PRINTFORML （%"♀",2%）
@@ -1121,7 +1121,7 @@ ENDIF
 CUSTOMDRAWLINE —
 PRINTFORMW 
 
-;◆服装チェック
+;◆복장チェック
 IF 場所 != -1
 	CALL HORUSTEIN_RAND_COW_TXT(1,암소鳴き声)
 	IF 服状態 <= -2
@@ -1421,9 +1421,9 @@ CALL HORUSTEIN_GET_DATA(듀얼리스트,カードID)
 듀얼리스트B = %듀얼리스트%
 
 ;自身の공격력을 0にする
-TRYCALLFORM CARD_{カードID},"攻撃力"
+TRYCALLFORM CARD_{カードID}("攻撃力")
 攻撃力計 = -RESULT
-TRYCALLFORM CARD_{カードID},"守備力"
+TRYCALLFORM CARD_{カードID}("守備力")
 守備力計 = -RESULT
 
 FOR カウンタB,0,2
@@ -1443,7 +1443,7 @@ FOR カウンタ,0,5
 			条件달성 = 1
 		
 		;ホルスタイン카드나 チェック(元々のカテゴリ)
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")},"カテゴリ"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}("カテゴリ")
 		SIF MATCH(RESULTS,"호루스타인")
 			条件달성 = 1
 		
@@ -1808,7 +1808,7 @@ CALL HORUSTEIN_GET_DATA(듀얼리스트,紋章カードID)
 参照カードID = RESULT:99
 
 ;속성(ホルスタイン몬스터는 필드에 存在する場合のみ、元の속성になる)
-TRYCALLFORM CARD_{参照カードID},"속성"
+TRYCALLFORM CARD_{参照カードID}("속성")
 암소속성 = RESULT
 
 FOR カウンタB,0,2
@@ -1965,38 +1965,3 @@ IF 合計金額 > 0
 	CUSTOMDRAWLINE —
 ENDIF
 
-;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-;CARD_GET_EMBLEM_VALUES
-;仕様：
-;永紋章に紐づく汎数１～３をすべて취득する処理。
-;一旦こっちで관리。本来の場所は「21.カード誘発효과.ERB」
-;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-
-@CARD_GET_EMBLEM_VALUES(듀얼리스트,カードID,永短설정)
-#DIMS DYNAMIC 듀얼리스트
-#DIM DYNAMIC カードID
-#DIM DYNAMIC カウンタ
-#DIM DYNAMIC 永短설정
-
-IF 永短설정 == 1
-	FOR カウンタ,0,99
-		SIF GETVAR(@"%듀얼리스트%_短紋章:カウンタ") != カードID
-			CONTINUE
-		;見つかったら値を설정
-		RESULT:1 = GETVAR(@"%듀얼리스트%_短紋_汎数１:カウンタ")
-		RESULT:2 = GETVAR(@"%듀얼리스트%_短紋_汎数２:カウンタ")
-		RETURN カウンタ
-	NEXT
-ELSE
-	FOR カウンタ,0,99
-		SIF GETVAR(@"%듀얼리스트%_永紋章:カウンタ") != カードID
-			CONTINUE
-		;見つかったら値を설정
-		RESULT:1 = GETVAR(@"%듀얼리스트%_永紋_汎数１:カウンタ")
-		RESULT:2 = GETVAR(@"%듀얼리스트%_永紋_汎数２:カウンタ")
-		RESULT:3 = GETVAR(@"%듀얼리스트%_永紋_汎数３:カウンタ")
-		RETURN カウンタ
-	NEXT
-ENDIF
-;見つからなかったら-1を返す
-RETURN -1

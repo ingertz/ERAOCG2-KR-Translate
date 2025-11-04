@@ -1,0 +1,179 @@
+﻿@CARDNAME_71706,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 霊神の聖櫃
+	CASE "略称"
+		RESULTS = 霊神の聖櫃
+	CASE "カテゴリ"
+		RESULTS:0 = 霊神
+		RESULTS:3 = ゲームオリジナル
+ENDSELECT
+
+
+@CARD_71706(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 永続魔法
+	CASE "レア度"
+		RETURN SPR
+	CASE "追加日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71706(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名のカードは１ターンに１枚しか発動できず、このカード名の②の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：このカードの発動時の効果処理として、自分のデッキ・墓地から「霊神の聖殿」１枚を手札に加える事ができる。
+PRINTL 自分フィールドが「霊神の聖殿」である場合、代わりに「霊神の聖櫃」以外の「霊神」魔法・罠カード１枚を手札に加える事もできる。
+CALLFORM CARD_ABLE(2,効果後誘発)
+PRINTL ②：自分フィールドが「霊神の聖殿」の状態で、相手がモンスターの効果を発動した場合に発動できる。
+PRINTL 相手の墓地のモンスター１体を選択し、そのモンスターと同じ属性の「霊神」・「エレメントセイバー」モンスター１体をデッキから手札に加える。
+
+;「エレメントセイバー」の初動を安定化させる追加カード。「霊神の聖殿」がなるべく初手に欲しいテーマなので、このカードでもかさ増しできるようにしている。
+;永続魔法として、相手のモンスター効果の発動に反応して、相手が使うモンスターと同じ属性のテーマモンスターをサーチする効果も持っており、
+;このカードを経由して「聖殿」と両方を貼る動きをすることで、更にアドバンテージを稼げるようになっている。
+
+;聖櫃の大きさは50x50x70cmぐらいのサイズで全部で６つあり、エレメントセイバーたちが身につける武具が１つずつ仕舞われている。
+;要は「聖闘士星矢」の聖衣の入ってる箱を思い浮かべればだいたいそれ。エレメントセイバーの武具は霊神を模したオブジェに組み立てられる感じだと妄想している。
+;こうなると相手に盤面を更地にされても「あなたにはまだ命が残っているでしょう」とラパウィラくんを酷使してくるスパルタ女神（本籍アテネ）も欲しくなるな。
+
+
+@CARDCAN_71706(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 複数属性, 8
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,71706)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF 発動済_1(決闘者,71706)
+		RETURN 0
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 種類 == 効果後誘発
+	SIF 発動済_2(決闘者,71706)
+		RETURN 0
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") >= 2
+		RETURN 0
+	SIF GETVARS(@"%決闘者%_フィールド名") != "霊神の聖殿"
+		RETURN 0
+	CALL FULLRESET
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_FIN_DATA(決闘者,"効果発動",1)
+	SIF RESULT != 1
+		RETURN 0
+	
+	;相手墓地の属性を確認して「複数属性」の変数に設定を格納。下の効果条件属性_複数にて利用。
+	CALL FULLRESET
+	CALL ELEMENTS_KIND_BASIC(決闘者,"墓地",複数属性,1)
+	
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ:0 = 霊神
+	効果条件カテゴリ:1 = エレメントセイバー
+	効果条件種類 = モン全般
+	CALL 効果条件属性_複数(複数属性)
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_71706(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード属性
+#DIM DYNAMIC 複数属性, 8
+#DIM DYNAMIC 追加条件フラグ = 0
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,71706,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+		
+		SIF GETVARS(@"%決闘者%_フィールド名") == "霊神の聖殿"
+			追加条件フラグ |= 1
+		
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果範囲墓地 = 1
+		効果条件カテゴリ:0 = ダミー
+		SIF 追加条件フラグ & 1
+			効果条件カテゴリ:1 = 霊神
+		効果条件種類 = 魔罠全般
+		効果条件固名前 = 霊神の聖櫃
+		効果条件スーパー名前 = 霊神の聖殿
+		効果条件任意 = 1
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		
+	ENDIF
+ELSEIF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,71706,2)
+	IF RESULT == 0
+		
+		;デッキに残っている霊神・エレメントセイバーの属性を確認して、その属性の相手墓地のモンスターしか選べないようにする処理。
+		CALL FULLRESET
+		効果条件カテゴリ:0 = 霊神
+		効果条件カテゴリ:1 = エレメントセイバー
+		CALL ELEMENTS_KIND_BASIC(決闘者,"デッキ",複数属性)
+		
+		CALL FULLRESET
+		効果範囲相手墓地 = 1
+		CALL 効果条件属性_複数(複数属性)
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT != 9999
+			選択カードID = RESULT:99
+			TRYCALLFORM CARD_{選択カードID}, "属性"
+			選択カード属性 = RESULT
+			
+			CALL FULLRESET
+			効果範囲デッキ = 1
+			効果条件カテゴリ:0 =霊神
+			効果条件カテゴリ:1 = エレメントセイバー
+			効果条件種類 = モン全般
+			効果条件属性 = 選択カード属性
+			CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+			
+		ENDIF
+	ENDIF
+ENDIF

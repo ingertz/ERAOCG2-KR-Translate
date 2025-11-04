@@ -1,0 +1,206 @@
+@CARDNAME_2186,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 공아단의 회검 도나
+	CASE "略称"
+		RESULTS = 회검 도나
+	CASE "カテゴリ"
+		RESULTS:0 = 공아단
+ENDSELECT
+
+
+@CARD_2186(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 1200
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_2186(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+;反素材条件カテゴリ = 없음
+素材条件R종족起動 = 1
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,2186) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_2186(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 종족이 다른 몬스터 2체
+PRINTL 이 카드명의 ①②의 효과는 1턴에 1번, 어느 한쪽만 사용할 수 있다.
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①: 자신 필드의 "공아단" 몬스터 1체와 상대 필드의 몬스터 1장을 대상으로 발동할 수 있다.
+PRINTL 그 몬스터를 파괴한다.
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ②: 자신 필드의 몬스터 1장을 릴리스하고 발동할 수 있다.
+PRINTL 릴리스한 몬스터와는 원래 카드명이 다른 "공아단" 몬스터 1장을 자신의 패 / 묘지에서 특수 소환한다.
+PRINTL 링크 몬스터를 릴리스하고 발동했을 경우, 추가로 1체 더 특수 소환할 수 있다.
+
+
+@CARDCAN_2186(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2186)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,2186)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 ++
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 공아단
+	효과条件종류 = モン全般
+	효과条件固名前 = 공아단의 회검 도나
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 ++
+	
+	SIF 발동불가:0 != 0 && 발동불가:1 != 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2186(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성,3
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 選択カード名前
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2186,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성:0 ++
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 공아단
+		효과条件종류 = モン全般
+		효과条件固名前 = 공아단의 회검 도나
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성:1 ++
+		
+		IF 条件달성:0 == 1 && 条件달성:1 == 1
+			IF 듀얼리스트 == "자신"
+				CALL YN_CHOICE(듀얼리스트,"①：공아단몬스터와 상대 필드의 몬스터를 파괴한다。","②：공아단몬스터를 릴리스하고 공아단몬스터를 특수 소환한다。")
+			ELSE
+				RESULT = 0
+			ENDIF
+		ELSEIF 条件달성:0 == 1
+			RESULT = 0
+		ELSEIF 条件달성:1 == 1
+			RESULT = 1
+		ENDIF
+		
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = 공아단
+			효과条件行先플래그 = 破壊行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+			ENDIF
+		ELSEIF RESULT == 1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				選択カード_ID = RESULT:1
+				TRYCALLFORM CARD_{選択カード_ID}("종류")
+				SIF RESULT == 링크
+					条件달성:2 ++
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+				選択カード名前 = %RESULTS%
+
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲묘지 = 1
+				효과条件カテゴリ = 공아단
+				효과条件固名前 = %選択カード名前%
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+				SIF 条件달성:2 == 0 || モンスター数(듀얼리스트) >= 5
+					RETURN 0
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲묘지 = 1
+				효과条件カテゴリ = 공아단
+				효과条件固名前 = %選択カード名前%
+				효과条件任意 = 1
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+

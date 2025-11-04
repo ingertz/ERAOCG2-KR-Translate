@@ -1,0 +1,108 @@
+@CARDNAME_28269,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ファーニマル・マウス
+	CASE "略称"
+		RESULTS = Fur・マウス
+	CASE "カテゴリ"
+		RESULTS:0 = ファーニマル
+ENDSELECT
+
+
+@CARD_28269(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 100
+	CASE "守備力"
+		RETURN 100
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28269(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカードの効果を発動するターン、
+PRINTL 自分は「デストーイ」モンスターしかエクストラデッキから特殊召喚できない。
+CALL CARD_ABLE(1,戦場起動)
+PRINTL ①：このカードがフィールドに表側表示で存在する限り１度だけ
+PRINTL 自分メインフェイズに発動できる。
+PRINTL デッキから「ファーニマル・マウス」を２体まで特殊召喚する。
+
+@CARDSUMMON_AA_28269
+
+
+@CARDCAN_28269(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,28269)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 戦場起動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 効果発動済(決闘者,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件名前 = ファーニマル・マウス
+	効果条件ID = 28269
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28269(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28269,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件ID = 28269
+		効果条件任意 = 1
+		効果条件複数 = 98
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		CALL CARD_EX_RESTRICTION(決闘者,"デストーイ")
+	ENDIF
+ENDIF
+

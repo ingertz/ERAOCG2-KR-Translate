@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 速攻魔法
 ENDSELECT
 
@@ -34,9 +33,9 @@ RETURN 0
 
 CALLFORM CARD_ABLE(0,魔罠起動,手札起動,フリー誘発)
 PRINTL ①：自分の「RR」モンスターが戦闘で破壊され墓地へ送られたターンに、
-PRINTL 자신 묘지의 「RR」Xモンスター１体を対象として発動できる。
-PRINTL そのモンスターを特殊소환し、その倍のランクのXモンスター１体を、
-PRINTL 対象のモンスターの上に重ねてX소환扱いとしてEX덱에서 特殊소환する。
+PRINTL 自分の墓地の「RR」Xモンスター１体を対象として発動できる。
+PRINTL そのモンスターを特殊召喚し、その倍のランクのXモンスター１体を、
+PRINTL 対象のモンスターの上に重ねてX召喚扱いとしてEXデッキから特殊召喚する。
 
 
 @CARDCAN_72666(決闘者,種類,ゾーン,場所)
@@ -54,15 +53,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 種類 == 魔罠起動 || 種類 == 手札起動 || 種類 == フリー誘発
-	IF ゾーン == "手札"
-		SIF ターンプレイヤー != 決闘者
-			RETURN 0
-	ELSEIF ゾーン == "魔罠"
-		SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 発動済_1(決闘者,72666) == 0
 		RETURN 0
 	CALL CARD_SS_CHECK(決闘者,0,"墓地")
@@ -116,7 +109,7 @@ IF 種類 == 魔罠起動 || 種類 == 手札起動 || 種類 == フリー誘発
 		効果条件カテゴリ = レイドラプターズ
 		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
 		IF RESULT == 1
-			設定レベル = GETVAR(@"%決闘者%_MZ_星:カード소환先") * 2
+			設定レベル = GETVAR(@"%決闘者%_MZ_星:カード召喚先") * 2
 			CALL FULLRESET
 			効果条件レベル = 設定レベル
 			効果条件種類 = エクシーズ
@@ -128,7 +121,7 @@ IF 種類 == 魔罠起動 || 種類 == 手札起動 || 種類 == フリー誘発
 				CALL RESETCONDITION_MAT(1)
 				代替素材数 = 1
 				重ねてＸ = 1
-				素材条件固定 = カード소환先
+				素材条件固定 = カード召喚先
 				TRYCALLFORM XYZSUMMON(決闘者,選択カード)
 			ENDIF
 		ENDIF

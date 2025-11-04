@@ -61,12 +61,12 @@ PRINTL 덱에서 이 카드명 이외의 "음마계극단" P 몬스터 1장을 �
 PRINTL 이 효과의 발동 후, 턴 종료시까지 자신은 "마계극단" 몬스터밖에 특수 소환할 수 없다.
 CALLFORM CARD_ABLE(2,발동強制誘発)
 PRINTL ①："음마계대본" 마법 / 함정 카드의 효과가 발동했을 때 발동한다.
-PRINTL 여성 몬스터 1장을 덱에서 상대 필드에 특수 소환한다.
+PRINTL 암컷 몬스터 1장을 덱에서 상대 필드에 특수 소환한다.
 PRINTL 그 후, 이 카드를 파괴한다.
 CALL TEXT_DECORATION("P_MAGIC_2")
 PRINTL 이 카드명의 몬스터 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(3,효과後誘発)
-PRINTL ②：이 카드명 이외의 자신의 여성 몬스터가 파괴되었을 경우 발동할 수 있다.
+PRINTL ②：이 카드명 이외의 자신의 암컷 몬스터가 파괴되었을 경우 발동할 수 있다.
 PRINTL 이 카드를 EX덱에서 상대의 마법 & 함정 존에 놓는다.
 CALL TEXT_DECORATION("ROGUE")
 
@@ -90,20 +90,9 @@ SIF RESULT == 1
 
 ;P
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	IF 듀얼리스트 != "자신"
-		CALL FULLRESET
-		효과範囲마함 = 1
-		효과条件名前 = 음마계극단－와로 마돈나
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT == 1
-			RETURN 0
-	ENDIF
 	RETURN 1
 
 ELSEIF 종류 == 마함起動

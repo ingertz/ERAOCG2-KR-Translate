@@ -69,7 +69,8 @@ IF 종류 == 효과後誘発
 		SIF RESULT != 1
 			RETURN 0
 	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
 	ELSE
 		RETURN 0
@@ -84,7 +85,7 @@ IF 종류 == 효과後誘発
 ELSEIF 종류 == 付与효과
 	SIF ゾーン != "필드"
 		RETURN 0
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:場所")},"성별"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:場所")}("성별")
 	SIF RESULT != 牝性
 		RETURN 0
 	RETURN 1
@@ -113,15 +114,15 @@ IF 종류 == 효과後誘発
 		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
 		IF 효과先 != 5
 			IF GETVAR(@"%対面者%_MZ_함정耐:효과先") == 0
-				TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:효과先")}, "名前"
+				TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:효과先")}("名前")
 				PRINTFORMW %RESULTS%는 가슴까지 구멍에 빠져버려, 꼴사납게 빠져나오려 허우적거렸다.
 				CALL SET_FIELD_INFO(対面者,"필드",효과先,"無効",2)
 				CALL SET_FIELD_INFO(対面者,"필드",효과先,"表固",2)
 				CALL SET_FIELD_INFO(対面者,"필드",효과先,"不材",2)
-				CALL SET_FIELD_INFO(対面者,"필드",효과先,"表",2)
+				CALL SET_FIELD_INFO(対面者,"필드",효과先,"表",2,1)
 				CALL CARD_GRANT_SPECIAL(対面者,효과先,99650)
 			ELSE
-				TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:효과先")}, "名前"
+				TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:효과先")}("名前")
 				PRINTFORMW %RESULTS%는 가슴까지 구멍에 빠졌지만, 함정 내성으로 자만하고 있습니다.
 				CALL CARD_GRANT_SPECIAL(対面者,효과先,99650)
 			ENDIF
@@ -130,7 +131,7 @@ IF 종류 == 효과後誘発
 
 ELSEIF 종류 == 付与효과
 	CALL LIFE_CHANGE(対面者,"増加","효과",1000)
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:場所")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:場所")}("名前")
 	PRINTFORMW 가슴까지 구멍에 빠진 %RESULTS%는 매우 지루해 보인다.
 	IF 듀얼리스트 == "상대"
 		PRINTFORMW %CALLNAME:MASTER%는 흘러들어온 달콤한 흰 액체를 맛있게 삼키며,

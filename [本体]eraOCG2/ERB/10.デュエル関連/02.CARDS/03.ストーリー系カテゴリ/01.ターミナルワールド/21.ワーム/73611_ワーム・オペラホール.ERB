@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 웜 오페라 홀
 	CASE "略称"
-		RESULTS = 웜 오페라 홀
+		RESULTS = Worm opera hole
 	CASE "カテゴリ"
 		RESULTS:0 = 웜
 		RESULTS:1 = 게임 오리지널
@@ -56,13 +56,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -131,8 +126,8 @@ ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73611,10)
 	IF RESULT == 0
 		SIF 듀얼리스트 == "자신"
-PRINTL 표시 형식을 선택해 주세요
-		CALL YN_CHOICE(듀얼리스트,"●表側守備표시","●裏側守備표시")
+			PRINTL 표시 형식을 선택해 주세요
+		CALL YN_CHOICE(듀얼리스트,"●앞면 수비 표시","●뒷면 수비 표시")
 		選択肢 = RESULT
 
 		CALL FULLRESET

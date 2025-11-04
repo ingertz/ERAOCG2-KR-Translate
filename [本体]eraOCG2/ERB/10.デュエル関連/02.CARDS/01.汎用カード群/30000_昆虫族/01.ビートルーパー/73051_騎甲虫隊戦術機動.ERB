@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 비틀트루퍼 포메이션
+		RESULTS = 비틀트루퍼 포메이션
 	CASE "略称"
-RESULTS = 비틀트루퍼포메션
+		RESULTS = 비틀트루퍼포메션
 	CASE "カテゴリ"
-RESULTS:0 = 비틀트루퍼
+		RESULTS:0 = 비틀트루퍼
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN フィールド
 ENDSELECT
 
@@ -74,13 +73,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 효과後誘発
@@ -127,7 +121,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		효과추가종류 = 効追戦無
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		カード_ID = RESULT:1
-		TRYCALLFORM CARD_{カード_ID}, "攻撃力"
+		TRYCALLFORM CARD_{カード_ID}("攻撃力")
 		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",RESULT)
 	ENDIF
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動

@@ -376,6 +376,35 @@ RESETCOLOR
 
 
 PRINTL
+PRINTFORML ――――금제――――
+PRINTL
+
+SETCOLOR C_RED
+SIF 필터条件制限:5 == 5
+	SETCOLOR C_YELLOW
+PRINTBUTTON "【 금지 】",365
+RESETCOLOR
+
+SETCOLOR C_RED
+SIF 필터条件制限:1 == 1
+	SETCOLOR C_YELLOW
+PRINTBUTTON "【 제한 】",361
+RESETCOLOR
+
+SETCOLOR C_ORANGE
+SIF 필터条件制限:2 == 2
+	SETCOLOR C_YELLOW
+PRINTBUTTON "【준제한】",362
+RESETCOLOR
+
+SIF 필터条件制限:3 == 3
+	SETCOLOR C_YELLOW
+PRINTBUTTON "【무제한】",363
+RESETCOLOR
+
+
+
+PRINTL
 PRINTFORML ――――그 외――――
 PRINTL
 
@@ -512,8 +541,6 @@ ELSEIF INRANGE(RESULT, 300,319)
 	ENDIF
 ELSEIF RESULT == 320
 	필터条件튜너 ^= 1
-
-
 ELSEIF INRANGE(RESULT, 321,325)
 	RESULT -= 320
 	IF 필터条件성별 != RESULT
@@ -548,14 +575,46 @@ ELSEIF INRANGE(RESULT, 331,339)
 ELSEIF INRANGE(RESULT, 340,350)
 	SELECTCASE RESULT
 		CASE 340
-			필터条件分割 = 효과なし
+			IF 필터条件分割 == 효과なし
+				필터条件分割 = -1
+			ELSE
+				필터条件分割 = 효과なし
+			ENDIF
 		CASE 341
-			필터条件分割 = デュアル
+			IF 필터条件分割 == デュアル
+				필터条件分割 = -1
+			ELSE
+				필터条件分割 = デュアル
+			ENDIF
 		CASE 342
-			필터条件分割 = 유니온
+			IF 필터条件分割 == 유니온
+				필터条件分割 = -1
+			ELSE
+				필터条件分割 = 유니온
+			ENDIF
+
 		CASE 343
-			필터条件分割 = 펜듈럼
+			IF 필터条件分割 == 펜듈럼
+				필터条件分割 = -1
+			ELSE
+				필터条件分割 = 펜듈럼
+			ENDIF
 	ENDSELECT
+
+
+ELSEIF INRANGE(RESULT, 360,370)
+	RESULT -= 360
+	IF 필터条件制限:RESULT == RESULT
+		필터条件制限:RESULT = 0
+		필터条件制限:0 = 0
+		FOR カウンタ,1,10
+			SIF 필터条件制限:カウンタ != 0
+				필터条件制限:0 = 999
+		NEXT
+	ELSE
+		필터条件制限:RESULT = RESULT
+		필터条件制限:0 = 999
+	ENDIF
 ELSEIF RESULT == 8888
 	CALL DECK_FILTER_RESET
 	
@@ -832,7 +891,7 @@ IF EX切り替え == 0
 			IF ソート方式 == "レア度"
 				CALL CARDPRICE(ALLリスト:カウンタ,"レア度")
 			ELSE
-				CALLFORM CARD_{ALLリスト:カウンタ},ソート方式
+				CALLFORM CARD_{ALLリスト:カウンタ}(ソート方式)
 			ENDIF
 			ALLリスト:カウンタ += RESULT * 10000000
 		NEXT
@@ -846,7 +905,7 @@ IF EX切り替え == 0
 		NEXT
 
 		FOR カウンタ,0,NRMカウンタ
-			CALLFORM CARD_{NRMリスト:カウンタ},ソート方式
+			CALLFORM CARD_{NRMリスト:カウンタ}(ソート方式)
 			NRMリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -859,7 +918,7 @@ IF EX切り替え == 0
 		NEXT
 
 		FOR カウンタ,0,EFFカウンタ
-			CALLFORM CARD_{EFFリスト:カウンタ},ソート方式
+			CALLFORM CARD_{EFFリスト:カウンタ}(ソート方式)
 			EFFリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -872,7 +931,7 @@ IF EX切り替え == 0
 		NEXT
 
 		FOR カウンタ,0,RITカウンタ
-			CALLFORM CARD_{RITリスト:カウンタ},ソート方式
+			CALLFORM CARD_{RITリスト:カウンタ}(ソート方式)
 			RITリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -885,7 +944,7 @@ IF EX切り替え == 0
 		NEXT
 
 		FOR カウンタ,0,MAGカウンタ
-			CALLFORM CARD_{MAGリスト:カウンタ},ソート方式
+			CALLFORM CARD_{MAGリスト:カウンタ}(ソート方式)
 			MAGリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -898,7 +957,7 @@ IF EX切り替え == 0
 		NEXT
 
 		FOR カウンタ,0,TRPカウンタ
-			CALLFORM CARD_{TRPリスト:カウンタ},ソート方式
+			CALLFORM CARD_{TRPリスト:カウンタ}(ソート方式)
 			TRPリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -1144,7 +1203,7 @@ ELSEIF EX切り替え == 1
 			IF ソート方式 == "レア度"
 				CALL CARDPRICE(ALLリスト:カウンタ,"レア度")
 			ELSE
-				CALLFORM CARD_{ALLリスト:カウンタ},ソート方式
+				CALLFORM CARD_{ALLリスト:カウンタ}(ソート方式)
 			ENDIF
 			ALLリスト:カウンタ += RESULT * 10000000
 		NEXT
@@ -1158,7 +1217,7 @@ ELSEIF EX切り替え == 1
 		NEXT
 
 		FOR カウンタ,0,FUSカウンタ
-			CALLFORM CARD_{FUSリスト:カウンタ},ソート方式
+			CALLFORM CARD_{FUSリスト:カウンタ}(ソート方式)
 			FUSリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -1171,7 +1230,7 @@ ELSEIF EX切り替え == 1
 		NEXT
 
 		FOR カウンタ,0,SYNカウンタ
-			CALLFORM CARD_{SYNリスト:カウンタ},ソート方式
+			CALLFORM CARD_{SYNリスト:カウンタ}(ソート方式)
 			SYNリスト:カウンタ += RESULT * 10000000
 		NEXT
 
@@ -1185,7 +1244,7 @@ ELSEIF EX切り替え == 1
 		NEXT
 
 		FOR カウンタ,0,XYZカウンタ
-			CALLFORM CARD_{XYZリスト:カウンタ},ソート方式
+			CALLFORM CARD_{XYZリスト:カウンタ}(ソート方式)
 			XYZリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -1198,7 +1257,7 @@ ELSEIF EX切り替え == 1
 		NEXT
 
 		FOR カウンタ,0,LINカウンタ
-			CALLFORM CARD_{LINリスト:カウンタ},ソート方式
+			CALLFORM CARD_{LINリスト:カウンタ}(ソート方式)
 			LINリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -1213,7 +1272,7 @@ ELSEIF EX切り替え == 1
 
 
 		FOR カウンタ,0,PSYカウンタ
-			CALLFORM CARD_{PSYリスト:カウンタ},ソート方式
+			CALLFORM CARD_{PSYリスト:カウンタ}(ソート方式)
 			PSYリスト:カウンタ += RESULT * 10000000
 		NEXT
 		IF ソート順番 == 1
@@ -1572,6 +1631,34 @@ NEXT
 SIF カードID == -1
 	RETURN 0
 IF 필터条件ワード != ""
+
+
+	VARSET RESULTS
+
+	TRYCALLFORM CARDNAME_{カードID}("名前")
+	SIF STRFIND(RESULTS, 필터条件ワード)  != -1
+		条件달성 ++
+	VARSET RESULTS
+	TRYCALLFORM CARDNAME_{カードID}("略称")
+	SIF STRFIND(RESULTS, 필터条件ワード)  != -1
+		条件달성 ++
+
+
+	VARSET RESULTS
+	TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
+	FOR カウンタ,0,10
+		SIF STRFIND(RESULTS:カウンタ, 필터条件ワード)  != -1
+			条件달성 ++
+	NEXT
+	VARSET RESULTS
+	TRYCALLFORM CARDNAME_{カードID}("検索カテゴリ")
+	FOR カウンタ,0,10
+		SIF STRFIND(RESULTS:カウンタ, 필터条件ワード)  != -1
+			条件달성 ++
+	NEXT
+	SIF 条件달성 != 0
+		GOTO SKIP_WORD
+
 	REDRAW 0
 	検索플래그 = 1
 	行数カウント = LINECOUNT
@@ -1587,38 +1674,22 @@ IF 필터条件ワード != ""
 	CLEARLINE 使用行数
 	VARSET 検索플래그
 
-	VARSET RESULTS
-
-
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
-	SIF STRFIND(RESULTS, 필터条件ワード)  != -1
-		条件달성 ++
-	VARSET RESULTS
-	TRYCALLFORM CARDNAME_{カードID}, "略称"
-	SIF STRFIND(RESULTS, 필터条件ワード)  != -1
-		条件달성 ++
-
-
-	VARSET RESULTS
-	TRYCALLFORM CARDNAME_{カードID}, "カテゴリ"
-	FOR カウンタ,0,10
-		SIF STRFIND(RESULTS:カウンタ, 필터条件ワード)  != -1
-			条件달성 ++
-	NEXT
-	VARSET RESULTS
-	TRYCALLFORM CARDNAME_{カードID}, "検索カテゴリ"
-	FOR カウンタ,0,10
-		SIF STRFIND(RESULTS:カウンタ, 필터条件ワード)  != -1
-			条件달성 ++
-	NEXT
+	$SKIP_WORD
 	SIF 条件달성 == 0
 		RETURN 0
 ENDIF
 IF 필터条件カテゴリ != ""
 	VARSET 条件달성
+	VARSET RESULTS
 	FOR カウンタ,0,10
-		TRYCALLFORM CARDNAME_{カードID}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 		SIF STRFIND(RESULTS:カウンタ, 필터条件カテゴリ)  != -1
+			条件달성 ++
+	NEXT
+	VARSET RESULTS
+	TRYCALLFORM CARDNAME_{カードID}("検索カテゴリ")
+	FOR カウンタ,0,10
+		SIF STRFIND(RESULTS:カウンタ,필터条件カテゴリ)  != -1
 			条件달성 ++
 	NEXT
 	SIF 条件달성 == 0
@@ -1627,7 +1698,7 @@ ENDIF
 IF 필터条件종류 > 0
 	VARSET 条件달성
 	;PRINTL 통합니다
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	IF MATCH(필터条件종류, 10)
 		SIF RESULT < 10
 			条件달성 = 1
@@ -1650,62 +1721,70 @@ IF 필터条件종류 > 0
 ENDIF
 
 IF 필터条件속성 > 0
-	TRYCALLFORM CARD_{カードID}, "속성"
+	TRYCALLFORM CARD_{カードID}("속성")
 	SIF !MATCH(필터条件속성, RESULT)
 		RETURN 0
 	SIF RESULT == 0
 		RETURN 0
 ENDIF
 IF 필터条件종족 > 0
-	TRYCALLFORM CARD_{カードID}, "종족"
+	TRYCALLFORM CARD_{カードID}("종족")
 	SIF !MATCH(필터条件종족, RESULT)
 		RETURN 0
 	SIF RESULT == 0
 		RETURN 0
 ENDIF
 IF 필터条件レベル > 0
-	TRYCALLFORM CARD_{カードID}, "レベル"
+	TRYCALLFORM CARD_{カードID}("レベル")
 	SIF !MATCH(필터条件レベル, RESULT)
 		RETURN 0
 	SIF RESULT == 0
 		RETURN 0
 ENDIF
 IF 필터条件攻撃力 > 0
-	TRYCALLFORM CARD_{カードID}, "攻撃力"
+	TRYCALLFORM CARD_{カードID}("攻撃力")
 	SIF RESULT > 필터条件攻撃力
 		RETURN 0
 ENDIF
 IF 필터条件固攻撃力 > 0
-	TRYCALLFORM CARD_{カードID}, "攻撃力"
+	TRYCALLFORM CARD_{カードID}("攻撃力")
 	SIF RESULT != 필터条件固攻撃力
 		RETURN 0
 ENDIF
 
 IF 필터条件守備力 > 0
-	TRYCALLFORM CARD_{カードID}, "守備力"
+	TRYCALLFORM CARD_{カードID}("守備力")
 	SIF RESULT > 필터条件守備力
 		RETURN 0
 ENDIF
 IF 필터条件分割 > 0
-	TRYCALLFORM CARD_{カードID}, "分割"
+	TRYCALLFORM CARD_{カードID}("分割")
 	SIF RESULT != 필터条件分割
 		RETURN 0
 ENDIF
 IF 필터条件튜너 > 0
-	TRYCALLFORM CARD_{カードID}, "튜너"
+	TRYCALLFORM CARD_{カードID}("튜너")
 	SIF RESULT == 0
 		RETURN 0
 ENDIF
 IF 필터条件성별 > 0
 	IF 필터条件성별 != 3
-		TRYCALLFORM CARD_{カードID}, "성별"
+		TRYCALLFORM CARD_{カードID}("성별")
 		SIF RESULT != 필터条件성별
 			RETURN 0
 	ELSE
-		TRYCALLFORM CARD_{カードID}, "성별"
+		TRYCALLFORM CARD_{カードID}("성별")
 		SIF RESULT == 1 || RESULT == 2
 			RETURN 0
 	ENDIF
+ENDIF
+
+IF 필터条件制限 > 0
+	CALL CARD_RESTRICTION_CHECK(カードID)
+	SIF RESULT == 0
+		RESULT = 3
+	SIF !MATCH(필터条件制限, RESULT)
+		RETURN 0
 ENDIF
 
 IF 필터条件화상 > 0
@@ -1715,11 +1794,11 @@ ENDIF
 
 IF 필터条件外部 > 0
 	IF 필터条件外部 == 1
-		TRYCALLFORM CARD_{カードID}, "외부자"
+		TRYCALLFORM CARD_{カードID}("외부자")
 		SIF RESULT != 1
 			RETURN 0
 	ELSEIF 필터条件外部 == 2
-		TRYCALLFORM CARD_{カードID}, "외부자"
+		TRYCALLFORM CARD_{カードID}("외부자")
 		SIF RESULT != 0
 			RETURN 0
 	ENDIF
@@ -1751,6 +1830,15 @@ ELSEIF 필터条件所持 == 1
 		SIF RESULT == 1
 			RETURN 0
 	ENDIF
+ELSEIF 필터条件所持 == 2
+	SIF ITEM:カードID == 0
+		RETURN 0
+	TRYCALLFORM CARD_{カードID}("듀얼리스트")
+	SIF RESULT == 1
+		RETURN 0
+	TRYCALLFORM CARD_{カードID}("生産불가")
+	SIF RESULT == 1
+		RETURN 0
 ENDIF
 
 RETURN 1
@@ -1777,6 +1865,8 @@ VARSET 필터条件外部
 VARSET 필터条件分割
 VARSET 필터条件所持
 VARSET 필터条件レア度
+VARSET 필터条件制限
+
 
 @DECK_FILTER_ON_CHECK
 SIF 필터条件固名前 != ""
@@ -1802,6 +1892,8 @@ SIF 필터条件성별 != 0
 SIF 필터条件화상 != 0
 	RETURN 1
 SIF 필터条件外部 != 0
+	RETURN 1
+SIF 필터条件制限 != 0
 	RETURN 1
 RETURN 0
 
@@ -1846,26 +1938,26 @@ FOR カウンタ,0 + (ページ開始 * 20) ,20 + (ページ開始 * 20)
 
 	VARSET RESULTS
 	IF 마이덱_エース:カウンタ > 0
-		TRYCALLFORM CARDNAME_{마이덱_エース:カウンタ}, "略称"
+		TRYCALLFORM CARDNAME_{마이덱_エース:カウンタ}("略称")
 	ELSE
-		TRYCALLFORM CARDNAME_{마이덱:カウンタ:0}, "略称"
+		TRYCALLFORM CARDNAME_{마이덱:カウンタ:0}("略称")
 	ENDIF	
 	SIF RESULTS != ""
 		PRINTFORM 　[%RESULTS,18,LEFT%]
 	VARSET RESULTS
 	IF 마이덱_アイドル:カウンタ > 0
-		TRYCALLFORM CARDNAME_{마이덱_アイドル:カウンタ}, "略称"
+		TRYCALLFORM CARDNAME_{마이덱_アイドル:カウンタ}("略称")
 	ELSE
-		TRYCALLFORM CARDNAME_{마이덱:カウンタ:14}, "略称"
+		TRYCALLFORM CARDNAME_{마이덱:カウンタ:14}("略称")
 	ENDIF
 	SIF RESULTS != ""
 		PRINTFORM 　[%RESULTS,18,LEFT%]
 	
 	VARSET RESULTS
 	IF 마이덱_切り札:カウンタ > 0
-		TRYCALLFORM CARDNAME_{마이덱_切り札:カウンタ}, "略称"
+		TRYCALLFORM CARDNAME_{마이덱_切り札:カウンタ}("略称")
 	ELSE
-		TRYCALLFORM CARDNAME_{마이덱:カウンタ:29}, "略称"
+		TRYCALLFORM CARDNAME_{마이덱:カウンタ:29}("略称")
 	ENDIF
 	SIF RESULTS != ""
 		PRINTFORM 　[%RESULTS,18,LEFT%]	
@@ -1953,14 +2045,14 @@ INPUT
 IF RESULT == 1	
 	FOR カウンタ,0,100000
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "종류"
+		TRYCALLFORM CARD_{カウンタ}("종류")
 		SIF INRANGE(RESULT,4,10)
 			CONTINUE
-		TRYCALLFORM CARD_{カウンタ}, "トークン"
+		TRYCALLFORM CARD_{カウンタ}("トークン")
 		SIF RESULT == 1
 			CONTINUE
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "종족"
+		TRYCALLFORM CARD_{カウンタ}("종족")
 		FOR カウンタB,1,20
 			SIF RESULT == カウンタB
 				종족数:カウンタB ++
@@ -1970,14 +2062,14 @@ IF RESULT == 1
 
 	FOR カウンタ,0,100000
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "종류"
+		TRYCALLFORM CARD_{カウンタ}("종류")
 		SIF !INRANGE(RESULT,4,10)
 			CONTINUE
-		TRYCALLFORM CARD_{カウンタ}, "トークン"
+		TRYCALLFORM CARD_{カウンタ}("トークン")
 		SIF RESULT == 1
 			CONTINUE
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "종족"
+		TRYCALLFORM CARD_{カウンタ}("종족")
 		FOR カウンタB,1,20
 			SIF RESULT == カウンタB
 				EX종족数:カウンタB ++
@@ -2001,14 +2093,14 @@ IF RESULT == 1
 ELSEIF RESULT == 2
 	FOR カウンタ,0,100000
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "종류"
+		TRYCALLFORM CARD_{カウンタ}("종류")
 		SIF INRANGE(RESULT,4,10)
 			CONTINUE
-		TRYCALLFORM CARD_{カウンタ}, "トークン"
+		TRYCALLFORM CARD_{カウンタ}("トークン")
 		SIF RESULT == 1
 			CONTINUE
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "속성"
+		TRYCALLFORM CARD_{カウンタ}("속성")
 		FOR カウンタB,1,7
 			SIF RESULT == カウンタB
 				속성数:カウンタB ++
@@ -2018,14 +2110,14 @@ ELSEIF RESULT == 2
 
 	FOR カウンタ,0,100000
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "종류"
+		TRYCALLFORM CARD_{カウンタ}("종류")
 		SIF !INRANGE(RESULT,4,10)
 			CONTINUE
-		TRYCALLFORM CARD_{カウンタ}, "トークン"
+		TRYCALLFORM CARD_{カウンタ}("トークン")
 		SIF RESULT == 1
 			CONTINUE
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "속성"
+		TRYCALLFORM CARD_{カウンタ}("속성")
 		FOR カウンタB,1,7
 			SIF RESULT == カウンタB
 				EX속성数:カウンタB ++
@@ -2051,7 +2143,7 @@ ELSEIF RESULT == 3
 	VARSET カウンタB		
 		FOR カウンタ,0,100000
 			VARSET RESULT
-			TRYCALLFORM CARD_{カウンタ}, "종류"
+			TRYCALLFORM CARD_{カウンタ}("종류")
 			FOR カウンタB,0,10
 				IF カウンタB == 1
 					SIF RESULT == 1
@@ -2115,7 +2207,7 @@ ELSEIF RESULT == 3
 	カウンタB = 11
 	FOR カウンタ,0,10000
 		VARSET RESULT
-		TRYCALLFORM CARD_{カウンタ}, "종류"
+		TRYCALLFORM CARD_{カウンタ}("종류")
 		SIF RESULT != 0
 			종류数:カウンタB ++
 	NEXT
@@ -2154,7 +2246,7 @@ ELSEIF RESULT == 4
 			ENDIF
 		NEXT
 		VARSET RESULTS
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		IF RESULTS != ""
 			カード実装 = 【C済】
 			カード名前 = %RESULTS%
@@ -2224,16 +2316,16 @@ ELSEIF RESULT == 6
 		VARSET カード名前
 		VARSET 캐릭터実装
 		VARSET カード実装
-		TRYCALLFORM CARD_{カードID}, "トークン"
+		TRYCALLFORM CARD_{カードID}("トークン")
 		SIF RESULT == 1
 			CONTINUE
-		TRYCALLFORM CARD_{カードID}, "듀얼리스트"
+		TRYCALLFORM CARD_{カードID}("듀얼리스트")
 		SIF RESULT == 1
 			CONTINUE
 
 
 		VARSET RESULTS
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		IF RESULTS != ""
 			カード名前 = %RESULTS%
 			カウンタ ++
@@ -2253,7 +2345,7 @@ ELSEIF RESULT == 7
 		VARSET カード実装
 
 		VARSET RESULTS
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		IF RESULTS != ""
 			カード名前 = %RESULTS%
 		ENDIF
@@ -2311,7 +2403,7 @@ ELSEIF RESULT == 8
 		VARSET 収録상황
 		VARSET RESULTS
 		
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		IF RESULTS != ""		
 			カード名前 = %RESULTS%
 			;パック상황の第二変数にある数字が、
@@ -2322,13 +2414,13 @@ ELSEIF RESULT == 8
 				収録상황 = %RESULTS%
 			ENDIF
 
-			TRYCALLFORM CARD_{カードID}, "トークン"
+			TRYCALLFORM CARD_{カードID}("トークン")
 			SIF RESULT == 1
 				収録상황 = トークンカード
-			TRYCALLFORM CARD_{カードID}, "듀얼리스트"
+			TRYCALLFORM CARD_{カードID}("듀얼리스트")
 			SIF RESULT == 1
 				収録상황 = 듀얼리스트カード
-			TRYCALLFORM CARD_{カードID}, "生産불가"
+			TRYCALLFORM CARD_{カードID}("生産불가")
 			SIF RESULT == 1
 				収録상황 = 生産불가
 
@@ -2346,7 +2438,7 @@ ELSEIF RESULT == 9
 	FOR カードID,1000,100000
 		VARSET 설정カテ
 		VARSET RESULTS
-		TRYCALLFORM CARDNAME_{カードID}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 		IF RESULTS != ""
 			FOR カウンタ,0,10
 				설정カテ:カウンタ = %RESULTS:カウンタ%
@@ -2773,13 +2865,13 @@ FOR カウンタ, 0, 60
 	カードID = 마이덱:選択덱番号:カウンタ
 	IF 효과条件名前 != ""
 		VARSET 条件달성
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		SIF !MATCH(효과条件名前, RESULTS)
 			CONTINUE
 	ENDIF
 	IF 효과条件カテゴリ != ""
 		VARSET 条件달성
-		TRYCALLFORM CARDNAME_{カードID}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 		IF MATCH(RESULTS, 효과条件カテゴリ)
 			条件달성 ++
 		ENDIF
@@ -2790,7 +2882,7 @@ FOR カウンタ, 0, 60
 			CONTINUE
 	ENDIF
 	IF 효과条件종류 > 0
-		TRYCALLFORM CARD_{カードID}, "종류"
+		TRYCALLFORM CARD_{カードID}("종류")
 		IF 효과条件종류 == モン全般
 			SIF RESULT > モン全般
 				CONTINUE
@@ -2807,7 +2899,7 @@ FOR カウンタ, 0, 60
 			VARSET 条件달성
 			SIF RESULT == 通常モン
 				条件달성 ++
-			TRYCALLFORM CARD_{カードID}, "分割"
+			TRYCALLFORM CARD_{カードID}("分割")
 			SIF RESULT == 通常モン
 				条件달성 ++
 			SIF 条件달성 != 0
@@ -2816,7 +2908,7 @@ FOR カウンタ, 0, 60
 			VARSET 条件달성
 			SIF RESULT == 通常モン
 				条件달성 ++
-			TRYCALLFORM CARD_{カードID}, "分割"
+			TRYCALLFORM CARD_{カードID}("分割")
 			SIF RESULT == 通常モン
 				条件달성 ++
 			SIF 条件달성 == 0
@@ -2841,42 +2933,42 @@ FOR カウンタ, 0, 60
 		ENDIF
 	ENDIF
 	IF 효과条件속성 > 0
-		TRYCALLFORM CARD_{カードID}, "속성"
+		TRYCALLFORM CARD_{カードID}("속성")
 		SIF !MATCH(효과条件속성, RESULT)
 			CONTINUE
 	ENDIF
 	IF 효과条件종족 > 0
-		TRYCALLFORM CARD_{カードID}, "종족"
+		TRYCALLFORM CARD_{カードID}("종족")
 		SIF !MATCH(효과条件종족, RESULT)
 			CONTINUE
 	ENDIF
 	IF 효과条件レベル > 0
-		TRYCALLFORM CARD_{カードID}, "レベル"
+		TRYCALLFORM CARD_{カードID}("レベル")
 		SIF !MATCH(효과条件レベル, RESULT)
 			CONTINUE
 	ENDIF
 	IF 효과条件攻撃力 > 0
-		TRYCALLFORM CARD_{カードID}, "攻撃力"
+		TRYCALLFORM CARD_{カードID}("攻撃力")
 		SIF RESULT > 효과条件攻撃力
 			CONTINUE
 	ENDIF
 	IF 효과条件固攻撃力 >= 0
-		TRYCALLFORM CARD_{カードID}, "攻撃力"
+		TRYCALLFORM CARD_{カードID}("攻撃力")
 		SIF RESULT != 효과条件固攻撃力
 			CONTINUE
 	ENDIF
 	IF 효과条件守備力 > 0
-		TRYCALLFORM CARD_{カードID}, "守備力"
+		TRYCALLFORM CARD_{カードID}("守備力")
 		SIF RESULT > 효과条件守備力
 			CONTINUE
 	ENDIF
 	IF 효과条件튜너 > 0
-		TRYCALLFORM CARD_{カードID}, "튜너"
+		TRYCALLFORM CARD_{カードID}("튜너")
 		SIF RESULT != 효과条件튜너
 			CONTINUE
 	ENDIF
 	IF 효과条件성별 > 0
-		TRYCALLFORM CARD_{カードID}, "성별"
+		TRYCALLFORM CARD_{カードID}("성별")
 		IF 효과条件성별 == 牝性
 			SIF !GETBIT(RESULT,0)
 				CONTINUE
@@ -2895,13 +2987,13 @@ FOR カウンタ, 0, 15
 	カードID = マイEX덱:選択덱番号:カウンタ
 	IF 효과条件名前 != ""
 		VARSET 条件달성
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		SIF !MATCH(효과条件名前, RESULTS)
 			CONTINUE
 	ENDIF
 	IF 효과条件カテゴリ != ""
 		VARSET 条件달성
-		TRYCALLFORM CARDNAME_{カードID}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 		IF MATCH(RESULTS, 효과条件カテゴリ)
 			条件달성 ++
 		ENDIF
@@ -2912,7 +3004,7 @@ FOR カウンタ, 0, 15
 			CONTINUE
 	ENDIF
 	IF 효과条件종류 > 0
-		TRYCALLFORM CARD_{カードID}, "종류"
+		TRYCALLFORM CARD_{カードID}("종류")
 		IF 효과条件종류 == モン全般
 			SIF RESULT > モン全般
 				CONTINUE
@@ -2929,7 +3021,7 @@ FOR カウンタ, 0, 15
 			VARSET 条件달성
 			SIF RESULT == 通常モン
 				条件달성 ++
-			TRYCALLFORM CARD_{カードID}, "分割"
+			TRYCALLFORM CARD_{カードID}("分割")
 			SIF RESULT == 通常モン
 				条件달성 ++
 			SIF 条件달성 != 0
@@ -2938,7 +3030,7 @@ FOR カウンタ, 0, 15
 			VARSET 条件달성
 			SIF RESULT == 通常モン
 				条件달성 ++
-			TRYCALLFORM CARD_{カードID}, "分割"
+			TRYCALLFORM CARD_{カードID}("分割")
 			SIF RESULT == 通常モン
 				条件달성 ++
 			SIF 条件달성 == 0
@@ -2963,42 +3055,42 @@ FOR カウンタ, 0, 15
 		ENDIF
 	ENDIF
 	IF 효과条件속성 > 0
-		TRYCALLFORM CARD_{カードID}, "속성"
+		TRYCALLFORM CARD_{カードID}("속성")
 		SIF !MATCH(효과条件속성, RESULT)
 			CONTINUE
 	ENDIF
 	IF 효과条件종족 > 0
-		TRYCALLFORM CARD_{カードID}, "종족"
+		TRYCALLFORM CARD_{カードID}("종족")
 		SIF !MATCH(효과条件종족, RESULT)
 			CONTINUE
 	ENDIF
 	IF 효과条件レベル > 0
-		TRYCALLFORM CARD_{カードID}, "レベル"
+		TRYCALLFORM CARD_{カードID}("レベル")
 		SIF !MATCH(효과条件レベル, RESULT)
 			CONTINUE
 	ENDIF
 	IF 효과条件攻撃力 > 0
-		TRYCALLFORM CARD_{カードID}, "攻撃力"
+		TRYCALLFORM CARD_{カードID}("攻撃力")
 		SIF RESULT > 효과条件攻撃力
 			CONTINUE
 	ENDIF
 	IF 효과条件固攻撃力 >= 0
-		TRYCALLFORM CARD_{カードID}, "攻撃力"
+		TRYCALLFORM CARD_{カードID}("攻撃力")
 		SIF RESULT != 효과条件固攻撃力
 			CONTINUE
 	ENDIF
 	IF 효과条件守備力 > 0
-		TRYCALLFORM CARD_{カードID}, "守備力"
+		TRYCALLFORM CARD_{カードID}("守備力")
 		SIF RESULT > 효과条件守備力
 			CONTINUE
 	ENDIF
 	IF 효과条件튜너 > 0
-		TRYCALLFORM CARD_{カードID}, "튜너"
+		TRYCALLFORM CARD_{カードID}("튜너")
 		SIF RESULT != 효과条件튜너
 			CONTINUE
 	ENDIF
 	IF 효과条件성별 > 0
-		TRYCALLFORM CARD_{カードID}, "성별"
+		TRYCALLFORM CARD_{カードID}("성별")
 		IF 효과条件성별 == 牝性
 			SIF !GETBIT(RESULT,0)
 				CONTINUE

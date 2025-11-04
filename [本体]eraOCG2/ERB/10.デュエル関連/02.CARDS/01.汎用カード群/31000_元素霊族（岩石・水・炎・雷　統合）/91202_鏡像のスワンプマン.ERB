@@ -74,7 +74,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트, 91202, "마함")
 	SIF RESULT == 1
@@ -217,15 +218,15 @@ ELSEIF 종류 == 효과後誘発
 			CALL CARD_CHOOSE_BASIC(듀얼리스트, "묘지", ゾーン, 場所)
 			IF RESULT != 9999
 				選択カード_ID = RESULT:99
-				TRYCALLFORM CARD_{選択カード_ID}, "종족"
+				TRYCALLFORM CARD_{選択カード_ID}("종족")
 				選択종족 = RESULT
-				TRYCALLFORM CARD_{選択カード_ID}, "속성"
+				TRYCALLFORM CARD_{選択カード_ID}("속성")
 				選択속성 = RESULT
-				TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"
+				TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
 				選択攻撃力 = RESULT
-				TRYCALLFORM CARD_{選択カード_ID}, "守備力"
+				TRYCALLFORM CARD_{選択カード_ID}("守備力")
 				選択守備力 = RESULT
-				TRYCALLFORM CARD_{選択カード_ID}, "レベル"
+				TRYCALLFORM CARD_{選択カード_ID}("レベル")
 				選択レベル = RESULT
 				
 				효과추가종류:0 = 効追永種 + 選択종족

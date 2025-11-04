@@ -1,0 +1,208 @@
+﻿@CARDNAME_1696,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = エレメントセイバー・ナル
+	CASE "略称"
+		RESULTS = ElmS・ナル
+	CASE "カテゴリ"
+		RESULTS:0 = エレメントセイバー
+		RESULTS:1 = エレメント
+		;カテゴリ縛りのSS、EX召喚のために設定
+		RESULTS:4 = 霊神
+ENDSELECT
+
+
+@CARD_1696(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RETURN 戦士族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1000
+	CASE "霊神属性"
+		RETURN 1
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1696(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：手札のこのカードを墓地へ送って発動できる。自分のデッキから「霊神の聖殿」１枚を手札に加える。
+PRINTL 自分フィールドが「霊神の聖殿」である場合、代わりに「霊神」魔法・罠カード１枚を手札に加える事もできる。
+CALLFORM CARD_ABLE(10,戦場起動)
+PRINTL ②：１ターンに１度、手札から「エレメント」モンスター１体を墓地へ送り、自分の墓地の「エレメントセイバー・ナル」以外の
+PRINTL 「霊神」・「エレメント」モンスター１体を対象にして発動できる。そのモンスターを手札に加える。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ③：墓地のこのカードは全ての属性のモンスターとして扱う。
+
+;「エレメントセイバー」の初動にもなる優秀な女戦士。戦場でのサルベージ効果も発動時に最低１枚は対象が墓地に存在している必要があるものの、
+;テーマの殆どのカードを手札にサルベージできる効果になっていて色々と応用が効く性能になっている。「霊神の聖殿」の③の効果を活用すれば、
+;墓地経由の実質「エレメントセイバー」モンスターのサーチ効果としても使える。手札コストは要るもののこれも名称ターン１でない効果になっている。
+;攻撃1500守備1000という比較的高いステータスも、「霊神の聖殿」のパンプアップ等を駆使すれば打点要員になれて地味ながら偉い。
+
+;女の子であるため、若干「エレメント」にも寄り添った効果にしている。ただし①のサーチ範囲は「エレメントセイバー」向けなので相性はそこそこ止まり。
+
+
+@CARDCAN_1696(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 追加条件フラグ = 0
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,1696)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,1696)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF GETVARS(@"%決闘者%_フィールド名") == "霊神の聖殿"
+		追加条件フラグ |= 1
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ:0 = ダミー
+	SIF 追加条件フラグ & 1
+		効果条件カテゴリ:1 = 霊神
+	効果条件種類 = 魔罠全般
+	効果条件スーパー名前 = 霊神の聖殿
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 効果発動済(決闘者,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 霊神の聖殿
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1 && !(発動済_3(決闘者,71705))
+		追加条件フラグ |= 1
+	CALL FULLRESET
+	効果範囲手札 = 1
+	SIF 追加条件フラグ & 1
+		効果範囲デッキ = 1
+	効果条件カテゴリ = エレメント
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ:0 = 霊神
+	効果条件カテゴリ:1 = エレメント
+	効果条件種類 = モン全般
+	効果条件固名前 = エレメントセイバー・ナル
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1696(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 追加条件フラグ = 0
+#DIM DYNAMIC 手札枚数＿前
+#DIM DYNAMIC 手札枚数＿後
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,1696,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		
+		SIF GETVARS(@"%決闘者%_フィールド名") == "霊神の聖殿"
+			追加条件フラグ |= 1
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ:0 = ダミー
+		SIF 追加条件フラグ & 1
+			効果条件カテゴリ:1 = 霊神
+		効果条件種類 = 魔罠全般
+		効果条件スーパー名前 = 霊神の聖殿
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,1695,10)
+	IF RESULT == 0
+		手札枚数＿前 = 手札数(決闘者)
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件名前 = 霊神の聖殿
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1 && !(発動済_3(決闘者,71705))
+			追加条件フラグ |= 1
+		;手札のエレメントモンスターを墓地へ送る。(条件次第でデッキからも送れる)
+		CALL FULLRESET
+		効果範囲手札 = 1
+		SIF 追加条件フラグ & 1
+			効果範囲デッキ = 1
+		効果条件カテゴリ = エレメント
+		効果条件種類 = モン全般
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			;墓地へ送る前後で手札の枚数を確認し、減っていない場合はデッキから送ったと判定し霊神の神殿の効果③を使用した扱いに。
+			手札枚数＿後 = 手札数(決闘者)
+			IF 手札枚数＿前 == 手札枚数＿後
+				;霊神の神殿の効果を発動した！
+				SETCOLOR C_YELLOW
+				PRINTFORML 「霊神の神殿」の効果によってデッキから直接モンスターを墓地へ送った！！
+				RESETCOLOR
+				CALL CARD_EFFECT_USE(決闘者,71705,3)
+			ENDIF
+			;墓地のモンスターをサルベージ
+			CALL FULLRESET
+			効果範囲墓地 = 1
+			効果条件カテゴリ:0 = 霊神
+			効果条件カテゴリ:1 = エレメント
+			効果条件種類 = モン全般
+			効果条件固名前 = エレメントセイバー・ナル
+			CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

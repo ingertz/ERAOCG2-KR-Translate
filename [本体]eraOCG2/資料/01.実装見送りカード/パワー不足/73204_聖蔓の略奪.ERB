@@ -25,7 +25,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 永続魔法
 ENDSELECT
 
@@ -34,13 +33,13 @@ RETURN 0
 @CARD_EXPLANATION_73204(種類)
 #DIM DYNAMIC 種類
 
-PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
 PRINTL ①：相手のフィールド（表側表示）・墓地の魔法カード１枚を対象として、
 PRINTL ８００LPを払って発動できる。そのカードを自分の手札に加える。
-PRINTL ②：자신 필드에 「サンアバロン」Lモンスターが存在する限り、
-PRINTL 자신 필드의 表側表示の마법 / 함정 카드 は対象耐性を得る。
+PRINTL ②：自分フィールドに「サンアバロン」Lモンスターが存在する限り、
+PRINTL 自分フィールドの表側表示の魔法・罠カードは対象耐性を得る。
 PRINTL ③：このカードがフィールドから離れた場合に発動する。
-PRINTL 자신 필드의 마법 / 함정 카드 を全て破壊し、相手は１枚ドローする。
+PRINTL 自分フィールドの魔法・罠カードを全て破壊し、相手は１枚ドローする。
 
 
 
@@ -73,13 +72,8 @@ IF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 種類 == 魔罠起動 || 種類 == 手札起動
-	IF 種類 == 魔罠起動
-		SIF GETVAR(@"%決闘者%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 決闘者
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 種類 == 永続効果

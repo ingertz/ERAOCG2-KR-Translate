@@ -32,7 +32,7 @@ RETURN 0
 #DIM DYNAMIC 획득モンスター
 #DIM DYNAMIC 이벤트主
 ;いったんターゲットを非難させる（バグ回避用）
-
+	이벤트主 = NO_TO_CHARANUM(1310)
 
 IF 依頼_달성상황 == 0
 	PRINTFORMW 듀얼 디스크로 이것저것 놀아본 결과, 사용감에도,
@@ -54,7 +54,7 @@ IF 依頼_달성상황 == 0
 	依頼_달성상황 += 1
 	CALL EVENT_TIMER(60)
 ELSEIF 依頼_달성상황 == 1
-	이벤트主 = NO_TO_CHARANUM(1310)
+
 	PRINTFORMW 번화가에 도착했지만…… 코스프레 페어는――
 	IF TIME > KANTAN_TIME(20,00)
 		PRINTFORMW 역시 끝났다…… 너무 늦었어……。
@@ -142,6 +142,7 @@ ELSEIF 依頼_달성상황 == 1
 		PRINTFORMW 도망치는 시민들 사이에 섞여 당신도 도망치며, 어떻게든 살아남는 데 성공했다.
 		CALL EVENT_TIMER(60)
 		CALL EVENT_MOVE(MASTER,場所_寝室)
+		CALL EVENT_MOVE(이벤트主,CFLAG:MASTER:현재위치)
 		CALL RECOVER_PERMIL(MASTER,-100,"체력")
 		CALL RECOVER_PERMIL(MASTER,-200,"기력")
 		RETURN 2

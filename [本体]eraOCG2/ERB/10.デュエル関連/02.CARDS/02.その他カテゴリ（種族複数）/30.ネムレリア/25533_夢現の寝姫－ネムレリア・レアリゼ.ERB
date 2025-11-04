@@ -1,0 +1,150 @@
+﻿@CARDNAME_25533,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 몽현의 침희－네무렐리아 레아리제
+	CASE "略称"
+		RESULTS = 레아리제
+	CASE "カテゴリ"
+		RESULTS:0 = 네무렐리아
+ENDSELECT
+
+
+@CARD_25533(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 3000
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_25533(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,손패起動)
+PRINTL ①：이 카드가 패에 존재할 경우、자신 필드의 몬스터 1장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 덱으로 되돌리고、이 카드를 특수 소환한다。
+
+CALL CARD_ABLE(2,특수소환時)
+PRINTL ②：이 카트를 특수 소환했을 경우에 발동할 수 있다。
+PRINTL 덱에서"꿈꾸는 네무렐리아"１장을 EX덱에 넣는다。
+PRINTL 그 후、상대필드의 앞면 표시 몬스터 １장을 뒷면 수비 표시로 할 수 있다。
+
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ③：이 카드의 공격력은、자신의 EX덱의 카드의 수×１００ 올린다。
+
+
+@CARDCAN_25533(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,25533)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,25533)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,25533,"손패",1)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,25533)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前 = 꿈꾸는 네무렐리아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_25533(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力상승
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,25533,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+
+
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン, 場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,25533,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 꿈꾸는 네무렐리아
+		CALL CARD_CHOOSE_BASIC(듀얼리스트, "덱",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_DISPOSE(듀얼리스트,"덱",選択カード,5)
+			CALL FULLRESET
+			효과条件표시 = 表側표시
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"표시변경")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	攻撃力상승 = 100 * 現EX山札数(듀얼리스트)
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力상승)
+ENDIF

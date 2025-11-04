@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 크리티우스의 이빨
+		RESULTS = 크리티우스의 이빨
 	CASE "略称"
-RESULTS = 크리티우스의이빨
+		RESULTS = 크리티우스의이빨
 	CASE "カテゴリ"
-RESULTS:0 = 전설의 용
-RESULTS:1 = 크리티우스의 이빨
+		RESULTS:0 = 전설의 용
+		RESULTS:1 = 크리티우스의 이빨
 ENDSELECT
 
 
@@ -67,19 +67,19 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		SIF GETVAR(@"%듀얼리스트%_EX덱:カウンタ") == -1
 			CONTINUE
 		選択カード_ID = GETVAR(@"%듀얼리스트%_EX덱:カウンタ")
-		TRYCALLFORM CARDNAME_{選択カード_ID},"カテゴリ"
+		TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 		SIF !MATCH(RESULTS,"크리티우스의 이빨")
 			CONTINUE
-		TRYCALLFORM CARD_{選択カード_ID},"종류"
+		TRYCALLFORM CARD_{選択カード_ID}("종류")
 		SIF RESULT != 융합
 			CONTINUE
-		TRYCALLFORM CARDSUMMON_{選択カード_ID},"素材条件名前"
+		TRYCALLFORM CARDSUMMON_{選択カード_ID}(듀얼리스트)
 		素材함정名前 = %RESULTS%
 		CALL FULLRESET
 		효과範囲마함 = 1
 		효과範囲손패 = 1
 		효과範囲묘지 = 1
-효과条件名前 = %素材함정名前%
+		효과条件名前 = %素材함정名前%
 		효과条件종류 = 함정全般
 		효과条件표시 = 0
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)

@@ -1,0 +1,241 @@
+﻿@CARDNAME_91405,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 순성한 위광
+	CASE "略称"
+		RESULTS = 순성한 위광
+	CASE "カテゴリ"
+		RESULTS:0 = 순성
+ENDSELECT
+
+
+@CARD_91405(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "추가日"
+		RETURN 250809
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_91405(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,마함起動,フリー誘発)
+PRINTL ①：자신 / 상대의 메인 페이즈에、이하의 효과에서 １개 선택해서 발동할 수 있다。
+PRINTL ●자신의 패 / 묘지에서、전사족 / 드래곤족으로 빛속성의 의식 몬스터 １장 또는 의식 마법 카드 １장을 덱에 되돌리고、
+PRINTL 덱에서 "순성" 몬스터 １장을 선택하여 패에 넣거나 특수 소환한다。
+PRINTL ●자신 필드의 전사족 / 드래곤족으로 빛속성의 의식 몬스터의 수까지、
+PRINTL 상대 필드의 카드를 대상으로 하고 발동할 수 있다. 그 카드와 이 카드를 파괴한다。
+
+
+@CARDCAN_91405(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과使用불가,10
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91405)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,91405)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件종족:0 = 전사족
+	효과条件종족:1 = 드래곤족
+	효과条件속성 = 빛속성
+	효과条件종류 = 의식
+	효과条件スーパーカテゴリ = 의식 마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1 
+		효과使用불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 순성
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1 
+		효과使用불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족:0 = 전사족
+	효과条件종족:1 = 드래곤족
+	효과条件속성 = 빛속성
+	효과条件종류 = 의식
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1 
+		효과使用불가:1 = 1
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1 
+		효과使用불가:1 = 1
+    SIF 효과使用불가:0 == 1 && 효과使用불가:1 == 1
+	    RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+
+
+@CARDEFFECT_91405(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 효과使用불가,10
+#DIM DYNAMIC 破壊数 
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91405,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件종족:0 = 전사족
+		효과条件종족:1 = 드래곤족
+		효과条件속성 = 빛속성
+		효과条件종류 = 의식
+		효과条件スーパーカテゴリ = 의식 마법
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1 
+			효과使用불가:0 = 1
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 순성
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1 
+			효과使用불가:0 = 1
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종족:0 = 전사족
+		효과条件종족:1 = 드래곤족
+		효과条件속성 = 빛속성
+		효과条件종류 = 의식
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1 
+			효과使用불가:1 = 1
+
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件除去種 = 묘지
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1 
+			효과使用불가:1 = 1
+			
+		IF 효과使用불가:0 == 0 && 효과使用불가:1 == 0
+			CALL YN_CHOICE(듀얼리스트,"●덱에서「순성」몬스터 １장을 골라 패에 넣거나 특수 소환한다","●자신 필드의 전사족 / 드래곤족으로 빛속성의 의식 몬스터의 수까지 상대 카드를 파괴한다")
+		ELSEIF 효과使用불가:0 == 1
+			RESULT = いいえ
+		ELSEIF 효과使用불가:1 == 1
+			RESULT = はい
+		ENDIF
+
+		IF RESULT == はい
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件종족:0 = 전사족
+			효과条件종족:1 = 드래곤족
+			효과条件속성 = 빛속성
+			효과条件종류 = 의식
+			효과条件スーパーカテゴリ = 의식 마법
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = 순성
+				효과条件종류 = モン全般
+				효과条件소환可 = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					CALL YN_CHOICE(듀얼리스트,"몬스터를 특수 소환한다","패에 넣는다")
+					IF RESULT == 0
+						CALL FULLRESET
+						효과範囲덱 = 1
+						효과条件カテゴリ = 순성
+						효과条件종류 = モン全般
+						CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+					ELSEIF RESULT == 1
+						CALL FULLRESET
+						효과範囲덱 = 1
+						효과条件カテゴリ = 순성
+						효과条件종류 = モン全般
+						CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+					ENDIF
+				ELSE
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과条件カテゴリ = 순성
+					효과条件종류 = モン全般
+					CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+				ENDIF			
+			ENDIF			
+		ELSEIF RESULT == いいえ
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件종족:0 = 전사족
+			효과条件종족:1 = 드래곤족
+			효과条件속성 = 빛속성
+			효과条件종류 = 의식
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			破壊数 = RESULT
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件複数 = 100 - 破壊数
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91405)
+	IF RESULT == 0
+	ENDIF
+ENDIF

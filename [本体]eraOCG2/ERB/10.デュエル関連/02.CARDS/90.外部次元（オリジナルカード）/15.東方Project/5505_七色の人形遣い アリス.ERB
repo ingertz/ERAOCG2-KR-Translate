@@ -1,0 +1,399 @@
+﻿@CARDNAME_5505,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 칠색의 인형사 앨리스
+	CASE "略称"
+		RESULTS = 인형사 앨리스
+	CASE "カテゴリ"
+		RESULTS:0 = 환상소녀
+		RESULTS:4 = 동방 Project
+ENDSELECT
+
+
+@CARD_5505(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 2000
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "성별"
+		RETURN 牝性
+	CASE "生成カード"
+		RETURN 205505
+	CASE "추가日"
+		RETURN 250829
+ENDSELECT
+
+
+RETURN 0
+
+@CARD_EXPLANATION_5505(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 P효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL TEXT_DECORATION("P_MAGIC")
+CALLFORM CARD_ABLE(P1,손패起動)
+PRINTL ①：이 카드를 지속마법취급으로 발동한 경우의 효과처리로서、
+PRINTL 덱에서 이 카드명 이외의 마법사족 "환상소녀" 몬스터 １장을 패에 넣는다。
+CALLFORM CARD_ABLE(P2,효과後誘発)
+PRINTL ②：필드에 몬스터가 특수 소환된 경우에 발동할 수 있다。
+PRINTL 필드에 "상하이 인형"을 특수 소환한다。
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：이 카드가 마법 / 함정 존에 존재하는 경우、"스펠카드" 효과를 발동한 경우에 발동할 수 있다。
+PRINTL 마법＆함정 존의 이 카드를 특수 소환한다。
+PRINTL 그 후、필드의 "인형" 몬스터 ２장을 묘지로 보낼 수 있다、
+PRINTL 그렇게 했을 경우 "골리아테 인형" １장을 특수 소환한다。
+
+
+
+
+
+@CARDCAN_5505(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과使用불가,2
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5505)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 손패起動
+	SIF 발동済_P1(듀얼리스트,5505)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件固名前 = 칠색의 인형사 앨리스
+	효과条件종족 = 마법사족
+	효과条件カテゴリ = 환상소녀
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF !GROUPMATCH(ゾーン,"마함")
+		RETURN 0
+	SIF 발동済_P2(듀얼리스트,5505)
+		효과使用불가:0 = 1
+	CALL CARD_SS_CHECK(듀얼리스트,105505,"")
+	SIF RESULT == 1
+		효과使用불가:0 = 1
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",2)
+	SIF RESULT != 1
+		효과使用불가:0 = 1
+
+	SIF 발동済_1(듀얼리스트,5505)
+		효과使用불가:1 = 1
+	CALL CARD_SS_CHECK(듀얼리스트,5505,"마함")
+	SIF RESULT == 1
+		효과使用불가:1 = 1
+	CALL FULLRESET
+	효과条件カテゴリ = スペルカード
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",2)
+	SIF RESULT != 1
+		효과使用불가:1 = 1
+
+
+	SIF 효과使用불가:0 == 1 && 효과使用불가:1 == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5505(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과使用불가,2
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5505,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件固名前 = 칠색의 인형사 앨리스
+		효과条件종족 = 마법사족
+		효과条件カテゴリ = 환상소녀
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+
+
+
+	SIF !GROUPMATCH(ゾーン,"마함")
+		RETURN 0
+	SIF 발동済_P2(듀얼리스트,5505)
+		효과使用불가:0 = 1
+	CALL CARD_SS_CHECK(듀얼리스트,105505,"")
+	SIF RESULT == 1
+		효과使用불가:0 = 1
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",2)
+	SIF RESULT != 1
+		효과使用불가:0 = 1
+
+	SIF 발동済_1(듀얼리스트,5505)
+		효과使用불가:1 = 1
+	CALL CARD_SS_CHECK(듀얼리스트,5505,"마함")
+	SIF RESULT == 1
+		효과使用불가:1 = 1
+	CALL FULLRESET
+	효과条件カテゴリ = スペルカード
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",2)
+	SIF RESULT != 1
+		효과使用불가:1 = 1
+
+	IF 효과使用불가:0 == 0 && 효과使用불가:1 == 0
+		PRINTL 상해인형을 특수 소환하시겠습니까？
+		CALL YN_CHOICE(듀얼리스트)
+	ELSEIF 효과使用불가:1 == 1
+		RESULT = はい
+
+	ELSEIF 효과使用불가:0 == 1
+		RESULT = いいえ
+	ENDIF
+
+	IF RESULT == はい
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5505,2)
+		IF RESULT == 0
+			PRINTL "샹하-이"
+			CALL CARD_GENERATE(듀얼리스트,105505)
+		ENDIF
+	ELSEIF RESULT == いいえ
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 인형
+		효과条件任意 = 1
+		효과条件複数 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+
+			PRINTL 「　シ　ャ　ン　ハ　ァ　ァ　ァ　ァ　ァ　イ　」
+			CALL CARD_GENERATE(듀얼리스트,205505)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+@CARDNAME_105505,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 상해인형
+	CASE "略称"
+		RESULTS = 상해인형
+	CASE "カテゴリ"
+		RESULTS:0 = 인형
+ENDSELECT
+
+
+@CARD_105505(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 500
+	CASE "성별"
+		RETURN 牝性
+	CASE "自動소멸"
+		RETURN 1
+
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_105505(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드는 공격유도와 직접공격을 갖는다。
+
+@CARDCAN_105505(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+RETURN 0
+
+@CARDEFFECT_105505(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻誘")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"直攻")
+ENDIF
+
+
+
+
+
+
+@CARDNAME_205505,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 골리아테 인형
+	CASE "略称"
+		RESULTS = 골리아테 인형
+	CASE "カテゴリ"
+		RESULTS:0 = 인형
+ENDSELECT
+
+
+@CARD_205505(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 牝性
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_205505(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드는 공격유도를 갖는다。
+CALLFORM CARD_ABLE(2, 戦闘→묘지, 破壊→묘지)
+PRINTL ②：이 카드가 파괴된 경우에 발동한다。
+PRINTL 자신은 카드를 ２장 드로우한다。
+
+@CARDCAN_205505(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	SIF 발동済_2(듀얼리스트,205505)
+		RETURN 0
+	RETURN 1
+ENDIF
+RETURN 0
+
+@CARDEFFECT_205505(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻誘")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"直攻")
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,205505,2)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,2)
+	ENDIF
+ENDIF

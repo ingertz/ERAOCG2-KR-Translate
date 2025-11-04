@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 이터널 페이버릿
+		RESULTS = 이터널 페이버릿
 	CASE "略称"
-RESULTS = 이터널 F
+		RESULTS = 이터널 F
 	CASE "カテゴリ"
-RESULTS:0 = 유벨
-RESULTS:1 = 페이버릿
+		RESULTS:0 = 유벨
+		RESULTS:1 = 페이버릿
 ENDSELECT
 
 
@@ -85,7 +85,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			RETURN 0
 		CALL FULLRESET
 		효과範囲필드 = 1
-효과条件名前 = 유벨
+		효과条件名前 = 유벨
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所,91750)
 		IF RESULT == 1
 			CALL RESETAREA_MAT
@@ -107,9 +107,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	ENDIF
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -154,7 +153,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		SIF RESULT == 1
 			条件달성B ++
 		IF 발동済_1(듀얼리스트,91750) == 0 && 발동済_2(듀얼리스트,91750) == 0 && 손패数(듀얼리스트) > 0 && 条件달성A != 0 && 条件달성B != 0
-			CALL YN_CHOICE(듀얼리스트,"●묘지에서 「유벨」몬스터를 특수 소환한다。","●俺（のモンスター）とお前（のモンスター）で超융합！")
+			CALL YN_CHOICE(듀얼리스트,"●묘지에서 「유벨」몬스터를 특수 소환한다。","●나（의 몬스터）와 너（의 몬스터）로 초융합！")
 		ELSEIF 발동済_1(듀얼리스트,91750) == 1 || 条件달성A == 0
 			RESULT = 1
 		ELSEIF 발동済_2(듀얼리스트,91750) == 1 || 条件달성B == 0

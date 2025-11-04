@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = E.R.A 트랩 팩토리
+		RESULTS = E.R.A 트랩 팩토리
 	CASE "略称"
-RESULTS = E.R.A함정공장
+		RESULTS = E.R.A함정공장
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:2 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:2 = E.R.A
 ENDSELECT
 
 
@@ -64,33 +64,37 @@ SIF RESULT == 1
 	RETURN 0
 
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || (종류 == フリー誘発 && ゾーン == "마함")
+IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
-		RETURN 0
-	SIF 발동済_1(듀얼리스트,99605)
-		RETURN 0
-	IF ターンプレイヤー == 듀얼리스트
-		CALL CARD_DRAW_CHECK
-		CALL FULLRESET
-		효과範囲묘지 = 1
-		효과条件カテゴリ = E.R.A
-		효과条件종류 = 通常함정
-		효과条件CNT = 1
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT >= 3
-			RETURN 1
-	ELSEIF ターンプレイヤー != 듀얼리스트
-		SIF 마함数(듀얼리스트) == 5
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		SIF 발동済_1(듀얼리스트,99605)
 			RETURN 0
-		CALL FULLRESET
-		효과範囲덱 = 1
-		효과条件カテゴリ = E.R.A
-		효과条件종류 = 通常함정
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT == 1
-			RETURN 1
+		IF ターンプレイヤー == 듀얼리스트
+			CALL CARD_DRAW_CHECK
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = E.R.A
+			효과条件종류 = 通常함정
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT >= 3
+				RETURN 1
+		ELSEIF ターンプレイヤー != 듀얼리스트
+			SIF 마함数(듀얼리스트) == 5
+				RETURN 0
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = E.R.A
+			효과条件종류 = 通常함정
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				RETURN 1
+		ENDIF
+	ELSE
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
 	ENDIF
 	RETURN 0
 ELSEIF 종류 == 효과後強制誘発
@@ -103,10 +107,6 @@ ELSEIF 종류 == 효과後強制誘発
 	효과条件종류 = 通常함정
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
 	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ENDIF

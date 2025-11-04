@@ -1,0 +1,245 @@
+﻿@CARDNAME_99073,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 惑乱魔ホールティア
+	CASE "略称"
+		RESULTS = 惑ホールティア
+	CASE "カテゴリ"
+		RESULTS:0 = 惑乱魔
+		RESULTS:1 = 蜜穴
+        RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_99073(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常罠
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 植物族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 200
+	CASE "守備力"
+		RETURN 2600
+	CASE "性別"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 効果なし
+	CASE "連動ID"
+		RETURN 1383
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_99073(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL このカード名の①②の効果は１ターンに１度、いずれか１つしか使用できない。
+PRINTL このカードは手札から「惑乱魔」・「落とし穴」・「蜜落とし穴」モンスターまたは通常罠カード１枚を捨て、セットしたターンに発動する事もできる。
+CALLFORM CARD_ABLE(1,魔罠起動,フリー誘発)
+PRINTL ①：このカードは発動後、モンスターゾーンに守備表示で特殊召喚する。
+PRINTL その後、自分フィールドのモンスターを素材として、EXデッキから「惑乱魔」モンスター１体をエクシーズ召喚またはリンク召喚する事ができる。
+CALLFORM CARD_ABLE(1,墓地起動,フリー誘発)
+PRINTL ②：墓地のこのカードを除外して発動できる。
+PRINTL 自分は墓地の「惑乱魔」モンスター１体を特殊召喚する。
+PRINTL その後、相手フィールドの表側表示モンスター１体に、この効果で特殊召喚したモンスターの蟲紋カウンターを１つ置く事ができる。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_99073(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件達成
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,99073)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || (種類 == フリー誘発 && ゾーン == "魔罠")
+	SIF 発動済_1(決闘者,99073)
+		RETURN 0
+	SIF 発動済_2(決闘者,99073)
+		RETURN 0
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF モンスター数(決闘者) >= 5
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,99073,"魔罠")
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件カテゴリ:0 = 惑乱魔
+	効果条件カテゴリ:1 = 落とし穴
+	効果条件カテゴリ:2 = 蜜穴
+	効果条件種類:0 = モン全般
+	効果条件種類:1 = 通常罠
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF GETVAR(@"%決闘者%_魔_表:場所") == 3 && RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 墓地起動 || (種類 == フリー誘発 && ゾーン == "墓地")
+	SIF 発動済_1(決闘者,99073)
+		RETURN 0
+	SIF 発動済_2(決闘者,99073)
+		RETURN 0
+	SIF モンスター数(対面者) >= 5
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = 惑乱魔
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_99073(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 选择カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC 召喚カードID
+#DIM DYNAMIC 効果先
+#DIM DYNAMIC 条件达成
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF (種類 == 魔罠起動 || (種類 == フリー誘発 && ゾーン == "魔罠")) && GETVAR(@"%決闘者%_魔_表:場所") == 3
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,99073,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果条件カテゴリ:0 = 惑乱魔
+		効果条件カテゴリ:1 = 落とし穴
+		効果条件カテゴリ:2 = 蜜穴
+		効果条件種類:0 = モン全般
+		効果条件種類:1 = 通常罠
+		CALL CARD_ADD_GY_BASIC(決闘者,"手札",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(決闘者, "魔罠", 場所, "守備表示")
+			CALL FULLRESET
+			PRINTL 自分フィールドのモンスターを使ってエクシーズ召喚またはリンク召喚を行いますか？
+			PRINTL [1] - ★YEAH!★
+			PRINTL [2] - NO
+			BINPUT
+			IF RESULT == 1
+				CALL FULLRESET
+				効果範囲EXデッキ = 1
+				効果条件カテゴリ = 惑乱魔
+				効果条件種類:0 = エクシーズ
+				効果条件種類:1 = リンク
+				効果条件召喚可 = 1
+				CALL CARD_CHOOSE_BASIC(決闘者, "EXデッキ",ゾーン,場所)
+				召喚カード = RESULT
+				IF 召喚カード != 9999
+					召喚カードID = RESULT:99
+					CALLFORM CARD_{召喚カードID}("種類")
+					IF RESULT == エクシーズ
+						TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
+						CALL XYZSUMMON(決闘者, 召喚カード)
+					ELSEIF RESULT == リンク
+						TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
+						CALL LINSUMMON(決闘者, 召喚カード)
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 魔罠起動 || (種類 == フリー誘発 && GROUPMATCH(ゾーン,"魔罠"))
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,99073,1)
+	IF RESULT == 0
+		CALL RESETCONDITION		
+		CALL CARD_SP_SUMMON(決闘者,ゾーン,場所, "守備表示")
+		CALL FULLRESET
+		PRINTL 自分フィールドのモンスターを使ってエクシーズ召喚またはリンク召喚を行いますか？
+		PRINTL [1] - ★YEAH!★
+		PRINTL [2] - NO
+		BINPUT
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲EXデッキ = 1
+			効果条件カテゴリ = 惑乱魔
+			効果条件種類:0 = エクシーズ
+			効果条件種類:1 = リンク
+			効果条件召喚可 = 1
+			CALL CARD_CHOOSE_BASIC(決闘者, "EXデッキ",ゾーン,場所)
+			召喚カード = RESULT
+			IF 召喚カード != 9999
+				召喚カードID = RESULT:99
+				CALLFORM CARD_{召喚カードID}("種類")
+				IF RESULT == エクシーズ
+					TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
+					CALL XYZSUMMON(決闘者, 召喚カード)
+				ELSEIF RESULT == リンク
+					TRYCALLFORM CARDSUMMON_{召喚カードID}(決闘者,召喚カード)
+					CALL LINSUMMON(決闘者, 召喚カード)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 墓地起動 || (種類 == フリー誘発 && ゾーン == "墓地")
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,99073,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件種類 = モン全般
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		効果先 = 最終召喚場所
+		召喚カードID = RESULT:1
+
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件表示 = 表側表示
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1
+			条件达成 = 1
+		IF 効果先 != 5 && 条件达成 == 1
+			CALL FULLRESET
+			効果範囲相手戦場 = 1
+			効果条件表示 = 表側表示
+			CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+			选择カード = RESULT
+			SIF 选择カード != 9999
+				CALL TRAPSEX_FACETIRON3(決闘者,ゾーン,種類,場所,选择カード,召喚カードID)
+		ENDIF
+	ENDIF
+ENDIF

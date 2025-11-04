@@ -1,0 +1,152 @@
+﻿@CARDNAME_54041,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데몬즈 마타도르
+	CASE "略称"
+		RESULTS = Ｄ’ｓ마타도르
+	CASE "カテゴリ"
+		RESULTS:0 = 데몬
+ENDSELECT
+
+
+@CARD_54041(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 의식
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+RETURN 0
+
+
+@CARDSUMMON_54041(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 6
+
+IF EX参照 == 1
+	CALL RITCAN(듀얼리스트,소환カード,54041) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_54041(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「마타도르 강림의 의식　다크 파세오」により降臨
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードが의식소환した場合に발동できる。
+PRINTL 덱から「데몬즈 마타도르」以外の「데몬」カード２枚を손패に加える。
+PRINTL このターン、このカードは攻撃できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：このカードは戦闘では破壊されず、このカードの戦闘で発生する자신への戦闘ダメージは０になる。
+CALLFORM CARD_ABLE(0,攻撃後強制誘発)
+PRINTL ③：このカードがモンスターと戦闘を行ったダメージ計算後に발동する。
+PRINTL そのモンスターを破壊し、상대に１０００ダメージを与える。
+
+
+@CARDCAN_54041(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54041)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,54041)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 데몬
+	효과条件固名前 = 데몬즈 마타도르
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_54041(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54041,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 데몬
+		효과条件固名前 = 데몬즈 마타도르
+		효과条件複数 = 2
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 攻撃後強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54041)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과추가종류 = 3
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘場所(듀얼리스트,1),"묘지",1000)
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ無効",3)
+ENDIF

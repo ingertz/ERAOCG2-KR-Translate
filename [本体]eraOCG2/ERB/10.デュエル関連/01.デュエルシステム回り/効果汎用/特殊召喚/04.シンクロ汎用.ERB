@@ -11,8 +11,9 @@
 #DIM DYNAMIC カウンタB
 #DIM DYNAMIC カウンタC
 #DIM DYNAMIC EX参照
-#DIM DYNAMIC 選択カード,10
-#DIM DYNAMIC 選択カード_ID,10
+#DIM DYNAMIC 選択カード,99
+#DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 選択カード_ID_保
 #DIM DYNAMIC 상대지정カード
 #DIM DYNAMIC 소환カード
 #DIM DYNAMIC 소환カード_ID
@@ -31,7 +32,8 @@
 #DIM DYNAMIC 효과추가종류보존,20
 #DIM DYNAMIC 素材ID起動 ;Anonym추가
 #DIM DYNAMIC 보존素材ID
-
+#DIM DYNAMIC 素材攻撃力起動 ;usui추가20251028
+#DIM DYNAMIC 合計攻撃力 ;usui추가20251028
 
 ;엑시즈소환
 VARSET 選択カード, -1
@@ -42,6 +44,8 @@ SIF 素材条件素材数起動 >= 1
 	素材数起動 = 1
 SIF 素材条件素材ID起動 >= 1 ;Anonym추가
 	素材ID起動 = 素材条件素材ID起動
+SIF 素材条件素材攻撃力起動 >= 1 ;usui추가20251028
+	素材攻撃力起動 = 1
 
 FOR カウンタ,0,10
 	효과추가종류보존:カウンタ = 효과추가종류:カウンタ
@@ -71,7 +75,7 @@ ELSEIF 素材数 == 0
 ENDIF
 
 IF 듀얼리스트 == "자신"
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_EX덱:{소환カード}")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_EX덱:{소환カード}")}("名前")
 	カード名 = %RESULTS%
 	PRINTFORML 소환 카드：《%カード名%》
 
@@ -116,11 +120,21 @@ IF 選択カード:素材数 == 9999
 	RETURN 0
 ELSEIF INRANGE (選択カード:素材数, 0, 5)
 	選択カード:素材数 = RESULT
+	CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
+	選択カード_ID_保 = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")
+
+	CALL SELECT_UI_SET(듀얼리스트,選択カード_ID_保,1)
+	IF RESULT == 1
+		選択カード:素材数 = -1
+		GOTO CHOICE_LOOP
+	ENDIF
+
+
 	選択カード_ID:素材数 = GETVAR(@"%듀얼리스트%_필드:{選択カード:素材数}")
 	レベル合計 += GETVAR(@"%듀얼리스트%_MZ_星:{選択カード:素材数}")
 ENDIF
 
-TRYCALLFORM CARDNAME_{GETVAR(@"選択カード_ID:{素材数}")}, "名前"
+TRYCALLFORM CARDNAME_{GETVAR(@"選択カード_ID:{素材数}")}("名前")
 使用素材名前:素材数 = %RESULTS%
 PRINTFORMW %使用素材名前:素材数%를 소재로합니다({素材数+1}체째)
 
@@ -136,13 +150,13 @@ IF レベル合計 == 必要レベル数
 	$INPUT_SKIP
 	FOR カウンタ,0,素材数
 		IF 지정素材名前 != ""
-			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}, "名前"
+			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}("名前")
 			IF RESULTS == 지정素材名前
 				条件달성 = 1
 			ENDIF
 		ENDIF
 		IF 지정素材カテゴリ != ""
-			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}("カテゴリ")
 			FOR カウンタC,0,5
 				IF RESULTS:カウンタC != ""
 					SIF MATCH(RESULTS:カウンタC, 지정素材カテゴリ)
@@ -153,14 +167,14 @@ IF レベル合計 == 必要レベル数
 			NEXT
 		ENDIF
 		IF 지정素材속성 != 0
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "속성"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("속성")
 			IF RESULT == 지정素材속성:0
 				条件달성 = 1
 				SIF 지정素材汎数 == 1
 					SETBIT 속성セットビット, 0
 			ENDIF
 			
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "속성"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("속성")
 			IF RESULT == 지정素材속성:1
 				条件달성 += 1				
 				SIF 지정素材汎数 == 1
@@ -168,10 +182,14 @@ IF レベル合計 == 必要レベル数
 			ENDIF
 		ENDIF
 		IF 지정素材종족 != 0
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "종족"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("종족")
 			IF MATCH(지정素材종족, RESULT)
 				条件달성 = 1
 			ENDIF
+		ENDIF
+		IF 素材攻撃力起動 == 1 ;usui추가20251028
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("攻撃力")
+			合計攻撃力 += RESULT
 		ENDIF
 	NEXT
 	FOR カウンタ,0,素材数
@@ -202,6 +220,10 @@ IF レベル合計 == 必要レベル数
 	IF 보존素材ID > 0 ;Anonym추가
 		SETVAR @"%듀얼리스트%_MZ_汎数:現필드(듀얼리스트)", 보존素材ID
 	ENDIF
+	IF 素材攻撃力起動 == 1 ;usui추가20251028
+		;PRINTFORML 合計攻撃力：{合計攻撃力}
+		SETVAR @"%듀얼리스트%_MZ_汎数:現필드(듀얼리스트)", 合計攻撃力
+	ENDIF
 
 	VARSET 효과추가종류
 	FOR カウンタ,0,10
@@ -230,9 +252,10 @@ ENDIF
 #DIM DYNAMIC R종족CNT
 
 #DIM DYNAMIC EX参照
-#DIM DYNAMIC 選択カード,10
-#DIM DYNAMIC 選択カードA,10
-#DIM DYNAMIC 選択カードB,10
+#DIM DYNAMIC 選択カード,99
+#DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 選択カードA,99
+#DIM DYNAMIC 選択カードB,99
 #DIM DYNAMIC ADDレベル설정
 
 #DIM DYNAMIC 最大値

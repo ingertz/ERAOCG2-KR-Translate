@@ -45,10 +45,10 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：패 / 마법 & 함정 존에서 발동한 이 카드는 ②의 효과를 가진 효과 몬스터가 되어 몬스터 존에 특수 소환한다.
-PRINTL (야수족 어둠 레벨8 공/수0)
+PRINTL (야수족 / 어둠 / 레벨8 / 공/수0)
 PRINTL 그 후, 자신 / 상대 묘지의 암컷 몬스터 1장을 이 카드에 장착한다.
 PRINTL 이 카드의 공격력은 장착 몬스터의 공격력만큼 오르고, 이 카드는 장착 몬스터와 같은 이름의 카드로 취급한다.
 CALL CARD_ABLE(2,ターン終了時)
@@ -77,18 +77,11 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,79704)
 		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
-	ENDIF
 	CALL CARD_SS_CHECK(듀얼리스트,79704,ゾーン)
 	SIF RESULT == 1
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
@@ -162,7 +155,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 				PRINTFORMW %CALLNAME:조교대상%은 마수가 창궐한 그림 속으로 끌려갔다！
 				CALL EROTIC_MOVE("구속晒し",조교대상,-1,300)
 			ELSE
-				TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 				PRINTFORMW %RESULTS%은 마수가 창궐한 그림 속으로 끌려갔다！
 			ENDIF
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"変化元ID",選択カード_ID,上書きモード)
@@ -188,7 +181,7 @@ ELSEIF 종류 == ターン終了時
 				PRINTFORMW %CALLNAME:조교대상%은 마수가 창궐한 그림 속으로 끌려갔다！
 				CALL EROTIC_MOVE("구속晒し",조교대상,-1,300)
 			ELSE
-				TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 				PRINTFORMW %RESULTS%은 마수가 창궐한 그림 속으로 끌려갔다！
 			ENDIF
 		ENDIF

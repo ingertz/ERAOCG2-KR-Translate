@@ -35,17 +35,15 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL 자신 필드는 "卍 그랜드 제로 卍"가 된다。
-PRINTL 이 카드명의 ③의 효과는 듀얼중에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①：자신의 "마도구" 카드의 효과에 대해 상대는 카드의 효과를 발동할 수 없다。
 CALL CARD_ABLE(0,효과後強制誘発)
 PRINTL ②："마도구" 마법 카드의 효과가 발동한 경우에 발동할 수 있다。
-PRINTL 자신은 덱에서 １장 드로우한다。그 후、
-PRINTL 이 카드에 무월 카운터를 １개 놓는다。
-CALLFORM CARD_ABLE(20,ターン終了時)
-PRINTL ③：자신의 엔드 페이즈에、이 카드에 무월 카운터가 ４개 이상 놓여있는 경우에 발동할 수 있다。
-PRINTL 패 / 덱 / 묘지 / 제외상태 / EX덱에서 "돌스자크" 몬스터를 ４장까지 특수 소환한다。
-PRINTL 그 후、다음 상대 메인 페이즈１을 스킵한다。
+PRINTL 자신은 덱에서 １장 드로우한다。그 후、이 카드에 무월 카운터를 １개 놓는다。
+CALLFORM CARD_ABLE(11,ターン終了時)
+PRINTL ③：이 카드가 필드에 앞면 표시로 존재하는 한 1번만、
+PRINTL 이 카드의 무월 카운터가 ４개 이상인 경우、자신 엔드 페이즈에 발동할 수 있다。
+PRINTL 자신의 패 / 묘지의 일반 마법 카드 １장을 제외하고、이 효과는、그 일반 마법 카드 발동시의 효과와 같아진다。
 
 @CARDCAN_73990(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -73,22 +71,14 @@ IF 종류 == ターン終了時
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲묘지 = 1
-	효과範囲덱 = 1
-	효과範囲EX덱 = 1
-	효과範囲제외 = 1
-	효과条件カテゴリ = 돌스자크
+	효과条件종류 = 通常마법
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 지속효과
@@ -97,7 +87,6 @@ ELSEIF 종류 == 지속효과
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
 		RETURN 0
 	RETURN 1
-
 ELSEIF 종류 == 효과後強制誘発
 	SIF ゾーン != "마함"
 		RETURN 0
@@ -110,7 +99,6 @@ ELSEIF 종류 == 효과後強制誘発
 	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_DRAW_CHECK
-
 	RETURN 1
 ENDIF
 
@@ -124,36 +112,28 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 효과先
 
 
-
-
-
 IF 종류 == ターン終了時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73990,20)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73990,11)
 	IF RESULT == 0
 		PRINTL
 		SETCOLOR C_BLUE
 		PRINTW 『열려라、무월의 문99！！』
 		RESETCOLOR
-		REPEAT 4
 			CALL FULLRESET
 			효과範囲손패 = 1
 			효과範囲묘지 = 1
-			효과範囲덱 = 1
-			효과範囲EX덱 = 1
-			효과範囲제외 = 1
-			효과条件任意 = 1
-			효과条件カテゴリ = 돌스자크
-			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-		REND
-		PRINTL
-		SETCOLOR C_BLUE
-		PRINTW 『월하卍괴 가 류미즈 卍！！』
-		RESETCOLOR
-		CALL SET_PLAYER_INFO(듀얼리스트,"メインスキップ", 1, 1)
+			효과条件종류 = 通常마법
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 0
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,마함起動,"효과処理")
+		ENDIF
 	ENDIF
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73990)

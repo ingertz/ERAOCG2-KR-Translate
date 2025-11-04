@@ -1,0 +1,152 @@
+@CARDNAME_93173,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 포톤 체인지
+	CASE "略称"
+		RESULTS = 포톤 체인지
+	CASE "カテゴリ"
+		RESULTS:0 = 포톤
+ENDSELECT
+
+
+@CARD_93173(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93173(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①: 자신 필드의 앞면 표시의 "포톤", "갤럭시" 몬스터 1장을 묘지로 보내고,
+PRINTL 이하의 효과에서 1개를 선택하여 발동할 수 있다. "갤럭시아이즈 포톤 드래곤"을 묘지로 보내 발동했을 경우, 양쪽을 선택할 수 있다.
+PRINTL ● 그 몬스터와 원래의 카드명이 다른 "포톤" 몬스터 1장을 덱에서 특수 소환한다.
+PRINTL ● 덱에서 이 카드명 이외의 "포톤" 카드 1장을 패에 넣는다.
+PRINTL ②: 이 카드는 발동 후, 2번째 턴의 자신 스탠바이 페이즈에 파괴된다.
+
+@CARDCAN_93173(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과先
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93173)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,93173)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ:0 = 포톤
+	효과条件カテゴリ:1 = 갤럭시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所,93173)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 포톤
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所,93173)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_93173(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名前
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93173,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ:0 = 포톤
+		효과条件カテゴリ:1 = 갤럭시
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			選択カードID = RESULT:1
+			TRYCALLFORM CARDNAME_{選択カードID}("名前")
+			選択カード名前 = %RESULTS%
+			IF 選択カード名前 == "갤럭시아이즈 포톤 드래곤"
+				PRINTL 양쪽의 효과를 선택하시겠습니까?
+				CALL YN_CHOICE(듀얼리스트)
+				SIF RESULT == はい
+					カウンタ = 2
+			ENDIF
+			IF カウンタ != 2
+				CALL YN_CHOICE(듀얼리스트,"「포톤」몬스터를 특수 소환한다","「포톤」카드를 패에 넣는다")
+				カウンタ = RESULT
+			ENDIF
+			IF カウンタ != 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = 포톤
+				효과条件固名前 = %選択カード名前%
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+			IF カウンタ != 0
+				CALL FULLRESET
+				효과条件カテゴリ = 포톤
+				효과条件固名前 = 포톤 체인지
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93173)
+	IF RESULT == 0
+		PRINTL "듀얼 모드, 포톤 체인지!""
+		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",1)
+		PRINTL 발동으로 인해 시간 제한이 발생했습니다.
+		PRINTL 이 카드는 2턴 후의 스탠바이 페이즈에 파괴됩니다.
+	ENDIF
+ELSEIF 종류 == ターン開始時強制
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") >= 1
+		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",1)
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") >= 3
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+ENDIF

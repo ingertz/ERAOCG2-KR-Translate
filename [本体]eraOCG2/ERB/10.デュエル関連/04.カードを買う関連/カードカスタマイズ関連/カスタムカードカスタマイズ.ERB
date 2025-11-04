@@ -1,0 +1,581 @@
+﻿@CUSTOM_CARD_CUSTOMIZE
+#DIM DYNAMIC カスタムカード
+#DIM DYNAMIC 캐릭터番号
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カスタムポテンシャル
+#DIM DYNAMIC RESULT보존
+#DIM CONST 最大ポテンシャル = 15
+
+
+PRINTFORMW 카드 커스터마이즈를 시작합니다。
+PRINTFORMW 포텐셜 포인트의 상한은 %TOFULL(TOSTR(最大ポテンシャル))%입니다。상한 이내에서 카드를 커스터마이즈 할 수 있습니다。
+PRINTFORML 
+
+$CARD_INPUTLOOP
+PRINTFORML 커스터마이즈 할 카드를 골라주세요。
+FOR カウンタ, カスタムカード開始, カスタムカード終了
+	IF ITEM:カウンタ > 0
+		TRYCALLFORM CARDNAME_{カウンタ}("名前")
+		PRINTFORML [{カウンタ}] - %RESULTS%
+	ENDIF
+NEXT
+
+PRINTFORML [9999] - 돌아간다
+BINPUT
+RESULT보존 = RESULT
+IF RESULT != 9999
+	TRYCALLFORM CARDNAME_{RESULT}("名前")
+	PRINTFORML 「{RESULT보존}」 %RESULTS%의 칸으로 괜찮으시겠습니까？
+	PRINTFORML [1] - 예
+	PRINTFORML [2] - 아니오
+	BINPUT
+	IF RESULT == 1
+	ELSEIF RESULT == 2
+		PRINTFORMW 돌아갑니다。
+		GOTO CARD_INPUTLOOP
+	ENDIF
+ELSEIF RESULT == 9999
+	PRINTFORML 커스터마이즈를 취소하고、돌아가시겠습니까？
+	PRINTFORML [1] - 예
+	PRINTFORML [2] - 아니오
+	BINPUT
+	IF RESULT == 1
+		PRINTFORMW 커스터마이즈를 취소합니다
+		RETURN 1
+	ELSEIF RESULT == 2
+		PRINTFORMW 카드 칸 선택으로 돌아갑니다。
+		GOTO CARD_INPUTLOOP
+	ENDIF
+ENDIF
+
+カスタムカード = RESULT보존
+
+
+$NO_INPUTLOOP
+
+PRINTFORML 커스터마이즈 할 캐릭터를 골라주세요。
+CALL MONSTER_LIST(9)
+IF RESULT > 0
+	캐릭터番号 = RESULT
+	カスタムID:カスタムカード = NO:캐릭터番号
+ELSE
+	PRINTFORMW 이 캐릭터를 고를 수 없습니다
+	GOTO NO_INPUTLOOP
+ENDIF
+
+PRINTFORML 
+IF デバッグシステム == 1
+	PRINTFORML 캐릭터번호={캐릭터番号}
+	PRINTFORML NO:캐릭터번호={カスタムID:カスタムカード}
+ENDIF
+PRINTFORML 
+
+CALL PRINT_STATE(캐릭터番号)
+PRINTFORMW 이 캐릭터 카드로 괜찮으시겠습니까？
+PRINTFORML [1] - 예
+PRINTFORML [2] - 아니오
+BINPUT
+IF RESULT == 1
+	CALL CARDCUSTOM_RESET(カスタムカード,1)
+ELSEIF RESULT == 2
+	GOTO NO_INPUTLOOP
+ENDIF
+
+$KATE_INPUTLOOP
+PRINTFORML 추가 카테고리명을 １개 입력해주세요。
+PRINTFORML 
+INPUTS
+
+カスタムカテゴリ:カスタムカード = %RESULTS%
+IF RESULTS == ""
+	PRINTFORMW 추가 카테고리는 없는 걸로 괜찮으시겠습니까？
+ELSE
+	PRINTFORMW 추가 카테고리는 「%カスタムカテゴリ:カスタムカード%」으로 괜찮으시겠습니까？
+ENDIF
+PRINTFORML [1] - 예
+PRINTFORML [2] - 아니오
+BINPUT
+IF RESULT == 1
+ELSEIF RESULT == 2
+	GOTO KATE_INPUTLOOP
+ENDIF
+
+PRINTFORML 
+PRINTFORML 카드의 속성을 골라주세요。
+PRINTFORML [1] - 빛 속성
+PRINTFORML [2] - 어둠 속성
+PRINTFORML [3] - 땅 속성
+PRINTFORML [4] - 물 속성
+PRINTFORML [5] - 화염 속성
+PRINTFORML [6] - 바람 속성
+PRINTFORML [7] - 신 속성
+BINPUT
+カスタム속성:カスタムカード = RESULT
+
+PRINTFORML 카드 종족을 골라주세요。
+PRINTFORML [1] - 마법사족
+PRINTFORML [2] - 드래곤족
+PRINTFORML [3] - 언데드족
+PRINTFORML [4] - 전사족
+PRINTFORML [5] - 기계족
+PRINTFORML [6] - 야수족
+PRINTFORML [7] - 비행야수족
+PRINTFORML [8] - 비늘야수족
+PRINTFORML [9] - 악마족
+PRINTFORML [10] - 천사족
+PRINTFORML [11] - 곤충족
+PRINTFORML [12] - 원소정령족
+PRINTFORML [13] - 식물족
+PRINTFORML [14] - 사이킥족
+PRINTFORML [15] - 사이버스족
+PRINTFORML [16] - 바다생물족
+PRINTFORML [17] - 미확인족
+PRINTFORML [20] - 환신야수족
+BINPUT
+カスタム종족:カスタムカード = RESULT
+
+$LV_INPUTLOOP
+PRINTFORML 
+PRINTFORML 카드 레벨을 입력해주세요。(1~12 사이로)
+PRINTFORML 
+INPUT
+IF !INRANGE(RESULT, 1, 12)
+	PRINTFORMW 1~12사이의 수치를 입력해주세요。
+	GOTO LV_INPUTLOOP
+ENDIF
+カスタムレベル:カスタムカード = RESULT
+PRINTFORMW 지정레벨:{カスタムレベル:カスタムカード}
+PRINTFORML 
+
+$ATK_INPUTLOOP
+PRINTFORML 
+PRINTFORML 카드 공격력을 입력해주세요。
+IF カスタムレベル:カスタムカード <= 4
+	PRINTFORML (1800이하 까지)
+ELSEIF カスタムレベル:カスタムカード > 4 && カスタムレベル:カスタムカード <= 6
+	PRINTFORML (2400이하 까지)
+ELSEIF カスタムレベル:カスタムカード > 7
+	PRINTFORML (3000이하 까지)
+ENDIF
+PRINTFORML (600마다 포텐셜 포인트1 소비)
+PRINTFORML (레벨5、6은 1포인트 삭감。레벨 7이상은 2포인트 삭감)
+PRINTFORML 
+INPUT
+IF カスタムレベル:カスタムカード <= 4 && RESULT > 1800
+	PRINTFORMW 1800이하의 수치를 입력해주세요。
+	GOTO ATK_INPUTLOOP
+ELSEIF INRANGE(カスタムレベル:カスタムカード,5,6) &&  RESULT > 2400
+	PRINTFORMW 2400이하의 수치를 입력해주세요。
+	GOTO ATK_INPUTLOOP
+ELSEIF INRANGE(カスタムレベル:カスタムカード,7,99) && RESULT > 3000
+	PRINTFORMW 3000이하의 수치를 입력해주세요。
+	GOTO ATK_INPUTLOOP
+ENDIF
+カスタム攻撃力:カスタムカード = RESULT
+PRINTFORMW 지정공격력:{カスタム攻撃力:カスタムカード}
+カスタムポテンシャル += (カスタム攻撃力:カスタムカード) / 600
+SIF INRANGE(カスタムレベル:カスタムカード,5,6) 
+	カスタムポテンシャル -= 1
+SIF INRANGE(カスタムレベル:カスタムカード,7,99) 
+	カスタムポテンシャル -= 2
+SIF カスタムポテンシャル < 0
+	カスタムポテンシャル = 0
+PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+PRINTFORML 
+
+
+$DEF_INPUTLOOP
+PRINTFORML 
+PRINTFORML 카드 수비력을 입력해쥇요。
+IF カスタムレベル:カスタムカード <= 4
+	PRINTFORML (1800이하 까지)
+ELSEIF INRANGE(カスタムレベル:カスタムカード,5,6) 
+	PRINTFORML (2400이하 까지)
+ELSEIF INRANGE(カスタムレベル:カスタムカード,7,99) 
+	PRINTFORML (3000이하 까지)
+ENDIF
+PRINTFORML (600마다 포텐셜 포인트1 소비)
+PRINTFORML (레벨5、6은 1포인트 삭감。레벨 7이상은 2포인트 삭감)
+PRINTFORML 
+INPUT
+IF カスタムレベル:カスタムカード <= 4 && RESULT > 1800
+	PRINTFORMW 1800이하의 수치를 입력해주세요。
+	GOTO DEF_INPUTLOOP
+ELSEIF INRANGE(カスタムレベル:カスタムカード,5,6)  &&  RESULT > 2400
+	PRINTFORMW 2400이하의 수치를 입력해주세요。
+	GOTO DEF_INPUTLOOP
+ELSEIF INRANGE(カスタムレベル:カスタムカード,7,99) && RESULT > 3000
+	PRINTFORMW 3000이하의 수치를 입력해주세요。
+	GOTO DEF_INPUTLOOP
+ENDIF
+カスタム守備力:カスタムカード = RESULT
+PRINTFORMW 지정수비력:{カスタム守備力:カスタムカード}
+カスタムポテンシャル += (カスタム守備力:カスタムカード) / 600
+SIF カスタムレベル:カスタムカード > 4 && カスタムレベル:カスタムカード <= 6
+	カスタムポテンシャル -= 1
+SIF カスタムレベル:カスタムカード > 7
+	カスタムポテンシャル -= 2
+SIF カスタムポテンシャル < 0
+	カスタムポテンシャル = 0
+PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+PRINTFORML 
+
+PRINTFORML 카드의 효과를 짜보시겠습니까？
+PRINTFORML [0] - 예
+PRINTFORML [1] - 아니오
+BINPUT
+IF RESULT == 1
+	カスタム종류:カスタムカード = 효과モン
+
+	PRINTFORMW 효과①을 작성합니다。
+	PRINTFORML 효과의 발동조건을 골라주세요。
+	PRINTFORML [1] - 소환시 && 특수소환시（포텐셜 포인트１소비）
+	PRINTFORML [2] - 필드 기동（포텐셜 포인트２ 소비）
+	PRINTFORML [3] - 손패 기동（포텐셜 포인트３ 소비）
+	PRINTFORML [4] - 묘지 기동（포텐셜 포인트２ 소비）
+	BINPUT
+
+	SELECTCASE RESULT
+		CASE 1
+			カスタム효과①条件01:カスタムカード = 소환時
+			カスタム효과①条件02:カスタムカード = 특수소환時
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		CASE 2
+			カスタム효과①条件01:カスタムカード = 필드起動
+			カスタム효과①条件02:カスタムカード = 필드起動
+			カスタムポテンシャル += 2
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		CASE 3
+			カスタム효과①条件01:カスタムカード = 손패起動
+			カスタム효과①条件02:カスタムカード = 손패起動
+			カスタムポテンシャル += 3
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		CASE 4
+			カスタム효과①条件01:カスタムカード = 묘지起動
+			カスタム효과①条件02:カスタムカード = 묘지起動
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ENDSELECT
+
+	IF カスタム효과①条件01:カスタムカード != 소환時
+		PRINTFORML 효과①의 타이밍을 골라주세요。
+		PRINTFORML [0] - 프리타이밍（포텐셜 포인트４ 소비）
+		PRINTFORML [1] - 자신 메인 페이즈 한정（포텐셜 포인트０ 소비）
+		PRINTFORML [2] - 자신 / 상대의 메인 페이즈 한정（포텐셜 포인트１소비）
+		BINPUT
+		カスタム효과①条件1:カスタムカード = RESULT
+		IF RESULT == 0
+			カスタムポテンシャル += 4
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 2
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ENDIF
+	ENDIF
+
+	IF カスタム효과①条件01:カスタムカード != 손패起動 && カスタム효과①条件01:カスタムカード != 묘지起動
+		PRINTFORML 효과①의 코스트를 설정하시겠습니까？
+		PRINTFORML [1] - 예（포텐셜 포인트０～２ 소비）
+		PRINTFORML [2] - 아니오（포텐셜 포인트５ 소비）
+		BINPUT
+	ELSE
+		RESULT = 1
+	ENDIF
+	IF RESULT == 1
+		PRINTFORML 효과①의 코스트를 골라주세요。
+		PRINTFORML [1] - 자신을 묘지로 보낸다（묘지에서라면 제외）（포텐셜 포인트０ 소비）
+		PRINTFORML [2] - 손패１장을 묘지로 보낸다（포텐셜 포인트１소비）
+		SIF カスタム효과①条件01:カスタムカード != 손패起動 && カスタム효과①条件01:カスタムカード != 묘지起動
+			PRINTFORML [3] - ライフ1000（포텐셜 포인트２소비）
+		PRINTFORML [4] - 자신을 덱으로 보낸다（포텐셜 포인트１소비）
+		SIF カスタム효과①条件01:カスタムカード != 손패起動 && カスタム효과①条件01:カスタムカード != 묘지起動
+			PRINTFORML [5] - 자신을 패로 되돌린다（포텐셜 포인트２소비）
+		BINPUT
+		カスタム효과①コスト:カスタムカード = RESULT
+		IF RESULT == 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 2
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 3
+			カスタムポテンシャル += 2
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 4
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+			ELSEIF RESULT == 5
+			カスタムポテンシャル += 2
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ENDIF
+	ELSEIF RESULT == 2
+		カスタムポテンシャル += 5
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ENDIF
+
+
+	PRINTFORML 효과①의 종류를 골라주세요。
+	PRINTFORML [1] - １장 드로우（포텐셜 포인트１소비）
+	PRINTFORML [2] - 자신의 카드를 패로 넣는다（포텐셜 포인트２소비）
+	PRINTFORML [3] - 자신의 카드를 묘지로 보낸다（포텐셜 포인트２소비）
+	PRINTFORML [4] - 자신의 카드를 특수 소환한다（포텐셜 포인트３소비）
+	PRINTFORML [5] - 상대 카드 제거（포텐셜 포인트１～３ 소비）
+	PRINTFORML [6] - 자신의 카드를 덱으로 되돌린다（포텐셜 포인트１소비）
+	PRINTFORML [7] - 자신의 카드를 제외한다（포텐셜 포인트１소비）
+	BINPUT
+	カスタム효과①종류:カスタムカード = RESULT
+
+	IF カスタム효과①종류:カスタムカード == 1
+		カスタムポテンシャル += 1
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		GOTO CUSTOM_END
+	ELSEIF カスタム효과①종류:カスタムカード == 2
+		カスタムポテンシャル += 2
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF カスタム효과①종류:カスタムカード == 3
+		カスタムポテンシャル += 2
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF カスタム효과①종류:カスタムカード == 4
+		カスタムポテンシャル += 3
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF カスタム효과①종류:カスタムカード == 5
+		カスタムポテンシャル += 3
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF カスタム효과①종류:カスタムカード == 6
+		カスタムポテンシャル += 1
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF カスタム효과①종류:カスタムカード == 7
+		カスタムポテンシャル += 1
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ENDIF
+
+	IF カスタム효과①종류:カスタムカード == 5
+		PRINTFORML 제거의 범위를 골라주세요。
+		PRINTFORML [1] - 몬스터 １장（포텐셜 포인트１소비）
+		PRINTFORML [2] - 몬스터 전체（포텐셜 포인트３ 소비）
+		PRINTFORML [3] - 마법 / 함정１장（포텐셜 포인트１소비）
+		PRINTFORML [4] - 마법 / 함정 전체（포텐셜 포인트３ 소비）
+		BINPUT
+		カスタム효과①除去範囲:カスタムカード = RESULT
+		IF RESULT == 1
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 2
+			カスタムポテンシャル += 3
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 3
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 4
+			カスタムポテンシャル += 3
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ENDIF
+		PRINTFORML 제거의 종류를 선택해 주세요。
+		PRINTFORML [0] - 파괴（포텐셜 포인트０소비）
+		PRINTFORML [1] - 묘지보내기（포텐셜 포인트１소비）
+		PRINTFORML [2] - 제외（포텐셜 포인트１소비）
+		PRINTFORML [3] - 패바운스（포텐셜 포인트１소비）
+		PRINTFORML [4] - 덱바운스（포텐셜 포인트２소비）
+		BINPUT
+		カスタム효과①除去範囲:カスタムカード = RESULT
+		IF RESULT == 0
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 1
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 2
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 3
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 4
+			カスタムポテンシャル += 2
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ENDIF
+	
+		GOTO CUSTOM_END
+	ENDIF
+	
+	PRINTFORML 효과①의 범위를 골라주세요。
+	SIF カスタム효과①종류:カスタムカード != 2
+		PRINTFORML [1] - 손패（포텐셜 포인트１소비）
+	SIF カスタム효과①종류:カスタムカード != 6
+		PRINTFORML [2] - 덱（포텐셜 포인트３ 소비）
+	SIF カスタム효과①종류:カスタムカード != 3
+		PRINTFORML [3] - 묘지（포텐셜 포인트２소비）
+	SIF カスタム효과①종류:カスタムカード != 4
+		PRINTFORML [4] - 필드（포텐셜 포인트１소비）
+	SIF カスタム효과①종류:カスタムカード != 7
+		PRINTFORML [5] - 제외（포텐셜 포인트０소비）
+	BINPUT
+	カスタム효과①範囲:カスタムカード = RESULT
+	IF RESULT == 1
+		カスタムポテンシャル += 1
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF RESULT == 2
+		カスタムポテンシャル += 3
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF RESULT == 3
+		カスタムポテンシャル += 2
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF RESULT == 4
+		カスタムポテンシャル += 1
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF RESULT == 5
+		カスタムポテンシャル += 0
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ENDIF
+	;제외から묘지送り/제외から덱戻し/묘지에서 덱戻し
+	{
+	IF (カスタム효과①종류:カスタムカード == 3 && カスタム효과①範囲:カスタムカード == 5) 
+	|| (カスタム효과①종류:カスタムカード == 6 && カスタム효과①範囲:カスタムカード == 5) 
+	|| (カスタム효과①종류:カスタムカード == 6 && カスタム효과①範囲:カスタムカード == 3)
+	}
+		PRINTFORML 대상효과를 여러장 지정가능하도록 하시겠습니까？
+		PRINTFORML [0] - 예（포텐셜 포인트１～４소비）
+		PRINTFORML [1] - 아니오（포텐셜 포인트０소비）
+		BINPUT
+		IF RESULT == 0
+			PRINTFORML 고를 수 있는 수를 지정해주세요
+			PRINTFORML [2] 2장 - 포텐셜 포인트１소비
+			PRINTFORML [3] 3장 - 포텐셜 포인트２소비
+			PRINTFORML [4] 4장 - 포텐셜 포인트３소비
+			PRINTFORML [5] 5장 - 포텐셜 포인트４소비
+			BINPUT
+			カスタム효과①複数選択:カスタムカード = RESULT
+		ENDIF
+	ENDIF
+	
+	PRINTFORML 효과①의 같은이름 조건을 골라주세요。
+	PRINTFORML [0] - 자유（이 선택지 안에서는）（포텐셜 포인트１소비）
+	PRINTFORML [1] - 같은이름만 대상（포텐셜 포인트０ 소비）
+	PRINTFORML [2] - 같은이름은 선택불가（포텐셜 포인트０ 소비）
+	BINPUT
+	カスタム효과①同名条件:カスタムカード = RESULT
+	IF RESULT == 0
+		カスタムポテンシャル += 1
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSE
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ENDIF
+
+	SIF カスタム효과①同名条件:カスタムカード == 1
+		GOTO CUSTOM_END
+
+	PRINTFORML 효과①의 대상조건을 골라주세요。
+	PRINTFORML [0] - 자유（이 선택지 안에서는）（포텐셜 포인트２소비）
+	SIF カスタムカテゴリ:カスタムカード != ""
+		PRINTFORML [1] - 커스터마이즈 설정한것과 같은 카테고리（포텐셜 포인트０ 소비）
+	PRINTFORML [2] - 자신과 같은 속성（포텐셜 포인트１소비）
+	PRINTFORML [3] - 자신과 같은 종족（포텐셜 포인트１소비）
+	PRINTFORML [4] - 자신과 같은 레벨（포텐셜 포인트２소비）
+	BINPUT
+	カスタム효과①대상条件1:カスタムカード = RESULT
+	IF RESULT == 0 || RESULT == 4
+		カスタムポテンシャル += 2
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSEIF RESULT == 2 || RESULT == 3
+		カスタムポテンシャル += 1
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ELSE
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+	ENDIF
+
+
+	IF カスタム효과①종류:カスタムカード != 4 && カスタム효과①대상条件1:カスタムカード <= 1
+		PRINTFORML 효과①의 대상조건(종류)를 골라주세요。
+		PRINTFORML [0] - 자유（이 선택지 안에서는）（포텐셜 포인트２소비）
+		PRINTFORML [10] - 몬스터전반（포텐셜 포인트１소비）
+		PRINTFORML [20] - 마법전반（포텐셜 포인트０ 소비）
+		PRINTFORML [30] - 함정전반（포텐셜 포인트０ 소비）
+		PRINTFORML [40] - 마법 / 함정전반（포텐셜 포인트１소비）
+		BINPUT
+		カスタム효과①대상条件2:カスタムカード = RESULT
+		IF RESULT == 0
+			カスタムポテンシャル += 2
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSEIF RESULT == 10 || RESULT == 40
+			カスタムポテンシャル += 1
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ELSE
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		ENDIF
+	ENDIF
+
+ELSE
+	カスタム종류:カスタムカード = 通常モン
+ENDIF
+
+$CUSTOM_END
+PRINTFORMW 이것으로 필요한 입력은 종료되었습니다。
+PRINTFORMW 카드의 포텐셜 포인트를 판정합니다……
+PRINTFORMW 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル} 
+IF カスタムポテンシャル > 最大ポテンシャル
+	PRINTFORMW 포텐셜 포인트가 상한에 달했습니다。
+	PRINTFORML 커스터마이즈를 다시 하시겠습니까？
+	PRINTFORML [1] - 다시한다
+	PRINTFORML [2] - 초기화하고 종료한다
+	BINPUT
+	IF RESULT == 1
+		PRINTFORMW 카테고리 입력부터 커스터마이즈를 다시 해주세요。
+		カスタムポテンシャル = 0
+		CALL CARDCUSTOM_RESET(カスタムカード,1)
+		GOTO KATE_INPUTLOOP
+	ELSEIF RESULT == 2
+		カスタムポテンシャル = 0
+		CALL CARDCUSTOM_RESET(カスタムカード)
+		PRINTFORMW 커스터마이즈를 취소합니다
+		RETURN 1
+	ENDIF
+
+ELSE
+	PRINTFORMW 포텐셜 포인트가 상한 이내에 들어왔습니다。
+ENDIF
+
+PRINTFORMW 카드의 커스터마이즈를 종료했습니다。
+PRINTFORMW 카드의 정보를 출력합니다
+TRYCALLFORM CARD_UI(カスタムカード);　カスタムカード情報출력
+WAIT
+
+カスタムポテンシャル = 0
+RETURN 1
+
+@CARDCUSTOM_RESET(カスタムカード,やり直し플래그)
+;#DIM DYNAMIC 参照
+#DIM DYNAMIC カスタムカード
+;#DIM DYNAMIC 캐릭터番号
+;#DIM DYNAMIC カウンタ
+#DIM DYNAMIC やり直し플래그
+
+SIF やり直し플래그 != 1
+	カスタムID:カスタムカード = -1
+
+カスタムカテゴリ:カスタムカード = ""
+
+カスタム종류:カスタムカード = 通常モン
+カスタム속성:カスタムカード = 빛속성
+カスタム종족:カスタムカード = 미확인족
+カスタムレベル:カスタムカード = 1
+カスタム攻撃力:カスタムカード = 0
+カスタム守備力:カスタムカード = 0
+
+
+カスタム효과①条件01:カスタムカード = 0
+カスタム효과①条件02:カスタムカード = 0
+カスタム효과①条件1:カスタムカード = 0
+カスタム효과①条件2:カスタムカード = 0
+
+カスタム효과①コスト:カスタムカード = 0
+カスタム효과①範囲:カスタムカード = 0
+カスタム효과①除去範囲:カスタムカード = 0
+カスタム효과①除去종류:カスタムカード = 0
+カスタム효과①대상条件1:カスタムカード = 0
+カスタム효과①대상条件2:カスタムカード = 0
+カスタム효과①同名条件:カスタムカード = 0
+カスタム효과①종류:カスタムカード = 0
+カスタム효과①複数選択:カスタムカード = 0
+
+

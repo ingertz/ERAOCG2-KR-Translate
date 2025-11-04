@@ -65,7 +65,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 
 	SIF 발동済_1(듀얼리스트,92710)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF モンスター数(듀얼리스트) >= 5
 		RETURN 0
@@ -116,14 +117,14 @@ IF 종류 == 마함起動
 		효과추가종류:1 = 695
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"強奪")
 		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"装",コントロール先,1)
-		TRYCALLFORM CARDNAME_{他参照選択カードID},"略称"
+		TRYCALLFORM CARDNAME_{他参照選択カードID}("略称")
 		PRINTL
 		PRINTFORMW 코즈믹한 수상한 광선을 받은 %RESULTS%는、흔들흔들하며 빛 아래로 걸어갔다……
 	ENDIF
 
 ELSEIF 종류 == ターン終了時強制
 	CALL SET_FIELD_INFO(듀얼리스트,"필드",装備先,"悪Ｃ",-1)
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:装備先")},"略称"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:装備先")}("略称")
 	IF GETVAR(@"%듀얼리스트%_MZ_悪Ｃ:装備先") < 1
 		PRINTFORMW 핫 하고 자아가 돌아온 %RESULTS%는 허겁지겁 자신의 주인의 밑으로 돌아갔다……
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)

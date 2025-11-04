@@ -1,0 +1,191 @@
+﻿@CARDNAME_92550,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 네무렐리아 레페테
+	CASE "略称"
+		RESULTS = 레페테
+	CASE "カテゴリ"
+		RESULTS:0 = 네무렐리아
+ENDSELECT
+
+
+@CARD_92550(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_92550(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,마함起動)
+PRINTL ①：자신 필드에 다른"네무렐리아" 카드가 존재할 경우、
+PRINTL EX덱의 EX몬스터카드를 이하의 수 만큼 제외하고、그 효과를 발동할 수 있다。
+PRINTL （이 효과로 제외된 카드는"제외되었을 때"의 효과를 발동할 수 없다）
+PRINTL ●１장：자신의 묘지에서"네무렐리아"카드 １장을 패에 넣는다。
+PRINTL ●２장：이 턴、자신이 받는 모든 데미지는 절반이 된다。
+PRINTL ●３장：자신 필드의 야수족 / 레벨１０ 몬스터 １장을 묘지로 보내고、
+PRINTL 상대 필드의 모든 앞면 표시 몬스터의 효과를 턴 종료시까지 무효로 한다。
+
+@CARDCAN_92550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92550)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,92550)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件他所 = 1
+	효과条件표시 = 表側표시
+	효과条件カテゴリ = 네무렐리아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = EXモン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+
+
+@CARDEFFECT_92550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC EXカード数
+#DIM DYNAMIC 속성数
+#DIM DYNAMIC 選択肢
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92550,1)
+	IF RESULT == 0
+
+
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종류 = EXモン全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		EXカード数 = RESULT
+
+		PRINTFORML EX덱을 몇장 제외하시겠습니까？
+		PRINTFORML
+		PRINTFORML
+		
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 네무렐리아
+		
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1 && EXカード数 >= 1
+			IF 듀얼리스트 == "자신"
+				PRINTFORML [1] - 묘지에서 "네무렐리아" 카드를 패에 넣는다。
+			ELSEIF 듀얼리스트 == "상대"
+				選択肢 = 1
+			ENDIF
+		ENDIF
+
+		IF EXカード数 >= 2
+			IF 듀얼리스트 == "자신"
+				PRINTFORML [2] - 받는 모든 데미지를 절반으로 한다。
+			ENDIF
+		ENDIF
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종족 = 야수족
+		효과条件レベル = 10
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1 && EXカード数 >= 3
+			IF 듀얼리스트 == "자신"
+				PRINTFORML [3] - 상대 필드의 모든 몬스터의 효과무효。
+			ELSEIF 듀얼리스트 == "상대"
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과条件CNT = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT >= 2
+					選択肢 = 3
+			ENDIF
+		ENDIF
+
+		IF 듀얼리스트 == "자신"
+			BINPUT
+			選択肢 = RESULT
+		ENDIF
+
+		IF 選択肢 >= 1
+			CALL FULLRESET
+			효과条件종류 = EXモン全般
+			효과条件複数 = 選択肢
+			효과条件行先플래그 = 完全제외行き
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			IF RESULT == 1	
+				IF 選択肢 == 1
+					CALL FULLRESET
+					효과条件カテゴリ = 네무렐리아
+					CALL CARD_ADD_BASIC(듀얼리스트,"묘지",ゾーン,場所)					
+				ELSEIF 選択肢 == 2
+					CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ半化",1)
+				ELSEIF 選択肢 == 3
+					CALL FULLRESET
+					효과条件종족 = 야수족
+					효과条件レベル = 10
+					CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)	
+					選択カード = RESULT
+					IF 選択カード != 9999
+						CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード)
+						CALL FULLRESET
+						CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"無効")
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92550)
+	IF RESULT == 0
+	ENDIF
+ENDIF

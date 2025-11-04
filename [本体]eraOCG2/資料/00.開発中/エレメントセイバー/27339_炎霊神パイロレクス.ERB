@@ -1,0 +1,176 @@
+﻿@CARDNAME_27339,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 炎霊神パイロレクス
+	CASE "略称"
+		RESULTS = 炎霊神ＰＲ
+	CASE "カテゴリ"
+		RESULTS:0 = 霊神
+ENDSELECT
+
+
+@CARD_27339(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 炎属性
+	CASE "種族"
+		RETURN 鱗獣族
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2200
+	CASE "特殊不可"
+		RETURN 1
+	CASE "召喚不可"
+		RETURN 1
+	CASE "レア度"
+		RETURN RARE
+	CASE "追加日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27339(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカードは通常召喚できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL 自分の墓地の炎属性モンスターが５体の場合のみ特殊召喚できる。
+PRINTL この方法による「炎霊神パイロレクス」の特殊召喚は１ターンに１度しかできず、
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(2,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に相手フィールドのモンスター１体を対象として発動できる。
+PRINTL そのモンスターを破壊し、元々の攻撃力のダメージを相手に与える。
+CALLFORM CARD_ABLE(3,戦破壊→墓地)
+PRINTL ②：このカードがフィールドから離れた場合に発動する。このターン、以下の効果を適用する。
+PRINTL ●お互いのプレイヤーは炎属性モンスターで攻撃する事ができない。
+
+;「破壊輪」互換のモンスター除去は、OCG本家のパイロレクスの効果自体が破壊輪と違っていて、
+;元々の攻撃力の半分のダメージを相手に与える効果になっている。同一条件の除去追加効果はeraOCG2には無く、
+;完全再現する程でもないので、最も近い「RR－エトランゼ・ファルコン」の効果に準拠したものに上方修正（相手のみバーンダメージを与える形式に）
+;「破壊輪」と同じ追加効果でも良かったのだが、お互いにバーンダメージを受ける部分よりも『元々の』攻撃力を参照する部分を重く見た。
+
+@CARDCAN_27339(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件達成
+#DIM DYNAMIC 属性数 = 0
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,27339)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,27339)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,27339,"手札")
+	SIF RESULT == 1
+		RETURN 0
+	;自分の墓地に炎属性モンスターが５体以上居る場合は無条件で特殊召喚不可能
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件属性 = 炎属性
+	効果条件CNT = 1	
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 5
+		RETURN 0	
+	RETURN 1
+ELSEIF 種類 == 特殊召喚時
+	SIF 発動済_2(決闘者,27339)
+		RETURN 0
+	;「破壊輪」の条件と同等
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件除去種 = 墓地
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 種類 == 戦破壊→墓地
+	SIF 発動済_3(決闘者,27339)
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 短紋章起動
+	RETURN 1
+ENDIF
+
+@CARDFORCE_27339(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+VARSET RESULT
+IF 種類 == 戦破壊→墓地
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_27339(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件達成
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 手札起動 
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,27339,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	ENDIF
+ELSEIF 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,27339,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果追加種類 = 4
+		CALL CARD_REMOVAL_BASIC(決闘者,"戦場単体",場所,"墓地")
+	ENDIF
+ELSEIF 種類 == 戦破壊→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,27339,3)
+	IF RESULT == 0
+		CALL CARD_RESERV(決闘者,27339,短紋章予約)
+	ENDIF
+ELSEIF 種類 == 短紋章起動
+	CALL FULLRESET
+	効果条件属性 = 炎属性
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"戦無")
+	CALL FULLRESET
+	効果条件属性 = 炎属性
+	CALL STATCHANGE_EFFECT(決闘者,"相手戦場",場所,"戦無")
+ENDIF
+
+
+

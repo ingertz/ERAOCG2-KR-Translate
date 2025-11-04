@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 괴뢰유의－서비스트 퍼핏
+		RESULTS = 괴뢰유의－서비스트 퍼핏
 	CASE "略称"
-RESULTS = 괴뢰유의
+		RESULTS = 괴뢰유의
 	CASE "カテゴリ"
-RESULTS:0 = 퍼핏
+		RESULTS:0 = 퍼핏
 ENDSELECT
 
 
@@ -60,7 +60,8 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,94060)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF モンスター数(듀얼리스트) >= 5
 		RETURN 0
@@ -135,15 +136,15 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		효과추가종류:1 = 695 ;仕様
 		효과条件複数 = 100 - 実行횟수
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"強奪")
-		TRYCALLFORM CARDNAME_{他参照選択カードID},"名前"
-		PRINTFORMW %RESULTS%는操り인형にされた！
+		TRYCALLFORM CARDNAME_{他参照選択カードID}("名前")
+		PRINTFORMW %RESULTS%는 조종당하는 인형이 되었다！
 	ENDIF
 ELSEIF 종류 == 묘지起動
 	;カード발동確認
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,94060,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		PRINTFORML 소환する場所を選択してください。
+		PRINTFORML 소환할 장소를 선택해주세요。
 		CALL YN_CHOICE(듀얼리스트,"자신 필드","상대 필드")
 		IF RESULT == 0
 			CALL FULLRESET

@@ -1,0 +1,113 @@
+﻿@CARDNAME_91504,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 리터너블 도기
+	CASE "略称"
+		RESULTS = 리터너블 도기
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_91504(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_91504(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1, 마함起動)
+PRINTL ①：자신の묘지から함정カード１枚を제외して발동できる。
+PRINTL そのカードとは元々のカード名が異なる함정カード１枚を자신の묘지から選んで손패に加える。
+
+@CARDCAN_91504(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件チェック,5
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 91504)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트, 91504)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 함정全般
+	효과条件固名前起動 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT < 2
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_91504(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 選択名前
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 91504, 1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+ 		효과条件종류 = 함정全般
+ 		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+		IF RESULT != 0
+			CALLFORM CARDNAME_{RESULT:1}("名前")
+			選択名前 = %RESULTS%
+			CALL FULLRESET
+			효과条件종류 = 함정全般
+			효과条件固名前 = %選択名前%
+			CALL CARD_ADD_BASIC(듀얼리스트, "묘지", ゾーン, 場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 91504)
+	IF RESULT == 0
+	ENDIF
+ENDIF
+

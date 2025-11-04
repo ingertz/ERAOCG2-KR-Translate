@@ -1,0 +1,314 @@
+;========================================================
+; 46500 光星の契約神レムリア
+;========================================================
+
+@CARDNAME_46500,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 光星の契約神レムリア
+	CASE "略称"
+		RESULTS = レムリア
+	CASE "カテゴリ"
+		RESULTS:0 = 創界神
+		RESULTS:1 = 光導
+		RESULTS:2 = 星竜
+		RESULTS:3 = 契約
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46500(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 超次元
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN ドラゴン族
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "特殊不可"
+		RETURN 1
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46500(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+PRINTL 「創界神」は対象耐性・破壊耐性を持つ。
+
+CALLFORM CARD_ABLE(1,EXデッキ起動)
+PRINTL ①：自分のEXデッキに「創界神」が１種類のみで、
+PRINTL 自分フィールドに「創界神」が存在しない場合に発動できる。
+PRINTL 手札１枚をデッキに加え、EXデッキのこのカードを自分の魔法＆罠ゾーンに表側表示でセットする。
+PRINTL その後、自分のデッキの上からカードを３枚墓地へ送る。
+PRINTL その中に「光導」または「星竜」または「超星」カードがあった場合、
+PRINTL その数だけこのカードにコアカウンターを置く。
+PRINTL その後、デッキから１枚ドローする。
+
+CALLFORM CARD_ABLE(0,召喚強制誘発)
+PRINTL ②：このカードが魔法・罠ゾーンに存在する限り、
+PRINTL 「光導」または「星竜」または「超星」モンスターが召喚・特殊召喚される度、
+PRINTL このカードにコアカウンターを１つ置く。
+
+CALLFORM CARD_ABLE(3,魔罠起動)
+PRINTL ③：メインフェイズに、自分フィールドのモンスター１体を対象として発動できる。
+PRINTL このカードに置かれたコアカウンターを好きな数取り除き、
+PRINTL そのモンスターに取り除いた数分、コアカウンターを置く。
+
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ④：自分フィールドのモンスターの攻撃力・守備力は、
+PRINTL 置かれているコアカウンターの数×３００アップする。
+
+CALLFORM CARD_ABLE(0,効果後誘発)
+PRINTL ⑤：自分フィールドの儀式モンスターがフィールドを離れた場合、
+PRINTL このカードにコアカウンターを１つ置く。
+
+RETURN 0
+
+@CARDCAN_46500(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC カウンタ
+#DIM  DYNAMIC 合計
+#DIM  DYNAMIC 枚数
+#DIM  DYNAMIC 位置
+
+IF 種類 == EXデッキ起動
+	SIF 発動済_1(決闘者,46500)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 手札数(決闘者) == 0
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件カテゴリ = 創界神
+	効果条件固名前起動 = 1
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT >= 2
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+		
+    CALL FULLRESET
+    効果範囲デッキ = 1
+    効果条件CNT = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 召喚強制誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+	SIF 最終召喚決者 != 決闘者
+		RETURN 0
+	SIF 最終召喚ID == -1
+		RETURN 0
+	CALLFORM CARDNAME_{最終召喚ID}("カテゴリ")
+	SIF !(MATCH(RESULTS,"光導") || MATCH(RESULTS,"星竜") || MATCH(RESULTS,"超星"))
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 魔罠起動
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF メインフェイズ != 1 || ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_個Ｃ:場所") < 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 効果後誘発
+    SIF ゾーン != "魔罠"
+        RETURN 0
+    SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+        RETURN 0
+    CALL FULLRESET
+    効果条件種類 = 儀式
+    CALL CARD_CHECK_FIN_DATA(決闘者,"戦場離れ")
+    SIF RESULT != 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+IF 種類 == 攻守変動
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+@CARDEFFECT_46500(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 選択カード
+#DIM  DYNAMIC 枚数
+#DIM  DYNAMIC カウンタ
+#DIM  DYNAMIC 位置
+#DIM  DYNAMIC 加算
+#DIM  DYNAMIC 最大移動
+#DIM  DYNAMIC 移動数
+#DIM  DYNAMIC ループ
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46500,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札       = 1
+		効果条件行先フラグ = デッキ行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT != 1
+			RETURN 0
+		ENDIF
+
+		CALL FULLRESET
+		CALL CARD_ADD(決闘者,"EXデッキ","魔罠",場所,"表側表示")
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件名前 = 光星の契約神レムリア
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 9999
+			RETURN 0
+		ENDIF
+		CALL CARD_SELECT(決闘者,RESULT)
+
+		枚数 = 0
+		REPEAT 3
+			VARSET RESULTS
+			TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_デッキ:0")}("カテゴリ")
+			IF MATCH(RESULTS,"光導") || MATCH(RESULTS,"星竜") || MATCH(RESULTS,"超星")
+				枚数 ++
+			ENDIF
+			CALL CARD_DECK_DISPOSE(決闘者,"デッキ",0)
+		REND
+
+		IF 枚数 > 0
+			CALL SET_FIELD_INFO(決闘者,"魔罠",場所,"個Ｃ",枚数)
+		ENDIF
+
+		CALL CARDDRAW_BASIC(決闘者,1)
+		CALL CARD_EFFECT_USE(決闘者,46500,1)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 召喚強制誘発
+	CALL SET_FIELD_INFO(決闘者,"魔罠",場所,"個Ｃ",1)
+	RETURN 0
+ENDIF
+
+
+IF 種類 == 魔罠起動
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = モン全般
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+	CALL CARD_SELECT(決闘者,RESULT)
+
+	最大移動 = GETVAR(@"%決闘者%_魔_個Ｃ:場所")
+	IF 最大移動 <= 0
+		RETURN 0
+	ENDIF
+
+	PRINTFORML このカードから何個のコアカウンターを移しますか？（現在 {最大移動} 個）
+	PRINTFORML [0] - キャンセル
+	FOR ループ,1,最大移動
+		PRINTFORML [{ループ}] - {ループ} 個移す
+	NEXT
+	BINPUT
+	移動数 = RESULT
+	IF 移動数 <= 0
+		RETURN 0
+	ENDIF
+	IF 移動数 > 最大移動
+		RETURN 0
+	ENDIF
+
+	CALL SET_FIELD_INFO(決闘者,"魔罠",場所,"個Ｃ",-移動数)
+	CALL SET_FIELD_INFO(決闘者,"戦場",選択カード（CS）,"個Ｃ",移動数)
+ENDIF
+
+
+IF 種類 == 効果後誘発
+    CALL SET_FIELD_INFO(決闘者,"魔罠",場所,"個Ｃ",1)
+    RETURN 0
+ENDIF
+
+
+IF 種類 == 攻守変動
+	FOR 位置,0,5
+		SIF GETVAR(@"%決闘者%_戦場:位置") == -1
+			CONTINUE
+		加算 = GETVAR(@"%決闘者%_MZ_個Ｃ:位置") * 300
+		CALL STATCHANGE_BASIC(決闘者, "自身", 位置, 加算, 加算)
+	NEXT
+	RETURN 0
+ENDIF
+
+IF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"魔自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(決闘者,"魔自身",場所,"破耐")
+	RETURN 0
+ENDIF
+
+RETURN 0

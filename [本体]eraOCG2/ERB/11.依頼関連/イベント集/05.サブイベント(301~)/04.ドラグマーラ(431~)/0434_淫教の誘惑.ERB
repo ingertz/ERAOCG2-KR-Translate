@@ -181,7 +181,7 @@ $INPUTLOOP1
 IF TALENT:投入カード:음교의신도 == 1 && TALENT:投入カード:성별 == 1
 	VARSET RESULTS
 	投入カード = NO:投入カード
-	TRYCALLFORM CARDNAME_{投入カード},"名前"
+	TRYCALLFORM CARDNAME_{投入カード}("名前")
 	SIF RESULTS == ""
 		GOTO INPUTLOOP1
 ELSE
@@ -271,7 +271,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 ELSEIF 종류 == ターン終了時
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
@@ -281,9 +282,8 @@ ELSEIF 종류 == ターン終了時
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -321,7 +321,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		효과条件성별 = 牝性
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		実行役대상 = RESULT:1
-		TRYCALLFORM CARD_{実行役대상},"レベル"
+		TRYCALLFORM CARD_{実行役대상}("レベル")
 		レベル = RESULT
 		CALL CARD_EROTICS(実行役대상)
 		実行役대상 = RESULT
@@ -362,7 +362,7 @@ ELSEIF 종류 == ターン終了時
 		IF RESULT == 1
 			SETVAR @"%듀얼리스트%_MZ_接可:カード소환先", 2
 			조교대상 = RESULT:1
-			TRYCALLFORM CARDNAME_{조교대상},"名前"
+			TRYCALLFORM CARDNAME_{조교대상}("名前")
 			無効대상 = %RESULTS%
 			PRINTFORML
 			SETCOLOR C_PINK

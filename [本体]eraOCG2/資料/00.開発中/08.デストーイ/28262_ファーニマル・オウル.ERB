@@ -1,0 +1,143 @@
+@CARDNAME_28262,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ファーニマル・オウル
+	CASE "略称"
+		RESULTS = Fur・オウル
+	CASE "カテゴリ"
+		RESULTS:0 = ファーニマル
+ENDSELECT
+
+
+@CARD_28262(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28262(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「ファーニマル・オウル」の①②の効果は１ターンに１度、いずれか１つしか使用できない。
+CALL CARD_ABLE(1,召喚時 ,特殊召喚時)
+PRINTL ①：このカードが手札からの召喚・特殊召喚に成功した時に発動できる。
+PRINTL デッキから「融合」１枚を手札に加える。
+CALL CARD_ABLE(2,戦場起動)
+PRINTL ②：５００ＬＰを払って発動できる。
+PRINTL 自分の手札・フィールドから、
+PRINTL 「デストーイ」融合モンスターによって決められた融合素材モンスターを墓地へ送り、
+PRINTL その融合モンスター１体をエクストラデッキから融合召喚する。
+
+@CARDSUMMON_AA_28262
+
+
+@CARDCAN_28262(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,28262)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,28262) || 発動済_2(決闘者,28262)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件名前 = 融合
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_1(決闘者,28262) || 発動済_2(決闘者,28262)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF GETVAR(@"ライフ_%決闘者%") <= 500
+		RETURN 0
+	CALL CARD_EX_CHECK(決闘者,0)
+	SIF RESULT == 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲戦場 = 1
+	素材範囲手札 = 1
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件カテゴリ = デストーイ
+	効果条件種類 = 融合
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28262(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28262,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件名前 = 融合
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28262,2)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",500)
+		CALL RESETAREA_MAT
+		素材範囲戦場 = 1
+		素材範囲手札 = 1
+		CALL FULLRESET
+		効果条件カテゴリ = デストーイ
+		効果条件種類 = 融合
+		効果条件召喚可 = 1
+		CALL CARD_CHOOSE_BASIC(決闘者,"EXデッキ",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{選択カード}(決闘者,選択カード)
+			CALL FUSSUMMON(決闘者,選択カード)
+		ENDIF
+	ENDIF
+ENDIF
+

@@ -1,0 +1,145 @@
+﻿@CARDNAME_28012,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데몬 광래
+	CASE "略称"
+		RESULTS = 데몬 광래
+	CASE "カテゴリ"
+		RESULTS:0 = 데몬
+		RESULTS:1 = 빛의 황금궤
+ENDSELECT
+
+
+@CARD_28012(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 1200
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28012(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,효과소환)
+PRINTL ①：자신フィールドに「빛의 황금궤」が存在する場合、このカードはリリースなしで소환できる。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合、
+PRINTL 상대フィールドのモンスター１体を대상として발동できる。
+PRINTL そのモンスターのコントロールを得る。
+PRINTL この효과の효과処理時に자신フィールドに「빛의 황금궤」が存在しない場合、
+PRINTL この효과でコントロールを得たモンスターは攻撃できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ③：자신フィールドのモンスターの攻撃力は、
+PRINTL 자신ターンの間５００アップする。
+
+@CARDCAN_28012(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28012)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과소환
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 빛의 황금궤
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,28012)
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 強奪
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_28012(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과소환
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28012,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 빛의 황금궤
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			条件달성 = 1
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과추가종류 = 5
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"強奪")
+		SIF RESULT == 1 && 条件달성 == 1
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード설치先,"戦無",1)
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,500)
+ENDIF
+

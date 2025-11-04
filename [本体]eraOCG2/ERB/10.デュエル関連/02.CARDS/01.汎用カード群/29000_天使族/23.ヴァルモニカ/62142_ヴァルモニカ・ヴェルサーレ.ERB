@@ -1,0 +1,176 @@
+@CARDNAME_62142,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 바르모니카 베르사레
+	CASE "略称"
+		RESULTS = 베르사레
+	CASE "カテゴリ"
+		RESULTS:0 = 바르모니카
+ENDSELECT
+
+
+@CARD_62142(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62142(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：이하의 효과에서 1개를 고르고 적용한다.
+PRINTL 자신의 마법 / 함정 존에 「바르모니카」 카드가 존재하지 않을 경우, 적용하는 효과는 무작위로 고른다.
+PRINTL ●자신은 500 LP 회복한다.
+PRINTL 그 후, "바르모니카" 카드가 나올 때까지 자신의 덱의 위에서 카드를 넘길 수 있다.
+PRINTL 그 경우, 넘긴 "바르모니카" 카드를 패에 넣고, 나머지를 덱으로 되돌린다.
+PRINTL ●자신은 500 데미지를 받는다.
+PRINTL 그 후, 덱에서 「바르모니카 베르사레」 이외의 「바르모니카」 카드 1장을 묘지로 보낼 수 있다.
+
+@CARDCAN_62142(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62142)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,62142)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_62142(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62142,1)
+	IF RESULT == 0
+		;通常마법汎用処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		;自마함の바르모니카Pをチェック
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 바르모니카
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		;なし／상대가 발동은 ランダムで
+		IF 듀얼리스트 == "상대" || RESULT != 1
+			SELECTCASE RAND:2 
+				CASE 0
+					PRINTFORML 選ばれた효과 
+					PRINTFORMW ●５００ＬＰ회복する。그 후、자신의 덱 위에서 카드를 めくって、最初に出た"바르모니카" 카드를 패에 넣는다。
+					CALL CARDEFFECT_62142_1(듀얼리스트,종류,ゾーン,場所)
+				CASE 1
+					PRINTFORML 選ばれた효과 
+					PRINTFORMW ●５００데미지를 受ける。그 후、덱에서 「바르모니카」카드 １장을 묘지로 보낸다。
+					CALL CARDEFFECT_62142_2(듀얼리스트,종류,ゾーン,場所)
+			ENDSELECT
+		ELSEIF 듀얼리스트 == "자신"
+			;ある場合
+			;上の条件でない場合を定義しているので、자신側でランダム분기は必要なし
+			PRINTL
+			PRINTL 어떤 느낌의
+			PRINTL 　음을 선택해?
+			PRINTL
+			PRINTL （속닥속닥…！）
+			PRINTL （회복하면서 덱 위에서부터 카드를 넘겨, 처음 나온"바르모니카"카드를 패에 가져오자…！）[0]
+			PRINTL
+			PRINTL （소근소근…♪）
+			PRINTL （데미지는 신경쓰지 말고"바르모니카"카드 1장을 묘지로 보내자…♪）[1]
+			BINPUT
+			IF RESULT == 0
+				CALL CARDEFFECT_62142_1(듀얼리스트,종류,ゾーン,場所)
+
+			ELSEIF RESULT == 1
+				CALL CARDEFFECT_62142_2(듀얼리스트,종류,ゾーン,場所)
+			ENDIF				
+		ENDIF
+	ENDIF
+ENDIF
+
+
+@CARDEFFECT_62142_1(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC めくり数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL LIFE_CHANGE(듀얼리스트,"増加","효과",500)
+
+PRINTL 덱 위에서 카드를 뒤집으시겠습니까?
+CALL YN_CHOICE(듀얼리스트)
+
+IF RESULT == はい
+	CALL FULLRESET
+	효과条件カテゴリ = 바르모니카
+	CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所,99)
+ENDIF
+
+RETURN
+
+
+@CARDEFFECT_62142_2(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL LIFE_CHANGE(듀얼리스트,"減少","효과",500)
+
+CALL FULLRESET
+효과条件任意 = 1
+효과条件行先플래그 = 묘지行き
+효과条件カテゴリ = 바르모니카
+효과条件固名前 = 바르모니카 베르사레
+CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+RETURN
+

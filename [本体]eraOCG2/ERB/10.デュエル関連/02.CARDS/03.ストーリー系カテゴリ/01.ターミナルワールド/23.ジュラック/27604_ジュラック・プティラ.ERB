@@ -1,0 +1,98 @@
+﻿@CARDNAME_27604,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 프티라
+	CASE "略称"
+		RESULTS = Ｊ 프티라
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_27604(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 無性
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN CMN
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27604(종류)
+#DIM DYNAMIC 종류
+CALL CARD_ABLE(1,攻撃後強制誘発)
+PRINTL ①：このカードが攻撃されたダメージ計算後、
+PRINTL 攻撃モンスターを持ち主の손패に戻す。
+PRINTL このカードの守備力は、この효과で손패に戻したモンスターのレベル×１００ポイントアップする。
+
+@CARDCAN_27604(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27604)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 攻撃後強制誘発
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_27604(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 強化値
+#DIM DYNAMIC バウンスカード
+#DIM DYNAMIC バウンスカードレベル
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;PRINTFORMW 종류:{종류}
+
+IF 종류 == 攻撃後強制誘発
+	バウンスカード = 戦闘場所(듀얼리스트,1)
+	バウンスカードレベル = GETVAR(@"%対面者%_MZ_星:(%対面者%_戦闘カード)")
+	CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",バウンスカード,"손패")
+	IF RESULT == 1
+		強化値 = バウンスカードレベル * 100
+		;PRINTFORMW {強化値}
+		CALL FULLRESET
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",強化値)
+	ENDIF
+ENDIF

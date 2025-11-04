@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = U.A. 파워드 깁스
+		RESULTS = U.A. 파워드 깁스
 	CASE "略称"
-RESULTS = 파워드 깁스
+		RESULTS = 파워드 깁스
 	CASE "カテゴリ"
-RESULTS:0 = 울트라 애슬리트
+		RESULTS:0 = 울트라 애슬리트
 ENDSELECT
 
 
@@ -61,17 +61,12 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-효과条件カテゴリ = 울트라 애슬리트
+	효과条件カテゴリ = 울트라 애슬리트
 	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -147,7 +142,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲필드 = 1
-효과条件カテゴリ = 울트라 애슬리트
+		효과条件カテゴリ = 울트라 애슬리트
 		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
 	ENDIF
 
@@ -163,7 +158,7 @@ ELSEIF 종류 == 戦破壊→묘지
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲묘지 = 1
-효과条件名前 = U.A. 파워드 깁스
+		효과条件名前 = U.A. 파워드 깁스
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF	
 

@@ -1,0 +1,157 @@
+@CARDNAME_72561,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = トイポット
+	CASE "略称"
+		RESULTS = トイポット
+	CASE "カテゴリ"
+		RESULTS:0 = トイポット
+ENDSELECT
+
+
+@CARD_72561(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 永続魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72561(種類)
+#DIM DYNAMIC 種類
+
+CALL CARD_ABLE(1,魔罠起動)
+PRINTL (1)：１ターンに１度、手札を１枚捨てて発動できる。
+PRINTL 自分はデッキから１枚ドローし、お互いに確認する。
+PRINTL 確認したカードが「ファーニマル」モンスターだった場合、
+PRINTL 手札からモンスター１体を特殊召喚できる。
+PRINTL 違った場合、そのドローしたカードを捨てる。
+CALL CARD_ABLE(2,戦場→墓地,破壊→墓地)
+PRINTL (2)：このカードが墓地へ送られた場合に発動できる。
+PRINTL デッキから「エッジインプ」モンスター１体または
+PRINTL 「ファーニマル」モンスター１体を手札に加える。
+
+@CARDCAN_72561(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,72561)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場→墓地 || 種類 == 戦闘→墓地 || 種類 == 破壊→墓地 || 種類 == 手札→墓地 || 種類 == デッキ→墓地 || 種類 == X素材時効果
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ:0 = エッジインプ
+	効果条件カテゴリ:1 = ファーニマル
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72561(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前
+
+IF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,72561,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		CALL CARD_ADD_GY_BASIC(決闘者,"手札",ゾーン,場所)
+		IF RESULT == 1
+			;デッキトップを確認
+			選択カード = GETVAR(@"%決闘者%_デッキ:0")
+			SIF 決闘者 == "自分"
+				TRYCALLFORM CARD_UI(選択カード)
+				PRINTW
+			;カテゴリ判定を先に行う
+			TRYCALLFORM CARDNAME_{選択カード}("カテゴリ")
+			カウンタ = GROUPMATCH(RESULTS,"ファーニマル")
+			CALL CARDDRAW_BASIC(決闘者,1)
+
+			IF カウンタ
+				SIF 決闘者 == "自分"
+					PRINTFORML ドローしたカードは「ファーニマル」モンスターです！
+				;手札から特殊召喚可能
+				CALL FULLRESET
+				効果範囲手札 = 1
+				効果条件種類 = モン全般
+				効果条件召喚可 = 1
+				CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+				IF RESULT == 1
+					SIF 決闘者 == "自分"
+						PRINTL 手札からモンスターを特殊召喚しますか？
+					CALL YN_CHOICE(決闘者)
+					IF RESULT == はい && 決闘者 == "自分"
+						CALL FULLRESET
+						効果範囲手札 = 1
+						効果条件種類 = モン全般
+						CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+					ENDIF
+				ENDIF
+			ELSE
+				SIF 決闘者 == "自分"
+					PRINTFORML 「ファーニマル」モンスターではありません。捨てます。
+				;ドローしたカードを捨てる
+				CALL FULLRESET
+				効果範囲手札 = 1
+				効果条件ID = 選択カード
+				CALL CARD_ADD_GY_BASIC(決闘者,"手札",ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 魔罠起動 || 種類 == 手札起動
+	;カード発動＆設置まで
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,72561)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+	ENDIF
+ELSEIF 種類 == 戦場→墓地 || 種類 == 戦闘→墓地 || 種類 == 破壊→墓地 || 種類 == 手札→墓地 || 種類 == デッキ→墓地 || 種類 == X素材時効果
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,72561,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ:0 = エッジインプ
+		効果条件カテゴリ:1 = ファーニマル
+		効果条件種類 = モン全般
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+	ENDIF
+ENDIF

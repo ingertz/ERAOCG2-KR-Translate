@@ -1,0 +1,160 @@
+﻿@CARDNAME_58022,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = No.22 프랑켄
+	CASE "略称"
+		RESULTS = #22 프랑켄
+	CASE "カテゴリ"
+		RESULTS:0 = 넘버즈
+ENDSELECT
+
+
+@CARD_58022(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 4500
+	CASE "守備力"
+		RETURN 1000
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+@CARDSUMMON_58022(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 8
+;추가효과用
+素材条件속성 = 어둠속성
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,58022) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_58022(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 어둠 속성 레벨 8 몬스터 2장
+PRINTL 이 카드는 엑시즈 소환으로밖에 특수 소환할 수 없다.
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ①: 자신 상대 턴에 1번, 이 카드가 필드에 공격 표시로 존재할 경우,
+PRINTL 이 카드의 엑시즈 소재를 1개 제거하고, 패를 1장 묘지로 보내고,
+PRINTL 상대 필드의 앞면 표시 카드 1장을 대상으로 발동할 수 있다.
+PRINTL 대상 카드의 효과를 턴 종료 시까지 무효로 한다.
+;PRINTL ②：이 카드는 암컷 몬스터를 공격할 수 없다。
+
+
+@CARDCAN_58022(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58022)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF 손패数(듀얼리스트) < 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件표시 = 10
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = No.22 프랑켄
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_戦闘カード") != 場所
+		RETURN 0
+	SIF GETVAR(@"%対面者%_戦闘カード") == 5
+		RETURN 0
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트,1)}("성별")
+	SIF RESULT != 牝性
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_58022(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58022,10,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件표시 = 10
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"無効")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻撃時強制誘発
+	PRINTW 프랑켄은 여자아이를 공격할수 없다！
+	PRINTL
+	CALL EVADE_ATTACK(듀얼리스트)
+ENDIF

@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속마법
 	CASE "生成カード"
 		RETURN 172652
@@ -73,13 +72,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,72652)
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -164,8 +158,17 @@ SELECTCASE 参照先
 		RETURN 0
 	CASE "守備力"
 		RETURN 0
+	CASE "自動소멸"
+		RETURN 1
 ENDSELECT
 
+
+@CARD_EXPLANATION_172652(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+PRINTL ①：이 카드가 존재하는 한、자신은 Ｓ몬스터밖에 ＥＸ덱에서 특수 소환할 수 없다。
 
 @CARDCAN_172652(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트

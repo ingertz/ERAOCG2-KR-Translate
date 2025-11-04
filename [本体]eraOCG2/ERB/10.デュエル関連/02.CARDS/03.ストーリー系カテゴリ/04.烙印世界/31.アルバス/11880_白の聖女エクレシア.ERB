@@ -13,6 +13,7 @@ SELECTCASE 参照先
 	CASE "カテゴリ"
 		RESULTS:0 = 에클레시아
 		RESULTS:1 = 알버스
+		RESULTS:2 = 낙인의 성녀
 ENDSELECT
 
 
@@ -39,6 +40,8 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "성별"
 		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1880
 ENDSELECT
 
 RETURN 0
@@ -55,8 +58,8 @@ CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
 PRINTL ②: 자신 / 상대의 메인 페이즈에 이 카드를 릴리스하고 발동할 수 있다.
 PRINTL 패 / 덱에서 "상검" 몬스터 또는 "알버스의 낙윤" 1장을 특수 소환한다.
 CALLFORM CARD_ABLE(3,ターン終了時)
-PRINTL ③: 엔드 페이즈에 발동할 수 있다.
-PRINTL 묘지의 융합 몬스터 1장을 덱으로 되돌리고, 이 카드를 패에 넣는다.
+PRINTL ③：자신의 묘지에 레벨８의 융합 몬스터가 존재하는 경우、엔드 페이즈에 발동할 수 있다。
+PRINTL 묘지의 이 카드를 패에 넣는다。
 
 
 
@@ -112,7 +115,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	효과範囲덱 = 1
 	효과条件スーパー名前 = 알버스의 낙윤
 	효과条件カテゴリ = 상검
-	효과条件소환可 = 1
+	효과条件소환可 = 2
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -125,6 +128,7 @@ ELSEIF 종류 == ターン終了時
 	CALL FULLRESET
 	효과範囲묘지 = 1
 	효과条件종류 = 융합
+	효과条件レベル = 8
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -159,12 +163,12 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 ELSEIF 종류 == ターン終了時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,11880,3)
 	IF RESULT == 0
-		CALL FULLRESET
-		효과条件종류 = 융합
-		효과条件行先플래그 = 덱行き
-		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
-		IF RESULT == 1
-			CALL CARD_DISPOSE(듀얼리스트,"묘지",場所,3)
-		ENDIF
+		; CALL FULLRESET
+		; 효과条件종류 = 융합
+		; 효과条件行先플래그 = 덱行き
+		; CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		; IF RESULT == 1
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+		; ENDIF
 	ENDIF	
 ENDIF

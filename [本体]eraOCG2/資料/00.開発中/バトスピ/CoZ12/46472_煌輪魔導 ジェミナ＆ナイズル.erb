@@ -1,0 +1,257 @@
+; ============================================================
+; 94322_煌輪魔導 ジェミナ＆ナイズル
+; ============================================================
+
+@CARDNAME_94322,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULTS
+SELECTCASE 参照先
+    CASE "名前"
+        RESULTS = 煌輪魔導 ジェミナ＆ナイズル
+    CASE "略称"
+        RESULTS = 煌輪ジェミニ
+    CASE "カテゴリ"
+        RESULTS:0 = CoZ12
+        RESULTS:1 = 光導
+        RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_94322(参照先)
+#DIMS DYNAMIC 参照先
+SELECTCASE 参照先
+    CASE "種類"
+        RETURN リンク
+    CASE "属性"
+        RETURN 光属性
+    CASE "種族"
+        RETURN 魔法使い族
+    CASE "レベル"
+        RETURN 3
+    CASE "攻撃力"
+        RETURN 2300
+    CASE "守備力"
+        RETURN 1900
+    CASE "性別"
+        RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_94322(種類)
+#DIM DYNAMIC 種類
+PRINTL 「CoZ12」モンスターを含むモンスター２体以上
+PRINTL このカードはL召喚及び以下の方法でのみ特殊召喚できる。
+PRINTL このカード名の①③の効果はそれぞれ１ターンに１度しか使用できない。
+
+CALLFORM CARD_ABLE(0,EXデッキ起動)
+PRINTL ●『煌臨』「魔導双神 ジェミナ＆ナイズル」
+PRINTL 自分ターンに、自分フィールドの「創界神」のコアカウンターを１つ取り除いて発動できる。
+PRINTL 上記モンスターをリリースし、このカードをＥＸデッキから特殊召喚する。
+
+CALLFORM CARD_ABLE(1,EX召喚時,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。
+PRINTL デッキの上から５枚めくる。
+PRINTL その中の「光導」カードを２枚まで手札に加える。
+
+CALLFORM CARD_ABLE(2,破壊→墓地,戦破壊→墓地)
+PRINTL ②：このカードが破壊された場合に発動する。
+PRINTL 自分は２０００のダメージを受け、墓地の「光導」カードを１枚手札に加える。
+
+CALLFORM CARD_ABLE(3,戦場起動)
+PRINTL ③：自分・相手のメインフェイズに自分の墓地の通常魔法カード１枚を対象として発動できる。
+PRINTL 自分の「創界神」からコアカウンターを１つ取り除き、
+PRINTL この効果は、その通常魔法カード発動時の効果と同じになる。
+RETURN 0
+
+@CARDSUMMON_94322(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM  DYNAMIC 召喚カード
+#DIM  DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要リンク数 = 3
+IF EX参照 == 0 || EX参照 == 1
+    素材条件カテゴリ = CoZ12
+ENDIF
+
+IF EX参照 == 1
+    CALL LINCAN(決闘者, 召喚カード, 94322)
+    RETURN RESULT
+ENDIF
+RETURN 0
+
+
+
+@CARDCAN_94322(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,94322)
+SIF RESULT == 1
+    RETURN 0
+
+; ── 『煌臨』：EXデッキ起動
+IF 種類 == EXデッキ起動
+    SIF ゾーン != "EXデッキ"
+        RETURN 0
+    SIF ターンプレイヤー != 決闘者 || メインフェイズ != 1
+        RETURN 0
+    SIF モンスター数(決闘者) == 5
+        RETURN 0
+    CALL FULLRESET
+    効果範囲戦場 = 1
+    効果条件名前 = 魔導双姫 ジェミナ＆ナイズル
+    効果条件CNT  = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+    CALL FULLRESET
+    効果範囲魔罠 = 1
+    効果条件カテゴリ = 創界神
+    効果条件個Ｃ所持 = 1
+    効果条件CNT      = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+IF 種類 == EX召喚時 || 種類 == 特殊召喚時
+    SIF 発動済_1(決闘者,94322)
+        RETURN 0
+    RETURN 1
+ENDIF
+
+IF 種類 == 破壊→墓地 || 種類 == 戦破壊→墓地
+    CALL FULLRESET
+    効果範囲墓地 = 1
+    効果条件カテゴリ = 光導
+    効果条件CNT = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+IF 種類 == 戦場起動
+    SIF ゾーン != "戦場"
+        RETURN 0
+    SIF 発動済_3(決闘者,94322)
+        RETURN 0
+    CALL FULLRESET
+    効果範囲魔罠 = 1
+    効果条件カテゴリ = 創界神
+    効果条件個Ｃ所持 = 1
+    効果条件CNT      = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+    CALL FULLRESET
+    効果範囲墓地 = 1
+    効果条件種類 = 通常魔法
+    効果条件CNT  = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_94322(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+; ── 『煌臨』：EXデッキ起動（創界神-2 → 上記モンスターをリリース → これをEXからSS）
+IF 種類 == EXデッキ起動
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,94322,0)
+
+    ; 1) 創界神を選び 個C -2
+    CALL FULLRESET
+    効果範囲魔罠 = 1
+    効果条件カテゴリ = 創界神
+    効果条件個Ｃ所持 = 1
+    CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+    SIF RESULT == 9999
+        RETURN 0
+    CALL CARD_SELECT(決闘者,RESULT)
+    CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+    ; 2) 「魔導双神 ジェミナ＆ナイズル」を選びリリース
+    CALL FULLRESET
+    効果範囲戦場 = 1
+    効果条件名前 = 魔導双神 ジェミナ＆ナイズル
+    効果条件複数   = 1
+    CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+
+    ; 3) EXからこのカードをSS
+    CALL FULLRESET
+    効果範囲EXデッキ = 1
+    効果条件固ID     = 94322
+    CALL CARD_SP_SUMMON(決闘者,"EXデッキ",場所)
+    RETURN 0
+ENDIF
+
+IF 種類 == EX召喚時 || 種類 == 特殊召喚時
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,94322,1)
+    CALL FULLRESET
+    効果範囲デッキ = 1
+    効果条件カテゴリ = 光導
+    効果条件任意   = 1
+    効果条件複数   = 2
+    CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所,5)
+    RETURN 0
+ENDIF
+
+IF 種類 == 破壊→墓地 || 種類 == 戦破壊→墓地
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,94322,2)
+    CALL LIFE_CHANGE(決闘者,"減少","効果",2000)
+    CALL FULLRESET
+    効果範囲墓地 = 1
+    効果条件カテゴリ = 光導
+    効果条件任意   = 1
+    効果条件行先フラグ = 手札行き
+    CALL CARD_ADD_GY_ADV(決闘者,"墓地",場所)
+    RETURN 0
+ENDIF
+
+IF 種類 == 戦場起動
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,94322,3)
+
+    CALL FULLRESET
+    効果範囲魔罠 = 1
+    効果条件カテゴリ = 創界神
+    効果条件個Ｃ所持 = 1
+    CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+    SIF RESULT == 9999
+        RETURN 0
+    CALL CARD_SELECT(決闘者,RESULT)
+    CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+    CALL FULLRESET
+    効果範囲墓地 = 1
+    効果条件種類 = 通常魔法
+    効果条件任意 = 1
+    CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+    SIF RESULT == 0
+        RETURN 0
+    選択カード_ID = RESULT:1
+    TRYCALLFORM CARDEFFECT_{選択カード_ID}(決闘者, 魔罠起動, "効果処理")
+    RETURN 0
+ENDIF
+
+RETURN 0

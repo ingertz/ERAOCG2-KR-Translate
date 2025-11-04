@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 装備魔法
 ENDSELECT
 
@@ -34,7 +33,7 @@ RETURN 0
 
 
 PRINTL 「ペンギン」モンスターにのみ装備可能。
-PRINTL 이 카드명의 ③의 효과는 1턴에 1번밖에 사용할 수 없다。
+PRINTL このカード名の③の効果は１ターンに１度しか使用できない。
 PRINTL ①：装備モンスターの攻撃力は８００アップする。
 PRINTL ②：装備モンスターが相手に戦闘ダメージを与えた時に発動できる。
 PRINTL 相手フィールドのカード１枚を選んで持ち主の手札に戻す。
@@ -56,13 +55,8 @@ SIF RESULT == 1
 
 
 IF 種類 == 魔罠起動 || 種類 == 手札起動
-	IF 種類 == 魔罠起動
-		SIF GETVAR(@"%決闘者%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 決闘者
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF

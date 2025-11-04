@@ -76,9 +76,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -91,7 +90,7 @@ ELSEIF 종류 == 身代효과
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
-	TRYCALLFORM CARDNAME_{破壊대상ID},"名前"
+	TRYCALLFORM CARDNAME_{破壊대상ID}("名前")
 	SIF MATCH(RESULTS,"암드 드래곤")
 		RETURN 1
 

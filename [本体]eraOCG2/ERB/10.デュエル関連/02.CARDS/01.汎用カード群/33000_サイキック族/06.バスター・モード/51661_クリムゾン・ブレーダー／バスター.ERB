@@ -1,0 +1,161 @@
+﻿@CARDNAME_51661,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 크림즌 블레이더/버스터
+	CASE "略称"
+		RESULTS = C 블레이더/B
+	CASE "カテゴリ"
+		RESULTS:0 = 버스터
+		RESULTS:1 = /버스터
+ENDSELECT
+
+
+@CARD_51661(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3300
+	CASE "守備力"
+		RETURN 3100
+	CASE "성별"
+		RETURN 雄性
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251026
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_51661(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,51661) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_51661(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは특수소환できず、「버스터 모드」の효과でのみ특수소환する事ができる。
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,常在無効)
+PRINTL ①：상대はEX덱から특수소환されたコスト５以上のモンスターの효과を발동できない。
+CALLFORM CARD_ABLE(0,戦闘→묘지 ,破壊→묘지)
+PRINTL ②：このカードが破壊された時に발동できる。
+PRINTL 묘지から「크림즌 블레이더」１体を특수소환する。
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：묘지のこのカードをEX덱に戻して발동できる。
+PRINTL 「버스터」カード１枚を덱から손패に加える。
+
+@CARDCAN_51661(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51661)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 常在無効
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 크림즌 블레이더
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,51661)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 버스터
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_51661(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == 常在無効
+	CALL FULLRESET
+	효과条件召種 = 召種EX덱
+	CALLFORM 효과条件レベル_ADV(5,"以上")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無",3)
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51661)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 크림즌 블레이더
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51661,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 버스터
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

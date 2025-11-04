@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 마계극단－데블 힐
+		RESULTS = 마계극단－데블 힐
 	CASE "略称"
-RESULTS = 데블 힐
+		RESULTS = 데블 힐
 	CASE "カテゴリ"
-RESULTS:0 = 마계극단
+		RESULTS:0 = 마계극단
 ENDSELECT
 
 
@@ -50,7 +50,7 @@ PRINTL 이 카드명의 ①의 P효과는 1턴에 1번밖에 사용할 수 없�
 CALLFORM CARD_ABLE(1,마함起動)
 PRINTL ①: 자신의 마법 & 함정 존에 이 카드명 이외의 P 몬스터 카드가 존재할 경우, 자신 메인 페이즈에 발동할 수 있다.
 PRINTL 패 / EX덱에서 "마계극단" P 몬스터 1장을 특수 소환한다.
-PRINTL 자신의 마법 & 함정 존에 "마계극단－팅클 리틀스타"가 존재할 경우, 이 효과의 대상을 2장으로 할 수 있다.
+PRINTL 자신의 마법 & 함정 존에 "마계극단－트윙클 리틀스타"가 존재할 경우, 이 효과의 대상을 2장으로 할 수 있다.
 CALLFORM CARD_ABLE(10,마함起動)
 PRINTL ②: 1턴에 1번, 자신 필드의 "마계극단" 몬스터 1장을 릴리스하고,
 PRINTL 상대 필드의 앞면 표시 몬스터 1장을 대상으로 하여 발동할 수 있다.
@@ -89,20 +89,9 @@ SIF RESULT == 1
 
 ;P
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	IF 듀얼리스트 != "자신"
-		CALL FULLRESET
-		효과範囲마함 = 1
-효과条件名前 = 마계극단－데블 힐
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT == 1
-			RETURN 0
-	ENDIF
 	RETURN 1
 
 ELSEIF 종류 == 마함起動
@@ -130,6 +119,7 @@ ELSEIF 종류 == 마함起動
 	효과範囲EX덱 = 1
 	효과条件カテゴリ = 마계극단
 	효과条件分割 = 펜듈럼
+	효과条件종류 = EX以外全般
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -227,6 +217,7 @@ ELSEIF 종류 == 마함起動
 	효과範囲EX덱 = 1
 	효과条件カテゴリ = 마계극단
 	효과条件分割 = 펜듈럼
+	효과条件종류 = EX以外全般
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -250,8 +241,8 @@ ELSEIF 종류 == 마함起動
 	
 	IF 발동불가:0 == 0 && 발동불가:1 == 0
 		SIF 듀얼리스트 == "자신"
-PRINTL 효과를 선택해 주세요
-		CALL YN_CHOICE(듀얼리스트,"●몬스터를 특수 소환한다","●상대 몬스터의 공격력을 下げる")
+	PRINTL 효과를 선택해 주세요
+		CALL YN_CHOICE(듀얼리스트,"●몬스터를 특수 소환한다","●상대 몬스터의 공격력을 내린다")
 	ELSEIF 발동불가:0 == 1
 		RESULT = 1
 	ELSEIF 발동불가:1 == 1
@@ -266,11 +257,12 @@ PRINTL 효과를 선택해 주세요
 			효과範囲EX덱 = 1
 			효과条件カテゴリ = 마계극단
 			효과条件分割 = 펜듈럼
+			효과条件종류 = EX以外全般
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 
 			CALL FULLRESET
 			효과範囲마함 = 1
-효과条件名前 = 마계극단－팅클 리틀스타
+			효과条件名前 = 마계극단－트윙클 리틀스타
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1 && モンスター数(듀얼리스트) < 5
 				CALL FULLRESET
@@ -278,6 +270,7 @@ PRINTL 효과를 선택해 주세요
 				효과範囲EX덱 = 1
 				효과条件カテゴリ = 마계극단
 				효과条件分割 = 펜듈럼
+				효과条件종류 = EX以外全般
 				효과条件任意 = 1
 				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 			ENDIF
@@ -290,7 +283,7 @@ PRINTL 효과를 선택해 주세요
 			효과条件カテゴリ = 마계극단
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 			IF RESULT == 1
-				TRYCALLFORM CARD_{RESULT:1},"攻撃力"
+				TRYCALLFORM CARD_{RESULT:1}("攻撃力")
 				攻撃力修正 = RESULT
 				CALL FULLRESET
 				효과条件종류 = 10

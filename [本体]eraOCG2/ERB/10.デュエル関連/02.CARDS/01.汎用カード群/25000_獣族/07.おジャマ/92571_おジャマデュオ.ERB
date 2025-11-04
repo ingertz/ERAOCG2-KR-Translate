@@ -61,9 +61,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,192570,"",1)
 	SIF RESULT == 1
@@ -83,7 +82,7 @@ ELSEIF 종류 == 묘지起動
 	효과範囲덱 = 1
 	효과条件カテゴリ = 방해꾼
 	효과条件소환可 = 1
-	효과条件固名前起動 = 1
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT < 2

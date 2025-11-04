@@ -1,0 +1,250 @@
+; ==============================
+; 46452_魔羯邪姫 アシュタリア・インボルフィード・ラグランツェルミ
+; ==============================
+
+@CARDNAME_46452,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 魔羯邪姫 アシュタリア・インボルフィード・ラグランツェルミ
+	CASE "略称"
+		RESULTS = ボルグ
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46452(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 0
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46452(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②③の効果はそれぞれ１ターンに１度しか使用できない。
+
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：このカード以外の手札の「CoZ12」モンスター１体を相手に見せて発動できる。
+PRINTL このカードを手札から特殊召喚する。
+
+CALLFORM CARD_ABLE(2,召喚時,特殊召喚時)
+PRINTL ②：このカードが召喚・特殊召喚に成功した場合に発動できる。
+PRINTL 自分の墓地の「光導」カード１枚を手札に加える。
+PRINTL その後、自分フィールドに「CoZ12」モンスターが３体以上存在する場合、
+PRINTL 自分の墓地の「CoZ12」モンスター１体を対象として特殊召喚できる。
+
+CALLFORM CARD_ABLE(3,戦場起動)
+PRINTL ②：自分メインフェイズに発動できる。
+PRINTL 自分フィールドの「光導の創界神帝 レピィ・アーズ」１枚を選び、その上のコアカウンターを２つ取り除き、
+PRINTL 手札の「CoZ12」モンスター１体を召喚できる。
+PRINTL その後、ターン終了時まで自分は「光導」モンスターしか特殊召喚できない。
+RETURN 0
+
+
+@CARDCAN_46452(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件達成
+#DIM  DYNAMIC 公開ID
+#DIM  DYNAMIC 選択カード
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46452)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,46452)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,46452,"手札")
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = CoZ12
+	効果条件固ID   = 46452
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46452)
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = 光導
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 戦場起動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_3(決闘者,46452)
+		RETURN 0
+	SIF メインフェイズ != 1 || ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 2
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = CoZ12
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46452(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件達成
+#DIM DYNAMIC 体数
+#DIM  DYNAMIC 公開ID
+#DIM  DYNAMIC 選択カード
+
+; ① 手札起動：手札のCoZ12を見せ、このカードを手札からSS
+IF 種類 == 手札起動
+	; O/T用の登録（①の「１ターンに１度」）
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46452,1)
+
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = CoZ12
+	効果条件固ID = 46452
+	効果条件表示 = 0
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	CALL FULLRESET
+	効果範囲手札   = 1
+	効果条件種類   = モン全般
+	効果条件カテゴリ = CoZ12
+	効果条件表示   = 0
+	効果条件固ID   = 46452
+	効果条件複数   = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+
+	CALL CARD_SELECT(決闘者,RESULT)
+	公開ID = GETVAR(@"%対象者（CS）%_%参照先（CS）%:{選択カード（CS）}")
+	TRYCALLFORM CARD_UI(公開ID)
+	WAIT
+
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件固ID = 46452
+	CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	RETURN 0
+ENDIF
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46452,2)
+
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = 光導
+	効果条件行先フラグ = 手札行き
+	CALL CARD_ADD_BASIC(決闘者,"墓地",ゾーン,場所,1)
+
+	CALL FULLRESET
+	効果範囲戦場     = 1
+	効果条件種類     = モン全般
+	効果条件スーパーカテゴリ = CoZ12
+	効果条件元々     = 1
+	CALL CARD_CHECK_ADV(決闘者, 種類, ゾーン, 場所)
+	SIF RESULT >= 3
+	    RETURN 0
+
+	CALL FULLRESET
+	効果範囲墓地     = 1
+	効果条件種類     = モン全般
+	効果条件スーパーカテゴリ = CoZ12
+	効果条件召喚可   = 1
+	効果条件任意     = 1
+	CALL CARD_SP_SUMMON_ADV(決闘者, ゾーン, 場所)
+		RETURN 0
+ENDIF
+
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46452,3)
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 2
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-2)
+	CALL FULLRESET
+	CALL CARD_RESERV(決闘者, 46452, 短紋章予約)
+	CALL CARD_SS_RESTRICTION(決闘者,"光導")
+	RETURN 0
+ENDIF
+
+IF 種類 == 短紋章起動
+   CALL FULLRESET
+   効果範囲手札   = 1
+   効果条件種類   = モン全般
+   効果条件カテゴリ = CoZ12
+   CALL STATCHANGE_HAND(決闘者, "全体", 場所, "召可")
+   RETURN 0
+ENDIF
+
+RETURN 0

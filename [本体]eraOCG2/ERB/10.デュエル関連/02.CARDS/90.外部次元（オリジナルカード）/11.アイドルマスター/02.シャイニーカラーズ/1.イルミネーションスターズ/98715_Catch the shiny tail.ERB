@@ -1,0 +1,162 @@
+@CARDNAME_98715,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Catch the shiny tail
+	CASE "略称"
+		RESULTS = 빛의 끝
+	CASE "カテゴリ"
+		RESULTS:0 = 일루미네이션 스타즈
+		RESULTS:1 = 샤이니 컬러즈
+ENDSELECT
+
+@CARD_98715(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_98715(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_98715(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 １턴에 어느것인가 １개밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：자신 필드에 "일루미네이션 스타즈" 몬스터가 존재하는 경우에 발동할 수 있다。
+PRINTL 서로는 각각 자신 필드의 몬스터 １장을 패로 되돌린다。
+PRINTL 그 후、자신은 패 / 묘지에서 "일루미네이션 스타즈" 몬스터 １장을 특수 소환할 수 있다。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 묘지의 이 카드를 제외하고、묘지에서 "일루미네이션 스타즈" 몬스터 １장을 공격 표시로 특수 소환한다。
+PRINTL 이 효과를 발동하는 턴、자신은 "일루미네이션 스타즈" 몬스터밖에 특수 소환할 수 없다。
+
+
+@CARDCAN_98715(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,98715)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,98715)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,98715)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1	
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 일루미네이션 스타즈
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,98715)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,98715)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 일루미네이션 스타즈
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件固カテゴリ = 일루미네이션 스타즈
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_98715(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 손패起動효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,98715,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_DISPOSE(듀얼리스트,"필드",RESULT,손패行き)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			CALL CARD_CHOOSE_BASIC(対面者,"필드",ゾーン,場所)
+			IF RESULT != 9999
+				CALL CARD_DISPOSE(듀얼리스트,"필드",RESULT,손패行き)
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲묘지 = 1
+				효과条件カテゴリ = 일루미네이션 스타즈
+				효과条件任意 = 1
+				CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,98715,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 일루미네이션 스타즈
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"攻撃표시")
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"일루미네이션 스타즈")
+	ENDIF
+ENDIF
+

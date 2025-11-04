@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 파괴륜
+		RESULTS = 파괴륜
 	CASE "略称"
-RESULTS = 파괴륜
+		RESULTS = 파괴륜
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -59,7 +58,8 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,91070)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1

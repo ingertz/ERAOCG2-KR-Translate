@@ -32,7 +32,7 @@ RETURN 0
 @CARD_EXPLANATION_99682(종류)
 #DIM DYNAMIC 종류
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  카드는 １턴에 １장밖에 발동할 수 없다。
+PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없다。
 CALL CARD_ABLE(1,마함起動,손패起動,フリー誘発)
 PRINTL ①：상대플레이어、또는 상대필드의 몬스터를 １장 고르고 발동할 수 있다。
 PRINT 고른 대상에게
@@ -64,13 +64,18 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-
 	SIF 발동済_1(듀얼리스트,99682)
 		RETURN 0
-
+	IF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "손패"
+		SIF GETVAR(@"%듀얼리스트%_手_発可:場所") == 0
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
 	RETURN 1
 ENDIF
 

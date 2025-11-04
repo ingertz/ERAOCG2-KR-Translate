@@ -47,13 +47,13 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(1,소환時)
 PRINTL ①：이 카드가 소환에 성공했을 때에 발동할 수 있다.
-PRINTL 자신의 묘지에서 '함정 속으로' 몬스터 1장을 수비 표시로 특수 소환한다.
+PRINTL 자신의 묘지에서 "함정 속으로" 몬스터 1장을 수비 표시로 특수 소환한다.
 CALLFORM CARD_ABLE(2,특수소환時)
 PRINTL ②：이 카드가 특수 소환에 성공했을 경우에 발동할 수 있다.
-PRINTL 자신의 묘지에서 '함정 속으로' 몬스터 1장을 마법 & 함정 존에 앞면 표시로 세트한다.
+PRINTL 자신의 묘지에서 "함정 속으로" 몬스터 1장을 마법 & 함정 존에 앞면 표시로 세트한다.
 CALLFORM CARD_ABLE(0,지속효과,攻守変動)
 PRINTL ③：이 카드는 함정내성을 갖는다
 PRINTL 자신 필드의 「웨트 홀-티오」를 제외한 "충혹마" 몬스터의 공격력을 300 올린다.
@@ -93,7 +93,8 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -199,7 +200,7 @@ ELSEIF 종류 == ターン終了時強制
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
 			SIF !MATCH(RESULTS, "충혹마")
 				CONTINUE
 		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",カウンタ)

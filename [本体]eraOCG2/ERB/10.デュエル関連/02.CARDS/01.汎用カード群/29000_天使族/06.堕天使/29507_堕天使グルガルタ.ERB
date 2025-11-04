@@ -1,0 +1,180 @@
+﻿@CARDNAME_29507,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 타락천사 굴갈타
+	CASE "略称"
+		RESULTS = 굴갈타
+	CASE "カテゴリ"
+		RESULTS:0 = 타락천사
+ENDSELECT
+
+
+@CARD_29507(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 800
+	CASE "生成カード"
+		RETURN 129507
+	CASE "특수制限"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_29507(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신は「타락천사 굴갈타」を１ターンに１度しか특수소환できず、
+PRINTL その②の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(0,소환時,특수소환時)
+PRINTL ①：このカードが특수소환した場合に발동できる。
+PRINTL 자신フィールドに「타락천사トークン」２体を특수소환する。
+PRINTL この효과の발동後、ターン終了時まで자신は천사족モンスターしか특수소환できない。
+CALLFORM CARD_ABLE(2,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지,X素材時효과)
+PRINTL ②：このカードが묘지へ送られた場合に발동できる。
+PRINTL 덱から「타락천사 굴갈타」以外の「타락천사」カードか「禁じられた」速攻마법カード１枚を손패に加える。
+
+
+@CARDCAN_29507(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29507)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 특수소환時
+	SIF モンスター数(듀얼리스트) >= 4
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,129507,"")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF GROUPMATCH(종류,필드→묘지,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지,X素材時효과)
+	SIF 발동済_2(듀얼리스트,29507)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ:0 = 타락천사
+	효과条件カテゴリ:1 = 禁じられた
+	효과条件固名前 = 타락천사 굴갈타
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_29507(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29507)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,129507)
+		CALL CARD_GENERATE(듀얼리스트,129507)
+		SS소환可能종족 = 천사족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF GROUPMATCH(종류,필드→묘지,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지,X素材時효과)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29507,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ:0 = 타락천사
+		효과条件カテゴリ:1 = 禁じられた
+		효과条件固名前 = 타락천사 굴갈타
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+;─────────────────────────────────────────────────────────────────────────
+
+@CARDNAME_129507,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 타락천사 토큰
+	CASE "略称"
+		RESULTS = 타락천사 토큰
+	CASE "カテゴリ"
+		RESULTS:0 = 타락천사
+ENDSELECT
+
+
+@CARD_129507(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_129507(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+PRINTL 「타락천사 굴갈타」의 효과로 특수 소환된다。
+PRINTL 
+PRINTL 
+
+
+@CARDCAN_129507(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+RETURN 0

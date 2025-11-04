@@ -1,0 +1,218 @@
+﻿@CARDNAME_50501,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 마건소룡－안드라비무스
+	CASE "略称"
+		RESULTS = 안드라비무스
+	CASE "カテゴリ"
+		RESULTS:0 = 마건
+ENDSELECT
+
+
+@CARD_50501(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 雄性
+	CASE "連動ID"
+		RETURN 1646
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_50501(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "마건" 효과 몬스터 ＋ 일반 몬스터
+PRINTL 이 카드명의 ③의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(0,EX소환時)
+PRINTL ①：이 카드의 융합 소환 성공 시에 상대는 효과를 발동할 수 없다.
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：1턴에 1번, 자신 묘지의 일반 몬스터 또는 "마건" 몬스터 1장을 대상으로 발동할 수 있다.
+PRINTL 그 몬스터와 같은 속성을 가진 상대 필드의 몬스터를 전부 파괴한다.
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：자신 묘지의 임의의 몬스터와 같은 속성을 가진,
+PRINTL 상대 몬스터가 전투 / 효과로 파괴되었을 경우에 발동할 수 있다.
+PRINTL 자신은 덱에서 1장 드로우한다.
+
+
+@CARDSUMMON_50501(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 마건
+	素材条件종류 = 효과全般
+ELSEIF EX参照 >= 10
+	素材条件종류 = 通常モン
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,50501) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_50501(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50501)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時強制
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	FOR カウンタ,1,8
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件スーパーカテゴリ = 마건
+		효과条件スーパー속성 = カウンタ
+		효과条件종류 = 通常モン
+		효과条件속성 = カウンタ
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件속성 = カウンタ
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		条件달성 = 1
+	NEXT
+	SIF 条件달성 == 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,50501)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	FOR カウンタ,1,8
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = カウンタ
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		CALL FULLRESET
+		효과条件속성 = カウンタ
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般",1)
+		SIF RESULT != 1
+			CONTINUE
+		条件달성 = 1
+	NEXT
+	SIF 条件달성 == 0
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_50501(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성,8
+#DIM DYNAMIC 選択カード속성
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL SET_PLAYER_INFO(듀얼리스트,"특수阻害中止", 3)
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50501,10)
+	IF RESULT == 0
+		FOR カウンタ,1,8
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件スーパーカテゴリ = 마건
+			효과条件スーパー속성 = カウンタ
+			효과条件종류 = 通常モン
+			효과条件속성 = カウンタ
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件속성 = カウンタ
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			条件달성:カウンタ = 1
+		NEXT
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = 通常モン
+		효과条件スーパーカテゴリ = 마건
+		효과条件속성:0 = 0
+		FOR カウンタ,1,8
+			IF 条件달성:カウンタ == 1
+				효과条件속성:カウンタ = カウンタ
+				효과条件スーパー속성:カウンタ = カウンタ
+			ENDIF
+		NEXT
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			TRYCALLFORM CARD_{RESULT:99}("속성")
+			選択カード속성 = RESULT
+			CALL FULLRESET
+			효과条件속성 = 選択カード속성
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50501,3)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ENDIF

@@ -1,0 +1,180 @@
+﻿@CARDNAME_2003,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 섬도희－아자레아
+	CASE "略称"
+		RESULTS = 섬도희－아자레아
+	CASE "カテゴリ"
+		RESULTS:0 = 섬도희
+		RESULTS:1 = 섬도
+ENDSELECT
+
+
+@CARD_2003(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1500
+	CASE "특수불가"
+		RETURN 1
+	CASE "특수制限"
+		RETURN 1
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+
+RETURN 0
+
+
+@CARD_EXPLANATION_2003(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 빛 / 어둠 속성 몬스터 2장
+PRINTL 이 카드는 L소환으로밖에 특수 소환할 수 없고, 자신은 "섬도희－아자레아"를 1턴에 1번밖에 특수 소환할 수 없다.
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ①：이 카드가 특수 소환되었을 경우, 상대 필드의 카드 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 그 카드를 파괴한다.
+PRINTL 그 후, 자신 묘지의 마법 카드가 3장 이하인 경우, 이 카드를 묘지로 보낸다.
+CALLFORM CARD_ABLE(10,攻撃時誘発)
+PRINTL ②：1턴에 1번, 이 카드가 상대 몬스터와 전투를 실행하는 경우,
+PRINTL 자신 묘지에서 마법 카드 1장을 제외하고 발동할 수 있다.
+PRINTL 그 상대 몬스터를 파괴한다.
+
+
+@CARDSUMMON_2003(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+素材条件속성:0 = 빛속성
+素材条件속성:1 = 어둠속성
+
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,2003) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARDCAN_2003(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2003)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,2003)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2003(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 破壊カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2003,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = 마법全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT <= 3
+			CALL CARD_DISPOSE(듀얼리스트,"필드",場所)
+	ENDIF
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2003,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종류 = 마법全般
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			破壊カード = 戦闘場所(듀얼리스트,1)
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",破壊カード,"묘지")
+		ENDIF
+	ENDIF
+ENDIF
+
+

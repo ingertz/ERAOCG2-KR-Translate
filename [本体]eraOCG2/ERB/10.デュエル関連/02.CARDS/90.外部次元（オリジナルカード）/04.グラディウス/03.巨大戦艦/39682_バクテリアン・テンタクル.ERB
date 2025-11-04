@@ -1,0 +1,187 @@
+﻿@CARDNAME_39682,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 박테리안 텐타클
+	CASE "略称"
+		RESULTS = 박테리안 촉수
+	CASE "カテゴリ"
+		RESULTS:0 = 박테리안
+		RESULTS:1 = 촉수
+		RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_39682(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 2000
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_39682(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ①: 이 카드가 마법 & 함정 존에 존재할 경우, 상대 몬스터의 공격 선언 시에 발동할 수 있다.
+PRINTL 주사위를 1개 굴려, 나온 눈이 2 이하였을 경우, 그 공격을 무효로 한다.
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ②: 몬스터 존의 이 카드가 암컷 몬스터와 전투를 실행할 경우에 발동할 수 있다.
+PRINTL "박테리안 텐타클"을 전투를 실행하는 상대 몬스터와 동명의 몬스터에 장착한다.
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ③: 자신 필드에 "박테리안 텐타클"이 2체 이상 존재할 경우,
+PRINTL 필드의 모든 몬스터의 공격력 / 수비력은 300 내린다.
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_39682(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39682)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻撃時誘発
+	IF ゾーン == "필드"
+		SIF 마함数(듀얼리스트) >= 5
+			RETURN 0
+		SIF 戦闘場所(듀얼리스트) != 場所
+			RETURN 0
+		SIF 戦闘場所(듀얼리스트,1) == 5
+			RETURN 0
+		TRYCALLFORM CARD_{戦闘カードID(듀얼리스트,1)}("성별")
+		SIF RESULT != 牝性
+			RETURN 0
+		RETURN 1
+	ELSEIF ゾーン == "마함"
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+			RETURN 0
+		SIF ターンプレイヤー == 듀얼리스트
+			RETURN 0
+		RETURN 1
+	ENDIF
+
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 装備先 == 5
+		RETURN 0
+	SIF GETVAR(@"%装備者%_필드:装備先") == -1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드" && ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前 = 박테리안 촉수
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_39682(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 装備カード
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39682)
+	IF RESULT == 0
+		IF ゾーン == "필드"
+			選択カード = 戦闘場所(듀얼리스트,1)
+			装備カード = 戦闘場所(듀얼리스트)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件ID = GETVAR(@"%対面者%_필드:選択カード")
+			CALL CARD_EQUIP_ADV(듀얼리스트,装備カード,"필드")
+			TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:選択カード")}("名前")
+			PRINTFORMW %RESULTS%의 몸에 분열한 촉수가 휘감겼다！
+
+		ELSEIF ゾーン == "마함"
+			CALL DICE_ROLL(듀얼리스트,1)
+			IF RESULT <= 2
+				選択カード = 戦闘場所(듀얼리스트,1)
+				TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:選択カード")}("名前")
+				PRINTFORMW %RESULTS%는 가는 길을 촉수에게 가로막혔다！
+				CALL EVADE_ATTACK(듀얼리스트)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == リアクション효과
+	選択カード = GETVAR(@"%対面者%_필드:装備先")
+	CALL CARD_EROTICS(選択カード)
+	IF RESULT != -1
+		조교대상 = RESULT
+		IF GETVAR(@"%対面者%_MZ_種:装備先") == 기계족
+			PRINTFORMW 촉수가 %CALLNAME:조교대상%의 몸을 파괴할 기세로 기어다니고 있다。
+			CALL EROTIC_MOVE("全身애무",조교대상,,200)
+		ELSE
+			PRINTFORMW 촉수가 %CALLNAME:조교대상%의 몸을 기어다니고 있다.
+			CALL EROTIC_MOVE("全身애무",조교대상)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,-300,-300)
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-300,-300)
+ENDIF
+

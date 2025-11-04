@@ -1,0 +1,663 @@
+﻿@CARDNAME_29946,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = イズモ
+	CASE "略称"
+		RESULTS = イズモ
+	CASE "カテゴリ"
+		RESULTS:0 = オラクル
+		RESULTS:1 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = ゴッド
+		RESULTS:6 = 中央G・リンク
+	CASE "マキシマム"
+		RESULTS = 中央G・リンク
+ENDSELECT
+
+
+@CARD_29946(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+	CASE "性別"
+		RETURN 雄性
+	CASE "レア度"
+		RETURN SPR
+	CASE "生成カード"
+		RESULT:3 = 229947
+		RESULT:2 = 229945
+		RESULT:1 = 129947
+		RETURN 129945
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_29946(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動,戦場起動)
+PRINTL ①：【G・MAXIMUM！！】「オラクル」モンスターまたは「ゴッド・ノヴァ」モンスター×２
+PRINTL 手札・フィールドに存在するほかの「オラクル」モンスターまたは「ゴッド・ノヴァ」モンスター２枚を書き換え、マキシマム召喚を行う。
+PRINTL マキシマム召喚は無効化されない。
+
+
+@CARDCAN_29946(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,29946)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動 || 種類 == 戦場起動
+	SIF 発動済_1(決闘者,29946)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果範囲戦場 = 1
+	効果条件他所 = 1
+	効果条件カテゴリ:0 = オラクル
+	効果条件カテゴリ:1 = ゴッド・ノヴァ
+	効果条件CNT = 1	
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	SIF GETVAR(@"%決闘者%_戦場:2") != 29946
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:1")}("カテゴリ")
+	SIF !MATCH(RESULTS,"左G・リンク")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:3")}("カテゴリ")
+	SIF !MATCH(RESULTS,"右G・リンク")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_29946(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC めくり数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 手札起動 || 種類 == 戦場起動
+	効果無効不能 = 1
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,29946,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果範囲戦場 = 1
+		効果条件他所 = 1
+		効果条件カテゴリ:0 = オラクル
+		効果条件カテゴリ:1 = ゴッド・ノヴァ
+		効果条件複数 = 2
+		効果条件行先フラグ = 消滅行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL CARD_DISPOSE(決闘者,ゾーン,場所,消滅行き)
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%決闘者%_戦場:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(決闘者,"戦場",カウンタ)
+			NEXT
+			CALL FULLRESET
+			CALL CARD_GENERATE(決闘者,29946,"攻撃表示")
+			IF 決闘者 == "自分"
+				PRINTL どのモンスターを特殊召喚しますか？
+				PRINTL
+				PRINTL [0] - 双魔左神ディーヴォ
+				PRINTL [1] - 妖精左神パールジャム
+				BINPUT
+			ELSE
+				RESULT = RAND:2
+			ENDIF
+
+			IF RESULT == 0
+				CALL FULLRESET
+				CALL CARD_GENERATE(決闘者,129945,"守備表示")
+			ELSEIF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_GENERATE(決闘者,229945,"守備表示")
+			ENDIF
+
+			IF 決闘者 == "自分"
+				PRINTL どのモンスターを特殊召喚しますか？
+				PRINTL
+				PRINTL [0] - 双天右神クラフト・ヴェルク
+				PRINTL [1] - 戦攻右神マッシヴ・アタック
+				BINPUT
+			ELSE
+				RESULT = RAND:2
+			ENDIF
+
+			IF RESULT == 0
+				CALL FULLRESET
+				CALL CARD_GENERATE(決闘者,129947,"守備表示")
+			ELSEIF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_GENERATE(決闘者,229947,"守備表示")
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_129945,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 双魔左神ディーヴォ
+	CASE "略称"
+		RESULTS = ディーヴォ
+	CASE "カテゴリ"
+		RESULTS:0 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = ゴッド
+		RESULTS:6 = 左G・リンク
+	CASE "マキシマム"
+		RESULTS = 左G・リンク
+ENDSELECT
+
+
+@CARD_129945(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "パーツ"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_129945(種類)
+#DIM DYNAMIC 種類
+
+PRINTL （マキシマム状態のこのカードは攻撃できない）
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,戦場起動)
+PRINTL ①：自分メインフェイズに発動できる。
+PRINTL 相手フィールドのモンスター１体をデッキに戻す。
+PRINTL 
+
+@CARDCAN_129945(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,129945)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 攻守変動 || 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_1(決闘者,129945)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件除去種 = デッキ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	SIF GETVAR(@"%決闘者%_戦場:1") != 129945
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"中央G・リンク")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:3")}("カテゴリ")
+	SIF !MATCH(RESULTS,"右G・リンク")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_129945(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,129945,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"デッキ")
+	ENDIF
+ELSEIF 種類 == マキシマム条件
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"戦無")
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_129947,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 双天右神クラフト・ヴェルク
+	CASE "略称"
+		RESULTS = クラフトヴェルク
+	CASE "カテゴリ"
+		RESULTS:0 = コマンド
+		RESULTS:1 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = ゴッド
+		RESULTS:6 = 右G・リンク
+	CASE "マキシマム"
+		RESULTS = 右G・リンク
+ENDSELECT
+
+
+@CARD_129947(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "パーツ"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_129947(種類)
+#DIM DYNAMIC 種類
+
+PRINTL （マキシマム状態のこのカードは攻撃できない）
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,戦場起動)
+PRINTL ①：自分メインフェイズに発動できる。
+PRINTL デッキから１枚ドローし、手札を１枚捨てる。
+PRINTL その後、自分は２０００LP回復する。
+
+@CARDCAN_129947(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,129947)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 攻守変動 || 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_1(決闘者,129947)
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	SIF GETVAR(@"%決闘者%_戦場:3") != 129947
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:1")}("カテゴリ")
+	SIF !MATCH(RESULTS,"左G・リンク")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"中央G・リンク")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_129947(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,129947,1)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(決闘者,1)	
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(決闘者,"手札",ゾーン,場所)
+		CALL LIFE_CHANGE(決闘者,"増加","効果",2000)
+	ENDIF
+ELSEIF 種類 == マキシマム条件
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"戦無")
+ENDIF
+
+
+
+
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_229945,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 妖精左神パールジャム
+	CASE "略称"
+		RESULTS = パールジャム
+	CASE "カテゴリ"
+		RESULTS:0 = スノーフェアリー
+		RESULTS:1 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = ゴッド
+		RESULTS:6 = 左G・リンク
+	CASE "マキシマム"
+		RESULTS = 左G・リンク
+ENDSELECT
+
+
+@CARD_229945(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "パーツ"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_229945(種類)
+#DIM DYNAMIC 種類
+
+PRINTL （マキシマム状態のこのカードは攻撃できない）
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。
+PRINTL デッキからレベル４以下の「オラクル」モンスター１体を特殊召喚する。
+PRINTL 
+
+@CARDCAN_229945(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,229945)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 攻守変動 || 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,229945)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = オラクル
+	CALLFORM 効果条件レベル_ADV(4,"以下")
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	SIF GETVAR(@"%決闘者%_戦場:1") != 229945
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"中央G・リンク")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:3")}("カテゴリ")
+	SIF !MATCH(RESULTS,"右G・リンク")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_229945(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,229945,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = オラクル
+		CALL 効果条件レベル_ADV(4,"以下")
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == マキシマム条件
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"戦無")
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_229947,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 戦攻右神マッシヴ・アタック
+	CASE "略称"
+		RESULTS = マッシヴアタック
+	CASE "カテゴリ"
+		RESULTS:0 = アースイーター
+		RESULTS:1 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = ゴッド
+		RESULTS:6 = 右G・リンク
+	CASE "マキシマム"
+		RESULTS = 右G・リンク
+ENDSELECT
+
+
+@CARD_229947(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RETURN 元素霊族
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "パーツ"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_229947(種類)
+#DIM DYNAMIC 種類
+
+PRINTL （マキシマム状態のこのカードは攻撃できない）
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。
+PRINTL デッキから１枚ドローする。
+PRINTL 
+
+@CARDCAN_229947(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,229947)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 攻守変動 || 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,229947)
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	SIF GETVAR(@"%決闘者%_戦場:3") != 229947
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:1")}("カテゴリ")
+	SIF !MATCH(RESULTS,"左G・リンク")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_戦場:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"中央G・リンク")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_229947(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,229947,1)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(決闘者,1)
+	ENDIF
+ELSEIF 種類 == マキシマム条件
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"戦無")
+ENDIF
+

@@ -40,8 +40,13 @@ RETURN 0
 @IRAI_ACT_212(参照)
 #DIM DYNAMIC 参照
 #DIM DYNAMIC 상대덱
+#DIM DYNAMIC 対戦상대
 #DIM DYNAMIC 조교대상
 #DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC 듀얼리스트収納,9999
+#DIM DYNAMIC 듀얼리스트数
+
 PRINTFORMW 뒷골목 한구석에 있는 듀얼장에 도착했다.
 PRINTFORMW
 
@@ -94,22 +99,61 @@ ENDIF
 
 PRINTFORMW 리스크는 있지만 리턴도 크다.
 PRINTFORMW 운이 좋다면 정령이 깃든 카드를 손에 넣을 수 있을지도 모른다.
-PRINTFORMW 대상 상대를 찾자.
+PRINTFORMW 대전상대를 찾자.
 PRINTFORMW …………
-PRINTFORML …………
+PRINTFORMW …………
 PRINTFORMW 대상 상대가 발견됐다!
+PRINTL
+
+;悪人以上で確率でネームド登場
+IF 依頼_完了횟수:212 != 0 && RAND:6 == 0 && FLAG:악랄치 > 65
+	VARSET 듀얼리스트数
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF TALENT:캐릭터_ID:듀얼리스트 != 1
+			CONTINUE
+		SIF TALENT:캐릭터_ID:연령 <= -1 && TIME < KANTAN_TIME(15,00)
+			CONTINUE
+		CALL CHARA_MOVEMENT_GOHOME_TEST(캐릭터_ID)
+		SIF TALENT:캐릭터_ID:연모 != 1 && RESULT == 1
+			CONTINUE
+		듀얼리스트収納:듀얼리스트数 = 캐릭터_ID
+		듀얼리스트数 ++
+	NEXT
+	캐릭터_ID = 듀얼리스트収納:(RAND:듀얼리스트数)
+	CALL PRINT_STATE(캐릭터_ID)
+	CALL EVENT_MOVE(캐릭터_ID,場所_裏通り)
+	対戦상대 = 캐릭터_ID
+	PRINTFORMW
+	PRINTFORMW 아무래도 %CALLNAME:MASTER%의 평판을 들은 %CALLNAME:캐릭터_ID%가 %TEXTR("토벌하러/힘을 확인하러")%온것같다。
+	CALL ENEMYDECK_CHECK(캐릭터_ID)
+	IF RESULT == 0
+		CALL CHOOSE_DECK_RANDOM
+		依頼_進行보존:212 = RESULT
+	ELSE
+		依頼_進行보존:212 = RESULT
+	ENDIF
+;確率でERA덱
+ELSEIF RAND:5 == 0
+	SETCOLOR C_RED
+	PRINTFORMW ……！！
+	PRINTFORMW 상대의 덱에서 E.R.A 카드의 기운을 느낀다…
+	RESETCOLOR
+	;仮설치
+	CALL CHOOSE_ERA_DECK_RANDOM
+	依頼_進行보존:212 = RESULT
+;確率でレート戦덱
+ELSEIF RAND:4 == 0
+	CALL CHOOSE_DECK_ONLINE_RATEMATCH
+	依頼_進行보존:212 = RESULT
+ELSE
+	CALL CHOOSE_DECK_RANDOM
+	依頼_進行보존:212 = RESULT
+ENDIF
+
+PRINTL
 PRINTFORMW 서로 안티 룰을 확인한 후에 듀얼이 시작된다…
 PRINTFORMW 질 생각은 없다고는 해도, 사용할 덱은 잘 생각하고 선택해야 할 것이다.
 
-
-;確率でレート戦덱
-IF RAND:6 == 0
-	CALL CHOOSE_DECK_ONLINE_RATEMATCH
-ELSE
-	CALL CHOOSE_DECK_RANDOM
-ENDIF
-
-依頼_進行보존:212 = RESULT
 
 $MYDECK_INPUT
 CALL SELECTDECK
@@ -317,10 +361,10 @@ ELSEIF 승리플래그 == 0
 			NEXT
 			候補カード_ID = GETVAR(@"자신_덱:(RAND:カウンタ)")
 		ENDIF
-		TRYCALLFORM CARD_{候補カード_ID}, "성별"	
+		TRYCALLFORM CARD_{候補カード_ID}("성별")	
 		SIF MATCH(RESULT, 牝性)
 			優先度 += 2
-		TRYCALLFORM CARD_{候補カード_ID}, "レア度"	
+		TRYCALLFORM CARD_{候補カード_ID}("レア度")	
 		IF MATCH(RESULT, ULR)
 			優先度 += 2	
 		ELSEIF MATCH(RESULT, SPR)
@@ -337,7 +381,7 @@ ELSEIF 승리플래그 == 0
 	
 	IF ITEM:選択カード_ID > 0
 		ITEM:選択カード_ID -= 1
-		TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+		TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 		SETCOLOR C_RED
 		PRINTFORMW 《%RESULTS%》을 잃었다……
 		RESETCOLOR

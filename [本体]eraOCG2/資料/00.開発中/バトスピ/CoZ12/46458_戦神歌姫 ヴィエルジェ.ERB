@@ -1,0 +1,230 @@
+; ============================================================
+; 46458_戦神歌姫 ヴィエルジェ
+; ============================================================
+
+@CARDNAME_46458,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 戦神歌姫 ヴィエルジェ
+	CASE "略称"
+		RESULTS = ヴィエルジェ
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46458(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 2100
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46458(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②③の効果はそれぞれ１ターンに１度しか使用できず、
+PRINTL ③の効果は１ターンに２度まで使用できる。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：自分メインフェイズに発動できる。
+PRINTL 自分フィールドの「光導の創界神帝 レピィ・アーズ」１枚を選び、その上のコアカウンターを２つ取り除く。
+PRINTL その後、このカードを手札から特殊召喚する。
+CALLFORM CARD_ABLE(2,召喚時,特殊召喚時)
+PRINTL ②：このカードが召喚・特殊召喚に成功した場合に発動できる。
+PRINTL 自分のデッキの上からカードを２枚めくる。
+PRINTL その中の「CoZ12」モンスターをすべて特殊召喚し、残りのカードを手札に加える。
+CALLFORM CARD_ABLE(3,効果後誘発)
+PRINTL ③：このカードがモンスターゾーンに存在し、
+PRINTL 自分フィールドの「光導」カードが効果で墓地へ送られた場合に発動できる。
+PRINTL 墓地の「光導」カードを１枚選んで手札に加える。
+RETURN 0
+
+
+@CARDCAN_46458(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_SS_CHECK(決闘者,46458,"手札")
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF メインフェイズ != 1 || ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 発動済_1(決闘者,46458)
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 2
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+
+	CALL CARD_SS_CHECK(決闘者,46458,"手札")
+	SIF RESULT == 1
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_2(決闘者,46458)
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 現山札数(決闘者) < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 効果後誘発
+    SIF ゾーン != "戦場"
+        RETURN 0
+    SIF GETVAR(@"%決闘者%_MZ_T1汎数:場所") >= 2
+        RETURN 0
+    CALL FULLRESET
+    効果条件カテゴリ = 光導
+	 CALL CARD_CHECK_FIN_DATA(決闘者,"効果墓送")
+    SIF RESULT != 1
+        RETURN 0
+    CALL FULLRESET
+    効果範囲墓地 = 1
+    効果条件カテゴリ = 光導
+    効果条件CNT = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46458(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC ループ
+#DIM  DYNAMIC 選択カードID
+#DIM  DYNAMIC 山枚数_前
+#DIM  DYNAMIC 山枚数_後
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46458,1)
+
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 2
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+
+	CALL CARD_SELECT(決闘者,RESULT)
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-2)
+
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件固ID = 46458
+	CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	RETURN 0
+ENDIF
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46458,2)
+
+    IF 現山札数(決闘者) > 0
+        選択カードID = GETVAR(@"%決闘者%_デッキ:0")
+        山枚数_前 = 現山札数(決闘者)
+
+        CALL FULLRESET
+        効果範囲デッキ     = 1
+        効果条件固ID       = 選択カードID
+        効果条件種類       = モン全般
+        効果条件スーパーカテゴリ   = CoZ12
+        効果条件召喚可     = 1
+        効果条件山切り無し = 1
+        CALL CARD_SP_SUMMON_ADV(決闘者, "デッキ", 場所, "", 1)
+
+        山枚数_後 = 現山札数(決闘者)
+        IF 山枚数_後 == 山枚数_前
+            CALL FULLRESET
+            効果範囲デッキ     = 1
+            効果条件山切り無し = 1
+            効果条件行先フラグ = 手札行き
+            CALL CARD_ADD_BASIC(決闘者, "デッキ", ゾーン, 場所, 1)
+        ENDIF
+    ENDIF
+
+    ; —— 2枚目 ——（同処理）
+    IF 現山札数(決闘者) > 0
+        選択カードID = GETVAR(@"%決闘者%_デッキ:0")
+        山枚数_前 = 現山札数(決闘者)
+
+        CALL FULLRESET
+        効果範囲デッキ     = 1
+        効果条件固ID       = 選択カードID
+        効果条件種類       = モン全般
+        効果条件スーパーカテゴリ   = CoZ12
+        効果条件召喚可     = 1
+        効果条件山切り無し = 1
+        CALL CARD_SP_SUMMON_ADV(決闘者, "デッキ", 場所, "", 1)
+
+        山枚数_後 = 現山札数(決闘者)
+        IF 山枚数_後 == 山枚数_前
+            CALL FULLRESET
+            効果範囲デッキ     = 1
+            効果条件山切り無し = 1
+            効果条件行先フラグ = 手札行き
+            CALL CARD_ADD_BASIC(決闘者, "デッキ", ゾーン, 場所, 1)
+        ENDIF
+    ENDIF
+
+    RETURN 0
+ENDIF
+
+IF 種類 == 効果後誘発
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46458,30)
+    ; 墓地の「光導」から１枚選んで手札へ
+    CALL FULLRESET
+    効果範囲墓地       = 1
+    効果条件カテゴリ   = 光導
+    効果条件複数       = 1
+    効果条件行先フラグ = 手札行き
+    CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+    RETURN 0
+ENDIF
+
+RETURN 0

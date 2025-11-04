@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 패왕흑룡 오드아이즈 리벨리온 드래곤
+		RESULTS = 패왕흑룡 오드아이즈 리벨리온 드래곤
 	CASE "略称"
-RESULTS = 패왕흑룡 ORD
+		RESULTS = 패왕흑룡 ORD
 	CASE "カテゴリ"
-RESULTS:0 = 오드아이즈
+		RESULTS:0 = 오드아이즈
 ENDSELECT
 
 
@@ -69,8 +69,7 @@ PRINTL 덱에서 P 몬스터 1장을 고르고, 자신의 마법 / 함정 존에
 CALL TEXT_DECORATION("P_MAGIC_2")
 
 PRINTL 드래곤족 레벨 7 몬스터 x 2
-PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
-CALLFORM CARD_ABLE(1,EX덱起動)
+CALLFORM CARD_ABLE(0,EX덱起動)
 PRINTL ①: 이 카드는 자신 필드의 드래곤족 P 몬스터 1장을 릴리스하는 것으로,
 PRINTL P 이외의 드래곤족 엑시즈 몬스터 위에 겹쳐서 엑시즈 소환할 수 있다.
 PRINTL 이렇게 엑시즈 소환에 성공했을 경우, 상대 필드의 레벨 7 이하의 몬스터를 전부 파괴하고, 그 공격력의 합계만큼의 데미지를 상대에게 준다.
@@ -90,10 +89,10 @@ PRINTL 이 카드를 자신의 P 존에 놓는다.
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 必要カード
+
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50865)
 SIF RESULT == 1
 	RETURN 0
-
 
 IF 종류 == 마함起動
 	SIF 발동済_1(듀얼리스트,50865)
@@ -209,7 +208,7 @@ ELSEIF 종류 == EX덱起動
 			효과条件표시 = 1
 			효과추가종류 = 効追無効
 			CALL 효과条件レベル_ADV(7, "以下")
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"묘지")
 		ENDIF
 	ENDIF
 
@@ -224,7 +223,7 @@ ELSEIF 종류 == 戦破壊→묘지
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲EX덱 = 1
-효과条件名前 = 패왕흑룡 오드아이즈
+		효과条件名前 = 패왕흑룡 오드아이즈 리벨리온 드래곤
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
 	ENDIF
 ENDIF

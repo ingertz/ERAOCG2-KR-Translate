@@ -1,0 +1,340 @@
+﻿@CARDNAME_4525,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 백로성의 주인 오사카베히메
+	CASE "略称"
+		RESULTS = 오사카베히메
+	CASE "要塞名"
+		RESULTS = 백로성
+	CASE "カテゴリ"
+		RESULTS:0 = 포트리스
+		RESULTS:1 = 영령
+		RESULTS:2 = FATE
+ENDSELECT
+
+@CARD_4525(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 7
+	CASE "コスト"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 3200
+	CASE "生成カード"
+		RETURN 104525
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_4525(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+RETURN 0
+
+@CARD_EXPLANATION_4525(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 『초차원』에 의해 강림.
+PRINTL (이 카드는 카드의 효과로만 EX덱에서 필드에 특수 소환 마법 & 함정 존에 놓을 수 있다)
+CALL TEXT_DECORATION("D_HEART_F")
+PRINTL 포트리스 측 《백로성》 코스트: 5
+CALLFORM CARD_ABLE(0,ターン開始時強制)
+PRINTL ①: 서로의 스탠바이 페이즈에 발동한다.
+PRINTL 자신은 1000LP 회복한다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②: 이 카드는 파괴 내성을 가진다.
+CALLFORM CARD_ABLE(0,ターン終了時)
+PRINTL ③: 자신의 LP가 15000 이상일 경우, 서로의 엔드 페이즈에 발동할 수 있다.
+PRINTL 이 카드를 몬스터로서 특수 소환한다.
+CALL TEXT_DECORATION("D_HEART_2")
+
+
+
+@CARDCAN_4525(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4525)
+SIF RESULT == 1
+	RETURN 0
+;F
+IF 종류 == ターン開始時強制
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+;F&M
+ELSEIF 종류 == 지속효과
+	SIF !GROUPMATCH(ゾーン, "마함")
+		RETURN 0
+	RETURN 1
+;F
+ELSEIF 종류 == ターン終了時
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") < 15000
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4525,"마함")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4525(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+
+IF 종류 == ターン開始時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4525)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
+	ENDIF
+ELSEIF 종류 == 지속효과
+		CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
+
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4525)
+	IF RESULT == 0
+		PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+		SETCOLOR C_YELLOW
+		PRINTL
+		PRINTFORML 「백로의 성、사방을 지키는 청정결계。
+		PRINTFORML 　　　이곳 굼겨 모으는 타카츠토리、곧 나는 팔천당。
+		PRINTFORML 　　　　　백귀야행의 오사카베히메、천대의 세월 팔천대의 세월 반짝이나니！」
+		PRINTL
+		CUSTOMDRAWLINE ―
+		RESETCOLOR
+		WAIT
+		CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,104525)
+		CALL RESETCONDITION
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+
+
+
+@CARDNAME_104525,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 백로성의 주인 오사카베히메
+	CASE "略称"
+		RESULTS = 오사카베히메
+	CASE "要塞名"
+		RESULTS = 백로성
+	CASE "カテゴリ"
+		RESULTS:0 = 포트리스
+		RESULTS:1 = 어쌔신
+		RESULTS:2 = 영령
+		RESULTS:3 = FATE
+ENDSELECT
+
+@CARD_104525(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 7
+	CASE "コスト"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 3200
+	CASE "生成カード"
+		RETURN 4525
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+
+
+@CARD_EXPLANATION_104525(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①: 자신의 다른 몬스터가 존재하는 한,
+PRINTL 이 몬스터는 상대의 공격 효과의 대상이 되지 않는다.
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ②: 자신 필드의 몬스터는, 그 속성에 따라 이하의 효과를 얻는다.
+PRINTL ●화염: 이 카드의 전투로 상대에게 주는 데미지는 배가 된다.
+PRINTL ●물: 이 카드는 일시 파괴 내성을 가진다.
+PRINTL ●땅: 이 카드의 공격력 / 수비력은 1000 업한다.
+PRINTL ●바람: 이 카드의 공격 가능 횟수는 +1 된다.
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ③: 1턴에 1번, 2000LP를 지불하고 발동할 수 있다.
+PRINTL 자신은 덱에서 2장 드로우한다.
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ④: 이 카드가 필드를 벗어나는 경우, 대신 마법 & 함정 존에 놓는다.
+
+
+
+@CARDCAN_104525(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,104525)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF !GROUPMATCH(ゾーン, "필드")
+		RETURN 0
+	RETURN 1
+;M
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) == 5
+		RETURN 0
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("속성")
+	SIF !MATCH(RESULT,화염속성)
+		RETURN 0
+	RETURN 1
+
+;M
+ELSEIF 종류 == 필드起動
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 2000
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_104525(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+
+IF 종류 == 지속효과
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻避")
+	ENDIF
+	CALL FULLRESET
+	효과条件속성 = 물속성
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"一破")
+	CALL FULLRESET
+	효과条件속성 = 바람속성
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"追戦",1)
+
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"変化元ID",4525,上書きモード)
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件속성 = 땅속성
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000,1000)
+
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ倍化",3,1)
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,104525,10)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",2000)
+		CALL CARDDRAW_BASIC(듀얼리스트,2)
+	ENDIF
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,104525)
+	IF RESULT == 0
+		CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,104525)
+
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き,0,1)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF
+
+
+

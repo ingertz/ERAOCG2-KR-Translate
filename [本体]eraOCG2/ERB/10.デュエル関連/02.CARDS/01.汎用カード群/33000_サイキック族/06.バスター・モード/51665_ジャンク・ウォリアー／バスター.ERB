@@ -1,0 +1,147 @@
+﻿@CARDNAME_51665,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 정크 워리어/버스터
+	CASE "略称"
+		RESULTS = JUNK W/B
+	CASE "カテゴリ"
+		RESULTS:0 = 정크
+		RESULTS:1 = 워리어
+		RESULTS:2 = 버스터
+		RESULTS:3 = /버스터
+ENDSELECT
+
+
+@CARD_51665(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 1800
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251026
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_51665(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは특수소환できず、「버스터 모드」の효과でのみ특수소환する事ができる。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードの攻撃力は、자신フィールドの「버스터」モンスターの数×１０００アップし、
+PRINTL このカードがモンスターとの戦闘で상대に与える戦闘ダメージは倍になる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：フィールドのこのカードは상대が발동したモンスターの효과を受けない。
+CALLFORM CARD_ABLE(0,戦闘→묘지 ,破壊→묘지)
+PRINTL ③：このカードが破壊された時に발동できる。
+PRINTL 묘지から「정크 워리어」１体を특수소환する。
+
+
+@CARDSUMMON_51665(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+RETURN 0
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,51665) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_51665(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51665)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 정크 워리어
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_51665(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC 攻撃力修正
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 버스터
+	효과条件종류 = 싱크로
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 1000
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)	
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_HAND(듀얼리스트,"自身",場所,"モン耐")
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ倍化",3,1)
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51665)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 정크 워리어
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

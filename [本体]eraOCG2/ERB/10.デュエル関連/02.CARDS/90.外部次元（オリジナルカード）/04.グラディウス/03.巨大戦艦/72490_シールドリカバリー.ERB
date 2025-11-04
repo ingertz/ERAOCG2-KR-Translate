@@ -1,0 +1,122 @@
+﻿@CARDNAME_72490,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 실드 리커버리
+	CASE "略称"
+		RESULTS = 실드 리커버리
+	CASE "カテゴリ"
+		RESULTS:0 = 박테리안
+ENDSELECT
+
+
+@CARD_72490(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72490(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①: 자신 필드의 "거대전함" 몬스터 1장을 대상으로 하여 발동할 수 있다.
+PRINTL 그 몬스터에 실드 카운터를 3개 놓는다.
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ②: 실드 카운터가 놓여 있지 않은 자신의 "거대전함" 몬스터가 상대 몬스터와 전투를 실행하는 공격 선언시에 발동할 수 있다.
+PRINTL 묘지의 이 카드를 제외하고, 이하의 효과를 각각 적용한다.
+PRINTL ● 그 몬스터에 실드 카운터를 2개 놓는다.
+PRINTL ● 그 몬스터의 공격력은 데미지 스텝 종료시까지 1000 올린다.
+
+
+@CARDCAN_72490(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72490)
+SIF RESULT == 1
+	RETURN 0
+
+;汎用処理
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 거대전함
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF GETVAR(@"%対面者%_戦闘カード") == 5
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF RESULTS != "거대전함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:%듀얼리스트%_戦闘カード") > 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_72490(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72490)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = 거대전함
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"個Ｃ",3)
+			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:選択カード")}("名前")
+			PRINTFORMW %RESULTS%의 실드가 회복됐다（나머지{GETVAR(@"%듀얼리스트%_MZ_個Ｃ:選択カード")}장）
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72490)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		選択カード = GETVAR(@"%듀얼리스트%_戦闘カード")
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"個Ｃ",2)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一時",1000)
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:選択カード")}("名前")
+		PRINTFORMW %RESULTS%의 실드가 회복됐다（나머지{GETVAR(@"%듀얼리스트%_MZ_個Ｃ:選択カード")}장）
+	ENDIF
+ENDIF

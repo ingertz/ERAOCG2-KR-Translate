@@ -1,0 +1,317 @@
+@CARDNAME_62088,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 도레미코드 하피니스
+	CASE "略称"
+		RESULTS = 행복의 다중주
+	CASE "カテゴリ"
+		RESULTS:0 = 도레미코드
+ENDSELECT
+
+
+@CARD_62088(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62088(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,마함起動 ,손패起動)
+PRINTL ①：이하의 효과에서 １개를 선택하고 발동할 수 있다
+PRINTL   （이 카드명의 이하의 효과는 각각 １턴에 １번밖에 선택할 수 없다）。
+PRINTL   ●자신의 패를 1장 골라서 버리고、덱에서 레벨이 다른 "도레미코드" P몬스터 2장을 패에 넣는다。
+PRINTL     그 후、상대 필드의 몬스터의 수+1장 까지、패에서 "도레미코드" P몬스터를 특수 소환할 수 있다。
+PRINTL   ●자신의 마법&함정 존에 존재하는 "도레미코드" P몬스터의 수까지、
+PRINTL     패 / EX덱에서、"도레미코드" P몬스터를 특수 소환할 수 있다。
+PRINTL   ●자신의 마법&함정 존의 "도레미코드" 카드 2장을 특수 소환한다。
+
+@CARDCAN_62088(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과使用可,3
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62088)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARDEFFCT_ABLE_62088(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT:1 == 0 && RESULT:2 == 0 && RESULT:3 == 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_62088(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과使用可,3
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62088,0)
+	IF RESULT == 0
+		;通常마법汎用処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		CALL CARDEFFCT_ABLE_62088(듀얼리스트,종류,ゾーン,場所)
+		효과使用可:0 = RESULT:1
+		효과使用可:1 = RESULT:2
+		효과使用可:2 = RESULT:3
+		
+		カウンタ = 발동済_1(듀얼리스트,62088) + 발동済_2(듀얼리스트,62088) + 발동済_3(듀얼리스트,62088)
+		PRINTL
+		IF カウンタ == 0
+			PRINTL 행복의 1중주：
+		ELSEIF カウンタ == 1
+			PRINTL 행복의 2중주：
+		ELSEIF カウンタ == 2
+			PRINTL 행복의 3중주：
+		ELSE
+			PRINTL 연주 종료。
+			PRINTW
+			RETURN
+		ENDIF
+
+		IF 듀얼리스트 == "자신"
+			IF 효과使用可:0 == 1
+				PRINTL
+				PRINTL [1]자신의 패를 1장 골라 버리고、덱에서 P 스케일이 다른 "도레미코드" P몬스터 2장을 패에 넣는다。
+				PRINTL    그 후、상대 필드의 몬스터의 수+1장 까지、패에서 "도레미코드" P몬스터를 특수 소환할 수 있다。
+			ENDIF
+			IF 효과使用可:1 == 1
+				PRINTL
+				PRINTL [2]자신의 마법&함정 존에 존재하는 "도레미코드" P몬스터의 수까지、
+				PRINTL    패 / EX덱에서、"도레미코드" P몬스터를 특수 소환할 수 있다。
+			ENDIF
+			IF 효과使用可:2 == 1
+				PRINTL
+				PRINTL [3]자신의 마법&함정 존의 "도레미코드" 카드 2장을 특수 소환한다。
+			ENDIF
+			PRINTL
+
+			BINPUT
+			IF RESULT == 1 && 효과使用可:0 == 1
+				CALL CARDEFFECT_62088_0(듀얼리스트,종류,ゾーン,場所)
+			ELSEIF RESULT == 2 && 효과使用可:1 == 1
+				CALL CARDEFFECT_62088_1(듀얼리스트,종류,ゾーン,場所)
+			ELSEIF RESULT == 3 && 효과使用可:2 == 1
+				CALL CARDEFFECT_62088_2(듀얼리스트,종류,ゾーン,場所)
+			ENDIF
+		ELSE
+			カウンタ = RAND:3
+			WHILE 효과使用可:カウンタ != 1
+				カウンタ = RAND:3
+			WEND
+			
+			SELECTCASE カウンタ
+				CASE 0
+					PRINTL 자신의 패를 1장 골라 버리고、덱에서 P 스케일이 다른 "도레미코드" P몬스터 2장을 패에 넣는다。
+					PRINTL 그 후、상대 필드의 몬스터의 수+1장 까지、패에서 "도레미코드" P몬스터를 특수 소환할 수 있다。
+					PRINTW
+					CALL CARDEFFECT_62088_0(듀얼리스트,종류,ゾーン,場所)
+				CASE 1
+					PRINTL 자신의 마법&함정 존에 존재하는 "도레미코드" P몬스터의 수까지、
+					PRINTL 패 / EX덱에서、"도레미코드" P몬스터를 특수 소환할 수 있다。
+					PRINTW
+					CALL CARDEFFECT_62088_1(듀얼리스트,종류,ゾーン,場所)
+				CASE 2
+					PRINTL 자신의 마법&함정 존의 "도레미코드" 카드 2장을 특수 소환한다。
+					PRINTW
+					CALL CARDEFFECT_62088_2(듀얼리스트,종류,ゾーン,場所)
+			ENDSELECT
+		ENDIF
+
+		IF 발동済_1(듀얼리스트,62088) && 발동済_2(듀얼리스트,62088) && 발동済_3(듀얼리스트,62088)
+			PRINTL
+			PRINTL ●「행복의 다중주」화려 종료。
+			PRINTW
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+;-------------------------------------------------------------------------
+@CARDEFFECT_62088_0(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_EFFECT_USE(듀얼리스트,62088,1)
+
+CALL FULLRESET
+CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+IF RESULT == 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = モン全般
+	효과条件分割 = 펜듈럼
+	CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	IF RESULT != 9999
+		CALLFORM CARD_{RESULT:1}("レベル")
+		カウンタ = RESULT
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 도레미코드
+		효과条件종류 = モン全般
+		효과条件分割 = 펜듈럼
+		CALL 효과条件レベル_ADV(カウンタ  , "以外")
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+	カウンタ = MIN( モンスター数(対面者)+1, 5-モンスター数(듀얼리스트))
+	
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件分割 = 펜듈럼
+	효과条件複数 = 100 - カウンタ
+	CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+ENDIF
+RETURN
+
+
+;-------------------------------------------------------------------------
+@CARDEFFECT_62088_1(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_EFFECT_USE(듀얼리스트,62088,2)
+
+CALL FULLRESET
+효과範囲마함 = 1
+효과条件カテゴリ = 도레미코드
+효과条件종류 = モン全般
+효과条件CNT = 1
+CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+カウンタ =  MIN( RESULT, 5 - モンスター数(듀얼리스트))
+
+CALL FULLRESET
+효과範囲손패 = 1
+효과範囲EX덱 = 1
+효과条件カテゴリ = 도레미코드
+효과条件종류 = EX以外全般
+효과条件分割 = 펜듈럼
+효과条件複数 = 100 - カウンタ
+CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+RETURN
+
+
+
+;-------------------------------------------------------------------------
+@CARDEFFECT_62088_2(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_EFFECT_USE(듀얼리스트,62088,3)
+
+CALL FULLRESET
+효과範囲마함 = 1
+효과条件カテゴリ = 도레미코드
+효과条件종류 = モン全般
+효과条件複数 = 2
+CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+RETURN
+
+;-------------------------------------------------------------------------
+@CARDEFFCT_ABLE_62088(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과使用可,3
+
+효과使用可:0 = 1 - 발동済_1(듀얼리스트,62088)
+효과使用可:1 = 1 - 발동済_2(듀얼리스트,62088)
+효과使用可:2 = 1 - 발동済_3(듀얼리스트,62088)
+SIF 손패数(듀얼리스트) == 0
+	효과使用可:0 = 0
+
+CALL FULLRESET
+효과範囲덱 = 1
+효과条件カテゴリ = 도레미코드
+효과条件종류 = モン全般
+효과条件分割 = 펜듈럼
+효과条件CNT = 1
+CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+SIF RESULT < 2
+	효과使用可:0 = 0
+
+CALL FULLRESET
+효과範囲손패 = 1
+효과範囲EX덱 = 1
+효과条件カテゴリ = 도레미코드
+효과条件分割 = 펜듈럼
+효과条件종류 = EX以外全般
+CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+SIF RESULT == 0
+	효과使用可:1 = 0
+
+CALL FULLRESET
+효과範囲마함 = 1
+효과条件カテゴリ = 도레미코드
+효과条件종류 = モン全般
+효과条件CNT = 1
+CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+SIF RESULT == 0
+	효과使用可:1 = 0
+SIF RESULT < 2
+	효과使用可:2 = 0
+SIF モンスター数(듀얼리스트) > 3
+	효과使用可:2 = 0
+
+VARSET RESULT
+RESULT:1 = 효과使用可:0
+RESULT:2 = 효과使用可:1
+RESULT:3 = 효과使用可:2

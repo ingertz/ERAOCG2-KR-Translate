@@ -1,0 +1,344 @@
+;========================================================
+; 46484 雷皇龍ジークヴルム
+;========================================================
+
+@CARDNAME_46484,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 雷皇龍ジークヴルム
+	CASE "略称"
+		RESULTS = ジークヴルム
+	CASE "カテゴリ"
+		RESULTS:0 = 星竜
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+@CARD_46484(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 炎属性
+	CASE "種族"
+		RETURN ドラゴン族
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 1900
+	CASE "生成カード"
+		RETURN 46485
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46484(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか発動できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：自分のLPが相手より少ない場合に発動できる。
+PRINTL 手札のこのカードを特殊召喚する。
+CALLFORM CARD_ABLE(2,召喚時,特殊召喚時)
+PRINTL ②：このカードが召喚・特殊召喚した場合に発動できる。
+PRINTL 攻撃力２０００以下の相手モンスター１体を破壊する。
+PRINTL その後、自分はデッキから１枚ドローする。
+CALLFORM CARD_ABLE(3,攻撃後誘発)
+PRINTL ③：《『転醒』「創界神」カウント６以下》
+PRINTL このモンスターが戦闘を行ったダメージステップ終了時に、
+PRINTL 自分フィールドの「創界神」のうち、カウントカウンターが６つ以下の１枚を対象として発動できる。
+PRINTL そのカードのコアカウンターを２つ取り除き、
+PRINTL このカードを裏返し「超神星龍ジークヴルム・ノヴァ」に転醒させる。
+PRINTL その後、対象とした「創界神」にカウントカウンターを１つ置く。
+RETURN 0
+
+@CARDCAN_46484(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46484)
+SIF RESULT == 1
+	RETURN 0
+
+; ① 手札起動：自分LP < 相手LP
+IF 種類 == 手札起動
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF 発動済_1(決闘者,46484)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%決闘者%") >= GETVAR(@"ライフ_%対面者%")
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,46484,"手札")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ② 召喚・特殊召喚時
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46484)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 攻撃後誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_3(決闘者,46484)
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠   = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 2
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46484(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+; ① 手札から自身をSS
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46484,1)
+	CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	RETURN 0
+ENDIF
+
+; ② 相手モンスターATK<=2000破壊 → 1ドロー
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46484,2)
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件種類 = モン全般
+	効果条件攻撃力 = 2000
+	CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"破壊")
+		SIF RESULT == 1
+	CALL CARDDRAW_BASIC(決闘者,1)
+	RETURN 0
+ENDIF
+
+IF 種類 == 攻撃後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46484,3)
+
+	CALL FULLRESET
+	効果範囲魔罠     = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 2
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT == 9999
+		RETURN 0
+	ENDIF
+	CALL CARD_SELECT(決闘者,RESULT)
+	SIF GETVAR(@"%対象者（CS）%_魔_悪Ｃ:{選択カード（CS）}") > 6
+		RETURN 0
+
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-2)
+	CALL CARD_DISPOSE(決闘者,"戦場",場所,消滅行き)
+	CALL CARD_GENERATE(決闘者,46485)
+
+	CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"悪Ｃ",1)
+	RETURN 0
+ENDIF
+
+RETURN 0
+
+;========================================================
+; 46485 超神星龍ジークヴルム・ノヴァ
+;========================================================
+
+@CARDNAME_46485,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 超神星龍ジークヴルム・ノヴァ
+	CASE "略称"
+		RESULTS = ジーク・ノヴァ
+	CASE "カテゴリ"
+		RESULTS:0 = 星竜
+		RESULTS:1 = 超星
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+@CARD_46485(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 儀式
+	CASE "属性"
+		RETURN 炎属性
+	CASE "種族"
+		RETURN ドラゴン族
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2500
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46485(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②の効果はデュエル中に１度しか発動できない。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。
+PRINTL 自分のLPを８０００まで回復し、自分フィールドの「創界神」にコアカウンターを５個置く。
+PRINTL このターンこのカードは相手のカードの効果を受けない。
+CALLFORM CARD_ABLE(2,攻撃後誘発)
+PRINTL ②：このカードに置かれたコアカウンターが３個以上で、
+PRINTL このカードが戦闘で相手モンスターを破壊した場合に発動できる。
+PRINTL 相手に４０００のダメージを与える。
+PRINTL その後、お互いの手札をデッキに戻す。
+CALLFORM CARD_ABLE(4,戦破壊→墓地)
+CALLFORM CARD_ABLE(4,除外時)
+CALLFORM CARD_ABLE(4,デッキ行き)
+CALLFORM CARD_ABLE(4,手札行き)
+PRINTL ■転醒体■
+PRINTL このカードがフィールドを離れた場合、表面の「雷皇龍ジークヴルム」に戻り、墓地に送られる。
+RETURN 0
+
+
+@CARDCAN_46485(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46485)
+SIF RESULT == 1
+	RETURN 0
+
+; ① 召喚・特殊召喚時（D1）
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_D1(決闘者,46485)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ② 戦闘破壊時（個Ｃ>=3はEFFECTで最終確認）／D1
+IF 種類 == 効果後誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_D1(決闘者,46485)
+		RETURN 0
+	CALL CARD_CHECK_FIN_DATA(決闘者,"戦闘破壊")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ③ フィールド離脱（戻りトリガ：流用）
+IF GROUPMATCH(種類, 破壊→墓地, 戦闘→墓地, 戦破壊→墓地, 手札行き, デッキ行き, 除外時)
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46485(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 現LP
+#DIM  DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+; ① 召喚・特殊召喚：LPを8000へ変更（ストリーム式）＋ 創界神へ個Ｃ+5 ＋ このターン[魔/罠/モ]耐性
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46485,1)
+
+	現LP = GETVAR(@"ライフ_%決闘者%")
+	SIF 現LP < 8000
+		CALL LIFE_CHANGE(決闘者,"","変更",8000)
+
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT != 9999
+		CALL CARD_SELECT(決闘者,RESULT)
+		CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",5)
+	ENDIF
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"モ耐",1)
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"魔耐",1)
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"罠耐",1)
+	CALL CARD_EFFECT_D1USE(決闘者,46485)
+	RETURN 0
+ENDIF
+
+; ② 戦闘破壊時：個Ｃ>=3 → 4000ダメ → お互いの手札を“自動で尽きるまで”デッキへ戻す → 両者シャッフル
+IF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46485,2)
+
+	SIF GETVAR(@"%決闘者%_MZ_個Ｃ:場所") < 3
+		RETURN 0
+	CALL LIFE_CHANGE(対面者,"減少","効果",4000,1)
+	VARSET カウンタ
+	FOR カウンタ,0,紙束最大値
+		SIF GETVAR(@"%決闘者%_手札:カウンタ") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(決闘者,"手札",カウンタ,デッキ行き)
+	NEXT
+	VARSET カウンタ
+	FOR カウンタ,0,紙束最大値
+		SIF GETVAR(@"%対面者%_手札:カウンタ") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(対面者,"手札",カウンタ,デッキ行き)
+	NEXT
+
+	; 仕上げ：両者シャッフル（デッキ順再確定）
+	CALL SHUFFLE(決闘者)
+	CALL SHUFFLE(対面者)
+	CALL CARD_EFFECT_D1USE(決闘者,46485)
+	RETURN 0
+ENDIF
+
+; ③ フィールド離脱：通常体(46484)のみ墓地に1枚生成（場残りなし）
+IF GROUPMATCH(種類, 破壊→墓地, 戦闘→墓地, 戦破壊→墓地, 手札行き, デッキ行き, 除外時)
+    CALL FULLRESET
+    CALL CARD_GENERATE_GY(決闘者, 46484)
+	CALL CARD_DISPOSE(決闘者, ゾーン, 場所, 消滅行き)
+	RETURN 0
+ENDIF
+
+RETURN 0

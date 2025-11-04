@@ -33,7 +33,7 @@ RETURN 0
 @CARD_EXPLANATION_71132(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의  카드는 １턴에 １장 밖에 발동할 수 없다。
+PRINTL 이 카드명의 카드는 １턴에 １장 밖에 발동할 수 없다。
 CALLFORM CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：덱에서 "보옥수" 몬스터 ２장을 고르고、자신의 마법＆함정존에 앞면 표시로 둔다。
 PRINTL 그 후、놓은 카드와는 카드명이 다른 "보옥수" 몬스터 １장을 자신의 패 / 묘지에서 고르고 특수 소환하고、
@@ -54,18 +54,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,71132)
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-		SIF 마함数(듀얼리스트) >= 4
-			RETURN 0
-	ELSEIF 종류 == 손패起動
-		SIF 마함数(듀얼리스트) >= 3
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲손패 = 1

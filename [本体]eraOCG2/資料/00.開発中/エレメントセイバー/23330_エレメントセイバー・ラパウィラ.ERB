@@ -1,0 +1,181 @@
+﻿@CARDNAME_23330,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = エレメントセイバー・ラパウィラ
+	CASE "略称"
+		RESULTS = ElmS・ラパウィラ
+	CASE "カテゴリ"
+		RESULTS:0 = エレメントセイバー
+		RESULTS:1 = エレメント
+		;カテゴリ縛りのSS、EX召喚のために設定
+		RESULTS:4 = 霊神
+ENDSELECT
+
+
+@CARD_23330(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 戦士族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 400
+	CASE "守備力"
+		RETURN 2100
+	CASE "霊神属性"
+		RETURN 1
+	CASE "性別"
+		RETURN 雄性
+	CASE "追加日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_23330(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。自分のデッキから「霊神」魔法・罠カード１枚を手札に加える。
+CALLFORM CARD_ABLE(10,発動誘発)
+PRINTL ②：１ターンに１度、相手が魔法・罠カードの効果を発動した時、
+PRINTL 手札から「エレメントセイバー」モンスター１体を墓地へ送って発動できる。その発動を無効にし破壊する。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ③：墓地のこのカードは全ての属性のモンスターとして扱う。
+
+;「エレメントセイバー」の中心となる光属性の戦士。出たときに「霊神」魔法罠をサーチできるため、フィールドを貼ったりする動きに繋げられる。
+;通常召喚できる下級モンスターとしては極めて珍しく、無効破壊の発動誘発効果も持っているため、手札次第では自前で泡やドミナスを弾けるのは偉い。
+;流石にうららやヴェーラーまでは弾けないので万全ではないが、メジャーな誘発を貫通できるというのはかなり強い。初動として積極的に使っていきたい。
+;盤面に残しておくことで相手ターンの妨害にも使えるので、エレメントセイバーの中心的存在として頼りになってくれるだろう。攻撃力は低いのが難点。
+
+
+@CARDCAN_23330(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 追加条件フラグ = 0
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,23330)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,23330)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = 霊神
+	効果条件種類 = 魔罠全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 発動誘発
+	SIF 効果発動済(決闘者,場所,ゾーン)
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	CALL FULLRESET
+	効果条件種類 = 魔罠全般
+	CALL CARD_CHECK_START_DATA(決闘者,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 霊神の聖殿
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1 && !(発動済_3(決闘者,71705))
+		追加条件フラグ |= 1
+	CALL FULLRESET
+	効果範囲手札 = 1
+	SIF 追加条件フラグ & 1
+		効果範囲デッキ = 1
+	効果条件カテゴリ = エレメントセイバー
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_23330(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 追加条件フラグ = 0
+#DIM DYNAMIC 手札枚数＿前
+#DIM DYNAMIC 手札枚数＿後
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,23330,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = 霊神
+		効果条件種類 = 魔罠全般
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 発動誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,23330,10)
+	IF RESULT == 0
+		手札枚数＿前 = 手札数(決闘者)
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件名前 = 霊神の聖殿
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1 && !(発動済_3(決闘者,71705))
+			追加条件フラグ |= 1
+		;手札のエレメントセイバーモンスターを墓地へ送る。(条件次第でデッキからも送れる)
+		CALL FULLRESET
+		効果範囲手札 = 1
+		SIF 追加条件フラグ & 1
+			効果範囲デッキ = 1
+		効果条件カテゴリ = エレメントセイバー
+		効果条件種類 = モン全般
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			;墓地へ送る前後で手札の枚数を確認し、減っていない場合はデッキから送ったと判定し霊神の神殿の効果③を使用した扱いに。
+			手札枚数＿後 = 手札数(決闘者)
+			IF 手札枚数＿前 == 手札枚数＿後
+				;霊神の神殿の効果を発動した！
+				SETCOLOR C_YELLOW
+				PRINTFORML 「霊神の神殿」の効果によってデッキから直接モンスターを墓地へ送った！！
+				RESETCOLOR
+				CALL CARD_EFFECT_USE(決闘者,71705,3)
+			ENDIF
+			;相手の発動を無効にして破壊する。
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(決闘者,"発動無効",場所,"墓地")
+			RETURN 1
+		ENDIF
+	ENDIF
+	RETURN 0
+ENDIF

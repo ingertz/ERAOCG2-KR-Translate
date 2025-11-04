@@ -78,20 +78,15 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲덱 = 1
 	효과範囲묘지 = 1
 	효과範囲제외 = 1
-효과条件名前 = 발정금지게임
+	효과条件名前 = 발정금지게임
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -128,11 +123,11 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			PRINTFORML %듀얼리스트%에게 발정 카운터가 얹어졌다.
 			PRINTFORMW 현재 발정 카운터의 수：{GETVAR(@"%듀얼리스트%_薬Ｃ")}
 
-PRINTL 효과를 선택해 주세요.
+			PRINTL 효과를 선택해 주세요.
 			PRINTL
-PRINTL [0] - ●1장 드로우한다.
-PRINTL [1] - ●이 카드를 묘지로 보낸다.
-PRINTL [2] - ●상대에게 발정 카운터를 1개 놓는다.
+			PRINTL [0] - ●1장 드로우한다.
+			PRINTL [1] - ●이 카드를 묘지로 보낸다.
+			PRINTL [2] - ●상대에게 발정 카운터를 1개 놓는다.
 			BINPUT
 			PRINTFORMW {RESULT}
 		ELSE
@@ -435,7 +430,7 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 		효과範囲덱 = 1
 		효과範囲묘지 = 1
 		효과範囲제외 = 1
-효과条件名前 = 해킹 레이스
+		효과条件名前 = 발정금지게임
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",2)
 	ENDIF
 

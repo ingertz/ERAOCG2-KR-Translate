@@ -55,6 +55,7 @@ PRINTL 묘지의 이 카드를 패에 넣는다。
 #DIM DYNAMIC カウンタ
 #DIMS DYNAMIC 装備者
 #DIM DYNAMIC 装備先
+#DIM DYNAMIC 装備カード_ID
 
 CALL 装備판정(듀얼리스트,場所,ゾーン)
 装備先 = RESULT	
@@ -65,13 +66,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0 
 
 	CALL FULLRESET
@@ -122,12 +118,10 @@ ELSEIF 종류 == 攻撃後強制誘発
 	SIF GETVAR(@"%装備者%_필드:装備先") == -1
 		RETURN 0
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 바람속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,바람속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 바람속성
+		RETURN 1
+	RETURN 0
 ENDIF
 
 @CARDEFFECT_71701(듀얼리스트,종류,ゾーン,場所)
@@ -140,6 +134,7 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIMS DYNAMIC 装備者
 #DIM DYNAMIC 装備先
+#DIM DYNAMIC 装備カード_ID
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -165,82 +160,52 @@ ELSEIF 종류 == 攻撃後強制誘発
 
 ELSEIF 종류 == 攻守変動
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 화염속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,화염속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 화염속성
 		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,300,300)
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 물속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,물속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 물속성
 		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,300,300)
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 바람속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,바람속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 바람속성
 		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,300,300)
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 땅속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,땅속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 땅속성
 		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,300,300)
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 빛속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,빛속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 빛속성
 		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,300,300)
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 어둠속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,어둠속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 어둠속성
 		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,300,300)
 
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 화염속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,화염속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 화염속성
 		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",装備先,"貫通")
-	ENDIF
-
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 물속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,물속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 물속성
 		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",装備先,"戦耐")
-	ENDIF
-
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 땅속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,땅속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 땅속성
 		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",装備先,"戦阻")
-	ENDIF
-
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 빛속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,빛속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 빛속성
 		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",装備先,"対耐")
-	ENDIF
-
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件속성:0 = 어둠속성
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT == 1
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("속성")
+	SIF MATCH(RESULT,어둠속성) || GETVAR(@"%듀얼리스트%_MZ_属:装備先") == 어둠속성
 		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",装備先,"破耐")
-	ENDIF
+		
 
 ELSEIF 종류 == 묘지起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71701,1)

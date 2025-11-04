@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 인페르니티 서프레션
+		RESULTS = 인페르니티 서프레션
 	CASE "略称"
-RESULTS = 만족 서프레
+		RESULTS = 만족 서프레
 	CASE "カテゴリ"
-RESULTS:0 = 인페르니티
+		RESULTS:0 = 인페르니티
 ENDSELECT
 
 
@@ -58,7 +58,8 @@ IF 종류 == 발동誘発
 		RETURN 0
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -71,12 +72,18 @@ IF 종류 == 발동誘発
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	SIF RESULT != 1
 		RETURN 0
-	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		SIF 손패数(듀얼리스트) != 0
-			RETURN 0
-	ENDIF
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
 	RETURN 1
 ENDIF
+
 
 @CARDEFFECT_92862(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -96,11 +103,14 @@ IF 종류 == 발동誘発
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
 		SIF 듀얼리스트 == "자신"
-PRINTL 데미지를 주시겠습니까?
+			PRINTL 데미지를 주시겠습니까?
 		CALL YN_CHOICE(듀얼리스트)
 		IF RESULT == 0
-			TRYCALLFORM CARD_{効後_효과ID:(処理中番号 - 1)},"レベル"
+			TRYCALLFORM CARD_{効後_효과ID:(処理中番号 - 1)}("レベル")
 			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",(RESULT*100),1)
 		ENDIF
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"発可")
 ENDIF

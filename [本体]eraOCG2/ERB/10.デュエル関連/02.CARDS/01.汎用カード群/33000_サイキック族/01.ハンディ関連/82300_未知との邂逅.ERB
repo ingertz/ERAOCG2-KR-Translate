@@ -10,7 +10,6 @@ SELECTCASE 参照先
 		RESULTS = 크로스타겟
 	CASE "略称"
 		RESULTS = 미지와의 해후
-
 	CASE "カテゴリ"
 		RESULTS:0 = 핸디
 ENDSELECT
@@ -24,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -65,7 +63,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		SIF RESULT != 1
 			RETURN 0
 	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
 	ELSE
 		RETURN 0
@@ -102,7 +101,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"덱")		
 		CALL FULLRESET
 		효과範囲필드 = 1
-효과条件名前 = 핸디레이디
+		효과条件名前 = 핸디레이디
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET

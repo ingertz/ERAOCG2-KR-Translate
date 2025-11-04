@@ -1,0 +1,187 @@
+﻿@CARDNAME_91914,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 낙인단죄
+	CASE "略称"
+		RESULTS = 낙인단죄
+	CASE "カテゴリ"
+		RESULTS:0 = 낙인
+ENDSELECT
+
+
+@CARD_91914(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "レア度"
+		RETURN SPR
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_91914(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과は１ターンに１度、いずれか１つしか使用できない。
+CALLFORM CARD_ABLE(1,소환誘発)
+PRINTL ①：상대がモンスターを특수소환した際に발동できる。
+PRINTL 「알버스」융합モンスターを、자신フィールドの表側표시モンスターの中から１体
+PRINTL または자신の묘지から２体選んでEX덱に戻し、そのモンスターを破壊する。
+PRINTL 상대はこの효과に対して효과を발동できない。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：묘지のこのカードを제외して발동できる。
+PRINTL 「낙인단죄」以外の자신の묘지の「낙인」마법・함정カード１枚を손패に加える。
+
+
+@CARDCAN_91914(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91914)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환誘発
+	SIF 발동済_1(듀얼리스트,91914)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,91914)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 最終소환決者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(最終소환타입,"특수","EX특수")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 알버스
+	효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 1
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 알버스
+	효과条件종류 = 융합
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT >= 2
+		RETURN 1
+	RETURN 0
+ELSEIF 종류 == チェーン可否
+	SIF !GROUPMATCH(チェーン可否종류,소환誘発)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,91914)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,91914)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 낙인
+	효과条件종류 = 마함全般
+	효과条件固名前 = 낙인단죄
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_91914(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 条件달성,10
+
+
+IF 종류 == 소환誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91914,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 알버스
+		효과条件종류 = 융합
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성:0 = 1
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 알버스
+		효과条件종류 = 융합
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT >= 2
+			条件달성:1 = 1
+
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		SIF 条件달성:0 == 1
+			효과範囲필드 = 1
+		SIF 条件달성:1 == 1
+			효과範囲묘지 = 1
+		효과条件カテゴリ = 알버스
+		효과条件종류 = 융합
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 1
+			RETURN 0
+		ELSEIF RESULT == 1 && 参照先（CS） == "묘지"
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 알버스
+			효과条件종류 = 융합
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+
+		효과先 = 最終소환場所
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",最終소환場所,"完全묘지")
+	ENDIF
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91914,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 낙인
+		효과条件종류 = 마함全般
+		효과条件固名前 = 낙인단죄
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

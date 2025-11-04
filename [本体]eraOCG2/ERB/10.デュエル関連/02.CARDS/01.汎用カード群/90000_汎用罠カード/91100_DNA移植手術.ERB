@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = DNA 이식 수술
+		RESULTS = DNA 이식 수술
 	CASE "略称"
-RESULTS = DNA 이식 수술
+		RESULTS = DNA 이식 수술
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -53,9 +52,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 攻守変動
@@ -83,35 +81,35 @@ IF 종류 == 마함起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91100)
 	IF RESULT == 0
 		IF 듀얼리스트 == "자신"
-PRINTL 효과를 선택해 주세요
+			PRINTL 효과를 선택해 주세요
 			PRINT [01] - 빛속성　
 			PRINT [02] - 어둠속성　
-PRINTL [03] - 땅속성
+			PRINTL [03] - 땅속성
 			PRINT [04] - 물속성　　　
 			PRINT [05] - 화염속성　　　
-PRINTL [06] - 바람속성
-PRINTL [07] - 신속성
+			PRINTL [06] - 바람속성
+			PRINTL [07] - 신속성
 			BINPUT
 		ELSE
 			RESULT = 1
 		ENDIF
 		選択효과 = RESULT
 		IF RESULT == 1
-RESULTS =(빛)
+			RESULTS =(빛)
 		ELSEIF RESULT == 2
-RESULTS =(어둠)
+			RESULTS =(어둠)
 		ELSEIF RESULT == 3
-RESULTS =(땅)
+			RESULTS =(땅)
 		ELSEIF RESULT == 4
-RESULTS =(물)
+			RESULTS =(물)
 		ELSEIF RESULT == 5
-RESULTS =(화염)
+			RESULTS =(화염)
 		ELSEIF RESULT == 6
-RESULTS =(바람)
+			RESULTS =(바람)
 		ELSEIF RESULT == 7
-RESULTS =(신)
+			RESULTS =(신)
 		ENDIF
-		PRINTFORML %RESULTS%속성が選ばれました。
+		PRINTFORML %RESULTS%속성이 선택되었습니다。
 		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"汎数",選択효과)
 	ENDIF
 ELSEIF 종류 == 攻守変動

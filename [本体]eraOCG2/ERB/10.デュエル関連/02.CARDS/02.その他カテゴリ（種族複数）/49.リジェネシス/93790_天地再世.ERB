@@ -1,0 +1,197 @@
+﻿@CARDNAME_93790,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 리제네시스 버스
+	CASE "略称"
+		RESULTS = 리제네 버스
+	CASE "カテゴリ"
+		RESULTS:0 = 리제네시스
+ENDSELECT
+
+
+@CARD_93790(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "추가日"
+		RETURN 250913
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_93790(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느것인가 １개밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：덱에서 "리제네시스" 몬스터 １장을 묘지로 보내、
+PRINTL 상대 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 뒷면 수비 표시로 한다。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ②：상대턴에、마법＆함정 존의 앞면 표시인 이 카드를 묘지로 보내고 발동할 수 있다。
+PRINTL 자신의 패 / 묘지 / 제외상태인 "리제네시스" 몬스터를 가능한 한 특수 소환한다（같은 이름의 카드는 １장까지）。
+PRINTL 이 효과로 특수 소환한 몬스터는 엔드 페이즈에 묘지로 보내진다。
+
+
+@CARDCAN_93790(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가,3
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93790)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,93790)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 리제네시스
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+    SIF ターンプレイヤー == 듀얼리스트
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 리제네시스
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+
+	RETURN 1
+
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+
+@CARDEFFECT_93790(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前,4
+#DIM DYNAMIC 발동불가,3
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93790,1)
+	IF RESULT == 0
+	    CALL FULLRESET
+	    효과範囲덱 = 1
+	    효과条件カテゴリ = 리제네시스
+	    효과条件종류 = モン全般
+	    CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	    SIF RESULT != 1
+		    발동불가:0 = 1
+	    CALL FULLRESET
+	    효과範囲상대필드 = 1
+	    효과条件표시 = 表側표시
+	    CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	    SIF RESULT != 1
+		    발동불가:0 = 1
+
+        SIF ターンプレイヤー == 듀얼리스트
+		    발동불가:0 = 1
+        CALL FULLRESET
+		효과範囲손패 = 1
+	    효과範囲묘지 = 1
+	    효과範囲제외 = 1
+	    효과条件カテゴリ = 리제네시스
+	    효과条件소환可 = 1
+	    CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	    SIF RESULT != 1
+		    발동불가:1 = 1
+
+	    IF 발동불가:0 == 0 && 발동불가:1 == 0
+			CALL YN_CHOICE(듀얼리스트,"①：상대 몬스터를 뒷면 수비 표시로 한다.","②：패 / 묘지 / 제외상태인 리제네시스 몬스터를 특수 소환한다.")
+		ELSEIF 발동불가:0 == 1
+			RESULT = 1
+		ELSEIF 발동불가:1 == 1
+			RESULT = 0
+		ENDIF
+
+		IF RESULT == 0
+		    CALL FULLRESET
+		    효과条件カテゴリ = 리제네시스
+		    효과条件종류 = モン全般
+		    CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			IF RESULT == 1
+			    CALL FULLRESET
+			    CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"표시변경")
+			ENDIF
+		ELSEIF RESULT == 1
+		    CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			FOR カウンタ,0,5
+			SIF モンスター数(듀얼리스트) >= 5
+				BREAK
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과範囲제외 = 1
+			효과条件カテゴリ = 리제네시스
+			효과추가종류 = 効追終破
+			SIF 選択カード名前:0 != ""
+				효과条件固名前:0 = %選択カード名前:0%
+			SIF 選択カード名前:1 != ""
+				효과条件固名前:1 = %選択カード名前:1%
+			SIF 選択カード名前:2 != ""
+				효과条件固名前:2 = %選択カード名前:2%
+			SIF 選択カード名前:3 != ""
+				효과条件固名前:3 = %選択カード名前:3%
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			SIF RESULT != 1
+				BREAK
+			TRYCALLFORM CARDNAME_{RESULT:1}("名前")
+			選択カード名前:カウンタ = %RESULTS%
+		    NEXT
+		ENDIF
+	ENDIF
+
+
+ELSEIF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93790)
+	IF RESULT == 0
+	ENDIF
+
+ENDIF
+

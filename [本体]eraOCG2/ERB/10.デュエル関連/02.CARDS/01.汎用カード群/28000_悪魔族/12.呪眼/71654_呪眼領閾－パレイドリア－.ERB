@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 주안영역－파레이돌리아－
+		RESULTS = 주안영역－파레이돌리아－
 	CASE "略称"
-RESULTS = 파레이돌리아
+		RESULTS = 파레이돌리아
 	CASE "カテゴリ"
-RESULTS:0 = 주안
+		RESULTS:0 = 주안
 ENDSELECT
 
 
@@ -31,7 +31,7 @@ RETURN 0
 @CARD_EXPLANATION_71654(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 자신 필드는 "주안 영역"이 된다.
+PRINTL 자신 필드는 "주안영역"이 된다.
 PRINTL 이 카드명의 ①③의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①: 이 카드의 발동 시의 효과 처리로서,
@@ -58,16 +58,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,71654)
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ELSE
-		SIF 마함数(듀얼리스트) >= 5
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_DRAW_CHECK
 	RETURN 1
@@ -146,5 +138,5 @@ ELSEIF 종류 == 攻撃時強制誘発
 	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ乱反射",1)
 
 ELSEIF 종류 == 지속효과
-	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "주안 영역")
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "주안영역")
 ENDIF

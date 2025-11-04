@@ -1,0 +1,626 @@
+﻿@CARDNAME_CUSTOM,カスタムカード,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIM DYNAMIC カスタムカード
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("名前")
+		SIF RESULTS == ""
+			RESULTS = 空白のカード
+	CASE "略称"
+		TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("略称")
+		SIF RESULTS == ""
+			RESULTS = 空白のカード
+	CASE "カテゴリ"
+		TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("カテゴリ")
+		RESULTS:3 = %カスタムカテゴリ:カスタムカード%
+ENDSELECT
+
+
+@CARD_CUSTOM(カスタムカード,参照先)
+#DIM DYNAMIC カスタムカード
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN カスタム종류:カスタムカード
+	CASE "속성"
+		RETURN カスタム속성:カスタムカード
+	CASE "종족"
+		RETURN カスタム종족:カスタムカード
+	CASE "レベル"
+		RETURN カスタムレベル:カスタムカード
+	CASE "攻撃力"
+		RETURN カスタム攻撃力:カスタムカード
+	CASE "守備力"
+		RETURN カスタム守備力:カスタムカード
+	CASE "성별"
+		TRYCALLFORM CARD_{カスタムID:カスタムカード}("성별")
+		RETURN RESULT
+	CASE "別途ID"
+		RETURN カスタムID:カスタムカード
+	CASE "連動ID"
+		RETURN カスタムID:カスタムカード
+	CASE "生産불가"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_CUSTOM(カスタムカード,종류)
+#DIM DYNAMIC カスタムカード
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("CUSTOM")
+IF カスタム효과①条件01:カスタムカード != 0
+PRINTFORML 이 카드명의 효과는１턴에 １번밖에 사용할 수 없다。
+PRINTFORM ①：
+	IF カスタム효과①条件01:カスタムカード == 소환時
+		PRINTFORML 이 카드를 소환 / 특수 소환 했을 경우에 발동 할 수 있다。
+	ELSEIF カスタム효과①条件1:カスタムカード == 0 && カスタム효과①条件01:カスタムカード != 소환時
+		PRINTFORM 자신 / 상대턴에 
+	ELSEIF カスタム효과①条件1:カスタムカード == 1 && カスタム효과①条件01:カスタムカード != 소환時
+		PRINTFORM 자신 메인 페이즈에 
+	ELSEIF カスタム효과①条件1:カスタムカード == 2 && カスタム효과①条件01:カスタムカード != 소환時
+		PRINTFORM 자신 / 상대의 메인 페이즈에 
+	ENDIF
+	
+	SELECTCASE カスタム효과①条件01:カスタムカード
+		CASE 필드起動
+			PRINTFORML 필드에서 발동 할 수 있다。
+		CASE 손패起動
+			PRINTFORML 패에서 발동 할 수 있다。
+		CASE 묘지起動
+			PRINTFORML 묘지에서 발동 할 수 있다。
+	ENDSELECT
+
+	IF カスタム효과①コスト:カスタムカード == 1 && カスタム효과①条件01:カスタムカード != 묘지起動
+		PRINTFORM 이 카드를 묘지로 보내、
+	ELSEIF カスタム효과①コスト:カスタムカード == 1 && カスタム효과①条件01:カスタムカード == 묘지起動
+		PRINTFORM 이 카드를 묘지에서 제외하여、
+	ELSEIF カスタム효과①コスト:カスタムカード == 2
+		PRINTFORM 손패１장을 묘지로 보내、
+	ELSEIF カスタム효과①コスト:カスタムカード == 3
+		PRINTFORM 라이프1000을 지불하여、
+	ELSEIF カスタム효과①コスト:カスタムカード == 4
+		PRINTFORM 이 카드를 덱으로 되돌리며、
+		ELSEIF カスタム효과①コスト:カスタムカード == 5
+		PRINTFORM 이 카드를 패로 되돌리며、
+	ENDIF
+
+	IF カスタム효과①範囲:カスタムカード == 1
+		PRINTFORM 패에서 
+	ELSEIF カスタム효과①範囲:カスタムカード == 2
+		PRINTFORM 덱에서 
+	ELSEIF カスタム효과①範囲:カスタムカード == 3
+		PRINTFORM 묘지에서 
+	ELSEIF カスタム효과①範囲:カスタムカード == 4
+		PRINTFORM 필드에서 
+	ELSEIF カスタム효과①範囲:カスタムカード == 5
+		PRINTFORM 제외 상태에서 
+	ENDIF
+
+	IF カスタム효과①同名条件:カスタムカード == 1
+		TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("名前")
+		PRINTFORM 「%RESULTS%」를
+	ELSEIF カスタム효과①同名条件:カスタムカード == 2
+		TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("名前")
+		PRINTFORM 「%RESULTS%」이외
+		IF カスタム효과①대상条件1:カスタムカード == 1
+			PRINTFORM 의
+		ELSEIF カスタム효과①대상条件1:カスタムカード == 2 && カスタム효과①대상条件1:カスタムカード == 3
+			PRINTFORM 로
+		ENDIF
+	ENDIF
+
+	IF カスタム효과①대상条件1:カスタムカード == 1
+		PRINTFORM 「%カスタムカテゴリ:カスタムカード%」
+	ELSEIF カスタム효과①대상条件1:カスタムカード == 2
+		PRINTFORM 이 카드의 원래 속성과 같은 속성의 
+	ELSEIF カスタム효과①대상条件1:カスタムカード == 3
+		PRINTFORM 이 카드의 원래 종족과 같은 종족의 
+	ELSEIF カスタム효과①대상条件1:カスタムカード == 4
+		PRINTFORM 이 카드의 원래 레벨과 같은 레벨의 
+	ELSEIF カスタム효과①대상条件1:カスタムカード == 0 && カスタムカテゴリ:カスタムカード != ""
+		PRINTFORM 의 
+	ENDIF
+
+	IF カスタム효과①대상条件2:カスタムカード == 10 || カスタム효과①종류:カスタムカード == 4
+		PRINTFORM 몬스터
+	ELSEIF カスタム효과①대상条件2:カスタムカード == 20
+		PRINTFORM 마법카드
+	ELSEIF カスタム효과①대상条件2:カスタムカード == 30
+		PRINTFORM 함정카드
+	ELSEIF カスタム효과①대상条件2:カスタムカード == 40
+		PRINTFORM 마법 / 함정 카드
+	ELSEIF カスタム효과①대상条件2:カスタムカード == 0 && カスタム효과①종류:カスタムカード != 1 && カスタム효과①종류:カスタムカード != 5 && カスタム효과①同名条件:カスタムカード != 1
+		PRINTFORM 카드
+	ENDIF
+	
+	IF カスタム효과①複数選択:カスタムカード == 0
+		PRINTFORM 1장을 
+	ELSE
+		PRINTFORM 를 {カスタム효과①複数選択:カスタムカード}장까지 
+	ENDIF
+
+	SELECTCASE カスタム효과①종류:カスタムカード
+		CASE 1
+			PRINTFORML １장 드로우 한다。
+		CASE 2
+			PRINTFORML 패에 넣는다。
+		CASE 3
+			PRINTFORML 묘지로 보낸다。
+		CASE 4
+			PRINTFORML 특수소환 한다。
+		CASE 6
+			PRINTFORML 덱으로 되돌린다。
+		CASE 7
+			PRINTFORML 제외한다。
+	ENDSELECT
+
+	IF カスタム효과①종류:カスタムカード == 5
+		SELECTCASE カスタム효과①除去範囲:カスタムカード
+			CASE 1
+				PRINTFORML 상대 필드의 몬스터１장을 
+			CASE 2
+				PRINTFORML 상대 필드의 몬스터를 전부 
+			CASE 3
+				PRINTFORML 상대 필드의  마법 / 함정 카드 １장을 
+			CASE 4
+				PRINTFORML 상대 필드의  마법 / 함정 카드를 전부 
+		ENDSELECT
+		SELECTCASE カスタム효과①除去종류:カスタムカード
+			CASE 0
+				PRINTFORML 파괴한다。
+			CASE 1
+				PRINTFORML 묘지로 보낸다。
+			CASE 2
+				PRINTFORML 제외한다。
+			CASE 3
+				PRINTFORML 패로 되돌린다。
+			CASE 4
+				PRINTFORML 덱으로 되돌린다。
+		ENDSELECT
+	ENDIF
+		
+ENDIF
+PRINTFORML 
+
+
+@CARDCAN_CUSTOM(カスタムカード,듀얼리스트,종류,ゾーン,場所)
+#DIM DYNAMIC カスタムカード
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,カスタムカード)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == カスタム효과①条件01:カスタムカード || 종류 == カスタム효과①条件02:カスタムカード
+	SIF 발동済_1(듀얼리스트,カスタムID:カスタムカード)
+		RETURN 0
+	IF カスタム효과①条件1:カスタムカード == 1
+		SIF メインフェイズ != 1
+			RETURN 0
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ELSEIF カスタム효과①条件1:カスタムカード == 2
+		SIF メインフェイズ != 1
+			RETURN 0
+	ELSEIF カスタム효과①条件1:カスタムカード == 3
+	ENDIF
+	IF カスタム효과①コスト:カスタムカード == 3
+		SIF GETVAR(@"ライフ_%듀얼리스트%") <= 1000
+			RETURN 0
+	ENDIF
+	SIF カスタム효과①範囲:カスタムカード == 2
+		CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_CUSTOM(カスタムカード,듀얼리스트,종류,ゾーン,場所)
+#DIM DYNAMIC カスタムカード
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 除去範囲
+#DIMS DYNAMIC 除去種
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == カスタム효과①条件01:カスタムカード || 종류 == カスタム효과①条件02:カスタムカード
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,カスタムカード,1)
+	IF RESULT == 0
+		SELECTCASE カスタム효과①コスト:カスタムカード
+			CASE 1
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CASE 2
+				CALL FULLRESET
+				CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			CASE 3
+				CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",1000)
+			CASE 4
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+			CASE 5
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+		ENDSELECT
+
+		CALL FULLRESET
+
+		IF カスタム효과①範囲:カスタムカード == 1
+			효과範囲손패 = 1
+		ELSEIF カスタム효과①範囲:カスタムカード == 2
+			효과範囲덱 = 1
+		ELSEIF カスタム효과①範囲:カスタムカード == 3
+			효과範囲묘지 = 1
+		ELSEIF カスタム효과①範囲:カスタムカード == 4
+			효과範囲필드 = 1
+		ELSEIF カスタム효과①範囲:カスタムカード == 5
+			효과範囲제외 = 1
+		ENDIF
+
+		SELECTCASE カスタム효과①同名条件:カスタムカード
+			CASE 1
+				TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("名前")
+				효과条件名前 = %RESULTS%
+			CASE 2
+				TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("名前")
+				효과条件固名前 = %RESULTS%
+		ENDSELECT
+
+		IF カスタム효과①대상条件1:カスタムカード == 1
+			효과条件カテゴリ = %カスタムカテゴリ:カスタムカード%
+		ELSEIF カスタム효과①대상条件1:カスタムカード == 2
+			효과条件속성 = カスタム속성:カスタムカード
+		ELSEIF カスタム효과①대상条件1:カスタムカード == 3
+			효과条件종족 = カスタム종족:カスタムカード
+		ELSEIF カスタム효과①대상条件1:カスタムカード == 4
+			효과条件レベル = カスタムレベル:カスタムカード
+		ENDIF
+
+		효과条件종류 = カスタム효과①대상条件2:カスタムカード
+		
+		SIF カスタム효과①複数選択:カスタムカード != 0
+			효과条件複数 = 100 - カスタム효과①複数選択:カスタムカード
+			
+
+		SELECTCASE カスタム효과①종류:カスタムカード
+			CASE 1
+				CALL CARDDRAW_BASIC(듀얼리스트,1)
+			CASE 2
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			CASE 3
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			CASE 4
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			CASE 5
+				SELECTCASE カスタム효과①除去範囲:カスタムカード
+					CASE 1
+						除去範囲 = 필드単体
+					CASE 2
+						除去範囲 = 필드全体
+					CASE 3
+						除去範囲 = 마함単体
+					CASE 4
+						除去範囲 = 마함全体
+				ENDSELECT
+				SELECTCASE カスタム효과①除去종류:カスタムカード
+					CASE 0
+						除去種 = 묘지
+					CASE 1
+						除去種 = リリース
+					CASE 2
+						除去種 = 제외
+					CASE 3
+						除去種 = 손패
+					CASE 4
+						除去種 = 덱
+				ENDSELECT
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,除去範囲,場所,除去種)
+			CASE 6
+				효과条件行先플래그 = 덱行き
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			CASE 7
+				효과条件行先플래그 = 제외行き
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDSELECT
+
+	ENDIF
+ENDIF
+
+
+
+@CARDNAME_201,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,201,参照先
+
+@CARD_201(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,201,参照先
+
+@CARD_EXPLANATION_201(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,201,종류
+
+@CARDCAN_201(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,201,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_201(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,201,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_202,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,202,参照先
+
+
+@CARD_202(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,202,参照先
+
+@CARD_EXPLANATION_202(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,202,종류
+
+@CARDCAN_202(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,202,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_202(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,202,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_203,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,203,参照先
+
+@CARD_203(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,203,参照先
+
+@CARD_EXPLANATION_203(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,203,종류
+
+@CARDCAN_203(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,203,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_203(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,203,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_204,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,204,参照先
+
+@CARD_204(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,204,参照先
+
+@CARD_EXPLANATION_204(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,204,종류
+
+@CARDCAN_204(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,204,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_204(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,204,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_205,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,205,参照先
+
+@CARD_205(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,205,参照先
+
+@CARD_EXPLANATION_205(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,205,종류
+
+@CARDCAN_205(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,205,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_205(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,205,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_206,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,206,参照先
+
+@CARD_206(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,206,参照先
+
+@CARD_EXPLANATION_206(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,206,종류
+
+@CARDCAN_206(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,206,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_206(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,206,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_207,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,207,参照先
+
+@CARD_207(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,207,参照先
+
+@CARD_EXPLANATION_207(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,207,종류
+
+@CARDCAN_207(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,207,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_207(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,207,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_208,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,208,参照先
+
+@CARD_208(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,208,参照先
+
+@CARD_EXPLANATION_208(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,208,종류
+
+@CARDCAN_208(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,208,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_208(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,208,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_209,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,209,参照先
+
+@CARD_209(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,209,参照先
+
+@CARD_EXPLANATION_209(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,209,종류
+
+@CARDCAN_209(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,209,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_209(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,209,듀얼리스트,종류,ゾーン,場所
+
+
+@CARDNAME_210,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+JUMP CARDNAME_CUSTOM,210,参照先
+
+@CARD_210(参照先)
+#DIMS DYNAMIC 参照先
+JUMP CARD_CUSTOM,210,参照先
+
+@CARD_EXPLANATION_210(종류)
+#DIM DYNAMIC 종류
+JUMP CARD_EXPLANATION_CUSTOM,210,종류
+
+@CARDCAN_210(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDCAN_CUSTOM,210,듀얼리스트,종류,ゾーン,場所
+
+@CARDEFFECT_210(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+JUMP CARDEFFECT_CUSTOM,210,듀얼리스트,종류,ゾーン,場所

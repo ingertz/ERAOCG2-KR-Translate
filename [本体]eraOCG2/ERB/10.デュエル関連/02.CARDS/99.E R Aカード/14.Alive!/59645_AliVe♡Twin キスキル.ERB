@@ -56,21 +56,19 @@ CALL TEXT_DECORATION("ROGUE")
 CALL TEXT_DECORATION("P_MAGIC")
 PRINTL 이 카드의 ①②의  펜듈럼 효과는 각각 1턴에 1번밖에 사용할 수 없다。
 CALL CARD_ABLE(2,攻撃時誘発)
-PRINTL ①：상대 몬스터의 직접 공격 선언시 발동할 수 있다 。
-PRINTL 자신은 1장 드로우 한다 。
+PRINTL ①：상대 몬스터의 직접 공격 선언시 발동할 수 있다。
+PRINTL 자신은 1장 드로우 한다。
 CALL CARD_ABLE(3,バトル開始時)
-PRINTL ② : 상대의 배틀 페이즈 개시 시, 상대 필등에 몬스터가 존재하지 않을 경우에 발동할 수 있다 。
-PRINTL 자신은 1000 LP 호뵉한다。
+PRINTL ② : 상대의 배틀 페이즈 개시 시, 상대 필등에 몬스터가 존재하지 않을 경우에 발동할 수 있다。
+PRINTL 자신은 1000 LP 회복한다。
 CALL TEXT_DECORATION("P_MAGIC_2")
 PRINTL 레벨 2 "키스킬" 몬스터 1장
 CALL CARD_ABLE(0,필드起動)
-PRINTL ①：자신 마법 & 함정 존에 「AliVe♡Twin 키스킬」이 존재하지 않으면 발동할 수 있다。
-PRINTL 이 카드를 마법 & 함정 존에 앞면 표시로 두고 "LiVe♥Do"마법 카드 1장을 패에 넣는다。
-PRINTL 이 효과를 발동한 턴 자신은 "Live☆Twin" 몬스터 밖에 특수 소환 할 수 없다。
+PRINTL ①：자신 마법 & 함정 존에 "AliVe♡Twin 키스킬"이 존재하지 않으면 발동할 수 있다。
+PRINTL 이 카드를 마법 & 함정 존에 앞면 표시로 두고、덱에서 "LiVe♥Do"마법 카드 1장을 패에 넣는다。
 CALL CARD_ABLE(0,戦破壊→묘지)
 PRINTL ②：필드에 존재하는 이카드가 파괴되었을 경우에 발동할 수 있다。
-PRINTL 마법 & 함정 존에 「AliVe♡Twin 리일라」１장을 엑스트라 덱에서 묘지로 보내고,
-PRINTL 묘지의 「Live☆Twin 키스킬」１장을 패에 넣고, 묘지의 「Live☆Twin 리일라」１장을 덱으로 되돌린다。
+PRINTL 자신 묘지의 "AliVe♡Twin 키스킬"１장을 덱으로 되돌리고, 자신은 1장 드로우한다。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -86,8 +84,9 @@ CALL RESETCONDITION_MAT
 必要링크数 = 1
 
 IF EX参照 == 0 || EX参照 == 1
-	素材条件名前:0 = Live☆Twin 키스킬
-	素材条件名前:1 = Live☆Twin 키스킬 프로스트
+	素材条件レベル = 2 
+	素材条件종류 = レベル持ち
+	素材条件カテゴリ = 키스킬
 ENDIF
 
 
@@ -111,11 +110,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 필드起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲마함 = 1
@@ -140,18 +136,7 @@ ELSEIF 종류 == 戦破壊→묘지
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	CALL FULLRESET
-	효과範囲묘지 = 1
-	효과条件名前 = Live☆Twin 리일라
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲마함 = 1
-	효과条件名前 = AliVe♡Twin 리일라
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+	CALL CARD_DRAW_CHECK
 	RETURN 1
 ELSEIF 종류 == 攻撃時誘発
 	SIF ゾーン != "마함"
@@ -205,28 +190,18 @@ IF 종류 == 필드起動
 		효과条件カテゴリ = Live♥Do
 		효과条件종류 = 마법全般
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			CALL CARD_SS_RESTRICTION(듀얼리스트,"Live☆Twin")
-			CALL CARD_EX_RESTRICTION(듀얼리스트,"Live☆Twin")
-		ENDIF
 	ENDIF
 ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59645,2)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과範囲마함 = 1
-		효과条件名前 = AliVe♡Twin 리일라
-		효과条件行先플래그 = EX덱行き
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		CALL FULLRESET
 		효과範囲묘지 = 1
 		효과条件名前 = Live☆Twin 키스킬
-		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-		CALL FULLRESET
-		효과範囲묘지 = 1
-		효과条件名前 = Live☆Twin 리일라
 		효과条件行先플래그 = 덱行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ENDIF
 	ENDIF
 ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59645,2)
@@ -237,8 +212,17 @@ ELSEIF 종류 == 攻撃時誘発
 ELSEIF 종류 == バトル開始時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59645,3)
 	IF RESULT == 0
+		PRINTFORML 
+		PRINTFORML 키스킬은 상대에세거 억지로 도네를 징수했다！
+		PRINTFORML 
 		CALL FULLRESET
 		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
+		SELECTCASE 듀얼리스트
+			CASE "자신"
+			CALL MONEY_GET(500)
+			CASE "상대"
+			CALL MONEY_GET(-500)
+		ENDSELECT
 	ENDIF
 ENDIF
 

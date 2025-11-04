@@ -1,0 +1,102 @@
+@CARDNAME_28261,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ファーニマル・ドッグ
+	CASE "略称"
+		RESULTS = Fur・ドッグ
+	CASE "カテゴリ"
+		RESULTS:0 = ファーニマル
+ENDSELECT
+
+
+@CARD_28261(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1700
+	CASE "守備力"
+		RETURN 1000
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28261(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「ファーニマル・ドッグ」の効果は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,召喚時 ,特殊召喚時)
+PRINTL ①：このカードが手札からの召喚・特殊召喚に成功した時に発動できる。
+PRINTL デッキから「エッジインプ」モンスター１体または
+PRINTL 「ファーニマル・ドッグ」以外の「ファーニマル」モンスター１体を手札に加える。
+
+@CARDSUMMON_AA_28261
+
+
+@CARDCAN_28261(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,28261)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,28261)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ:0 = エッジインプ
+	効果条件カテゴリ:1 = ファーニマル
+	効果条件種類 = モン全般
+	効果条件固名前 = ファーニマル・ドッグ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28261(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28261,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ:0 = エッジインプ
+		効果条件カテゴリ:1 = ファーニマル
+		効果条件種類 = モン全般
+		効果条件固名前 = ファーニマル・ドッグ
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+	ENDIF
+ENDIF
+

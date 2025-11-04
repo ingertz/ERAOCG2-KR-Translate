@@ -312,6 +312,9 @@ ELSEIF 選択モード == 4 ;온라인レートマッチ
 		PRINTFORML 승리해서 레이트가 올랐다！
 		PRINTFORML 현재 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} + {レート増減}
 		CFLAG:MASTER:듀얼레이트 += レート増減
+		IF CFLAG:MASTER:듀얼레이트 >= CFLAG:MASTER:최대레이트
+			CFLAG:MASTER:최대레이트 = CFLAG:MASTER:듀얼레이트
+		ENDIF
 		IF TARGET > 0
 			PRINTFORML %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} - {レート増減}
 			CFLAG:TARGET:듀얼레이트 -= レート増減
@@ -336,6 +339,10 @@ ELSEIF 選択モード == 5 && TALENT:TARGET:듀얼리스트 >= 1 ;オフライ�
 		PRINTFORML 현재 자신의 듀얼 레이트:{CFLAG:MASTER:듀얼레이트} + {レート増減}
 		PRINTFORML 현재 %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트} - {レート増減}
 		CFLAG:MASTER:듀얼레이트 += レート増減
+		IF CFLAG:MASTER:듀얼레이트 >= CFLAG:MASTER:최대레이트
+			CFLAG:MASTER:최대레이트 = CFLAG:MASTER:듀얼레이트
+		ENDIF
+
 		CFLAG:TARGET:듀얼레이트 -= レート増減
 		SIF CFLAG:TARGET:듀얼레이트 == 0
 			CFLAG:TARGET:듀얼레이트 = -1

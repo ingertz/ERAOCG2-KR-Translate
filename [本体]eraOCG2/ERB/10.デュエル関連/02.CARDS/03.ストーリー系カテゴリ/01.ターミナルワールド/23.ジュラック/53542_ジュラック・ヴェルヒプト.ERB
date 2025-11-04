@@ -1,0 +1,138 @@
+﻿@CARDNAME_53542,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 벨히프트
+	CASE "略称"
+		RESULTS = Ｊ 벨히프트
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_53542(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 無性
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN RARE
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_53542(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+CALL RESETCONDITION_MAT
+素材条件素材攻撃力起動 = 1
+必要レベル数 = 5
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+	素材条件종족 = 비늘야수족
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,53542) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_53542(종류)
+#DIM DYNAMIC 종류
+PRINTL 튜너＋튜너以外の비늘야수족モンスター１体以上
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードの攻撃力・守備力は、このカードのＳ素材としたモンスターの元々の攻撃力を合計した数値になる。
+CALL CARD_ABLE(1,攻撃時誘発)
+PRINTL ②：このカードが守備표시モンスターを攻撃したダメージステップ開始時に발동できる。
+PRINTL その守備표시モンスターを破壊する。
+;このカードが裏側守備표시モンスターを攻撃したダメージステップ開始時に발동できる。
+;その裏側守備표시モンスターを破壊する。(なにも裏側に限定しなくてもいいと思ったので強化)
+
+
+@CARDCAN_53542(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,53542)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	SIF GETVAR(@"%対面者%_MZ_表:戦闘場所(듀얼리스트,1)") == 1 
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_53542(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 能力修正
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;PRINTFORMW 종류:{종류}
+
+IF 종류 == 攻守変動
+	能力修正 = GETVAR(@"%듀얼리스트%_MZ_汎数:場所")
+	;PRINTFORMW 攻撃力修正 = {能力修正}
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,能力修正,能力修正)
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,53542)
+	IF RESULT == 0
+		選択カード = 戦闘場所(듀얼리스트,1)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"묘지")
+	ENDIF
+ENDIF

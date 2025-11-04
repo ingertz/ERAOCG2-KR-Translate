@@ -1,0 +1,291 @@
+@CARDNAME_5515,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 홍마관의 광기 플랑드르 스칼렛
+	CASE "略称"
+		RESULTS = 홍마관의플랑
+	CASE "カテゴリ"
+		RESULTS:0 = 홍마관
+		RESULTS:1 = 환상소녀
+		RESULTS:2 = 뱀파이어
+		RESULTS:3 = 플랑드르
+		RESULTS:4 = 동방 Project
+ENDSELECT
+
+@CARD_5515(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 800
+	CASE "성별"
+		RETURN 牝性
+	CASE "生成カード"
+		RETURN 105515
+	CASE "추가日"
+		RETURN 250705
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_5515(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "홍마관" 몬스터를 포함하는 몬스터 ２장 이상
+PRINTL 이 카드명의 ②③의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ①：이 카드가 특수소환에 성공한 경우에 발동할 수 있다。
+PRINTL 필드의 카드를 １장 파괴한다。
+CALL CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신 메인 페이즈에 발동할 수 있다。이 카드를 EX덱으로 되돌린다。
+PRINTL 그 후、"포 오브 어 카인드"을 ４장까지 특수 소환한다。
+PRINTL 이 효과를 발동한 턴 자신은 "플랑드르" 몬스터 밖에 EX덱에서 특수 소환할 수 없다。
+CALL CARD_ABLE(3,ターン終了時)
+PRINTL ③：자신의 엔드 페이즈에 필드의 카드 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 카드를 파괴한다。
+PRINTL 상대 필드에 카드가 존재하지 않고、상대 라이프 포인트가 ２０００이하로 있는 경우、대신에 상대 플레이어를 파괴한다。
+
+
+@CARDCAN_5515(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5515)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,5515)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,5515)
+		RETURN 0
+
+	RETURN 1
+ENDIF
+@CARDSUMMON_5515(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 4
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 홍마관
+ELSE
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,5515) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDEFFECT_5515(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5515)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5515,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,EX덱行き)
+		CALL CARD_GENERATE(듀얼리스트,105515,,,4)
+		CALL CARD_EX_RESTRICTION(듀얼리스트,"플랑드르")
+	ENDIF
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5515,3)
+	IF RESULT == 0
+
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ELSE
+			IF GETVAR(@"ライフ_%対面者%") <= 2000
+				SETCOLOR C_RED
+				PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+				PRINTL
+				PRINTFORMW "꾸욱 해서―――
+				PRINTFORMW 　　콰앙♪"
+				PRINTL
+				CUSTOMDRAWLINE ―
+
+				CALL FLASH(3)
+				CALL SET_PLAYER_INFO(듀얼리스트,"듀얼패배플래그",4,1)
+				PRINTFORML 
+				PRINTFORMW 상대플레이어는 파괴되어버렸습니다。
+				RESETCOLOR
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+@CARDNAME_105515(参照先)
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 포 오브 어 카인드
+	CASE "略称"
+		RESULTS = 분신플랑
+	CASE "カテゴリ"
+		RESULTS:0 = 홍마관
+		RESULTS:1 = 뱀파이어
+		RESULTS:4 = 동방 Project
+ENDSELECT
+
+
+@CARD_105515(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 1400
+	CASE "守備力"
+		RETURN 400
+	CASE "성별"
+		RETURN 牝性
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_105515(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+CALL CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ①：이 카드가 특수소환에 성공한 경우에 발동할 수 있다。
+PRINTL 필드의 카드를 １장 파괴한다。
+
+
+@CARDCAN_105515(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,105515)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 특수소환時
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_105515(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,105515)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ENDIF
+
+
+
+
+
+
+
+
+
+

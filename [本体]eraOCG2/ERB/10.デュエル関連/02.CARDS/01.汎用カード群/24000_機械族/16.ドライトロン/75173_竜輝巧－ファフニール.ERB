@@ -34,14 +34,14 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 
-PRINTL 자신 필드는 '파프니르'이 된다.
+PRINTL 자신 필드는 "파프니르"가 된다.
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①: 이 카드의 발동 시의 효과 처리로서,
-PRINTL 덱에서 '드라이트론－파프니르' 이외의 '드라이트론' 마법 / 함정 카드 1장을 패에 더할 수 있다.
+PRINTL 덱에서 "드라이트론－파프니르" 이외의 "드라이트론" 마법 / 함정 카드 1장을 패에 더할 수 있다.
 CALLFORM CARD_ABLE(0,효과後誘発)
 PRINTL ②: 의식 마법 카드의 효과 발동 및 그 발동한 효과는 무효화되지 않는다.
 CALLFORM CARD_ABLE(10,효과後誘発)
-PRINTL ③: 1턴에 1번, 자신 필드에 '드라이트론' 몬스터가 존재하는 상태에서,
+PRINTL ③: 1턴에 1번, 자신 필드에 "드라이트론" 몬스터가 존재하는 상태에서,
 PRINTL 몬스터가 앞면 표시로 소환 / 특수 소환된 경우에 발동할 수 있다.
 PRINTL 그 앞면 표시 몬스터의 레벨은 1개 내려간다.
 
@@ -61,13 +61,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,75173)
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 효과後誘発

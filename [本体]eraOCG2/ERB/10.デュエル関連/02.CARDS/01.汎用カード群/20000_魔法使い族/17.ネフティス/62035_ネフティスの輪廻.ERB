@@ -1,0 +1,154 @@
+@CARDNAME_62035,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 네프티스의 윤회
+	CASE "略称"
+		RESULTS = 네프티스의 윤회
+	CASE "カテゴリ"
+		RESULTS:0 = 네프티스
+		RESULTS:1 = 의식 마법
+ENDSELECT
+
+
+@CARD_62035(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62035(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "네프티스" 의식 몬스터의 강림에 필요.
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(0,마함起動 ,손패起動)
+PRINTL ①: 레벨의 합계가 의식 소환하는 몬스터의 레벨 이상이 되도록,
+PRINTL 자신의 패 / 필드의 몬스터를 묘지로 보내고,
+PRINTL 패에서 "네프티스" 의식 몬스터 1장을 의식 소환한다.
+;PRINTL "네프티스の祀り手" 또는 "네프티스の蒼凰신"を의식 소환한 경우에 は、
+PRINTL 그 후, 자신 필드에 "네프티스의 사제" 또는 "네프티스의 창황신"이 존재할 경우,
+PRINTL 추가로 상대 필드의 카드 1장을 고르고 파괴할 수 있다.
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ②: 이 카드가 효과로 파괴되어 묘지로 보내졌을 경우에 발동할 수 있다.
+PRINTL 묘지의 이 카드를 패에 넣는다.
+PRINTL 
+
+@CARDCAN_62035(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62035)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
+	素材範囲손패 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = 의식
+	효과条件カテゴリ = 네프티스
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;参考：하얀 숲
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,62035)
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = 네프티스의 윤회
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_62035(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62035)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件종류 = 의식
+		효과条件カテゴリ = 네프티스
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		選択カード_ID = RESULT:1
+		IF INRANGE (選択カード , 100, 199)
+			選択カード -= 100
+			CALL RESETAREA_MAT
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_손패:{選択カード}")}(듀얼리스트,選択カード)
+			素材範囲필드 = 1
+			素材範囲손패 = 1
+			TRYCALLFORM RITSUMMON(듀얼리스트, 選択カード,"손패")
+
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件名前:0 = 네프티스의 사제
+			효과条件名前:1 = 네프티스의 창황신
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				IF モンスター数(対面者) > 0 || 마함数(対面者) > 0
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과範囲상대마함 = 1
+					효과条件任意 = 1
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62035,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 네프티스의 윤회
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

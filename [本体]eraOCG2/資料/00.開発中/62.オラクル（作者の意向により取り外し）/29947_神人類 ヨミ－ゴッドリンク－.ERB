@@ -1,0 +1,151 @@
+﻿@CARDNAME_29947,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 神人類 ヨミ－ゴッドリンク－
+	CASE "略称"
+		RESULTS = 三体神ヨミ
+	CASE "カテゴリ"
+		RESULTS:0 = オラクル
+		RESULTS:1 = ゴッド
+		RESULTS:2 = ゴッド・ノヴァ
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_29947(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN リンク
+	CASE "属性"
+		RESULT:1 = 闇属性
+		RETURN 光属性
+	CASE "種族"
+		RESULT:1 = 悪魔族
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2000
+	CASE "性別"
+		RETURN 雄性
+	CASE "特殊制限"
+		RETURN 1
+	CASE "レア度"
+		RETURN SPR
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_29947(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC 条件達成
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要リンク数 = 3
+素材条件カテゴリ = ゴッド・ノヴァ
+素材条件固名前起動 = 1
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 神人類 ヨミ
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(決闘者,召喚カード,29947) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_29947(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「神人類 ヨミ」を含むカード名が異なる「ゴッド・ノヴァ」モンスター２体以上
+PRINTL 自分は「神人類 ヨミ－ゴッドリンク－」を１ターンに１度しか特殊召喚できない。
+CALLFORM CARD_ABLE(0,EX召喚時強制,特殊召喚時強制)
+PRINTL このカードはX素材を持つことができ、X素材を２つ持った状態で特殊召喚される。
+PRINTL このカードがモンスターゾーンを離れる場合、かわりにX素材を１つ取り除くことができる。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ①：このカードは攻撃誘導を持ち、１度のバトルフェイズ中に３回攻撃できる。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ②：このカードがフィールドに存在する限り、自分は効果ダメージを受けず、他の「オラクル」モンスターは対象耐性を得る。
+
+
+@CARDCAN_29947(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,29947)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == EX召喚時強制 || 種類 == 特殊召喚時強制
+	RETURN 1
+ELSEIF 種類 == 身代効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 破壊対象ゾーン != "戦場"
+		RETURN 0
+	SIF 破壊対象場所 != 場所
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_29947(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+IF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"追戦",2)
+	CALL SET_PLAYER_INFO(決闘者,"効果ダメージ無効",3)
+	CALL FULLRESET
+	効果条件カテゴリ = オラクル
+	効果条件他所 = 1
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"対耐")
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"攻誘")
+ELSEIF 種類 == EX召喚時強制 || 種類 == 特殊召喚時強制
+	CALL SET_FIELD_INFO(決闘者,"戦場",場所,"Ｘ",2)
+ELSEIF 種類 == 身代効果
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,29947,0,X消費1)
+	IF RESULT == 0
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

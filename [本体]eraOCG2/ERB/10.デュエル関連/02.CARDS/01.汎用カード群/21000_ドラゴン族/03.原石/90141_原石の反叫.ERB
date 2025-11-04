@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 원석의 반규
+		RESULTS = 원석의 반규
 	CASE "略称"
-RESULTS = 원석의 반규
+		RESULTS = 원석의 반규
 	CASE "カテゴリ"
-RESULTS:0 = 원석
+		RESULTS:0 = 원석
 ENDSELECT
 
 
@@ -61,9 +61,8 @@ SIF RESULT == 1
 IF 종류 == 효과後誘発
 	SIF 발동済_1(듀얼리스트,21141)
 		RETURN 0
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF FINAL_SUMMON_TARGET(듀얼리스트,1) == 5 
 		RETURN 0
@@ -110,7 +109,7 @@ ELSEIF 종류 == ターン開始時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,90141,2)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = 원석의 반규
+		효과条件名前 = 원석의 반규
 		효과추가종류 = 500
 		CALL CARD_SET_BASIC(듀얼리스트,"묘지",ゾーン,場所,"裏側표시")
 	ENDIF

@@ -1,0 +1,151 @@
+﻿@CARDNAME_51666,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = TG 할버드 캐논/버스터
+	CASE "略称"
+		RESULTS = TG할버드/B
+	CASE "カテゴリ"
+		RESULTS:0 = 테크지너스
+		RESULTS:1 = 버스터
+		RESULTS:2 = /버스터
+ENDSELECT
+
+
+@CARD_51666(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 4500
+	CASE "守備力"
+		RETURN 4500
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251026
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_51666(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは특수소환できず、「버스터 모드」の효과でのみ특수소환する事ができる。
+CALLFORM CARD_ABLE(0,소환誘発)
+PRINTL ①：１ターンに１度、상대がモンスターを소환・특수소환する際に발동できる。
+PRINTL それを無効にし、そのモンスターを破壊する。
+PRINTL （この효과は１ターン中に、자신の묘지のSモンスターの数まで使用できる。）
+CALLFORM CARD_ABLE(0,戦闘→묘지 ,破壊→묘지)
+PRINTL ②：このカードが破壊された時に발동できる。
+PRINTL 묘지から「TG 할버드 캐논」１体を특수소환する。
+
+
+@CARDSUMMON_51666(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+RETURN 0
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,51666) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_51666(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51666)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 最終소환決者 == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 싱크로
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") > RESULT
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = TG 할버드 캐논
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_51666(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC 효과ダメージ
+#DIM DYNAMIC 효과先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50257,30)
+	IF RESULT == 0
+		효과先 = 最終소환場所
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"完全제외")
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",효과先,"제외")
+	ENDIF
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51666)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = TG 할버드 캐논
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+

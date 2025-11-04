@@ -71,9 +71,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 攻撃時強制誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -91,9 +90,8 @@ IF 종류 == 攻撃時強制誘発
 
 	RETURN 1
 ELSEIF 종류 == ライフ変強制誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF ダメージ受者 != 듀얼리스트
 		RETURN 0
@@ -132,9 +130,8 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 		SIF メインフェイズ != 1
 			RETURN 0
 	ELSEIF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
 	ENDIF
 	RETURN 1
@@ -285,11 +282,11 @@ IF 종류 == 攻撃時強制誘発
 			효과条件他所 = 1
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 			IF RESULT != 1
-PRINTL 아무것도 없다……이곳은……출구이다！！
+				PRINTL 아무것도 없다……이곳은……출구이다！！
 				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
 				PRINTW 던전은 공략되어 붕괴했다。
 			ELSE
-PRINTL 막다른 곳에서 묘상이 된 몬스터들이 있었고 구출하는 데에 성공했다。
+				PRINTL 막다른 곳에서 묘상이 된 몬스터들이 있었고 구출하는 데에 성공했다。
 			ENDIF
 		ENDIF
 	ENDIF
@@ -333,7 +330,7 @@ ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 
 			PRINTFORMW 
 			PRINTFORMW 또한, 덱에서 뻗은 묘상은 %CALLNAME:조교대상%에 감싸며……。
 			PRINTFORMW 그 몸을 범하기 시작했습니다。
-			CALL EROTIC_MOVE("묘상 포박",조교대상,-1,1000)
+			CALL EROTIC_MOVE("묘상捕縛",조교대상,-1,1000)
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
@@ -390,6 +387,8 @@ SELECTCASE 参照先
 		RETURN 1500
 	CASE "守備力"
 		RETURN 0
+	CASE "自動소멸"
+		RETURN 1
 ENDSELECT
 RETURN 0
 

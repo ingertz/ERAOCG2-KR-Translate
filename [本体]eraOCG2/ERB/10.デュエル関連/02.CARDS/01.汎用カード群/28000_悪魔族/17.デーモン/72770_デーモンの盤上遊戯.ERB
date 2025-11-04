@@ -1,0 +1,212 @@
+﻿@CARDNAME_72770,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데몬의 스트래터지
+	CASE "略称"
+		RESULTS = Ｄ의 스트래터지
+	CASE "カテゴリ"
+		RESULTS:0 = 데몬
+ENDSELECT
+
+
+@CARD_72770(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72770(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドは「悪魔の遊戯盤」となる。
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：ＥＸ덱から특수소환された악마족モンスターの攻撃力は１０００アップする。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：以下の효과から１つを選択して발동できる。
+PRINTL ●자신の손패・묘지から악마족モンスター１体か「데몬」カード１枚を제외して발동できる。
+PRINTL 　덱からフィールド마법カード以外の「데몬」カード１枚を손패に加える。
+PRINTL ●덱から「데몬」Ｐモンスター１体をＥＸ덱に加える。
+
+@CARDCAN_72770(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72770)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,72770)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件종족 = 악마족
+	효과条件スーパーカテゴリ = 데몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 데몬
+	효과条件종류:0 = モン全般
+	효과条件종류:1 = 함정全般
+	효과条件종류:2 = 通常마법
+	효과条件종류:3 = 速攻마법
+	효과条件종류:4 = 지속마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 데몬
+	효과条件分割 = 펜듈럼
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72770(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 발동불가,2
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72770,2)
+	IF RESULT == 0
+		SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件종족 = 악마족
+		효과条件スーパーカテゴリ = 데몬
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 데몬
+		효과条件종류:0 = モン全般
+		효과条件종류:1 = 함정全般
+		효과条件종류:2 = 通常마법
+		효과条件종류:3 = 速攻마법
+		효과条件종류:4 = 지속마법
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 데몬
+		효과条件分割 = 펜듈럼
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+		
+		SIF 발동불가:0 == 1 && 발동불가:1 == 1
+			RETURN 0
+		
+		IF 발동불가:0 != 1 && 발동불가:1 != 1
+			CALL YN_CHOICE(듀얼리스트,"●덱からフィールド以外の「데몬」を손패に加える","●덱の「데몬」ＰをＥＸ덱に送る")
+		ELSEIF 발동불가:0 != 1
+			RESULT = 0
+		ELSEIF 발동불가:1 != 1
+			RESULT = 1
+		ENDIF
+
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件종족 = 악마족
+			효과条件スーパーカテゴリ = 데몬
+			효과条件行先플래그 = 제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = 데몬
+				효과条件종류:0 = モン全般
+				효과条件종류:1 = 함정全般
+				효과条件종류:2 = 通常마법
+				효과条件종류:3 = 速攻마법
+				효과条件종류:4 = 지속마법
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+
+		ELSEIF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 데몬
+			효과条件分割 = 펜듈럼
+			효과条件行先플래그 = EX덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72770)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件召種 = 召種EX덱
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000,0)
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,1000,0,72770)
+
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"悪魔の遊戯盤")
+ENDIF

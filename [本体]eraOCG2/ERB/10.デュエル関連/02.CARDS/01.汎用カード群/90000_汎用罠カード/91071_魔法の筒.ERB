@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 매직 실린더
+		RESULTS = 매직 실린더
 	CASE "略称"
-RESULTS = 매직 실린더
+		RESULTS = 매직 실린더
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -58,6 +57,10 @@ IF 종류 == 攻撃時誘発
 		RETURN 0
 	SIF ターンプレイヤー == 듀얼리스트
 		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
 	RETURN 1
 ENDIF
 
@@ -85,17 +88,17 @@ IF 종류 == 攻撃時誘発
 
 		CALL FULLRESET
 		효과範囲묘지 = 1
-효과条件名前 = 리로드 실린더
+		효과条件名前 = 리로드 실린더
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1 && GETVAR(@"%듀얼리스트%_제외NG置換") == 0
-PRINTL 묘지의 리로드 실린더를 제외하시겠습니까?
+			PRINTL 묘지의 리로드 실린더를 제외하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 		ELSE
 			RESULT = いいえ
 		ENDIF
 		IF RESULT == はい
 			CALL FULLRESET
-효과条件名前 = 리로드 실린더
+			효과条件名前 = 리로드 실린더
 			CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
 			SIF RESULT == 1
 				ダメージ量 = ダメージ量 * 2

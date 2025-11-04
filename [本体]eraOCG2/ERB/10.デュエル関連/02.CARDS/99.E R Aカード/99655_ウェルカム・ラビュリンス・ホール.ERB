@@ -41,7 +41,7 @@ PRINTL ②：상대 배틀 페이즈에 발동할 수 있다
 PRINTL 자신 필드의 암컷 몬스터를 마법 / 함정 존에 놓고 "고기구멍"으로 취급한다。
 CALL CARD_ABLE(3,攻撃時誘発)
 PRINTL ③：상대 몬스터 공격 선언 시 발동할 수 있다。
-PRINTL 자신의 마법 / 함정 존의 「고기구멍」１장을 묘지로 보내고, 그 수비력 만큼 공격 몬스터의 공격력을 감소 시킨다。
+PRINTL 자신의 마법 / 함정 존의 "고기구멍" １장을 묘지로 보내고, 그 수비력 만큼 공격 몬스터의 공격력을 감소 시킨다。
 PRINTL 그 후, 공격 몬스터의 공격력이 0이라면, 대상 몬스터를 파괴하고, 원래 공격력의 데미지 만큼 상대에게 준다。
 CALL TEXT_DECORATION("ROGUE")
 
@@ -98,9 +98,8 @@ ELSEIF 종류 == 攻撃時誘発
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -137,7 +136,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 ||
 		효과範囲필드 = 1
 		효과条件성별 = 牝性
 		효과추가カテ = 고기구멍
-		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",99655)
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",)
 		選択カード_ID = RESULT:1
 		CALL CARD_EROTICS(選択カード_ID)
 		IF RESULT != -1
@@ -163,12 +162,12 @@ ELSEIF 종류 == 攻撃時誘発
 	IF RESULT == 0
 		選択カード = 戦闘場所(듀얼리스트,1)
 		攻撃モンスター_ID = GETVAR(@"%対面者%_필드:選択カード")
-		TRYCALLFORM CARD_{攻撃モンスター_ID},"攻撃力"
+		TRYCALLFORM CARD_{攻撃モンスター_ID}("攻撃力")
 		攻撃力 = RESULT
 		CALL CARD_EROTICS(攻撃モンスター_ID)
 		攻撃モンスター = RESULT
 		IF 攻撃モンスター == -1
-			TRYCALLFORM CARDNAME_{攻撃モンスター_ID},"名前"
+			TRYCALLFORM CARDNAME_{攻撃モンスター_ID}("名前")
 			攻撃モンスター名 = %RESULTS%
 		ENDIF
 
@@ -176,7 +175,7 @@ ELSEIF 종류 == 攻撃時誘発
 		효과条件カテゴリ = 고기구멍
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"마함",ゾーン,場所)
 		守備モンスター_ID = RESULT:1
-		TRYCALLFORM CARD_{守備モンスター_ID},"守備力"
+		TRYCALLFORM CARD_{守備モンスター_ID}("守備力")
 		守備力 = RESULT
 		CALL CARD_EROTICS(守備モンスター_ID)
 		守備モンスター = RESULT
@@ -199,7 +198,7 @@ ELSEIF 종류 == 攻撃時誘発
 		ENDIF
 
 		CALL FULLRESET
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"永攻DOWN",99655,守備力)
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"永攻DOWN",守備力)
 		
 		CALL FULLRESET
 		IF (GETVAR(@"%対面者%_MZ_攻:選択カード") - 守備力) <= 0
@@ -219,7 +218,7 @@ ELSEIF 종류 == 攻撃時誘発
 				PRINTFORML
 			ENDIF
 			CALL FULLRESET
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"묘지",99655)
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"묘지")
 			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",攻撃力,1)
 		ENDIF
 	ENDIF

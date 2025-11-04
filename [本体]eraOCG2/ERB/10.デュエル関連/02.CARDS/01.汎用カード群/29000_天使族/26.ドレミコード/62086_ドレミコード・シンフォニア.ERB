@@ -1,0 +1,133 @@
+﻿@CARDNAME_62086,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 도레미코드 심포니아
+	CASE "略称"
+		RESULTS = ♪심포니아
+	CASE "カテゴリ"
+		RESULTS:0 = 도레미코드
+ENDSELECT
+
+
+@CARD_62086(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62086(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動 ,フリー誘発)
+PRINTL ①: 자신 필드의 앞면 표시의 "도레미코드"P 몬스터 카드의 종류에 따라 이하의 효과를 적용한다.
+PRINTL ●3종류 이상: 이 턴에, 자신 필드의 "도레미코드" 몬스터의 공격력은,
+PRINTL 자신 필드의 앞면 표시의 "도레미코드"P 몬스터 카드의 종류 × 300 올린다.
+PRINTL ●5종류 이상: 상대 필드의 카드 1장을 고르고 파괴하며, 자신은 덱에서 1장 드로우한다.
+PRINTL ●7종류 이상: EX덱에서 "그랜도레미코드" 몬스터 1장을 특수 소환할 수 있다.
+
+@CARDCAN_62086(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62086)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,62086)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲필드 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 도레미코드
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
+	효과条件표시 = 表側표시
+	효과条件CNT = 1	
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT <= 2
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_62086(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 도레미코드数 
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62086,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과範囲필드 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 도레미코드
+		효과条件固名前起動 = 1
+		효과条件표시 = 表側표시
+		효과条件CNT = 1	
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		도레미코드数 = RESULT
+		IF 도레미코드数 >= 3
+			PRINTFORMW 서장……
+			PRINTFORMW """Solfachord Trio！"""
+			PRINTFORMW 도레미코드들은 악기의 요정을 불러내어、각각 고무의 연주를 시작했다.
+		ENDIF
+		IF 도레미코드数 >= 5
+			PRINTFORMW 제 2장……！
+			PRINTFORMW """""Solfachord La Quintet""""""
+			PRINTFORMW 늦게온 두 사람이 합류하여 5인조로 정화의 연주를 시작했다.
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ENDIF
+		IF 도레미코드数 >= 7
+			PRINTFORMW 최종조곡……！！
+			PRINTFORMW """""""Solfachord... La Orchestra！！"""""""
+			PRINTFORMW 필드에 모인 도레미계의 천사들이 행복의 다중주를 연주하니、천상계의 문이 열렸다！
+			IF モンスター数(듀얼리스트) < 5
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과条件カテゴリ = 그랜도레미코드
+				효과条件任意 = 1
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ELSE
+				PRINTFORML
+				PRINTFORMW （자리에 빈자리가 없다는 것을 알게 되자、문은 조용히 닫혔다）
+			ENDIF
+		ENDIF
+		CALL FULLRESET
+		효과条件カテゴリ = 도레미코드
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"一攻",300 * 도레미코드数)
+
+
+	ENDIF
+ENDIF

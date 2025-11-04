@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 초중신동 워커-U4
+		RESULTS = 초중신동 워커-U4
 	CASE "略称"
-RESULTS = 와카U4
+		RESULTS = 워커U4
 	CASE "カテゴリ"
-RESULTS:0 = 초중무사
+		RESULTS:0 = 초중무사
 ENDSELECT
 
 
@@ -76,11 +76,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -186,7 +183,7 @@ ELSEIF 종류 == 마함起動
 		IF RESULT == 1
 			CALL FULLRESET
 			효과範囲마함 = 1
-효과条件名前 = 초중신동 워커-U4
+			효과条件名前 = 초중신동 워커-U4
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
@@ -212,7 +209,7 @@ ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24530,3)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = 초중신동 워커-U4
+		효과条件名前 = 초중신동 워커-U4
 		CALL CARD_SET_BASIC(듀얼리스트,"EX덱",ゾーン,場所,"表側표시")
 	ENDIF
 

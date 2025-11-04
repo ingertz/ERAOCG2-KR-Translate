@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 通常罠
 ENDSELECT
 
@@ -33,7 +32,7 @@ RETURN 0
 #DIM DYNAMIC 種類
 CALLFORM CARD_ABLE(0,攻撃時誘発)
 PRINTL ①：相手モンスターの攻撃宣言時に発動できる。その攻撃を無効にする。
-PRINTL その後、자신 필드의 光属性モンスターの攻撃力はターン終了時まで攻撃したモンスターの攻撃力分アップする。
+PRINTL その後、自分フィールドの光属性モンスターの攻撃力はターン終了時まで攻撃したモンスターの攻撃力分アップする。
 
 @CARDCAN_93170(決闘者,種類,ゾーン,場所)
 #DIMS DYNAMIC 決闘者
@@ -53,7 +52,8 @@ SIF RESULT == 1
 IF 種類 == 攻撃時誘発
 	SIF ゾーン != "魔罠"
 		RETURN 0
-	SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0

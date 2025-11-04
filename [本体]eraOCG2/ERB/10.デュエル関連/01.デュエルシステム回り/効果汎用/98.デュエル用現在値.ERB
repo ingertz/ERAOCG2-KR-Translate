@@ -634,6 +634,7 @@ SELECTCASE 듀얼리스트
 ENDSELECT
 
 
+
 @발동済_4(듀얼리스트,カードID)
 #FUNCTION
 #DIMS DYNAMIC 듀얼리스트
@@ -666,6 +667,107 @@ SELECTCASE 듀얼리스트
 ENDSELECT
 
 
+
+@발동済_P1(듀얼리스트,カードID)
+#FUNCTION
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カードID
+#DIM DYNAMIC カウンタ
+
+SIF うららチェック == 1
+	RETURNF 0
+
+FOR カウンタ,0,100
+	SIF 誘発選択済:カウンタ == カードID
+		RETURNF 1
+NEXT
+
+SELECTCASE 듀얼리스트
+	CASE "자신"
+		FOR カウンタ,0,100
+			SIF 자신_誘発選択済:カウンタ == カードID
+				RETURNF 1
+		NEXT
+		IF FINDELEMENT(자신_발동済효과_P1, カードID) != -1
+			RETURNF 1
+		ENDIF
+		RETURNF 0
+	CASE "상대"
+		FOR カウンタ,0,100
+			SIF 상대_誘発選択済:カウンタ == カードID
+				RETURNF 1
+		NEXT
+		SIF FINDELEMENT(상대_발동済효과_P1, カードID) != -1
+			RETURNF 1
+		RETURNF 0
+ENDSELECT
+
+@발동済_P2(듀얼리스트,カードID)
+#FUNCTION
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カードID
+#DIM DYNAMIC カウンタ
+SIF うららチェック == 1
+	RETURNF 0
+FOR カウンタ,0,100
+	SIF 誘発選択済:カウンタ == カードID
+		RETURNF 1
+NEXT
+
+SELECTCASE 듀얼리스트
+	CASE "자신"
+		FOR カウンタ,0,100
+			SIF 자신_誘発選択済:カウンタ == カードID
+				RETURNF 1
+		NEXT
+		SIF FINDELEMENT(자신_발동済효과_P2, カードID) != -1
+			RETURNF 1
+		RETURNF 0
+	CASE "상대"
+		FOR カウンタ,0,100
+			SIF 상대_誘発選択済:カウンタ == カードID
+				RETURNF 1
+		NEXT
+		SIF FINDELEMENT(상대_발동済효과_P2, カードID) != -1
+			RETURNF 1
+		RETURNF 0
+ENDSELECT
+
+
+@발동済_P3(듀얼리스트,カードID)
+#FUNCTION
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カードID
+#DIM DYNAMIC カウンタ
+SIF うららチェック == 1
+	RETURNF 0
+FOR カウンタ,0,100
+	SIF 誘発選択済:カウンタ == カードID
+		RETURNF 1
+NEXT
+
+SELECTCASE 듀얼리스트
+	CASE "자신"
+		FOR カウンタ,0,100
+			SIF 자신_誘発選択済:カウンタ == カードID
+				RETURNF 1
+		NEXT
+		SIF FINDELEMENT(자신_발동済효과_P3, カードID) != -1
+			RETURNF 1
+		RETURNF 0
+	CASE "상대"
+		FOR カウンタ,0,100
+			SIF 상대_誘発選択済:カウンタ == カードID
+				RETURNF 1
+		NEXT
+		SIF FINDELEMENT(상대_발동済효과_P3, カードID) != -1
+			RETURNF 1
+		RETURNF 0
+ENDSELECT
+
+
+
+
 @紋章済(듀얼리스트,カードID,紋章種)
 #FUNCTION
 #DIMS DYNAMIC 듀얼리스트
@@ -684,6 +786,8 @@ IF 紋章種 == 0
 		CASE "자신"
 			SIF FINDELEMENT(자신_永紋章, カードID) != -1
 				RETURNF 1
+			SIF FINDELEMENT(자신_短紋章, カードID) != -1
+			RETURNF 1
 			SIF FINDELEMENT(자신_永攻紋章, カードID) != -1
 				RETURNF 1
 			SIF FINDELEMENT(자신_時限紋章, カードID) != -1
@@ -692,6 +796,8 @@ IF 紋章種 == 0
 		CASE "상대"
 			SIF FINDELEMENT(상대_永紋章, カードID) != -1
 				RETURNF 1
+			SIF FINDELEMENT(상대_短紋章, カードID) != -1
+				RETURNF 1
 			SIF FINDELEMENT(상대_永攻紋章, カードID) != -1
 				RETURNF 1
 			SIF FINDELEMENT(상대_時限紋章, カードID) != -1
@@ -699,6 +805,7 @@ IF 紋章種 == 0
 			RETURNF 0
 	ENDSELECT
 ENDIF
+
 
 @지정場所(場所,ゾーン)
 #FUNCTION
@@ -748,6 +855,8 @@ ELSEIF 듀얼리스트 == "상대"
 ENDIF
 IF 対面플래그 == 1
 	リザルト = GETVAR(@"%対面者%_戦闘カード")
+ELSEIF 対面플래그 == 2
+	リザルト = GETVAR(@"%対面者%_戦闘カード") + 2000
 ELSE
 	リザルト = GETVAR(@"%듀얼리스트%_戦闘カード")
 ENDIF

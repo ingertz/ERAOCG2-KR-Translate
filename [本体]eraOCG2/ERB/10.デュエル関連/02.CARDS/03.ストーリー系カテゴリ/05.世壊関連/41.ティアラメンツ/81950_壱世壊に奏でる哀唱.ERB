@@ -54,8 +54,10 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,81950)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || (종류 == フリー誘発 && ゾーン == "마함")
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || 종류 == フリー誘発 && ゾーン == "마함" && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	SIF 발동済_1(듀얼리스트,81950)
+		RETURN 0
+	SIF ゾーン != "마함"
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
 		RETURN 0
@@ -84,10 +86,11 @@ ELSEIF 종류 == 덱→묘지
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発 && ゾーン == "마함" && GETVAR(@"%듀얼리스트%_魔_表:場所") == 2
+	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -108,7 +111,7 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || (종류 == フリー誘発 && ゾーン == "마함")
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || 종류 == フリー誘発 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81950,1)
 	IF RESULT == 0
 		CALL FULLRESET
@@ -126,8 +129,18 @@ ELSEIF 종류 == 덱→묘지
 		효과条件종류 = モン全般
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 	ENDIF
-ELSEIF 종류 == 마함起動
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 2
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81950)
 	IF RESULT == 0
+		TRYCALLFORM CARDCAN_81950(듀얼리스트,마함起動,"마함",場所)
+		IF RESULT == 1
+			PRINTFORML 
+			PRINTFORML 지금、효과를 사용하시겠습니까？
+			PRINTFORML 
+			CALL YN_CHOICE(듀얼리스트)
+			IF RESULT == 0
+				TRYCALLFORM CARDEFFECT_81950(듀얼리스트,마함起動,"마함",場所)
+			ENDIF
+		ENDIF
 	ENDIF
 ENDIF

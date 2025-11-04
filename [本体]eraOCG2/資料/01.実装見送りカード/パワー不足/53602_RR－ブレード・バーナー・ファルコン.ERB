@@ -37,9 +37,9 @@ SELECTCASE 参照先
 ENDSELECT
 RETURN 0
 
-@CARDSUMMON_53602(決闘者,소환カード,EX参照)
+@CARDSUMMON_53602(決闘者,召喚カード,EX参照)
 #DIMS DYNAMIC 決闘者
-#DIM DYNAMIC 소환カード
+#DIM DYNAMIC 召喚カード
 #DIM DYNAMIC EX参照
 #DIM DYNAMIC カウンタ
 
@@ -49,7 +49,7 @@ CALL RESETCONDITION_MAT
 素材条件種族 = 鳥獣族
 
 IF EX参照 == 1
-	CALL XYZCAN(決闘者,소환カード,53602) 
+	CALL XYZCAN(決闘者,召喚カード,53602) 
 	RETURN RESULT
 ENDIF
 
@@ -58,8 +58,8 @@ ENDIF
 #DIM DYNAMIC 種類
 
 PRINTL 鳥獣族レベル４モンスター×２
-CALLFORM CARD_ABLE(0,EX소환時)
-PRINTL ①：自分のLPが相手より３０００以上少ない状態でこのカードがX소환した場合に発動できる。
+CALLFORM CARD_ABLE(0,EX召喚時)
+PRINTL ①：自分のLPが相手より３０００以上少ない状態でこのカードがX召喚した場合に発動できる。
 PRINTL このカードの攻撃力は３０００アップする。
 CALLFORM CARD_ABLE(0,攻撃後誘発)
 PRINTL ②：このカードが戦闘で相手モンスターを破壊した場合に発動できる。
@@ -80,7 +80,7 @@ CALL 対面者判定(決闘者)
 CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,53602)
 SIF RESULT == 1
 	RETURN 0
-IF 種類 == EX소환時
+IF 種類 == EX召喚時
 	SIF GETVAR(@"ライフ_%決闘者%") + 3000 > GETVAR(@"ライフ_%対面者%") 
 		RETURN 0
 	RETURN 1
@@ -115,7 +115,7 @@ ENDIF
 CALL 対面者判定(決闘者)
 対面者 = %RESULTS%
 
-IF 種類 == EX소환時
+IF 種類 == EX召喚時
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,53602)
 	IF RESULT == 0
 		CALL SET_FIELD_INFO(決闘者,"戦場",場所,"永攻",3000)

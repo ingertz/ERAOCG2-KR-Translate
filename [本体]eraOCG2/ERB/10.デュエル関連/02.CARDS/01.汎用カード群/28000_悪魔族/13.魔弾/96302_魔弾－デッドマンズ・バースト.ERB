@@ -34,7 +34,7 @@ RETURN 0
 PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
 CALLFORM CARD_ABLE(1,발동誘発)
 PRINTL ①: 자신 필드에 앞면 표시의 "마탄환" 카드가 존재할 경우,
-PRINTL 상대가 마법·함정 / 몬스터의 효과를 발동했을 때 발동할 수 있다.
+PRINTL 상대가 마법 / 함정 / 몬스터의 효과를 발동했을 때 발동할 수 있다.
 PRINTL 그 발동을 무효로 하고 파괴한다.
 
 @CARDCAN_96302(듀얼리스트,종류,ゾーン,場所)
@@ -52,9 +52,17 @@ SIF RESULT == 1
 IF 종류 == 발동誘発
 	SIF 발동済_1(듀얼리스트,96302)
 		RETURN 0
-	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	IF ゾーン != "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン != "손패"
+		SIF GETVAR(@"%듀얼리스트%_手_発可:場所") == 0
+			RETURN 0
+	ELSE
 		RETURN 0
+	ENDIF
+
 
 	효과範囲필드 = 1
 	효과範囲마함 = 1

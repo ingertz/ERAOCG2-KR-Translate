@@ -1,0 +1,132 @@
+﻿@CARDNAME_1087,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 포츈 레이디 다르키
+	CASE "略称"
+		RESULTS = 다르키
+	CASE "カテゴリ"
+		RESULTS:0 = 포츈 레이디
+ENDSELECT
+
+
+@CARD_1087(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1087(종류)
+#DIM DYNAMIC 종류
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ①: 이 카드의 공격력, 수비력은 이 카드의 레벨 ×400이 된다.
+CALL CARD_ABLE(10,필드起動)
+PRINTL ②: 1턴에 1번, 자신 메인 페이즈에 발동할 수 있다.
+PRINTL 이 카드의 레벨을 1개 올린다.
+CALL CARD_ABLE(0,특수소환時)
+PRINTL ③: 자신 필드 위의 "포츈 레이디" 몬스터가 전투로 상대 몬스터를 파괴했을 경우에 발동할 수 있다.
+PRINTL 자신 묘지의 "포츈 레이디" 몬스터 1장을 특수 소환한다.
+PRINTL 그 몬스터의 공격력은 이 카드의 공격력만큼 업한다.
+
+@CARDCAN_1087(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1087)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) == 5
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF !MATCH(RESULTS,"포츈 레이디")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 포츈 레이디
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_1087(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC レベル修正
+IF 종류 == 攻守変動
+	CALL FULLRESET
+	攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_星:場所") * 400
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正,攻撃力修正)
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1087,10)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",1)
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1087)
+	IF RESULT == 0
+		攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:場所")
+		SIF 攻撃力修正 >= 9999
+			攻撃力修正 = 9999
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 포츈 레이디
+		효과추가종류 = 100000 + 攻撃力修正
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

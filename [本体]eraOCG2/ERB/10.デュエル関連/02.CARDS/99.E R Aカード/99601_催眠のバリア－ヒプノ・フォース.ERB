@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 유혹의 베리어－히프노 포스－
+		RESULTS = 유혹의 베리어－히프노 포스－
 	CASE "略称"
-RESULTS = 유혹의 베리어
+		RESULTS = 유혹의 베리어
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:2 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:2 = E.R.A
 ENDSELECT
 
 
@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -58,9 +57,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 攻撃時誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -123,8 +121,8 @@ ELSEIF 종류 == ターン終了時予約
 	SIF RESULT == 1
 		条件달성 = 1
 	IF 条件달성 && 듀얼리스트 == "자신"
-PRINTL 상대 필드의 하인들이 당신에게 애교를 부리며 몸을 끌어당겼다.
-PRINTL 지금 이 순간부터 당신은 그녀들의 주인 ...... 그녀들을 어떻게 할지도 당신의 자유입니다.
+		PRINTL 상대 필드의 하인들이 당신에게 애교를 부리며 몸을 끌어당겼다.
+		PRINTL 지금 이 순간부터 당신은 그녀들의 주인 ...... 그녀들을 어떻게 할지도 당신의 자유입니다.
 	ENDIF
 ENDIF
 

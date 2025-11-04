@@ -1,0 +1,294 @@
+﻿@CARDNAME_72480,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 파워 캡슐
+	CASE "略称"
+		RESULTS = 파워 캡슐
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_72480(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "生成カード"
+		RETURN 172480
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72480(종류)
+#DIM DYNAMIC 종류
+
+PRINTL ①：자신 필드의 "초시공 전투기 빅 바이퍼" 1장을 선택하여 발동할 수 있다.
+PRINTL 이하의 효과 중에서 1개를 선택하여 적용한다.
+PRINTL ●그 카드의 공격력은 1200 올린다.
+PRINTL ●자신 필드에 덱 밖에서 "옵션" 1장을 특수 소환한다.
+PRINTL ●자신 필드에 덱 밖에서 "배리어" 1장을 수비 표시로 특수 소환한다.
+PRINTL ●자신 몬스터 존의 "시공 전투기" 카드의 수까지,
+PRINTL 　상대 필드의 카드를 선택하여 파괴한다.
+
+
+@CARDCAN_72480(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72480)
+SIF RESULT == 1
+	RETURN 0
+
+;汎用処理
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前:0 = 초시공 전투기 빅 바이퍼
+	효과条件名前:1 = 초시공 전투기 빅토리 바이퍼
+	효과条件名前:2 = 초차원전투기 레전드 빅토리 바이퍼
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_72480(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 破壊횟수
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72480)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前:0 = 초시공 전투기 빅 바이퍼
+		효과条件名前:1 = 초시공 전투기 빅토리 바이퍼
+		효과条件名前:2 = 초차원전투기 레전드 빅토리 바이퍼
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+
+		IF 듀얼리스트 == "자신"
+			PRINTL 
+			SETCOLOR C_YELLOW
+			PRINTL POWERCAPCELL AWAKEN
+			PRINTW SELECT CUSTOM
+			RESETCOLOR
+			PRINTL
+			PRINTL [0] - POWER UP
+			IF モンスター数(듀얼리스트) >= 5
+				PRINTL No. EMPTY
+				PRINTL No. EMPTY
+			ELSE
+				PRINTL [1] - OPTION
+				PRINTL [2] - ？
+			ENDIF
+			IF モンスター数(対面者) <= 0 && 마함数(対面者) <= 0
+				PRINTL NO TARGET
+			ELSE
+				PRINTL [3] - MISSILE
+			ENDIF
+			BINPUT
+		ELSE
+			IF モンスター数(듀얼리스트) < 5
+				SELECTCASE RAND:5
+					CASE 1
+						RESULT = 2
+					CASEELSE
+						RESULT = 1
+				ENDSELECT
+			ELSEIF モンスター数(対面者) > 0 || 마함数(対面者) > 0
+				RESULT = 3
+			ELSE
+				RESULT = 0
+			ENDIF
+		ENDIF
+
+		IF RESULT == 0
+			SETCOLOR C_YELLOW
+			PRINTW POWER UP！
+			RESETCOLOR
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永攻",1200)
+		ELSEIF RESULT == 1
+			SETCOLOR C_YELLOW
+			PRINTW GET OPTION！
+			RESETCOLOR
+			CALL FULLRESET
+			CALL CARD_GENERATE(듀얼리스트,24800)
+		ELSEIF RESULT == 2
+			SETCOLOR C_YELLOW
+			PRINTW GET BARRIER！
+			RESETCOLOR
+			CALL FULLRESET
+			CALL CARD_GENERATE(듀얼리스트,172480,"守備표시")
+		ELSEIF RESULT == 3
+
+			IF 듀얼리스트 == "자신"
+				SETCOLOR C_YELLOW
+				PRINTL TARGET LOCK……
+				RESETCOLOR
+			ENDIF
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = 시공 전투기
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			破壊횟수 = RESULT
+			IF 듀얼리스트 == "자신"
+				PRINTL
+				PRINT 　＞＞＞
+				PRINTBUTTON @"【FIRE！】",1
+				PRINTL ＜＜＜
+				BINPUT
+			ENDIF
+
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件任意 = 1
+			효과条件複数 = 100 - 破壊횟수
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+			
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+@CARDNAME_172480,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 배리어
+	CASE "略称"
+		RESULTS = 배리어
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_172480(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 2700
+	CASE "토큰"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_172480(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "파워 캡슐"의 효과로 특수 소환된다.
+PRINTL ①：이 카드가 필드에 존재하는 한 상대는 "배리어"만 공격할 수 없으며,
+PRINTL 자신 필드의 "시공 전투기" 몬스터는 효과로는 파괴되지 않는다.
+PRINTL ②：이 카드가 전투를 실행했을 경우,
+PRINTL 이 카드의 수비력은 전투를 실행한 상대 몬스터의 공격력만큼 감소한다.
+
+@CARDCAN_172480(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,172480)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	;이 카드가 戦闘
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	;戦闘したのが상대プレイヤーじゃない
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_172480(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 減少量
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 시공 전투기
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+	CALL FULLRESET
+	효과条件固名前 = 배리어
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"攻避")
+
+ELSEIF 종류 == 攻撃後強制誘発
+	;参考：마법の筒
+	減少量 = GETVAR(@"%対面者%_MZ_攻:(%対面者%_戦闘カード)")
+	;参考：ゾンバイア
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",-減少量)
+ENDIF
+

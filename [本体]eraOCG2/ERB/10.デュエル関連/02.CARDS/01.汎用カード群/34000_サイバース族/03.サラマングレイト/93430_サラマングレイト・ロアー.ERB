@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 샐러맨그레이트 로어
+		RESULTS = 샐러맨그레이트 로어
 	CASE "略称"
-RESULTS = 전생 포효-
+		RESULTS = 전생 로어
 	CASE "カテゴリ"
-RESULTS:0 = 샐러맨그레이트
+		RESULTS:0 = 샐러맨그레이트
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -71,9 +70,8 @@ IF 종류 == 발동誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
@@ -132,7 +130,7 @@ ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93430,2)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = 샐러맨그레이트 로어
+		효과条件名前 = 샐러맨그레이트 로어
 		효과추가종류 = 500
 		CALL CARD_SET_BASIC(듀얼리스트,"묘지",ゾーン,場所,"裏側표시")
 	ENDIF

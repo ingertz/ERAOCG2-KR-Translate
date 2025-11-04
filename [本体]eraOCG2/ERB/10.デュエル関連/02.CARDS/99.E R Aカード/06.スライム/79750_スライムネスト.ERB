@@ -33,7 +33,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.。
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.。
 CALL CARD_ABLE(1,손패起動)
 PRINTL ①：이 카드의 발동시의 효과 처리로서, 덱에서 「슬라임」 몬스터 1장을 패에 넣을 수 있다。
 CALL CARD_ABLE(2,마함起動)
@@ -96,16 +96,8 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 	;①を발동済みなら침묵
 	SIF 발동済_1(듀얼리스트,79750)
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ELSEIF 종류 == 손패起動
-		SIF 마함数(듀얼리스트) >= 5
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF

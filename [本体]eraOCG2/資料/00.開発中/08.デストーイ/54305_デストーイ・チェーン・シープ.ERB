@@ -1,0 +1,136 @@
+@CARDNAME_54305,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = デストーイ・チェーン・シープ
+	CASE "略称"
+		RESULTS = DT・鎖羊
+	CASE "カテゴリ"
+		RESULTS:0 = デストーイ
+ENDSELECT
+
+
+@CARD_54305(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 2000
+	CASE "性別"
+		RETURN 雄性
+	CASE "追加日"
+		RETURN 250829
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54305(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件種類 = トークン以外
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = エッジインプ・チェーン
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = ファーニマル
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(決闘者,召喚カード,54305)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54305(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「エッジインプ・チェーン」＋「ファーニマル」モンスター
+PRINTL 「デストーイ・チェーン・シープ」の(2)の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ①：このカードが戦闘を行う場合、
+PRINTL 相手はダメージステップ終了時まで魔法・罠・モンスターの効果を発動できない。
+CALLFORM CARD_ABLE(0,破壊→墓地 ,戦闘→墓地)
+PRINTL ②：このカードが戦闘または効果で破壊され墓地へ送られた場合に発動できる。
+PRINTL このカードを墓地から特殊召喚する。
+PRINTL この効果で特殊召喚したこのカードの攻撃力は８００アップする。
+
+
+@CARDCAN_54305(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,54305)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	SIF ゾーン != "墓地"
+		RETURN 0
+	;1ターンに1度の制限チェック
+	SIF 発動済_2(決闘者,54305)
+		RETURN 0
+	;召喚可能かチェック（モンスターゾーンが満杯ではないか）
+	SIF モンスター数(決闘者) >= 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54305(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 新場所
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"戦阻")
+ELSEIF 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,54305,2)
+	IF RESULT == 0
+		;このカード自身を墓地から特殊召喚
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件名前 = デストーイ・チェーン・シープ
+		効果追加種類:0 = 100000 + 800
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ENDIF

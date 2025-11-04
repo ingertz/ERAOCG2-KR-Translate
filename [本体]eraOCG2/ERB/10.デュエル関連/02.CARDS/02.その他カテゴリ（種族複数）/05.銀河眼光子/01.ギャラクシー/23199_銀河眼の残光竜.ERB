@@ -1,0 +1,166 @@
+@CARDNAME_23199,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 갤럭시아이즈 애프터글로우 드래곤
+	CASE "略称"
+		RESULTS = 은하안의 잔광룡
+	CASE "カテゴリ"
+		RESULTS:0 = 갤럭시아이즈
+		RESULTS:1 = 갤럭시
+ENDSELECT
+
+
+@CARD_23199(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2500
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_23199(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①: 자신 필드에 "갤럭시아이즈" 몬스터가 존재할 경우에 발동할 수 있다.
+PRINTL 이 카드를 패에서 수비 표시로 특수 소환한다.
+CALLFORM CARD_ABLE(2,묘지起動,フリー誘発)
+PRINTL ②: 자신 필드에 엑시즈 몬스터가 존재하고, 묘지에 이 카드가 존재하는 자신 / 상대 턴에 발동할 수 있다.
+PRINTL 패/덱에서 "은하안의 광자룡" 1장을 특수 소환하거나 묘지로 보낸다.
+PRINTL 묘지로 보냈을 경우, 자신 필드의 엑시즈 몬스터 1장의 엑시즈 소재를 1개 늘린다
+PRINTL (그 몬스터가 "No.62" 몬스터일 경우, 각성 상태로 한다).
+PRINTL 이 효과를 배틀 페이즈에 발동했을 경우, 자신 필드의 모든 "No." 엑시즈 몬스터의 공격력은 배가 된다.
+
+@CARDCAN_23199(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23199)
+SIF RESULT == 1
+	RETURN 0
+
+
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,23199)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,23199,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 갤럭시아이즈
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,23199)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 엑시즈
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+효과条件名前 = 갤럭시아이즈 포톤 드래곤
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_23199(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23199,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所,"守備표시")
+	ENDIF
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23199,2)
+	IF RESULT == 0
+		CALL YN_CHOICE(듀얼리스트,"특수 소환한다","묘지へ送る")
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+효과条件名前 = 갤럭시아이즈 포톤 드래곤
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,選択カード)
+		ELSEIF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+효과条件名前 = 갤럭시아이즈 포톤 드래곤
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,選択カード)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과条件종류 = 엑시즈
+				CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+				選択カード = RESULT
+				IF 選択カード != 9999
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"Ｘ",1)
+					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:選択カード")}("名前")
+					選択カード名前 = %RESULTS%
+					SIF 選択カード名前 == "No.62 갤럭시아이즈 프라임 포톤 드래곤" || 選択カード名前 == "CNo.62 네오 갤럭시아이즈 프라임 포톤 드래곤"
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"条達",2,1)
+				ENDIF
+			ENDIF
+		ENDIF
+		IF バトルフェイズ == 1
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
+					CONTINUE
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:選択カード")}("カテゴリ")
+				SIF RESULTS != "넘버즈"
+					CONTINUE
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"永攻",GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ"))
+			NEXT
+		ENDIF
+	ENDIF
+ENDIF
+

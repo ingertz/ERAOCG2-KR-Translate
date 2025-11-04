@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 트릭스터 라이트스테이지
+		RESULTS = 트릭스터 라이트스테이지
 	CASE "略称"
-RESULTS = 트릭스터스테이지
+		RESULTS = Ts스테이지
 	CASE "カテゴリ"
-RESULTS:0 = 트릭스터
+		RESULTS:0 = 트릭스터
 ENDSELECT
 
 
@@ -51,13 +51,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
@@ -89,7 +84,7 @@ ELSEIF 종류 == ライフ変強制誘発
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
-효과条件名前 = 트릭스터 라이트스테이지
+	효과条件名前 = 트릭스터 라이트스테이지
 	CALL CARD_CHECK_START_DATA(듀얼리스트)
 	SIF RESULT == 1
 		RETURN 0

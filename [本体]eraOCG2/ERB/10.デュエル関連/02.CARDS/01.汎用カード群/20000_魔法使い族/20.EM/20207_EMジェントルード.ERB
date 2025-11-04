@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = EM 젠틀루드
+		RESULTS = EM 젠틀루드
 	CASE "略称"
-RESULTS = EM 젠틀루드
+		RESULTS = EM 젠틀루드
 	CASE "カテゴリ"
-RESULTS:0 = 엔터메이트
+		RESULTS:0 = 엔터메이트
 ENDSELECT
 
 
@@ -74,9 +74,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
@@ -90,7 +89,7 @@ ELSEIF 종류 == 마함起動
 		RETURN 0
 	CALL FULLRESET
 	효과範囲마함 = 1
-효과条件名前 = EM 레이디앙쥬
+	효과条件名前 = EM 레이디앙쥬
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

@@ -10,8 +10,9 @@
 #DIM DYNAMIC カウンタB
 #DIM DYNAMIC カウンタC
 #DIM DYNAMIC EX参照
-#DIM DYNAMIC 選択カード,10
-#DIM DYNAMIC 選択カード_ID,10
+#DIM DYNAMIC 選択カード,99
+#DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 選択カード_ID_保
 #DIM DYNAMIC 소환カード
 #DIM DYNAMIC 소환カード_ID
 #DIM DYNAMIC 素材数
@@ -60,7 +61,7 @@ ENDIF
 
 
 IF 듀얼리스트 == "자신"
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_EX덱:{소환カード}")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_EX덱:{소환カード}")}("名前")
 	カード名 = %RESULTS%
 	PRINTFORML 소환 카드：《%カード名%》
 
@@ -105,11 +106,22 @@ IF 選択カード:素材数 == 9999
 	VARSET ALT条件
 	RETURN 0
 ELSEIF INRANGE (選択カード:素材数, 0, 5)
+	CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
+	選択カード_ID_保 = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")
+
+	CALL SELECT_UI_SET(듀얼리스트,選択カード_ID_保,1)
+	IF RESULT == 1
+		選択カード:素材数 = -1
+		GOTO CHOICE_LOOP
+	ENDIF
+
+
 	選択カード_ID:素材数 = GETVAR(@"%듀얼리스트%_필드:(選択カード:素材数)")	
 	IF 重ねてＸ == 1
 		重素材数 = GETVAR(@"%듀얼리스트%_MZ_Ｘ:(選択カード:素材数)") + 1
 	ENDIF
-	TRYCALLFORM CARDNAME_{GETVAR(@"選択カード_ID:{素材数}")}, "名前"
+
+	TRYCALLFORM CARDNAME_{選択カード_ID_保}("名前")
 	使用素材名前:素材数 = %RESULTS%
 	PRINTFORMW %使用素材名前:素材数%를 소재로합니다
 	;({素材数+1}体目)
@@ -121,7 +133,7 @@ ELSEIF INRANGE (選択カード:素材数, 0, 5)
 
 	IF 必要素材数 >= 3
 		VARSET RESULT
-		TRYCALLFORM CARD_{GETVAR(@"選択カード_ID:{素材数}")}, "XYZ代用"
+		TRYCALLFORM CARD_{選択カード_ID_保}("XYZ代用")
 		SIF RESULT == 1
 			代替素材数 = 必要素材数 - 1
 	ENDIF
@@ -139,13 +151,13 @@ IF 素材数 >= 必要素材数 || (素材数 >= 代替素材数 && 代替素材
 	VARSET 代替素材数
 	FOR カウンタ,0,素材数
 		IF 지정素材名前 != ""
-			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}, "名前"
+			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}("名前")
 			IF MATCH(지정素材名前, RESULTS)
 				条件달성 = 1
 			ENDIF
 		ENDIF
 		IF 지정素材カテゴリ != ""
-			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}("カテゴリ")
 			FOR カウンタC,0,5
 				IF RESULTS:カウンタC != ""
 					SIF MATCH(RESULTS:カウンタC, 지정素材カテゴリ)
@@ -156,13 +168,13 @@ IF 素材数 >= 必要素材数 || (素材数 >= 代替素材数 && 代替素材
 			NEXT
 		ENDIF
 		IF 지정素材속성 != 0
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "속성"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("속성")
 			IF MATCH(지정素材속성, RESULT)
 				条件달성 = 1
 			ENDIF
 		ENDIF
 		IF 지정素材종족 != 0
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "종족"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("종족")
 			IF MATCH(지정素材종족, RESULT)
 				条件달성 = 1
 			ENDIF
@@ -170,7 +182,7 @@ IF 素材数 >= 必要素材数 || (素材数 >= 代替素材数 && 代替素材
 
 		IF 지정素材종류 != 0
 			VARSET 検出종류, -1
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "종류"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("종류")
 			FOR カウンタC,0,5
 				SIF RESULT:カウンタC <= 0
 					CONTINUE
@@ -201,7 +213,7 @@ IF 素材数 >= 必要素材数 || (素材数 >= 代替素材数 && 代替素材
 	TRYCALLFORM CARD_FINISHER_SHOKO(듀얼리스트,소환カード_ID)
 
 	CALL MAT_EVENT_CHECK(듀얼리스트,カード名,使用素材名前) 
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_EX덱:소환カード")}, "レベル"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_EX덱:소환カード")}("レベル")
 	PRINTFORMW 엑시즈 소환！랭크{RESULT}！%カード名%！！
 	IF 素材数起動 == 1
 		SETVAR @"%듀얼리스트%_MZ_汎数:現필드(듀얼리스트)", 素材数
@@ -233,7 +245,8 @@ ENDIF
 #DIM DYNAMIC 소환カード
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 素材数
-#DIM DYNAMIC 選択カード,10
+#DIM DYNAMIC 選択カード,99
+#DIM DYNAMIC 選択カード_ID,99
 
 VARSET 選択カード, -1
 

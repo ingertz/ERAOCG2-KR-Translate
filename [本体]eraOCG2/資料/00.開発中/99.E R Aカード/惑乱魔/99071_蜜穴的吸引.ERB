@@ -1,0 +1,184 @@
+﻿@CARDNAME_99071,参照先
+;ココで指定卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 蜜穴のひきつけ
+	CASE "略称"
+		RESULTS = 蜜穴ひきつけ
+	CASE "カテゴリ"
+		RESULTS:0 = 蜜穴
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_99071(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常罠
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_99071(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("ROGUE")
+CALLFORM CARD_ABLE(0,魔罠起動,フリー誘発)
+PRINTL ①：自分フィールドの「惑乱魔」モンスター１体と相手フィールドのモンスター１体を対象として発動できる。
+PRINTL 対象の相手モンスターの攻撃力は対象の自分モンスターの守備力分ダウンし、
+PRINTL その相手モンスターに対象の自分のモンスターの蟲紋カウンターを１つ置く。
+CALLFORM CARD_ABLE(1,墓地起動,フリー誘発)
+PRINTL ②：墓地のこのカードを除外し、相手フィールドのモンスター１体と自分フィールドの「惑乱魔」モンスター１体を対象として発動できる。
+PRINTL 対象の相手モンスターに蟲紋カウンターが置かれている場合、このターン、対象の自分モンスターは戦闘では破壊されない。
+CALL TEXT_DECORATION("ROGUE")
+
+
+
+@CARDCAN_99071(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 效果限制达成
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件达成
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,99071)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == フリー誘発
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = 惑乱魔
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1     
+    
+ELSEIF 種類 == 墓地起動 || (種類 == フリー誘発 && ゾーン == "墓地")
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+		
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = 惑乱魔
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+ENDIF
+
+@CARDEFFECT_99071(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 选择卡片,2
+#DIM DYNAMIC 选择卡片_ID
+#DIM DYNAMIC 调教对象,2
+#DIM DYNAMIC 攻撃力修正,2
+#DIM DYNAMIC 性別判定
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 魔罠起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,99071)
+	IF RESULT == 0
+        CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+        CALL FULLRESET
+        効果範囲戦場 = 1
+        効果条件カテゴリ = 惑乱魔
+        CALL CARD_CHOOSE_BASIC(決闘者,"戦場",ゾーン,場所)
+        选择卡片:0 = RESULT
+		选择卡片_ID = RESULT:99
+        IF 选择卡片:0 != 9999
+        	攻撃力修正:0 = GETVAR(@"%決闘者%_MZ_守:(选择卡片:0)")
+        	CALL FULLRESET
+            効果範囲相手戦場 = 1
+			効果条件表示 = 表側表示
+            CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+            选择卡片:1 = RESULT
+            IF 选择卡片:1 != 9999
+            	CALL CARD_REMOVAL_BASIC(決闘者,"自動処理",选择卡片:1,"永攻DOWN",攻撃力修正:0)
+				CALL TRAPSEX_FACETIRON3(決闘者,ゾーン,種類,場所,选择卡片:1,选择卡片_ID)
+				CALL CARD_LOADUP
+				攻撃力修正:1 = GETVAR(@"%対面者%_MZ_攻:(选择卡片:1)")
+				性別判定 = GETVAR(@"%対面者%_MZ_性:(选择卡片:1)")
+
+				调教对象:0 = GETVAR(@"%決闘者%_戦場:(选择卡片:0)")
+                调教对象:1 = GETVAR(@"%対面者%_戦場:(选择卡片:1)")
+
+				CALL SEXTEXT_99071_1_1(決闘者,性別判定,调教对象:0,调教对象:1)
+            ENDIF
+        ENDIF
+    ENDIF
+
+ELSEIF 種類 == 墓地起動 || (種類 == フリー誘発 && ゾーン == "墓地")
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,99071)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件表示 = 表側表示
+		CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+		选择卡片:1 = RESULT
+		IF 选择卡片:1 != 9999
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件カテゴリ = 惑乱魔
+			効果条件表示 = 表側表示
+			CALL CARD_CHOOSE_BASIC(決闘者,"戦場",ゾーン,場所)
+			选择卡片:0 = RESULT
+			IF 选择卡片:0 != 9999
+				CALL TRAPSEX_FACETIRON1(対面者,选择卡片:1)
+				IF RESULT >= 1
+					调教对象:0 = GETVAR(@"%決闘者%_戦場:(选择卡片:0)")
+					调教对象:1 = GETVAR(@"%対面者%_戦場:(选择卡片:1)")
+					性別判定 = GETVAR(@"%対面者%_MZ_性:(选择卡片:1)")
+
+					CALL SEXTEXT_99071_2_1(決闘者,性別判定,调教对象:0,调教对象:1)
+					
+					CALL STATCHANGE_EFFECT(決闘者,"自身",(选择卡片:0),"戦耐",1)
+				ENDIF
+			ENDIF
+		ENDIF
+    ENDIF
+ENDIF

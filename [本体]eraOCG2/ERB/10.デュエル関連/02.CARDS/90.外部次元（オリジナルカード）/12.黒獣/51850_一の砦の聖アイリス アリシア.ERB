@@ -1,0 +1,338 @@
+@CARDNAME_51850,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 1의 방패의 성 아이리스 앨리시아
+	CASE "略称"
+		RESULTS = 성앨리시아
+	CASE "カテゴリ"
+		RESULTS:0 = 7방패 동맹
+		RESULTS:1 = 쿠로이누
+ENDSELECT
+
+@CARD_51850(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "連動ID"
+		RETURN 4710
+	CASE "추가日"
+		RETURN 250707
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_51850(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 1
+素材条件종족 = 전사족
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,51850) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_51850(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 이 카드명의 P효과는 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(1,발동誘発)
+PRINTL ①：이 카드명 이외의 몬스터의 효과가 발동한 경우에、
+PRINTL 자신 필드에 "7방패 동맹의 상징 셀레스틴" 또는 "2의 방패의 공주 프림"이 존재한다면 발동할 수 있다。
+PRINTL 이 카드를 특수 소환한다。
+PRINTL 그 후, 이 카드의 X소재를 1개 늘리는 것으로, 발동한 효과를 무효로 할 수 있다。
+CALL TEXT_DECORATION("P_MAGIC_2")
+PRINTL 레벨1 전사족 몬스터×2
+CALL CARD_ABLE(2,EX덱起動)
+PRINTL 이 카드명의 카드는 1턴에 1번、
+PRINTL 자신 필드에 "7방패 동맹의 상징 셀레스틴" 또는 "2의 방패의 공주 프림"이 존재할 경우、
+PRINTL 자신 필드의 "1의 방패의 여기사 앨리시아" 위에 겹쳐서 X소환할 수 있다。
+PRINTL 이 카드명의 ①② 몬스터 효과는 각각 1턴에 1번밖에 사용할 수 없다。
+CALL CARD_ABLE(3,EX소환時,특수소환時)
+PRINTL ①：이 카드가 특수 소환된 경우에 발동할 수 있다。
+PRINTL 이 카드의 X소재를 1개 제거하고, 이 턴 동안 이 카드는 각성 상태가 되며、
+PRINTL 공격력이 자신 필드에 존재하는 "7방패 동맹" 몬스터의 레벨 또는 랭크 종류×200 오른다。
+CALL CARD_ABLE(4,효과後誘発)
+PRINTL ②：이 카드명 이외의 몬스터가 특수 소환된 경우에、
+PRINTL 자신 필드에 "7방패 동맹의 상징 셀레스틴" 또는 "2의 방패의 공주 프림"이 존재한다면 발동할 수 있다。
+PRINTL 이 카드를 마법&함정존에 앞면 표시로 놓고、
+PRINTL EX덱 / 마법&함정존의 이 카드명 이외이면서 EX몬스터 이외의 "7방패 동맹"P몬스터 1장을 특수 소환한다。
+
+
+@CARDCAN_51850(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51850)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,51850)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") > 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	효과条件固名前 = 1의 방패의 성 아이리스 앨리시아
+	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前:0 = 7방패 동맹의 상징 셀레스틴
+	효과条件名前:1 = 二の砦の無垢姫 프림
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,51850,"마함")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX덱起動
+	SIF 발동済_2(듀얼리스트,51850)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前:0 = 7방패 동맹의 상징 셀레스틴
+	효과条件名前:1 = 二の砦の無垢姫 프림
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 1의 방패의 여기사 앨리시아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF 발동済_3(듀얼리스트,51850)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") < 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_4(듀얼리스트,51850)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	효과条件固名前 = 1의 방패의 성 아이리스 앨리시아
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",2)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前:0 = 7방패 동맹의 상징 셀레스틴
+	효과条件名前:1 = 2의 방패의 공주 프림
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 7방패 동맹
+	효과条件分割 = 펜듈럼
+	효과条件종류 = EX以外全般
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_51850(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 候補제외レベル,12
+#DIM DYNAMIC カウンタB
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51850)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51850,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			IF 듀얼리스트 == "자신"
+				PRINTL 이 카드의 Ｘ소재를 １개 늘리고、발동한 효과를 무효로 하시겠습니까？
+				CALL YN_CHOICE(듀얼리스트)
+			ELSE
+				SIF 効後_実行者:(効後_カウンタ - 2) == 듀얼리스트
+					RESULT = いいえ
+			ENDIF
+			IF RESULT == はい
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"Ｘ",1)
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+				RETURN 1
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51850,2)
+	IF RESULT == 0
+		CALL RESETCONDITION_MAT
+		必要素材数 = 1
+		효과範囲필드 = 1
+		素材条件名前 = 1의 방패의 여기사 앨리시아
+		重ねてＸ = 1
+		TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+	ENDIF
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51850,3,X消費1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"条達",1,上書きモード)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51850,4)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲마함 = 1
+			효과範囲EX덱 = 1
+			효과条件종류 = EX以外全般
+			효과条件固名前 = 1의 방패의 성 아이리스 앨리시아
+			효과条件分割 = 펜듈럼
+			효과条件カテゴリ = 7방패 동맹
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	FOR カウンタ, 0, 6
+		;MZ
+		選択カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+		IF 選択カード != -1
+			VARSET 条件달성
+			TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+			SIF MATCH(RESULTS, "7방패 동맹")
+				条件달성 ++
+			IF GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ") > -1
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ")}("カテゴリ")
+				SIF MATCH(RESULTS, "7방패 동맹")
+					条件달성 ++
+			ENDIF
+			;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
+			IF GETVARS(@"%듀얼리스트%_MZ_改名:カウンタ") != ""
+				VARSET 条件달성
+			ENDIF
+			SIF GETVARS(@"%듀얼리스트%_MZ_追カテ:カウンタ") == "7방패 동맹"
+				条件달성++
+			SIF GETVARS(@"%듀얼리스트%_MZ_追カテ2:カウンタ") == "7방패 동맹"
+				条件달성++
+			IF 条件달성 > 0 && GETVAR(@"%듀얼리스트%_MZ_星:カウンタ") - 1 > 0
+				候補제외レベル:(GETVAR(@"%듀얼리스트%_MZ_星:カウンタ") - 1) = 1
+			ENDIF
+		ENDIF
+		;마함
+		選択カードID = GETVAR(@"%듀얼리스트%_마함:カウンタ")
+		IF 選択カード != -1
+			VARSET 条件달성
+			TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+			SIF MATCH(RESULTS, "7방패 동맹")
+				条件달성++
+			;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
+			IF GETVARS(@"%듀얼리스트%_魔_改名:カウンタ") != ""
+				VARSET 条件달성
+			ENDIF
+			SIF GETVARS(@"%듀얼리스트%_魔_追カテ:カウンタ") == "7방패 동맹"
+				条件달성++
+			SIF GETVARS(@"%듀얼리스트%_魔_追カテ2:カウンタ") == "7방패 동맹"
+				条件달성++
+			IF 条件달성 > 0
+				TRYCALLFORM CARD_{選択カードID}("レベル")
+				SIF RESULT > 0
+					候補제외レベル:(RESULT - 1) = 1
+			ENDIF
+		ENDIF
+	NEXT
+	カウンタ = MATCH(候補제외レベル,1)
+	IF カウンタ > 0
+		CALL FULLRESET
+		CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,カウンタ*200)
+	ENDIF
+	RETURN 0
+ENDIF

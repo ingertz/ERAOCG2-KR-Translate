@@ -7,13 +7,13 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마계대본 "마계의 하렘"
+		RESULTS = 음마계대본 "마계의 하렘"
 	CASE "略称"
-RESULTS = "마계 하렘"
+		RESULTS = "마계 하렘"
 	CASE "カテゴリ"
-RESULTS:0 = 마계대본
-RESULTS:1 = 음마계대본
-RESULTS:2 = E.R.A
+		RESULTS:0 = 마계대본
+		RESULTS:1 = 음마계대본
+		RESULTS:2 = E.R.A
 ENDSELECT
 
 
@@ -62,9 +62,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,79808)
 		RETURN 0
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -145,12 +144,12 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 			FOR カウンタ,0,5
 				SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
 					CONTINUE
-				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}, "カテゴリ"	
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}("カテゴリ")	
 				IF !MATCH(RESULTS, "음마계극단")
 					SIF GETVARS(@"%듀얼리스트%_MZ_追カテ:{カウンタ}") != "음마계극단"
 						CONTINUE
 				ENDIF
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}, "성별"	
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}("성별")	
 				SIF !MATCH(RESULT, 牝性)
 					CONTINUE
 				CALL CARD_EROTICS(GETVAR(@"%듀얼리스트%_필드:{カウンタ}"))
@@ -163,7 +162,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 						PRINTL
 					ELSE
 						SETCOLOR C_YELLOW
-						PRINTFORM %TEXTR("一方、/負けじと、/さらに、/そして、")%
+						PRINTFORM %TEXTR("한편、/지지않고、/추가로、/그리고、")%
 					ENDIF
 					SELECTCASE RAND:5
 						CASE 0
@@ -220,13 +219,13 @@ ELSEIF 종류 == 破壊→묘지
 			PRINTL
 			SELECTCASE RAND:4
 				CASE 0
-					PRINTFORMW %CALLNAME:(女優대상:0)%と %CALLNAME:(女優대상:1)%는 양쪽에서 %CALLNAME:MASTER%의 자지를 끼우고 봉사하고있다
+					PRINTFORMW %CALLNAME:(女優대상:0)%와 %CALLNAME:(女優대상:1)%는 양쪽에서 %CALLNAME:MASTER%의 자지를 끼우고 봉사하고있다
 					PRINTL
 					RESETCOLOR
 					CALL EROTIC_MOVE("파이즈리",女優대상:0,MASTER,500)
 					CALL EROTIC_MOVE("파이즈리",女優대상:1,MASTER,500)
 				CASE 1
-					PRINTFORMW %CALLNAME:(女優대상:0)%と %CALLNAME:(女優대상:1)%는 양쪽에서 %CALLNAME:MASTER%의 자지를 번갈아가며 핥고있다
+					PRINTFORMW %CALLNAME:(女優대상:0)%와 %CALLNAME:(女優대상:1)%는 양쪽에서 %CALLNAME:MASTER%의 자지를 번갈아가며 핥고있다
 					PRINTL
 					RESETCOLOR
 					CALL EROTIC_MOVE("펠라치오",女優대상:0,MASTER,500)

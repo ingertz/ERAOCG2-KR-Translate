@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 엔젤 티어
+		RESULTS = 엔젤 티어
 	CASE "略称"
-RESULTS = A 티어
+		RESULTS = A 티어
 	CASE "カテゴリ"
-RESULTS:0 = 발할라
-RESULTS:1 = 게임 오리지널
+		RESULTS:0 = 발할라
+		RESULTS:1 = 게임 오리지널
 ENDSELECT
 
 
@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -62,7 +61,8 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,92961)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
@@ -117,7 +117,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				CALL FULLRESET
 				효과範囲마함 = 1
 				효과範囲묘지 = 1
-효과条件名前 = 신의 거성－발할라
+				효과条件名前 = 신의 거성－발할라
 				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 				IF RESULT == 1
 					IF ターンプレイヤー == 対面者 && 戦闘場所(듀얼리스트) == 5

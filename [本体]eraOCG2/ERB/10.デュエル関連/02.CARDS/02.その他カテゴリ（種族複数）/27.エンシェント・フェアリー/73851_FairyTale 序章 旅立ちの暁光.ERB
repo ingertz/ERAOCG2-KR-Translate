@@ -1,0 +1,169 @@
+﻿@CARDNAME_73851,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = FairyTale 서장 여정의 새벽빛
+	CASE "略称"
+		RESULTS = FT여정의 새벽빛
+	CASE "カテゴリ"
+		RESULTS:0 = 요정
+ENDSELECT
+
+
+@CARD_73851(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 250322
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_73851(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신 필드는 "서장 여정의 새벽빛"이 된다.
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(0,지속효과,攻撃時強制誘発)
+PRINTL ①: 이 카드가 필드 존에 존재하는 한, 서로가 받는 전투 데미지는 절반이 된다.
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②: 자신 필드에 야수족 빛 속성 몬스터 또는 레벨 7 8의 드래곤족 S 몬스터가
+PRINTL 존재할 경우에 발동할 수 있다. 자신은 1장 드로우한다.
+CALLFORM CARD_ABLE(3,ターン開始時)
+PRINTL ③: 자신 턴 개시 시에, 필드 존의 이 카드를 묘지로 보내고 발동할 수 있다.
+PRINTL 자신의 손패 덱에서, "FairyTale 서장 여정의 새벽빛" 이외의
+PRINTL 필드 마법 카드 1장을 자신의 필드 존에 앞면 표시로 놓는다.
+
+
+@CARDCAN_73851(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과발동플래그
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73851)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,73851)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 야수족
+	효과条件속성 = 빛속성
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		효과발동플래그 |= 1
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 싱크로
+	효과条件종족 = 드래곤족
+	효과条件レベル:0 = 7
+	효과条件レベル:1 = 8
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		효과발동플래그 |= 2
+	SIF (효과발동플래그 & 1) && (효과발동플래그 & 2)
+		RETURN 0
+	;ドロー효과仮置き
+	SIF GETVAR(@"%듀얼리스트%_ドロー불가") >= 1
+		효과발동플래그 |= 2
+	SIF (효과발동플래그 & 1) && (효과발동플래그 & 2)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;SIF 발동済_1(듀얼리스트,73851)
+	;	RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時
+	;SIF 발동済_3(듀얼리스트,73851)
+	;	RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件종류 = フィールド
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_73851(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 攻撃力修正
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73851,2)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73851,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == ターン開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73851,3)
+	IF RESULT == 0
+		;이 카드를 묘지送り
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		;フィールド마법 카드１장을 골라 앞면 표시로 置く
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件종류 = フィールド
+		효과条件固名前 = FairyTale 서장 여정의 새벽빛
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "서장 여정의 새벽빛")
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ半化",3)
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ半化",3,1)
+ENDIF
+

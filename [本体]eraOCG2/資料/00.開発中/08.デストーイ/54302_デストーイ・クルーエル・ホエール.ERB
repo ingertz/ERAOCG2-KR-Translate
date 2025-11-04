@@ -1,0 +1,174 @@
+@CARDNAME_54302,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = デストーイ・クルーエル・ホエール
+	CASE "略称"
+		RESULTS = DT・残鯨
+	CASE "カテゴリ"
+		RESULTS:0 = デストーイ
+ENDSELECT
+
+
+@CARD_54302(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2600
+	CASE "守備力"
+		RETURN 2400
+	CASE "性別"
+		RETURN 雄性
+	CASE "追加日"
+		RETURN 250829
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54302(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件種類 = トークン以外
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = エッジインプ
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = ファーニマル
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(決闘者,召喚カード,54302)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54302(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「エッジインプ」モンスター＋「ファーニマル」モンスター
+CALLFORM CARD_ABLE(0,EX召喚時)
+PRINTL ①：このカードが融合召喚に成功した場合に発動できる。
+PRINTL 自分及び相手フィールドのカードを１枚ずつ選んで破壊する。
+CALLFORM CARD_ABLE(0,戦場起動)
+PRINTL ②：１ターンに１度、自分フィールドの融合モンスター１体を対象として発動できる。
+PRINTL デッキ・ＥＸデッキから「デストーイ・クルーエル・ホエール」以外の「デストーイ」カード１枚を墓地へ送り、
+PRINTL 対象のモンスターの攻撃力はターン終了時まで、自身の元々の攻撃力の半分だけアップする。
+
+
+@CARDCAN_54302(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,54302)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EX召喚時
+	;自分または相手フィールドにカードがあるかチェック
+	SIF モンスター数(決闘者) + 魔罠数(決闘者) + モンスター数(対面者) + 魔罠数(対面者) < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_1(決闘者,54302)
+		RETURN 0
+	;自分フィールドに融合モンスターがいるかチェック
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = 融合
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;デッキに「デストーイ」カードがあるかチェック
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = デストーイ
+	効果条件固名前 = デストーイ・クルーエル・ホエール
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54302(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 対象カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 元攻撃力
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == EX召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,54302,1)
+	IF RESULT == 0
+		;自分フィールドのカード1枚を破壊
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果範囲魔罠 = 1
+		CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"墓地")
+		;相手フィールドのカード1枚を破壊
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果範囲相手魔罠 = 1
+		CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"墓地")
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,54302,1)
+	IF RESULT == 0
+		;自分フィールドの融合モンスター1体を対象
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件種類 = 融合
+		CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"選択")
+		IF RESULT == 1
+			対象カード = RESULT:1
+			;デッキから「デストーイ」カードを墓地へ送る
+			CALL FULLRESET
+			効果範囲デッキ = 1
+			効果条件カテゴリ = デストーイ
+			効果条件固名前 = デストーイ・クルーエル・ホエール
+			CALL CARD_ADD_GY_BASIC(決闘者,"デッキ",ゾーン,場所)
+			IF RESULT == 1
+				;元々の攻撃力を取得
+				元攻撃力 = GETVAR(@"%決闘者%_MZ_攻:対象カード")
+				;攻撃力を元攻撃力の半分だけアップ（ターン終了時まで）
+				CALL STATCHANGE_EFFECT(決闘者,"戦場",対象カード,"一攻",元攻撃力 / 2)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

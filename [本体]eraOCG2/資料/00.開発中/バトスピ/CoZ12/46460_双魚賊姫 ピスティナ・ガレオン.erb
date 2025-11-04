@@ -1,0 +1,214 @@
+; ============================================================
+; 46460_双魚賊姫 ピスティナ・ガレオン
+; ============================================================
+
+@CARDNAME_46460,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 双魚賊姫 ピスティナ・ガレオン
+	CASE "略称"
+		RESULTS = ピスケガレオン
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+	CASE "性別"
+		RESULTS = 牝性
+ENDSELECT
+RETURN 0
+
+
+@CARD_46460(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 海生族
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 3100
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46460(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,効果召喚)
+PRINTL 自分フィールドの「光導の創界神帝 レピィ・アーズ」のコアカウンターを１つ取り除くことで、
+PRINTL このカードはリリースなしで召喚できる。
+CALLFORM CARD_ABLE(1,戦場起動)
+PRINTL ①：自分メインフェイズに発動できる。
+PRINTL デッキから「光導」罠カードを１枚手札に加える。
+PRINTL その後、相手の手札をランダムに１枚選んで墓地へ送る。
+CALLFORM CARD_ABLE(2,効果後誘発)
+PRINTL ②：相手がモンスターを特殊召喚した場合に発動できる。
+PRINTL 自分の「創界神」からコアカウンターを１つ取り除いて発動できる。
+PRINTL その特殊召喚を無効にし、そのモンスターを破壊する。
+CALLFORM CARD_ABLE(3,戦場→墓地)
+PRINTL ③：このカードがフィールドから墓地へ送られた場合に発動できる。
+PRINTL 相手の手札をランダムに２枚まで選んで墓地へ送る。
+RETURN 0
+
+
+@CARDCAN_46460(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+VARSET RESULT
+VARSET RESULTS
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46460)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 効果召喚
+    SIF モンスター数(決闘者) == 5
+        RETURN 0
+
+    CALL FULLRESET
+    効果範囲魔罠 = 1
+    効果条件名前   = 光導の創界神帝 レピィ・アーズ
+    効果条件個Ｃ所持 = 1
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT < 1
+        RETURN 0
+    RETURN 1
+ENDIF
+
+; ① 戦場起動
+IF 種類 == 戦場起動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者 || メインフェイズ != 1
+		RETURN 0
+	SIF 発動済_1(決闘者,46460)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ   = 1
+	効果条件種類     = 罠全般
+	効果条件カテゴリ = 光導
+	効果条件CNT      = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ② 相手が特殊召喚（効果後誘発）
+IF 種類 == 効果後誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46460)
+		RETURN 0
+	SIF FINAL_SUMMON_TARGET(決闘者,1) == 5
+		RETURN 0
+	CALL CARD_CHECK_FIN_DATA(決闘者,"特殊召喚",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ:0 = 創界神
+	効果条件個Ｃ所持  = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ③ フィールドから墓地へ
+IF 種類 == 戦場→墓地 || 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	SIF 発動済_3(決闘者,46460)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46460(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC カウンタ
+#DIM  DYNAMIC カウンタB
+#DIM  DYNAMIC 手札枚数
+#DIM  DYNAMIC 選択カード
+#DIM  DYNAMIC 効果先
+VARSET RESULT
+VARSET RESULTS
+
+IF 種類 == 効果召喚
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前   = 光導の創界神帝 レピィ・アーズ
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHOOSE_ADV(決闘者, ゾーン, 場所) 
+	IF RESULT != 9999
+		CALL CARD_SELECT(決闘者,RESULT)
+		CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46460,1)
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = 光導
+		効果条件種類 = 罠全般
+    CALL CARD_ADD_ADV(決闘者, ゾーン, 場所)
+	CALL FULLRESET
+	CALL CARD_REMOVAL_BASIC(決闘者,"手札破壊",場所,"墓地")
+	RETURN 0
+ENDIF
+
+IF 種類 == 効果後誘発 && ゾーン == "戦場"
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件カテゴリ:0 = 創界神
+	効果条件個Ｃ所持  = 1
+	効果条件任意      = 1
+	CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+	IF RESULT != 9999
+		CALL CARD_SELECT(決闘者,RESULT)
+		CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+
+		効果先 = FINAL_SUMMON_TARGET(決闘者,1)
+		CALL FULLRESET
+		効果追加種類 = 60
+		CALL CARD_REMOVAL_BASIC(決闘者,"自動処理",効果先,"完全墓地")
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 戦場→墓地 || 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46460,3)
+	CALL FULLRESET
+	CALL CARD_REMOVAL_BASIC(決闘者,"手札破壊",場所,"墓地")
+	CALL FULLRESET
+	CALL CARD_REMOVAL_BASIC(決闘者,"手札破壊",場所,"墓地")
+	RETURN 0
+ENDIF
+
+RETURN 0

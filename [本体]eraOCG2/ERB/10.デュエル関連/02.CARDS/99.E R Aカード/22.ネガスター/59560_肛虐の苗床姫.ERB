@@ -78,7 +78,7 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL "아누스피어"튜너＋암컷 몬스터 １장 이상
 
 PRINTL "항학의 묘상공주"는 필드 위에 １장밖에 앞면 표시로 존재할 수 없다。
-PRINTL 이 카드명의  ①②의 효과는 각각 １턴에 1번밖에 사용할 수 없다。
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 1번밖에 사용할 수 없다。
 PRINTL ②의 효과는 이 카드의 컨트롤러가【금단의 지식】을 습득하고있는 경우에만 발동할 수 있다。
 
 CALLFORM CARD_ABLE(1,필드起動)
@@ -212,11 +212,11 @@ IF 종류 == 필드起動
 			選択カード = -1
 			FOR カウンタ,0,現山札数(듀얼리스트)
 				제외カードID = GETVAR(@"%듀얼리스트%_덱:カウンタ")
-				CALLFORM CARD_{제외カードID},"종류"
+				CALLFORM CARD_{제외カードID}("종류")
 				SIF RESULT != 효과モン
 					CONTINUE
 				
-				CALLFORM CARD_{제외カードID},"성별"
+				CALLFORM CARD_{제외カードID}("성별")
 				SIF RESULT == 牝性 || RESULT == 雄性 || RESULT == ふたなり 
 					CONTINUE
 				
@@ -226,7 +226,7 @@ IF 종류 == 필드起動
 			
 			PRINTFORMW 항학의 묘상공주는 부들부들 떨고 어딘가로 사라져버렸다…
 			IF 選択カード != -1
-				TRYCALLFORM CARDNAME_{제외カードID},"名前"
+				TRYCALLFORM CARDNAME_{제외カードID}("名前")
 				
 				PRINTFORMW 아까까지 항학의 묘상공주가 안장있던 장소엔 커다란 물웅덩이가 생겨있다…
 				SETCOLOR C_GRAY
@@ -268,7 +268,7 @@ ELSEIF 종류 == 효과後誘発
 		
 		IF RESULT != 0
 			제외カードID = RESULT:99
-			TRYCALLFORM CARDNAME_{제외カードID}, "略称"
+			TRYCALLFORM CARDNAME_{제외カードID}("略称")
 			제외カード名 = %RESULTS%
 			
 			PRINTFORML 항학의 묘상공주에게서 촉수가 뻗으니、상대 덱의 카드에 평행세계의 정보를 새겨간다！
@@ -306,7 +306,7 @@ ELSEIF 종류 == 지속효과
 ELSEIF 종류 == 攻撃時強制誘発
 
 	選択カードID = GETVAR(@"%対面者%_필드:戦闘場所(対面者)")
-	TRYCALLFORM CARDNAME_{選択カードID},"略称"
+	TRYCALLFORM CARDNAME_{選択カードID}("略称")
 	IF GETVARS(@"%듀얼리스트%_フィールド名")  ==  "촉수궁"
 		PRINTFORML %RESULTS%는 묘상공주의 모습을 쫓지만 잃어버리고말았다。
 		PRINTFORML …어느샌가 들러붙어있던 촉수를 뿌리치지만、독을 받아버린것인지 묘한 권태감을 느끼고있다。

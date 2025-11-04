@@ -25,7 +25,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 0
 	CASE "종류"
-
 		RETURN 装備마법
 ENDSELECT
 
@@ -39,7 +38,7 @@ PRINTL 이 카드명의 ③의 효과는 1턴에 1번밖에 사용할 수 없다
 CALLFORM CARD_ABLE(0,攻守変動)
 PRINTL ①: 장착 몬스터의 공격력은 400 상승한다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ②: 상대는 장착 몬스터 이외의 자신 필드의 몬스터를 공격/효과의 대상으로 할 수 없다.
+PRINTL ②: 상대는 장착 몬스터 이외의 자신 필드의 몬스터를 공격 / 효과의 대상으로 할 수 없다.
 CALLFORM CARD_ABLE(3,묘지起動)
 PRINTL ③: 이 카드가 묘지에 존재할 경우, 자신 필드의 몬스터(레벨 5 이상 / 사이킥족) 1장을 대상으로 하고 발동할 수 있다.
 PRINTL 이 카드를 장착한다.
@@ -62,13 +61,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 
 	CALL FULLRESET

@@ -52,10 +52,16 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,96300)
 		RETURN 0
-	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	IF ゾーン != "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン != "손패"
+		SIF GETVAR(@"%듀얼리스트%_手_発可:場所") == 0
+			RETURN 0
+	ELSE
 		RETURN 0
-
+	ENDIF
 	효과範囲필드 = 1
 	효과範囲마함 = 1
 	효과条件カテゴリ = 마탄환
@@ -66,7 +72,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL FULLRESET
 	효과範囲상대필드 = 1
 	효과範囲상대마함 = 1
-	효과条件除去種 = 破壊
+	효과条件除去種 = 묘지
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所,96300)
 	SIF RESULT != 1
 		RETURN 0

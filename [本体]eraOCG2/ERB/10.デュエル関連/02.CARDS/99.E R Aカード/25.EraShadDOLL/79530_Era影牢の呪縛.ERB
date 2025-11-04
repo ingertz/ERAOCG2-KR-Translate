@@ -134,7 +134,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	
 	;対戦상대自身の分身となるカード（カードデータ）が存在していないと발동できない。（要はモブ系が대상外となる）
 	;듀얼리스트系캐릭터も、基本的に対応するバニラカードのデータがあるため大丈夫なはず・・・대상外が存在する場合は추가が必要。
-	TRYCALLFORM CARDNAME_{NO:조교대상}, "名前"
+	TRYCALLFORM CARDNAME_{NO:조교대상}("名前")
 	SIF RESULTS == "" || RESULTS == "상대"
 		RETURN 0
 	CALL FULLRESET
@@ -239,13 +239,8 @@ ELSEIF 종류 == リアクション효과
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 상황確認
@@ -311,7 +306,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 				조교대상ID = NO:조교대상
 				SETCOLOR C_D_PINK
 				PRINTFORMW 영뢰에 둘러쳐진 그림자 실이, 불길하게 맥동하기 시작했다……
-				PRINTFORMW 그림자 실의 무리가 물결치듯이 꿈틀거리며, %CALLNAME:조교 대상%와, 그녀의 듀얼디스크에 쇄도해 간다!!
+				PRINTFORMW 그림자 실의 무리가 물결치듯이 꿈틀거리며, %CALLNAME:조교대상%와, 그녀의 듀얼디스크에 쇄도해 간다!!
 				CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "個Ｃ", -3)
 				RESETCOLOR
 				CALL CARD_GENERATE_BAN(対面者, 조교대상ID)
@@ -339,24 +334,24 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 				CALL CARD_SP_SUMMON_ADV(듀얼리스트, ゾーン, 場所, "攻撃표시")
 				IF RESULT == 1
 					強奪カードID = RESULT:1
-					TRYCALLFORM CARDNAME_{強奪カードID}, "名前"
+					TRYCALLFORM CARDNAME_{強奪カードID}("名前")
 					強奪カード名称 = %RESULTS%
 					IF 強奪カードID == 조교대상ID
 						;자신自身の心と向き合う（メタトロニオス！？）。まるで少年向けバトル漫画の修行シーンみたいだなあ・・・
 						;SETCOLOR C_D_PINK
 						PRINTFORML 
-						PRINTFORML 휘감긴 그림자 실이 %CALLNAME:조교 대상%의 가슴에서 무언가를 뽑아내자, 그대로 그림자 실이 덩어리가 되어 %CALLNAME:MASTER%의 발밑에 모인다.
-						PRINTFORML 덩어리는 흐물흐물 형태를 바꾸더니――"%강탈 카드 명칭%"와 꼭 닮은 모습으로 변화했다!
+						PRINTFORML 휘감긴 그림자 실이 %CALLNAME:조교대상%의 가슴에서 무언가를 뽑아내자, 그대로 그림자 실이 덩어리가 되어 %CALLNAME:MASTER%의 발밑에 모인다.
+						PRINTFORML 덩어리는 흐물흐물 형태를 바꾸더니――"%強奪カード名称%"와 꼭 닮은 모습으로 변화했다!
 						PRINTFORMW 
-						PRINTFORMW 하지만, 그 표정에는 사악한 미소가 달라붙어 있으며, 듀얼디스크를 다시 고쳐 잡는 %CALLNAME:조교 대상%을 경멸의 시선으로 바라보고 있다.
-						PRINTFORML %CALLNAME:MASTER%의 충실한 암컷 노예로서 적대하는 자기 자신의 모습을 보게 되어, %CALLNAME:조교 대상%은 동요하는 표정을 감추지 못했다……
+						PRINTFORMW 하지만, 그 표정에는 사악한 미소가 달라붙어 있으며, 듀얼디스크를 다시 고쳐 잡는 %CALLNAME:조교대상%을 경멸의 시선으로 바라보고 있다.
+						PRINTFORML %CALLNAME:MASTER%의 충실한 암컷 노예로서 적대하는 자기 자신의 모습을 보게 되어, %CALLNAME:조교대상%은 동요하는 표정을 감추지 못했다……
 						PRINTFORMW 
 						RESETCOLOR
 					ELSE
 						;SETCOLOR C_D_PINK
 						PRINTFORML 
 						PRINTFORMW 휘감긴 그림자 실이 상대의 듀얼디스크에서 빼앗은 몬스터가, %CALLNAME:MASTER%의 곁으로 소환되었다!
-						PRINTFORML 소환된 "%강탈 카드 명칭%"는, 몸도 마음도 그림자 실에 휘감겨 %CALLNAME:MASTER%의 충실한 암컷 노예의 모습으로 변해 버렸다……
+						PRINTFORML 소환된 "%強奪カード名称%"는, 몸도 마음도 그림자 실에 휘감겨 %CALLNAME:MASTER%의 충실한 암컷 노예의 모습으로 변해 버렸다……
 						PRINTFORMW 
 						RESETCOLOR
 						;ラテックス生地の奴隷用の黒ボンテージとか着用してる事にしたいけど、표시されるイラストと食い違うので明言は避ける。心眼で対応してね
@@ -438,7 +433,7 @@ ELSEIF 종류 == ライフ変強制誘発
 			戦闘場所 = 戦闘場所(듀얼리스트)
 			戦闘モンスターID = GETVAR(@"%듀얼리스트%_MZ_ID:戦闘場所")
 			戦闘モンスター所有者 = GETVAR(@"%듀얼리스트%_MZ_所有:戦闘場所")
-			TRYCALLFORM CARDNAME_{戦闘モンスターID}, "名前"
+			TRYCALLFORM CARDNAME_{戦闘モンスターID}("名前")
 			戦闘モンスター名称 = %RESULTS%
 			
 			;PRINTFORMW 상대プレイヤー＝{상대プレイヤー}、조교대상＝{조교대상}、조교대상ID＝{조교대상ID}、戦闘モンスターID＝{戦闘モンスターID}、戦闘モンスター所有者＝{戦闘モンスター所有者}
@@ -601,7 +596,7 @@ ELSEIF 종류 == リアクション효과
 		IF RESULT != -1
 			조교대상 = RESULT
 			戦闘モンスターID = GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")
-			TRYCALLFORM CARDNAME_{戦闘モンスターID}, "名前"
+			TRYCALLFORM CARDNAME_{戦闘モンスターID}("名前")
 			戦闘モンスター名称 = %RESULTS%
 			SETCOLOR C_D_PINK
 			PRINTFORML
@@ -761,11 +756,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動

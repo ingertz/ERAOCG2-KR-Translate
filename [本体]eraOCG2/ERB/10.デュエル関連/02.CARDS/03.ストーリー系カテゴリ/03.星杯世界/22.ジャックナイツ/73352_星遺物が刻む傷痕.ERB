@@ -31,7 +31,7 @@ RETURN 0
 @CARD_EXPLANATION_73352(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 자신 필드는 "성유물이 새긴 상흔"가 된다.
+PRINTL 자신 필드는 "성유물이 새긴 상흔"이 된다.
 CALLFORM CARD_ABLE(0,攻守変動)
 PRINTL ①: 필드의 "잭나이츠" 몬스터의 공격력 / 수비력은 300 올린다.
 CALLFORM CARD_ABLE(10,마함起動)
@@ -89,13 +89,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_DRAW_CHECK
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
@@ -201,5 +196,5 @@ ELSEIF 종류 == 攻守変動
 	효과条件カテゴリ = 잭나이츠
 	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300,300)
 ELSEIF 종류 == 지속효과
-	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "성유물이새긴상흔")
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "성유물이 새긴 상흔")
 ENDIF

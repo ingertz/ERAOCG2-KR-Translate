@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -58,9 +57,8 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91030)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 효과後誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -133,90 +131,90 @@ IF 종류 == 효과後誘発
 
 				IF 듀얼리스트 == "자신" && 발동済_D1(듀얼리스트,91030) == 0
 					PRINTL
-					PRINTW 식사フェイズに入ります
+					PRINTW 식사 페이즈로 들어갑니다
 					PRINTL
 					PRINTL
-					TRYCALLFORM CARD_{選択カード_ID},"속성"
+					TRYCALLFORM CARD_{選択カード_ID}("속성")
 					味付け = RESULT
-					TRYCALLFORM CARD_{選択カード_ID},"종족"
+					TRYCALLFORM CARD_{選択カード_ID}("종족")
 					材料 = RESULT
-					TRYCALLFORM CARD_{選択カード_ID},"攻撃力"
+					TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
 					具の量 = RESULT
 					회복量 = 具の量 / 3
 
-					PRINTW 今日のお弁当は……
+					PRINTW 오늘의 도시락은……
 					PRINTL
 					IF 具の量 <= 1
-						PRINTW 空っぽだった……
+						PRINTW 텅 비었었다……
 						PRINTL
-						PRINTW 식사フェイズを終了します
+						PRINTW 식사 페이즈를 종료합니다
 						RETURN 0
 					ENDIF
 					IF 味付け == 화염속성
-						PRINT 火を噴くほど辛い
+						PRINT 불을 뿜을 정도로 매운 
 					ELSEIF 味付け == 물속성
-						PRINT キンキンに冷えた
+						PRINT 꽝꽝 얼어있는 
 					ELSEIF 味付け == 땅속성
-						PRINT 塩気たっぷりの
+						PRINT 염분 듬뿍인 
 					ELSEIF 味付け == 바람속성
-						PRINT のど越しさわやかな
+						PRINT 목넘김이 시원한 
 					ELSEIF 味付け == 어둠속성
-						PRINT 箱いっぱいの海苔に包まれた
+						PRINT 상자 가득 김에 둘러싸인 
 					ELSEIF 味付け == 빛속성
-						PRINT 直視できないほどに輝く
+						PRINT 직시할 수 없을 정도로 빛나는 
 					ENDIF
 					IF 材料 == 마법사족
-PRINTL 케미컬 도시락이다!
-						PRINTW 変な色の食べ物がいっぱい入ってる！
+						PRINTL 케미컬 도시락이다!
+						PRINTW 이상한 색의 음식이 가득 들어있다！
 					ELSEIF 材料 == 드래곤족
-PRINTL 드래곤 도시락이다!
-						PRINTW すごい！箱の半分を巨大な肉が占領している！
+						PRINTL 드래곤 도시락이다!
+						PRINTW 굉장해！상자 반을 거대한 고기가 점령하고있다！
 					ELSEIF 材料 == 언데드족
-PRINTL 세메터리 도시락이다!
-						PRINTW 毒沼ソ-スがすごい緑色だ……
+						PRINTL 세메터리 도시락이다!
+						PRINTW 독늪 소스가 굉장한 녹색이다……
 					ELSEIF 材料 == 전사족
-PRINTL 노동자 도시락이다!
-						PRINTW 肉やら野菜やらがぎっしり詰まってる！
+						PRINTL 노동자 도시락이다!
+						PRINTW 고기든 야채든 가득 들어있다！
 					ELSEIF 材料 == 기계족
-PRINTL 로봇 도시락이다!
-						PRINTW 色んな食べ物を組み合わせよう！
+						PRINTL 로봇 도시락이다!
+						PRINTW 많은 음식을 조합해보자！
 					ELSEIF 材料 == 야수족
-PRINTL 고기 도시락이다!
-						PRINTW 肉、肉、キャベツ、肉！ここまで肉肉しいとすがすがしいぜ！
+						PRINTL 고기 도시락이다!
+						PRINTW 고기、고기、양배추、고기！이렇게까지 고기고기면 기분좋다！
 					ELSEIF 材料 == 비행야수족
-PRINTL 카라아게 도시락이다!
-						PRINTW これだよ、これ！
+						PRINTL 카라아게 도시락이다!
+						PRINTW 이거라고、이거！
 					ELSEIF 材料 == 비늘야수족
-PRINTL 도마뱀 도시락이다!
-						PRINTW 蛇の開きが入ってる……！
+						PRINTL 도마뱀 도시락이다!
+						PRINTW 뱀의 머리가 들어있다……！
 					ELSEIF 材料 == 악마족
-PRINTL 어린이 도시락이다!
-						PRINTW お菓子が９割！
+						PRINTL 어린이 도시락이다!
+						PRINTW 과자가 90%！
 					ELSEIF 材料 == 천사족
-PRINTL 화이트 도시락이다!
-						PRINTW すげえ！全部白い！
+						PRINTL 화이트 도시락이다!
+						PRINTW 엄청나！전부 하얘！
 					ELSEIF 材料 == 곤충족
-PRINTL 인섹트 도시락이다!
-						PRINTW 虫がまるまる入ってるのは人を選ぶな……
+						PRINTL 인섹트 도시락이다!
+						PRINTW 곤충이 그대로 들어있는건 호불호가 있을것……
 					ELSEIF 材料 == 원소정령족
-PRINTL 삼색 도시락이다!
-						PRINTW お得感がすごい！
+						PRINTL 삼색 도시락이다!
+						PRINTW 이득본것같아！
 					ELSEIF 材料 == 식물족
-PRINTL 야채 도시락이다!
-						PRINTW 野菜以外は米しかない！
+						PRINTL 야채 도시락이다!
+						PRINTW 야채 말곤 쌀밖에 없어！
 					ELSEIF 材料 == 사이킥족
-PRINTL 최면 도시락이다!
-						PRINTW なんか……すごく食べたくなってきた！
+						PRINTL 최면 도시락이다!
+						PRINTW 뭔가……엄청 먹고싶어졌다！
 					ELSEIF 材料 == 사이버스족
-PRINTL 링크 도시락이다!
-						PRINTW 링크先の食べ物と一緒に食べよう！
+						PRINTL 링크 도시락이다!
+						PRINTW 링크앞의 음식과 같이 먹자！
 					ELSEIF 材料 == 바다생물족
-PRINTL 해산물 도시락이다!
-						PRINTW エビの主張が激しい！
+						PRINTL 해산물 도시락이다!
+						PRINTW 새우의 주장이 격렬하다！
 					ENDIF
 					PRINTL
 					PRINTL
-					PRINTBUTTON @"【いただきます！】",1
+					PRINTBUTTON @"【잘먹겠습니다！】",1
 					PRINTL
 					BINPUT
 					PRINTL
@@ -224,10 +222,10 @@ PRINTL 해산물 도시락이다!
 					CALL RECOVER_PERMIL(MASTER,회복量,"기력",1)
 					お腹空き = MAXBASE:MASTER:체력 - BASE:MASTER:체력
 					IF 회복量 * 3 > お腹空き
-						PRINTW ちょっと多いか……？
+						PRINTW 조금 많나……？
 						満腹感 ++
 					ELSE
-						PRINTW うまい！うまい！
+						PRINTW 맛있다！맛있다！
 					ENDIF
 					PRINTL
 					CALL RECOVER_PERMIL(MASTER,회복量,"체력",1)
@@ -235,50 +233,50 @@ PRINTL 해산물 도시락이다!
 					お腹空き = MAXBASE:MASTER:체력 - BASE:MASTER:체력
 					IF 회복量 * 2 > お腹空き
 						IF 満腹感 == 1
-							PRINTW 少し辛くなってきた……
+							PRINTW 조금 맵기 시작했다……
 						ELSE
-							PRINTW ちょっと多いか……？
+							PRINTW 조금 많나……？
 						ENDIF
 						満腹感 ++
 					ELSE
-						PRINTW 全然飽きない！まだまだイケるぜ！
+						PRINTW 전혀 질리지 않아！아직 완전 먹을수 있다구！
 					ENDIF
 					CALL RECOVER_PERMIL(MASTER,회복量,"체력",1)
 					CALL RECOVER_PERMIL(MASTER,회복量,"기력",1)
 					お腹空き = MAXBASE:MASTER:체력 - BASE:MASTER:체력
 					IF 회복量 > お腹空き
 						IF 満腹感 == 2
-							PRINTW 苦しい……もう食べたく無い……
+							PRINTW 힘들다……이제 먹기싫어……
 							PRINTL ！？
-							PRINTW 食堂のおばちゃんがこっちを見ている！残せない！
+							PRINTW 식당의 아주머니가 이쪽을 보고있다！남길수없어！
 						ELSE
-							PRINTW うっ……食べ過ぎたかもしれない……苦しい……
+							PRINTW 윽……너무 많이 먹었을지도 모르겠다……힘들어……
 						ENDIF
 						満腹感 ++
 					ELSE
-						PRINTW ああ、もうおかずが無い……
+						PRINTW 아아、벌써 반찬이 없어……
 					ENDIF
 					PRINTW …………。
 					PRINTL
 					SETCOLOR C_YELLOW
-					PRINTW 完食！
+					PRINTW 완식！
 					RESETCOLOR
 					PRINTL
 					PRINTL
-					PRINTBUTTON @"【ごちそうさまでした！】",1
+					PRINTBUTTON @"【잘먹었습니다！】",1
 					PRINTL
 					BINPUT
 					IF 満腹感 > 0
-						PRINTW 一応完食は出来たものの、少し疲れてしまった……
+						PRINTW 일단 완식은 했지만, 조금 피곤해졌다……
 						BASE:MASTER:체력 -= 500
 						BASE:MASTER:기력 -= 500
 					ELSE
-						PRINTW とても만족のいく味だった！
+						PRINTW 매우 만족스러운 맛이었다！
 					ENDIF
 					CALL CARD_EFFECT_USE(듀얼리스트,91030,20)
 					PRINTL
 					PRINTL
-					PRINTW 식사フェイズを終了します
+					PRINTW 식사 페이즈를 종료합니다
 				ENDIF
 			ENDIF
 		ENDIF

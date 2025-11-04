@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 저주받은 하인 마스터
+		RESULTS = 저주받은 하인 마스터
 	CASE "略称"
-RESULTS = 저주받하인마스터
+		RESULTS = 저주받하인마스터
 	CASE "カテゴリ"
-RESULTS:0 = 저주받은 하인
+		RESULTS:0 = 저주받은 하인
 ENDSELECT
 
 
@@ -75,13 +75,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -114,7 +109,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		효과条件종류 = モン全般
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
 		IF RESULT != 9999
-			TRYCALLFORM CARDNAME_{RESULT:99},"名前"
+			TRYCALLFORM CARDNAME_{RESULT:99}("名前")
 			選択カード名前 = %RESULTS%
 
 			CALL FULLRESET
@@ -125,7 +120,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			IF RESULT == 1
 				CALL FULLRESET
 				효과範囲묘지 = 1
-효과条件名前 = %選択カード名前%
+				효과条件名前 = %選択カード名前%
 				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 			ENDIF
 		ENDIF
@@ -142,6 +137,6 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
-효과条件名前 = 저주받은 하인 킹
+	효과条件名前 = 저주받은 하인 킹
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"貫通")
 ENDIF

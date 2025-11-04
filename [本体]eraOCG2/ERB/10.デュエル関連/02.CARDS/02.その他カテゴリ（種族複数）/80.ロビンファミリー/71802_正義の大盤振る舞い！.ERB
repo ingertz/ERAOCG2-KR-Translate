@@ -1,0 +1,139 @@
+﻿@CARDNAME_71802,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 정의의 열렬행사!
+	CASE "略称"
+		RESULTS = 정의의 열렬행사
+	CASE "カテゴリ"
+		RESULTS:0 = 로빈 패밀리
+		RESULTS:1 = 게임 오리지널
+ENDSELECT
+
+
+@CARD_71802(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71802(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없으며,
+PRINTL 이 카드명의 ③의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①: 이 카드의 발동 시 효과 처리로서,
+PRINTL 덱에서 이 카드명 이외의 "로빈 패밀리" 카드 1장을 패에 추가할 수 있다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②: 자신 몬스터 존에 "이차원 에스퍼 스타 로빈"이 존재하는 한,
+PRINTL 자신 필드의 앞면 표시 카드는 파괴 내성을, "이차원 에스퍼 스타 로빈"은 대상 내성을 얻는다.
+CALLFORM CARD_ABLE(3,마함起動)
+PRINTL ③: 자신 메인 페이즈에 발동할 수 있다.
+PRINTL 자신의 패 / 제외 상태에서 "이차원 에스퍼 스타 로빈"
+PRINTL "야수전사 퓨먼""봉왕수 가이르다""철의 거인 아이언해머" 중 1장을 특수 소환한다.
+
+
+@CARDCAN_71802(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71802)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_3(듀얼리스트,71802)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲제외 = 1
+	효과条件名前:0 = 이차원 에스퍼 스타 로빈
+	효과条件名前:1 = 야수전사 퓨먼
+	효과条件名前:2 = 봉왕수 가이르다
+	효과条件名前:3 = 철의 거인 아이언해머
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,71802)
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	효과範囲필드 = 1
+	효과条件名前 = 이차원 에스퍼 스타 로빈
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所,80226)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_71802(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM 選択カード
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71802,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲제외 = 1
+		효과条件名前:0 = 이차원 에스퍼 스타 로빈
+		효과条件名前:1 = 야수전사 퓨먼
+		효과条件名前:2 = 봉왕수 가이르다
+		효과条件名前:3 = 철의 거인 아이언해머
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71802,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과条件カテゴリ = 로빈 패밀리
+		효과条件固名前 = 정의의 열렬행사!
+		효과条件任意 = 1
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件표시 = 表側표시
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐")
+	CALL FULLRESET
+	효과条件名前 = 이차원 에스퍼 스타 로빈
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+ENDIF

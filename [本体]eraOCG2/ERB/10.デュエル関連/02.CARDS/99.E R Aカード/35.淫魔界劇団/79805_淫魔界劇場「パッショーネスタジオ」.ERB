@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마계극장 "파시오네 스튜디오"
+		RESULTS = 음마계극장 "파시오네 스튜디오"
 	CASE "略称"
-RESULTS = 음마계 스튜디오
+		RESULTS = 음마계 스튜디오
 	CASE "カテゴリ"
-RESULTS:0 = 음마계극단
-RESULTS:1 = E.R.A
+		RESULTS:0 = 음마계극단
+		RESULTS:1 = E.R.A
 ENDSELECT
 
 
@@ -64,13 +64,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 발동誘発
@@ -85,8 +80,6 @@ ELSEIF 종류 == 발동誘発
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	SIF RESULT != 1
 		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件カテゴリ = 음마계극단 
@@ -98,6 +91,8 @@ ELSEIF 종류 == 효과後誘発
 	SIF 발동済_3(듀얼리스트,79805)
 		RETURN 0
 	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
 		RETURN 0
@@ -167,10 +162,10 @@ ELSEIF 종류 == 지속효과
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}, "カテゴリ"	
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}("カテゴリ")	
 		SIF MATCH(RESULTS, "음마계극단")
 			CONTINUE
-		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}, "성별"	
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:{カウンタ}")}("성별")	
 		SIF !MATCH(RESULT, 牝性)
 			CONTINUE	
 		CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カウンタ,"음마계극단")
@@ -186,12 +181,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마계필름
+		RESULTS = 음마계필름
 	CASE "略称"
-RESULTS = 음마계필름
+		RESULTS = 음마계필름
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:1 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
 ENDSELECT
 
 
@@ -338,7 +333,7 @@ FOR カウンタ,0,5
 NEXT
 
 IF 女優人数 > 1
-	フィルム名称 = 【%女優名前% ほか】『%タイトル%』
+	フィルム名称 = 【%女優名前% 외】『%タイトル%』
 ELSE
 	フィルム名称 = 【%女優名前%】『%タイトル%』
 ENDIF
@@ -374,12 +369,13 @@ CALL CARD_EROTICS(女優ID)
 IF 女優대상 != -1
 	女優名前 = %CALLNAME:女優대상%
 ELSE
-	TRYCALLFORM CARDNAME_{女優ID},"略称"
+	TRYCALLFORM CARDNAME_{女優ID}("略称")
 	女優名前 = %RESULTS%
 ENDIF
 
-RESULT = 女優대상	
-RESULTS = %여배우 이름%
+RESULTS = %女優名前%
+RETURN 女優대상	
+
 
 
 ;화상표시 参考:E.R.ANSOM トロイ코드1

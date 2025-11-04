@@ -1,0 +1,907 @@
+﻿@CARDNAME_50974,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 멸망의 기원 제로무
+	CASE "略称"
+		RESULTS = 멸망의 기원 제로무
+	CASE "カテゴリ"
+		RESULTS:0 = 제론
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_50974(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 0
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "특수불가"
+		RETURN 1
+	CASE "単一存在"
+		RETURN 1
+	CASE "生成カード"
+		RESULT:4 = 550974
+		RESULT:3 = 450974
+		RESULT:2 = 350974
+		RESULT:1 = 250974
+		RETURN 150974
+	CASE "制限"
+		RETURN 制限
+	CASE "実装日"
+		RETURN 251024
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_50974(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 《멸망의 기원 제로무》 는 자신 필드에 １장밖에 존재할 수 없으며、이 카드의 효과의 발동에 대해 상대는 효과를 발동할 수 없다。
+CALLFORM CARD_ABLE(0,ターン開始時強制)
+PRINTL ①：게임 개시시에 발동한다。
+PRINTL EX덱의 이 카드와、다른 ４종류의 제론 성운 카드를 자신의 마법＆함정 존에 놓고、상대는 １장 더 카드를 뽑는다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드는 상대의 효과의 대상이 되지 않으며、효과로는 파괴되지 않는다。
+PRINTL ③：『제론卍탄』
+PRINTL 자신의 ４장째의 제론 성운 카드를 이 카드와 링크했을 때 발동한다。
+PRINTL 이 카드를 뒤집고、《제론》 으로서 특수 소환한다。
+
+@CARDSUMMON_50974(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+RETURN 0
+
+@CARDCAN_50974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50974)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == ターン開始時強制
+	SIF ゾーン != "EX덱"
+		RETURN 0
+	SIF ターン数 > 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 永紋章起動
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_50974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 카운터数
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == ターン開始時強制
+	CALL FULLRESET
+	CALL CARD_ADD(듀얼리스트,"EX덱", "마함", 場所,"表側표시")
+	CALL CARD_GENERATE_MAGIC(듀얼리스트,250974,1)
+	CALL CARD_GENERATE_MAGIC(듀얼리스트,350974,1)
+	CALL CARD_GENERATE_MAGIC(듀얼리스트,450974,1)
+	CALL CARD_GENERATE_MAGIC(듀얼리스트,550974,1)
+	CALL CARDDRAW_BASIC(対面者,1,1)
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
+ELSEIF 종류 == 永紋章起動
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과範囲EX덱 = 1
+	효과範囲제외 = 1
+	효과範囲묘지 = 1
+	효과条件名前 = 멸망의 기원 제로무
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL LIFE_CHANGE(듀얼리스트,"","변경",0)
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 제론
+	효과条件攻撃力 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과条件名前 = 제론
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"無効",-1)
+	ENDIF
+ENDIF
+
+;----------------------------------------------------------トークン
+
+@CARDNAME_150974,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 제론
+	CASE "略称"
+		RESULTS = 제론
+	CASE "カテゴリ"
+		RESULTS:0 = 제론
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+@CARD_150974(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "トークン"
+		RETURN 1	
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 0
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_150974(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드는 소재로 할 수 없다。
+CALLFORM CARD_ABLE(0,특수소환時)
+PRINTL ①：이 카드가 특수 소환됐을 때에 발동할 수 있다。
+PRINTL 상대 필드의 모든 몬스터의 공격력 / 수비력은 ０이된다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드의 공격력이 ０이하인 한、이하의 효과를 얻는다。
+PRINTL ●이 카드의 효과는 무효화되지 않으며、몬스터존을 벗어날 경우에 벗어나지 않을수 있다。
+PRINTL ●이 카드의 전투로 발생하는 데미지는 ０이 된다。
+PRINTL ●상대는 이 카드를 공격 대상으로 선택할 수 없다。
+CALLFORM CARD_ABLE(0,攻撃後強制誘発)
+PRINTL ③：이 카드가 전투를 하는 데미지 계산 후에 발동한다。
+PRINTL 전투를 한 상대 몬스터를 파괴한다。그것이 상대로의 직접공격이었을 경우、상대의 라이프를 ０으로 한다。
+PRINTL ④：이 카드가 자신 필드 이외에 존재하는 경우、자신의 라이프는 ０이된다。
+
+@CARDCAN_150974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,150974)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 특수소환時
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") > 0
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") > 0
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_150974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 카운터数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,150974)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"永攻DOWN",999999)
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"永守DOWN",999999)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	IF GETVAR(@"%듀얼리스트%_MZ_攻:場所") <= 0
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻避")
+	ENDIF
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
+ELSEIF 종류 == 身代효과
+	RETURN 1
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ無効",3)
+ELSEIF 종류 == 攻撃後強制誘発
+	IF 戦闘場所(듀얼리스트,1) != 5
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘場所(듀얼리스트,1),"묘지")
+	ELSE
+		CALL LIFE_CHANGE(対面者,"","변경",0)
+	ENDIF
+ENDIF
+
+
+;패의 의식
+@CARDNAME_250974,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 제론 성운 패의 의식
+	CASE "略称"
+		RESULTS = 패의 의식
+	CASE "カテゴリ"
+		RESULTS:0 = 제론
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+@CARD_250974(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "トークン"
+		RETURN 1	
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 0
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_250974(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,ターン終了時)
+PRINTL ①：서로의 엔드 페이즈에 발동할 수 있다。
+PRINTL 패가 １장도 없는 플레이어가 있다면、이 카드를 자신의 《멸망의 기원 제로무》에게 링크한다。
+PRINTL 그 후、덱의 가장 위의 카드를 보고、그것이 어둠속성 몬스터라면 패에 넣을 수 있다。
+PRINTL (링크한 이 카드는 소멸한다。)
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드는 상대의 효과의 대상이 되지 않으며、효과로는 파괴되지 않는다。
+
+
+@CARDCAN_250974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,250974)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 멸망의 기원 제로무
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 손패数(듀얼리스트) != 0 && 손패数(対面者) != 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_250974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 카운터数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,250974)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 멸망의 기원 제로무
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 3 && モンスター数(듀얼리스트) >= 5
+				PRINTL 《제론 성운 패의 의식》는《멸망의 기원 제로무》와 링크하려 했지만
+				PRINTW 몬스터 존에 빈칸이 없어 실패했다
+			ELSE
+				PRINTW 《제론 성운 패의 의식》는《멸망의 기원 제로무》와 링크했다
+				CALL FULLRESET
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"個Ｃ",1)
+				TRYCALLFORM CARD_UI(GETVAR(@"%듀얼리스트%_덱:0"))
+				CALL FULLRESET
+				효과条件속성 = 어둠속성
+				효과条件任意 = 1
+				효과条件山切り無し = 1
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所,1)
+			ENDIF
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 4
+				SETCOLOR C_RED
+				PRINTL
+				PRINTL 모든 제론 성운이《멸망의 기원 제로무》에게 링크했다
+				PRINTW 제 론 卍 탄 ！
+				RESETCOLOR
+				CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,選択カード,150974)
+				CALL RESETCONDITION
+				CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,選択カード)
+				CALL CARD_RESERV(듀얼리스트,50974,永紋章予約)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+;묘지의 의식
+@CARDNAME_350974,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 제론 성운 묘지의 의식
+	CASE "略称"
+		RESULTS = 묘지의 의식
+	CASE "カテゴリ"
+		RESULTS:0 = 제론
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+@CARD_350974(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "トークン"
+		RETURN 1	
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 0
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_350974(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ①：카드가 자신의 묘지에 보내질 경우、자신의 묘지에 카드가 ８장 이상 있다면 발동할 수 있다。
+PRINTL 이 카드를 자신의《멸망의 기원 제로무》에게 링크한다。
+PRINTL 그 후、상대 필드의 몬스터 １장을 골라、턴 종료시까지 공격력을 ０으로 할 수 있다。
+PRINTL (링크한 이 카드는 소멸한다。)
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드는 상대의 효과의 대상이 되지 않으며、효과로는 파괴되지 않는다。
+
+
+@CARDCAN_350974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,350974)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 멸망의 기원 제로무
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般+HD")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 8
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_350974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 카운터数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,350974)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 멸망의 기원 제로무
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 3 && モンスター数(듀얼리스트) >= 5
+				PRINTL 《제론 성운 묘지의 의식》은《멸망의 기원 제로무》와 링크하려 했지만
+				PRINTW 몬스터존에 빈칸이 없어 실패했다
+			ELSE
+				PRINTW 《제론 성운 묘지의 의식》은《멸망의 기원 제로무》와 링크했다
+				CALL FULLRESET
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"個Ｃ",1)
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"一攻DOWN",999999)
+			ENDIF
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 4
+				SETCOLOR C_RED
+				PRINTL
+				PRINTL 모든 제론 성운이《멸망의 기원 제로무》와 링크했다
+				PRINTW 제 론 卍 탄 ！
+				RESETCOLOR
+				CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,選択カード,150974)
+				CALL RESETCONDITION
+				CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,選択カード)
+				CALL CARD_RESERV(듀얼리스트,50974,永紋章予約)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+;부활의 의식
+@CARDNAME_450974,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 제론 성운 부활의 의식
+	CASE "略称"
+		RESULTS = 부활의 의식
+	CASE "カテゴリ"
+		RESULTS:0 = 제론
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+@CARD_450974(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "トークン"
+		RETURN 1	
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 0
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_450974(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ①：자신이 묘지에서 몬스터를 특수 소환한 경우에 발동할 수 있다。
+PRINTL 이 카드를 자신의《멸망의 기원 제로무》에게 링크하고、자신의 덱 위에서 ２장을 묘지에 놓는다。
+PRINTL (링크한 이 카드는 소멸한다。)
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드는 상대의 효과의 대상이 되지 않으며、효과로는 파괴되지 않는다。
+
+
+@CARDCAN_450974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,450974)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 멸망의 기원 제로무
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_BIT(듀얼리스트,"소환出処",3)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_450974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 카운터数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,450974)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 멸망의 기원 제로무
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 3 && モンスター数(듀얼리스트) >= 5
+				PRINTL 《제론 성운 부활의 의식》은《멸망의 기원 제로무》와 링크하려 했지만
+				PRINTW 몬스터존에 빈칸이 없어 실패했다
+			ELSE
+				PRINTW 《제론 성운 부활의 의식》은《멸망의 기원 제로무》와 링크했다
+				CALL FULLRESET
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"個Ｃ",1)
+				CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",2)
+			ENDIF
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 4
+				SETCOLOR C_RED
+				PRINTL
+				PRINTL 모든 제론 성운이《멸망의 기원 제로무》와 링크했다
+				PRINTW 제 론 卍 탄 ！
+				RESETCOLOR
+				CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,選択カード,150974)
+				CALL RESETCONDITION
+				CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,選択カード)
+				CALL CARD_RESERV(듀얼리스트,50974,永紋章予約)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+;파괴의 의식
+@CARDNAME_550974,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 제론 성운 파괴의 의식
+	CASE "略称"
+		RESULTS = 파괴의 의식
+	CASE "カテゴリ"
+		RESULTS:0 = 제론
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+@CARD_550974(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "トークン"
+		RETURN 1	
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 0
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_550974(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,효과後強制誘発)
+PRINTL ①：몬스터가 전투 / 효과로 파괴될때 마다、이 카드에 개별 카운터를 １개 놓는다。
+CALLFORM CARD_ABLE(0,他효과起動)
+PRINTL ②：이 카드의 개별 카운터가 ３개 이상 된 경우에 발동할 수 있다。
+PRINTL 이 카드를 자신의《멸망의 기원 제로무》에게 링크한다。
+PRINTL 그 후、어둠속성 몬스터 １장을 자신의 묘지에서 패에 되돌릴 수 있다。
+PRINTL (링크한 이 카드는 소멸한다。)
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드는 상대의 효과의 대상이 되지 않으며、효과로는 파괴되지 않는다。
+
+
+@CARDCAN_550974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,550974)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 멸망의 기원 제로무
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 他효과起動
+ 	RETURN 1
+ENDIF
+
+@CARDEFFECT_550974(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 카운터数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
+ELSEIF 종류 == 효과後強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,550974)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",1)
+		PRINTFORMW 《제론 성운 파괴의 의식》에 카운터가 놓였습니다。（현재치：{GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")}개）
+		SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 3
+			CALLFORM CARD_STANBY(550974,듀얼리스트,他효과起動,"마함",場所)
+	ENDIF
+ELSEIF 종류 == 他효과起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,550974)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 멸망의 기원 제로무
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 3 && モンスター数(듀얼리스트) >= 5
+				PRINTL 《제론 성운 파괴의 의식》은《멸망의 기원 제로무》와 링크하려 했지만
+				PRINTW 몬스터존에 빈칸이 없어 실패했다
+			ELSE
+				PRINTW 《제론 성운 파괴의 의식》은《멸망의 기원 제로무》와 링크했다
+				CALL FULLRESET
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"個Ｃ",1)
+				CALL FULLRESET
+				효과条件속성 = 어둠속성
+				효과条件종류 = モン全般
+				효과条件任意 = 1	
+				CALL CARD_ADD_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+			ENDIF
+			IF GETVAR(@"%듀얼리스트%_魔_個Ｃ:選択カード") == 4
+				SETCOLOR C_RED
+				PRINTL
+				PRINTL 모든 제론 성운이《멸망의 기원 제로무》와 링크했다
+				PRINTW 제 론 卍 탄 ！
+				RESETCOLOR
+				CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,選択カード,150974)
+				CALL RESETCONDITION
+				CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,選択カード)
+				CALL CARD_RESERV(듀얼리스트,50974,永紋章予約)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

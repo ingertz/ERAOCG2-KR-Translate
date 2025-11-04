@@ -1,0 +1,105 @@
+@CARDNAME_28251,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = エッジインプ・シザー
+	CASE "略称"
+		RESULTS = EI・シザー
+	CASE "カテゴリ"
+		RESULTS:0 = エッジインプ
+ENDSELECT
+
+
+@CARD_28251(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 800
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28251(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「エッジインプ・シザー」の効果は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,墓地起動)
+PRINTL ①：このカードが墓地に存在する場合、
+PRINTL 手札を１枚デッキの一番上に戻して発動できる。
+PRINTL このカードを墓地から守備表示で特殊召喚する。
+
+@CARDSUMMON_AA_28251
+
+
+@CARDCAN_28251(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,28251)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 墓地起動
+	SIF 発動済_1(決闘者,28251)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF ゾーン != "墓地"
+		RETURN 0
+	SIF 手札数(決闘者) < 1
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,28251,"墓地")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28251(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 墓地起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28251,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果条件行先フラグ = デッキ行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(決闘者,"墓地",場所,"守備表示")
+		ENDIF
+	ENDIF
+ENDIF
+

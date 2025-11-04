@@ -1,0 +1,170 @@
+﻿@CARDNAME_54611,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 영원의 제너레이드 오르무간드
+	CASE "略称"
+		RESULTS = 영왕 오르무간드
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_54611(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 雄性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_54611(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①: 필드의 "영원의 제너레이드 오르무간드"의 공격력 / 수비력은,
+PRINTL 필드의 "제너레이드" 몬스터 × 1000이 된다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②: 필드의 "영원의 제너레이드 오르무간드"는 파괴 내성을 가지며, 이 카드는 공격 유도를 가진다.
+
+
+@CARDCAN_54611(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,47241)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_54611(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻誘")
+	CALL FULLRESET
+	효과条件名前 = 영원의 제너레이드 오르무간드
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
+
+
+ELSEIF 종류 == 攻守変動
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件カテゴリ = 제너레이드
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = 1000 * RESULT		
+
+	CALL FULLRESET
+	효과条件名前 = 영원의 제너레이드 오르무간드
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻撃力修正,攻撃力修正)
+ENDIF
+
+
+
+
+@CARDNAME_154611,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 영원의 제너레이드 오르무간드
+	CASE "略称"
+		RESULTS = 영왕의 몸통
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_154611(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 雄性
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+@CARD_EXPLANATION_154611(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+
+
+@CARDCAN_154611(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+
+RETURN 0

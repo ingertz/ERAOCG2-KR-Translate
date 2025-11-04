@@ -1,0 +1,95 @@
+@CARDNAME_28267,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ファーニマル・キャット
+	CASE "略称"
+		RESULTS = Fur・キャット
+	CASE "カテゴリ"
+		RESULTS:0 = ファーニマル
+ENDSELECT
+
+
+@CARD_28267(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 天使族
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 700
+	CASE "守備力"
+		RETURN 300
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28267(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「ファーニマル・キャット」の効果は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,F素材時効果)
+PRINTL ①：このカードが融合召喚の素材となって墓地へ送られた場合、自分の墓地の「融合」１枚を対象として発動できる。
+PRINTL そのカードを手札に加える。
+
+@CARDSUMMON_AA_28267
+
+
+@CARDCAN_28267(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,28267)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == F素材時効果
+	SIF 発動済_1(決闘者,28267)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件名前 = 融合
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28267(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == F素材時効果
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28267,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件名前 = 融合
+		CALL CARD_ADD_BASIC(決闘者,"墓地",ゾーン,場所)
+	ENDIF
+ENDIF
+

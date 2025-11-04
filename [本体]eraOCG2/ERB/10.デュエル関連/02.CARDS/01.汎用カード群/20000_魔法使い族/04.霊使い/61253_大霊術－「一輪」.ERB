@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 대령술－"일륜"
+		RESULTS = 대령술－「일륜」
 	CASE "略称"
-RESULTS = 대령술－"일륜"
+		RESULTS = 대령술－「일륜」
 	CASE "カテゴリ"
-RESULTS:0 = 령사
+		RESULTS:0 = 령사
 ENDSELECT
 
 
@@ -24,6 +24,8 @@ VARSET RESULTS
 SELECTCASE 参照先
 	CASE "종류"
 		RETURN フィールド
+	CASE "レア度"
+		RETURN ULR
 ENDSELECT
 
 RETURN 0
@@ -31,7 +33,7 @@ RETURN 0
 @CARD_EXPLANATION_61253(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 자신 필드는 "대령술－"일륜""이 된다.
+PRINTL 자신 필드는 "대령술－「일륜」"이 된다.
 PRINTL 이 카드 이름의 ①②의 효과는 1턴에 한 번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,발동誘発)
 PRINTL ①：자신 필드에 "령사" 몬스터가 존재하는 한 발동할 수 있다.
@@ -75,13 +77,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 발동誘発
@@ -130,7 +127,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
 		選択カード = RESULT
 		IF 選択カード != 9999
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:選択カード")},"속성"
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:選択カード")}("속성")
 			설정속성 = RESULT
 			CALL FULLRESET
 			효과条件속성 = 설정속성

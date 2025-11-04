@@ -34,7 +34,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 자신의 필드는"미향의 숲"이 된다.
+PRINTL 자신의 필드는 "미향의 숲"이 된다.
 PRINTL "트립아로마 포레스트"는 1턴에 1장 밖에 사용할 수 없다.
 CALL CARD_ABLE(1,필드起動,손패起動)
 PRINTL ①：이 카드의 발동시 효과 처리로서, 덱에서 「아로마」 몬스터 1장을 패로 가져올 수 있다.
@@ -59,13 +59,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,79800)
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
@@ -119,7 +114,7 @@ ELSEIF 종류 == ターン終了時強制
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
 			SIF MATCH(RESULTS, "아로마")
 				CONTINUE
 		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",カウンタ)
@@ -137,7 +132,7 @@ ELSEIF 종류 == ターン終了時強制
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:カウンタ")}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:カウンタ")}("カテゴリ")
 			SIF MATCH(RESULTS, "아로마")
 				CONTINUE
 		;CALL CARD_EFFECT_CHECK(対面者,カウンタ,79800)

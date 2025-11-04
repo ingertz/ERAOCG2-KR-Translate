@@ -1,0 +1,125 @@
+﻿@CARDNAME_82121,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미캉코의 약속
+	CASE "略称"
+		RESULTS = 미캉코의 약속
+	CASE "カテゴリ"
+		RESULTS:0 = 미캉코
+ENDSELECT
+
+
+@CARD_82121(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_82121(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 1턴에 1장 밖에 발동할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：패 / 덱에서 "미캉코" 몬스터 1장을 특수 소환한다.
+PRINTL 그 후, 그 몬스터가 장착 가능한 장착 마법 카드 1장을 자신의 패 / 묘지에서 고르고 그 몬스터에 장착할 수 있다.
+PRINTL 이 효과로 특수 소환한 몬스터는, 필드에서 벗어났을 경우에 제외된다.
+
+
+
+@CARDCAN_82121(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,82121)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,82121)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件カテゴリ = 미캉코
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_82121(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID 
+#DIM DYNAMIC 条件달성
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カード装備先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82121,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件カテゴリ = 미캉코
+		효과추가종류 = 2
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT
+			カード装備先 = カード소환先
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과範囲손패 = 1
+			효과条件종류 = 装備마법
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				IF INRANGE (選択カード , 100, 199)
+					選択カード -= 100
+					選択カード_ID = GETVAR(@"%듀얼리스트%_손패:選択カード")
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과条件固定 = カード装備先
+					CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"손패")
+				ELSEIF INRANGE (選択カード , 200, 299)
+					選択カード -= 200
+					選択カード_ID = GETVAR(@"%듀얼리스트%_묘지:選択カード")
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과条件固定 = カード装備先
+					CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

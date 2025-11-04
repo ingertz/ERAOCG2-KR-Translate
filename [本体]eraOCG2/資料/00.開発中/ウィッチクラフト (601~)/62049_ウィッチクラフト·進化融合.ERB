@@ -6,12 +6,12 @@ VARSET RESULT
 VARSET RESULTS
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = ウィッチクラフト·進化융합
+		RESULTS = ウィッチクラフト·進化融合
 	CASE "略称"
-		RESULTS = WC·進化융합
+		RESULTS = WC·進化融合
 	CASE "カテゴリ"
 		RESULTS:0 = ウィッチクラフト
-		RESULTS:1 = 융합
+		RESULTS:1 = 融合
 		RESULTS:2 = ゲームオリジナル
 ENDSELECT
 
@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 通常魔法
 	CASE "生産不可"
 		RETURN 1
@@ -34,14 +33,14 @@ RETURN 0
 @CARD_EXPLANATION_62049(種類)
 #DIM DYNAMIC 種類
 
-PRINTL 이 카드명의 ①②のモンスター効果はそれぞれ１ターンに１度しか使用できない。
-PRINTL 이 카드명의 カードは１ターンに１枚しか発動できない。
+PRINTL このカード名の①②のモンスター効果はそれぞれ１ターンに１度しか使用できない。
+PRINTL このカード名のカードは１ターンに１枚しか発動できない。
 CALLFORM CARD_ABLE(1,魔罠起動,手札起動,フリー誘発)
 PRINTL ①：自分・相手のメインフェイズに発動できる。
-PRINTL 自分の手札・フィールド・墓地のモンスターを융합素材としてデッキに戻し、
-PRINTL 「ウィッチクラフト」を융합素材とする융합モンスター１体を융합소환する。
+PRINTL 自分の手札・フィールド・墓地のモンスターを融合素材としてデッキに戻し、
+PRINTL 「ウィッチクラフト」を融合素材とする融合モンスター１体を融合召喚する。
 CALLFORM CARD_ABLE(2,ターン終了時)
-PRINTL ②：このカードが墓地に存在し、자신 필드에 「ウィッチクラフト」モンスターが存在する場合、自分エンドフェイズに発動できる。
+PRINTL ②：このカードが墓地に存在し、自分フィールドに「ウィッチクラフト」モンスターが存在する場合、自分エンドフェイズに発動できる。
 PRINTL このカードを手札に加える。
 
 @CARDCAN_62049(決闘者,種類,ゾーン,場所)
@@ -75,9 +74,9 @@ IF 種類 == 魔罠起動 || 種類 == 手札起動
 	素材範囲墓地 = 1
 	CALL FULLRESET
 	効果範囲EXデッキ = 1
-	効果条件種類 = 융합
+	効果条件種類 = 融合
 	効果条件カテゴリ = ウィッチクラフト
-	効果条件소환可 = 1
+	効果条件召喚可 = 1
 	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -112,7 +111,7 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択済カード
 #DIM DYNAMIC EX条件達成
-;융합召唤
+;融合召唤
 #DIMS DYNAMIC 対面者
 
 CALL 対面者判定(決闘者)
@@ -131,9 +130,9 @@ IF 種類 == 魔罠起動 || 種類 == 手札起動
 		素材範囲墓地 = 1
 		CALL FULLRESET
 		効果範囲EXデッキ = 1
-		効果条件種類 = 융합
+		効果条件種類 = 融合
 		効果条件カテゴリ = ウィッチクラフト 
-		効果条件소환可 = 1
+		効果条件召喚可 = 1
 		CALL CARD_CHOOSE_BASIC(決闘者,"EXデッキ",ゾーン,場所)
 		選択カード = RESULT
 		IF 選択カード != 9999

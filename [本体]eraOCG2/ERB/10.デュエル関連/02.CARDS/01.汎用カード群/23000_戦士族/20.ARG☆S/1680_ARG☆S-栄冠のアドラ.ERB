@@ -1,0 +1,163 @@
+﻿@CARDNAME_1680,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ARG☆S-영관의 아드라
+	CASE "略称"
+		RESULTS = 영관의 아드라
+	CASE "カテゴリ"
+		RESULTS:0 = ARG☆S
+ENDSELECT
+
+
+@CARD_1680(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1680(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ③의 효과는 1턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,손패起動,フリー誘発)
+PRINTL ①：상대 턴에, 자신 필드에 지속 함정 카드가 존재할 경우。
+PRINTL 이 카드를 패에서 제외하고 발동할 수 있다. 필드의 몬스터 1장의 공격력을 턴 종료시까지 0으로 한다。
+CALLFORM CARD_ABLE(0,소환時強制)
+PRINTL ②：이 카드를 일반 소환했을 경우에 발동한다。
+PRINTL 이 턴에, 자신의 지속 함정 카드의 효과의 발동에 대하여 상대는 효과를 발동할 수 없다。
+CALLFORM CARD_ABLE(3,필드起動)
+PRINTL ③：필드의 이 카드를 제외하고 발동할 수 있다.。
+PRINTL 패 / 덱에서 "ARG☆S(아르고스타즈)" 지속 함정 카드를 2장까지 자신의 마법 & 함정 존에 앞면 표시로 놓는다(같은 이름의 카드는 1장까지).。
+
+
+@CARDCAN_1680(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1680)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件종류 = 지속함정
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 10
+	효과条件以攻撃力 = 100
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時強制
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_3(듀얼리스트,1680)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件カテゴリ = ARG☆S
+	효과条件종류 = 지속함정
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1680(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1680,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+		CALL FULLRESET
+		효과条件표시 = 10
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"一攻DOWN",99999)
+	ENDIF
+ELSEIF 종류 == 소환時強制
+	CALL FULLRESET
+	CALL SET_PLAYER_INFO(듀얼리스트,"永함정阻害",1)
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1680,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件カテゴリ = ARG☆S
+		효과条件종류 = 지속함정
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+		IF RESULT == 1 && 마함数(듀얼리스트) < 5
+			選択カード_ID = RESULT:1
+			CALL FULLRESET
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+			효과条件固名前 = %RESULTS%
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			효과条件カテゴリ = ARG☆S
+			효과条件종류 = 지속함정
+			효과条件任意 = 1
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+		ENDIF
+	ENDIF
+ENDIF
+

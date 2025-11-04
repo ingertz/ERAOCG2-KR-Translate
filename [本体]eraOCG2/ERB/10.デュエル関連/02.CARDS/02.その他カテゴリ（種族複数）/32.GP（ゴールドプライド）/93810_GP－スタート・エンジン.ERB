@@ -1,0 +1,105 @@
+﻿@CARDNAME_93810,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = GP－스타트 엔진
+	CASE "略称"
+		RESULTS = GP－엔진
+	CASE "カテゴリ"
+		RESULTS:0 = 골드 프라이드
+ENDSELECT
+
+
+@CARD_93810(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93810(종류)
+#DIM DYNAMIC 종류
+
+CALL CARD_ABLE(0,효과後誘発 ,フリー誘発)
+PRINTL ①: 상대가 몬스터를 소환 / 특수 소환했을 경우, 그 몬스터 1장을 대상으로 발동할 수 있다.
+PRINTL 덱에서 "GP" 몬스터 3장을 상대에게 보여준다.
+PRINTL 자신은 그 중에서 랜덤하게 1장을 자신 필드에 특수 소환하고, 나머지를 덱으로 되돌린다.
+PRINTL 그 후, 대상의 몬스터를 파괴한다.
+PRINTL 
+
+@CARDCAN_93810(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93810)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発 || 종류 == フリー誘発
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 골드 프라이드
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_93810(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード,10
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ランダム
+#DIM DYNAMIC 효과先
+
+IF 종류 == 효과後誘発 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93810)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+
+		CALL FULLRESET
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 골드 프라이드
+		효과条件複数 = 3
+		효과条件소환可 = 1
+		효과条件RND = 1	
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

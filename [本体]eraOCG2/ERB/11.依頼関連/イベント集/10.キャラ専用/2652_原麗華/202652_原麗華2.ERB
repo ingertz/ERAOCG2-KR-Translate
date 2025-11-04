@@ -1,0 +1,483 @@
+@IRAI_EVENT_202652(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2652-02)確率の海と羅針盤
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_繁華街
+	CASE "詳細"
+		PRINTL デュエリストが集うVR交流会にて、麗華が予測不能な戦術を操るデュエリストに苦戦している模様。
+		PRINTL 
+		PRINTL 報酬：2000DP、お金10000
+	CASE "条件"
+		SIF 依頼_完了횟수:102652 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2652):호감도 < 500
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2652):반발각인 > 0
+			RESULTS = 彼女の記録簿には、あなたへの不信が明記されているだろう。冷静な判断を取り戻すまで待つべきだ。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_202652(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC ギャンブラー
+
+이벤트主 = NO_TO_CHARANUM(2652)
+ギャンブラー = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 繁華街の一角に、最新のVR技術を駆使したデュエル交流会の会場がある。
+	PRINTFORML 大型モニターには様々なデュエリストたちの戦いが映し出され、活気に満ちている。
+	PRINTFORMW あなたは招待を受け、会場を訪れていた。
+	PRINTFORML
+	PRINTFORML エントランスを抜けると、見覚えのある姿が目に入る。
+	PRINTFORML 原 麗華だ。彼女はVRゴーグルを外し、端末に何かを記録している。
+	PRINTFORMW しかし、その表情は明らかに不機嫌そうだ。
+	PRINTFORML
+	PRINTFORML メガネの奥の瞳には苛立ちの色が滲み、端末を操作する指先にも力が入っている。
+	PRINTFORML 「…非論理的です。あまりにも非論理的すぎる…」
+	PRINTFORMW 彼女は小さく呟きながら、データを見返している。
+	PRINTFORML
+	PRINTFORML 近くのモニターには、先ほどのデュエルのリプレイが流れている。
+	PRINTFORML コイントスやサイコロの目によって、盤面が目まぐるしく変化していく様子が映し出されている。
+	PRINTFORMW 麗華の덱は完璧に組まれているように見えたが、運の要素に翻弄され패배したようだ。
+	PRINTFORML
+	PRINTFORML あなたが近づくと、麗華は顔を上げる。
+	PRINTFORML 一瞬驚いたような表情を見せるが、すぐに冷静な表情に戻る。
+	PRINTFORMW 「%CALLNAME:MASTER%…あなたも、この交流会に？」
+	PRINTFORML
+	IF GETBIT(依頼_進行보존:102652, 0)
+		PRINTFORML 麗華は少し考えるような仕草を見せた後、珍しく자신から話しかけてくる。
+		PRINTFORML 「…実は、先ほど予想外の패배を喫しました」
+		PRINTFORMW 彼女は端末の画面をあなたに見せる。
+		PRINTFORML
+		PRINTFORML 「상대は『運』を主軸とした戦術を使うデュエリスト。コイントスやサイコロで全てが決まる…」
+		PRINTFORML 麗華の声には明確な苛立ちが滲んでいる。
+		PRINTFORMW 「私の計画は完璧でした。しかし、ただのコイン一枚で全てが覆された」
+		PRINTFORML
+		PRINTFORML 「あなたなら、この상황をどう分析しますか？」
+		PRINTFORML 麗華は真剣な表情であなたを見つめる。
+		PRINTFORMW その瞳には、助言を求める色が浮かんでいる。
+	ELSE
+		PRINTFORML 麗華は端末を閉じ、あなたに向き直る。
+		PRINTFORML 「…先ほど、理不尽な패배を喫しました」
+		PRINTFORMW 彼女の声には抑えきれない苛立ちが滲んでいる。
+		PRINTFORML
+		PRINTFORML 「상대は『運』を主軸とした戦術を使うデュエリスト。論理も計画も通用しない…」
+		PRINTFORML 麗華はメガネを外し、疲れたような表情を見せる。
+		PRINTFORMW 「こんな非論理的な戦術が、なぜ有効なのか理解できません」
+	ENDIF
+
+	PRINTFORML その時、背後から派手な笑い声が響いた。
+	PRINTFORML 「ひゃははっ！また一人、運に見放された哀れなデュエリストが誕生したぜ！」
+	PRINTFORMW 振り向くと、派手な복장の男が腕を組んで立っている。
+	PRINTFORML
+	PRINTFORML 男はVRゴーグルを首にかけ、勝ち誇ったような表情を浮かべている。
+	PRINTFORML 「お嬢ちゃん、計画だの分析だの言ってたけどよ、結局運には勝てなかったな！」
+	PRINTFORMW 男の挑発的な言葉に、麗華の表情がさらに険しくなる。
+	PRINTFORML
+	PRINTFORML 「…あなたは」
+	PRINTFORML 麗華は冷たい声で男を見据える。
+	PRINTFORMW 「デュエルを運任せのギャンブルと同一視するのですか？」
+	PRINTFORML
+	PRINTFORML 男は鼻で笑う。
+	PRINTFORML 「ギャンブル？違うね。これは『確率を支配する技術』だ」
+	PRINTFORMW 「お前みたいな真面目ちゃんには理解できねえだろうけどな」
+	PRINTFORML
+	PRINTFORML 麗華の拳が小さく震えている。
+	PRINTFORML 彼女は何か言い返そうとするが、言葉が出てこないようだ。
+	PRINTFORMW あなたは決断を迫られる。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「非論理的な戦術に腹を立てる気持ちは分かる」と共感する
+	PRINTL [1] - 「運も実力のうち、とは言うが…」と声をかける
+	PRINTL [2] - 「彼の戦術を分析してみないか？」と提案する
+	PRINTL
+	BINPUT
+
+	IF RESULT == 2
+		PRINTFORML あなたは冷静に提案した。
+		PRINTFORMW 麗華は一瞬驚いたような表情を見せる。
+		PRINTFORML
+		PRINTFORML 「…分析ですか」
+		PRINTFORML 麗華は深呼吸をし、少しずつ冷静さを取り戻していく。
+		PRINTFORMW 「確かに、感情的になっているだけでは無意味ですね」
+		PRINTFORML
+		PRINTFORML 彼女は端末を開き、先ほどのデュエルのログを見返し始める。
+		PRINTFORML 「コイントスの횟수、サイコロの出目、それぞれの確率…」
+		PRINTFORMW 麗華の瞳に、いつもの理知的な光が戻ってくる。
+		PRINTFORML
+		PRINTFORML 「ありがとうございます、%CALLNAME:MASTER%」
+		PRINTFORML 麗華は小さく微笑む。
+		PRINTFORMW 「あなたの助言で、冷静さを取り戻せました」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+		SETBIT 依頼_進行보존:202652, 0
+
+	ELSEIF RESULT == 0
+		PRINTFORML あなたは麗華の肩に手を置き、共感の言葉をかける。
+		PRINTFORMW 麗華は少し驚いたような表情を見せる。
+		PRINTFORML
+		PRINTFORML 「…ええ」
+		PRINTFORML 麗華は小さく頷く。
+		PRINTFORMW 「計画の全てが、ただのコインで覆されるのは屈辱です」
+		PRINTFORML
+		PRINTFORML 「しかし、感情的になっても仕方ありません」
+		PRINTFORML 麗華は深呼吸をし、冷静さを取り戻そうとする。
+		PRINTFORMW 「記録を見返し、対策を立てるべきですね」
+		PRINTFORML
+		PRINTFORML 彼女は端末を開き、データを確認し始める。
+		PRINTFORML あなたの共感が、彼女の心を少し軽くしたようだ。
+		PRINTFORMW 麗華の表情が、わずかに和らいでいる。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,50)
+
+	ELSE
+		PRINTFORML あなたは声をかけた。
+		PRINTFORMW 麗華は冷たい視線であなたを見る。
+		PRINTFORML
+		PRINTFORML 「…精神論ですか」
+		PRINTFORML 麗華の声は氷のように冷たい。
+		PRINTFORMW 「私はそのような非生産的な議論を好みません」
+		PRINTFORML
+		PRINTFORML 「運も実力のうち？それは思考停止の言い訳です」
+		PRINTFORML 麗華は端末を閉じ、あなたから視線を逸らす。
+		PRINTFORMW 「論理的な分析こそが、デュエリストに必要なものです」
+		PRINTFORML
+		PRINTFORML あなたの言葉は、彼女の心には届かなかったようだ。
+		PRINTFORML 麗華は一人で端末を操作し始める。
+		PRINTFORMW その背中は、どこか孤独に見えた。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-50)
+	ENDIF
+
+	PRINTFORML 男はあなたたちのやり取りを見て、面白そうに笑う。
+	PRINTFORML 「おいおい、分析だの対策だの言ってるけどよ」
+	PRINTFORMW 「結局、運には勝てねえんだよ」
+	PRINTFORML
+	PRINTFORML 男はデュエルディスクを誇示するように掲げる。
+	PRINTFORML 「どうだ？お前が代わりにやってみるか？」
+	PRINTFORMW 挑発的な笑みを浮かべながら、あなたを見据える。
+	PRINTFORML
+	PRINTFORML 麗華があなたの方を見る。
+	PRINTFORML その瞳には、期待と不安が入り混じっている。
+	PRINTFORMW 「%CALLNAME:MASTER%…」
+	PRINTFORML
+	PRINTFORML 周囲のデュエリストたちも、興味深そうにこちらを見ている。
+	PRINTFORML 会場の空気が緊張感に包まれる。
+	PRINTFORMW あなたはデュエルディスクを構えた。
+	PRINTFORML
+	PRINTFORML 「いいだろう。受けて立つ」
+	PRINTFORMW 男は不敵に笑う。
+	PRINTFORML
+	PRINTFORML VRゴーグルが起動し、周囲の景色が一変する。
+	PRINTFORML 無数のコインやサイコロが宙を舞う、奇妙な空間が広がる。
+	PRINTFORMW 「ここが俺の領域だ。覚悟しろよ！」
+	PRINTFORML
+	PRINTFORML デュエルの場が整う。
+	PRINTFORML 周囲には多くの観客が集まり、モニターにはあなたたちの姿が映し出されている。
+	PRINTFORMW 麗華も少し離れた場所から、固唾を呑んで見守っている。
+	PRINTFORML
+	PRINTFORML 男は不敵に笑う。
+	PRINTFORML 「いいか、俺の덱は全てが運で決まる。コイン、サイコロ、カードの효과…」
+	PRINTFORMW 「お前の計画なんて、一瞬で吹き飛ばしてやるよ！」
+	PRINTFORML
+	PRINTFORML デュエルディスクが起動し、緊張感が高まる。
+	PRINTFORML 麗華が小さく呟く声が聞こえた。
+	PRINTFORMW 「%CALLNAME:MASTER%…お願いします」
+	PRINTFORML
+	TARGET = ギャンブラー
+	CALL CHOICE_DUEL_TYPE(202652)
+
+	IF RESULT == 1
+		PRINTFORML デュエルに승리した。
+		PRINTFORML 男のライフポイントがゼロになり、周囲から大きな歓声が上がる。
+		PRINTFORMW 男は信じられないという表情で立ち尽くしている。
+		PRINTFORML
+		PRINTFORML 「な、なんで…！運が味方してくれなかった…！」
+		PRINTFORML 男は震える声で呟く。
+		PRINTFORMW 「こんなはずじゃ…俺の確率論は完璧だったのに…！」
+		PRINTFORML
+		PRINTFORML VRゴーグルを外すと、現実の会場に戻る。
+		PRINTFORML 周囲の観客たちは拍手を送り、モニターにはあなたの승리が映し出されている。
+		PRINTFORMW 男は悔しそうに歯ぎしりしながら、その場を去っていく。
+		PRINTFORML
+		PRINTFORML 麗華が駆け寄ってくる。
+		PRINTFORML 「%CALLNAME:MASTER%…見事でした」
+		PRINTFORMW 彼女の瞳には、驚きと感心の色が浮かんでいる。
+		PRINTFORML
+		PRINTFORML 「あなたの戦い方…運の要素を完全に排除したわけではなく、リスクとして관리していた」
+		PRINTFORML 麗華は端末に何かを記録しながら続ける。
+		PRINTFORMW 「確率論に基づき、最も損害が少なくリターンが期待できる選択を積み重ねていた…」
+		PRINTFORML
+		PRINTFORML 彼女は感心したような表情であなたを見る。
+		PRINTFORML 「私の計画には、この視点が欠けていました」
+		PRINTFORMW 麗華の声には、素直な敬意が込められている。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+
+		PRINTL
+		PRINTL [0] - 「運は관리すべきリスクの一つだ」とビジネス的思考を説明する
+		PRINTL [1] - 「今回はたまたまツイてただけさ」と謙遜する
+		PRINTL [2] - 「君の分析があれば、もっと楽に勝てた」と麗華を持ち上げる
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたは冷静に説明した。
+			PRINTFORMW 麗華は真剣な表情で聞いている。
+			PRINTFORML
+			PRINTFORML そもそも、遊戯王だけじゃなく、多数のカードゲームが元より確率で成立したもの。
+			PRINTFORML 運は排除できない要素だ。しかし、確率論を駆使して、ある程度で制御することはできる。
+			PRINTFORMW コイントスなら50％、サイコロなら6分の1。それを前提に戦術を組み立てればいい。
+			PRINTFORML
+			PRINTFORML 最悪のケースを想定し、それでも勝てる選択肢を選ぶ。
+			PRINTFORML 運が良ければボーナス、悪くても致命傷にならないように立ち回る。
+			PRINTFORMW これがいわゆるリスクマネジメントだ。
+			PRINTFORML
+			PRINTFORML 麗華は目を見開き、深く頷く。
+			PRINTFORML 「不確定要素を確率論で制御する…私の計画にはなかった変数관리」
+			PRINTFORMW 「興味深いアプローチです。記録させてください」
+			PRINTFORML
+			PRINTFORML 彼女は端末に熱心にメモを取り始める。
+			PRINTFORML 「この考え方を取り入れれば、私の덱構築はさらに進化できる…」
+			PRINTFORMW 麗華の瞳が、知的好奇心で輝いている。
+			PRINTFORML
+			PRINTFORML 「%CALLNAME:MASTER%、あなたから学ぶことは多いですね」
+			PRINTFORML 麗華は珍しく、素直に感謝の言葉を口にする。
+			PRINTFORMW 「今後も、ご指導をお願いします」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,100)
+			SETBIT 依頼_進行보존:202652, 1
+
+		ELSEIF RESULT == 1
+			PRINTFORMW 麗華は少し物足りなそうな表情を見せる。
+			PRINTFORML
+			PRINTFORML 「…謙遜も結構ですが」
+			PRINTFORML 麗華は端末を操作しながら言う。
+			PRINTFORMW 「私はあなたの戦術の論理的根拠に関心があります」
+			PRINTFORML
+			PRINTFORML 「デュエルのログを見る限り、あなたの選択には明確なパターンがある」
+			PRINTFORML 麗華は分析データをあなたに見せる。
+			PRINTFORMW 「運任せではなく、確率論に基づいた判断をしていた」
+			PRINTFORML
+			PRINTFORML 「もし可能なら、その思考プロセスを教えていただけませんか？」
+			PRINTFORML 麗華は真剣な表情であなたを見つめる。
+			PRINTFORMW 「記録に残し、今後の参考にしたいのです」
+			PRINTFORML
+			PRINTFORML あなたは少し考えた後、簡単に説明する。
+			PRINTFORML 麗華は熱心にメモを取り、만족そうに頷いた。
+			PRINTFORMW 「ありがとうございます。大変参考になりました」
+			PRINTFORML
+		ELSE
+			PRINTFORML あなたは麗華を持ち上げた。
+			PRINTFORMW 麗華は一瞬照れたような表情を見せる。
+			PRINTFORML 
+
+			PRINTFORML 「…お世辞は結構です」
+			PRINTFORML 麗華は少し頬を染めながら言う。
+			PRINTFORMW しかし、その声には嬉しそうな響きが混じっている。
+			PRINTFORML
+			PRINTFORML 「ですが、そう言ってくれるなら…」
+			PRINTFORML 麗華は端末を操作し、大量のデータをあなたに送信する。
+			PRINTFORMW 「次回の参考に、私の分析データを提供しましょう」
+			PRINTFORML
+			PRINTFORML 「상대덱の傾向、よく使われるカードの효과、チェーンのタイミング…」
+			PRINTFORML 麗華は誇らしげに説明する。
+			PRINTFORMW 「全て記録してあります。ご活用ください」
+			PRINTFORML
+			PRINTFORML 「今後も、協力関係を続けられれば幸いです」
+			PRINTFORML 麗華は珍しく、柔らかい笑みを浮かべる。
+			PRINTFORMW 「%CALLNAME:MASTER%となら、どんな상대にも勝てる気がします」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,50)
+		ENDIF
+
+		IF 依頼_見返し中 == 0
+            PRINTFORML その時、会場のスタッフがあなたたちに近づいてくる。
+            PRINTFORML 「お二人とも、お疲れ様でした」
+            PRINTFORMW スタッフは封筒を手渡してくる。
+
+            PRINTFORML 「今回のデュエルは、本日最も注目を集めた試合として認定されました」
+            PRINTFORML スタッフは笑顔で説明する。
+            PRINTFORMW 「スポンサー企業から、特別ボーナスが贈られます」
+
+            PRINTFORML 封筒の中には、賞金の小切手が入っている。
+            PRINTFORML 麗華は少し驚いたような表情を見せる。
+            PRINTFORMW 「これは…予想外の収穫ですね」
+
+            PRINTFORML 「%CALLNAME:MASTER%、受け取ってください」
+            PRINTFORML 麗華はあなたに小切手を手渡す。
+            PRINTFORMW 「あなたの승리によるものです」
+
+            PRINTFORML スタッフは一礼して去っていく。
+        ENDIF
+        
+		PRINTFORML 周囲の観客たちも徐々に散っていき、会場は落ち着きを取り戻す。
+		PRINTFORMW 麗華はメガネを外し、少し疲れたような表情を見せる。
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:202652, 1)
+			PRINTFORML 「%CALLNAME:MASTER%、今日は本当にありがとうございました」
+			PRINTFORML 麗華は珍しく、素直に感謝の言葉を口にする。
+			PRINTFORMW 「あなたから学んだことを、必ず次に活かします」
+			PRINTFORML
+			PRINTFORML 「もしよろしければ…今度、カフェにでも」
+			PRINTFORML 麗華は少し恥ずかしそうに視線を逸らす。
+			PRINTFORMW 「お礼をさせてください。風紀委員として、ではなく…個人的に、です」
+			PRINTFORML
+			PRINTFORML 彼女の頬が、わずかに赤く染まっている。
+			PRINTFORML 「…記録には残しませんので、ご安心を」
+			PRINTFORMW 麗華は小さく微笑む。
+			PRINTFORML
+			PRINTFORML あなたは頷いた。
+			PRINTFORML 麗華は嬉しそうに端末に何かを入力する。
+			PRINTFORMW 「では、後日改めて連絡します」
+		ELSE
+			PRINTFORML 「今日は貴重な경험になりました」
+			PRINTFORML 麗華は端末を閉じ、一礼する。
+			PRINTFORMW 「今後も、よろしくお願いします」
+			PRINTFORML
+			PRINTFORML 彼女は만족そうに頷き、会場を後にする。
+			PRINTFORML その背中は、どこか自信に満ちているように見えた。
+			PRINTFORMW あなたも、만족感と共にその場を後にした。
+		ENDIF
+
+		PRINTFORML VR交流会の喧騒が遠ざかっていく。
+		PRINTFORML 今日の出来事は、麗華にとって大きな転機となったようだ。
+		PRINTFORMW そして、あなたにとっても貴重な경험となった。
+		PRINTFORML
+		CALL EVENT_TIMER(120)
+		RETURN 2
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、周囲から落胆の声が漏れる。
+		PRINTFORMW 男は勝ち誇ったように笑う。
+		PRINTFORML
+		PRINTFORML 「ひゃははっ！やっぱりな！運には勝てねえんだよ！」
+		PRINTFORML 男は周囲に向かって大声で叫ぶ。
+		PRINTFORMW 「見たか！これが確率を支配する力だ！」
+		PRINTFORML
+		PRINTFORML VRゴーグルを外すと、現実の会場に戻る。
+		PRINTFORML 男は만족そうに笑いながら、その場を去っていく。
+		PRINTFORMW 「また遊んでやるよ。運に見放された哀れなデュエリストたち！」
+		PRINTFORML
+		PRINTFORML 周囲の観客たちも徐々に散っていく。
+		PRINTFORML 麗華がゆっくりとこちらに歩いてくる。
+		PRINTFORMW その表情は、明らかに失望の色を浮かべている。
+		PRINTFORML
+		PRINTFORML 「…%CALLNAME:MASTER%」
+		PRINTFORML 麗華は冷たい声で言う。
+		PRINTFORMW 「あなたほどのデュエリストでも、あの不確定要素は制御できませんでしたか」
+		PRINTFORML
+		PRINTFORML 「やはり、論理の通じない상대は…」
+		PRINTFORML 麗華は端末を操作しながら呟く。
+		PRINTFORMW 彼女の声には、深い落胆が滲んでいる。
+		PRINTFORML
+		PRINTFORML 「私の分析も、あなたの実力も、運の前では無力だった」
+		PRINTFORML 麗華はメガネを外し、疲れたような表情を見せる。
+		PRINTFORMW 「…記録に残します。今回の패배を、次に活かさなければ」
+		PRINTFORML
+		PRINTFORML 彼女は一礼し、その場を後にする。
+		PRINTFORML その背中は、どこか孤独で自信を失っているように見えた。
+		PRINTFORMW あなたも、패배の苦さを噛みしめながら会場を後にする。
+		PRINTFORML
+		PRINTFORML 今回は失敗してしまった。
+		PRINTFORML しかし、次こそは…そう心に誓う。
+		PRINTFORMW 麗華の信頼を取り戻すためにも。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-100)
+		CALL EVENT_TIMER(120)
+		RETURN 3
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_202652
+CALL DP_GET(2000)
+CALL MONEY_GET(10000)
+
+@IRAI_DECK_202652(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 202652
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_202652
+
+PRINTFORML 
+PRINTFORML ギャンブラーデュエリスト「ひゃははっ！運命の女神に祈るんだな！」
+PRINTFORMW 
+
+;ダイスキー
+@DUELDECK_202652(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 29001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2352
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2352
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2352
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2353
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2353
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2354
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2354
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2355
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2355
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2356
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2356
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 2357
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 62350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 62350
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70016
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72931
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72931
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72931
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72911
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72911
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72911
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72960
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 72960
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 92963
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 92963
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 29002
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 2350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 2351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42354
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42354
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1631
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54550
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54550

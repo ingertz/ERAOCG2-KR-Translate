@@ -1,0 +1,259 @@
+﻿@CARDNAME_40075,参照先
+;ココで指定卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 惑乱魔セラ
+	CASE "略称"
+		RESULTS = 惑セラ
+	CASE "カテゴリ"
+		RESULTS:0 = 惑乱魔
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_40075(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN リンク
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 植物族
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 400
+	CASE "守備力"
+		RETURN 2400
+	CASE "性別"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1370
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_40075(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要リンク数 = 1
+素材条件種類 = リンク以外
+素材条件カテゴリ:0 = 蟲惑魔
+素材条件カテゴリ:1 = 惑乱魔
+
+IF EX参照 == 1
+	CALL LINCAN(決闘者,召喚カード,40075) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_40075(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL リンクモンスター以外の「蟲惑魔」モンスターまたは「惑乱魔」モンスター１体
+PRINTL このカード名の③④の効果はそれぞれ１ターンに１度使用できる。
+CALLFORM CARD_ABLE(1,特殊召喚時,EX召喚時)
+PRINTL ①：このカードが特殊召喚した場合、相手フィールドの表側表示モンスター１体を対象として発動できる。
+PRINTL そのモンスターにこのカードの蟲紋カウンターを１つ置く。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ②：自分フィールドにこのカード名以外の「惑乱魔」モンスターが存在する限り、このカードは攻撃対象にならない。
+CALLFORM CARD_ABLE(2,効果後誘発)
+PRINTL ③：相手がモンスターを召喚・特殊召喚した場合、フィールドのこのカードをリリースして発動できる。
+PRINTL デッキから「惑乱魔」モンスター１体を特殊召喚し、その相手モンスターに特殊召喚した自分のモンスターの蟲紋カウンターを１つ置く。
+CALLFORM CARD_ABLE(3,攻撃後誘発)
+PRINTL ④：このカードが墓地に存在し、
+PRINTL 相手モンスターの攻撃でダメージステップ終了時までに「惑乱魔」モンスターがフィールドから離れなかった場合に発動できる。
+PRINTL このカードを特殊召喚するかエクストラデッキに戻す。
+PRINTL エクストラデッキに戻した場合、デッキから「落とし穴」通常罠カードまたは「蜜穴」通常罠カード１枚を自分フィールドにセットできる。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_40075(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件达成
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,40075)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 特殊召喚時 || 種類 == EX召喚時
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 効果後誘発
+	;对方把怪兽双召时,从卡组特殊召唤惑乱魔怪兽的效果检测。
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,40075)
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(決闘者,"召喚全般",1)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = 惑乱魔
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 攻撃後誘発
+	SIF ゾーン != "墓地"
+		RETURN 0
+	SIF 発動済_3(決闘者,40075)
+		RETURN 0
+	SIF ターンプレイヤー == 決闘者
+		RETURN 0
+
+  	CALL FULLRESET
+	効果条件カテゴリ = 惑乱魔
+	CALL CARD_CHECK_FIN_DATA(決闘者,"戦場離れ")
+	SIF RESULT == 1
+		RETURN 0      
+	RETURN 1
+
+ENDIF
+
+
+@CARDEFFECT_40075(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 选择卡片,2
+#DIM DYNAMIC 选择卡片_ID
+#DIM DYNAMIC 蟲纹種類
+#DIM DYNAMIC 效果先
+#DIM DYNAMIC 选择对方卡片
+#DIM DYNAMIC 条件达成,3
+#DIM DYNAMIC 调教对象
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 特殊召喚時 || 種類 == EX召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40075,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果条件表示 = 表側表示
+		CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+		选择卡片:0 = RESULT
+		IF 选择卡片:0 != 9999
+			CALL TRAPSEX_FACETIRON1(対面者,选择卡片:0)
+			蟲纹種類 = RESULT
+			CALL SET_FIELD_INFO(対面者,"戦場",选择卡片:0,"塞拉纹Ｃ",1)
+
+			调教对象 = GETVAR(@"%対面者%_戦場:(选择卡片:0)")
+			CALL SEXTEXT_40075_1_1(決闘者,调教对象,蟲纹種類)
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 永続効果
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = 惑乱魔
+	効果条件表示 = 表側表示
+	効果条件固名前 = 惑乱魔セラ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"攻避")
+
+ELSEIF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40075,2)
+	IF RESULT == 0
+		效果先 = FINAL_SUMMON_TARGET(決闘者,1)
+		调教对象 = GETVAR(@"%対面者%_戦場:效果先")
+
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = 惑乱魔
+		効果条件種類 = モン全般
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		选择卡片_ID = RESULT:1
+		IF 选择卡片_ID != -1
+			CALL TRAPSEX_FACETIRON3(決闘者,ゾーン,種類,場所,效果先,选择卡片_ID)
+			CALL SEXTEXT_40075_2_1(決闘者,调教对象)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 攻撃後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40075,3)
+	IF RESULT == 0
+		SIF モンスター数(決闘者) <= 4
+			条件达成:0 = 1
+		SIF 魔罠数(決闘者) <= 4
+			条件达成:1 = 1
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件種類 = モン全般
+		効果条件カテゴリ = 惑乱魔
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1
+			条件达成:2 = 1
+
+		IF (条件达成:0) == 1
+			CALL FULLRESET
+			PRINTL セラを特殊召喚しますか、デッキに戻しますか？
+			PRINTL [1] - 特殊召喚
+			PRINTL [2] - EXデッキに戻
+			BINPUT
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_SP_SUMMON(決闘者,ゾーン,場所)
+			ELSEIF RESULT == 2
+				$TRAPSEX_40075_4
+				CALL CARD_DISPOSE(決闘者,ゾーン,場所,EXデッキ行き)
+				IF RESULT == 1 && (条件达成:1) == 1 && (条件达成:2) == 1
+					CALL FULLRESET
+					PRINTL デッキから通常罠カード「落とし穴」または「蜜穴」１枚を自分フィールドにセットしますか？
+					PRINTL [1] - ★YEAH!★
+					PRINTL [2] - NO
+					BINPUT
+					IF RESULT == 1
+						CALL FULLRESET
+						効果条件カテゴリ:0 = 落とし穴
+						効果条件カテゴリ:1 = 蜜穴
+						効果条件種類 = 通常罠
+						CALL CARD_SET_BASIC(決闘者,"デッキ",ゾーン,場所,"裏側表示")
+					ENDIF
+				ENDIF
+			ENDIF
+		ELSE
+			GOTO TRAPSEX_40075_4
+		ENDIF
+	ENDIF
+ENDIF
+

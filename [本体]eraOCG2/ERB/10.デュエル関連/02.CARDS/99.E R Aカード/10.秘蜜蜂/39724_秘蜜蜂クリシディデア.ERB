@@ -83,11 +83,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
@@ -199,7 +196,7 @@ ELSEIF 종류 == 攻撃時強制誘発
 		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",GETVAR(@"%듀얼리스트%_MZ_攻:場所"),1)
 	ENDIF
 	IF 조교대상 >= 0
-		PRINTFORML %CALLNAME:조교대상%은 몸속에 떼지은 벌들에게 애무되어、秘豆に集まった愛蜜をたっぷり採取された。
+		PRINTFORML %CALLNAME:조교대상%은 몸속에 떼지은 벌들에게 애무되어、숨겨진 콩에 모인 사랑꿀을 듬뿍 채집당했다。
 		CALL EROTIC_MOVE("클리토리스凌辱",조교대상,-1,GETVAR(@"%듀얼리스트%_MZ_攻:場所"))
 	ENDIF
 	CALL EVADE_ATTACK(듀얼리스트)
@@ -207,7 +204,7 @@ ELSEIF 종류 == ターン終了時
 	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
 	IF RESULT != -1
 		조교대상 = RESULT
-		PRINTFORML %CALLNAME:조교대상%은 몸속에 떼지은 벌들에게 애무되어、秘豆に集まった愛蜜をたっぷり採取された。
+		PRINTFORML %CALLNAME:조교대상%은 몸속에 떼지은 벌들에게 애무되어、숨겨진 콩에 모인 사랑꿀을 듬뿍 채집당했다。
 		PRINTFORM 너무 많이가서 몸을 경련시키는 %CALLNAME:조교대상%을 거들떠도 보지않고、벌들은 채집한 암컷꿀을 마스터에게 헌상한다。
 		CALL EROTIC_MOVE("클리토리스凌辱",조교대상,-1,400)
 	ENDIF

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 변덕스러운 군관니기리
+		RESULTS = 변덕스러운 군관니기리
 	CASE "略称"
-RESULTS = 변덕스러운 군관
+		RESULTS = 변덕스러운 군관
 	CASE "カテゴリ"
-RESULTS:0 = 군관
+		RESULTS:0 = 군관
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -57,9 +56,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
@@ -106,7 +104,7 @@ IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함"
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
 		효과範囲손패= 1
-효과条件名前 = 샤리 군관
+		효과条件名前 = 샤리 군관
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET

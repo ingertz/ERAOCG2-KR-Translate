@@ -1,0 +1,108 @@
+﻿@CARDNAME_27602,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 아우로
+	CASE "略称"
+		RESULTS = Ｊ 아우로
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_27602(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 200
+	CASE "守備力"
+		RETURN 200
+	CASE "성별"
+		RETURN 無性
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN RARE
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27602(종류)
+#DIM DYNAMIC 종류
+CALL CARD_ABLE(1,필드起動)
+PRINTL ①：このカードをリリースし、「쥬락 아우로」以外の
+PRINTL 자신の묘지のレベル４以下の「쥬락」モンスター１体を대상として발동できる。
+PRINTL そのモンスターを특수소환する。
+
+@CARDCAN_27602(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27602)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 쥬락
+	효과条件固名前 = 쥬락 아우로
+	CALLFORM 효과条件レベル_ADV(4,"以下")
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_27602(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM サーチカード 
+
+
+
+;PRINTFORMW 종류:{종류}
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27602,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 쥬락
+		효과条件固名前 = 쥬락 아우로
+		CALLFORM 효과条件レベル_ADV(4,"以下")
+		효과条件소환可 = 2
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

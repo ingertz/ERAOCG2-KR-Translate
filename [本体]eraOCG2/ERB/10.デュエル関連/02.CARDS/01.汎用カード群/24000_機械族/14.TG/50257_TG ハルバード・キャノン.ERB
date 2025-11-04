@@ -1,0 +1,156 @@
+﻿@CARDNAME_50257,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = TG 할버드 캐논
+	CASE "略称"
+		RESULTS = TG할버드
+	CASE "カテゴリ"
+		RESULTS:0 = 테크지너스
+ENDSELECT
+
+
+@CARD_50257(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 4000
+	CASE "守備力"
+		RETURN 4000
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50257(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 12
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+	素材条件종류 = 싱크로
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+	素材条件종류 = 싱크로
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,50257) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50257(종류)
+#DIM DYNAMIC 종류
+
+PRINTL Sモンスターの튜너＋튜너以外のSモンスター１体以上
+PRINTL このカードはS소환でしか특수소환できない。
+CALLFORM CARD_ABLE(0,소환誘発)
+PRINTL ①：１ターンに１度、상대がモンスターを소환・특수소환する際に발동できる。
+PRINTL それを無効にし、そのモンスターを破壊する。
+PRINTL （この효과は１ターン中に、자신の묘지のSモンスターの数まで使用できる。）
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ②：このカードがフィールドを離れた場合に발동できる。
+PRINTL 묘지・EX덱の「TG」Sモンスター１体を특수소환することができる。
+
+
+
+@CARDCAN_50257(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50257)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 最終소환決者 == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 싱크로
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") > RESULT
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 테크지너스
+	효과条件종류 = 싱크로
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_50257(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 효과先
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50257,30)
+	IF RESULT == 0
+		효과先 = 最終소환場所
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"完全묘지")
+	ENDIF
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50257)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 테크지너스
+		효과条件종류 = 싱크로
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

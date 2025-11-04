@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 원탁의 성기사
+		RESULTS = 원탁의 성기사
 	CASE "略称"
-RESULTS = 원탁의 성기사
+		RESULTS = 원탁의 성기사
 	CASE "カテゴリ"
-RESULTS:0 = 성기사
+		RESULTS:0 = 성기사
 ENDSELECT
 
 
@@ -72,13 +72,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_DRAW_CHECK
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 지속효과
@@ -125,7 +120,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			효과条件カテゴリ = 성기사
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 			IF RESULT == 1
-PRINTL 패의 "성검"카드를 장비하시겠습니까?
+				PRINTL 패의 "성검"카드를 장비하시겠습니까?
 				CALL YN_CHOICE(듀얼리스트)
 				IF RESULT == はい
 					カード装備先 = カード소환先

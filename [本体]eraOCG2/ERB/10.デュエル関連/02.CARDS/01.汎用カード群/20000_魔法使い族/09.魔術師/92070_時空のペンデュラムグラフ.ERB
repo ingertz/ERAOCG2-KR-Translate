@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 시공의 펜듈럼그래프
+		RESULTS = 시공의 펜듈럼그래프
 	CASE "略称"
-RESULTS = 시공의 P 그래프
+		RESULTS = 시공의 P 그래프
 	CASE "カテゴリ"
-RESULTS:0 = 펜듈럼그래프
-RESULTS:1 = 펜듈럼
+		RESULTS:0 = 펜듈럼그래프
+		RESULTS:1 = 펜듈럼
 ENDSELECT
 
 
@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -59,7 +58,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 
 	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
@@ -119,6 +119,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				효과範囲상대필드 = 1
 				효과範囲상대마함 = 1
 				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+				
 			ENDIF
 		ENDIF
 	ELSE

@@ -1,0 +1,220 @@
+@CARDNAME_61157,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 문라이트 마스커레이드
+	CASE "略称"
+		RESULTS = 문라이트무도회
+	CASE "カテゴリ"
+		RESULTS:0 = 문라이트
+ENDSELECT
+
+
+@CARD_61157(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "추가日"
+		RETURN 250516
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61157(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②③의 효과는 각각 1턴에 1번만 사용할 수 없다.
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①: 이 카드의 발동 시의 효과 처리로서,
+PRINTL 덱에서 "문라이트" 몬스터 1장을 묘지로 보낼 수 있다.
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②: 자신이 "문라이트" 융합 몬스터를 특수 소환했을 경우에 발동할 수 있다.
+PRINTL 자신의 묘지 / 제외 상태인 "융합" 1장을 패에 넣고, 카드를 1장 버린다.
+CALLFORM CARD_ABLE(3,마함起動)
+PRINTL ③: 이 카드명의 ②의 효과를 발동한 자신 메인 페이즈에 발동할 수 있다.
+PRINTL 패에서 "융합" 또는 "문라이트 퓨전" 1장을 묘지로 보내고,
+PRINTL 그 융합 마법에 의해 정해진 장소에서 융합 소재 몬스터를 묘지로 보내고,
+PRINTL "문라이트" 융합 몬스터 1장을 융합 소환한다.
+PRINTL 이 때, 묘지 / 제외 상태의 몬스터를 제외하여 융합 소재로 할 수도 있다.
+
+@CARDCAN_61157(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 융합달성
+#DIM DYNAMIC 月光융합달성
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,61157)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+    SIF 발동済_3(듀얼리스트,61157)
+    	RETURN 0
+    SIF 발동済_2(듀얼리스트,61157) == 0
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件名前 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		융합달성 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件名前 = 문라이트 퓨전
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		月光융합달성 = 1 
+	SIF 융합달성 == 0 && 月光융합달성 == 0
+		RETURN 0
+	;상대에게 EX몬스터가 いる場合の条件달성。
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 =	EXモン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		月光융합달성 = 0
+	CALL RESETAREA_MAT
+	IF 月光융합달성 == 1
+		素材範囲덱 = 1	
+		素材範囲EX덱 = 1	
+	ENDIF
+	素材範囲필드 = 1
+	素材範囲손패 = 1
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") == 0
+		素材範囲묘지 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
+	효과条件カテゴリ = 문라이트
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 문라이트
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+    SIF 발동済_2(듀얼리스트,61157)
+    	RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 문라이트
+	효과条件종류 = 융합
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件名前 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_61157(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 月光융합달성
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61157,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前:0 = 융합
+		효과条件名前:1 = 문라이트 퓨전
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			SIF RESULT:1 == 61156
+				月光융합달성 = 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件종류 =	EXモン全般
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				月光융합달성 = 0
+			;EX덱確認
+			CALL RESETAREA_MAT
+			IF 月光융합달성 == 1
+				素材範囲덱 = 1	
+				素材範囲EX덱 = 1	
+			ENDIF	
+			素材範囲필드 = 1
+			素材範囲손패 = 1
+			SIF GETVAR(@"%듀얼리스트%_제외NG置換") == 0
+				素材範囲묘지 = 1
+			CALL FULLRESET
+			효과条件종류 = 융합
+			효과条件カテゴリ = 문라이트
+			효과条件소환可 = 2
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+				CALL FUSSUMMON(듀얼리스트, 選択カード)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61157)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		IF 발동済_1(듀얼리스트,61157) != 1
+			CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61157,1)
+			IF RESULT == 0
+				CALL FULLRESET
+				효과条件カテゴリ = 문라이트
+				효과条件종류 = モン全般
+				CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF	
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61157,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 융합
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

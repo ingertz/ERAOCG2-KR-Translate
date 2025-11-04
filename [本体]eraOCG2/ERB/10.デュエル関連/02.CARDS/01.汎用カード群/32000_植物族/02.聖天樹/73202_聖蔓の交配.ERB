@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 생바인 크로스브리드
+		RESULTS = 생바인 크로스브리드
 	CASE "略称"
-RESULTS = 성만의 교배
+		RESULTS = 성만의 교배
 	CASE "カテゴリ"
-RESULTS:0 = 생아발론
-RESULTS:1 = 생바인
+		RESULTS:0 = 생아발론
+		RESULTS:1 = 생바인
 ENDSELECT
 
 
@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속마법
 ENDSELECT
 
@@ -72,13 +71,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -106,7 +100,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			選択カード_ID = RESULT:1
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 			選択カード名前 = %RESULTS%
 			CALL FULLRESET
 			효과範囲묘지 = 1

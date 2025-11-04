@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 시라누이류 전생의 진
+		RESULTS = 시라누이류 전생의 진
 	CASE "略称"
-RESULTS = 시라누이전생의진
+		RESULTS = 시라누이전생의진
 	CASE "カテゴリ"
-RESULTS:0 = 시라누이
+		RESULTS:0 = 시라누이
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN フィールド
 ENDSELECT
 
@@ -90,13 +89,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -153,14 +147,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 				条件달성:1 = 0
 
 			IF 듀얼리스트 == "자신"
-PRINTL 효과를 선택해 주세요
+				PRINTL 효과를 선택해 주세요
 				PRINTL
 				SIF 条件달성:0 == 1
-PRINTL [0] - 덱에서 패에 넣는다
+					PRINTL [0] - 덱에서 패에 넣는다
 				SIF 条件달성:1 == 1
-PRINTL [1] - 묘지에서 특수 소환한다
+					PRINTL [1] - 묘지에서 특수 소환한다
 				SIF 条件달성:2 == 1
-PRINTL [2] - 제외된 곳에서 묘지로 되돌린다
+					PRINTL [2] - 제외된 곳에서 묘지로 되돌린다
 				BINPUT
 			ELSE
 				IF 条件달성:1 == 1
@@ -201,6 +195,6 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
 	ENDIF
 ELSEIF 종류 == 지속효과
-	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "시라누이류전생의진")
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "시라누이류 전생의 진")
 
 ENDIF

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 분보그 005
+		RESULTS = 분보그 005
 	CASE "略称"
-RESULTS = 분보그 005
+		RESULTS = 분보그 005
 	CASE "カテゴリ"
-RESULTS:0 = 분보그
+		RESULTS:0 = 분보그
 ENDSELECT
 
 
@@ -36,6 +36,8 @@ SELECTCASE 参照先
 		RETURN 500
 	CASE "分割"
 		RETURN 펜듈럼
+	CASE "추가日"
+		RETURN 250514
 ENDSELECT
 RETURN 0
 
@@ -55,7 +57,7 @@ CALLFORM CARD_ABLE(0,소환時,특수소환時)
 PRINTL ①: 이 카드가 소환 / 특수 소환했을 경우에 발동할 수 있다.
 PRINTL 필드의 마법 / 함정 카드 1장을 고르고 파괴한다.
 CALLFORM CARD_ABLE(0,攻守変動)
-PRINTL ②: 이 카드의 공격력은, 자신의 EX덱의 EX 몬스터 이외의 "분보-그" P 몬스터의 수× 500 올린다.
+PRINTL ②: 이 카드의 공격력은, 자신의 EX덱의 EX 몬스터 이외의 "분보그" P 몬스터의 수× 500 올린다.
 CALLFORM CARD_ABLE(3,戦破壊→묘지)
 PRINTL ③: 마법 & 함정 존의 이 카드가 효과로 파괴되었을 경우에 발동할 수 있다.
 PRINTL 자신의 묘지에서 "분보그" 몬스터 1장을 특수 소환한다.
@@ -72,11 +74,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 

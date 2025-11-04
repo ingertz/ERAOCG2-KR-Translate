@@ -26,7 +26,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 速攻마법
 ENDSELECT
 
@@ -71,7 +70,7 @@ IF 종류 == 攻撃時誘発
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트) == 5
 		RETURN 0
-	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)},"カテゴリ"
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
 	SIF !MATCH(RESULTS, "베토벤")
 		RETURN 0
 	CALL CARD_DRAW_CHECK
@@ -107,7 +106,7 @@ IF 종류 == 攻撃時誘発
 				GOTO INPUT_HAND_LOOP
 			ELSE	
 				IF カウンタ < 3
-					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:現選択カード")}, "名前"
+					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:現選択カード")}("名前")
 					PRINTFORML 선택된 카드:"{現選択カード}" %RESULTS%
 					選択カード:カウンタ = 現選択カード
 					カウンタ ++		
@@ -118,24 +117,24 @@ IF 종류 == 攻撃時誘発
 			VARSET カウンタ
 			REPEAT 3
 				VARSET 条件달성
-				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}, "カテゴリ"
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}("カテゴリ")
 				IF MATCH(RESULTS, "셀레스")
 					条件달성 ++
 				ENDIF
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}, "レベル"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}("レベル")
 				SIF RESULT > 7
 					条件달성 = 0
 
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}, "종족"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}("종족")
 				SIF RESULT == 드래곤족
 					条件달성 ++
 
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}, "종류"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}("종류")
 				SIF RESULT >= 10
 					条件달성 = 0
 
 				IF 条件달성 >= 1
-					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}, "名前"
+					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:(選択カード:カウンタ)")}("名前")
 					PRINTFORML %RESULTS%を특수소환しますか？
 					CALL YN_CHOICE(듀얼리스트)
 					IF RESULT == 0

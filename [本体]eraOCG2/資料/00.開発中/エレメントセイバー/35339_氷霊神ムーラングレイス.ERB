@@ -1,0 +1,172 @@
+﻿@CARDNAME_35339,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 氷霊神ムーラングレイス
+	CASE "略称"
+		RESULTS = 氷霊神ＭＧ
+	CASE "カテゴリ"
+		RESULTS:0 = 霊神
+ENDSELECT
+
+
+@CARD_35339(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RETURN 海生族
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2200
+	CASE "特殊不可"
+		RETURN 1
+	CASE "召喚不可"
+		RETURN 1
+	CASE "レア度"
+		RETURN ULR
+	CASE "追加日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35339(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカードは通常召喚できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL 自分の墓地の水属性モンスターが５体の場合のみ特殊召喚できる。
+PRINTL この方法による「氷霊神ムーラングレイス」の特殊召喚は１ターンに１度しかできず、
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(2,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。相手の手札をランダムに２枚捨てる。
+CALLFORM CARD_ABLE(3,戦破壊→墓地)
+PRINTL ②：このカードがフィールドから離れた場合に発動する。このターン、以下の効果を適用する。
+PRINTL ●お互いのプレイヤーは水属性モンスターで攻撃する事ができない。
+
+;２ハンデスは「いたずら好きな双子悪魔」の効果再現であるらしい。他の霊神も含めて、SS時に強力な再現効果を使うというデザイン。
+;ハッキリ言って強いんだけど、ナーフしたら水属性デッキでも採用しなくなるからなあという理由でそのまま。
+
+
+@CARDCAN_35339(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件達成
+#DIM DYNAMIC 属性数 = 0
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,35339)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,35339)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,35339,"手札")
+	SIF RESULT == 1
+		RETURN 0
+	;自分の墓地に水属性モンスターが５体以上居る場合は無条件で特殊召喚不可能
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件属性 = 水属性
+	効果条件CNT = 1	
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 5
+		RETURN 0	
+	RETURN 1
+ELSEIF 種類 == 特殊召喚時
+	SIF 発動済_2(決闘者,35339)
+		RETURN 0
+	;「いたずら好きな双子悪魔」の条件と同等
+	SIF 手札数(対面者) < 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 種類 == 戦破壊→墓地
+	SIF 発動済_3(決闘者,35339)
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 短紋章起動
+	RETURN 1
+ENDIF
+
+@CARDFORCE_35339(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+VARSET RESULT
+IF 種類 == 戦破壊→墓地
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35339(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件達成
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 手札起動 
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,35339,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	ENDIF
+ELSEIF 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,35339,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(決闘者,"手札破壊",場所,"墓地")
+		IF 手札数(対面者) >= 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(決闘者,"手札破壊",場所,"墓地")
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 戦破壊→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,35339,3)
+	IF RESULT == 0
+		CALL CARD_RESERV(決闘者,35339,短紋章予約)
+	ENDIF
+ELSEIF 種類 == 短紋章起動
+	CALL FULLRESET
+	効果条件属性 = 水属性
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"戦無")
+	CALL FULLRESET
+	効果条件属性 = 水属性
+	CALL STATCHANGE_EFFECT(決闘者,"相手戦場",場所,"戦無")
+ENDIF
+
+

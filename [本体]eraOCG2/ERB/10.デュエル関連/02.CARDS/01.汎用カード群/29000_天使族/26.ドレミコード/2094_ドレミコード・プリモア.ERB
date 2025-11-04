@@ -1,0 +1,242 @@
+﻿@CARDNAME_2094,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 도레미코드 프리모아
+	CASE "略称"
+		RESULTS = 프리모아
+	CASE "カテゴリ"
+		RESULTS:0 = 도레미코드
+ENDSELECT
+
+
+@CARD_2094(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 400
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "추가日"
+		RETURN 250817
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2094(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 이 카드명의 ①의 P효과는 １턴에 １번밖에 사용할 수 없으며、
+PRINTL 자신의 마법＆함정 존에 이 카드명이 존재하지 않는 경우에 패에서 지속 마법으로 발동할 수 있다.
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다.
+PRINTL 패 / EX덱에서 레벨 ４ 이하의 "도레미코드" 몬스터 １장을 특수 소환할 수 있다.
+PRINTL 그 후, 자신의 "도레미코드" 카드 １장을 선택하여 그 카드를 패로 되돌린다.
+
+CALL TEXT_DECORATION("P_MAGIC_2")
+PRINTL 이 카드명의 ①의 몬스터 효과는 １턴에 １번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(2,소환時 ,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 덱에서 "도레미코드 프리모아" 이외의 "도레미코드" 카드 １장을 패에 넣는다。
+PRINTL ②：마법＆함정 존에 홀수와 짝수 레벨의 "도레미코드" 카드가 각각 존재하는 한、
+PRINTL 자신이 발동한「도레미코드」카드의 효과는 무효화되지 않는다。
+
+PRINTL ③：자신이 "도레미코드" 몬스터를 링크 소환한 경우에 발동할 수 있다.
+PRINTL 자신의 EX덱（앞면） / 묘지에서 "도레미코드" 카드 １장을 손패에 넣는다。
+
+@CARDSUMMON_AA_2094
+
+
+@CARDCAN_2094(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2094)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 도레미코드 프리모아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	SIF 발동済_1(듀얼리스트,2094)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = EX以外全般
+	CALL 효과条件レベル_ADV(4, "以下")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,2094)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件固名前 = 도레미코드 프리모아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = モン全般
+	효과条件レベル:0 = 1
+	효과条件レベル:1 = 3
+	효과条件レベル:2 = 5
+	효과条件レベル:3 = 7
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = モン全般
+	효과条件レベル:0 = 2
+	효과条件レベル:1 = 4
+	효과条件レベル:2 = 6
+	효과条件レベル:3 = 8
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,2094)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = EX以外全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = 링크
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"EX특수소환")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2094(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2094)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2094,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 도레미코드
+		효과条件종류 = EX以外全般
+		CALL 효과条件レベル_ADV(4, "以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 도레미코드
+		효과条件표시 = 表側표시
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2094,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 도레미코드
+		효과条件종류 = モン全般
+		효과条件固名前 = 도레미코드 프리모아
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_CAT_SOGAI_INFO(듀얼리스트,"도레미코드")
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2094,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 도레미코드
+		효과条件종류 = EX以外全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

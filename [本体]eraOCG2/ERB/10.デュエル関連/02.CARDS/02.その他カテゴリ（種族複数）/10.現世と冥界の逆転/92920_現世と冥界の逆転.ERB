@@ -1,0 +1,128 @@
+﻿@CARDNAME_92920,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 현세와 명계의 역전
+	CASE "略称"
+		RESULTS = 현세와명계의역전
+	CASE "カテゴリ"
+		RESULTS:0 = 현세와 명계
+ENDSELECT
+
+
+@CARD_92920(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_92920(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 카드는 듀얼 중에 1장밖에 발동할 수 없다.
+CALLFORM CARD_ABLE(20,마함起動 ,フリー誘発)
+PRINTL ①: 자신 묘지의 카드가 15장 이상이고, 상대의 묘지가 5장 이상인 경우에 1000LP를 지불하고 발동할 수 있다.
+PRINTL 서로의 플레이어는, 각각 자신의 덱과 묘지의 카드를 모두 교체하고, 덱을 셔플한다.
+
+
+
+@CARDCAN_92920(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92920)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_D1(듀얼리스트,92920)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 묘지数(듀얼리스트) < 15
+		RETURN 0
+	SIF 묘지数(対面者) < 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_92920(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カード待機,紙束最大値
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択カード
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92920,20)
+	IF RESULT == 0
+		FOR カウンタ,0,紙束最大値
+			SIF GETVAR(@"%듀얼리스트%_묘지:カウンタ") == -1
+				CONTINUE
+			カード待機:カウンタB = GETVAR(@"%듀얼리스트%_묘지:カウンタ")
+			カウンタB ++
+		NEXT
+		FOR カウンタ,0,紙束最大値
+			SIF GETVAR(@"%듀얼리스트%_덱:0") == -1
+				BREAK
+			CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",0)
+		NEXT
+		FOR カウンタ,0,カウンタB
+			CALL CARD_RECONSTRUCT(듀얼리스트,"덱",カウンタ,カード待機:カウンタ)
+		NEXT
+		CALL SHUFFLE(듀얼리스트)
+
+		VARSET カード待機
+		VARSET カウンタB
+		FOR カウンタ,0,紙束最大値
+			SIF GETVAR(@"%対面者%_묘지:カウンタ") == -1
+				CONTINUE
+			カード待機:カウンタB = GETVAR(@"%対面者%_묘지:カウンタ")
+			カウンタB ++
+		NEXT
+		FOR カウンタ,0,紙束最大値
+			SIF GETVAR(@"%対面者%_덱:0") == -1
+				BREAK
+			CALL CARD_DISPOSE(対面者,"덱",0)
+		NEXT
+		FOR カウンタ,0,カウンタB
+			CALL CARD_RECONSTRUCT(対面者,"덱",カウンタ,カード待機:カウンタ)
+		NEXT
+		CALL SHUFFLE(対面者)
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+

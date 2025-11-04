@@ -471,7 +471,7 @@ FOR カウンタ,0,5
 	설정場所 = GETVAR(@"%듀얼리스트%_MZ_汎数:カウンタ")
 	IF 설정場所 >= 6
 		설정場所 -= 10
-		SIF GETVAR(@"%対面者%_필드:설정場所") == -1
+		SIF GETVAR(@"%対面者%_마함:설정場所") == -1
 			SETVAR @"%듀얼리스트%_필드:カウンタ", -1
 	ELSEIF 설정場所 <= 4
 		SIF GETVAR(@"%対面者%_필드:설정場所") == -1
@@ -558,23 +558,23 @@ $INPUT_LOOP
 
 FOR カウンタ,0,5
 	SETVAR @"%듀얼리스트%_MZ_ID:カウンタ", GETVAR(@"%듀얼리스트%_필드:カウンタ")
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "攻撃力"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("攻撃力")
 	SETVAR @"%듀얼리스트%_MZ_攻:カウンタ", RESULT
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "守備力"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("守備力")
 	SETVAR @"%듀얼리스트%_MZ_守:カウンタ", RESULT
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "속성"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("속성")
 	SETVAR @"%듀얼리스트%_MZ_属:カウンタ", RESULT
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "종족"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("종족")
 	SETVAR @"%듀얼리스트%_MZ_種:カウンタ", RESULT
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "レベル"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("レベル")
 	SETVAR @"%듀얼리스트%_MZ_星:カウンタ", RESULT
-	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "튜너"
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("튜너")
 	SETVAR @"%듀얼리스트%_MZ_Ｔ:カウンタ", RESULT
 
 	IF GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ") >= 1
-		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ")}, "성별"
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ")}("성별")
 	ELSE
-		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "성별"
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("성별")
 	ENDIF
 	SETVAR @"%듀얼리스트%_MZ_性:カウンタ", RESULT
 	IF オプション_성별
@@ -655,9 +655,6 @@ FOR カウンタ,0,5
 	SIF GETVAR(@"%듀얼리스트%_MZ_一属:カウンタ") != 0
 		SETVAR @"%듀얼리스트%_MZ_属:カウンタ", GETVAR(@"%듀얼리스트%_MZ_一属:カウンタ")
 
-	SIF GETVAR(@"%듀얼리스트%_MZ_変属:カウンタ") != 0
-		SETVAR @"%듀얼리스트%_MZ_属:カウンタ", GETVAR(@"%듀얼리스트%_MZ_変属:カウンタ")
-
 	SIF GETVAR(@"%듀얼리스트%_MZ_一種:カウンタ") != 0
 		SETVAR @"%듀얼리스트%_MZ_種:カウンタ", GETVAR(@"%듀얼리스트%_MZ_一種:カウンタ")
 
@@ -680,9 +677,9 @@ FOR カウンタ,0,5
 		CONTINUE
 	VARSET カード_ID
 	カード_ID = GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ")
-	TRYCALLFORM CARD_{カード_ID},"攻撃力"
+	TRYCALLFORM CARD_{カード_ID}("攻撃力")
 	SETVAR @"%듀얼리스트%_MZ_攻:カウンタ", RESULT + GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ")
-	TRYCALLFORM CARD_{カード_ID},"守備力"
+	TRYCALLFORM CARD_{カード_ID}("守備力")
 	SETVAR @"%듀얼리스트%_MZ_守:カウンタ", RESULT + GETVAR(@"%듀얼리스트%_MZ_守:カウンタ")
 NEXT
 

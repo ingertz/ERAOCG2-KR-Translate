@@ -127,7 +127,7 @@ FOR 캐릭터クター,0,CHARANUM
 	SIF TALENT:캐릭터クター:임신가능 == 0
 		CONTINUE
 	캐릭터クターID = NO:(캐릭터クター)
-	TRYCALLFORM CARDNAME_{캐릭터クターID},"名前"
+	TRYCALLFORM CARDNAME_{캐릭터クターID}("名前")
 	SIF RESULTS == ""
 		CONTINUE
 PRINTFORML [{캐릭터クター}] %NAME:캐릭터クター%
@@ -194,16 +194,16 @@ RETURN
 대상 = NO:대상
 
 ;PRINTFORML 대상 = {대상}
-CALLFORM CARD_{대상},"속성"
+CALLFORM CARD_{대상}("속성")
 参照ステータス:0 = RESULT
 
-CALLFORM CARD_{대상},"종족"
+CALLFORM CARD_{대상}("종족")
 参照ステータス:1 = RESULT
 
-CALLFORM CARD_{대상},"攻撃力"
+CALLFORM CARD_{대상}("攻撃力")
 参照ステータス:2 = RESULT
 
-CALLFORM CARD_{대상},"守備力"
+CALLFORM CARD_{대상}("守備力")
 参照ステータス:3 = RESULT
 
 $LOOPPOINT00
@@ -213,45 +213,45 @@ SELECTCASE RAND:6
 		$LOOPPOINT0
 		;PRINTFORML CASE 0
 		新カード = RAND:5001
-		TRYCALLFORM CARDNAME_{新カード},"カテゴリ"
+		TRYCALLFORM CARDNAME_{新カード}("カテゴリ")
 		SIF RESULTS == "듀얼리스트"
 			GOTO LOOPPOINT0
 		SIF 新カード == 대상
 			GOTO LOOPPOINT0
-		TRYCALLFORM CARDNAME_{新カード},"名前"
+		TRYCALLFORM CARDNAME_{新カード}("名前")
 		SIF RESULTS == ""
 			GOTO LOOPPOINT0
-		TRYCALLFORM CARD_{新カード},"속성"
+		TRYCALLFORM CARD_{新カード}("속성")
 		SIF RESULT != 参照ステータス:0
 			GOTO LOOPPOINT0
 	CASE 1
 		$LOOPPOINT1
 		;PRINTFORML CASE 1
 		新カード = RAND:5001
-		TRYCALLFORM CARDNAME_{新カード},"カテゴリ"
+		TRYCALLFORM CARDNAME_{新カード}("カテゴリ")
 		SIF RESULTS == "듀얼리스트"
 			GOTO LOOPPOINT1
 		SIF 新カード == 대상
 			GOTO LOOPPOINT1
-		TRYCALLFORM CARDNAME_{新カード},"名前"
+		TRYCALLFORM CARDNAME_{新カード}("名前")
 		SIF RESULTS == ""
 			GOTO LOOPPOINT1
-		TRYCALLFORM CARD_{新カード},"종족"
+		TRYCALLFORM CARD_{新カード}("종족")
 		SIF RESULT != 参照ステータス:1
 			GOTO LOOPPOINT1
 	CASE 2
 		$LOOPPOINT2
 		;PRINTFORML CASE 2
 		新カード = RAND:5001
-		TRYCALLFORM CARDNAME_{新カード},"カテゴリ"
+		TRYCALLFORM CARDNAME_{新カード}("カテゴリ")
 		SIF RESULTS == "듀얼리스트"
 			GOTO LOOPPOINT2
 		SIF 新カード == 대상
 			GOTO LOOPPOINT2
-		TRYCALLFORM CARDNAME_{新カード},"名前"
+		TRYCALLFORM CARDNAME_{新カード}("名前")
 		SIF RESULTS == ""
 			GOTO LOOPPOINT2
-		TRYCALLFORM CARD_{新カード},"攻撃力"
+		TRYCALLFORM CARD_{新カード}("攻撃力")
 		IF RESULT != 参照ステータス:2 && ループ횟수 < 5
 			ループ횟수 ++
 			GOTO LOOPPOINT2
@@ -262,15 +262,15 @@ SELECTCASE RAND:6
 		$LOOPPOINT3
 		;PRINTFORML CASE 3
 		新カード = RAND:5001
-		TRYCALLFORM CARDNAME_{新カード},"カテゴリ"
+		TRYCALLFORM CARDNAME_{新カード}("カテゴリ")
 		SIF RESULTS == "듀얼리스트"
 			GOTO LOOPPOINT3
 		SIF 新カード == 대상
 			GOTO LOOPPOINT3
-		TRYCALLFORM CARDNAME_{新カード},"名前"
+		TRYCALLFORM CARDNAME_{新カード}("名前")
 		SIF RESULTS == ""
 			GOTO LOOPPOINT3
-		TRYCALLFORM CARD_{新カード},"守備力"
+		TRYCALLFORM CARD_{新カード}("守備力")
 		IF RESULT != 参照ステータス:3 && ループ횟수 < 5
 			ループ횟수 ++
 			GOTO LOOPPOINT3
@@ -280,18 +280,18 @@ SELECTCASE RAND:6
 	CASE 4
 		;PRINTFORML CASE 4
 		新カード = 대상 + 60000
-		TRYCALLFORM CARDNAME_{新カード},"名前"
+		TRYCALLFORM CARDNAME_{新カード}("名前")
 		SIF RESULTS == ""
 			GOTO LOOPPOINT00
 	CASE 5
 		;PRINTFORML CASE 5
 		新カード = 대상 + 80000
-		TRYCALLFORM CARDNAME_{新カード},"名前"
+		TRYCALLFORM CARDNAME_{新カード}("名前")
 		SIF RESULTS == ""
 			GOTO LOOPPOINT00
 ENDSELECT
 
-;TRYCALLFORM CARDNAME_{新カード},"名前"
+;TRYCALLFORM CARDNAME_{新カード}("名前")
 ;PRINTFORML 新カード = {新カード}、%RESULTS%
 CALL CARD_GET_SINGLE(新カード)
 

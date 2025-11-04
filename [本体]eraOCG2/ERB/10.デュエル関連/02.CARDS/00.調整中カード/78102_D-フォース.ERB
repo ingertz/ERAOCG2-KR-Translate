@@ -1,0 +1,139 @@
+@CARDNAME_78102,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+    CASE "名前"
+        RESULTS = D-포스
+    CASE "略称"
+        RESULTS = D-포스
+    CASE "カテゴリ"
+        RESULTS:0 = D-HERO
+ENDSELECT
+
+@CARD_78102(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "実装日"
+		RETURN 251031
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_78102(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：이 카드의 발동시의 효과처리로서、
+PRINTL 자신의 덱 / 묘지에서 "데스티니 히어로 블루-D" １장을 패에 넣을 수 있다。
+CALLFORM CARD_ABLE(0,지속효과,攻守変動,ターン終了時強制)
+PRINTL ②：자신 필드에 "데스티니 히어로 블루-D"가 존재하는 한, 다음 효과를 적용한다.
+PRINTL ●자신은 드로우 페이즈를 스킵한다。
+PRINTL ●자신 필드의 카드는 대상 내성을 얻는다。
+PRINTL ●자신의 몬스터 존의 "데스티니 히어로 블루-D"는、
+PRINTL 공격력이 서로의 묘지의 몬스터의 수×１００오르고、
+PRINTL １번의 배틀 페이즈중에 ２회 공격할 수 있으며、파괴 내성을 얻는다。
+
+@CARDCAN_78102(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,78102)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 데스티니 히어로 블루-D
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時強制
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 데스티니 히어로 블루-D
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_78102(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+#DIM DYNAMIC 攻撃力修正
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78102,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件名前 = 데스티니 히어로 블루-D
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"対耐")
+	CALL FULLRESET
+	효과条件名前 = 데스티니 히어로 블루-D
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"追戦",1)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 100
+	IF 攻撃力修正 > 0
+		CALL FULLRESET
+		효과条件名前 = 데스티니 히어로 블루-D
+		CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻撃力修正)
+	ENDIF
+ELSEIF 종류 == ターン終了時強制
+	CALL SET_PLAYER_INFO(듀얼리스트,"ドロースキップ", 1)
+ENDIF

@@ -1,0 +1,214 @@
+@CARDNAME_94701,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = RAIL ACTION - STRIKE CHARGE
+	CASE "略称"
+		RESULTS = RA-STRIKE C
+	CASE "カテゴリ"
+		RESULTS:0 = 신희
+ENDSELECT
+
+
+@CARD_94701(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 지속함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_94701(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 １턴에 １번밖에 발동할 수 없으며、이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL 자신 필드의 몬스터가 "신희"몬스터 １장만 있을 경우, 이 카드는 패에서도 발동할 수 있다.
+CALLFORM CARD_ABLE(0,バトル開始時)
+PRINTL ①：자신 필드의 몬스터가 "신희"몬스터 １장만 있으며,
+PRINTL 그 몬스터보다 공격력이 높은 몬스터가 상대 필드에 존재하는 경우, 서로의 배틀 페이즈 시작 시에 발동할 수 있다.
+PRINTL 자신 필드의 몬스터의 공격력은 턴 종료 시까지 그 차이값 +100 올리고, 이 효과로 상승한 수치만큼, 자신은 LP를 잃는다.
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ②：자신 필드에 "신희" 몬스터가 존재하는 경우、상대 필드의 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 이 카드를 패로 되돌리고、그 몬스터를 파괴한다。
+
+@CARDCAN_94701(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件チェック,5
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,94701)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,94701)
+		RETURN 0
+
+	SIF ゾーン != "마함"
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 신희
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	SIF モンスター数(対面者) == 0
+		RETURN 0
+	
+	RETURN 1
+
+ELSEIF 종류 == 마함起動
+	SIF 발동済_2(듀얼리스트,94701)
+		RETURN 0
+
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패起動
+	SIF 발동済_2(듀얼리스트,94701)
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 신희
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	SIF モンスター数(듀얼리스트) != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == バトル開始時
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF モンスター数(듀얼리스트) != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 신희
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
+			CONTINUE
+		IF 条件チェック:0 < GETVAR(@"%듀얼리스트%_MZ_攻:{カウンタ}")
+			条件チェック:0 = GETVAR(@"%듀얼리스트%_MZ_攻:{カウンタ}")
+		ENDIF
+	NEXT
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:{カウンタ}") == -1
+			CONTINUE
+		IF 条件チェック:1 < GETVAR(@"%対面者%_MZ_攻:{カウンタ}")
+			条件チェック:1 = GETVAR(@"%対面者%_MZ_攻:{カウンタ}")
+		ENDIF
+	NEXT
+	
+	SIF 条件チェック:0 >= 条件チェック:1
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_94701(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+#DIM DYNAMIC 条件チェック,5
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,94701,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,"마함",場所,3)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,94701,2)
+	IF RESULT == 0
+	ENDIF
+ELSEIF 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,94701,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前 = RAIL ACTION - STRIKE CHARGE
+		CALL CARD_ADD(듀얼리스트,"손패","마함",場所,"表側표시")
+	ENDIF
+ELSEIF 종류 == バトル開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,94701,3)
+	IF RESULT == 0
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%듀얼리스트%_필드:{カウンタ}") == -1
+				CONTINUE
+			IF 条件チェック:0 < GETVAR(@"%듀얼리스트%_MZ_攻:{カウンタ}")
+				条件チェック:0 = GETVAR(@"%듀얼리스트%_MZ_攻:{カウンタ}")
+			ENDIF
+		NEXT
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%対面者%_필드:{カウンタ}") == -1
+				CONTINUE
+			IF 条件チェック:1 < GETVAR(@"%対面者%_MZ_攻:{カウンタ}")
+				条件チェック:1 = GETVAR(@"%対面者%_MZ_攻:{カウンタ}")
+			ENDIF
+		NEXT
+
+		攻撃力修正 = 条件チェック:1 - 条件チェック:0 + 100
+
+		CALL FULLRESET
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999	
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一攻",攻撃力修正)
+			CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",攻撃力修正)
+		ENDIF
+	ENDIF
+ENDIF
+

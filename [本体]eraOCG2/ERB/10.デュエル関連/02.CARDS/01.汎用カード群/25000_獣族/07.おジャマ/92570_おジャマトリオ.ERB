@@ -59,9 +59,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,192570,"",1)
 	SIF RESULT == 1
@@ -107,11 +106,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 방해꾼 토큰
+		RESULTS = 방해꾼 토큰
 	CASE "略称"
-RESULTS = 방해꾼 토큰
+		RESULTS = 방해꾼 토큰
 	CASE "カテゴリ"
-RESULTS:0 = 방해꾼
+		RESULTS:0 = 방해꾼
 ENDSELECT
 
 
@@ -136,6 +135,8 @@ SELECTCASE 参照先
 		RETURN 1000
 	CASE "トークン"
 		RETURN 1
+	CASE "自動소멸"
+		RETURN 1
 ENDSELECT
 
 RETURN 0
@@ -143,6 +144,7 @@ RETURN 0
 @CARD_EXPLANATION_192570(종류)
 #DIM DYNAMIC 종류
 
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
 PRINTL 이 토큰은 소재로 할 수 없고, 이 토큰이 파괴되었을 때 자신은 300 데미지를 받는다.
 PRINTL 
 

@@ -1000,11 +1000,23 @@ SELECTCASE 使用場所
 				PRINTW 돌아갑니다。
 			ENDIF
 		ENDIF
+	CASE 21
+
+
 	CASE 30
 		CALL HAN_KOJO_OPTION(캐릭터_ID)
 
 	CASE 31
-
+		IF CFLAG:캐릭터_ID:아르바이트 == PT_カドショ
+			CFLAG:캐릭터_ID:아르바イト = 0
+			PRINTFORML %CALLNAME:캐릭터_ID%에게 아르바이트를 그만두게 했다.
+		ELSE
+			CFLAG:캐릭터_ID:아르바이트 = PT_カドショ
+			CALL PTJ_SETTINGS(캐릭터_ID,"名前")
+			PRINTFORML %CALLNAME:캐릭터_ID%는 간결하게 승낙하고、오늘부터 %RESULTS%로서 일하게 되었다。
+			CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
+			CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
+		ENDIF
 	CASE 3
 		IF TALENT:캐릭터_ID:듀얼리스트 == 0 && CFLAG:캐릭터_ID:소유함 == 0
 			PRINTFORML 이 캐릭터는 소유하고 있지 않습니다。			

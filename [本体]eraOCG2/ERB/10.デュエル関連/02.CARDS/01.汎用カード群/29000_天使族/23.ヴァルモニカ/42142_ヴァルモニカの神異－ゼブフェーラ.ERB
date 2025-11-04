@@ -1,0 +1,193 @@
+﻿@CARDNAME_42142,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 바르모니카의 신이－제브페라
+	CASE "略称"
+		RESULTS = 신이 제브페라
+	CASE "カテゴリ"
+		RESULTS:0 = 바르모니카
+ENDSELECT
+
+
+@CARD_42142(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2100
+	CASE "성별"
+		RETURN 牝性
+	CASE "특수制限"
+		RETURN 1
+	CASE "連動ID"
+		RETURN 2142
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_42142(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC 条件달성
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 1
+素材条件종류 = 효과全般
+
+FOR カウンタ,0,5
+	SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+		CONTINUE
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:{カウンタ}")}("종족")
+	SIF RESULT != 악마족
+		CONTINUE
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:カウンタ") < 3
+		CONTINUE
+	条件달성 = 1
+NEXT
+SIF 条件달성 == 0
+	RETURN 0
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,42142) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_42142(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 효과 몬스터 1장
+PRINTL 이 카드의 L소환은 자신의 마법 / 함정 존의 악마족 몬스터의 향명 카운터가 3개 이상인 경우에만 실행할 수 있고,
+PRINTL 자신은 "바르모니카의 신이 - 제브페라"를 1턴에 1번밖에 특수 소환할 수 없다.
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ①：자신 필드의 카드가 전투 / 효과로 파괴될 경우, 대신에 자신 마법 / 함정 존의 향명 카운터를 3개 제거할 수 있다.
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：상대 턴에, 자신 묘지 / 제외 상태의 "바르모니카" 일반 마법 / 함정 카드 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 그 마법 / 함정 카드의 발동시의 효과를 적용한다.
+
+@CARDCAN_42142(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,42142)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 身代효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"효과","戦闘")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 바르모니카
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT:9 < 3
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,42142)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 바르모니카
+	효과条件종류:0 = 通常마법
+	효과条件종류:1 = 通常함정
+	효과条件固名前 = 바르모니카 에레디타레
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_42142(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+
+
+IF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,42142)
+	IF RESULT == 0
+		REPEAT 3
+			PRINTL 향명 카운터를 제거하는 카드를 선택
+			CALL FULLRESET
+			효과条件カテゴリ = 바르모니카
+			효과条件個Ｃ所持 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALL CARD_SELECT(듀얼리스트,選択カード)
+				CALL FULLRESET
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"個Ｃ",-1)
+				CALL FULLRESET
+				CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐",6)
+				CALL FULLRESET
+				CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐",6)
+
+			ENDIF
+		REND
+		RETURN 1
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,42142,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 바르모니카
+		효과条件종류:0 = 通常마법
+		효과条件종류:1 = 通常함정
+		효과条件固名前 = 바르모니카 에레디타레
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			TRYCALLFORM CARDEFFECT_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:RESULT")}(듀얼리스트,마함起動,"효과処理",選択カード)
+		ENDIF
+	ENDIF
+ENDIF
+
+

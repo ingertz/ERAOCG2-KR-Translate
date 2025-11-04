@@ -27,6 +27,8 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "종류"
 		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 251022
 ENDSELECT
 
 RETURN 0
@@ -39,9 +41,9 @@ CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
 PRINTL ①：자신의 패 / 필드의 어둠속성 몬스터 １장을 묘지로 보내고、
 PRINTL "마도구" 몬스터 １장을 덱에서 골라 수비 표시로 특수 소환한다。
 CALLFORM CARD_ABLE(2,묘지起動)
-PRINTL ②：자신 메인 페이즈에 발동할 수 있다。
-PRINTL 묘지의 "마도구" 또는 "돌스자크" 카드 ２장을 덱으로 되돌리고、이 카드를 묘지에서 패에 넣는다。
-
+PRINTL ②：자신 메인 페이즈에 묘지의 이 카드를 덱으로 되돌리고、
+PRINTL 자신 필드의 "마도구" 몬스터 １장을 대상으로 발동할 수 있다。
+PRINTL 대상의 몬스터를 파괴하고、덱에서 "돌스자크" 마법 / 함정 카드 １장을 패에 넣는다。
 
 
 @CARDCAN_71425(듀얼리스트,종류,ゾーン,場所)
@@ -57,15 +59,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0
-	ELSE
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,71425)
 		RETURN 0
 	CALL FULLRESET
@@ -129,6 +125,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		효과範囲필드 = 1
 		효과条件종류 = モン全般
 		효과条件속성 = 어둠속성
+		효과条件行先플래그 = 破壊行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
@@ -142,20 +139,18 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 ELSEIF 종류 == 묘지起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71425,2)
 	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
 		CALL FULLRESET
-		효과範囲묘지 = 1
-		효과条件カテゴリ:0 = 마도구
-		효과条件カテゴリ:1 = 돌스자크
-		효과条件他所 = 1
-		효과条件複数 = 2
-		효과条件行先플래그 = 덱行き
+		효과範囲필드 = 1
+		효과条件カテゴリ = 마도구
+		효과条件行先플래그 = 破壊行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
-			효과範囲묘지 = 1
-			효과条件名前 = 卍데모니움
-			효과条件行先플래그 = 손패行き
-			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			효과範囲덱 = 1
+			효과条件종류 = 마함全般
+			효과条件カテゴリ = 돌스자크
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
 ENDIF

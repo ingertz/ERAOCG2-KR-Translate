@@ -1,0 +1,272 @@
+@CARDNAME_4713,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 4의 방패의 여용병 마이아
+	CASE "略称"
+		RESULTS = 4의방패 마이아
+	CASE "カテゴリ"
+		RESULTS:0 = 7방패 동맹
+		RESULTS:1 = 쿠로이누
+ENDSELECT
+
+@CARD_4713(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "추가日"
+		RETURN 250707
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_4713(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 4
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,4713) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_4713(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 이 카드명의 P효과는 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(1,마함起動)
+PRINTL ①：자신 메인 페이즈에, 패 / 필드의 P몬스터 카드 1장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 카드를 EX덱에 보내고, 이 카드를 특수 소환한다。
+CALL TEXT_DECORATION("P_MAGIC_2")
+PRINTL 레벨4 몬스터×2
+CALL CARD_ABLE(4,EX덱起動)
+PRINTL 이 카드명의 카드는 1턴에 1번, 자신 필드에 이 카드명의 카드가 존재하지 않는 경우에,
+PRINTL 자신 필드의 레벨6 이하의 P몬스터 카드 1장을 EX덱에 보내는 것으로, 자신의 마법&함정존에 앞면 표시로 놓을 수 있다.
+PRINTL 이 카드명의 ①② 몬스터 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(2,EX소환時,특수소환時)
+PRINTL ①：이 카드가 특수 소환된 경우에 상대 필드의 앞면 표시 몬스터 1장을 대상으로 하고 발동할 수 있다。
+PRINTL 턴 종료시까지, 그 몬스터의 효과를 무효화한다。
+CALL CARD_ABLE(3,효과後誘発)
+PRINTL ②：이 카드명 이외의 몬스터가 특수 소환된 경우에 발동할 수 있다。
+PRINTL 이 카드를 마법&함정존에 앞면 표시로 놓고,
+PRINTL EX덱 / 마법&함정존의 이 카드명 이외이면서 EX몬스터 이외의 P몬스터 1장을 특수 소환한다。
+
+
+@CARDCAN_4713(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4713)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,4713)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	IF モンスター数(듀얼리스트) < 5
+		효과範囲손패 = 1
+		효과範囲마함 = 1
+	ENDIF
+	효과範囲필드 = 1
+	효과条件他所 = 1
+	효과条件分割 = 펜듈럼
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4713,"마함",1)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,4713)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,4713)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件固名前 = 4의 방패의 여용병 마이아
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",2)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲EX덱 = 1
+	효과条件分割 = 펜듈럼
+	효과条件종류 = EX以外全般
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX덱起動
+	SIF 발동済_4(듀얼리스트,4713)
+		RETURN 0
+	IF 마함数(듀얼리스트) >= 5
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件分割 = 펜듈럼
+		CALLFORM 효과条件レベル_ADV(6,"以下")
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前 = 4의 방패의 여용병 마이아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件分割 = 펜듈럼
+	CALLFORM 효과条件レベル_ADV(6,"以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4713(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 대상者
+#DIMS DYNAMIC 대상ゾーン
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4713)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4713,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		IF モンスター数(듀얼리스트) < 5
+			효과範囲손패 = 1
+			효과範囲마함 = 1
+		ENDIF
+		효과範囲필드 = 1
+		효과条件他所 = 1
+		효과条件分割 = 펜듈럼
+		효과条件行先플래그 = EX덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4713,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"無効")
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4713,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과範囲마함 = 1
+			효과条件종류 = EX以外全般
+			효과条件固名前 = 4의 방패의 여용병 마이아
+			효과条件分割 = 펜듈럼
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4713,4)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과範囲필드 = 1
+		효과条件分割 = 펜듈럼
+		CALLFORM 효과条件レベル_ADV(6,"以下")
+		효과条件行先플래그 = EX덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件名前 = 4의 방패의 여용병 마이아
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+		ENDIF
+	ENDIF
+ENDIF

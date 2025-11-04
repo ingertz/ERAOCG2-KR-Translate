@@ -1,0 +1,151 @@
+; ============================================================
+; 46465_コズミックアンコール
+; ============================================================
+
+@CARDNAME_46465,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = コズミックアンコール
+	CASE "略称"
+		RESULTS = アンコール
+	CASE "カテゴリ"
+		RESULTS:0 = 光導
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46465(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 永続罠
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46465(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②③の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,魔罠起動)
+PRINTL ①：自分・相手ターンに発動できる。墓地の「光導」モンスター１体を特殊召喚する。
+CALLFORM CARD_ABLE(2,効果後誘発)
+PRINTL ②：自分フィールドの「CoZ12」モンスターが戦闘で破壊された場合に発動できる。
+PRINTL 自分のEXデッキから表側表示のPモンスター１体を手札に加える。
+CALLFORM CARD_ABLE(3,戦破壊→墓地,破壊→墓地)
+PRINTL ③：このカードが破壊された場合に発動できる。デッキの上から４枚めくる。
+PRINTL その中の「光導」カードを２枚まで手札に加える。
+PRINTL 残ったカードはデッキに戻す。
+RETURN 0
+
+
+@CARDCAN_46465(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46465)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 発動済_1(決闘者,46465)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地   = 1
+	効果条件種類   = モン全般
+	効果条件カテゴリ = 光導
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 効果後誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF 発動済_2(決闘者,46465)
+		RETURN 0
+	CALL CARD_CHECK_FIN_DATA(決闘者,"戦闘破壊")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲EXデッキ   = 1
+	効果条件分割       = ペンデュラム
+	効果条件表示       = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 破壊→墓地 || 種類 == 戦破壊→墓地
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF 発動済_3(決闘者,46465)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46465(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+IF 種類 == 魔罠起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46465,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地   = 1
+		効果条件種類   = モン全般
+		効果条件カテゴリ = 光導
+		効果条件召喚可 = 1
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 効果後誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46465,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲EXデッキ = 1
+		効果条件分割     = ペンデュラム
+		効果条件表示     = 1
+		CALL CARD_ADD_BASIC(決闘者,"EXデッキ",ゾーン,場所)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 破壊→墓地 || 種類 == 戦破壊→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46465,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ       = 1
+		効果条件カテゴリ     = 光導
+		効果条件任意         = 1
+		効果条件複数         = 98
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所,4)
+	ENDIF
+	RETURN 0
+ENDIF
+
+RETURN 0

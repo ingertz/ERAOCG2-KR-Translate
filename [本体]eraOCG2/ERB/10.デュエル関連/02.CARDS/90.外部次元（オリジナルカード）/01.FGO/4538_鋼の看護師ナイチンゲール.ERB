@@ -1,0 +1,230 @@
+﻿@CARDNAME_4538,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 강철의 간호사 나이팅게일
+	CASE "略称"
+		RESULTS = 나이팅게일
+	CASE "カテゴリ"
+		RESULTS:0 = 영령
+		RESULTS:1 = 버서커
+		RESULTS:2 = FATE
+ENDSELECT
+
+
+@CARD_4538(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 1300
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 250810
+ENDSELECT
+
+RETURN 0
+
+
+
+@CARD_EXPLANATION_4538(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：몬스터가 필드에서 파괴된 경우에 발동할 수 있다。
+PRINTL 이 카드를 패에서 특수 소환한다。
+PRINTL 그 후、그 카드를 수비 표시로 자신 필드에 특수 소환한다。
+PRINTL 그 카드는 턴 종료시까지 표시 형식을 변경할 수 없다。
+
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드가 자신 메인 페이즈에 있는 한 발동한다。
+PRINTL 자신의 다른 몬스터에게서 안좋은걸 전부 제거한다。
+CALLFORM CARD_ABLE(3, ターン終了時強制)
+PRINTL ③：자신 턴 종료시 강제로 발동한다。
+PRINTL 이 카드는 패로 돌아간다。
+
+@CARDCAN_4538(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+IF 종류 == 효과後強制誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4538,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,4538)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_4538(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID,10
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 대상カード名
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後強制誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4538)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン, 場所)
+
+		選択カード_ID:0 =  GETVAR(@"%듀얼리스트%_直前破壊")
+		選択カード_ID:1 =  GETVAR(@"%対面者%_直前破壊")
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲상대묘지 = 1
+		효과条件ID:0 = 999999
+		효과条件ID:1 = 選択カード_ID:0
+		효과条件ID:2 = 選択カード_ID:1
+		효과추가종류 = 38
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+	ENDIF
+ELSEIF 종류 == 필드起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4538,2)
+	IF RESULT == 0
+		FOR カウンタ,0,5
+			SIF カウンタ == 場所
+				CONTINUE
+			SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") < 1
+				CONTINUE
+			VARSET 대상カード名
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("성별")
+			IF RESULT == 牝性 || RESULT == ふたなり
+				대상カード名 = 미스
+			ELSE
+				대상カード名 = 미스터
+			ENDIF
+			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("略称")
+			대상カード名 = %대상カード名% %RESULTS%
+			IF RESULTS != ""
+				SETCOLOR C_Ne_PINK
+				PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+				PRINTL
+				PRINTFORMW 「그럼 진단을 시작합니다、빠르게 끝내도록 하죠 %대상カード名%」
+				PRINTFORMW ・・・・・・
+				IF GETVAR(@"%듀얼리스트%_MZ_悪Ｃ:カウンタ") >= 1
+					PRINTFORML 「악성종양 확인、긴급 절제 수술이 필요합니다、이리와！」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"悪Ｃ",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_無効:カウンタ") >= 1
+					PRINTFORML 「마비효과입니까、그럼 마사지로 대처하도록 하죠……흡！！　하앗！！」（빠각뽀각！
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"無効",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_終処:カウンタ") >= 1
+					PRINTFORML 「시간이 없습니다、그 죽음을 끊는다――！」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"終処",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_戦狂:カウンタ") >= 1
+					PRINTFORML 「――어떠신가요、날뛰고다녀서 진정되었습니까？」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"戦狂",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_戦無:カウンタ") >= 1
+					PRINTFORML 「――싸울수 없다？　멍청한 소리를！」（뽀각
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"戦無",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_直無:カウンタ") >= 1
+					PRINTFORML 「마스터、%대상カード名%의 자기긍정감 회복을 위해 한번 모래주머니가 되어주십시오」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"直無",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_不材:カウンタ") >= 1
+					PRINTFORML 「위생적으로 특수 소환의 소재로 부적절한것 같군요。자 이쪽으로……약독목욕을 준비했습니다」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"不材",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_除処:カウンタ") >= 1
+					PRINTFORML 「당신의 목숨을 빼앗아서라도 구――하면 제외되는군요……다른 방법으로 대처합니다……」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"除処",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_表固:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_表固:カウンタ") != 2
+					PRINTFORML 「몸이 딱딱하군요、그럼……핫！　하앗！！」（우득 빠직！
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"表固",0,1)
+				ELSEIF GETVAR(@"%듀얼리스트%_MZ_表固:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_表固:カウンタ") == 2
+					PRINTFORML 「붕대를 감아줬으면 한다？　아직 안정이 필요하기에 허가할수 없습니다」
+				ENDIF
+				PRINTFORMW ・・・・
+				IF GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:カウンタ") >= 1
+					PRINTFORML 「독은 보다 강한 약독으로 중화합니다。괜찮습니다、고통은 동반합니다만 의존증은 없으니」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"薬Ｃ",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_조교:カウンタ") >= 1
+					PRINTFORML 「조교？　바보같은 소리를、멍청한짓 하지 말고 서번트의 자각을 하십시오！」（빠각
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"조교",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_発情:カウンタ") >= 1
+					PRINTFORML 「――강력한 미약이 영기를 감돌고 있습니다、제거합니다」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"発情",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_胸追:カウンタ") >= 1
+					PRINTFORML 「흉부의 이상한 비대화、착유기로 대처합니다――」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"胸追",0,1)
+				ENDIF
+				IF GETVAR(@"%듀얼리스트%_MZ_服状:カウンタ") >= 1
+					PRINTFORML 「옷의 손상、빠르게 새로운 복장의 준비를――」
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"服状",0,1)
+				ENDIF
+				PRINTFORMW ・・
+				PRINTL 
+				PRINTFORMW 「끝났습니다、다음！」
+				PRINTL 
+				CUSTOMDRAWLINE ―
+				RESETCOLOR
+			ENDIF
+		NEXT
+	ENDIF
+ELSEIF 종류 == ターン終了時強制
+	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+ENDIF
+

@@ -55,13 +55,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF 소환権 == 0
 		RETURN 0
@@ -183,7 +178,17 @@ SELECTCASE 参照先
 		RETURN 2000
 	CASE "守備力"
 		RETURN 2000
+	CASE "自動소멸"
+		RETURN 1
 ENDSELECT
+
+
+@CARD_EXPLANATION_173530(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+CALLFORM CARD_ABLE(0,戦闘→묘지, 破壊→묘지)
 
 
 @CARDCAN_173530(듀얼리스트,종류,ゾーン,場所)

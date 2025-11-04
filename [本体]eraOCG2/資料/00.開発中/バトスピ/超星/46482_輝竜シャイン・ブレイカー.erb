@@ -1,0 +1,359 @@
+; ============================================================
+; 46482_輝竜シャイン・ブレイカー（通常体）／46483_輝竜シャイン・ブレイカー・ブレイヴ（装備魔法）
+; ============================================================
+
+@CARDNAME_46482,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 輝竜シャイン・ブレイカー
+	CASE "略称"
+		RESULTS = Ｓ・ブレイカー
+	CASE "カテゴリ"
+		RESULTS:0 = 星竜
+		RESULTS:1 = 光導
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+@CARD_46482(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN ドラゴン族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1300
+	CASE "生成カード"
+		RETURN 46483
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46482(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：自分フィールドに「超星」または「光導」モンスターが存在する場合に発動できる。
+PRINTL このカードを手札から特殊召喚する。
+CALLFORM CARD_ABLE(2,召喚時,特殊召喚時)
+PRINTL ②：このカードが召喚・特殊召喚した場合に発動できる。
+PRINTL デッキの上から５枚めくる。その中の「超星」または「光導」カードを１枚手札に加える。
+PRINTL 残りはデッキに戻す。
+CALLFORM CARD_ABLE(3,戦場起動)
+PRINTL ③：自分フィールドのレベル６以上の「光導」または「神星」モンスター１体を対象として発動できる。
+PRINTL このカードをブレイヴ体に変形し、そのモンスターに装備する。
+RETURN 0
+
+
+@CARDCAN_46482(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 条件達成
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46482)
+SIF RESULT == 1
+	RETURN 0
+
+; ① 手札からSS
+IF 種類 == 手札起動
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF 発動済_1(決闘者,46482)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ:0 = 超星
+	効果条件カテゴリ:1 = 光導
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,46482,"手札")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ② 召喚・特殊召喚時
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46482)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ③ ブレイヴ転写（戦場起動）
+IF 種類 == 戦場起動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_3(決闘者,46482)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ:0 = 光導
+	効果条件カテゴリ:1 = 神星
+	CALLFORM 効果条件レベル_ADV(6,"以上")
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46482(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 装備先
+#DIM DYNAMIC 装備カード
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+; ① 手札からSS
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46482,1)
+	CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	RETURN 0
+ENDIF
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46482,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件任意   = 1
+		効果条件カテゴリ:0 = 超星
+		効果条件カテゴリ:1 = 光導
+		効果条件複数       = 1
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所,5)
+	ENDIF
+	RETURN 0
+ENDIF
+
+; ③ ブレイヴ転写：対象選択→ブレイヴ体(46483)を装備→自身は消滅
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46482,3)
+	IF RESULT == 0
+		; 対象選択
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件種類 = モン全般
+		効果条件カテゴリ:0 = 光導
+		効果条件カテゴリ:1 = 神星
+		CALLFORM 効果条件レベル_ADV(6,"以上")
+		CALL CARD_CHOOSE_ADV(決闘者,"戦場",場所)
+		IF RESULT == 9999
+			RETURN 0
+		ENDIF
+		CALL CARD_SELECT(決闘者,RESULT)
+		装備先 = 選択カード（CS）
+		 CALL CARD_DISPOSE(決闘者,"戦場",場所,消滅行き)
+		CALL FULLRESET
+		CALL CARD_GENERATE_MAGIC(決闘者,46483,1,装備先)
+		SIF RESULT == 0
+			RETURN 0
+	ENDIF
+	RETURN 0
+ENDIF
+
+RETURN 0
+
+
+;============================================================
+; ブレイヴ体（装備魔法） ID:46483
+;============================================================
+
+@CARDNAME_46483,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 輝竜シャイン・ブレイカー ‐ブレイヴ‐
+	CASE "略称"
+		RESULTS = 合体シャイン
+	CASE "カテゴリ"
+		RESULTS:0 = 星竜
+		RESULTS:1 = ブレイヴ
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+@CARD_46483(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 装備魔法
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46483(種類)
+#DIM DYNAMIC 種類
+CALLFORM CARD_ABLE(1,攻撃時誘発)
+PRINTL ①：このカードを装備したモンスターが特殊召喚されたモンスターと戦闘を行うダメージ計算時に発動できる。
+PRINTL そのモンスターの攻撃力はその戦闘中のみ１０００アップする。
+CALLFORM CARD_ABLE(0,永続効果)
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ②：装備モンスターの攻撃力は８００アップし、相手の魔法・罠カードの効果を受けない。
+CALLFORM CARD_ABLE(3,効果後誘発)
+PRINTL ③：装備モンスターが相手モンスターを戦闘で破壊した場合に発動できる。
+PRINTL 相手に１０００ダメージを与える。
+CALLFORM CARD_ABLE(4,戦破壊→墓地)
+CALLFORM CARD_ABLE(4,除外時)
+CALLFORM CARD_ABLE(4,デッキ行き)
+CALLFORM CARD_ABLE(4,手札行き)
+PRINTL ■ブレイヴ■
+PRINTL このカードがフィールドから離れる場合、「輝竜シャイン・ブレイカー」に戻り、墓地に送られる。
+RETURN 0
+
+
+@CARDCAN_46483(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 装備者
+#DIM  DYNAMIC 装備先
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL 装備判定(決闘者,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46483)
+SIF RESULT == 1
+	RETURN 0
+
+; ① ダメージ計算時（装備先が戦闘中）
+IF 種類 == 攻撃時誘発
+    SIF ゾーン != "魔罠"
+        RETURN 0
+    CALL 装備判定(決闘者,場所,ゾーン)
+    装備先 = RESULT
+    SIF 戦闘場所(決闘者) != 装備先
+        RETURN 0
+    SIF 戦闘場所(決闘者,1) == 5
+        RETURN 0
+    CALL 対面者判定(決闘者)
+    対面者 = %RESULTS%
+    SIF GETVAR(@"%対面者%_MZ_召種:%対面者%_戦闘カード") == 召種通常
+        RETURN 0
+
+    RETURN 1
+	
+ELSEIF 種類 == 攻守変動
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL 装備判定(決闘者,場所,ゾーン)
+	SIF RESULT == -1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL 装備判定(決闘者,場所,ゾーン)
+	SIF RESULT == -1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 効果後誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL CARD_CHECK_FIN_DATA(決闘者,"戦闘破壊")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+; ④ フィールド離脱トリガ
+IF GROUPMATCH(種類, 破壊→墓地, 戦闘→墓地, 戦破壊→墓地, 手札行き, デッキ行き, 除外時)
+    RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46483(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 装備者
+#DIM  DYNAMIC 装備先
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL 装備判定(決闘者,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+; ① 戦闘中のみ+1000
+IF 種類 == 攻撃時誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46483,1)
+	IF RESULT == 0
+		CALL STATCHANGE_BASIC(決闘者,"装備",場所,1000)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 攻守変動
+	CALL STATCHANGE_BASIC(決闘者,"装備",場所,800)
+	RETURN 0
+ENDIF
+	
+IF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"装備",場所,"魔耐")
+	CALL STATCHANGE_EFFECT(決闘者,"装備",場所,"罠耐")
+	RETURN 0
+ENDIF
+
+; ③ 装備先が戦闘破壊したら1000バーン
+IF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46483,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","効果",1000,1)
+	ENDIF
+	RETURN 0
+ENDIF
+
+; ④ ブレイヴ体が離れたら：通常体(46482)を墓地に生成（シャッフルは必要時のみ）
+IF GROUPMATCH(種類, 破壊→墓地, 戦闘→墓地, 戦破壊→墓地, 手札行き, デッキ行き, 除外時)
+    CALL FULLRESET
+    CALL CARD_GENERATE_GY(決闘者, 46482)
+	CALL CARD_DISPOSE(決闘者, ゾーン, 場所, 消滅行き)
+    RETURN 0
+ENDIF
+
+RETURN 0

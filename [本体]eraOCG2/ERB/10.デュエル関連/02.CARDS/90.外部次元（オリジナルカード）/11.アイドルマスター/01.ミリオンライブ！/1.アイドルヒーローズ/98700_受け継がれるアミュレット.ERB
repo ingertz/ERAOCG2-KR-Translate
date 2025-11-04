@@ -1,0 +1,245 @@
+@CARDNAME_98700,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 계승되는 아뮬렛
+	CASE "略称"
+		RESULTS = MS아뮬렛
+	CASE "カテゴリ"
+		RESULTS:0 = I•HERO
+		RESULTS:1 = HERO
+		RESULTS:2 = 밀리언 라이브!
+		RESULTS:3 = 융합
+ENDSELECT
+
+@CARD_98700(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 250601
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_98700(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_98700(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드는 자신 필드에 "I•HERO" 융합 몬스터가 존재하지 않을 경우, 패에서도 발동할 수 있다.
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①: 자신의 "I•HERO" 몬스터가 묘지로 보내졌을 경우에, 묘지로 보내진 그 몬스터 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 자신의 패 / 필드 / 묘지에서, "I•HERO" 융합 몬스터 카드에 따라 정해진 융합 소재 몬스터를 제외하고,
+PRINTL 그 융합 몬스터 1장을 EX덱에서 융합 소환한다.
+PRINTL 이 때, 2번째 융합 소재는 묘지의 대상 몬스터여야 한다.
+CALLFORM CARD_ABLE(2,ターン終了時)
+PRINTL ②: 자신 / 상대 엔드 페이즈에 자신 필드에 "I•HERO" 융합 몬스터가 존재할 경우에 발동할 수 있다.
+PRINTL 묘지의 이 카드를 세트한다.
+PRINTL 이 효과로 세트한 이 카드는, 필드에서 벗어날 경우 제외된다.
+
+@CARDCAN_98700(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 破壊カードID,100
+#DIMS DYNAMIC 破壊カード名
+#DIM DYNAMIC 破壊カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,98700)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,98700)
+		RETURN 0
+	IF ゾーン == "손패"
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = 융합
+		효과条件カテゴリ = I•HERO
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1	
+		RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	VARSET 破壊カードID,-1
+	CALL FULLRESET
+	효과条件カテゴリ = I•HERO
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般+HD",0,1)
+	破壊カウンタ = RESULT
+	FOR カウンタ,0,破壊カウンタ
+		破壊カードID:カウンタ = RESULT:(カウンタ+1)
+	NEXT
+	FOR カウンタ, 0, 破壊カウンタ
+		VARSET RESULTS
+		VARSET 破壊カード名
+		SIF 破壊カードID:カウンタ == -1
+			CONTINUE
+		TRYCALLFORM CARDNAME_{破壊カードID:カウンタ}("名前")
+		破壊カード名 = %RESULTS%
+		SIF 破壊カード名 == ""
+			CONTINUE
+		CALL RESETAREA_MAT
+		素材範囲필드 = 1
+		素材範囲손패 = 1
+		素材範囲묘지 = 1
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = I•HERO
+		효과条件종류 = 융합
+		효과条件소환可 = 1
+		強制必要素材名前２ = %破壊カード名%
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성++
+	NEXT
+	SIF 条件달성 < 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF 발동済_2(듀얼리스트,98700)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = I•HERO
+	효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_98700(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+#DIM DYNAMIC 破壊カードID,100
+#DIM DYNAMIC 破壊カウンタ
+#DIMS DYNAMIC 破壊カード名
+#DIM DYNAMIC 대상カードID,100
+#DIM DYNAMIC カウンタＢ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,98700,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		VARSET 破壊カードID,-1
+		CALL FULLRESET
+		효과条件カテゴリ = I•HERO
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般+HD",0,1)
+		破壊カウンタ = RESULT
+		FOR カウンタ,0,破壊カウンタ
+			破壊カードID:カウンタ = RESULT:(カウンタ+1)
+		NEXT
+		FOR カウンタ, 0, 破壊カウンタ
+			VARSET RESULTS
+			VARSET 破壊カード名
+			SIF 破壊カードID:カウンタ == -1
+				CONTINUE
+			TRYCALLFORM CARDNAME_{破壊カードID:カウンタ}("名前")
+			破壊カード名 = %RESULTS%
+			SIF 破壊カード名 == ""
+				CONTINUE
+			CALL RESETAREA_MAT
+			素材範囲필드 = 1
+			素材範囲손패 = 1
+			素材範囲묘지 = 1
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件カテゴリ = I•HERO
+			효과条件종류 = 융합
+			효과条件소환可 = 1
+			強制必要素材名前２ = %破壊カード名%
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				대상カードID:カウンタＢ = 破壊カードID:カウンタ
+				カウンタＢ++
+			ENDIF
+		NEXT
+		IF カウンタＢ > 0
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			FOR カウンタ, 0, カウンタＢ
+				SIF VARSIZE("효과条件ID") < カウンタ
+					BREAK
+				효과条件ID:カウンタ = 대상カードID:カウンタ
+			NEXT
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				CALL CARD_SELECT(듀얼리스트,RESULT)
+				選択カード = 選択カード（CS）
+				CALL RESETAREA_MAT
+				素材範囲필드 = 1
+				素材範囲손패 = 1
+				素材範囲묘지 = 1
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과条件カテゴリ = I•HERO
+				효과条件종류 = 융합
+				強制素材場所２ = 지정場所(選択カード,"묘지")
+				효과条件소환可 = 1
+					CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+					選択カード = RESULT
+					IF 選択カード != 9999
+						TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+					CALL FUSSUMMON(듀얼리스트,選択カード)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,98700,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 계승되는 아뮬렛
+		효과추가종류 = 500
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+	ENDIF
+ENDIF

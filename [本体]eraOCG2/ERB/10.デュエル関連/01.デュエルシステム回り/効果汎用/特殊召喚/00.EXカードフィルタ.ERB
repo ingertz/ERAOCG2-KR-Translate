@@ -88,13 +88,13 @@ SIF 素材範囲상대제외 == 1
 $INPUTLOOP
 IF 소환플래그 == 융합
 	소환カード_ID = 소환カード
-	TRYCALLFORM CARD_{소환カード_ID}, "속성"
+	TRYCALLFORM CARD_{소환カード_ID}("속성")
 	소환カード속성 = RESULT
 ELSE
 	소환カード_ID = GETVAR(@"%듀얼리스트%_%出処%:{소환カード}")
-	TRYCALLFORM CARD_{소환カード_ID}, "속성"
+	TRYCALLFORM CARD_{소환カード_ID}("속성")
 	소환カード속성 = RESULT
-	TRYCALLFORM CARDNAME_{소환カード_ID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{소환カード_ID}("カテゴリ")
 	소환カードカテゴリ = %RESULTS%
 ENDIF
 ;PRINTFORML ここ通りました！開始C4！！	参照先０:{参照先セットアップ:0}/参照先２:{参照先セットアップ:2}
@@ -255,7 +255,7 @@ FOR カウンタ,0,サーチ範囲
 	SIF カウンタ + 上級値 == 強制素材禁止場所
 		CONTINUE
 
-	FOR 素材数確認,0,10
+	FOR 素材数確認,0,90
 		IF カウンタ + 上級値 == 選択カード:素材数確認
 			選択済カード = 1
 			CONTINUE
@@ -309,14 +309,14 @@ FOR カウンタ,0,サーチ範囲
 	ENDIF
 
 	IF 소환플래그 == 융합 && 条件合計 >= 1
-		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "융합代用"
+		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("융합代用")
 		IF RESULT == 10 || RESULT == 소환カード속성
 			GOTO SKIP_RESTRICTION
 		ENDIF
 	ENDIF
 
 	IF 소환플래그 == 의식 || 소환플래그 == 싱크로
-		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "종류"
+		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("종류")
 		SIF RESULT == 엑시즈 || RESULT == 링크
 			CONTINUE
 	ENDIF
@@ -347,7 +347,7 @@ FOR カウンタ,0,サーチ範囲
 		ENDIF
 		IF 重ねてＸ == 0 && なんでもＸ == 0
 			IF 소환플래그 == 엑시즈
-				TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "종류"
+				TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("종류")
 				SIF RESULT == 엑시즈 || RESULT == 링크
 					CONTINUE
 			ENDIF
@@ -390,7 +390,7 @@ FOR カウンタ,0,サーチ範囲
 				ENDIF
 			ENDIF
 		ELSE
-			CALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "攻撃力"
+			CALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("攻撃力")
 			IF RESULT < 現在最小攻撃力
 				現在最小攻撃力 = RESULT
 				상대選択カード = カウンタ + 上級値
@@ -410,17 +410,17 @@ FOR カウンタ,0,サーチ範囲
 			RESULT:1 = カウンタ + 上級値
 			RETURN 1
 		CASE 의식
-			TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "의식代用"
+			TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("의식代用")
 			SIF RESULT == 소환カード속성
 				条件合計 = 9999
-			TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "의식代用カテゴリ"
+			TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("의식代用カテゴリ")
 			SIF RESULTS == 소환カードカテゴリ
 				条件合計 = 9999
 			IF 룡輝巧의식 == 1
 				IF 参照先 == "필드"
 					条件合計 += GETVAR(@"%実行者%_MZ_攻:カウンタ")
 				ELSE
-					TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "攻撃力"
+					TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("攻撃力")
 					条件合計 += RESULT
 				ENDIF
 
@@ -428,7 +428,7 @@ FOR カウンタ,0,サーチ範囲
 				IF 参照先 == "필드"
 					条件合計 += GETVAR(@"%実行者%_MZ_星:カウンタ")
 				ELSE
-					TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "レベル"
+					TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("レベル")
 					条件合計 += RESULT
 				ENDIF
 			ENDIF
@@ -437,7 +437,7 @@ FOR カウンタ,0,サーチ範囲
 			RETURN 1
 		CASE 엑시즈
 			IF 必要素材数 >= 3
-				TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}, "XYZ代用"
+				TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("XYZ代用")
 				IF RESULT == 1
 					RESULT:1 = カウンタ + 上級値
 					RETURN 2
@@ -514,18 +514,18 @@ SIF GETVAR(@"%実行者%_%参照先%:カウンタ") == -1
 
 IF 素材条件名前 != ""
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "別途ID"
+	TRYCALLFORM CARD_{설정カードID}("別途ID")
 	IF RESULT >= 1
-		TRYCALLFORM CARDNAME_{RESULT}, "名前"
+		TRYCALLFORM CARDNAME_{RESULT}("名前")
 	ELSE
-		TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+		TRYCALLFORM CARDNAME_{설정カードID}("名前")
 	ENDIF
 	SIF MATCH(素材条件名前, RESULTS)
 		条件달성 ++
 
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("名前")
 			SIF MATCH(素材条件名前, RESULTS)
 				条件달성 ++
 		ENDIF
@@ -550,12 +550,12 @@ IF 素材条件名前 != ""
 ENDIF
 IF 素材条件固名前 != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+	TRYCALLFORM CARDNAME_{설정カードID}("名前")
 	SIF MATCH(素材条件固名前, RESULTS)
 		条件달성 ++
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("名前")
 			SIF MATCH(素材条件名前, RESULTS)
 				条件달성 ++
 		ENDIF
@@ -576,14 +576,14 @@ IF 素材条件固名前 != ""
 		ENDIF
 
 	ENDIF
-	TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+	TRYCALLFORM CARDNAME_{설정カードID}("名前")
 ;	PRINTFORML 条件달성:{条件달성}/「{カウンタ}」名前:%RESULTS%
 	SIF 条件달성 != 0
 		RETURN 0
 ENDIF
 IF 素材条件カテゴリ != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
 	FOR カウンタB,0,5
 		IF RESULTS:カウンタB != ""
 			SIF MATCH(RESULTS:カウンタB, 素材条件カテゴリ)
@@ -595,7 +595,7 @@ IF 素材条件カテゴリ != ""
 
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			SIF MATCH(素材条件カテゴリ, RESULTS)
 				条件달성 ++
 			SIF MATCH(RESULTS, 素材条件カテゴリ)
@@ -646,7 +646,7 @@ ENDIF
 
 IF 反素材条件カテゴリ != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
 	IF MATCH(RESULTS, 反素材条件カテゴリ)
 		条件달성 ++
 	ENDIF
@@ -655,7 +655,7 @@ IF 反素材条件カテゴリ != ""
 	ENDIF
 	IF 参照先 == "필드"
 				IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			SIF MATCH(反素材条件カテゴリ, RESULTS)
 				条件달성 ++
 			SIF MATCH(RESULTS, 反素材条件カテゴリ)
@@ -700,7 +700,7 @@ ENDIF
 ;PRINTFORML 필터通過３
 
 IF 素材条件分割 > 0
-	TRYCALLFORM CARD_{설정カードID}, "分割"
+	TRYCALLFORM CARD_{설정カードID}("分割")
 	IF 素材条件分割 == 10
 		SIF RESULT == 0
 			RETURN 0
@@ -715,16 +715,16 @@ ENDIF
 
 IF 素材条件종류  > 0
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "종류"
+	TRYCALLFORM CARD_{설정カードID}("종류")
 	IF 素材条件종류  == モン全般
 		SIF RESULT < モン全般
 			条件달성 ++
 	ELSEIF 素材条件종류 == トークン
-		TRYCALLFORM CARD_{설정カードID}, "トークン"
+		TRYCALLFORM CARD_{설정カードID}("トークン")
 		SIF RESULT >= 1
 			条件달성 ++
 	ELSEIF 素材条件종류 == トークン以外
-		TRYCALLFORM CARD_{설정カードID}, "トークン"
+		TRYCALLFORM CARD_{설정カードID}("トークン")
 		SIF RESULT == 0
 			条件달성 ++
 	ELSEIF 素材条件종류  == EXモン全般
@@ -743,14 +743,14 @@ IF 素材条件종류  > 0
 	ELSEIF 素材条件종류  == 효과全般
 		SIF GROUPMATCH(RESULT, 효과モン, 융합, 의식, 싱크로, 엑시즈, 링크, 초차원)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT == 通常モン
 			VARSET 条件달성
 
 	ELSEIF 素材条件종류  == 효과無し全般
 		SIF RESULT == 通常モン
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT == 通常モン
 			条件달성 ++
 
@@ -797,7 +797,7 @@ IF 参照先 == "필드"
 		SIF MATCH(素材条件속성, GETVAR(@"%実行者%_MZ_属:カウンタ"))
 			条件달성 ++
 		;複数속성チェック
-		TRYCALLFORM CARD_{설정カードID}, "속성"
+		TRYCALLFORM CARD_{설정カードID}("속성")
 		IF RESULT:1 >= 1
 			SIF MATCH(素材条件속성, RESULT)
 				条件달성 ++
@@ -810,7 +810,7 @@ IF 参照先 == "필드"
 		SIF MATCH(素材条件종족, GETVAR(@"%実行者%_MZ_種:カウンタ"))
 			条件달성 ++
 		;複数종족チェック
-		TRYCALLFORM CARD_{설정カードID}, "종족"
+		TRYCALLFORM CARD_{설정カードID}("종족")
 		IF RESULT:1 >= 1
 			SIF MATCH(素材条件종족, RESULT)
 				条件달성 ++
@@ -834,14 +834,14 @@ IF 参照先 == "필드"
 
 		IF 소환플래그 == 엑시즈
 			VARSET RESULT
-			TRYCALLFORM CARD_{설정カードID}, "Xレベル"
+			TRYCALLFORM CARD_{설정カードID}("Xレベル")
 			SIF MATCH(素材条件レベル, RESULT)
 				条件달성 ++
 			SIF MATCH(RESULT,素材条件レベル)
 				条件달성 ++
 		ENDIF
 		VARSET RESULT
-		TRYCALLFORM CARD_{설정カードID}, "コスト"
+		TRYCALLFORM CARD_{설정カードID}("コスト")
 		SIF MATCH(素材条件レベル, RESULT)
 			条件달성 ++
 		SIF MATCH(RESULT,素材条件レベル)
@@ -851,7 +851,7 @@ IF 参照先 == "필드"
 	ENDIF
 	IF 素材条件L数制限 >= 2
 		VARSET 条件달성
-		TRYCALLFORM CARD_{설정カードID}, "종류"
+		TRYCALLFORM CARD_{설정カードID}("종류")
 		IF RESULT == 링크
 			SIF GETVAR(@"%実行者%_MZ_星:カウンタ") <= 2
 				条件달성 ++
@@ -915,72 +915,72 @@ IF 参照先 == "필드"
 		ENDIF
 	ENDIF
 ELSE
-	CALLFORM CARD_{설정カードID}, "종류"
+	CALLFORM CARD_{설정カードID}("종류")
 	SIF RESULT >= 20
 		RETURN 0
 
 	IF 素材条件튜너 > 0
-		TRYCALLFORM CARD_{설정カードID}, "튜너"
+		TRYCALLFORM CARD_{설정カードID}("튜너")
 		SIF RESULT == 0
 			RETURN 0
 	ENDIF
 	IF 素材条件속성 > 0
-		TRYCALLFORM CARD_{설정カードID}, "속성"
+		TRYCALLFORM CARD_{설정カードID}("속성")
 		SIF !MATCH(素材条件속성, RESULT)
 			RETURN 0
 	ENDIF
 	IF 素材条件종족 > 0
-		TRYCALLFORM CARD_{설정カードID}, "종족"
+		TRYCALLFORM CARD_{설정カードID}("종족")
 		SIF !MATCH(素材条件종족, RESULT)
 			RETURN 0
 	ENDIF
 	
 	IF 素材条件R속성 > 0
-		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:{カウンタ}")}, "속성"
+		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:{カウンタ}")}("속성")
 		SIF MATCH(素材条件R속성, RESULT)
 			RETURN 0
 	ENDIF
 	IF 素材条件R종족 > 0
-		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:{カウンタ}")}, "종족"
+		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:{カウンタ}")}("종족")
 		SIF MATCH(素材条件R종족, RESULT)
 			RETURN 0
 	ENDIF
 
 	IF 素材条件レベル > 0
 		VARSET 条件달성
-		TRYCALLFORM CARD_{설정カードID}, "レベル"
+		TRYCALLFORM CARD_{설정カードID}("レベル")
 		SIF MATCH(素材条件レベル, RESULT)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "コスト"
+		TRYCALLFORM CARD_{설정カードID}("コスト")
 		SIF MATCH(素材条件レベル, RESULT)
 			条件달성 ++
 		SIF 条件달성 == 0		
 			RETURN 0
 	ENDIF
 	IF 素材条件攻撃力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT > 素材条件攻撃力
 			RETURN 0
 	ENDIF
 	IF 素材条件以攻撃力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT < 素材条件以攻撃力
 			RETURN 0
 	ENDIF
 
 	IF 素材条件守備力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		SIF RESULT > 素材条件守備力
 			RETURN 0
 	ENDIF
 	IF 素材条件以守備力 > 0
-		TRYCALLFORM CARD_{설정カードID}, "守備力"
+		TRYCALLFORM CARD_{설정カードID}("守備力")
 		SIF RESULT < 素材条件以守備力
 			RETURN 0
 	ENDIF
 
 	IF 素材条件성별 > 0
-		TRYCALLFORM CARD_{설정カードID}, "성별"
+		TRYCALLFORM CARD_{설정カードID}("성별")
 		캐릭터番号 = NO_TO_CHARANUM(설정カードID)
 		IF 캐릭터番号 >= 1 && オプション_성별
 			RESULT = TALENT:캐릭터番号:성별
@@ -1035,18 +1035,18 @@ SIF GETVAR(@"%実行者%_%参照先%:カウンタ") == -1
 
 IF 素材条件スーパー名前 != ""
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "別途ID"
+	TRYCALLFORM CARD_{설정カードID}("別途ID")
 	IF RESULT >= 1
-		TRYCALLFORM CARDNAME_{RESULT}, "名前"
+		TRYCALLFORM CARDNAME_{RESULT}("名前")
 	ELSE
-		TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+		TRYCALLFORM CARDNAME_{설정カードID}("名前")
 	ENDIF
 	SIF MATCH(素材条件スーパー名前, RESULTS)
 		条件달성 ++
 
 	IF 参照先 == "필드"
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("名前")
 			SIF MATCH(素材条件スーパー名前, RESULTS)
 				条件달성 ++
 		ENDIF
@@ -1067,7 +1067,7 @@ ENDIF
 
 IF 素材条件スーパーカテゴリ != ""
 	VARSET 条件달성
-	TRYCALLFORM CARDNAME_{설정カードID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
 	FOR カウンタB,0,5
 		IF RESULTS:カウンタB != ""
 			SIF MATCH(RESULTS:カウンタB, 素材条件スーパーカテゴリ)
@@ -1093,7 +1093,7 @@ IF 素材条件スーパーカテゴリ != ""
 		ENDIF
 
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			IF MATCH(RESULTS, 素材条件スーパーカテゴリ)
 				条件달성 ++
 			ENDIF
@@ -1124,7 +1124,7 @@ ENDIF
 
 IF 素材条件スーパー종류 > 0
 	VARSET 条件달성
-	TRYCALLFORM CARD_{설정カードID}, "종류"
+	TRYCALLFORM CARD_{설정カードID}("종류")
 	IF 素材条件スーパー종류 == モン全般
 		SIF RESULT < モン全般
 			条件달성 ++
@@ -1142,13 +1142,13 @@ IF 素材条件スーパー종류 > 0
 	ELSEIF 素材条件スーパー종류 == 효과全般
 		SIF GROUPMATCH(RESULT, 효과モン, 융합, 의식, 싱크로, 엑시즈, 링크, 초차원)
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT != 通常モン
 			条件달성 ++
 	ELSEIF 素材条件スーパー종류 == 효과無し全般
 		SIF RESULT == 通常モン
 			条件달성 ++
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		SIF RESULT == 通常モン
 			条件달성 ++
 
@@ -1173,7 +1173,7 @@ ENDIF
 
 
 IF 素材条件スーパー속성 > 0
-	TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:{カウンタ}")}, "속성"
+	TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:{カウンタ}")}("속성")
 	SIF !MATCH(素材条件スーパー속성, RESULT)
 		RETURN 0
 ENDIF

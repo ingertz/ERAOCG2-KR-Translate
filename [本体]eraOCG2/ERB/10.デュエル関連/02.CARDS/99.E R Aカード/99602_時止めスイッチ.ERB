@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -59,9 +58,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
@@ -114,7 +112,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
 			IF RESULT == 1
 				CALL CARD_SELECT(듀얼리스트,RESULT:1)
-				TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_필드:選択カード（CS）")}, "名前"
+				TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_필드:選択カード（CS）")}("名前")
 				PRINTFORMW %RESULTS%는 스위치 하나를 누른 것만으로 마치 얼어붙은 것처럼 굳어버렸다.
 				CALL CARD_GRANT_SPECIAL(대상者（CS）,選択カード（CS）,99602)
 				CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード（CS）,"接可",2,1)
@@ -175,6 +173,7 @@ CALL TEXT_DECORATION("ROGUE")
 CALL CARD_ABLE(1,마함起動,フリー誘発)
 PRINTL ①：이 카드는 상대 턴에도 패에서 발동할 수 있다。
 PRINTL 자신 / 상대 필드의 "시간 정지 스위치"의 효과를 받은 몬스터 １장을 골라、그 받고있는 효과를 해제한다。
+PRINTL
 PRINTL 해제（딸깍！
 
 CALL TEXT_DECORATION("ROGUE")

@@ -21,7 +21,7 @@ VARSET 素材条件종류, -1
 VARSET 素材条件종족起動
 VARSET 素材条件素材数起動
 VARSET 素材条件素材攻撃力起動
-VARSET 素材条件素材ID起動 ;Anonym추가
+VARSET 素材条件素材ID起動
 VARSET 素材条件속성
 VARSET 素材条件종족
 
@@ -120,6 +120,7 @@ VARSET 효과条件종족, -1
 VARSET 효과条件レベル, -1
 VARSET 효과条件固レベル, -1
 VARSET 효과条件変レベル, -1
+
 VARSET 효과条件攻撃力
 VARSET 효과条件以攻撃力, -1
 VARSET 효과条件固攻撃力, -1
@@ -180,6 +181,7 @@ VARSET 효과条件攻撃可
 VARSET 효과설정改名
 VARSET 효과条件うらら解除
 VARSET 효과条件元々
+VARSET 효과条件セット
 
 VARSET 強制必要素材名前
 VARSET 強制必要素材名前２
@@ -198,6 +200,7 @@ VARSET 효과条件優先종류,-1
 VARSET 효과条件優先レベル,-1
 VARSET 효과条件優先攻撃力,-1
 VARSET 효과条件優先성별,-1
+VARSET 효과条件大小反転
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
 @RESETAREA
@@ -223,9 +226,9 @@ SIF 효과条件名前 != ""
 	RETURN 1
 SIF 효과条件カテゴリ != ""
 	RETURN 1
-SIF 효과条件分割 > 0
+SIF 효과条件分割 != -1
 	RETURN 1
-SIF 효과条件종류  > 0
+SIF 효과条件종류 != -1
 	RETURN 1
 SIF 효과条件속성 != -1
 	RETURN 1
@@ -233,6 +236,7 @@ SIF 효과条件종족 != -1
 	RETURN 1
 SIF 효과条件レベル != -1
 	RETURN 1
+
 SIF 효과条件攻撃力 != 0
 	RETURN 1
 SIF 효과条件以攻撃力 != -1
@@ -241,6 +245,7 @@ SIF 효과条件固攻撃力 != -1
 	RETURN 1
 SIF 효과条件元固攻撃力 != -1
 	RETURN 1
+
 SIF 효과条件守備力 != 0
 	RETURN 1
 SIF 효과条件以守備力 != -1
@@ -403,7 +408,7 @@ IF 듀얼리스트 == "자신"
 	ENDIF
 ENDIF
 
-TRYCALLFORM CARDNAME_{カードID}, "名前"
+TRYCALLFORM CARDNAME_{カードID}("名前")
 발동カード名 = %RESULTS%
 
 VARSET RESULT
@@ -416,6 +421,8 @@ IF 듀얼리스트 == "자신"
 	PRINTL
 	CUSTOMDRAWLINE —
 	RESETCOLOR
+	CALLFORM SELECT_UI_SET(듀얼리스트,カードID,99,場所,종류,ゾーン)
+	PRINTW
 ELSEIF 듀얼리스트 == "상대"
 	;발동確認
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,5,カードID,종류)
@@ -433,7 +440,7 @@ ENDIF
 IF 효과番号 != 0
 	IF ゾーン == "효과処理"
 		RETURN 0
-	ELSEIF GROUPMATCH(효과番号, 1, 2, 3, 4)
+	ELSEIF GROUPMATCH(효과番号, 1, 2, 3, 4, 101, 102, 103)
 		CALL CARD_EFFECT_USE(듀얼리스트,カードID,효과番号)
 	ELSEIF 효과番号 == 10
 		IF ゾーン == "마함"
@@ -571,7 +578,7 @@ ELSE
 	SETVAR @"%듀얼리스트%_발동数" , GETVAR(@"%듀얼리스트%_발동数") + 1
 	TRYCALLFORM CARD_{カードID}("종류")
 	IF RESULT <= 10
-		TRYCALLFORM CARD_{カードID}, "分割"
+		TRYCALLFORM CARD_{カードID}("分割")
 		IF RESULT == 펜듈럼 && 종류 == 손패起動
 			CALL SET_PLAYER_INFO(듀얼리스트,"마법발동数",1,0,1,1)
 		ELSE
@@ -742,7 +749,9 @@ ENDSELECT
 ;ライオホープ
 SIF カードID == 58242
 	RETURN 0
-
+;ゼーロン
+SIF カードID == 150974
+	RETURN 0
 SIF 종류 == 付与효과 || 종류 == 필드起動付与 || 종류 == 상대起動付与 || 종류 == 맥시멈条件 || 종류 == チェーン可否
 	RETURN 0
 
@@ -1011,6 +1020,16 @@ SELECTCASE 듀얼리스트
 			CASE 4
 				자신_발동済효과_4:자신_발동カウンタ_4 = カードID
 				자신_발동カウンタ_4 ++
+
+			CASE 101
+				자신_발동済효과_P1:자신_발동カウンタ_P1 = カードID
+				자신_발동カウンタ_P1 ++
+			CASE 102
+				자신_발동済효과_P2:자신_발동カウンタ_P2 = カードID
+				자신_발동カウンタ_P2 ++
+			CASE 103
+				자신_발동済효과_P3:자신_발동カウンタ_P3 = カードID
+				자신_발동カウンタ_P3 ++
 		ENDSELECT
 	CASE "상대"
 		SELECTCASE 효과番号
@@ -1026,6 +1045,16 @@ SELECTCASE 듀얼리스트
 			CASE 4
 				상대_발동済효과_4:상대_발동カウンタ_4 = カードID
 				상대_발동カウンタ_4 ++
+
+			CASE 101
+				상대_발동済효과_P1:상대_발동カウンタ_P1 = カードID
+				상대_발동カウンタ_P1 ++
+			CASE 102
+				상대_발동済효과_P2:상대_발동カウンタ_P2 = カードID
+				상대_발동カウンタ_P2 ++
+			CASE 103
+				상대_발동済효과_P3:상대_발동カウンタ_P3 = カードID
+				상대_발동カウンタ_P3 ++
 		ENDSELECT
 ENDSELECT
 
@@ -1575,49 +1604,49 @@ NEXT
 
 
 IF カードID > 0
-	CALLFORM CARD_{カードID}, "종류"
+	CALLFORM CARD_{カードID}("종류")
 	IF GETVAR(@"%듀얼리스트%_EX可종류番号:{RESULT}") == 0
 		;PRINTL 종류NG
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "속성"
+	CALLFORM CARD_{カードID}("속성")
 	IF GETVAR(@"%듀얼리스트%_EX可속성番号:{RESULT}") == 0
 		;PRINTL 속성NG
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "종족"
+	CALLFORM CARD_{カードID}("종족")
 	IF GETVAR(@"%듀얼리스트%_EX可종족番号:{RESULT}") == 0
 		;PRINTL 종족NG
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "レベル"
+	CALLFORM CARD_{カードID}("レベル")
 	IF GETVAR(@"%듀얼리스트%_EX可レベル番号:{RESULT}") == 0
 		;PRINTL 종족NG
 		RETURN 1
 	ENDIF
 
 
-	CALLFORM CARD_{カードID}, "종류"
+	CALLFORM CARD_{カードID}("종류")
 	IF GETVAR(@"%듀얼리스트%_一時EX可종류番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "종류"
+	CALLFORM CARD_{カードID}("종류")
 	IF GETVAR(@"%듀얼리스트%_一時EX可종류番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "속성"
+	CALLFORM CARD_{カードID}("속성")
 	IF GETVAR(@"%듀얼리스트%_一時EX可속성番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
 
 	IF GETVARS(@"%듀얼리스트%_EX可カテゴリ") != ""
-		CALLFORM CARDNAME_{カードID}, "カテゴリ"
+		CALLFORM CARDNAME_{カードID}("カテゴリ")
 		FOR カウンタB,0,5
 			IF RESULTS:カウンタB != ""
 				SIF RESULTS:カウンタB == GETVARS(@"%듀얼리스트%_EX可カテゴリ")
@@ -1629,7 +1658,7 @@ IF カードID > 0
 		ENDIF
 	ENDIF
 	IF GETVARS(@"%듀얼리스트%_一時EXカテゴリ制限") != ""
-		CALLFORM CARDNAME_{カードID}, "カテゴリ"
+		CALLFORM CARDNAME_{カードID}("カテゴリ")
 		FOR カウンタB,0,5
 			IF RESULTS:カウンタB != ""
 				SIF RESULTS:カウンタB == GETVARS(@"%듀얼리스트%_一時EXカテゴリ制限")
@@ -1660,17 +1689,17 @@ SIF GETVAR(@"%듀얼리스트%_NS制限") >= 2
 	RETURN 1
 
 IF カードID > 0
-	CALLFORM CARD_{カードID}, "종류"
+	CALLFORM CARD_{カードID}("종류")
 	IF GETVAR(@"%듀얼리스트%_NS可종류番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "속성"
+	CALLFORM CARD_{カードID}("속성")
 	IF GETVAR(@"%듀얼리스트%_NS可속성番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "종족"
+	CALLFORM CARD_{カードID}("종족")
 	IF GETVAR(@"%듀얼리스트%_NS可종족番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
@@ -1856,10 +1885,10 @@ IF カードID > 0
 		IF ゾーン != "EX덱"
 			;PRINTFORML ここまでOK２！
 			VARSET 条件달성
-			TRYCALLFORM CARDNAME_{カードID}, "名前"
+			TRYCALLFORM CARDNAME_{カードID}("名前")
 			SIF RESULTS == "무구한 자 메디우스"
 				条件달성 ++
-			TRYCALLFORM CARDNAME_{カードID}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 			FOR カウンタB,0,5
 				IF RESULTS:カウンタB != ""
 					SIF RESULTS:カウンタB == "아르토메기아"
@@ -1875,7 +1904,7 @@ IF カードID > 0
 		;PRINTFORML ここまでOK4！
 	ENDIF
 
-	TRYCALLFORM CARD_{カードID}, "単一存在"
+	TRYCALLFORM CARD_{カードID}("単一存在")
 	IF RESULT == 1
 		FOR カウンタ,0,5
 			SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == カードID
@@ -1883,57 +1912,57 @@ IF カードID > 0
 		NEXT
 	ENDIF
 
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	IF GETVAR(@"%듀얼리스트%_SS可종류番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
 
 
-	TRYCALLFORM CARD_{カードID}, "속성"
+	TRYCALLFORM CARD_{カードID}("속성")
 	IF GETVAR(@"%듀얼리스트%_SS可속성番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
 
 	IF GETVAR(@"%듀얼리스트%_レベル５制限") >= 1
-		TRYCALLFORM CARD_{カードID}, "レベル"
+		TRYCALLFORM CARD_{カードID}("レベル")
 		IF RESULT >= 5
 			RETURN 1
 		ENDIF
 	ENDIF
 
 	IF GETVAR(@"%듀얼리스트%_튜너制限") >= 1
-		CALLFORM CARD_{カードID}, "튜너"
+		CALLFORM CARD_{カードID}("튜너")
 		IF RESULT == 0
 			RETURN 1
 		ENDIF
 	ENDIF
 
 
-	CALLFORM CARD_{カードID}, "종족"
+	CALLFORM CARD_{カードID}("종족")
 	IF GETVAR(@"%듀얼리스트%_SS可종족番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
 
 
-	CALLFORM CARD_{カードID}, "レベル"
+	CALLFORM CARD_{カードID}("レベル")
 	IF GETVAR(@"%듀얼리스트%_SS可レベル番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 	
-	CALLFORM CARD_{カードID}, "종류"
+	CALLFORM CARD_{カードID}("종류")
 	IF GETVAR(@"%듀얼리스트%_一時SS可종류番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "속성"
+	CALLFORM CARD_{カードID}("속성")
 	IF GETVAR(@"%듀얼리스트%_一時SS可속성番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
 
-	CALLFORM CARD_{カードID}, "종족"
+	CALLFORM CARD_{カードID}("종족")
 	IF GETVAR(@"%듀얼리스트%_一時SS可종족番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
@@ -1941,7 +1970,7 @@ IF カードID > 0
 	
 	IF GETVARS(@"%듀얼리스트%_SS可カテゴリ") != ""
 		VARSET 条件달성
-		CALLFORM CARDNAME_{カードID}, "カテゴリ"
+		CALLFORM CARDNAME_{カードID}("カテゴリ")
 		FOR カウンタB,0,5
 			IF RESULTS:カウンタB != ""
 				SIF RESULTS:カウンタB == GETVARS(@"%듀얼리스트%_SS可カテゴリ")
@@ -2066,26 +2095,26 @@ SIF 攻撃誘導플래그 == 2
 SIF GETVAR(@"%듀얼리스트%_攻撃制限") >= 2
 	RETURN 1
 
-CALLFORM CARD_{カードID}, "종류"
+CALLFORM CARD_{カードID}("종류")
 IF GETVAR(@"%듀얼리스트%_攻撃可종류番号:{RESULT}") == 0
 	;PRINTL 종류NG
 	RETURN 1
 ENDIF
 
-CALLFORM CARD_{カードID}, "속성"
+CALLFORM CARD_{カードID}("속성")
 IF GETVAR(@"%듀얼리스트%_攻撃可속성番号:{RESULT}") == 0
 	;PRINTL 속성NG
 	RETURN 1
 ENDIF
 
-CALLFORM CARD_{カードID}, "종족"
+CALLFORM CARD_{カードID}("종족")
 IF GETVAR(@"%듀얼리스트%_攻撃可종족番号:{RESULT}") == 0
 	;PRINTL 종족NG
 	RETURN 1
 ENDIF
 
 IF GETVARS(@"%듀얼리스트%_攻撃可カテゴリ") != ""
-	CALLFORM CARDNAME_{カードID}, "カテゴリ"
+	CALLFORM CARDNAME_{カードID}("カテゴリ")
 	FOR カウンタB,0,5
 		IF RESULTS:カウンタB != ""
 			SIF RESULTS:カウンタB == GETVARS(@"%듀얼리스트%_攻撃可カテゴリ")
@@ -2146,6 +2175,8 @@ CALL 対面者판정(듀얼리스트)
 
 $INPUT_LOOP
 FOR カウンタ,0,5
+	VARSET 隷属先存在
+	VARSET 爆破先存在
 	IF GETVAR(@"%듀얼리스트%_MZ_束縛:カウンタ") <= -1
 		CONTINUE
 	ELSE 
@@ -2446,7 +2477,7 @@ ENDIF
 SIF カードID <= 0
 	RETURN 0
 
-TRYCALLFORM CARD_{カードID}, "종류"
+TRYCALLFORM CARD_{カードID}("종류")
 
 
 
@@ -2625,6 +2656,51 @@ SELECTCASE デコレーション
 		CALL XON_GRADATION(C_MONS_BR,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
 	CASE "P_MAGIC_2"
 		CALL XON_GRADATION(C_MONS_BR,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		
+	CASE "BASM_P_MAGIC"
+		CALL XON_GRADATION(C_BASM_BR,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_BASM_BR,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "BASM_P_MAGIC_2"
+		CALL XON_GRADATION(C_BASM_BR,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_BASM_BR,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," 몬스터 효과 ","――――――――――――――――――――――――――――――――――")
+	CASE "GISK_P_MAGIC"
+		CALL XON_GRADATION(C_GISK_BLUE,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_GISK_BLUE,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "GISK_P_MAGIC_2"
+		CALL XON_GRADATION(C_GISK_BLUE,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_GISK_BLUE,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," 몬스터 효과 ","――――――――――――――――――――――――――――――――――")
+	CASE "FUSE_P_MAGIC"
+		CALL XON_GRADATION(C_FUSE_PUR,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_FUSE_PUR,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "FUSE_P_MAGIC_2"
+		CALL XON_GRADATION(C_FUSE_PUR,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_FUSE_PUR,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," 몬스터 효과 ","――――――――――――――――――――――――――――――――――")
+	CASE "SYN_P_MAGIC"
+		CALL XON_GRADATION(C_SYN_WHITE,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_SYN_WHITE,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "SYN_P_MAGIC_2"
+		CALL XON_GRADATION(C_SYN_WHITE,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_SYN_WHITE,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," 몬스터 효과 ","――――――――――――――――――――――――――――――――――")
+	CASE "XYZ_P_MAGIC"
+		CALL XON_GRADATION(C_XYZ_BLACK,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_XYZ_BLACK,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "XYZ_P_MAGIC_2"
+		CALL XON_GRADATION(C_XYZ_BLACK,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_XYZ_BLACK,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," 몬스터 효과 ","――――――――――――――――――――――――――――――――――")
+	CASE "LINK_P_MAGIC"
+		CALL XON_GRADATION(C_LINK_BLUE,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_LINK_BLUE,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "LINK_P_MAGIC_2"
+		CALL XON_GRADATION(C_LINK_BLUE,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_LINK_BLUE,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," 몬스터 효과 ","――――――――――――――――――――――――――――――――――")
+	CASE "PSY_P_MAGIC"
+		CALL XON_GRADATION(C_PSY_RED,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," PENDULUM  MAGIC ","――――――――――――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_PSY_RED,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 지속 마법 취급으로 발동할 수 있다 ","―――――――――――――――――――――――――――")
+	CASE "PSY_P_MAGIC_2"
+		CALL XON_GRADATION(C_PSY_RED,C_MAGIC_G,"―――――――――――――――――――――――――――","이 카드는 필드에서 묘지로 보내질 경우 EX덱으로 간다","――――――――――――――――――――――――")
+		CALL XON_GRADATION(C_PSY_RED,C_MAGIC_G,"――――――――――――――――――――――――――――――――――"," 몬스터 효과 ","――――――――――――――――――――――――――――――――――")
+
+
 	CASE "MAXIMUM"
 		SETCOLOR C_GOLD
 		PRINTFORML %"―" * 33%【맥시멈모드】%"―" * 33%
@@ -2713,7 +2789,7 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-TRYCALLFORM CARD_{カードID}, "종류"
+TRYCALLFORM CARD_{カードID}("종류")
 IF GETVAR(@"%듀얼리스트%_MZ_モ耐:場所") >= 1 && INRANGE(RESULT, 0,15)
 	耐性衝突 = 1
 ELSEIF GETVAR(@"%듀얼리스트%_MZ_魔耐:場所") >= 1 && INRANGE(RESULT, 20,30)
@@ -3053,6 +3129,30 @@ ELSE
 ENDIF
 RETURN 0
 
+
+@CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+SIF メインフェイズ != 1
+	RETURN 0
+SIF ターンプレイヤー != 듀얼리스트
+	RETURN 0
+
+;IF 종류 == 마함起動
+IF ゾーン == "마함"
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		RETURN 0
+;ELSEIF 종류 == 손패起動
+ELSEIF ゾーン == "손패"
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+ENDIF
+RETURN 1
+
+
 @CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
@@ -3091,6 +3191,7 @@ IF GETVAR(@"%듀얼리스트%_魔_発可:場所") == 0
 ENDIF
 
 RETURN 1
+
 
 @CHECK_DP_GET(승리판정,이벤트플래그)
 #DIM DYNAMIC 승리판정
@@ -3204,7 +3305,7 @@ SIF OPPOSER >= 1
 PRINTFORML 합계DP:{FLAG:듀얼포인트}
 
 
-;Anonym추가
+
 IF 상대_듀얼패배플래그 >= 1
 	レート増減 = (획득DP / 100)
 	IF CFLAG:MASTER:듀얼레이트 < 2000
@@ -3224,7 +3325,7 @@ ENDIF
 CUSTOMDRAWLINE —
 
 EXP:MASTER:듀얼경험 ++
-;Anonym추가。듀얼승리、패배경험
+;듀얼승리、패배경험
 SIF OPPOSER >= 1
 	EXP:OPPOSER:듀얼경험 ++
 IF 자신_듀얼패배플래그 >= 1
@@ -3469,7 +3570,7 @@ RETURN 選択カード
 コピー先 = 現손패(듀얼리스트)
 SETVAR @"%듀얼리스트%_손패:コピー先",カードID
 
-CALLFORM CARDNAME_{カードID},"名前"
+CALLFORM CARDNAME_{カードID}("名前")
 PRINTFORMW %듀얼리스트%의 패에 %RESULTS%가 추가되었다！
 
 
@@ -3481,7 +3582,7 @@ PRINTFORMW %듀얼리스트%의 패에 %RESULTS%가 추가되었다！
 コピー先 = 現山札数(듀얼리스트)
 SETVAR @"%듀얼리스트%_덱:コピー先",カードID
 
-CALLFORM CARDNAME_{カードID},"名前"
+CALLFORM CARDNAME_{カードID}("名前")
 PRINTFORMW %듀얼리스트%의 덱에 %RESULTS%가 추가되었다！
 
 
@@ -3494,7 +3595,7 @@ PRINTFORMW %듀얼리스트%의 덱에 %RESULTS%가 추가되었다！
 コピー先 = 現EX山札数(듀얼리스트)
 SETVAR @"%듀얼리스트%_EX덱:コピー先",カードID
 
-CALLFORM CARDNAME_{カードID},"名前"
+CALLFORM CARDNAME_{カードID}("名前")
 PRINTFORMW %듀얼리스트%의 ＥＸ덱에 %RESULTS%가 추가되었다！
 
 
@@ -3507,7 +3608,7 @@ PRINTFORMW %듀얼리스트%의 ＥＸ덱에 %RESULTS%가 추가되었다！
 コピー先 = 現묘지数(듀얼리스트)
 SETVAR @"%듀얼리스트%_묘지:コピー先",カードID
 
-CALLFORM CARDNAME_{カードID},"名前"
+CALLFORM CARDNAME_{カードID}("名前")
 PRINTFORMW %듀얼리스트%의 묘지에 %RESULTS%가 추가되었다！
 
 @CARD_GENERATE_BAN(듀얼리스트,カードID)
@@ -3518,7 +3619,7 @@ PRINTFORMW %듀얼리스트%의 묘지에 %RESULTS%가 추가되었다！
 コピー先 = 現제외数(듀얼리스트)
 SETVAR @"%듀얼리스트%_제외:コピー先",カードID
 
-CALLFORM CARDNAME_{カードID},"名前"
+CALLFORM CARDNAME_{カードID}("名前")
 PRINTFORMW %듀얼리스트%의 제외되어있는 카드 안에 %RESULTS%가 추가되었다！
 
 
@@ -3730,6 +3831,7 @@ CALL CARD_MAKE_FIELD("자신",23173)
 #DIM DYNAMIC 설정플래그
 #DIM DYNAMIC 使用機能
 #DIMS DYNAMIC 표시名
+#DIMS DYNAMIC カード実名
 #DIM DYNAMIC 표시星
 #DIM DYNAMIC 표시属
 #DIM DYNAMIC 표시種
@@ -3737,11 +3839,12 @@ CALL CARD_MAKE_FIELD("자신",23173)
 #DIM DYNAMIC 표시攻
 #DIM DYNAMIC 표시守
 #DIM DYNAMIC 표시Ｔ
+#DIM DYNAMIC 표시割
 #DIM DYNAMIC 표시CT
 #DIM DYNAMIC 표시可否
 #DIM DYNAMIC 표시限界
 #DIM DYNAMIC 보존する色
-#DIMS DYNAMIC 대상者 ;Anonym추가
+#DIMS DYNAMIC 대상者
 #DIM DYNAMIC 悪Ｃ数
 ;使用機能
 ; 0 = フィールド표시
@@ -3749,7 +3852,6 @@ CALL CARD_MAKE_FIELD("자신",23173)
 
 
 参照先 = %元参照先%
-;Anonym추가
 SELECTCASE 参照先
 	CASE "필드"
 		参照先 = 필드
@@ -3828,25 +3930,27 @@ SELECTCASE 参照先
 ENDSELECT
 
 IF オプション_略표시 == 1
-	TRYCALLFORM CARDNAME_{カードID}, "略称"
+	TRYCALLFORM CARDNAME_{カードID}("略称")
 	표시名 = %RESULTS%
+	TRYCALLFORM CARDNAME_{カードID}("名前")
+	カード実名 = %RESULTS%
 
 ELSEIF 使用機能 == 1
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	TRYCALLFORM CARDNAME_{カードID}("名前")
 	STRLENS RESULTS
 	SIF RESULT >= 40
 		표시限界 = 1
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	TRYCALLFORM CARDNAME_{カードID}("名前")
 	SUBSTRING RESULTS, 0, 38
 	표시名 = %RESULTS%
 
 ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,0,5) && 대상者 != "상대"
 	IF GETVAR(@"자신_MZ_変化元ID:場所") > -1
-		TRYCALLFORM CARDNAME_{GETVAR(@"자신_MZ_変化元ID:場所")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"자신_MZ_変化元ID:場所")}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{GETVAR(@"자신_MZ_変化元ID:場所")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"자신_MZ_変化元ID:場所")}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ELSEIF GETVARS(@"자신_MZ_改名:場所") != ""
@@ -3858,11 +3962,11 @@ ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,0,5) && �
 		SUBSTRING 표시名, 0, 38
 		표시名 = %RESULTS%
 ELSE
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	TRYCALLFORM CARDNAME_{カードID}("名前")
 	STRLENS RESULTS
 	SIF RESULT >= 40
 		표시限界 = 1
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	TRYCALLFORM CARDNAME_{カードID}("名前")
 	SUBSTRING RESULTS, 0, 38
 	표시名 = %RESULTS%
 	ENDIF
@@ -3877,11 +3981,11 @@ ELSEIF 参照先 == "마함" && 설정플래그 == 0 && INRANGE(場所,10,15) &&
 		SUBSTRING 표시名, 0, 38
 		표시名 = %RESULTS%
 	ELSE
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ENDIF
@@ -3889,11 +3993,11 @@ ELSEIF 参照先 == "마함" && 설정플래그 == 0 && INRANGE(場所,10,15) &&
 ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,2000,2004)
 	場所 -= 2000
 	IF GETVAR(@"상대_MZ_変化元ID:場所") > -1
-		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ELSEIF GETVARS(@"상대_MZ_改名:場所") != ""
@@ -3905,22 +4009,22 @@ ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,2000,2004
 		SUBSTRING 표시名, 0, 38
 		표시名 = %RESULTS%
 	ELSE
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ENDIF
 	場所 += 2000
 ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,0,4) && 대상者 == "상대"
 	IF GETVAR(@"상대_MZ_変化元ID:場所") > -1
-		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"상대_MZ_変化元ID:場所")}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ELSEIF GETVARS(@"상대_MZ_改名:場所") != ""
@@ -3932,11 +4036,11 @@ ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,0,4) && �
 		SUBSTRING 표시名, 0, 38
 		표시名 = %RESULTS%
 	ELSE
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ENDIF
@@ -3951,11 +4055,11 @@ ELSEIF 参照先 == "마함" && 설정플래그 == 0 && INRANGE(場所,2010,2014
 		SUBSTRING 표시名, 0, 38
 		표시名 = %RESULTS%
 	ELSE
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ENDIF
@@ -3970,20 +4074,20 @@ ELSEIF 参照先 == "마함" && 설정플래그 == 0 && INRANGE(場所,0,4) && �
 		SUBSTRING 표시名, 0, 38
 		표시名 = %RESULTS%
 	ELSE
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		STRLENS RESULTS
 		SIF RESULT >= 40
 			표시限界 = 1
-		TRYCALLFORM CARDNAME_{カードID}, "名前"
+		TRYCALLFORM CARDNAME_{カードID}("名前")
 		SUBSTRING RESULTS, 0, 38
 		표시名 = %RESULTS%
 	ENDIF
 ELSE
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	TRYCALLFORM CARDNAME_{カードID}("名前")
 	STRLENS RESULTS
 	SIF RESULT >= 40
 		표시限界 = 1
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	TRYCALLFORM CARDNAME_{カードID}("名前")
 	SUBSTRING RESULTS, 0, 38
 	표시名 = %RESULTS%
 ENDIF
@@ -3991,9 +4095,9 @@ ENDIF
 
 IF 参照先 == "필드" && 대상者 != "상대" && 설정플래그 == 0 && INRANGE(場所,0,4)
 	표시星 = 자신_MZ_星:場所
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	표시類 = RESULT
-	TRYCALLFORM CARD_{カードID}, "コスト"
+	TRYCALLFORM CARD_{カードID}("コスト")
 	표시CT = RESULT
 	표시属 = 자신_MZ_属:場所
 	표시種 = 자신_MZ_種:場所
@@ -4002,9 +4106,9 @@ IF 参照先 == "필드" && 대상者 != "상대" && 설정플래그 == 0 && INR
 	표시Ｔ = 자신_MZ_Ｔ:場所
 ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,2000,2004)
 	場所 -= 2000
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	표시類 = RESULT
-	TRYCALLFORM CARD_{カードID}, "コスト"
+	TRYCALLFORM CARD_{カードID}("コスト")
 	표시CT = RESULT
 	표시星 = 상대_MZ_星:場所
 	표시属 = 상대_MZ_属:場所
@@ -4014,22 +4118,24 @@ ELSEIF 参照先 == "필드" && 설정플래그 == 0 && INRANGE(場所,2000,2004
 	표시Ｔ = 상대_MZ_Ｔ:場所
 	場所 += 2000
 ELSE
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	표시類 = RESULT
-	TRYCALLFORM CARD_{カードID}, "レベル"
+	TRYCALLFORM CARD_{カードID}("レベル")
 	표시星 = RESULT
-	TRYCALLFORM CARD_{カードID}, "コスト"
+	TRYCALLFORM CARD_{カードID}("コスト")
 	표시CT = RESULT
-	TRYCALLFORM CARD_{カードID}, "속성"
+	TRYCALLFORM CARD_{カードID}("속성")
 	표시属 = RESULT
-	TRYCALLFORM CARD_{カードID}, "종족"
+	TRYCALLFORM CARD_{カードID}("종족")
 	표시種 = RESULT
-	TRYCALLFORM CARD_{カードID}, "攻撃力"
+	TRYCALLFORM CARD_{カードID}("攻撃力")
 	표시攻 = RESULT
-	TRYCALLFORM CARD_{カードID}, "守備力"
+	TRYCALLFORM CARD_{カードID}("守備力")
 	표시守 = RESULT
-	TRYCALLFORM CARD_{カードID}, "튜너"
+	TRYCALLFORM CARD_{カードID}("튜너")
 	표시Ｔ = RESULT
+	TRYCALLFORM CARD_{カードID}("分割")
+	표시割 = RESULT
 ENDIF
 
 SIF 표시属 >= 1
@@ -4060,9 +4166,61 @@ IF オプション_略표시 == 1
 		PRINTFORM [{場所,4}]
 	ENDIF
 	IF 裏側플래그 >= 3
-		PRINTFORM 　%"ＵＮＫＮОＷＮ",16,LEFT%
+		IF 参照先 == "필드"
+			IF 표시Ｔ
+				CALL XON_FONT("튜너")
+			ELSE
+				CALL XON_FONT("カード")
+			ENDIF
+		ENDIF
+		IF 参照先 == "마함"
+			IF 표시類 == フィールド
+				CALL XON_FONT("フィールド")
+			ELSEIF 표시類 == 지속마법 || 표시類 == 지속함정
+				CALL XON_FONT("지속")
+			ELSEIF 표시類 == 装備마법
+				CALL XON_FONT("装備")
+			ELSEIF 표시類 == 速攻마법
+				CALL XON_FONT("速攻")
+			ELSEIF 표시割 == 펜듈럼
+				CALL XON_FONT("펜듈럼",C_MAGIC_G)
+			ELSE
+				CALL XON_FONT("カード")
+			ENDIF
+		ENDIF
+		IF 参照先 == "손패"
+			CALL XON_FONT("손패")
+		ENDIF
+		IF 参照先 == "묘지"
+			CALL XON_FONT("묘지")
+		ENDIF
+		IF 参照先 == "덱"
+			CALL XON_FONT("덱")
+		ENDIF
+		IF 参照先 == "EX덱"
+			IF 표시類 == 융합
+				CALL XON_FONT("융합")
+			ELSEIF 표시類 == 싱크로
+				CALL XON_FONT("싱크로")
+			ELSEIF 표시類 == 엑시즈
+				CALL XON_FONT("엑시즈")
+			ELSEIF 표시類 == 링크
+				CALL XON_FONT("링크")
+			ELSEIF 표시割 == 펜듈럼
+				CALL XON_FONT("펜듈럼",C_MAGIC_G)
+			ENDIF
+		ENDIF
+		IF 参照先 == "제외"
+			CALL XON_FONT("제외")
+		ENDIF
+	ELSEIF 裏側플래그 >= 3
+		PRINTFORM ？
+	ENDIF
+	IF 裏側플래그 >= 3
+		PRINTFORM  %"ＵＮＫＮОＷＮ",16,LEFT%
 	ELSE
-		PRINTFORM 　%표시名,16,LEFT%
+		HTML_PRINT @"<button value='{場所}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(GETCOLOR(),"X6")%'> %HTML_ESCAPE(표시名),40,LEFT%</font></button>",1
+		;PRINTFORM 　%표시名,16,LEFT%
 	ENDIF
 ELSE
 	SELECTCASE 参照先
@@ -4089,9 +4247,60 @@ ELSE
 		PRINTFORM [{場所,4}] 
 	ENDIF
 	IF 裏側플래그 >= 3
-		PRINTFORM 　%"ＵＮＫＮＯＷＮ",40,LEFT%
+		IF 参照先 == "필드"
+			IF 표시Ｔ
+				CALL XON_FONT("튜너")
+			ELSE
+				CALL XON_FONT("カード")
+			ENDIF
+		ENDIF
+		IF 参照先 == "마함"
+			IF 표시類 == フィールド
+				CALL XON_FONT("フィールド")
+			ELSEIF 표시類 == 지속마법 || 표시類 == 지속함정
+				CALL XON_FONT("지속")
+			ELSEIF 표시類 == 装備마법
+				CALL XON_FONT("装備")
+			ELSEIF 표시類 == 速攻마법
+				CALL XON_FONT("速攻")
+			ELSEIF 표시割 == 펜듈럼
+				CALL XON_FONT("펜듈럼",C_MAGIC_G)
+			ELSE
+				CALL XON_FONT("カード")
+			ENDIF
+		ENDIF
+		IF 参照先 == "손패"
+			CALL XON_FONT("손패")
+		ENDIF
+		IF 参照先 == "묘지"
+			CALL XON_FONT("묘지")
+		ENDIF
+		IF 参照先 == "덱"
+			CALL XON_FONT("덱")
+		ENDIF
+		IF 参照先 == "EX덱"
+			IF 표시類 == 융합
+				CALL XON_FONT("융합")
+			ELSEIF 표시類 == 싱크로
+				CALL XON_FONT("싱크로")
+			ELSEIF 표시類 == 엑시즈
+				CALL XON_FONT("엑시즈")
+			ELSEIF 표시類 == 링크
+				CALL XON_FONT("링크")
+			ELSEIF 표시割 == 펜듈럼
+				CALL XON_FONT("펜듈럼",C_MAGIC_G)
+			ENDIF
+		ENDIF
+		IF 参照先 == "제외"
+			CALL XON_FONT("제외")
+		ENDIF
+	ELSEIF 裏側플래그 >= 3
+		PRINTFORM ？
+	ENDIF
+	IF 裏側플래그 >= 3
+		PRINTFORM  %"ＵＮＫＮＯＷＮ",40,LEFT%
 	ELSE
-		PRINTFORM 　%표시名,40,LEFT%
+		PRINTFORM  %표시名,40,LEFT%
 	ENDIF
 ENDIF
 
@@ -4240,12 +4449,12 @@ PRINTL
 #DIM DYNAMIC カードID
 #DIM DYNAMIC 場所
 
-TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%ゾーン%:場所")}, "名前"
+TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%ゾーン%:場所")}("名前")
 元カード名称 = %RESULTS%
 
 SETVAR @"%듀얼리스트%_%ゾーン%:場所", カードID
 
-TRYCALLFORM CARDNAME_{カードID}, "名前"
+TRYCALLFORM CARDNAME_{カードID}("名前")
 PRINTFORMW %ゾーン%의 %元カード名称%는 %RESULTS%로 바뀌었습니다。
 
 @CARD_SET_CATEGORY(듀얼리스트,ゾーン,場所,설정カテ,추가２플래그)
@@ -4327,36 +4536,36 @@ SIF RESULT == 1
 
 
 IF GETVAR(@"%듀얼리스트%_モン阻害") >= 1
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	SIF INRANGE(RESULT,0,10)
 		RETURN 1	
 ENDIF
 
 IF GETVAR(@"%듀얼리스트%_通함정阻害") >= 1
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	SIF RESULT == 通常함정
 		RETURN 1
 ENDIF
 
 IF GETVAR(@"%듀얼리스트%_永함정阻害") >= 1
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	SIF RESULT == 지속함정
 		RETURN 1
 ENDIF
 
 IF GETVAR(@"%듀얼리스트%_速魔阻害") >= 1
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	SIF RESULT == 速攻마법
 		RETURN 1	
 ENDIF
 
 IF GETVAR(@"%듀얼리스트%_물属阻害") >= 1
-	TRYCALLFORM CARD_{カードID}, "속성"
+	TRYCALLFORM CARD_{カードID}("속성")
 	SIF RESULT == 물속성
 		RETURN 1	
 ENDIF
 IF GETVARS(@"%듀얼리스트%_カテ阻害") != ""
-	TRYCALLFORM CARDNAME_{カードID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 	SIF RESULTS == GETVARS(@"%듀얼리스트%_カテ阻害")
 		RETURN 1
 ENDIF
@@ -4397,7 +4606,7 @@ ENDIF
 VARSET 설정値, -1
 カードID = GETVAR(@"%듀얼리스트%_필드:戦闘場所(듀얼리스트)")
 
-TRYCALLFORM CARD_{カードID},설정種
+TRYCALLFORM CARD_{カードID}(설정種)
 IF RESULT:1 >= 1
 	FOR カウンタ,1,10
 		IF RESULT:カウンタ != 0	
@@ -4435,7 +4644,7 @@ ELSE
 ENDIF
 カードID = GETVAR(@"%実行者%_필드:場所")
 
-TRYCALLFORM CARDNAME_{カードID},"カテゴリ"
+TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 SIF MATCH(RESULTS, カテゴリ名)
 	RETURN 1
 
@@ -4686,7 +4895,7 @@ IF 場所 == 5
 ENDIF
 カード追カテ:0 = %GETVARS(@"%듀얼리스트%_MZ_追カテ:場所")%
 カード追カテ:1 = %GETVARS(@"%듀얼리스트%_MZ_追カテ2:場所")%
-TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)},"カテゴリ"
+TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
 SIF MATCH(RESULTS,カテゴリ)
 	RETURN 1
 SIF MATCH(カード追カテ,カテゴリ)
@@ -4702,7 +4911,7 @@ RETURN 0
 #DIM DYNAMIC 場所
 
 VARSET 選択カード名前
-TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:場所")}, "名前"
+TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:場所")}("名前")
 選択カード名前 = %RESULTS%
 SIF 選択カード名前 == ""
 	RETURN 0
@@ -4828,7 +5037,7 @@ ENDIF
 IF ゾーン == "필드"
 	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",運命보존,1)
 ELSE
-	TRYCALLFORM CARD_{カードID},"종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	IF GROUPMATCH(RESULT,フィールド,지속마법)
 		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"汎数",運命보존,1)
 	ENDIF

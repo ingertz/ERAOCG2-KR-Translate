@@ -7,7 +7,7 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 마인드컨트롤러 - 어댑터
+		RESULTS = 마인드 컨트롤러 어댑터
 	CASE "略称"
 		RESULTS = MC 어댑터
 	CASE "カテゴリ"
@@ -33,7 +33,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  카드는 1턴에 1장 밖에 발동하지 못 하고,③의 효과는 1턴에 1번 밖에 사용할 수 없다.
+PRINTL 이 카드명의 카드는 1턴에 1장 밖에 발동하지 못 하고,③의 효과는 1턴에 1번 밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,손패起動,마함起動)
 PRINTL ①：이 카드의 발동시의 효과 처리로서
 PRINTL 덱으로 부터"MC" 몬스터 1장을 패에 넣는다.
@@ -56,24 +56,29 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79850)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF 발동済_2(듀얼리스트,79850)
-			RETURN 0
-		CALL FULLRESET
-		효과範囲상대묘지 = 1
-		효과条件カテゴリ = MC
-		효과条件CNT = 1
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT < 10
-			RETURN 0
-	ELSE 
-		SIF 발동済_1(듀얼리스트,79850)
-			RETURN 0
-	ENDIF
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,79850)
+		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대묘지 = 1
+	효과条件カテゴリ = MC
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 10
+		RETURN 0
+
+
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,79850)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
@@ -99,26 +104,9 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 손패起動
-	;カード발동＆설치まで
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79850,1)
-	IF RESULT == 0
-		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
-		CALL FULLRESET
-		효과条件カテゴリ = MC
-		효과条件종류 = モン全般
-		효과条件任意 = 1
-		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
-	ENDIF
-ELSEIF 종류 == 攻守変動
-	攻撃力修正 = 손패数(対面者) * 200
-	CALL FULLRESET
-	효과条件カテゴリ = MC
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻撃力修正,攻撃力修正)
-ELSEIF 종류 == 지속효과
-	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "마인드컨트롤러 - 어댑터")
-ELSEIF 종류 == 마함起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79850,2)
 	IF RESULT == 0
 		CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
 		IF RESULT != -1
@@ -165,7 +153,7 @@ ELSEIF 종류 == 마함起動
 						ELSEIF BUST_SIZE(조교대상) >= 4
 							PRINTFORM 그 %TEXTR("규격외의 크기인/천박할 정도의 크기의")% 초유를 말랑하게%TEXTR("장난치면서 주물르/엉성하게 주물르/심심풀이로 만져되/움켜잡으")%면서
 						ENDIF
-						PRINTFORMW 정상위로 범한다......
+						PRINTFORMW 정상위로 범해%TEXTR("주었/、승리의 유열에 잠겼")%다……
 				ENDSELECT
 			ENDIF
 			CALL EROTIC_MOVE("憑依기승위",조교대상,MASTER,500)
@@ -175,4 +163,22 @@ ELSEIF 종류 == 마함起動
 		ENDIF
 		CALL SET_PLAYER_INFO(듀얼리스트,"듀얼패배플래그",4,1)
 	ENDIF
+ELSEIF 종류 == 손패起動 || 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79850,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과条件カテゴリ = MC
+		효과条件종류 = モン全般
+		효과条件任意 = 1
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	攻撃力修正 = 손패数(対面者) * 200
+	CALL FULLRESET
+	효과条件カテゴリ = MC
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻撃力修正,攻撃力修正)
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "마인드 컨트롤러 어댑터")
 ENDIF

@@ -207,18 +207,18 @@ FOR カウンタ,0,サーチ範囲
 	ENDIF
 
 	IF 濾過条件名前 != ""
-		TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+		TRYCALLFORM CARDNAME_{설정カードID}("名前")
 		SIF !MATCH(濾過条件名前, RESULTS)
 			CONTINUE
 	ENDIF
 	IF 濾過条件固名前 != ""
-		TRYCALLFORM CARDNAME_{설정カードID}, "名前"
+		TRYCALLFORM CARDNAME_{설정カードID}("名前")
 		SIF MATCH(濾過条件固名前, RESULTS)
 			CONTINUE
 	ENDIF
 	IF 濾過条件カテゴリ != ""
 		VARSET 条件달성
-		TRYCALLFORM CARDNAME_{설정カードID}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
 		SIF MATCH(RESULTS, 濾過条件カテゴリ)
 			条件달성 ++
 		SIF MATCH(濾過条件カテゴリ, RESULTS)
@@ -245,7 +245,7 @@ FOR カウンタ,0,サーチ範囲
 	ENDIF
 ;	PRINTFORML カウンタ4:カウンタ
 	IF 濾過条件종류 > 0
-		TRYCALLFORM CARD_{설정カードID}, "종류"
+		TRYCALLFORM CARD_{설정カードID}("종류")
 		IF 濾過条件종류 == モン全般
 			SIF RESULT > モン全般
 				CONTINUE
@@ -281,7 +281,7 @@ FOR カウンタ,0,サーチ範囲
 		ENDIF
 	ENDIF
 	IF 濾過条件分割 > 0
-		TRYCALLFORM CARD_{설정カードID}, "分割"
+		TRYCALLFORM CARD_{설정カードID}("分割")
 		IF 濾過条件分割 == 分割在り
 			SIF RESULT == 0
 				CONTINUE
@@ -299,12 +299,12 @@ FOR カウンタ,0,サーチ範囲
 	ENDIF
 
 	IF チェック플래그 == 2
-		TRYCALLFORM CARD_{설정カードID}, "종류"
+		TRYCALLFORM CARD_{설정カードID}("종류")
 		SIF RESULT > 10
 			CONTINUE
 		SIF RESULT == 3 && 濾過条件의식無視 == 0
 			CONTINUE
-		TRYCALLFORM CARD_{설정カードID}, "특수불가"
+		TRYCALLFORM CARD_{설정カードID}("특수불가")
 		SIF RESULT == 1
 			CONTINUE
 	ENDIF
@@ -439,43 +439,43 @@ FOR カウンタ,0,サーチ範囲
 			CONTINUE
 	ELSE
 		IF 濾過条件튜너 > 0
-			TRYCALLFORM CARD_{설정カードID}, "튜너"
+			TRYCALLFORM CARD_{설정カードID}("튜너")
 			SIF RESULT != 濾過条件튜너
 				CONTINUE
 		ENDIF
 		IF 濾過条件속성 > 0
-			TRYCALLFORM CARD_{설정カードID}, "속성"
+			TRYCALLFORM CARD_{설정カードID}("속성")
 			SIF !MATCH(濾過条件속성, RESULT)
 				CONTINUE
 		ENDIF
 		IF 濾過条件종족 > 0
-			TRYCALLFORM CARD_{설정カードID}, "종족"
+			TRYCALLFORM CARD_{설정カードID}("종족")
 		SIF !MATCH(濾過条件종족, RESULT)
 			CONTINUE
 		ENDIF
 		IF 濾過条件レベル > 0
-			TRYCALLFORM CARD_{설정カードID}, "レベル"
+			TRYCALLFORM CARD_{설정カードID}("レベル")
 			SIF !MATCH(濾過条件レベル, RESULT)
 				CONTINUE
 		ENDIF
 		IF 濾過条件攻撃力 > 0
-			TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+			TRYCALLFORM CARD_{설정カードID}("攻撃力")
 			SIF RESULT > 濾過条件攻撃力
 				CONTINUE
 		ENDIF
 		IF 濾過条件固攻撃力 > 0
-			TRYCALLFORM CARD_{설정カードID}, "攻撃力"
+			TRYCALLFORM CARD_{설정カードID}("攻撃力")
 			SIF RESULT != 濾過条件固攻撃力
 				CONTINUE
 		ENDIF
 
 		IF 濾過条件守備力 > 0
-			TRYCALLFORM CARD_{설정カードID}, "守備力"
+			TRYCALLFORM CARD_{설정カードID}("守備力")
 			SIF RESULT > 濾過条件守備力
 				CONTINUE
 		ENDIF
 		IF 濾過条件성별 > 0
-			TRYCALLFORM CARD_{설정カードID}, "성별"
+			TRYCALLFORM CARD_{설정カードID}("성별")
 			SIF !MATCH(RESULT, 濾過条件성별)
 				CONTINUE
 		ENDIF
@@ -512,7 +512,7 @@ FOR カウンタ,0,サーチ範囲
 				選択カード = カウンタ 
 			ENDIF
 		ELSE
-			CALLFORM CARD_{설정カードID}, "攻撃力"
+			CALLFORM CARD_{설정カードID}("攻撃力")
 			IF  RESULT > 現在最大攻撃力
 				現在最大攻撃力 = RESULT
 				選択カード = カウンタ + 上級値
@@ -534,7 +534,6 @@ RESULT:1 = 完全条件달성
 
 SKIPDISP 0
 
-;PRINTFORML 選択カード!:{選択カード},実行者:%実行者%
 IF 実行者 == "자신"
 	RETURN 0
 ELSEIF 実行者 == "상대"

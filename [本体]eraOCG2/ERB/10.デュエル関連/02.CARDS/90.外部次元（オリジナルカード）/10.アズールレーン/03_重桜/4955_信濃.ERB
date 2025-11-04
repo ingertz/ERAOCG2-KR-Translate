@@ -1,0 +1,204 @@
+﻿@CARDNAME_4955,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 항공모함 시나노
+	CASE "略称"
+		RESULTS = 시나노
+	CASE "カテゴリ"
+		RESULTS:0 = 벽람항로
+		RESULTS:1 = 사쿠라 엠파이어(AL)
+ENDSELECT
+
+
+@CARD_4955(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 3000
+	CASE "성별"
+		RETURN 牝性
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_4955(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "사쿠라 엠파이어(AL)" 융합 몬스터 + "벽람항로" 의식 융합 S X L 몬스터
+PRINTL 이 카드는 융합 소환으로만 특수 소환할 수 있다.
+PRINTL 이 카드명의 ①②③의 효과는 각각 1턴에 1번만 사용할 수 있다.
+CALLFORM CARD_ABLE(1,EX소환時,ターン開始時)
+PRINTL ①: 이 카드가 융합 소환했을 경우, 또는 스탠바이 페이즈에 발동할 수 있다.
+PRINTL 상대 필드의 카드 1장을 고르고 파괴한다.
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ②: 상대가 카드의 효과를 발동했을 때 발동할 수 있다.
+PRINTL 자신 필드의 "벽람항로" 몬스터는 턴 종료시까지,
+PRINTL 그 발동한 카드와 같은 종류의 카드 (몬스터 마법 / 함정)의 효과를 받지 않는다.
+CALLFORM CARD_ABLE(3,身代효과)
+PRINTL ③: 이 카드가 상대에 의해 필드를 벗어날 경우,
+PRINTL 대신 자신 묘지의 "사쿠라 엠파이어(AL)" 카드 2장을 덱으로 되돌릴 수 있다.
+
+@CARDSUMMON_4955(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 사쿠라 엠파이어(AL)
+	素材条件종류 = 융합
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = 벽람항로
+	素材条件종류:0 = 의식
+	素材条件종류:1 = 융합
+	素材条件종류:2 = 싱크로
+	素材条件종류:3 = 엑시즈
+	素材条件종류:4 = 링크
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,4955) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_4955(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4955)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時 || 종류 == ターン開始時
+	SIF 발동済_1(듀얼리스트,4955)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_2(듀얼리스트,4955)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF 발동済_3(듀얼리스트,4955)
+		RETURN 0
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 사쿠라 엠파이어(AL)
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4955(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동カード_ID
+#DIMS DYNAMIC 획득耐性
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時 || 종류 == ターン開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4955,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+	ENDIF
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4955,2)
+	IF RESULT == 0
+		발동カード_ID = 効後_設場所:(処理中番号 - 1)
+
+		TRYCALLFORM CARD_{발동カード_ID}("종류")
+		IF RESULT < 10
+			획득耐性 = モ耐
+		ELSEIF INRANGE(RESULT,20,26)
+			획득耐性 = 魔耐
+		ELSEIF INRANGE(RESULT,30,33)
+			획득耐性 = 함정耐
+		ENDIF
+		
+		CALL FULLRESET
+		효과条件カテゴリ = 벽람항로
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,획득耐性,1)
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4955,3)
+	IF RESULT == 0		
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 사쿠라 엠파이어(AL)
+		효과条件複数 = 2
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

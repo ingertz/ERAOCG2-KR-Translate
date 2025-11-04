@@ -1,0 +1,148 @@
+@CARDNAME_98710,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 바니 폴리스의 긴급 체포
+	CASE "略称"
+		RESULTS = 바니 P 긴급 체포
+	CASE "カテゴリ"
+		RESULTS:0 = 래빗시티
+		RESULTS:1 = 바니 폴리스
+		RESULTS:2 = 밀리언 라이브!
+ENDSELECT
+
+@CARD_98710(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 250601
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_98710(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_98710(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드는 상대의 마법 & 함정 존에 "래빗 걸" P 몬스터 카드가 존재할 경우, 패에서도 발동할 수 있다.
+PRINTL 이 카드명의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①: 상대 필드에 몬스터가 특수 소환되었을 경우,
+PRINTL 상대 필드의 몬스터 1장과 자신 / 상대의 마법 & 함정 존의 "래빗 걸" P 몬스터 카드를 대상으로 하여 발동할 수 있다.
+PRINTL 대상의 상대 필드의 몬스터의 컨트롤을 얻고, 뒷면 수비 표시로 하여 공격 회피를 부여하고, 표시 고정 상태로 한다.
+PRINTL 그 후, 대상의 "래빗 걸" P 몬스터 카드를 파괴한다.
+
+@CARDCAN_98710(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,98710)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,98710)
+		RETURN 0
+	IF ゾーン == "손패"
+		CALL FULLRESET
+		효과範囲상대마함 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 래빗 걸
+		효과条件分割 = 펜듈럼
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1	
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲상대마함 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 래빗 걸
+	효과条件分割 = 펜듈럼
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_98710(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード듀얼리스트
+#DIM DYNAMIC 選択カードＢ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,98710,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과範囲상대마함 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 래빗 걸
+		효과条件分割 = 펜듈럼
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		CALL CARD_SELECT(듀얼리스트,RESULT:1)
+		選択カード = 選択カード（CS）
+		選択カード듀얼리스트 = %대상者（CS）%
+		IF RESULT
+			選択カードＢ = 現필드(듀얼리스트)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"強奪")
+			IF RESULT == 1
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カードＢ,"表",3,1)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カードＢ,"表固",2)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カードＢ,"攻避",2)
+				CALL CARD_DISPOSE(選択カード듀얼리스트,"마함",選択カード,破壊行き)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

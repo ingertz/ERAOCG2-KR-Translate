@@ -74,7 +74,7 @@ ENDIF
 CALL TEXT_DECORATION("ROGUE")
 PRINTL "가스타" 또는 "아누스피어" 레벨４ 몬스터×２
 PRINTL EX덱의 이 카드는 "젬나이트가스타 캄"１ 장 위에 곂쳐서 X소환할 수도 있다。
-PRINTL 이 카드명의  ③의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL 이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①：이 카드가 "가스타의 정적 캄" 또는 "젬나이트가스타 캄"을 소재로 X소환하고있을 경우、이하의 효과를 얻는다。
 PRINTL ●이 카드가 몬스터와 전투를 행하는 경우、그 ２장은 전투로는 파괴되지 않는다。
@@ -213,7 +213,7 @@ ELSEIF 종류 == 필드起動
 		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
 		
 		IF RESULT != -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:選択カード（CS）")}, "略称"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:選択カード（CS）")}("略称")
 			대상カード名 = %RESULTS%
 			
 			IF GETVAR(@"%対面者%_MZ_性:選択カード（CS）") == 牝性
@@ -231,9 +231,9 @@ ELSEIF 종류 == 攻撃時強制誘発
 	
 	戦闘カード = 戦闘場所(듀얼리스트)
 	대상カード = 戦闘場所(듀얼리스트,1)
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:戦闘カード")},"略称"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:戦闘カード")}("略称")
 	戦闘カード名 = %RESULTS%
-	TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:대상カード")},"略称"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:대상カード")}("略称")
 	대상カード名 = %RESULTS%
 	대상カード성별 = GETVAR(@"%対面者%_MZ_性:대상カード")
 	
@@ -447,7 +447,7 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == ターン終了時強制
 	;마함 묘지 / 제외존에 あったら소멸する
 	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)	
-	TRYCALLFORM CARDNAME_{159556},"名前"
+	TRYCALLFORM CARDNAME_{159556}("名前")
 	選択カード名 = %RESULTS%
 	
 	PRINTFORMW 사용되지 않은 "%選択カード名%"는 소멸했습니다。
@@ -468,7 +468,7 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 		IF RESULT != -1
 			選択カード = RESULT
 			選択カードID = RESULT:99
-			;TRYCALLFORM CARDNAME_{選択カードID},"略称"
+			;TRYCALLFORM CARDNAME_{選択カードID}("略称")
 			
 			IF 選択カード != 9999
 				CALL CARD_SELECT(듀얼리스트,選択カード)
@@ -480,12 +480,12 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 				IF 대상者（CS） == "자신"
 					;자신 필드의  카드를 選択
 					;네가스타X 몬스터의 場合
-					TRYCALLFORM CARDNAME_{選択カードID},"カテゴリ"
+					TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
 					IF MATCH(RESULTS, "네가스타")
 						CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"Ｘ",1)
 						PRINTFORML 
 						
-						TRYCALLFORM CARDNAME_{選択カードID},"略称"
+						TRYCALLFORM CARDNAME_{選択カードID}("略称")
 						選択カード名 = %RESULTS%
 						
 						SELECTCASE 選択カードID

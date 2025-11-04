@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 매직비스트 마스터케로베로스
+		RESULTS = 매직비스트 마스터케로베로스
 	CASE "略称"
-RESULTS = 마수 케르베로스
+		RESULTS = 마수 케르베로스
 	CASE "カテゴリ"
-RESULTS:0 = 매직비스트
-RESULTS:1 = 마력카운터
+		RESULTS:0 = 매직비스트
+		RESULTS:1 = 마력카운터
 ENDSELECT
 
 
@@ -73,13 +73,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-
 	RETURN 1
 ELSEIF 종류 == 마함起動
 	SIF 발동済_1(듀얼리스트,20065)
@@ -177,7 +173,7 @@ ELSEIF 종류 == 필드起動
 		IF RESULT == 1
 			選択カード_ID = RESULT:2
 			VARSET RESULT
-			TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"
+			TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
 			CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"永攻",RESULT)
 		ENDIF
 	ENDIF

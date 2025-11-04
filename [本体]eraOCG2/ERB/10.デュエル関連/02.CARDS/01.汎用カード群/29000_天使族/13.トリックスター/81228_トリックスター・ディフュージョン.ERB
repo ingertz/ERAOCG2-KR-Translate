@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 트릭스터 디퓨전
+		RESULTS = 트릭스터 디퓨전
 	CASE "略称"
-RESULTS = 트릭스터 디퓨전
+		RESULTS = TsDe퓨전
 	CASE "カテゴリ"
-RESULTS:0 = 트릭스터
-RESULTS:1 = 융합
+		RESULTS:0 = 트릭스터
+		RESULTS:1 = 융합
 ENDSELECT
 
 
@@ -63,9 +63,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,81228)
 		RETURN 0
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL RESETAREA_MAT
 	素材範囲묘지 = 1
@@ -128,7 +127,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		IF 選択カード != 9999
 			選択カード_ID = RESULT:99
 			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
-			TRYCALLFORM CARD_{選択カード_ID},"종류"
+			TRYCALLFORM CARD_{選択カード_ID}("종류")
 			IF RESULT == 융합
 				CALL FUSSUMMON(듀얼리스트,選択カード)
 			ELSEIF RESULT == 링크

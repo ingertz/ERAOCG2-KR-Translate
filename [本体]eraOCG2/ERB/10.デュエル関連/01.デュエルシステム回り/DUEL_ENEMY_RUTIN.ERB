@@ -45,6 +45,8 @@ CASE "크샤트리라 펜리르"
 	返し値 += 2000
 CASE "서큐베 바르모니카"
 	返し値 += 3000
+CASE "엑스 라이제올"
+	返し値 += 3000
 ENDSELECT
 
 
@@ -103,7 +105,7 @@ SELECTCASE RESULTS
 		ENDIF
 
 	;トラブルサン：無駄に使わないようにするため
-	CASE "Evil★Twin's 트러블 써니","The Evil★Twins！키스킬＆리일라"
+	CASE "Evil★Twin’s 트러블 써니","The Evil★Twins！키스킬＆리일라"
 		SIF モンスター数("자신") == 0
 			RETURN 1
 	;シュトラールを戻させないため
@@ -153,13 +155,13 @@ SELECTCASE RESULTS
 				RETURN 1
 		ENDIF
 	;상대のモンスターがいなければ使わせない…？けど意図が分からなかったので一旦コメントアウト
-	;CASE "드래그마의 기사 플루르드리스"
-	;	SIF (モンスター数("자신")) == 0
-	;		RETURN 1
+	; CASE "드래그마의 기사 플루르드리스"
+	; 	SIF (モンスター数("자신")) == 0
+	; 		RETURN 1
 	;(CPU)から見て자신のターン、メインフェイズには使わせない…んだったけど、ゼロが来て話が変わったので一旦コメントアウト
-	;CASE "섬도희－레이"
-	;	SIF ターンプレイヤー == "상대" && メインフェイズ == 1
-	;		RETURN 1
+	; CASE "섬도희－레이"
+	; 	SIF ターンプレイヤー == "상대" && メインフェイズ == 1
+	; 		RETURN 1
 	CASE "다크 다이브 봄버"
 		;攻撃する前は使わせない
 		IF 종류 == 필드起動
@@ -182,7 +184,6 @@ SELECTCASE RESULTS
 		IF 종류 == 필드起動
 			CALL FULLRESET_EXT
 			濾過範囲상대필드 = 1
-			濾過範囲상대마함 = 1
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 0
 				RETURN 1
@@ -282,9 +283,7 @@ SELECTCASE RESULTS
 				SIF RESULT == 0
 					RETURN 1
 			ENDIF
-			RETURN 1
 		ENDIF
-		RETURN 1
 	CASE "No.39 희망황 비욘드 더 호프"
 		;自滅にしかならず、使わせるとしても使う場面の基準が作れないので一切使わせない
 		IF 종류 == 필드起動 || 종류 == フリー誘発
@@ -379,6 +378,62 @@ SELECTCASE RESULTS
 					RETURN 1
 			ENDIF
 		ENDIF
+	CASE "팬텀 포그 블레이드"
+		;상대フィールドに대상になるカードが無ければ발동させない
+		IF 종류 == 필드起動
+			CALL FULLRESET_EXT
+			濾過範囲상대필드 = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 0
+				RETURN 1
+		ENDIF
+	CASE "클리어윙 싱크로 드래곤","크리스탈윙 싱크로 드래곤","크리스탈클리어윙 오버 싱크로 드래곤"
+	;자신の효과に対して효과を발동させない
+		SIF 後듀얼리스트 == "상대"
+			RETURN 1
+	CASE "플뢰르 드 바로네스"
+		IF 종류 == ターン開始時
+			SIF 효과발동済("상대",場所,ゾーン) == 0
+				RETURN 1
+		ENDIF
+	CASE "흔들리는 눈빛"
+		CALL FULLRESET_EXT
+		濾過範囲마함 = 1
+		濾過範囲상대마함 = 1
+		濾過条件표시 = 10
+		濾過条件CNT = 1
+		CALL CARD_CHECK_EXT("상대",0,"",場所)
+		SIF RESULT < 2
+			RETURN 1
+	CASE "순백의 성녀 에클레시아"
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			CALL FULLRESET_EXT
+			濾過範囲EX덱 = 1
+			濾過条件종류 = 싱크로
+			濾過条件소환可 = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 1
+				RETURN 1
+		ENDIF
+	CASE "데스 엠페러 데몬"
+		IF 종류 == 손패起動
+			CALL FULLRESET
+			濾過範囲마함 = 1
+			濾過範囲상대마함 = 1
+			濾過条件표시 = 表側표시
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 1
+				RETURN 0
+		ENDIF
+	CASE "원석룡 어나더 베릴"
+		IF 종류 == 필드起動
+			RETURN 1
+		ENDIF
+	CASE "아이스 라이제올"
+		IF 종류 == 손패起動
+			SIF 발동済_2("상대",31224) == 0 && 소환権 >= 0
+				RETURN 1
+		ENDIF
 ENDSELECT
 
 ;カテゴリチェック
@@ -396,14 +451,19 @@ ENDSELECT
 ;CPUは자신마함に펜듈럼が２枚以上あれば펜듈럼の손패起動を使わない。
 CALLFORM CARD_{カードID}("分割")
 IF RESULT == 펜듈럼 && 종류 == 손패起動
-	;PRINTFORML （A）　RESULT:{RESULT} ／ 종류 == {종류}
 	CALL FULLRESET_EXT
 	濾過範囲마함 = 1
 	濾過条件종류 = 펜듈럼
 	濾過条件CNT = 1
 	CALL CARD_CHECK_EXT("상대",0,"",場所)
-	;PRINTFORML （B）　RESULT:{RESULT}
 	SIF RESULT >= 2
+		RETURN 1
+	;同名のPが마함にあれば、손패からそのPを발동しない
+	CALL FULLRESET_EXT
+	濾過範囲마함 = 1
+	濾過条件ID = カードID
+	CALL CARD_CHECK_EXT("상대",0,"",場所)
+	SIF RESULT == 1
 		RETURN 1
 ENDIF
 
@@ -430,21 +490,33 @@ RETURN 0
 SIF ALT条件 >= 1
 	RETURN 0
 	
+;基本、소환するモンスターと同名のカードは素材にしないように
+IF GETVAR(@"상대_%ゾーン%:지정カード") == 소환カード_ID
+	RETURN 1
+ENDIF
+
 IF ゾーン == "필드"
 	SELECTCASE 소환法
+		CASE 의식
 
-	CASE 엑시즈
-	CASE 싱크로
+		CASE 융합
+
+		CASE 싱크로
 		CALLFORM CARD_{소환カード_ID}("レベル")
 		IF RESULT < 8
 			SIF 상대_MZ_攻:지정カード > 1950
 				RETURN 1
 		ENDIF
+		CASE 엑시즈
+		
+		CASE 링크
+			SIF 상대_MZ_攻:지정カード > 1950
+				RETURN 1
 	CASEELSE
 		SIF 상대_MZ_攻:지정カード > 1950
 			RETURN 1
 	ENDSELECT
-	;セラは素材化から守られる
+	;モンスターゾーンのセラは素材化から守られる
 	SIF 상대_필드:지정カード == 1370
 		RETURN 1
 ENDIF
@@ -587,6 +659,34 @@ IF 효과条件손패취득 == 1
 			효과条件優先名前:0 = 본 데몬
 		CASE "콜 레조네이터","크림즌 헬가이아"
 			효과条件優先名前:0 = 소울 레조네이터
+		CASE "혹정의 새턴카모밀"
+			효과条件優先名前:0 = 흑극정의 코스모스터
+		CASE "흑극정의 코스모스터"
+			효과条件優先名前:0 = 해학의 코스모스 공주
+			효과条件優先名前:1 = 뒤섞는 코스모스 공주
+		CASE "빛의 제너레이드 마르델"
+			효과条件優先名前 = 제너레이드 스테이지
+		CASE "제너레이드 섀도우 로프톨"
+			IF ターン数 < 1
+				효과条件優先名前 = 빛의 제너레이드 마르델
+			ELSE
+				효과条件優先名前 = 제너레이드 세이즈 발라
+			ENDIF
+		CASE "나비의 단검－엘마"
+			효과条件優先名前 = 가디언 엘마
+		CASE "유성의 활－실"
+			효과条件優先名前:0 = 가디언 엘마
+			SIF ターン数 <= 1
+				효과条件優先名前:1 = 가디언 케이스트
+			효과条件優先名前:2 = 가디언 실
+		CASE "파사의 대검－바오우"
+			효과条件優先名前 = 가디언 바오우
+		CASE "중력의 도끼－그랄"
+			효과条件優先名前:0 = 가디언 그랄
+			효과条件優先名前:1 = 가디언 트라이스
+			효과条件劣後名前 = 가디언 에아토스
+		CASE "섬광의 쌍검－트라이스"
+			효과条件優先名前 = 가디언 에아토스
 	ENDSELECT
 ELSE ;その他、묘지に送る、제외するなどの処理の분기
 	SELECTCASE カード名
@@ -1201,6 +1301,14 @@ SELECTCASE RESULTS
 		RETURN -10000
 	CASE "하염의 구희"
 		RETURN 1000
+	CASE "피들바두르"
+		RETURN 2000
+	CASE "엘리멘틀 히어로 어나더 네오스"
+		RETURN -1000
+	CASE "아이스 라이제올"
+		RETURN 1000
+	CASE "스타 라이제올"
+		RETURN -1800
 	CASEELSE
 		IF 손패플래그
 			TRYCALLFORM CARDCAN_{カードID}("상대",소환時,"필드")
@@ -1215,7 +1323,7 @@ RETURN 0
 
 
 ;カードをサーチ、효과での특수소환する時の優先度ボーナスはここで설정
-@ENEMY_PRIORITY_FILTER(カードID,攻撃力설정)
+@ENEMY_PRIORITY_FILTER(カードID,参照先,場所)
 #DIMS DYNAMIC 参照先
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カードID
@@ -1225,6 +1333,10 @@ RETURN 0
 #DIM DYNAMIC 攻撃力설정
 #DIM DYNAMIC 修正値
 #DIM DYNAMIC 返し値
+
+IF GROUPMATCH(参照先,"상대필드","상대마함","상대묘지","상대손패","상대덱","상대제외","상대EX덱")
+	修正値 += 99999
+ENDIF
 
 IF 효과条件손패취득 == 1
 	CALL FULLRESET_EXT
@@ -1238,7 +1350,7 @@ IF 효과条件손패취득 == 1
 		;無かったら修正値+20000
 		修正値 += 20000
 	ENDIF
-	TRYCALLFORM CARD_{カードID}, "종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	IF RESULT == フィールド
 		修正値 += 20
 	ELSEIF RESULT == 지속마법
@@ -1255,7 +1367,7 @@ IF 효과条件손패취득 == 1
 		修正値 += 1
 	ENDIF
 
-	TRYCALLFORM CARDNAME_{カードID}, "名前"
+	TRYCALLFORM CARDNAME_{カードID}("名前")
 	SELECTCASE RESULTS
 		CASE "제알 웨폰－페가수스 트윈 세이버","제알 웨폰－라이트닝 블레이드","제알 웨폰－토네이도 브링거"
 			修正値 += -10000
@@ -1268,27 +1380,27 @@ IF 효과条件손패취득 == 1
 	ENDSELECT
 ENDIF
 
-TRYCALLFORM CARDNAME_{カードID}, "名前"
+TRYCALLFORM CARDNAME_{カードID}("名前")
 SIF MATCH(효과条件優先名前, RESULTS)
 	修正値 += 10000
 
-TRYCALLFORM CARDNAME_{カードID}, "名前"
+TRYCALLFORM CARDNAME_{カードID}("名前")
 SIF MATCH(효과条件劣後名前, RESULTS)
 	修正値 += -10000
 
-TRYCALLFORM CARD_{カードID}, "レベル"
+TRYCALLFORM CARD_{カードID}("レベル")
 SIF MATCH(효과条件優先レベル, RESULT)
 	修正値 += 10000
 
-TRYCALLFORM CARD_{カードID}, "攻撃力"
+TRYCALLFORM CARD_{カードID}("攻撃力")
 SIF MATCH(효과条件優先攻撃力, RESULT)
 	修正値 += 10000
 
 
 ;カテゴリで一纏め
-TRYCALLFORM CARDNAME_{カードID},"カテゴリ"
+TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
 IF MATCH(RESULTS,"라뷰린스")
-	TRYCALLFORM CARD_{カードID},"종류"
+	TRYCALLFORM CARD_{カードID}("종류")
 	IF RESULT <= 10 ;モンスターはモンスターゾーンの同名カードチェック（마함置き除去ケア）
 		CALL FULLRESET_EXT
 		濾過範囲필드 = 1
@@ -1306,10 +1418,16 @@ IF MATCH(RESULTS,"라뷰린스")
 			修正値 += -3000
 		ENDIF
 	ENDIF
+ELSEIF MATCH(RESULTS,"스프라이트")
+	TRYCALLFORM CARD_{カードID}("종류")
+	IF RESULT == 효과モン
+		SIF 발동済_2("상대",カードID)
+			修正値 -= 500
+	ENDIF
 ENDIF
 
 ;個別での優先度修正
-TRYCALLFORM CARDNAME_{カードID}, "名前"
+TRYCALLFORM CARDNAME_{カードID}("名前")
 SELECTCASE RESULTS
 	CASE "크샤트리라 유니콘"
 		;同名カードチェック
@@ -1402,11 +1520,20 @@ SELECTCASE RESULTS
 		修正値 += -1000
 	CASE "센츄리온 가고일ＩＩ"
 		修正値 += -1000
+	CASE "상검사－막야"
+		修正値 += 200
+	CASE "스프라이트 블루"
+		修正値 += 300
 ENDSELECT
 
 
 $SKIP_RUTIN
-返し値 = 攻撃力설정 + 修正値
+IF 参照先 == "필드"
+	返し値 = 상대_MZ_攻:場所 + 修正値
+ELSE
+	TRYCALLFORM CARD_{カードID}("攻撃力")
+	返し値 = RESULT + 修正値
+ENDIF
 ;PRINTFORML PRIORITY カードID:{カードID}/返し値:{返し値}
 SIF 返し値 <= 0
 	返し値 = 1
@@ -1609,12 +1736,20 @@ CASE "검의 미캉코 하레", "구슬의 미캉코 후우리", "거울의 미�
 CASE "잭나이츠 파라디온 아스트람"
 	SIF GETVAR(@"%듀얼리스트%_MZ_召種:攻撃元") != 召種通常
 		RETURN 999999
+;戦闘耐性＋ダメージ反射
 CASE "오오히메의 미캉코", "아라히메의 미캉코", "우즈히메의 미캉코", "No.92 위해신룡 Heart－eartH Dragon", "유벨"
+	RETURN 999999
+;攻撃時誘発で戦闘상대を除去等
+CASE "사이버스 퀀텀 드래곤"
 	RETURN 999999
 CASE "환상의 소환신 엑조디아"
 	攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:攻撃先") + GETVAR(@"ライフ_%듀얼리스트%")
 	RETURN 攻撃力修正
 ENDSELECT
+
+CALLFORM CARDNAME_{被攻撃カードID}("カテゴリ")
+SIF RESULTS == "시계신"
+	RETURN 999999
 
 攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:攻撃先")
 RETURN 攻撃力修正

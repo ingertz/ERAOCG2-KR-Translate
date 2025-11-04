@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 빙결계
+		RESULTS = 빙결계
 	CASE "略称"
-RESULTS = 빙결계
+		RESULTS = 빙결계
 	CASE "カテゴリ"
-RESULTS:0 = 빙결계
+		RESULTS:0 = 빙결계
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -58,9 +57,8 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,90350)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 攻撃時誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -119,7 +117,7 @@ ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘
 		CALL 효과条件レベル_ADV(5, "以上")	
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
 
-PRINTL 몬스터를 패에 넣겠습니까?
+		PRINTL 몬스터를 패에 넣겠습니까?
 		CALL YN_CHOICE(듀얼리스트)
 		IF RESULT == はい
 			CALL FULLRESET

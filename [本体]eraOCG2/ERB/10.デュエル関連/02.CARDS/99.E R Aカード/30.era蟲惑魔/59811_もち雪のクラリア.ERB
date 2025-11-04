@@ -66,10 +66,10 @@ ENDIF
 CALL TEXT_DECORATION("ROGUE")
 PRINTL "충혹마" 몬스터 2장
 CALLFORM CARD_ABLE(1,ターン終了時)
-PRINTL ①：자신의 엔드 페이즈에 발동할 수 있다. 묘지의 「함정 속으로」 몬스터를 마법 & 함정 존에 앞면 표시로 세트한다.
+PRINTL ①：자신의 엔드 페이즈에 발동할 수 있다. 묘지의 "함정 속으로" 몬스터를 마법 & 함정 존에 앞면 표시로 세트한다.
 CALLFORM CARD_ABLE(2,필드起動)
 PRINTL ②：1턴에 1번, 서로의 메인 페이즈에 발동할 수 있다.
-PRINTL 서로의 묘지에서 '충혹마' 융합 몬스터 카드에 의해 정해진 융합 소재 몬스터를 제외하고,
+PRINTL 서로의 묘지에서 "충혹마" 융합 몬스터 카드에 의해 정해진 융합 소재 몬스터를 제외하고,
 PRINTL 그 융합 몬스터 1장을 EX덱에서 융합 소환한다.
 CALLFORM CARD_ABLE(3,지속효과)
 PRINTL ③：이 카드는 함정 내성을 가지고,
@@ -160,7 +160,8 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -298,7 +299,7 @@ ELSEIF 종류 == ターン終了時強制
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
 			SIF !MATCH(RESULTS, "충혹마")
 				CONTINUE
 		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",カウンタ)

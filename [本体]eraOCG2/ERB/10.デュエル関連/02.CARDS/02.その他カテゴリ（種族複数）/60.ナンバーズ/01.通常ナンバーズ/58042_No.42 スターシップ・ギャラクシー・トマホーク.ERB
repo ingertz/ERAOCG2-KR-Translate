@@ -1,0 +1,230 @@
+﻿@CARDNAME_58042,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = No.42 스타쉽 갤럭시 토마호크
+	CASE "略称"
+		RESULTS = #42 갤토마
+	CASE "カテゴリ"
+		RESULTS:0 = 넘버즈
+		RESULTS:1 = 갤럭시
+ENDSELECT
+
+
+@CARD_58042(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 3000
+	CASE "生成カード"
+		RETURN 158042
+	CASE "추가日"
+		RETURN 250712
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_58042(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 7
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,58042) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_58042(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨７ 몬스터×２
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ①：１턴에 １번、이 카드의 Ｘ소재를 ２개 제거하고 발동할 수 있다。
+PRINTL 자신 필드에 "배틀 이글 토큰"을 가능한 한 특수 소환한다。
+PRINTL 이 효과로 특수 소환한 토큰은 이 턴의 엔드 페이즈에 파괴된다。
+PRINTL 이 효과의 발동 후、턴 종료시 까지 상대가 받는 전투 데미지는 ０이 된다。
+
+
+@CARDSUMMON_AA_58042
+
+SETCOLOR C_ORANGE
+PRINT 　　　　　　　　　　　　　　　　　　 
+PRINTL 　　　　　　　　　　　　　　　　　　　　　
+PRINT 　　　　　　　　　　　　 ／￣￣￣＼　
+PRINTL 　　　　　　　　 ／￣￣￣￣￣￣￣￣＼　　 
+PRINT 　　　　　　　　　　　 ／　　　　　│
+PRINTL 　　　　　　　 ／　　　　　　　　　　＼　 
+PRINT 　　　　　　　　　　 ／　　　　　　│
+PRINTL 　　　　　　 ／　　　　　　　　　 　　 ＼ 
+PRINT 　　　　　　　　　 ／　　　　　　　│
+PRINTL 　　　　　　│　　 　／￣￣￣￣＼　　　 │
+PRINT 　　　　　　　　 ／　　　　　　　　│
+PRINTL 　　　　　　│　　　│　／￣＼　│　　　│
+PRINT 　　　　　　　 ／　　　　／│　　　│
+PRINTL 　　　　　　│　　　│（　　　）│　　　│
+PRINT 　　　　　　 ／　　　　／  │　　　│
+PRINTL 　　　　　　 ＼＿＿／ 　＼＿／　 ＼＿＿／ 
+PRINT 　　　　　 ／　　　　／　　│　　　│
+PRINTL 　　　　　　　　　　　　　　　 　　　　　 
+PRINT 　　　　 ／　　　　∠二二ヽ│　　　│
+PRINTL 　　　　　　　　　　　／￣￣￣＼　　　　　
+PRINT 　　　　(　　　　　　　　)ﾉ│　　　│
+PRINTL 　　　　　　　　　　／　　　　／　　　　　
+PRINT 　　　　 ＼＿＿＿＿＿＿／   ＼＿＿／ 
+PRINTL 　　　　　　　　 ／　　　　 ／　　　　　　
+PRINT 　　　　　　　　　　　　　　　　　　 
+PRINTL 　　　　　　　 ／　　　　 ∠二二二二二二ヽ
+PRINT 　　　　　　　　　　　　　 　／￣＼　
+PRINTL 　　　　　　　│　　　　　　　　　　　　│
+PRINT 　　　　　　　　　　　　　　(　　　) 
+PRINTL 　　　　　　　 ＼＿＿＿＿＿＿＿＿＿＿＿／ 
+PRINT 　　　　　　　　　　　　　　 ＼＿／　
+PRINTL 　　　　　　　　　　　　　　　　　　　　　
+RESETCOLOR
+WAIT
+
+
+@CARDCAN_58042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58042)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,58042)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,58042,"")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_58042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 특수소환数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58042,1,X消費1)
+	IF RESULT == 0
+		특수소환数 = 5 - モンスター数(듀얼리스트)
+		REPEAT 특수소환数
+			CALL FULLRESET
+			효과추가종류 = 効追終破
+			CALL CARD_GENERATE(듀얼리스트,158042)
+		REND
+		CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ無効",1,1)
+	ENDIF
+ENDIF
+
+;--------------------------------------------------------------------------------------------------
+
+@CARDNAME_158042,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 배틀 이글 토큰
+	CASE "略称"
+		RESULTS = 배틀 이글
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_158042(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 0
+	CASE "トークン"
+		RETURN 1
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_158042(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+PRINTL "Ｎｏ.４２ 스타쉽 갤럭시 토마호크"의 효과로 특수소환된다。
+PRINTL 
+PRINTL 
+
+
+@CARDCAN_158042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+RETURN 0

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 보옥의 기적
+		RESULTS = 보옥의 기적
 	CASE "略称"
-RESULTS = 보옥의 기적
+		RESULTS = 보옥의 기적
 	CASE "カテゴリ"
-RESULTS:0 = 보옥
+		RESULTS:0 = 보옥
 ENDSELECT
 
 
@@ -24,8 +24,6 @@ VARSET RESULTS
 SELECTCASE 参照先
 	CASE "종류"
 		RETURN 通常함정
-	CASE "C불가"
-		RETURN 1
 	CASE "추가日"
 		RETURN 250401
 ENDSELECT
@@ -67,9 +65,8 @@ SIF RESULT == 1
 IF 종류 == 발동誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0	
 
 	CALL FULLRESET
@@ -107,6 +104,8 @@ ELSEIF 종류 == 효과後誘発
 	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ELSEIF 종류 == チェーン可否
 	RETURN 1
 ENDIF
 

@@ -1,0 +1,325 @@
+﻿@CARDNAME_4807,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 행운의 에헤카틀
+	CASE "略称"
+		RESULTS = 에헤카틀
+	CASE "カテゴリ"
+		RESULTS:0 = 이르바의 신
+		RESULTS:2 = Elona
+ENDSELECT
+
+
+@CARD_4807(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 신속성
+	CASE "종족"
+		RETURN 환신야수족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "소환불가"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+	CASE "生成カード"
+		RETURN 14807
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4807(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드의 효과 발동에 대해 상대는 효과를 발동할 수 없다.
+PRINTL 이 카드는 특수 소환할 수 없으며, 필드의 몬스터 10장을 릴리스하는 것으로 소환할 수 있다.
+CALL CARD_ABLE(0,ターン開始時強制)
+PRINTL ①: 스탠바이 페이즈에 발동한다.
+PRINTL 주사위를 2개 굴리고, 이 카드의 공격력, 수비력은 턴 종료시까지 나온 눈의 수× 1000이 된다.
+CALL CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ②: 자신 / 상대 턴에 1번 발동할 수 있다.
+PRINTL 주사위를 1번 굴린다.
+PRINTL 그 후, 이 카드 이외의 필드의 몬스터를 전부 파괴하고, [파괴한 수] × [나온 눈] × 100의 데미지를 서로 받는다.
+CALL CARD_ABLE(0,戦破壊→묘지)
+PRINTL ③: 이 카드가 상대에 의해 필드에서 벗어났을 경우에 발동할 수 있다.
+PRINTL "에헤카틀 속의 신"이 강림한다.
+
+
+@CARDCAN_4807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4807)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과소환
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 10
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン開始時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC ダメージ修正
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과소환
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件複数 = 10
+	CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン開始時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4807)
+	IF RESULT == 0
+		 
+		CALL DICE_ROLL(듀얼리스트,1)
+		攻撃力修正 += RESULT
+		CALL DICE_ROLL(듀얼리스트,1)
+		攻撃力修正 += RESULT
+		攻撃力修正 = 攻撃力修正 * 1000
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"一攻",攻撃力修正)
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"一守",攻撃力修正)
+		IF 攻撃力修正 >= 10000
+			SETCOLOR C_YELLOW
+			PRINTW "たらばがに！"
+			RESETCOLOR
+		ELSE
+			SETCOLOR C_YELLOW
+			PRINTW "うっみゅ-うみゅうみゅ。"
+			RESETCOLOR
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4807,10)
+	IF RESULT == 0
+		SETCOLOR C_YELLOW
+		PRINTW "うみみゃぁ！"
+		RESETCOLOR
+		CALL DICE_ROLL(듀얼리스트,1)
+		ダメージ修正 = RESULT * 100
+		CALL FULLRESET
+		효과条件他所 = 1
+		효과추가종류 = 11
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지",91006,ダメージ修正)
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4807)
+	IF RESULT == 0
+		SETCOLOR C_YELLOW
+		PRINTW "…ぅっぅぅ…っぅぅっぅううううみみゃぁ！！！"
+		RESETCOLOR
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,14807)
+	ENDIF
+ENDIF
+
+
+
+@CARDNAME_14807,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 에헤카틀 속의 신
+	CASE "略称"
+		RESULTS = Ehekatl of Luck
+	CASE "カテゴリ"
+		RESULTS:0 = 이르바의 신
+ENDSELECT
+
+
+@CARD_14807(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 신속성
+	CASE "종족"
+		RETURN 환신야수족
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 5000
+	CASE "守備力"
+		RETURN 5000
+	CASE "성별"
+		RETURN 牝性
+	CASE "소환불가"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_14807(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "행운의 에헤카틀"의 효과로만 필드에 강림할 수 있다.
+PRINTL 이 카드의 효과 발동에 대해 상대는 효과를 발동할 수 없다.
+CALL CARD_ABLE(0,지속효과)
+PRINTL ①: 이 카드는 1턴에 5번 공격할 수 있다.
+CALL CARD_ABLE(0,攻撃後強制誘発)
+PRINTL ②: 이 카드가 상대 몬스터를 전투로 파괴했을 경우, 상대에게 2000 데미지를 준다.
+CALL CARD_ABLE(0,발동誘発)
+PRINTL ③: 상대의 효과가 발동했을 때에 발동할 수 있다.
+PRINTL 그 효과를 무효로 하고 파괴하며, 자신은 1000 LP를 잃는다.
+
+@CARDCAN_14807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,14807)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_14807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻撃後強制誘発
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",2000,1)
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,14807)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지",14807)
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",1000)
+		RETURN 1
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",4)
+ENDIF

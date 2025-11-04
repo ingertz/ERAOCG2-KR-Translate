@@ -1,0 +1,141 @@
+﻿@CARDNAME_28715,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 다마 두시저
+	CASE "略称"
+		RESULTS = 다마 두시저
+	CASE "カテゴリ"
+		RESULTS:0 = 마도구
+		RESULTS:4 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_28715(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+	CASE "추가日"
+		RETURN 251022
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28715(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②③의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환에 성공된 경우에 발동할 수 있다。
+PRINTL 상대 필드의 몬스터 １장의 공격력을 ２０００포인트 내린다。
+PRINTL 이 효과로 공격력이 ０이된 경우、추가로 그 몬스터를 파괴한다。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：필드의 이 카드를 릴리스하고 발동할 수 있다。
+PRINTL 덱에서 "마도구" 몬스터 １장을 특수 소환한다。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：이 카드가 묘지에 존재하고、자신의 "마도구" "돌스자크" 몬스터가 파괴된 경우에 발동할 수 있다。
+PRINTL 이 카드를 묘지에서 특수 소환한다。
+
+@CARDCAN_28715(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28715)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,28715)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 마도구
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,28715)
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ:0 = 마도구
+	효과条件カテゴリ:1 = 돌스자크
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,28715,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28715(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 攻撃力修正
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28715)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		효과추가종류 = 11
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"永攻DOWN",2000)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28715,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 마도구
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28715,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, ゾーン, 場所)
+	ENDIF
+ENDIF
+

@@ -88,9 +88,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 ||
 ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") > 1
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -158,15 +157,15 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 ||
 		ENDIF
 		PRINTFORML
 		PRINTFORML
-		PRINTFORMW %듀얼리스트%는 %조교대상名前%의 덱에 가르친"E.R.ANSOM 웜"을 없애는 것을 대상으로 해서 %조교대상名前%을 위협했다.
+		PRINTFORMW %듀얼리스트%는 %조교대상名前%의 덱에 집어넣은 "E.R.ANSOM 웜"을 없애는 것을 대상으로 %조교대상名前%을 위협했다.
 		PRINTFORML
 		IF 対面者 == "자신"
 			PRINTL
 			PRINTFORML 적용하는 효과를 선택해 주세요.
 			PRINTL
-			PRINTFORML [0] - ●덱의 맨위와 패에 랜덤으로"MC"통상 마법 카드를 1장씩 생성한다.
+			PRINTFORML [0] - ●덱의 맨위와 패에 랜덤으로 "MC"통상 마법 카드를 1장씩 생성한다.
 			SETCOLOR C_GRAY
-			PRINTFORML (1) - ●듀얼에 지면 데이트 약속을 하는 일로, 덱으로 부터"ERANSOM 웜"1장을 패에 넣는다（%조교대상名前%가 요구하지 않았다）
+			PRINTFORML (1) - ●듀얼에 지면 데이트 약속을 하는 것으로, 덱으로 부터"ERANSOM 웜"1장을 패에 넣는다（%조교대상名前%가 요구하지 않았다）
 			RESETCOLOR
 			PRINTFORML
 			BINPUT
@@ -199,7 +198,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 ||
 			ENDIF
 			選択カード_ID = 79840 + RAND:9
 			SETVAR @"%対面者%_덱:0", 選択カード_ID
-			CALLFORM CARDNAME_{選択カード_ID}, "名前"
+			CALLFORM CARDNAME_{選択カード_ID}("名前")
 			PRINTFORMW %対面者%의 덱 탑에 %RESULTS%가 더해졌다!
 
 			選択カード_ID = 79840 + RAND:9
@@ -250,7 +249,7 @@ ELSEIF 종류 == 지속효과
 ELSEIF 종류 == ターン終了時強制
 	PRINTL
 	PRINTL
-	PRINTFORML %対面者%가 보통의 요구를 물은 일로, 해킹을 한 번 해제 해주었다.
+	PRINTFORML %対面者%가 보통의 요구를 물은 것으로, 해킹을 한 번 해제 해주었다.
 	PRINTL
 	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 	CALL FULLRESET

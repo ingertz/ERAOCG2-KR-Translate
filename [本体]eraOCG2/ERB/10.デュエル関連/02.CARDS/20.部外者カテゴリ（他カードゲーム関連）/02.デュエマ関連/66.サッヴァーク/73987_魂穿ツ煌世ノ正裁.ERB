@@ -62,15 +62,10 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,73987)
 		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
@@ -162,7 +157,7 @@ ELSEIF 종류 == 발동誘発
 		CALL FULLRESET
 		효과範囲필드 = 1
 		효과条件종족 = 드래곤족
-		효과条件カテゴリ = メタリカ
+		효과条件カテゴリ = 메탈리카
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET

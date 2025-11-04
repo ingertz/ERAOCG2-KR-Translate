@@ -66,13 +66,8 @@ CALL 装備판정(듀얼리스트,場所,ゾーン)
 装備先 = RESULT
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -151,7 +146,7 @@ ELSEIF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"破耐")
 ELSEIF 종류 == 攻守変動
 	CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,400)
-	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}, "종류"
+	TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("종류")
 	SIF RESULT == 융합
 		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,600)
 	

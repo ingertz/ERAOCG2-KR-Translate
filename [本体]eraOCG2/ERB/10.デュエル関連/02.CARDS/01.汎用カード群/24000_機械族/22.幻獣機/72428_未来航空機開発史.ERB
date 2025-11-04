@@ -1,0 +1,181 @@
+﻿@CARDNAME_72428,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미래항공기 개발사
+	CASE "略称"
+		RESULTS = 개발사
+	CASE "カテゴリ"
+		RESULTS:0 = 환상수기
+		RESULTS:1 = 구전
+ENDSELECT
+
+
+@CARD_72428(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "生成カード"
+		RETURN 124210
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_72428(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드는 룰상 "환상수기" 카드、"구전" 카드로도 취급한다。
+PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
+;발동時サーチ
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：이 카드의 발동시의 효과 처리로서、
+PRINTL 덱에서 "미래항공기 개발사" 이외의 "환상수기" 카드 또는 "구전" 카드 １장을 패에 넣을 수 있다。
+;액셀싱크로
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ②：자신 필드에 "환상수" 몬스터가 존재하고、상대가 효과를 발동했을 때에 패를 １장 버리고 발동할 수 있다。
+PRINTL 자신 필드에 "환상수기 토큰" １장을 튜너 취급으로 특수 소환한다。
+PRINTL 그 후、자신 필드의 몬스터를 소재로서 기계족 또는 야수족 Ｓ몬스터 １장을 Ｓ소환한다。
+;대상耐性付与
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：자신 필드에 "환상수" Ｓ몬스터가 존재하는 한、
+PRINTL 자신 필드의 "환상수" 몬스터는 상대의 효과의 대상이 되지 않는다。
+
+
+@CARDCAN_72428(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72428)
+SIF RESULT == 1
+	RETURN 0
+;발동時サーチ
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,72428)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+;액셀싱크로
+ELSEIF 종류 == 발동誘発
+
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,72428)
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,124210,"")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 환상수
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	RETURN 1
+;대상耐性付与
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 환상수
+	효과条件종류 = 싱크로
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72428(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;발동時サーチ
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72428,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ:0 = 환상수기
+		효과条件カテゴリ:1 = 구전
+		효과条件固名前 = 미래항공기 개발사
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+;액셀싱크로
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72428,2)
+	IF RESULT == 0
+		CALL FULLRESET
+;		효과範囲필드 = 1
+;		효과条件カテゴリ = 환상수
+;		효과条件任意 = 1
+;		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"一Ｔ",1)
+;		IF 選択カード != 9999
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			CALL FULLRESET
+			효과추가종류 = 効追永Ｔ
+			CALL CARD_GENERATE(듀얼리스트,124210)
+
+			CALL FULLRESET
+			효과条件종류 = 싱크로
+			효과条件종족:0 = 야수족
+			효과条件종족:1 = 기계족
+			효과条件任意 = 1
+			효과条件소환可 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+				CALL SYNSUMMON(듀얼리스트, 選択カード)
+			ENDIF
+;		ENDIF
+	ENDIF
+;대상耐性付与
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 환상수
+	효과条件종류 = 싱크로
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과条件カテゴリ = 환상수
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+	ENDIF
+ENDIF

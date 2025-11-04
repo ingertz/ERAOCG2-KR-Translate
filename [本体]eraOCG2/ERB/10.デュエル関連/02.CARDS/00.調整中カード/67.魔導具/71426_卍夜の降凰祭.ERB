@@ -27,6 +27,8 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "종류"
 		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251022
 ENDSELECT
 
 RETURN 0
@@ -66,8 +68,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
+	IF 종류 == 마함起動
+		SIF 손패数(듀얼리스트) == 0
+			RETURN 0
+	ELSEIF 종류 == 손패起動
+		SIF 손패数(듀얼리스트) <= 1
 		RETURN 0
+	ENDIF
 	CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件종류 = モン全般
@@ -142,6 +149,7 @@ ELSEIF 종류 == ターン終了時
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
 		CALL FULLRESET
 		효과範囲묘지 = 1
+		효과範囲필드 = 1
 		효과条件カテゴリ = 마도구
 		효과条件複数 = 4
 		효과条件行先플래그 = 덱行き
@@ -149,6 +157,7 @@ ELSEIF 종류 == ターン終了時
 		IF RESULT == 1
 			CALL FULLRESET
 			효과範囲덱 = 1
+			효과範囲묘지 = 1
 			효과条件カテゴリ = 돌스자크
 			효과条件종류 = モン全般
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)

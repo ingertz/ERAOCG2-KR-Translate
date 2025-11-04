@@ -30,7 +30,7 @@ RETURN 0
 @CARD_EXPLANATION_82175(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의  카드는 1턴에 1장 밖에 발동할 수 없다.
+PRINTL 이 카드명의 카드는 1턴에 1장 밖에 발동할 수 없다.
 PRINTL 이 카드는 자신 필드의 앞면 표시의 "M∀LICE" 몬스터 1장을 제외하고,
 PRINTL 세트 한 턴에 발동할 수 있다.
 CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
@@ -59,17 +59,9 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,82175)
 		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件カテゴリ = 맬리스
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT == 1 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
-			RETURN 0
-		특수발동 = 1
-	ELSEIF RESULT == 0 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+    SIF RESULT != 1
 		RETURN 0
-	ENDIF
 
 	CALL FULLRESET
 	효과範囲덱 = 1
@@ -91,6 +83,18 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		ENDIF
 	ENDIF
 
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 맬리스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
 	RETURN 1
 ENDIF
 
@@ -144,5 +148,8 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		효과추가종류:1 = 効追一無
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"発可")
 ENDIF
 

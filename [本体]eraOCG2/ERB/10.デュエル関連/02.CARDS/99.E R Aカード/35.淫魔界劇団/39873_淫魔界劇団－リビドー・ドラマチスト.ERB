@@ -7,13 +7,13 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마계극단－리비도 드라마티스트
+		RESULTS = 음마계극단－리비도 드라마티스트
 	CASE "略称"
-RESULTS = 음마드라마티스트
+		RESULTS = 음마드라마티스트
 	CASE "カテゴリ"
-RESULTS:0 = 마계극단
-RESULTS:1 = 음마계극단
-RESULTS:2 = E.R.A
+		RESULTS:0 = 마계극단
+		RESULTS:1 = 음마계극단
+		RESULTS:2 = E.R.A
 ENDSELECT
 
 
@@ -54,15 +54,15 @@ CALL TEXT_DECORATION("ROGUE")
 CALLFORM CARD_ABLE(0,손패起動)
 CALL TEXT_DECORATION("P_MAGIC")
 PRINTL 이 카드명의 ①의 P 효과는 1턴에 1번밖에 사용할 수 없다.
-CALLFORM CARD_ABLE(1,효과後強制誘発)
-PRINTL ①: 자신 필드의 암컷 몬스터가 효과를 발동했을 경우에 발동한다.
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①: 자신의 마법 / 함정 카드의 효과가 발동했을 경우에 발동할 수 있다.
 PRINTL 이 카드를 마법 & 함정 존에서 특수 소환한다.
 CALL TEXT_DECORATION("P_MAGIC_2")
 PRINTL 이 카드명의 ①②의 몬스터 효과는 1턴에 1번밖에 사용할 수 없다.
-CALLFORM CARD_ABLE(2,소환時強制,특수소환時強制)
-PRINTL ①: 이 카드가 소환 / 특수 소환했을 경우에 발동한다.
-PRINTL 덱에서, "음마계대본" 마법 / 함정 카드 1장을 패에 더할 수 있다.
-PRINTL 더하지 않았을 경우, 상대 필드에 세트된 마법 / 함정 카드 1장을 파괴한다.
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ①: 이 카드가 소환 / 특수 소환했을 경우에 발동할 수 있다.
+PRINTL 덱에서, "음마계대본" 마법 / 함정 카드 1장을 패에 넣을 수 있다.
+PRINTL 넣지 않았을 경우, 상대 필드에 세트된 마법 / 함정 카드 1장을 파괴한다.
 CALLFORM CARD_ABLE(3,戦破壊→묘지)
 PRINTL ②: 몬스터 존의 이 카드가 EX덱으로 보내졌을 경우에 발동할 수 있다.
 PRINTL 자신 묘지의 "음마계대본" 마법 / 함정 카드 1장을 덱으로 되돌리고,
@@ -88,30 +88,17 @@ SIF RESULT == 1
 
 ;P
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	IF 듀얼리스트 != "자신"
-		CALL FULLRESET
-		효과範囲마함 = 1
-		효과条件名前 = 음마계극단－리비도 드라마티스트
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT == 1
-			RETURN 0
-	ENDIF
 	RETURN 1
-ELSEIF 종류 == 효과後強制誘発
+ELSEIF 종류 == 효과後誘発
 	SIF 발동済_1(듀얼리스트,39873)
 		RETURN 0
 	SIF ゾーン != "마함"
 		RETURN 0
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件성별 = 牝性
-	;효과条件固名前 = 음마계극단－리비도 드라마티스트
+	효과条件종류 = 마함全般
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
 	SIF RESULT != 1
 		RETURN 0
@@ -120,7 +107,7 @@ ELSEIF 종류 == 효과後強制誘発
 		RETURN 0
 	RETURN 1
 ;M
-ELSEIF 종류 == 소환時強制 || 종류 == 특수소환時強制
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	SIF 발동済_2(듀얼리스트,39873)
 		RETURN 0
 	RETURN 1
@@ -164,7 +151,7 @@ IF 종류 == 손패起動
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
 	ENDIF
 
-ELSEIF 종류 == 효과後強制誘発
+ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39873,1)
 	IF RESULT == 0
 		PRINTFORMW
@@ -172,7 +159,7 @@ ELSEIF 종류 == 효과後強制誘発
 		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン, 場所)
 	ENDIF
 ;モンスター효과-------------------------
-ELSEIF 종류 == 소환時強制 || 종류 == 특수소환時強制
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39873,2)
 	IF RESULT == 0
 		PRINTFORMW

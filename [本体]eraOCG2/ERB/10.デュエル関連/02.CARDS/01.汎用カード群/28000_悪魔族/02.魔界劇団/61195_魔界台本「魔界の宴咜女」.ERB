@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 마계대본 "마계의 엔터메"
+		RESULTS = 마계대본 "마계의 엔터메"
 	CASE "略称"
-RESULTS = "마계의엔터메"
+		RESULTS = "마계의엔터메"
 	CASE "カテゴリ"
-RESULTS:0 = 마계대본
+		RESULTS:0 = 마계대본
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속마법
 ENDSELECT
 
@@ -81,22 +80,20 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF 마함数(듀얼리스트) >= 5
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 破壊→묘지
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
 	CALL FULLRESET
 	효과範囲EX덱 = 1
 	효과条件カテゴリ = 마계극단
 	효과条件分割 = 펜듈럼
+	효과条件종류 = EX以外全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

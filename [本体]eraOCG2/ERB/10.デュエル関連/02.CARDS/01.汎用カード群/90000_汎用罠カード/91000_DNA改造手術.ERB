@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = DNA 개조 수술
+		RESULTS = DNA 개조 수술
 	CASE "略称"
-RESULTS = DNA 개조 수술
+		RESULTS = DNA 개조 수술
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -53,9 +52,8 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 攻守変動
@@ -83,31 +81,31 @@ IF 종류 == 마함起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91000)
 	IF RESULT == 0
 		IF 듀얼리스트 == "자신"
-PRINTL 효과를 선택해 주세요
+			PRINTL 효과를 선택해 주세요
 			PRINT [01] - 마법사족　
 			PRINT [02] - 드래곤족　
-PRINTL [03] - 언데드족
+			PRINTL [03] - 언데드족
 			PRINT [04] - 전사족　　　
 			PRINT [05] - 기계족　　　
-PRINTL [06] - 야수족
+			PRINTL [06] - 야수족
 			PRINT [07] - 비행야수족　　　
 			PRINT [08] - 비늘야수족　　　
-PRINTL [09] - 악마족
+			PRINTL [09] - 악마족
 			PRINT [10] - 천사족　　　
 			PRINT [11] - 곤충족　　　
-PRINTL [12] - 원소정령족
+			PRINTL [12] - 원소정령족
 			PRINT [13] - 식물족　　　
 			PRINT [14] - 사이킥족
-PRINTL [15] - 사이버스족
+			PRINTL [15] - 사이버스족
 			PRINT [16] - 바다생물족　　　
 			PRINT [17] - 미확인족　　
-PRINTL [20] - 환신야수족
+			PRINTL [20] - 환신야수족
 			BINPUT
 		ELSE
 			RESULT = RAND:17 + 1
 		ENDIF
 		選択효과 = RESULT
-		PRINTFORML %GET_TALENTNAME(191,選択효과)%が選ばれました。
+		PRINTFORML %GET_TALENTNAME(191,選択효과)%가 선택되었습니다。
 		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"汎数",選択효과)
 	ENDIF
 ELSEIF 종류 == 攻守変動

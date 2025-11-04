@@ -1,0 +1,141 @@
+@CARDNAME_28252,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = エッジインプ・サイズ
+	CASE "略称"
+		RESULTS = EI・サイズ
+	CASE "カテゴリ"
+		RESULTS:0 = エッジインプ
+ENDSELECT
+
+
+@CARD_28252(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 0
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28252(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,手札起動)
+PRINTL ①：相手メインフェイズに、手札のこのカードを相手に見せて発動できる。
+PRINTL 自分の手札・フィールドから、
+PRINTL 「デストーイ」融合モンスターカードによって決められた手札のこのカードを含む融合素材モンスターを墓地へ送り、
+PRINTL その融合モンスター１体をＥＸデッキから融合召喚する。
+CALL CARD_ABLE(0,身代効果)
+PRINTL ②：自分フィールドの「デストーイ」融合モンスターが戦闘・効果で破壊される場合、
+PRINTL 代わりに墓地のこのカードを除外できる。
+
+@CARDSUMMON_AA_28252
+
+
+@CARDCAN_28252(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,28252)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,28252)
+		RETURN 0
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF ターンプレイヤー == 決闘者
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL CARD_EX_CHECK(決闘者,0)
+	SIF RESULT == 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲戦場 = 1
+	素材範囲手札 = 1
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件カテゴリ = デストーイ
+	効果条件種類 = 融合
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 身代効果
+	SIF 発動済_2(決闘者,28252)
+		RETURN 0
+	SIF ゾーン != "墓地"
+		RETURN 0
+	TRYCALLFORM CARDNAME_{破壊対象ID}("カテゴリ")
+	SIF !MATCH(RESULTS,"デストーイ")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28252(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28252,1)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲戦場 = 1
+		素材範囲手札 = 1
+		素材条件素材ID起動 = 1
+		CALL FULLRESET
+		効果条件カテゴリ = デストーイ
+		効果条件種類 = 融合
+		効果条件召喚可 = 1
+		CALL CARD_CHOOSE_BASIC(決闘者,"EXデッキ",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{選択カード}(決闘者,選択カード)
+			CALL FUSSUMMON(決闘者,選択カード)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 身代効果
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,28252)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,除外行き)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF
+

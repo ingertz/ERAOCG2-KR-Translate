@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 암드 드래곤 라이트닝
+		RESULTS = 암드 드래곤 라이트닝
 	CASE "略称"
-RESULTS = 암드드래곤 뇌정
+		RESULTS = 암드드래곤 뇌정
 	CASE "カテゴリ"
-RESULTS:0 = 암드 드래곤
+		RESULTS:0 = 암드 드래곤
 ENDSELECT
 
 
@@ -72,13 +72,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -87,7 +82,7 @@ ELSEIF 종류 == 身代효과
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
-	TRYCALLFORM CARDNAME_{破壊대상ID},"カテゴリ"
+	TRYCALLFORM CARDNAME_{破壊대상ID}("カテゴリ")
 	SIF !GROUPMATCH(RESULTS,"암드 드래곤")
 		RETURN 0
 	SIF !GROUPMATCH(ゾーン,"필드","묘지")

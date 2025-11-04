@@ -35,16 +35,16 @@ RETURN 0
 #DIMS DYNAMIC 듀얼리스트
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  ②의 효과는 1턴에 1번밖에 사용할 수 없다.。
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.。
 CALL CARD_ABLE(0,발동誘発)
-PRINTL ①：자신 몬스터 존에 「인디센츄리온」 몬스터가 존재하는 상태에서
+PRINTL ①：자신 몬스터 존에 "인디센츄리온" 몬스터가 존재하는 상태에서
 PRINTL 상대 남성 몬스터의 효과가 발동했을 때에 발동할 수 있다。
 PRINTL 필드의 엑시즈 소재 1개를 제거하고, 그 발동을 무효로 해 파괴한다。
 PRINTL 그 후, 자신은 이 효과로 파괴한 남성 몬스터의 원래 수비력만큼 라이프를 회복한다。
 CALL CARD_ABLE(2,묘지起動)
 PRINTL ②：묘지의 이카드를 제외하고 발동할 수 있다。
-PRINTL 자신 묘지에 「인디센츄리온」 엑시즈 몬스터 1장을 엑스트라 덱으로 되돌리고,
-PRINTL 자신 제외 상태에 「인디센츄리온」싱크로 몬스터 1장을 특수 소환한다。
+PRINTL 자신 묘지에 "인디센츄리온" 엑시즈 몬스터 1장을 엑스트라 덱으로 되돌리고,
+PRINTL 자신 제외 상태에 "인디센츄리온" 싱크로 몬스터 1장을 특수 소환한다。
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDCAN_99693(듀얼리스트,종류,ゾーン,場所)
@@ -117,9 +117,8 @@ ELSEIF 종류 == 묘지起動
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -157,12 +156,12 @@ IF 종류 == 발동誘発
 			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード（CS）,"Ｘ",-1)
 			CALL FULLRESET
 			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
-			TRYCALLFORM CARD_{他参照選択カードID},"성별"
+			TRYCALLFORM CARD_{他参照選択カードID}("성별")
 			IF RESULT == 雄性
-				TRYCALLFORM CARD_{他参照選択カードID},"攻撃力"
+				TRYCALLFORM CARD_{他参照選択カードID}("攻撃力")
 				数値보존 = RESULT
 				IF オプション_特定素材이벤트 == 1
-					TRYCALLFORM CARDNAME_{他参照選択カードID},"名前"
+					TRYCALLFORM CARDNAME_{他参照選択カードID}("名前")
 					IF RESULTS != ""
 						PRINTFORML
 						SETCOLOR C_PINK

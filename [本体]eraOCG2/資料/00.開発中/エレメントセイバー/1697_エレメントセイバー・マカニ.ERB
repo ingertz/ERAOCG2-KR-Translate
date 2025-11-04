@@ -1,0 +1,216 @@
+﻿@CARDNAME_1697,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = エレメントセイバー・マカニ
+	CASE "略称"
+		RESULTS = ElmS・マカニ
+	CASE "カテゴリ"
+		RESULTS:0 = エレメントセイバー
+		RESULTS:1 = エレメント
+		;カテゴリ縛りのSS、EX召喚のために設定
+		RESULTS:4 = 霊神
+ENDSELECT
+
+
+@CARD_1697(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 戦士族
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1300
+	CASE "守備力"
+		RETURN 1200
+	CASE "霊神属性"
+		RETURN 1
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1697(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。自分のデッキから「霊神」・「エレメントセイバー」モンスター１体を墓地へ送る。
+PRINTL その後、この効果で墓地へ送ったモンスターと同じ属性を持つ相手フィールドのモンスター１体を選び、攻撃力・守備力を５００ダウンする事ができる。
+CALLFORM CARD_ABLE(10,戦場起動)
+PRINTL ②：１ターンに１度、手札から「エレメントセイバー」モンスター１体を墓地へ送って発動できる。
+PRINTL 自分のデッキから「エレメントセイバー・マカニ」以外の「エレメントセイバー」モンスター１体を手札に加える。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ③：墓地のこのカードは全ての属性のモンスターとして扱う。
+
+;「エレメントセイバー」モンスターのサーチ効果を持つ重要な潤滑役をこなす女戦士。出たとき効果でもデッキに触ってくれるようになっている。
+;サーチ効果は手札コストがあるためアドバンテージを稼げているわけではないが、デッキ内のテーマモンスターを自由に墓地や手札に移動させる効果はちゃんと有能。
+;ほぼおまけのような相手の攻守ダウンは「相手に合わせて属性を選ぶ」という要素をつけるために追加している。ささやかな効果だがこのぐらいが丁度いいだろう。
+
+;なお、「マカニって男（男の娘）じゃね？」という意見も当然あると思うが、それに対して女の子であることを盤石とする完璧な回答は準備されている。
+;中国語版ＭＤのマカニは「元素軍刀 瑪卡妮」というカード名の表記であり、この「妮」という字は「女の子、少女」という意味の漢字である。Q.E.D.
+
+
+@CARDCAN_1697(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 追加条件フラグ = 0
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,1697)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,1697)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ:0 = 霊神
+	効果条件カテゴリ:1 = エレメントセイバー
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 効果発動済(決闘者,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠 = 1
+	効果条件名前 = 霊神の聖殿
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1 && !(発動済_3(決闘者,71705))
+		追加条件フラグ |= 1
+	CALL FULLRESET
+	効果範囲手札 = 1
+	SIF 追加条件フラグ & 1
+		効果範囲デッキ = 1
+	効果条件カテゴリ = エレメントセイバー
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = エレメントセイバー
+	効果条件種類 = モン全般
+	効果条件固名前 = エレメントセイバー・マカニ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1697(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 追加条件フラグ = 0
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 墓地送り属性
+#DIM DYNAMIC 手札枚数＿前
+#DIM DYNAMIC 手札枚数＿後
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,1697,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ:0 = 霊神
+		効果条件カテゴリ:1 = エレメントセイバー
+		効果条件種類 = モン全般
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			;相手の攻守ダウンの追加効果の処理
+			カードID = RESULT:1
+			TRYCALLFORM CARD_{カードID}, "属性"
+			墓地送り属性 = RESULT
+			CALL FULLRESET
+			効果範囲相手戦場 = 1
+			効果条件属性 = 墓地送り属性
+			効果条件種類 = モン全般
+			効果条件除去種 = 永攻DOWN
+			CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+			IF RESULT == 1
+				;属性の合った相手フィールドのモンスター１体を選んで攻守500ダウン。追加種類=10で守備もダウンする
+				CALL FULLRESET
+				効果範囲相手戦場 = 1
+				効果条件属性 = 墓地送り属性
+				効果条件種類 = モン全般
+				効果追加種類 = 10
+				効果条件任意 = 1
+				CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"永攻DOWN",500)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,1697,10)
+	IF RESULT == 0
+		手札枚数＿前 = 手札数(決闘者)
+		CALL FULLRESET
+		効果範囲魔罠 = 1
+		効果条件名前 = 霊神の聖殿
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1 && !(発動済_3(決闘者,71705))
+			追加条件フラグ |= 1
+		;手札のエレメントセイバーを墓地へ送る。(条件次第でデッキからも送れる)
+		CALL FULLRESET
+		効果範囲手札 = 1
+		SIF 追加条件フラグ & 1
+			効果範囲デッキ = 1
+		効果条件カテゴリ = エレメントセイバー
+		効果条件種類 = モン全般
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			;墓地へ送る前後で手札の枚数を確認し、減っていない場合はデッキから送ったと判定し霊神の神殿の効果③を使用した扱いに。
+			手札枚数＿後 = 手札数(決闘者)
+			IF 手札枚数＿前 == 手札枚数＿後
+				;霊神の神殿の効果を発動した！
+				SETCOLOR C_YELLOW
+				PRINTFORML 「霊神の神殿」の効果によってデッキから直接モンスターを墓地へ送った！！
+				RESETCOLOR
+				CALL CARD_EFFECT_USE(決闘者,71705,3)
+			ENDIF
+			;デッキから手札に加える。
+			CALL FULLRESET
+			効果範囲デッキ = 1
+			効果条件カテゴリ = エレメントセイバー
+			効果条件種類 = モン全般
+			効果条件固名前 = エレメントセイバー・マカニ
+			CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

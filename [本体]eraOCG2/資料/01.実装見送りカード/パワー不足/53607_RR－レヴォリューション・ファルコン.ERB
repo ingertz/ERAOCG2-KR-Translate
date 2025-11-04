@@ -37,9 +37,9 @@ SELECTCASE 参照先
 ENDSELECT
 RETURN 0
 
-@CARDSUMMON_53607(決闘者,소환カード,EX参照)
+@CARDSUMMON_53607(決闘者,召喚カード,EX参照)
 #DIMS DYNAMIC 決闘者
-#DIM DYNAMIC 소환カード
+#DIM DYNAMIC 召喚カード
 #DIM DYNAMIC EX参照
 #DIM DYNAMIC カウンタ
 
@@ -49,7 +49,7 @@ CALL RESETCONDITION_MAT
 素材条件種族 = 鳥獣族
 
 IF EX参照 == 1
-	CALL XYZCAN(決闘者,소환カード,53607) 
+	CALL XYZCAN(決闘者,召喚カード,53607) 
 	RETURN RESULT
 ENDIF
 
@@ -59,16 +59,16 @@ ENDIF
 #DIM DYNAMIC 種類
 
 PRINTL 鳥獣族レベル６モンスター×３
-PRINTL 墓地にランク５以下の「RR」Xモンスターが存在する場合、X소환したこのカードは覚醒状態となる。
-PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
+PRINTL 墓地にランク５以下の「RR」Xモンスターが存在する場合、X召喚したこのカードは覚醒状態となる。
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
 CALLFORM CARD_ABLE(1,戦場起動)
 PRINTL ①：このカードのX素材を１つ取り除いて発動できる。
 PRINTL このターン、このカードは相手モンスター全てに１回ずつ攻撃できる。
 CALLFORM CARD_ABLE(0,攻撃時強制誘発)
-PRINTL ②：このカードが特殊소환された表側表示モンスターと戦闘を行う場合に発動する。
+PRINTL ②：このカードが特殊召喚された表側表示モンスターと戦闘を行う場合に発動する。
 PRINTL そのモンスターの攻撃力・守備力を０にする。
 CALLFORM CARD_ABLE(10,戦場起動)
-PRINTL ③：１턴에 １번、覚醒状態のこのカードのX素材を１つ取り除き、相手フィールドのモンスター１体を対象として発動できる。
+PRINTL ③：１ターンに１度、覚醒状態のこのカードのX素材を１つ取り除き、相手フィールドのモンスター１体を対象として発動できる。
 PRINTL そのモンスターを破壊し、その攻撃力の半分のダメージを相手に与える。
 
 @CARDCAN_53607(決闘者,種類,ゾーン,場所)
@@ -85,7 +85,7 @@ CALL 対面者判定(決闘者)
 CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,53607)
 SIF RESULT == 1
 	RETURN 0
-IF 種類 == EX소환時強制 
+IF 種類 == EX召喚時強制 
 	CALL FULLRESET
 	効果範囲墓地 = 1
 	効果条件種類 = エクシーズ
@@ -138,7 +138,7 @@ ENDIF
 CALL 対面者判定(決闘者)
 対面者 = %RESULTS%
 
-IF 種類 == EX소환時強制 
+IF 種類 == EX召喚時強制 
 	CALL SET_FIELD_INFO(決闘者,"戦場",場所,"条達",2,1)
 ELSEIF 種類 == 戦場起動
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,53607,0,X消費1)

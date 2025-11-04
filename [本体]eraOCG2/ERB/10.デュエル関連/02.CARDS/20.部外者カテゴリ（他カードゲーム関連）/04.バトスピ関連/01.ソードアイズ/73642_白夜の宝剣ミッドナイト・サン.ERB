@@ -27,7 +27,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 지속마법
 	CASE "속성"
 		RESULT:1 = 어둠속성
@@ -55,13 +54,13 @@ RETURN 0
 
 PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ①: 이 카드의 속성은 바람・물・불꽃・땅・어둠・빛으로 취급한다.
+PRINTL ①: 이 카드의 속성은 바람 / 물 / 화염 / 땅 / 어둠 / 빛으로 취급한다.
 CALLFORM CARD_ABLE(10,마함起動)
 PRINTL ②: 1턴에 1번, 자신 메인 페이즈에 발동할 수 있다.
 PRINTL 이 카드를 자신의 코스트 5 이상의 몬스터 1체에 장비한다.
 PRINTL (코스트 5는 레벨 / 랭크 / 링크 5의 카드를 가리킨다)
 CALLFORM CARD_ABLE(0,攻守変動)
-PRINTL ③: 이 카드를 장비하고 있는 몬스터의 공격력・수비력은 500 상승하고, 대상 내성과 파괴 내성을 얻는다.
+PRINTL ③: 이 카드를 장비하고 있는 몬스터의 공격력 / 수비력은 500 상승하고, 대상 내성과 파괴 내성을 얻는다.
 
 @CARDCAN_73642(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -102,15 +101,10 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,73642)
 		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 攻守変動 || 종류 == 지속효과

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 셀렌의 주안
+		RESULTS = 셀렌의 주안
 	CASE "略称"
-RESULTS = 셀렌의 주안
+		RESULTS = 셀렌의 주안
 	CASE "カテゴリ"
-RESULTS:0 = 주안
+		RESULTS:0 = 주안
 ENDSELECT
 
 
@@ -62,13 +62,8 @@ CALL 装備판정(듀얼리스트,場所,ゾーン)
 装備先 = RESULT
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -98,6 +93,7 @@ ELSEIF 종류 == 묘지起動
 	효과条件他所 = 1
 	효과条件종류 = 마함全般
 	효과条件カテゴリ = 주안
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -113,7 +109,7 @@ ELSEIF 종류 == 발동強制誘発
 	SIF GETVAR(@"%装備者%_필드:装備先") == -1
 		RETURN 0
 	CALL FULLRESET
-	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("名前")
 	효과条件スーパー名前 = %RESULTS%
 	효과条件カテゴリ = 주안
 	효과条件종류 = 마함全般
@@ -165,7 +161,7 @@ ELSEIF 종류 == 묘지起動
 			CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",500)
 			CALL FULLRESET
 			효과範囲묘지 = 1
-효과条件名前 = 셀렌의 주안
+			효과条件名前 = 셀렌의 주안
 			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF

@@ -135,7 +135,24 @@ NEXT
 選択덱 = 덱リスト:(RAND:カウンタB)
 RETURN 選択덱
 
+;レイ追記20251022
+@CHOOSE_ERA_DECK_RANDOM
+#DIM DYNAMIC 설정
+#DIM DYNAMIC 덱リスト,1000
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択덱
+FOR カウンタ,2,1000
+	VARSET RESULT
+	TRYCALLFORM DUELDECK_{60000 + カウンタ}("存在確認")
+	SIF RESULT != 1
+		CONTINUE
+	덱リスト:カウンタB = 60000 + カウンタ
+	カウンタB ++
+NEXT
 
+選択덱 = 덱リスト:(RAND:カウンタB)
+RETURN 選択덱
 
 @DECK_LIST(설정)
 #DIM DYNAMIC 설정
@@ -288,26 +305,26 @@ IF 덱モード == 1
 
 		VARSET RESULTS
 		IF 마이덱_エース:カウンタ > 0
-			TRYCALLFORM CARDNAME_{마이덱_エース:カウンタ}, "略称"
+			TRYCALLFORM CARDNAME_{마이덱_エース:カウンタ}("略称")
 		ELSE
-			TRYCALLFORM CARDNAME_{마이덱:カウンタ:0}, "略称"
+			TRYCALLFORM CARDNAME_{마이덱:カウンタ:0}("略称")
 		ENDIF	
 		SIF RESULTS != ""
 			PRINTFORM 　[%RESULTS,18,LEFT%]
 		VARSET RESULTS
 		IF 마이덱_アイドル:カウンタ > 0
-			TRYCALLFORM CARDNAME_{마이덱_アイドル:カウンタ}, "略称"
+			TRYCALLFORM CARDNAME_{마이덱_アイドル:カウンタ}("略称")
 		ELSE
-			TRYCALLFORM CARDNAME_{마이덱:カウンタ:14}, "略称"
+			TRYCALLFORM CARDNAME_{마이덱:カウンタ:14}("略称")
 		ENDIF
 		SIF RESULTS != ""
 			PRINTFORM 　[%RESULTS,18,LEFT%]
 		
 		VARSET RESULTS
 		IF 마이덱_切り札:カウンタ > 0
-			TRYCALLFORM CARDNAME_{마이덱_切り札:カウンタ}, "略称"
+			TRYCALLFORM CARDNAME_{마이덱_切り札:カウンタ}("略称")
 		ELSE
-			TRYCALLFORM CARDNAME_{마이덱:カウンタ:29}, "略称"
+			TRYCALLFORM CARDNAME_{마이덱:カウンタ:29}("略称")
 		ENDIF
 		SIF RESULTS != ""
 			PRINTFORM 　[%RESULTS,18,LEFT%]	

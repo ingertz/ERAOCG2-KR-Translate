@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 화이트 아우라 바이하무트
+		RESULTS = 화이트 아우라 바이하무트
 	CASE "略称"
-RESULTS = 백투기쌍두신룡
+		RESULTS = 백투기쌍두신룡
 	CASE "カテゴリ"
-RESULTS:0 = 화이트 아우라
+		RESULTS:0 = 화이트 아우라
 ENDSELECT
 
 
@@ -110,7 +110,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-효과条件名前 = 신룡 토큰
+	효과条件名前 = 신룡 토큰
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
 		RETURN 0
@@ -126,7 +126,7 @@ ELSEIF 종류 == 破壊→묘지
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-효과条件名前 = 신룡 토큰
+	효과条件名前 = 신룡 토큰
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -212,7 +212,18 @@ SELECTCASE 参照先
 		RETURN 3000
 	CASE "튜너"
 		RETURN 1
+	CASE "自動소멸"
+		RETURN 1
 ENDSELECT
+
+
+@CARD_EXPLANATION_157605(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+CALLFORM CARD_ABLE(0,戦闘→묘지, 破壊→묘지)
+
 
 
 @CARDCAN_157605(듀얼리스트,종류,ゾーン,場所)

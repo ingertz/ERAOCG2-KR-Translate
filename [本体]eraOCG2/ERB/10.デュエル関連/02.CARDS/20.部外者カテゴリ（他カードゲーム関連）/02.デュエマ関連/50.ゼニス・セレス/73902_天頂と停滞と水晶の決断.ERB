@@ -27,7 +27,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 速攻마법
 ENDSELECT
 
@@ -84,7 +83,8 @@ ELSEIF 종류 == 攻撃時誘発
 	IF ゾーン == "손패"
 		PRINT
 	ELSEIF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
 	ELSE
 		RETURN 0
@@ -93,7 +93,7 @@ ELSEIF 종류 == 攻撃時誘発
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:戦闘場所(듀얼리스트)")},"カテゴリ"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:戦闘場所(듀얼리스트)")}("カテゴリ")
 	SIF !MATCH(RESULTS, "제니스")
 		RETURN 0
 	RETURN 1
@@ -178,7 +178,7 @@ IF 듀얼리스트 == "자신"
 	PRINTL
 	PRINTL 어떤 결단을 기동하시겠습니까?
 	PRINTL
-	PRINTL [ 1] - 천정 - "제니스""언노운""셀레스" 회수
+	PRINTL [ 1] - 천정 - "제니스" "언노운" "셀레스" 회수
 	IF 효과使用불가:1 == 0
 		PRINTL [ 2] - 정체 - 상대 필드의 카드를 덱 맨 아래로 보낸다
 	ELSE 

@@ -1,0 +1,265 @@
+﻿@CARDNAME_42271,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 킬러튠 리믹스
+	CASE "略称"
+		RESULTS = 리믹스
+	CASE "カテゴリ"
+		RESULTS:0 = 킬러튠
+		RESULTS:5 = 튜너소재가능
+ENDSELECT
+
+
+@CARD_42271(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 250823
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_42271(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 5
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 킬러튠 믹스
+ELSEIF EX参照 >= 10
+	素材条件튜너 = 1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,42271) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_42271(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "킬러튠 믹스"＋튜너 １장 이상
+PRINTL 이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：상대의 필드나 묘지에 튜너가 존재하는 한、
+PRINTL 이 카드의 공격력은 １５００오른다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：상대 턴에、이 카드를 릴리스 하고 발동할 수 있다。
+PRINTL 자신의 묘지에서 Ｓ몬스터 이외의 튜너 ２장을 골라、
+PRINTL 그 안에서 １장을 패에 넣고、１장 더 특수 소환한다。
+PRINTL 그 후、이하의 효과에서 １개를 골라 적용할 수 있다。
+PRINTL ●자신 필드의 몬스터를 Ｓ소재로 하고、Ｓ몬스터인 튜너 １장을 Ｓ소환한다。
+PRINTL ●패의 튜너 １장과 자신 필드의 원래 레벨이 ４이하인 "킬러튠" 튜너 １장을 Ｓ소재로서 묘지로 보내고、
+PRINTL 　ＥＸ덱에서 Ｓ몬스터의 튜너 １장을 Ｓ소환한다。
+
+
+@CARDCAN_42271(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,42271)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,42271)
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 싱크로以外
+	효과条件튜너 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 싱크로以外
+	효과条件튜너 = 1
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_表:カウンタ") == 3
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_Ｔ:カウンタ") >= 1
+			RETURN 1
+	NEXT
+	CALL FULLRESET
+	효과範囲상대묘지 = 1
+	효과条件튜너 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 1
+	RETURN 0
+ENDIF
+
+@CARDEFFECT_42271(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC EX選択カード
+#DIM DYNAMIC EXカードID,50
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,42271,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = 싱크로以外
+		효과条件튜너 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종류 = 싱크로以外
+			효과条件튜너 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과条件종류 = 싱크로
+				효과条件튜너 = 1
+				효과条件소환可 = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT != 1
+					발동불가:0 = 1
+				
+				FOR カウンタ,0,5
+					SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+						CONTINUE
+					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
+					SIF !MATCH(RESULTS,"킬러튠")
+						CONTINUE
+					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("レベル")
+					SIF RESULT > 4
+						CONTINUE
+					CALL KILLERTUNE_CHECK(듀얼리스트,カウンタ,1)
+					IF RESULT == 1
+						条件달성 = 1
+						BREAK
+					ENDIF
+				NEXT
+				SIF 条件달성 != 1
+					발동불가:1 = 1
+
+				SIF 발동불가:0 == 1 && 발동불가:1 == 1
+					RETURN 0
+				SIF 듀얼리스트 == "자신"
+					PRINTL 싱크로소환を行いますか？
+				CALL YN_CHOICE(듀얼리스트)
+				SIF RESULT == いいえ
+					RETURN 0
+				
+				IF 발동불가:0 != 1 && 발동불가:1 != 1
+					CALL YN_CHOICE(듀얼리스트,"●필드의 몬스터로 Ｓ소환한다。","●패의 튜너와 필드의 킬러튠으로 Ｓ소환한다。")
+				ELSEIF 발동불가:0 != 1
+					RESULT = 0
+				ELSEIF 발동불가:1 != 1
+					RESULT = 1
+				ENDIF
+
+				IF RESULT == 0
+					CALL FULLRESET
+					효과条件종류 = 싱크로
+					효과条件튜너 = 1
+					CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+					IF RESULT != 9999
+						選択カード = RESULT
+						TRYCALLFORM CARDSUMMON_{RESULT:99}(듀얼리스트,選択カード)
+						CALL SYNSUMMON(듀얼리스트, 選択カード)
+					ENDIF
+
+				ELSEIF RESULT == 1
+					CALL FULLRESET
+					효과条件名前:0 = 킬러튠 레코
+					효과条件名前:1 = 킬러튠 믹스
+					효과条件名前:2 = 킬러튠 클립
+					효과条件名前:3 = 킬러튠 트랙메이커
+					CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+					IF RESULT != 9999
+						選択カード = RESULT
+						CALL KILLERTUNE_CHECK(듀얼리스트,選択カード,1)
+						FOR カウンタ,0,50
+							EXカードID:カウンタ = RESULT:(カウンタ+1)
+						NEXT
+
+						CALL FULLRESET
+						FOR カウンタ,0,50
+							효과条件ID:カウンタ = EXカードID:カウンタ
+						NEXT
+						CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+						IF RESULT != 9999
+							EX選択カード = RESULT
+							CALL KILLERTUNE_SYNSUMMON(듀얼리스트,"필드",選択カード,EX選択カード)
+						ENDIF
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,1500)
+ENDIF

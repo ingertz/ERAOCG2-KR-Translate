@@ -36,7 +36,7 @@ CALLFORM CARD_ABLE(0,攻守変動)
 PRINTL ①: 장착 몬스터의 공격력은 300 올린다.
 PRINTL 장착 몬스터가 레벨 8 이상의 "마그넷 워리어" 몬스터일 경우, 장착 몬스터는 추가 공격을 얻는다.
 CALLFORM CARD_ABLE(0,효과後誘発)
-PRINTL ②: 이 카드가 묘지에 존재하는 상태에서, 자신 필드에 원소정령족 땅 속성 몬스터가 특수 소환되었을 경우에 발동할 수 있다.
+PRINTL ②: 이 카드가 묘지에 존재하는 상태에서, 자신 필드에 원소정령족 / 땅 속성 몬스터가 특수 소환되었을 경우에 발동할 수 있다.
 PRINTL 이 카드를 자신 필드의 땅 속성 몬스터 1장에게 장착한다.
 
 @CARDCAN_71011(듀얼리스트,종류,ゾーン,場所)
@@ -63,13 +63,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 
 	CALL FULLRESET
@@ -105,7 +100,7 @@ ELSEIF 종류 == 攻撃後強制誘発
 		RETURN 0
 	SIF GETVAR(@"%装備者%_필드:装備先") == -1
 		RETURN 0
-	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("カテゴリ")
 	SIF !MATCH(RESULTS, "마그넷 워리어")
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_MZ_星:装備先") < 8
@@ -159,7 +154,7 @@ ELSEIF 종류 == 攻守変動
 	CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,300)
 
 ELSEIF 종류 == 攻撃後強制誘発
-	CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"効済",1)
+	CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"効済",1,1)
 	CALL SET_FIELD_INFO(듀얼리스트,"필드",装備先,"戦",1)
 	PRINTW 전자의 힘이, 더 큰 공격을 가능하게 한다!
 

@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -89,9 +88,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 
 	RETURN 1
 ELSEIF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -146,7 +144,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		효과使用불가:2 = 1
 
 	IF 효과使用불가:1 == 0 && 효과使用불가:2 == 0
-PRINTL 진룡 몬스터를 패에서 소환하시겠습니까?
+		PRINTL 진룡 몬스터를 패에서 소환하시겠습니까?
 		CALL YN_CHOICE(듀얼리스트)
 	ELSEIF 효과使用불가:2 == 1
 		RESULT = はい

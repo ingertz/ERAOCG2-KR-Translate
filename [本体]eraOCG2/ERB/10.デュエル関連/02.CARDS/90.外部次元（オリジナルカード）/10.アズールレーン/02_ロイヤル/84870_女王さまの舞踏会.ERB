@@ -1,0 +1,208 @@
+@CARDNAME_84870,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+;エクトプラズマ-
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 여왕님의 무도회
+	CASE "略称"
+		RESULTS = 여왕님의 무도회
+	CASE "カテゴリ"
+		RESULTS:0 = 벽람항로
+		RESULTS:1 = 로열(AL)
+ENDSELECT
+
+
+@CARD_84870(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 지속함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_84870(종류)
+#DIM DYNAMIC 종류
+#DIMS DYNAMIC 듀얼리스트
+
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(0,마함起動)
+PRINTL ①: 상대의 배틀 페이즈에 자신 몬스터 존의 "전함 퀸 엘리자베스" 1장을 대상으로 하여 발동할 수 있다.
+PRINTL 이하의 효과에서 1개를 선택하여 적용한다.
+PRINTL ●상대 필드의, 대상의 카드보다 공격력이 낮은 몬스터 1장을 고르고, 그 어떤 내성도 무시하고 묘지로 보낸다.
+PRINTL ●자신 필드의 대상의 카드 이외의 카드 1장을 패로 되돌리고, 대상의 카드보다 공격력이 높은 상대 필드의 몬스터 1장의 공격력을 턴 종료시까지 절반으로 한다.
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ②: 자신 필드의 "전함 퀸 엘리자베스"의 공격력은 자신 필드의 다른 "로열(AL)" 몬스터의 수× 200 포인트 올라간다.
+
+@CARDCAN_84870(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 陛下攻撃力
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,84870)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1	
+		SIF 발동済_1(듀얼리스트,84870)
+			RETURN 0
+		SIF バトルフェイズ != 1
+			RETURN 0
+		SIF ターンプレイヤー == 듀얼리스트
+			RETURN 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 전함 퀸 엘리자베스
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		陛下攻撃力 = RESULT:3
+		SIF RESULT < 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件攻撃力 = 陛下攻撃力
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT != 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				RETURN 0
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲마함 = 1
+			효과条件固名前 = 전함 퀸 엘리자베스
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				RETURN 0
+		ENDIF
+	ELSE
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_84870(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+#DIM DYNAMIC 陛下攻撃力
+#DIM DYNAMIC 条件Ａ
+#DIM DYNAMIC 条件Ｂ
+#DIM DYNAMIC 選択효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84870,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 전함 퀸 엘리자베스
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			陛下攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:RESULT")
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件攻撃力 = 陛下攻撃力
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				条件Ａ = 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件以攻撃力 = 陛下攻撃力 + 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과範囲마함 = 1
+				효과条件固名前 = 전함 퀸 엘리자베스
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+					条件Ｂ = 1
+			ENDIF
+			IF 条件Ａ == 1 && 条件Ｂ == 1
+				CALL YN_CHOICE(듀얼리스트,"●상대필드의、대상의 카드보다 공격력이 낮은 몬스터 １장을 내성 무시로 묘지보내기","●자신필드의 대상의 카드 이외의 카드 １장을 패로 되돌리고、대상의 카드보다 공격력이 높은상대 필드의 몬스터 １장의 공격력을 턴 종료시까지 절반으로한다")
+				選択효과 = RESULT
+			ELSEIF 条件Ｂ == 1 && 条件Ａ == 1
+				選択효과 = いいえ
+			ELSEIF 条件Ａ == 1 && 条件Ｂ == 1
+				選択효과 = はい
+			ENDIF
+			IF 選択효과 == はい
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과条件攻撃力 = 陛下攻撃力
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ELSEIF 選択효과 == いいえ
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과範囲마함 = 1
+				효과条件固名前 = 전함 퀸 엘리자베스
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과条件以攻撃力 = 陛下攻撃力 + 1
+					효과추가종류 = 2
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"一攻DOWN")
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84870)
+	IF RESULT == 0
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件固名前 = 전함 퀸 엘리자베스
+	효과条件カテゴリ = 로열(AL)
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	陛下攻撃力 = RESULT * 200
+	IF 陛下攻撃力 > 0
+		CALL FULLRESET
+		효과条件名前 = 전함 퀸 엘리자베스
+		CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,陛下攻撃力)
+	ENDIF
+ENDIF

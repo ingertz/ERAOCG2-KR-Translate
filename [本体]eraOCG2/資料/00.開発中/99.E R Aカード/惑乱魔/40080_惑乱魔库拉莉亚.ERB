@@ -1,0 +1,279 @@
+﻿@CARDNAME_40080,参照先
+;ココで指定卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 惑乱魔クラリア
+	CASE "略称"
+		RESULTS = 惑クラリア
+	CASE "カテゴリ"
+		RESULTS:0 = 惑乱魔
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_40080(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN リンク
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 植物族
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 900
+	CASE "守備力"
+		RETURN 1900
+	CASE "性別"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1380
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_40080(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+	必要リンク数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ:0 = 蟲惑魔
+	素材条件カテゴリ:1 = 惑乱魔
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(決闘者,召喚カード,40080) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_40080(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 「蟲惑魔」または「惑乱魔」モンスターを含むモンスター２体以上
+PRINTL このカード名の①③④の効果はそれぞれ１ターンに１度使用できる。
+CALLFORM CARD_ABLE(1,特殊召喚時,EX召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。
+PRINTL 相手は墓地のモンスター１体を攻撃表示で特殊召喚する。その相手がこの効果で特殊召喚したモンスターに、
+PRINTL 自分フィールドの「惑乱魔」モンスター全ての蟲紋カウンターをそれぞれ１つずつ置く。
+PRINTL その後、自分は墓地の「惑乱魔」モンスター１体を選んで特殊召喚できる。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ②：このカードが攻撃表示の場合、相手フィールドの蟲紋カウンターが４種類以上置かれているモンスターの効果は無効化される。
+CALLFORM CARD_ABLE(2,戦場起動,フリー誘発)
+PRINTL ③：相手のバトルフェイズに、相手フィールドの表側表示モンスター１体を対象として発動できる。
+PRINTL 対象のモンスターはこのターン、もう１度攻撃できるようになり、そのモンスターにこのカードの蟲紋カウンターを１つ置く。
+CALLFORM CARD_ABLE(3,攻撃時誘発)
+PRINTL ④：このカードが攻撃対象として選択された時、相手フィールドの表側表示モンスター１体を対象として発動できる。
+PRINTL このカードを守備表示にし、そのモンスターにこのカードの蟲紋カウンターを１つ置く。
+PRINTL その後、対象のモンスターに置かれている蟲紋カウンターが４種類以上の場合、
+PRINTL このカードの守備力はターン終了時まで対象のモンスターの攻撃力分アップする。
+CALL TEXT_DECORATION("ROGUE")
+
+;このカードの①効果の発動条件は、相手の墓地に特殊召喚可能なモンスターが存在するだけでよく、自分墓地に「惑乱魔」モンスターが存在する必要はありません。
+;たとえ自分が「惑乱魔」モンスターを特殊召喚していなくても、このカードは相手がこの効果で特殊召喚したモンスターに蟲紋を刻むことができます。
+
+;このカードの④効果は、対象モンスターと攻撃モンスターが異なり、かつ防御が成功した場合、攻撃モンスターにもこのカードの蟲紋を刻みます。
+
+@CARDCAN_40080(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要的卡
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,40080)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 特殊召喚時 || 種類 == EX召喚時
+	SIF 発動済_1(決闘者,40080)
+		RETURN 0	
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF モンスター数(対面者) >= 5
+		RETURN 0
+
+    CALL FULLRESET
+    効果範囲相手墓地 = 1
+    効果条件種類 = モン全般
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+    SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF 発動済_2(決闘者,40080)
+		RETURN 0	
+	SIF ターンプレイヤー == 決闘者
+		RETURN 0
+	SIF	バトルフェイズ != 1
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+
+ELSEIF 種類 == 攻撃時誘発
+	SIF 発動済_3(決闘者,40080)
+		RETURN 0	
+    SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	SIF ターンプレイヤー == 決闘者
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_表:場所") != 1
+		RETURN 0
+	RETURN 1 
+ENDIF
+
+
+@CARDEFFECT_40080(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 选择卡片
+#DIM DYNAMIC 选择卡片_ID
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 调教对象,2
+#DIM DYNAMIC 攻击卡片
+#DIM DYNAMIC 效果先
+#DIM DYNAMIC 蟲纹種類
+#DIM DYNAMIC 守備力修正
+#DIM DYNAMIC カウンタ
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 特殊召喚時 || 種類 == EX召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40080,1)
+    IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+    	効果条件種類 = モン全般
+		CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所,"攻击表示")
+		效果先 = 最終召喚場所
+		IF 效果先 != 5
+			CALL FULLRESET
+			効果範囲墓地 = 1
+			効果条件種類 = モン全般
+			効果条件カテゴリ = 惑乱魔
+			CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%決闘者%_戦場:カウンタ") == -1
+					CONTINUE
+				SIF GETVAR(@"%決闘者%_MZ_リ数:カウンタ") >= 10
+					CONTINUE
+				SIF GETVAR(@"%決闘者%_MZ_表:カウンタ") == 3
+					CONTINUE
+
+				选择卡片_ID = GETVAR(@"%決闘者%_戦場:カウンタ")
+				CALL TRAPSEX_FACETIRON3(決闘者,ゾーン,種類,場所,效果先,选择卡片_ID)
+			NEXT
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40080,2)
+    IF RESULT == 0
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件表示 = 表側表示
+		CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+    	选择卡片 = RESULT
+    	IF 选择卡片 != 9999
+			CALL SET_FIELD_INFO(決闘者,"戦場",选择卡片,"戦",1,,1)
+			CALL SET_FIELD_INFO(決闘者,"戦場",选择卡片,"库拉莉亚纹Ｃ",1,,1)
+        ENDIF
+    ENDIF
+
+ELSEIF 種類 == 攻撃時誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40080,3)
+    IF RESULT == 0
+		攻击卡片 = 戦闘場所(決闘者,1)
+
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件表示 = 表側表示
+		CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+		选择卡片 = RESULT
+		IF 选择卡片 != 9999
+			守備力修正 = GETVAR(@"%対面者%_MZ_守:选择卡片")
+
+			CALL SET_FIELD_INFO(決闘者,"戦場",場所,"表",2,1)
+			CALL SET_FIELD_INFO(決闘者,"戦場",选择卡片,"库拉莉亚纹Ｃ",1,,1)
+			CALL TRAPSEX_FACETIRON1(対面者,选择卡片)
+			蟲纹種類 = RESULT
+
+			调教对象:0 = GETVAR(@"%対面者%_戦場:选择卡片")
+			调教对象:1 = GETVAR(@"%対面者%_戦場:攻击卡片")
+
+		IF (攻击卡片 == 选择卡片) && 蟲纹種類 >= 4
+			CALL SET_FIELD_INFO(決闘者,"戦場",場所,"一守",守備力修正)
+		ELSEIF (攻击卡片 != 选择卡片) && 蟲纹種類 >= 4
+			CALL SET_FIELD_INFO(決闘者,"戦場",場所,"一守",守備力修正)
+			CALL SET_FIELD_INFO(決闘者,"戦場",攻击卡片,"库拉莉亚纹Ｃ",1,,1)
+		ENDIF
+
+			CALL SEXTEXT_40080_1_1(決闘者,攻击卡片,选择卡片,蟲纹種類,守備力修正,调教对象:0,调教对象:1)
+		ENDIF
+	ENDIF
+	
+ELSEIF 種類 == 永続効果
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_戦場:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_リ数:カウンタ") >= 10
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_表:カウンタ") == 3
+			CONTINUE
+		CALL TRAPSEX_FACETIRON1(対面者,カウンタ)
+		SIF RESULT <= 3
+			CONTINUE
+
+		CALL STATCHANGE_EFFECT(対面者,"自身",カウンタ,"無効")
+	NEXT
+ENDIF
+

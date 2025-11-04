@@ -22,7 +22,7 @@ IF 마법함정플래그 == 0
 
 		SIF GETVAR(@"%대상者%_MZ_無差耐:場所") >= 1
 			RETURN 0
-		TRYCALLFORM CARD_{カードID}, "종류"
+		TRYCALLFORM CARD_{カードID}("종류")
 		IF GETVAR(@"%대상者%_MZ_モ耐:場所") >= 1 && INRANGE(RESULT, 0,15)
 			RETURN 0
 		ELSEIF GETVAR(@"%대상者%_MZ_魔耐:場所") >= 1 && INRANGE(RESULT, 20,30)
@@ -37,7 +37,7 @@ IF 마법함정플래그 == 0
 		IF 대상者 != 듀얼리스트
 			SIF GETVAR(@"%대상者%_MZ_対耐:場所") >= 1
 				RETURN 2
-			TRYCALLFORM CARD_{カードID}, "종류"
+			TRYCALLFORM CARD_{カードID}("종류")
 			IF GETVAR(@"%대상者%_MZ_モ耐:場所") >= 1 && INRANGE(RESULT, 0,15)
 				RETURN 2
 			ELSEIF GETVAR(@"%대상者%_MZ_魔耐:場所") >= 1 && INRANGE(RESULT, 20,30)
@@ -76,6 +76,9 @@ IF 마법함정플래그 == 0
 			RETURN 0
 	ELSEIF 除去種 == "묘지"
 		SIF GETVAR(@"%대상者%_MZ_破耐:場所") >= 1
+			RETURN 0
+	ELSEIF 除去種 == "強奪"
+		SIF GETVAR(@"%대상者%_MZ_忠実:場所") >= 1
 			RETURN 0
 	ENDIF
 
@@ -153,7 +156,7 @@ IF 마법함정플래그 == 0
 		IF 효과추가종류除去보존 == 1
 			ダメージ量 = GETVAR(@"%대상者%_MZ_攻:場所")
 		ELSEIF 효과추가종류除去보존 == 4
-			TRYCALLFORM CARD_{대상カードID}, "攻撃力"
+			TRYCALLFORM CARD_{대상カードID}("攻撃力")
 			ダメージ量 = RESULT
 		ENDIF
 		CALL CARD_DISPOSE(대상者,"필드",場所,손패行き)
@@ -196,7 +199,7 @@ IF 마법함정플래그 == 0
 			ダメージ量 = 修正値
 		;원래 공격력
 		ELSEIF 효과추가종류除去보존 == 4
-			TRYCALLFORM CARD_{대상カードID}, "攻撃力"
+			TRYCALLFORM CARD_{대상カードID}("攻撃力")
 			ダメージ量 = RESULT
 		;드로우 가능함
 		ELSEIF 효과추가종류除去보존 == 20

@@ -76,20 +76,9 @@ SIF RESULT == 1
 	RETURN 0
 ;P
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	IF 듀얼리스트 != "자신"
-		CALL FULLRESET
-		효과範囲마함 = 1
-		효과条件名前 = 예섀도르－세피라나가
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT == 1
-			RETURN 0
-	ENDIF
 	RETURN 1
 ELSEIF 종류 == 마함起動
 	SIF メインフェイズ != 1
@@ -192,7 +181,7 @@ ELSEIF 종류 == 특수소환時 || 종류 == 破壊→묘지 || 종류 == 戦�
 		효과条件소환可 = 1
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
-PRINTL "섀도르" 몬스터를 융합 소환하시겠습니까?
+			PRINTL "섀도르" 몬스터를 융합 소환하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 			IF RESULT == はい
 				CALL RESETAREA_MAT

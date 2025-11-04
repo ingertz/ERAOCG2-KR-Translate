@@ -1,0 +1,157 @@
+; ============================================================
+; 46453_白羊樹姫 セフィ・アリエス
+; ============================================================
+
+@CARDNAME_46453,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 白羊樹姫 セフィ・アリエス
+	CASE "略称"
+		RESULTS = アリエス
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+
+RETURN 1
+
+
+@CARD_46453(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "種類"
+		RESULT = 効果モン
+	CASE "属性"
+		RESULT = 光属性
+	CASE "種族"
+		RESULT = 植物族
+	CASE "レベル"
+		RESULT = 3
+	CASE "攻撃力"
+		RESULT = 700
+	CASE "守備力"
+		RESULT = 1300
+	CASE "性別"
+		RESULTS = 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN RESULT
+
+
+@CARD_EXPLANATION_46453(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：自分メインフェイズに発動できる。
+PRINTL 自分のデッキの上からカードを３枚めくる。
+PRINTL その中から「CoZ12」モンスター１体を特殊召喚できる。
+PRINTL 残りのカードはデッキの下に戻す。
+PRINTL この効果でモンスターの特殊召喚に成功した場合、その後、手札のこのカードを特殊召喚できる。
+PRINTL 以後、そのターン自分は「光導」しか特殊召喚できない。
+CALLFORM CARD_ABLE(2,効果後誘発)
+PRINTL ②：相手がモンスターを特殊召喚した場合に発動できる。
+PRINTL そのモンスターを表側守備表示にする。
+RETURN 0
+
+
+@CARDCAN_46453(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+IF 種類 == 手札起動
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF 発動済_1(決闘者,46453)
+		RETURN 0
+	SIF メインフェイズ != 1 || ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 現山札数(決闘者) < 3
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件CNT   = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 効果後誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46453)
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(決闘者,"特殊召喚",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46453(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC SS成功
+#DIM  DYNAMIC idx
+#DIMS DYNAMIC 対象者
+#DIMS DYNAMIC 対象参照
+#DIM  DYNAMIC 対象場所
+#DIM  DYNAMIC 件数
+#DIM  DYNAMIC カウンタ
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46453,1)
+
+	FOR カウンタ,0,2
+		TRYCALLFORM CARD_UI(GETVAR(@"%決闘者%_デッキ:カウンタ"))
+	NEXT
+
+	CALL FULLRESET
+	効果範囲デッキ     = 1
+	効果条件カテゴリ   = CoZ12
+	効果条件種類       = モン全般
+	効果条件任意       = 1
+	CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所,"",3)
+
+	IF RESULT == 1
+		CALL FULLRESET
+		効果範囲手札 = 1
+		CALL CARD_SP_SUMMON(決闘者,"手札",場所)
+	ENDIF
+
+	CALL CARD_SS_RESTRICTION(決闘者,"光導")
+	RETURN 0
+ENDIF
+
+IF 種類 == 効果後誘発
+	件数 = 効後_カウンタ
+	FOR idx,0,件数-1
+		対象者   = %効後_実行者:idx%
+		対象参照 = %効後_ゾーン:idx%
+		対象場所 =  効後_設場所:idx
+		SIF 対象者 != "相手"
+			CONTINUE
+		SIF 対象参照 != "戦場"
+			CONTINUE
+		CALL SET_FIELD_INFO("相手","戦場",対象場所,"表",2,1)
+	NEXT
+	RETURN 0
+ENDIF
+
+RETURN 0

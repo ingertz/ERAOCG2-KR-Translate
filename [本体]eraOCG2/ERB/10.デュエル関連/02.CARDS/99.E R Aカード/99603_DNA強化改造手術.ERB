@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = DNA강화 개조수술
+		RESULTS = DNA강화 개조수술
 	CASE "略称"
-RESULTS =강화개조수술
+		RESULTS = 강화개조수술
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:2 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:2 = E.R.A
 ENDSELECT
 
 
@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속함정
 ENDSELECT
 
@@ -65,13 +64,12 @@ SIF RESULT == 1
 
 
 IF 종류 == 마함起動
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲마함 = 1
-효과条件名前 = DNA강화 개조수술
+	효과条件名前 = DNA강화 개조수술
 	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
@@ -103,21 +101,21 @@ IF 종류 == 마함起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99603)
 	IF RESULT == 0
 		IF 듀얼리스트 == "자신"
-PRINTL 효과를 선택해 주세요
-PRINTL [1] - ●빛 속성/기계족 : 마법 내성을 얻는다.
-PRINTL [2] - ●어둠 속성/악마족 : 공격력이 1000 오른다.
-PRINTL [3] - ●땅 속성/식물족 : 함정 내성을 얻는다.
-PRINTL [4] - ●물 속성/원소령족 : 전투 내성을 얻는다.
-PRINTL [5] - ●불 속성/드래곤족 : 대상 내성을 얻는다.
-PRINTL [6] - ●바람 속성/야수족 : 파괴 내성을 얻는다.
+			PRINTL 효과를 선택해 주세요
+			PRINTL [1] - ●빛 속성/기계족 : 마법 내성을 얻는다.
+			PRINTL [2] - ●어둠 속성/악마족 : 공격력이 1000 오른다.
+			PRINTL [3] - ●땅 속성/식물족 : 함정 내성을 얻는다.
+			PRINTL [4] - ●물 속성/원소령족 : 전투 내성을 얻는다.
+			PRINTL [5] - ●불 속성/드래곤족 : 대상 내성을 얻는다.
+			PRINTL [6] - ●바람 속성/야수족 : 파괴 내성을 얻는다.
 			BINPUT
 		ELSE
-PRINTL <1> - ●빛 속성/기계족 : 마법 내성을 얻는다.
-PRINTL <2> - ●어둠 속성/악마족 : 공격력이 1000 오른다.
-PRINTL <3> - ●땅 속성/식물족 : 함정 내성을 얻는다.
-PRINTL <4> - ●물 속성/원소령족 : 전투 내성을 얻는다.
-PRINTL <5> - ●불 속성/드래곤족 : 대상 내성을 얻는다.
-PRINTL <6> - ●바람 속성/야수족 : 파괴 내성을 얻는다.
+			PRINTL <1> - ●빛 속성/기계족 : 마법 내성을 얻는다.
+			PRINTL <2> - ●어둠 속성/악마족 : 공격력이 1000 오른다.
+			PRINTL <3> - ●땅 속성/식물족 : 함정 내성을 얻는다.
+			PRINTL <4> - ●물 속성/원소령족 : 전투 내성을 얻는다.
+			PRINTL <5> - ●불 속성/드래곤족 : 대상 내성을 얻는다.
+			PRINTL <6> - ●바람 속성/야수족 : 파괴 내성을 얻는다.
 			WAIT
 			RESULT = RAND:6 + 1
 		ENDIF

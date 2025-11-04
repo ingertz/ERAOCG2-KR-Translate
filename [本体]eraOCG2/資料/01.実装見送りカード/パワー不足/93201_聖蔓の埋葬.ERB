@@ -25,7 +25,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 通常罠
 ENDSELECT
 
@@ -33,9 +32,9 @@ RETURN 0
 
 @CARD_EXPLANATION_93201(種類)
 #DIM DYNAMIC 種類
-PRINTL 이 카드명의 カードは１ターンに１枚しか発動できない。
-PRINTL ①：자신 필드에 「サンアバロン」Lモンスターが存在する場合、
-PRINTL そのリンク数の合計まで、相手の마법&함정 존の裏側表示を対象として発動できる。
+PRINTL このカード名のカードは１ターンに１枚しか発動できない。
+PRINTL ①：自分フィールドに「サンアバロン」Lモンスターが存在する場合、
+PRINTL そのリンク数の合計まで、相手の魔法＆罠ゾーンの裏側表示を対象として発動できる。
 PRINTL そのカードを除外する（この効果で除外されたカードは効果を発動できない）。
 
 
@@ -59,7 +58,8 @@ IF 種類 == 魔罠起動 || 種類 == フリー誘発
 		RETURN 0
 	SIF 発動済_1(決闘者,93201)
 		RETURN 0
-	SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	効果範囲戦場 = 1
@@ -97,10 +97,10 @@ IF 種類 == 魔罠起動 || 種類 == フリー誘発
 		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
 		FOR カウンタ,0,5
 			選択カード_ID = GETVAR(@"%決闘者%_戦場:カウンタ")
-			TRYCALLFORM CARD_{選択カード_ID},"種類"
+			TRYCALLFORM CARD_{選択カード_ID}("種類")
 			SIF !MATCH(RESULT,リンク)
 				CONTINUE
-			TRYCALLFORM CARD_{選択カード_ID},"レベル"
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
 			選択カード_リンク += RESULT
 		NEXT
 		REPEAT 選択カード_リンク

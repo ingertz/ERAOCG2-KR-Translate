@@ -1,0 +1,187 @@
+﻿@CARDNAME_62193,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = K9-EX 포스 레버레이션
+	CASE "略称"
+		RESULTS = EX 강제해제
+	CASE "カテゴリ"
+		RESULTS:0 = K9
+ENDSELECT
+
+
+@CARD_62193(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 250322
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62193(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 1번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：자신 / 상대의 메인 페이즈에、자신 필드의 「K9」X몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 각 문장을 자연스러운 한국어로 번역했습니다.
+PRINTL 대상의 몬스터 위에 겹쳐서 X소환 취급으로 EX덱에서 특수 소환한다。
+PRINTL 그 후、상대 필드의 카드 １장을 파괴할 수 있다。
+CALLFORM CARD_ABLE(2,攻撃後誘発)
+PRINTL ②：자신의 "K9" 몬스터가 전투를 실행한 배틀 종료시에 발동할 수 있다.
+PRINTL 묘지의 이 카드를 자신 필드에 세트한다。
+
+
+
+@CARDCAN_62193(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62193)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,62193)
+		RETURN 0
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = K9
+	효과条件종류 = 엑시즈
+	효과条件RUM = 62193
+	효과条件重ねてＸ = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF 발동済_2(듀얼리스트,62193)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF !MATCH(RESULTS,"K9")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_62193(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 설정レベル
+
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カードB
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62193)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = K9
+		효과条件종류 = 엑시즈
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			選択カードID = GETVAR(@"%듀얼리스트%_필드:選択カード")
+			CALL FULLRESET
+			효과条件固ID = 選択カードID
+			효과条件カテゴリ = K9
+			효과条件종류 = 엑시즈
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			選択カードB = RESULT
+			;돌아간다
+			IF 選択カードB != 9999
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カードB}")}(듀얼리스트,選択カードB)
+				CALL RESETCONDITION_MAT(1)
+				代替素材数 = 1
+				重ねてＸ = 1
+				素材条件固定 = 選択カード
+				TRYCALLFORM XYZSUMMON(듀얼리스트,選択カードB)
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과範囲상대마함 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62193,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件ID = 62193
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+	ENDIF
+ENDIF
+
+
+
+@CARDRUM_62193(듀얼리스트,ゾーン,場所,カードID)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 설정カードID
+#DIM DYNAMIC 素材レベル
+VARSET RESULT
+
+カードID = GETVAR(@"%듀얼리스트%_필드:場所")
+素材レベル = GETVAR(@"%듀얼리스트%_MZ_星:場所")
+
+FOR カウンタ,0,15
+	설정カードID =  GETVAR(@"%듀얼리스트%_EX덱:カウンタ")
+	SIF 설정カードID == -1 
+		CONTINUE
+	TRYCALLFORM CARD_{설정カードID}("종류")
+	SIF RESULT != 엑시즈
+		CONTINUE
+	TRYCALLFORM CARDNAME_{설정カードID}("カテゴリ")
+	SIF !MATCH(RESULTS,"K9")
+		CONTINUE
+	SIF 설정カードID == カードID
+		CONTINUE
+
+	VARSET RESULT
+	RETURN 1
+NEXT
+	
+VARSET RESULT
+RETURN 0

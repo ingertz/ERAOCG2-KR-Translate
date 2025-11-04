@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 나선창살
+		RESULTS = 나선창살
 	CASE "略称"
-RESULTS = 나선창살
+		RESULTS = 나선창살
 	CASE "カテゴリ"
-RESULTS:0 = 기사 가이아
+		RESULTS:0 = 기사 가이아
 ENDSELECT
 
 @CARD_73062(参照先)
@@ -32,8 +32,8 @@ RETURN 0
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①: 자신의 "기사 가이아" 몬스터는 관통 능력을 얻는다.
 CALLFORM CARD_ABLE(0,ライフ変強制誘発)
-PRINTL ②: 자신의 "기사 가이아" 융합 S X L 몬스터가 상대에게 전투 데미지를 입혔을 경우에 발동한다.
-PRINTL 자신은 덱에서 ２장 드로우하고, 그 후 손패를 １장 골라 버린다.
+PRINTL ②: 자신의 "기사 가이아" 융합 / S / X / L 몬스터가 상대에게 전투 데미지를 입혔을 경우에 발동한다.
+PRINTL 자신은 덱에서 ２장 드로우하고, 그 후 패를 １장 골라 버린다.
 PRINTL 
 
 @CARDCAN_73062(듀얼리스트,종류,ゾーン,場所)
@@ -49,13 +49,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ;
@@ -77,7 +72,7 @@ ELSEIF 종류 == ライフ変強制誘発
 	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
 	SIF RESULTS != "기사 가이아"
 		RETURN 0
-	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)},"종류"
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("종류")
 	SIF !GROUPMATCH(RESULT,융합,싱크로,엑시즈,링크)
 		RETURN 0
 	CALL CARD_DRAW_CHECK

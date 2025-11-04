@@ -37,7 +37,7 @@ PRINTL ①：装備モンスターの攻撃力は１０００アップし、そ�
 CALLFORM CARD_ABLE(0,攻撃時誘発)
 PRINTL ②：装備モンスターが相手モンスターと戦闘を行う場合、以下の効果から１つを選んで発動できる。
 PRINTL ●装備モンスターはその戦闘では破壊されない。
-PRINTL ●덱에서 「RUM」魔法カード １장을 패에 넣는다。
+PRINTL ●デッキから「RUM」魔法カード１枚を手札に加える。
 
 
 @CARDCAN_72663(決闘者,種類,ゾーン,場所)
@@ -59,13 +59,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 種類 == 魔罠起動 || 種類 == 手札起動
-	IF 種類 == 魔罠起動
-		SIF GETVAR(@"%決闘者%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 決闘者
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	効果範囲戦場 = 1
@@ -84,7 +79,8 @@ ELSEIF 種類 == 攻撃時誘発
 	SIF ゾーン != "魔罠"
 		RETURN 0
 	IF ゾーン == "魔罠"
-	SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	ENDIF
 	SIF バトルフェイズ != 1
@@ -129,7 +125,7 @@ ELSEIF 種類 == 永続効果
 ELSEIF 種類 == 攻撃時誘発
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,72663)
 	IF RESULT == 0
-		CALL YN_CHOICE(決闘者,"●装備モンスターはその戦闘では破壊されない。","●덱에서 「RUM」魔法カード １장을 패에 넣는다。")
+		CALL YN_CHOICE(決闘者,"●装備モンスターはその戦闘では破壊されない。","●デッキから「RUM」魔法カード１枚を手札に加える。")
 		IF RESULT == 0
 			CALL STATCHANGE_EFFECT(決闘者,"装備",場所,"戦耐",1)
 		ELSEIF RESULT == 1

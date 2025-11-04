@@ -1,0 +1,145 @@
+;========================================================
+; 46496 スターリードロー
+;========================================================
+
+@CARDNAME_46496,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = スターリードロー
+	CASE "略称"
+		RESULTS = スタードロー
+	CASE "カテゴリ"
+		RESULTS:0 = 光導
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46496(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常魔法
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46496(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか発動できない。
+
+CALLFORM CARD_ABLE(1,魔罠起動,手札起動)
+PRINTL ①：自分メインフェイズに発動できる。
+PRINTL デッキから「光導」または「星竜」または「超星」カードを２枚選ぶ。
+PRINTL １枚は手札に加え、もう１枚は墓地に送る。
+
+CALLFORM CARD_ABLE(2,墓地起動)
+PRINTL ②：このカードが墓地に存在する場合に発動できる。
+PRINTL 自分の「創界神」からコアカウンターを１つ取り除き、
+PRINTL 墓地のこのカードを手札に戻す。
+RETURN 0
+
+@CARDCAN_46496(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46496)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF ゾーン != "手札"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 発動済_1(決闘者,46496)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 墓地起動
+	SIF ゾーン != "墓地"
+		RETURN 0
+	SIF 発動済_2(決闘者,46496)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲魔罠     = 1
+	効果条件カテゴリ = 創界神
+	効果条件個Ｃ所持 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+@CARDEFFECT_46496(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 選択カード
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46496,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = 光導
+		効果条件カテゴリ:1 = 星竜
+		効果条件カテゴリ:2 = 超星
+		PRINTL 手札に加えるカードを１枚選んでください。
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = 光導
+		効果条件カテゴリ:1 = 星竜
+		効果条件カテゴリ:2 = 超星
+		PRINTL 墓地に送るカードを１枚選んでください。
+		 CALL CARD_ADD_GY_BASIC(決闘者,"デッキ",ゾーン,場所)
+		CALL CARD_EFFECT_USE(決闘者,46496,1)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 墓地起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46496,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲魔罠     = 1
+		効果条件カテゴリ = 創界神
+		効果条件個Ｃ所持 = 1
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 9999
+			RETURN 0
+		ENDIF
+		CALL CARD_SELECT(決闘者,RESULT)
+		CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",-1)
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件名前 = スターリードロー
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		
+		CALL CARD_EFFECT_USE(決闘者,46496,2)
+	ENDIF
+	RETURN 0
+ENDIF
+
+RETURN 0

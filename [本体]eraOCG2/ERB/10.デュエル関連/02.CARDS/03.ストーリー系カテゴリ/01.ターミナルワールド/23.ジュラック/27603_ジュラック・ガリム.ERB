@@ -1,0 +1,97 @@
+﻿@CARDNAME_27603,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 갈림
+	CASE "略称"
+		RESULTS = Ｊ 갈림
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_27603(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 無性
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN CMN
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27603(종류)
+#DIM DYNAMIC 종류
+CALL CARD_ABLE(1,戦闘→묘지)
+PRINTL ①：このカードが戦闘で破壊され묘지へ送られた場合に발동できる。
+;①：このカードが戦闘で破壊され묘지へ送られた場合に발동する。
+PRINTL 상대は손패を１枚選んで捨ててこの효과を無効にできる。
+PRINTL 捨てなかった場合、このカードを破壊したモンスターを破壊する。
+
+@CARDCAN_27603(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27603)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 戦闘→묘지
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_27603(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 破壊カード
+#DIMS DYNAMIC 対面者 
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;PRINTFORMW 종류:{종류}
+
+IF 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27603)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_BASIC(対面者,"손패",ゾーン,場所)
+		IF RESULT != 1
+			破壊カード = 戦闘場所(듀얼리스트,1)
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",破壊カード,"묘지")
+		ENDIF
+	ENDIF
+ENDIF

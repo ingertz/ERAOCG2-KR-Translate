@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 인형의 행복
+		RESULTS = 인형의 행복
 	CASE "略称"
-RESULTS = 인형의 행복
+		RESULTS = 인형의 행복
 	CASE "カテゴリ"
-RESULTS:0 = 인형
+		RESULTS:0 = 인형
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 지속마법
 	CASE "単一存在"
 		RETURN 1
@@ -89,19 +88,11 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,66120)
 		RETURN 0
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	RETURN 1
 
 	RETURN 1
 
@@ -112,7 +103,7 @@ ELSEIF 종류 == 지속효과
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-효과条件名前 = 프린세스 코론
+	효과条件名前 = 프린세스 코론
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

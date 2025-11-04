@@ -1,0 +1,192 @@
+; ============================================================
+; 46454_魔導双姫 ジェミナ＆ナイズル
+; ============================================================
+
+@CARDNAME_46454,参照先
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 魔導双姫 ジェミナ＆ナイズル
+	CASE "略称"
+		RESULTS = ジェミナイズ
+	CASE "カテゴリ"
+		RESULTS:0 = CoZ12
+		RESULTS:1 = 光導
+		RESULTS:2 = 詩姫
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+RETURN 0
+
+
+@CARD_46454(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 魔法使い族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1100
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_46454(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①②③の効果はそれぞれ１ターンに１度しか発動できない。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時,攻撃時誘発)
+PRINTL ①：このカードが召喚・特殊召喚に成功した場合、または攻撃宣言した場合に発動できる。
+PRINTL 手札の「CoZ12」モンスター１体を特殊召喚できる。
+CALLFORM CARD_ABLE(2,効果後誘発)
+PRINTL ②：自分フィールドに「CoZ12」モンスターが召喚・特殊召喚された場合に発動できる。
+PRINTL デッキを１枚めくる。そのカードがモンスターなら特殊召喚し、違った場合は手札に加える。
+CALLFORM CARD_ABLE(3,戦場起動)
+PRINTL ③：このカードをリリースして発動できる。
+PRINTL デッキから１枚ドローする。その後、自分フィールドの「創界神」にコアカウンターを１つ置く。
+RETURN 0
+
+
+@CARDCAN_46454(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46454)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時 || 種類 == 攻撃時誘発
+	IF 種類 == 攻撃時誘発
+		SIF ゾーン != "戦場"
+			RETURN 0
+		SIF 戦闘場所(決闘者) != 場所
+			RETURN 0
+		SIF ターンプレイヤー != 決闘者
+			RETURN 0
+	ENDIF
+
+	SIF 発動済_1(決闘者,46454)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件カテゴリ = CoZ12
+	効果条件種類   = モン全般
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 効果後誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_2(決闘者,46454)
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_最召場所") == 場所
+		RETURN 0
+	SIF 現山札数(決闘者) == 0
+		RETURN 0
+	CALL FULLRESET
+	効果条件カテゴリ = CoZ12
+	CALL CARD_CHECK_FIN_DATA(決闘者,"召喚全般")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+ IF 種類 == 戦場起動
+	SIF 発動済_3(決闘者,46454)
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 現山札数(決闘者) == 0
+		RETURN 0
+	RETURN 1
+ ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46454(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC 山枚数_前
+#DIM  DYNAMIC 山枚数_後
+
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時 || 種類 == 攻撃時誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46454,1)
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件カテゴリ = CoZ12
+	効果条件種類   = モン全般
+	効果条件召喚可 = 1
+	CALL CARD_SP_SUMMON_ADV(決闘者, ゾーン, 場所)
+	RETURN 0
+ENDIF
+
+IF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46454,2)
+
+	山枚数_前 = 現山札数(決闘者)
+    CALL FULLRESET
+    効果範囲デッキ = 1
+    効果条件種類 = モン全般
+    効果条件任意 = 1
+    CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所,,1)
+    山枚数_後 = 現山札数(決闘者)
+
+    IF 山枚数_後 == 山枚数_前
+        CALL FULLRESET
+        効果範囲デッキ = 1
+        効果条件任意 = 1
+        効果条件行先フラグ = 手札行き
+        CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所,1)
+    ENDIF
+
+	RETURN 0
+ENDIF
+
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46454,3)
+	CALL CARD_DISPOSE(決闘者, ゾーン, 場所)
+	CALL CARDDRAW_BASIC(決闘者,1)
+
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	CALL CARD_CHOOSE_ADV(決闘者,"全場",場所)
+	IF RESULT != 9999
+		CALL CARD_SELECT(決闘者,RESULT)
+		CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"個Ｃ",1)
+	ENDIF
+	RETURN 0
+ENDIF
+
+RETURN 0

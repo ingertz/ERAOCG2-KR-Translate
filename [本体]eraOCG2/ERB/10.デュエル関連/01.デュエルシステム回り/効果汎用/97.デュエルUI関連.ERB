@@ -21,7 +21,7 @@ SIF !GROUPMATCH(덱플래그,2,3)
 
 $RESETVIEW
 
-TRYCALLFORM CARD_{選択カード_ID}, "종류"
+TRYCALLFORM CARD_{選択カード_ID}("종류")
 IF RESULT == 1
 	설정色 = C_MONS_BR
 ELSEIF RESULT == 2
@@ -45,7 +45,7 @@ ELSEIF RESULT >= 20 && RESULT < 30
 ELSEIF RESULT >= 30
 	설정色 = C_TRAP_PUR
 ENDIF
-TRYCALLFORM CARD_{選択カード_ID}, "分割"
+TRYCALLFORM CARD_{選択カード_ID}("分割")
 IF RESULT == 0
 	설정色２ = 설정色
 ELSEIF RESULT <= 10
@@ -87,9 +87,9 @@ CALL PRINT_STATE_DUEL(選択カード_ID)
 SIF RESULT == 1
 	CALL COLOR_LINE(설정色,설정色２)
 
-TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 PRINTFORM <<%RESULTS%>>
-TRYCALLFORM CARD_{選択カード_ID}, "속성"
+TRYCALLFORM CARD_{選択カード_ID}("속성")
 SELECTCASE RESULT
 CASE 1
 	SETCOLOR C_LIGHT_T
@@ -112,10 +112,13 @@ CASE 6
 CASE 7
 	SETCOLOR C_LIGHT_T
 	PRINTFORM （%"신",2%）
+CASE 9
+	SETCOLOR C_WHITE
+	PRINTFORM （%"무",2%）
 ENDSELECT
 RESETCOLOR
 
-TRYCALLFORM CARD_{選択カード_ID}, "속성"
+TRYCALLFORM CARD_{選択カード_ID}("속성")
 FOR カウンタ,1,7
 	IF RESULT:カウンタ != 0
 		IF RESULT:カウンタ == 1
@@ -139,20 +142,23 @@ FOR カウンタ,1,7
 		ELSEIF RESULT:カウンタ == 7
 			SETCOLOR C_LIGHT_T
 			PRINTFORM （%"신",2%）
+		ELSEIF RESULT:カウンタ == 9
+			SETCOLOR C_WHITE
+			PRINTFORM （%"무",2%）
 		ENDIF
 		RESETCOLOR
 	ENDIF
 NEXT
 
 
-TRYCALLFORM CARDNAME_{選択カード_ID}, "武装名"
+TRYCALLFORM CARDNAME_{選択カード_ID}("武装名")
 IF RESULTS != ""
 	PRINTFORM /
 	SETCOLOR C_PSY_RED
 	PRINTFORM 웨폰：<<%RESULTS%>>
 	RESETCOLOR
 ENDIF
-TRYCALLFORM CARDNAME_{選択カード_ID}, "要塞名"
+TRYCALLFORM CARDNAME_{選択カード_ID}("要塞名")
 IF RESULTS != ""
 	PRINTFORM /
 	SETCOLOR C_MAGIC_G
@@ -165,7 +171,7 @@ ENDIF
 PRINTL
 CALL COLOR_LINE(설정色,설정色２)
 PRINT 소속 카테고리:
-TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 SIF RESULTS:0 != ""
 	PRINTFORM 【%RESULTS:0%】
 SIF RESULTS:1 != ""
@@ -178,12 +184,12 @@ PRINTL
 
 
 
-TRYCALLFORM CARD_{選択カード_ID}, "종류"
+TRYCALLFORM CARD_{選択カード_ID}("종류")
 IF INRANGE (RESULT, 1, 10)
 	CALL COLOR_LINE(설정色,설정色２)
 
 	PRINTFORM （★）× 
-	TRYCALLFORM CARD_{選択カード_ID}, "レベル"
+	TRYCALLFORM CARD_{選択カード_ID}("レベル")
 	選択カード_星 = RESULT
 	IF 덱플래그 == 3
 		IF 자신_手_一星:確認場所 >= 1
@@ -197,13 +203,13 @@ IF INRANGE (RESULT, 1, 10)
 	ENDIF
 	PRINTFORM {選択カード_星,2,RIGHT}
 	RESETCOLOR
-	TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"	
+	TRYCALLFORM CARD_{選択カード_ID}("攻撃力")	
 	PRINTFORM 　　　　（공）　{(RESULT),6,RIGHT}
-	TRYCALLFORM CARD_{選択カード_ID}, "守備力"	
+	TRYCALLFORM CARD_{選択カード_ID}("守備力")	
 	PRINTFORM （수）　{(RESULT),6,RIGHT}
 
 	VARSET RESULT
-	TRYCALLFORM CARD_{選択カード_ID}, "성별"
+	TRYCALLFORM CARD_{選択カード_ID}("성별")
 	캐릭터番号 = NO_TO_CHARANUM(選択カード_ID)
 	IF 캐릭터番号 >= 1 && オプション_성별
 		RESULT = TALENT:캐릭터番号:성별
@@ -228,15 +234,15 @@ ENDIF
 CALL COLOR_LINE(설정色,설정色２)
 SIF 選択カード_ID != 999990
 	PRINTFORM 【
-TRYCALLFORM CARD_{選択カード_ID}, "종족"	
+TRYCALLFORM CARD_{選択カード_ID}("종족")	
 SIF RESULT
-	PRINTFORM %GET_TALENTNAME(191,RESULT),12,LEFT%/　
+	PRINTFORM %GET_TALENTNAME(191,RESULT)% /　
 SIF RESULT:1
-	PRINTFORM %GET_TALENTNAME(191,RESULT:1),12,LEFT%/　
+	PRINTFORM %GET_TALENTNAME(191,RESULT:1)% /　
 
 
 
-TRYCALLFORM CARD_{選択カード_ID}, "종류"
+TRYCALLFORM CARD_{選択カード_ID}("종류")
 IF RESULT == 1
 	PRINTFORM 효과
 ELSEIF RESULT == 2
@@ -279,14 +285,14 @@ ELSE
 	PRINTFORM 그 외
 ENDIF
 VARSET RESULT
-TRYCALLFORM CARD_{選択カード_ID}, "튜너"
+TRYCALLFORM CARD_{選択カード_ID}("튜너")
 IF RESULT >= 1
 	PRINTFORM 　/　튜너　
 ENDIF
 
 
 VARSET RESULT
-TRYCALLFORM CARD_{選択カード_ID}, "分割"
+TRYCALLFORM CARD_{選択カード_ID}("分割")
 ;PRINTFORM ID:{選択カード_ID}　分割 {RESULT}
 IF RESULT == 通常モン
 	PRINTFORM 　/
@@ -319,7 +325,7 @@ IF 덱플래그 == 1
 	PRINTFORM [0] - 돌아간다
 	PRINTFORM %"",10%
 	VARSET RESULT
-	TRYCALLFORM CARD_{選択カード_ID}, "生成カード"
+	TRYCALLFORM CARD_{選択カード_ID}("生成カード")
 	SIF RESULT >= 1
 		PRINTFORM [10] - 생성 카드 확인
 		
@@ -330,7 +336,7 @@ IF 덱플래그 == 1
 	PRINTL
 	BINPUT
 	IF RESULT == 10
-		TRYCALLFORM CARD_{選択カード_ID}, "生成カード"
+		TRYCALLFORM CARD_{選択カード_ID}("生成カード")
 		トークン보존:0 = RESULT
 		トークン보존:1 = RESULT:1
 		トークン보존:2 = RESULT:2
@@ -373,7 +379,7 @@ ENDIF
 
 
 
-@CARD_SUMINFO(듀얼리스트)
+@CARD_SUMINFO(듀얼리스트);フィールドに표시されるカード情報
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
 #DIMS DYNAMIC 듀얼리스트
@@ -381,10 +387,13 @@ ENDIF
 #DIM DYNAMIC 現守備力
 #DIM DYNAMIC 설정色
 #DIM DYNAMIC 설정色２
+#DIM DYNAMIC 설정色３
 #DIM DYNAMIC MAX_M_存在
 #DIM DYNAMIC MAX_L_存在
 #DIM DYNAMIC MAX_R_存在
 #DIMS DYNAMIC カード名
+#DIMS DYNAMIC カード実名
+#DIMS DYNAMIC カード略称
 ;真ん中のカード
 SIF GETVAR(@"%듀얼리스트%_MZ_MAX成立:2") >= 1
 	MAX_M_存在 = 1
@@ -392,7 +401,6 @@ SIF GETVAR(@"%듀얼리스트%_MZ_MAX成立:1") >= 1
 	MAX_L_存在 = 1
 SIF GETVAR(@"%듀얼리스트%_MZ_MAX成立:3") >= 1
 	MAX_R_存在 = 1
-
 
 
 FOR カウンタB,0,10
@@ -409,8 +417,9 @@ FOR カウンタB,0,10
 	FOR カウンタ,0,5
 		설정色 = COLOR_FROMRGB(192, 192, 192)
 		설정色２ = COLOR_FROMRGB(192, 192, 192)
+		설정色３ = C_WHITE
 		IF GETVAR(@"%듀얼리스트%_필드:カウンタ") != -1			
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "종류"
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("종류")
 			IF RESULT == 0
 				RESETCOLOR
 			ELSEIF RESULT <= 10
@@ -442,7 +451,7 @@ FOR カウンタB,0,10
 			IF GETVAR(@"%듀얼리스트%_필드:カウンタ") == 使用불가ゾーン
 				설정色 = C_L_GRAY
 			ENDIF
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "分割"
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("分割")
 			IF RESULT == 0
 				설정色２ = 설정色
 			ELSEIF RESULT <= 10
@@ -603,51 +612,66 @@ FOR カウンタB,0,10
 			ELSEIF カウンタB == 1
 				FONTSTYLE 8
 				VARSET RESULT
-				SIF GETVAR(@"%듀얼리스트%_MZ_接可:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_性:カウンタ") == 牝性
-					SETCOLOR C_PINK
-
+				IF GETVAR(@"%듀얼리스트%_MZ_接可:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_性:カウンタ") == 牝性
+					설정色３ = C_PINK
+					SETCOLOR 설정色３
+				ENDIF
 				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
-				SIF RESULT == 1 && 듀얼리스트 == "자신"
-					SETCOLOR C_G_YELLOW
+				IF RESULT == 1 && 듀얼리스트 == "자신"
+					설정色３ = C_G_YELLOW
+					SETCOLOR 설정色３
+				ENDIF
 				;略称
 				IF GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ") >= 1
-					SETCOLOR C_M_GREEN
-					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ")}, "略称"
+					설정色３ = C_M_GREEN
+					SETCOLOR 설정色３
+					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ")}("略称")
 				ELSE					
-					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "略称"
+					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("略称")
 				ENDIF
+				カード略称 = %RESULTS%
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("名前")
+				カード実名 = %RESULTS%
 				IF 듀얼리스트 == "자신"
 					IF GETVARS(@"%듀얼리스트%_MZ_改名:カウンタ")  != ""
-						SETCOLOR C_RED
+						설정色３ = C_RED
+						SETCOLOR 설정色３
 						カード名 = %GETVARS(@"%듀얼리스트%_MZ_改名:カウンタ")%
 						STRLENS カード名
 						IF RESULT >= 18
 							SUBSTRING カード名, 0, 16
-							PRINTBUTTON @" %RESULTS,16,LEFT%… ", (2000 + カウンタ)
+							カード名 = %RESULTS:0,16,LEFT%
+							HTML_PRINT @"<button value='{2000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
 						ELSE
 							SUBSTRING カード名, 0, 19
-							PRINTBUTTON @" %RESULTS,19,LEFT%", (2000 + カウンタ)		
+							カード名 = %RESULTS:0,16,LEFT%
+							HTML_PRINT @"<button value='{2000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1
 						ENDIF
 					ELSE
-						PRINTBUTTON @" %RESULTS,19,LEFT%", (2000 + カウンタ)
+						カード略称 = %カード略称,19,LEFT%
+						HTML_PRINT @"<button value='{2000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 					ENDIF
 				ELSEIF 듀얼리스트 == "상대"
 					IF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
 						PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (5000 + カウンタ)
 					ELSE
 						IF GETVARS(@"%듀얼리스트%_MZ_改名:カウンタ")  != ""
-							SETCOLOR C_RED
+							설정色３ = C_RED
+							SETCOLOR 설정色３
 							カード名 = %GETVARS(@"%듀얼리스트%_MZ_改名:カウンタ")%
 							STRLENS カード名
 							IF RESULT >= 18
 								SUBSTRING カード名, 0, 16
-								PRINTBUTTON @" %RESULTS,16,LEFT%… ", (5000 + カウンタ)
+								カード名 = %RESULTS:0,16,LEFT%
+								HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
 							ELSE
 								SUBSTRING カード名, 0, 19
-								PRINTBUTTON @" %RESULTS,19,LEFT%", (5000 + カウンタ)		
+								カード名 = %RESULTS:0,19,LEFT%
+								HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1 
 							ENDIF
 						ELSE
-							PRINTBUTTON @" %RESULTS,19,LEFT%", (5000 + カウンタ)
+							カード略称 = %カード略称,19,LEFT%
+							HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 						ENDIF
 					ENDIF
 				ENDIF
@@ -675,6 +699,8 @@ FOR カウンタB,0,10
 					CASE 7
 						SETCOLOR C_LIGHT_T
 						PRINTFORM (%"神",2%)
+					CASE 9
+						PRINTFORM (%"무",2%)
 					CASEELSE
 						PRINTFORM (%"？",2%)
 				ENDSELECT
@@ -682,7 +708,7 @@ FOR カウンタB,0,10
 				FONTSTYLE 0
 			ELSEIF カウンタB == 2
 				;レベル
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "종류"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("종류")
 				IF RESULT == 엑시즈
 					PRINTFORM %"",18,RIGHT%
 					CALL XON_FONT("★",C_XYZ_LBLACK)
@@ -690,7 +716,7 @@ FOR カウンタB,0,10
 					PRINTFORM  {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
 				ELSEIF RESULT == 링크
 					SETCOLOR C_LINK_BLUE
-					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "レベル"
+					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("レベル")
 					PRINTFORM %"LINK －",21,RIGHT% {RESULT,2,RIGHT}
 				ELSE
 					PRINTFORM %"",18,RIGHT%
@@ -703,7 +729,7 @@ FOR カウンタB,0,10
 			ELSEIF カウンタB == 3
 				PRINTFORM %GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:カウンタ")),15,LEFT%
 				;14が限界、5までOK
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "分割"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("分割")
 				IF RESULT == 0
 					PRINTFORM %"",5%
 				ELSE
@@ -720,8 +746,11 @@ FOR カウンタB,0,10
 						SETCOLOR C_ORANGE
 						PRINTFORM %"Uni ",4%
 					ELSEIF RESULT == 펜듈럼
-						SETCOLOR C_MAGIC_G
-						PRINTFORM %"Pend",4%
+						PRINTFORM %"",1%
+						CALL XON_FONT("펜듈럼",C_MAGIC_G)
+						PRINTFORM %"",1%
+						;SETCOLOR C_MAGIC_G
+						;PRINTFORM %"Pend",4%
 					ELSEIF RESULT == 크로스기어
 						SETCOLOR C_PSY_RED
 						PRINTFORM %"Xrs",4%
@@ -733,7 +762,7 @@ FOR カウンタB,0,10
 					PRINTFORM /
 				ENDIF
 				CALL CARD_SETCOLOR(듀얼리스트,"필드",カウンタ)
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "종류"	
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("종류")	
 				IF RESULT == 1
 					PRINTFORM %"효과",4%
 				ELSEIF RESULT == 2 || RESULT == 31
@@ -741,13 +770,24 @@ FOR カウンタB,0,10
 				ELSEIF RESULT == 의식
 					PRINTFORM %"의식",4%
 				ELSEIF RESULT == 융합
-					PRINTFORM %"융합",4%
+					CALL XON_FONT("융합")
+					PRINTFORM %"",1%
+					;PRINTFORM %"융합",4%
 				ELSEIF RESULT == 싱크로
-					PRINTFORM %"싱",4%
+					PRINTFORM %"",1%
+					CALL XON_FONT("싱크로")
+					PRINTFORM %"",1%
+					;PRINTFORM %"シン",4%
 				ELSEIF RESULT == 엑시즈
-					PRINTFORM %"XYZ ",4%
+					PRINTFORM %"",1%
+					CALL XON_FONT("엑시즈")
+					PRINTFORM %"",1%
+					;PRINTFORM %"XYZ ",4%
 				ELSEIF RESULT == 링크
-					PRINTFORM %"LINK",4%
+					PRINTFORM %"",1%
+					CALL XON_FONT("링크")
+					PRINTFORM %"",1%
+					;PRINTFORM %"LINK",4%
 				ELSEIF RESULT == 초차원
 					PRINTFORM %"PSY",4%
 				ELSEIF INRANGE(RESULT,20,29)
@@ -760,12 +800,15 @@ FOR カウンタB,0,10
 				RESETCOLOR
 			ELSEIF カウンタB == 4
 				IF GETVAR(@"%듀얼리스트%_MZ_Ｔ:カウンタ") >= 1
-					PRINTFORM 　튜너　　　
+					PRINTFORM %"",5%
+					CALL XON_FONT("튜너")
+					PRINTFORM %"",5%
+					;PRINTFORM 　튜너
 				ELSE
 					PRINTFORM 　　　　　　
 				ENDIF
 				VARSET RESULT
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "トークン"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("トークン")
 				IF RESULT >= 1
 					PRINTFORM 　　 ToK
 				ELSE
@@ -822,7 +865,7 @@ FOR カウンタB,0,10
 
 			ELSEIF カウンタB == 8
 				PRINTFORM 【
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "攻撃力"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("攻撃力")
 				SIF GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ") > RESULT
 					SETCOLOR C_GREEN
 				SIF GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ") < RESULT
@@ -830,7 +873,7 @@ FOR カウンタB,0,10
 				PRINTFORM {(GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ")),9,RIGHT}
 				RESETCOLOR
 				PRINTFORM ／
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "守備力"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("守備力")
 				SIF GETVAR(@"%듀얼리스트%_MZ_守:カウンタ") > RESULT
 					SETCOLOR C_GREEN
 				SIF GETVAR(@"%듀얼리스트%_MZ_守:カウンタ") < RESULT
@@ -942,7 +985,11 @@ NEXT
 #DIM DYNAMIC 現守備力
 #DIM DYNAMIC 설정色
 #DIM DYNAMIC 설정色２
+#DIM DYNAMIC 설정色３
 #DIMS DYNAMIC カード名
+#DIMS DYNAMIC カード実名
+#DIMS DYNAMIC カード略称
+
 
 FOR カウンタB,0,5
 	IF ターンプレイヤー == "자신"
@@ -964,8 +1011,9 @@ FOR カウンタB,0,5
 	FOR カウンタ,0,5
 		설정色 = COLOR_FROMRGB(192, 192, 192)
 		설정色２ = COLOR_FROMRGB(192, 192, 192)
+		설정色３ = C_WHITE
 		IF GETVAR(@"%듀얼리스트%_마함:カウンタ") != -1			
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}, "종류"
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("종류")
 			IF RESULT == 0
 				RESETCOLOR
 			ELSEIF RESULT <= 10
@@ -995,7 +1043,7 @@ FOR カウンタB,0,5
 				설정色 = C_L_GRAY
 			ENDIF
 
-			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}, "分割"
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("分割")
 			IF RESULT == 0
 				설정色２ = 설정色
 			ELSEIF RESULT <= 10
@@ -1087,25 +1135,35 @@ FOR カウンタB,0,5
 				VARSET RESULT
 				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")}(듀얼리스트,마함起動,"마함",カウンタ)
 ;				PRINTFORML GETVAR(@"%듀얼리스트%_魔_ID:{カウンタ}"):{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")} 마함起動:{RESULT}
-				SIF RESULT == 1 && 듀얼리스트 == "자신"
-					SETCOLOR C_G_YELLOW
+				IF RESULT == 1 && 듀얼리스트 == "자신"
+					설정色３ = C_G_YELLOW
+					SETCOLOR 설정色３
+				ENDIF
 				;略称		
-				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}, "略称"
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("略称")
+				カード略称 = %RESULTS%
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("名前")
+				カード実名 = %RESULTS%
 				IF 듀얼리스트 == "자신"
 					IF GETVARS(@"%듀얼리스트%_魔_改名:カウンタ")  != ""
-						SETCOLOR C_RED
+						설정色３ = C_RED
+						SETCOLOR 설정色３
 						カード名 = %GETVARS(@"%듀얼리스트%_魔_改名:カウンタ")%
 						STRLENS カード名
 						IF RESULT >= 18
 							SUBSTRING カード名, 0, 16
-							PRINTBUTTON @" %RESULTS,16,LEFT%… ", (3000 + カウンタ)
+							カード名 = %RESULTS:0,16,LEFT%
+							HTML_PRINT @"<button value='{3000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
+						
 						ELSE
 							SUBSTRING カード名, 0, 19
-							PRINTBUTTON @" %RESULTS,19,LEFT%", (3000 + カウンタ)		
-						ENDIF
+							カード名 = %RESULTS:0,19,LEFT%
+							HTML_PRINT @"<button value='{3000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1
 
+						ENDIF
 					ELSE
-						PRINTBUTTON @" %RESULTS,19,LEFT%", (3000 + カウンタ)
+						カード略称 = %カード略称,19,LEFT%
+						HTML_PRINT @"<button value='{3000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 					ENDIF
 				ELSEIF 듀얼리스트 == "상대"
 					IF GETVAR(@"%듀얼리스트%_魔_表:カウンタ") >= 2
@@ -1117,13 +1175,16 @@ FOR カウンタB,0,5
 							STRLENS カード名
 							IF RESULT >= 18
 								SUBSTRING カード名, 0, 16
-								PRINTBUTTON @" %RESULTS,16,LEFT%… ", (6000 + カウンタ)
+								カード名 = %RESULTS:0,16,LEFT%
+								HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
 							ELSE
 								SUBSTRING カード名, 0, 19
-								PRINTBUTTON @" %RESULTS,19,LEFT%", (6000 + カウンタ)		
+								カード名 = %RESULTS:0,19,LEFT%
+								HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1	
 							ENDIF
 						ELSE
-							PRINTBUTTON @" %RESULTS,19,LEFT%", (6000 + カウンタ)
+							カード略称 = %カード略称,19,LEFT%
+							HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 						ENDIF
 					ENDIF
 				ENDIF
@@ -1139,38 +1200,50 @@ FOR カウンタB,0,5
 				FONTSTYLE 0
 			ELSEIF カウンタB == 2
 				CALL CARD_SETCOLOR(듀얼리스트,"마함",カウンタ)
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}, "종류"	
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("종류")	
 				IF RESULT == 通常마법
 					PRINTFORM %"통상마법",15,LEFT%
 				ELSEIF RESULT == 速攻마법
-					PRINTFORM %"속공마법",15,LEFT%
+					CALL XON_FONT("速攻")
+					PRINTFORM %"속공마법",13,LEFT%
 				ELSEIF RESULT == 装備마법
-					PRINTFORM %"장착마법",15,LEFT%
+					CALL XON_FONT("装備")
+					PRINTFORM %"장착마법",13,LEFT%
 				ELSEIF RESULT == 지속마법
-					PRINTFORM %"지속마법",15,LEFT%
+					CALL XON_FONT("지속")
+					PRINTFORM %"지속마법",13,LEFT%
 				ELSEIF RESULT == フィールド
-					PRINTFORM %"필드",15,LEFT%
+					CALL XON_FONT("フィールド")
+					PRINTFORM %"필드",13,LEFT%
 				ELSEIF RESULT == 通常함정
 					PRINTFORM %"통상함정",15,LEFT%
 				ELSEIF RESULT == 지속함정
-					PRINTFORM %"지속함정",15,LEFT%
+					CALL XON_FONT("지속")
+					PRINTFORM %"지속함정",13,LEFT%
 				ELSEIF RESULT == 초차원
 					PRINTFORM %"초차원",15,LEFT%
 				ELSE
-					PRINTFORM %"그 외",15,LEFT%
+					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("分割")
+					IF RESULT == 펜듈럼
+						PRINTFORM %"펜듈럼",12,LEFT%
+						CALL XON_FONT("펜듈럼",C_MAGIC_G)
+						PRINTFORM %"",2,LEFT%
+					ELSE
+						PRINTFORM %"그 외",15,LEFT%
+					ENDIF
 				ENDIF
 				;14が限界、5までOK
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}, "分割"
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("分割")
 				IF RESULT == 0
-					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}, "トークン"
+					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("トークン")
 					IF RESULT == 1
-						SETCOLOR C_MONS_BR
 						PRINTFORM %"/Tok",5%
 					ELSE
 						PRINTFORM %"",5%
 					ENDIF
 				ELSE
-					PRINTFORM /
+					SIF RESULT != 펜듈럼
+						PRINTFORM /
 					IF RESULT == デュアル
 						SETCOLOR C_MONS_BR
 						PRINTFORM %"Dual",4%
@@ -1181,11 +1254,13 @@ FOR カウンタB,0,5
 						SETCOLOR C_XYZ_BLACK
 						PRINTFORM %"DIS ",4%
 					ELSEIF RESULT == 유니온
-						SETCOLOR C_ORANGE
-						PRINTFORM %"Uni ",4%
-					ELSEIF RESULT == 펜듈럼
-						SETCOLOR C_MAGIC_G
-						PRINTFORM %"Pend",4%
+						CALL XON_FONT("装備",C_ORANGE)
+						PRINTFORM %"",2%
+						;SETCOLOR C_ORANGE
+						;PRINTFORM %"Uni ",4%
+					;ELSEIF RESULT == 펜듈럼
+						;SETCOLOR C_MAGIC_G
+						;PRINTFORM %"Pend",4%
 					ELSEIF RESULT == 크로스기어
 						SETCOLOR C_PSY_RED
 						PRINTFORM %"Xrs",4%
@@ -1551,7 +1626,7 @@ RETURN LRESULT
 $INPUTLOOP
 
 選択カード_ID = GETVAR(@"%듀얼리스트%_필드:選択カード")
-TRYCALLFORM CARD_{選択カード_ID}, "종류"
+TRYCALLFORM CARD_{選択カード_ID}("종류")
 IF RESULT == 1
 	설정色 = C_MONS_BR
 ELSEIF RESULT == 2
@@ -1574,7 +1649,7 @@ ELSEIF RESULT >= 30
 	설정色 = C_TRAP_PUR
 ENDIF
 
-TRYCALLFORM CARD_{選択カード_ID}, "分割"
+TRYCALLFORM CARD_{選択カード_ID}("分割")
 IF RESULT == 0
 	설정色２ = 설정色
 ELSEIF RESULT <= 10
@@ -1620,7 +1695,7 @@ IF GETVARS(@"%듀얼리스트%_MZ_改名:選択カード")  != ""
 	FONTSTYLE 4
 ENDIF
 
-TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 PRINTFORM <<%RESULTS%>>
 
 
@@ -1634,7 +1709,7 @@ RESETCOLOR
 
 
 IF GETVAR(@"%듀얼리스트%_MZ_変化元ID:選択カード") >= 1
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_MZ_変化元ID:選択カード")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_MZ_変化元ID:選択カード")}("名前")
 	PRINTFORM （추가명칭）<<%RESULTS%>>
 ENDIF
 
@@ -1660,10 +1735,13 @@ CASE 6
 CASE 7
 	SETCOLOR C_LIGHT_T
 	PRINTFORM （%"신",2%）
+CASE 9
+	SETCOLOR C_WHITE
+	PRINTFORM （%"무",2%）
 ENDSELECT
 
 
-TRYCALLFORM CARD_{選択カード_ID}, "속성"
+TRYCALLFORM CARD_{選択カード_ID}("속성")
 FOR カウンタ,1,7
 	IF RESULT:カウンタ != 0
 		IF RESULT:カウンタ == 1
@@ -1687,6 +1765,9 @@ FOR カウンタ,1,7
 		ELSEIF RESULT:カウンタ == 7
 			SETCOLOR C_LIGHT_T
 			PRINTFORM （%"신",2%）
+		ELSEIF RESULT:カウンタ == 9
+			SETCOLOR C_WHITE
+			PRINTFORM （%"무",2%）
 		ENDIF
 		RESETCOLOR
 	ENDIF
@@ -1701,7 +1782,7 @@ IF GETVARS(@"%듀얼리스트%_MZ_改名:選択カード")  != ""
 	SETCOLOR C_RED
 	FONTSTYLE 4
 ENDIF
-TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 SIF RESULTS:0 != ""
 	PRINTFORM 【%RESULTS:0%】
 SIF RESULTS:1 != ""
@@ -1729,7 +1810,7 @@ PRINTL
 CALL COLOR_LINE(설정色,설정色２)
 PRINTFORM （★）× {GETVAR(@"%듀얼리스트%_MZ_星:選択カード"),2,RIGHT}
 
-TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"
+TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
 SIF GETVAR(@"%듀얼리스트%_MZ_攻:選択カード") > RESULT
 	SETCOLOR C_GREEN
 SIF GETVAR(@"%듀얼리스트%_MZ_攻:選択カード") < RESULT
@@ -1737,7 +1818,7 @@ SIF GETVAR(@"%듀얼리스트%_MZ_攻:選択カード") < RESULT
 PRINTFORM 　　　　（공）　{GETVAR(@"%듀얼리스트%_MZ_攻:選択カード"),6,RIGHT}
 RESETCOLOR
 
-TRYCALLFORM CARD_{選択カード_ID}, "守備力"	
+TRYCALLFORM CARD_{選択カード_ID}("守備力")	
 SIF GETVAR(@"%듀얼리스트%_MZ_守:選択カード") > RESULT
 	SETCOLOR C_GREEN
 SIF GETVAR(@"%듀얼리스트%_MZ_守:選択カード") < RESULT
@@ -1746,7 +1827,7 @@ PRINTFORM （수）　{GETVAR(@"%듀얼리스트%_MZ_守:選択カード"),6,RIG
 RESETCOLOR
 
 VARSET RESULT
-;TRYCALLFORM CARD_{選択カード_ID}, "성별"
+;TRYCALLFORM CARD_{選択カード_ID}("성별")
 IF GETVAR(@"%듀얼리스트%_MZ_性:選択カード") == 牝性
 	SETCOLOR C_PINK
 	PRINTFORM （%"♀",2%）
@@ -1766,13 +1847,12 @@ PRINTL
 
 CALL COLOR_LINE(설정色,설정色２)
 PRINTFORM 【
-
-PRINTFORM %GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:選択カード")),18,LEFT%/　
-
+PRINTFORM %GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:選択カード"))% /　
 
 
 
-TRYCALLFORM CARD_{選択カード_ID}, "종류"
+
+TRYCALLFORM CARD_{選択カード_ID}("종류")
 IF RESULT == 1
 	PRINTFORM 효과
 ELSEIF RESULT == 2
@@ -1812,7 +1892,6 @@ ELSEIF RESULT > 30
 		PRINTFORM 지속함정
 	ELSE
 		PRINTFORM 그 외
-
 	ENDIF
 ENDIF
 IF GETVAR(@"%듀얼리스트%_MZ_Ｔ:選択カード") >= 1
@@ -2168,7 +2247,7 @@ IF 듀얼리스트 == "자신"
 	TRYCALLFORM CARDCAN_{자신_MZ_특수状態:選択カード}("자신",필드起動付与,"필드",選択カード)
 	IF RESULT == 1
 		SETCOLOR C_G_YELLOW
-		PRINT [4] - 부여 효과 발동　
+		PRINT 　[4] - 부여 효과 발동　
 	ENDIF
 	RESETCOLOR
 
@@ -2176,14 +2255,14 @@ IF 듀얼리스트 == "자신"
 	IF メインフェイズ == 1
 		IF ターンプレイヤー == "자신"
 			IF 자신_MZ_表固:選択カード >= 1
-				PRINT 「1」- 표시형식변경불가　
+				PRINT 　「1」- 표시형식변경불가　
 			ELSEIF 자신_MZ_表変:選択カード == 1
-				PRINT [1] - 표시형식변경　　　　
+				PRINT 　[1] - 표시형식변경　　　　
 			ENDIF
 		ENDIF
 		IF 자신_MZ_接可:選択カード >= 1 || オプション_いつでも触れる == 1
 			SETCOLOR C_PINK
-			PRINT [69] - 몬스터를 만진다
+			PRINT 　[69] - 몬스터를 만진다
 			RESETCOLOR
 		ENDIF
 	ELSEIF バトルフェイズ == 1
@@ -2192,7 +2271,7 @@ IF 듀얼리스트 == "자신"
 			VARSET RESULT
 			CALL CARD_ATK_CHECK("자신",選択カード)
 			SIF RESULT == 0
-				PRINT [5] - 공격 선언
+				PRINT 　[5] - 공격 선언
 			RESETCOLOR
 		ENDIF
 	ENDIF
@@ -2201,7 +2280,7 @@ ELSEIF 듀얼리스트 == "상대"
 	VARSET RESULT
 	TRYCALLFORM CARDCAN_{상대_MZ_특수状態:選択カード}("자신",付与효과,"필드",選択カード)
 	SIF RESULT == 1
-		PRINT [4] - 부여 효과 발동　
+		PRINT 　[4] - 부여 효과 발동　
 	RESETCOLOR
 	IF メインフェイズ == 1
 		IF 상대_MZ_接可:選択カード >= 1 || オプション_いつでも触れる == 1
@@ -2214,9 +2293,9 @@ ELSEIF 듀얼리스트 == "상대"
 ENDIF
 
 VARSET RESULT
-TRYCALLFORM CARD_{選択カード_ID}, "生成カード"
+TRYCALLFORM CARD_{選択カード_ID}("生成カード")
 SIF RESULT >= 1
-	PRINTFORM [10] - 생성 카드 확인
+	PRINTFORM 　[10] - 생성 카드 확인
 
 PRINTL
 RESETCOLOR
@@ -2401,7 +2480,7 @@ ELSEIF RESULT == 1000
 	WAIT
 ELSEIF RESULT == 10
 
-	TRYCALLFORM CARD_{選択カード_ID}, "生成カード"
+	TRYCALLFORM CARD_{選択カード_ID}("生成カード")
 	トークン보존:0 = RESULT
 	トークン보존:1 = RESULT:1
 	トークン보존:2 = RESULT:2
@@ -2453,7 +2532,7 @@ CALL 対面者판정(듀얼리스트)
 $INPUTLOOP
 選択カード_ID = GETVAR(@"%듀얼리스트%_마함:選択カード")
 
-TRYCALLFORM CARD_{選択カード_ID}, "종류"
+TRYCALLFORM CARD_{選択カード_ID}("종류")
 IF RESULT == 1
 	설정色 = C_MONS_BR
 ELSEIF RESULT == 2
@@ -2475,7 +2554,7 @@ ELSEIF RESULT >= 20 && RESULT < 30
 ELSEIF RESULT >= 30
 	설정色 = C_TRAP_PUR
 ENDIF
-TRYCALLFORM CARD_{選択カード_ID}, "分割"
+TRYCALLFORM CARD_{選択カード_ID}("分割")
 IF RESULT == 0
 	설정色２ = 설정色
 ELSEIF RESULT <= 10
@@ -2520,23 +2599,23 @@ CALL COLOR_LINE(설정色,설정色２)
 IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表:選択カード == 1 || デバッグコマンド == 1)
 
 	VARSET RESULTS
-	TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+	TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
 	PRINTFORM <<%RESULTS%>>
 
 	VARSET RESULTS
-	TRYCALLFORM CARDNAME_{選択カード_ID}, "要塞名"
+	TRYCALLFORM CARDNAME_{選択カード_ID}("要塞名")
 	IF RESULTS != ""
-		TRYCALLFORM CARDNAME_{選択カード_ID}, "要塞名"
+		TRYCALLFORM CARDNAME_{選択カード_ID}("要塞名")
 		PRINTFORM （요새명）<<%RESULTS%>>
 	ENDIF
 
 	IF GETVAR(@"%듀얼리스트%_魔_変化元ID:選択カード") >= 1
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_魔_変化元ID:選択カード")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_魔_変化元ID:選択カード")}("名前")
 		PRINTFORM （추가명칭）<<%RESULTS%>>
 	ENDIF
 
 
-	TRYCALLFORM CARD_{選択カード_ID}, "속성"
+	TRYCALLFORM CARD_{選択カード_ID}("속성")
 	IF RESULT == 1
 		PRINTFORM （%"빛",2%）
 	ELSEIF RESULT == 2
@@ -2551,9 +2630,11 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 		PRINTFORM （%"바람"%）
 	ELSEIF RESULT == 7
 		PRINTFORM （%"신",2%）
+	ELSEIF RESULT == 9
+		PRINTFORM （%"무",2%）
 	ENDIF	
 	
-	TRYCALLFORM CARD_{選択カード_ID}, "속성"
+	TRYCALLFORM CARD_{選択カード_ID}("속성")
 	FOR カウンタ,1,7
 		IF RESULT:カウンタ != 0
 			IF RESULT:カウンタ == 1
@@ -2577,6 +2658,9 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 			ELSEIF RESULT:カウンタ == 7
 				SETCOLOR C_LIGHT_T
 				PRINTFORM （%"신",2%）
+			ELSEIF RESULT:カウンタ == 9
+				SETCOLOR C_WHITE
+				PRINTFORM （%"무",2%）
 			ENDIF
 			RESETCOLOR
 		ENDIF
@@ -2587,7 +2671,7 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 	PRINTL
 	CALL COLOR_LINE(설정色,설정色２)
 	PRINT 소속 카테고리:
-	TRYCALLFORM CARDNAME_{選択カード_ID}, "カテゴリ"
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
 	SIF RESULTS:0 != ""
 		PRINTFORM 【%RESULTS:0%】
 	SIF RESULTS:1 != ""
@@ -2599,18 +2683,18 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 
 	PRINTL
 
-	TRYCALLFORM CARD_{選択カード_ID}, "종류"
+	TRYCALLFORM CARD_{選択カード_ID}("종류")
 	IF INRANGE (RESULT, 1, 10)
 		CALL COLOR_LINE(설정色,설정色２)
-		TRYCALLFORM CARD_{選択カード_ID}, "レベル"
+		TRYCALLFORM CARD_{選択カード_ID}("レベル")
 		PRINTFORM （★）× {RESULT,2,RIGHT}
-		TRYCALLFORM CARD_{選択カード_ID}, "攻撃力"	
+		TRYCALLFORM CARD_{選択カード_ID}("攻撃力")	
 		PRINTFORM 　　　　（공）　{(RESULT),6,RIGHT}
-		TRYCALLFORM CARD_{選択カード_ID}, "守備力"	
+		TRYCALLFORM CARD_{選択カード_ID}("守備力")	
 		PRINTFORM （수）　{(RESULT),6,RIGHT}
 
 		VARSET RESULT
-		TRYCALLFORM CARD_{選択カード_ID}, "성별"
+		TRYCALLFORM CARD_{選択カード_ID}("성별")
 		캐릭터番号 = NO_TO_CHARANUM(選択カード_ID)
 		IF 캐릭터番号 >= 1 && オプション_성별
 			RESULT = TALENT:캐릭터番号:성별
@@ -2634,11 +2718,11 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 	ENDIF
 	CALL COLOR_LINE(설정色,설정色２)
 	PRINTFORM 【
-	TRYCALLFORM CARD_{選択カード_ID}, "종족"	
+	TRYCALLFORM CARD_{選択カード_ID}("종족")	
 	SIF RESULT
-		PRINTFORM %GET_TALENTNAME(191,RESULT),12,LEFT%/　
+		PRINTFORM %GET_TALENTNAME(191,RESULT)% /　
 
-	TRYCALLFORM CARD_{選択カード_ID}, "종류"
+	TRYCALLFORM CARD_{選択カード_ID}("종류")
 	IF RESULT == 1
 		PRINTFORM 효과
 	ELSEIF RESULT == 2
@@ -2681,7 +2765,7 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 		ENDIF
 	ENDIF
 	VARSET RESULT
-	TRYCALLFORM CARD_{選択カード_ID}, "튜너"
+	TRYCALLFORM CARD_{選択カード_ID}("튜너")
 	SIF RESULT >= 1
 		PRINTFORM /　튜너　　
 	PRINTFORM 】
@@ -2836,7 +2920,7 @@ ELSEIF 듀얼리스트 == "상대"
 ENDIF
 
 VARSET RESULT
-TRYCALLFORM CARD_{選択カード_ID}, "生成カード"
+TRYCALLFORM CARD_{選択カード_ID}("生成カード")
 SIF RESULT >= 1
 	PRINTFORM 　[10] - 생성 카드 확인
 
@@ -2937,7 +3021,7 @@ ELSEIF RESULT == 1000
 	WAIT
 ELSEIF RESULT == 10
 
-	TRYCALLFORM CARD_{選択カード_ID}, "生成カード"
+	TRYCALLFORM CARD_{選択カード_ID}("生成カード")
 	トークン보존:0 = RESULT
 	トークン보존:1 = RESULT:1
 	トークン보존:2 = RESULT:2
@@ -3051,6 +3135,16 @@ CASE 20
 		条件달성 = 1
 CASE 21
 	SIF 발동済_D2(듀얼리스트,カード_ID)
+		条件달성 = 1
+
+CASE P1
+	SIF 발동済_P1(듀얼리스트,カード_ID)
+		条件달성 = 1
+CASE P2
+	SIF 발동済_P2(듀얼리스트,カード_ID)
+		条件달성 = 1
+CASE P3
+	SIF 발동済_P3(듀얼리스트,カード_ID)
 		条件달성 = 1
 ENDSELECT
 
@@ -3475,8 +3569,6 @@ RETURN RESULT
 #DIM DYNAMIC EX덱実数
 #DIM DYNAMIC 설정_EX덱,99
 
-
-
 #DIM DYNAMIC 설정_ボタン,99
 
 #DIM DYNAMIC 選択カード
@@ -3488,6 +3580,10 @@ RETURN RESULT
 #DIM DYNAMIC 攻撃誘導플래그
 #DIM DYNAMIC 지정グラカード
 #DIM DYNAMIC 지정グラ番号
+
+#DIMS DYNAMIC カード名前
+#DIMS DYNAMIC カード略称
+#DIM DYNAMIC 설정色
 
 #DIM 現在モード
 #DIM 初期値
@@ -3581,11 +3677,14 @@ ENDIF
 
 PRINTPLAINFORM ┏━━
 
-SIF 손패起動可
-	SETCOLOR C_YELLOW
+IF 손패起動可
+	설정色 = C_YELLOW
+	SETCOLOR 설정色
+ENDIF
 IF 現在モード == 0
 	FONTSTYLE 8
-	SETCOLOR C_L_BLUE
+	설정色 = C_L_BLUE
+	SETCOLOR 설정色
 	PRINTBUTTON "▽손패▽",8081
 ELSE
 	PRINTBUTTON " [손패] ",8081
@@ -3595,10 +3694,12 @@ RESETCOLOR
 
 PRINTPLAINFORM ━
 SIF 묘지起動可
-	SETCOLOR C_YELLOW
+	설정色 = C_YELLOW
+	SETCOLOR 설정色
 IF 現在モード == 1
-FONTSTYLE 8
-SETCOLOR C_L_BLUE
+	FONTSTYLE 8
+	설정色 = C_L_BLUE
+	SETCOLOR 설정色
 	PRINTBUTTON "▽묘지▽",8082
 ELSE
 	PRINTBUTTON " [묘지] ",8082
@@ -3611,8 +3712,10 @@ RESETCOLOR
 
 
 PRINTPLAINFORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━PAGE：{(初期値 / 5)+1, 2}━━━━━━┯━┓
-SIF 묘지起動可 || EX起動可
-	SETCOLOR C_YELLOW
+IF 묘지起動可 || EX起動可
+	설정色 = C_YELLOW
+	SETCOLOR 설정色
+ENDIF
 PRINTPLAIN ┏━▽정보확인▽━━━┓
 RESETCOLOR
 PRINTL
@@ -3624,16 +3727,22 @@ PRINTFORM │　
 PRINTPLAIN ┃
 
 
-SIF 묘지起動可 || EX起動可
-	SETCOLOR C_YELLOW
+IF 묘지起動可 || EX起動可
+	설정色 = C_YELLOW
+	SETCOLOR 설정色
+ENDIF
 PRINTPLAIN ┃
 RESETCOLOR
-	SIF EX起動可
-		SETCOLOR C_YELLOW
+	IF EX起動可
+		설정色 = C_YELLOW
+		SETCOLOR 설정色
+	ENDIF
 	PRINT [800] EX덱을 확인　 
 	RESETCOLOR
-SIF 묘지起動可 || EX起動可
-	SETCOLOR C_YELLOW
+IF 묘지起動可 || EX起動可
+	설정色 = C_YELLOW
+	SETCOLOR 설정色
+ENDIF
 PRINTPLAIN ┃
 RESETCOLOR
 PRINTL
@@ -3668,21 +3777,30 @@ FOR カウンタ,0,20
 			SIF RESULT == 1
 				발동可能 ++
 			IF MAX可能 >= 1
-				SETCOLOR C_RED
+				설정色 = C_RED
+				SETCOLOR 설정色
 				PRINT (！)
 			ELSEIF 발동可能 >= 1
-				SETCOLOR C_G_YELLOW
+				설정色 = C_G_YELLOW
+				SETCOLOR 설정色
 				PRINT (발)
 				
 			ELSEIF 소환可能 >= 1
-				SETCOLOR C_AQUA
+				설정色 = C_AQUA
+				SETCOLOR 설정色
 				PRINT (소)
 			ELSE
 				CALL CARD_SETCOLOR("자신","손패",설정_ボタン:実カウンタ)
+				GETCOLOR
+				설정色 = RESULT:0
+				SETCOLOR 설정色
 				PRINT (　)
 			ENDIF
-			TRYCALLFORM CARDNAME_{설정_손패:実カウンタ}, "略称"
-			PRINTBUTTON @" [%RESULTS,16,LEFT%]", (설정_ボタン:実カウンタ)
+			TRYCALLFORM CARDNAME_{설정_손패:実カウンタ}("名前")
+			カード名前 = %RESULTS%
+			TRYCALLFORM CARDNAME_{설정_손패:実カウンタ}("略称")
+			カード略称 = %RESULTS,16,LEFT%
+			HTML_PRINT @"<button value='{설정_ボタン:実カウンタ}' title='%HTML_ESCAPE(カード名前)%'><font color='#%TOSTR(설정色,"X6")%'> [%HTML_ESCAPE(カード略称), 16, LEFT%]</font></button>",1
 			RESETCOLOR
 		ENDIF
 	;묘지モード
@@ -3701,14 +3819,21 @@ FOR カウンタ,0,20
 			SIF RESULT == 1
 				발동可能 ++
 			IF 발동可能 >= 1
-				SETCOLOR C_G_YELLOW
+				설정色 = C_G_YELLOW
+				SETCOLOR 설정色
 				PRINT (발)
 			ELSE
 				CALL CARD_SETCOLOR("자신","묘지",설정_ボタン:実カウンタ)
+				GETCOLOR
+				설정色 = RESULT:0
+				SETCOLOR 설정色
 				PRINT (　)
 			ENDIF
-			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}, "略称"
-			PRINTBUTTON @" [%RESULTS,16,LEFT%]", (설정_ボタン:実カウンタ)
+			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}("名前")
+			カード名前 = %RESULTS%
+			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}("略称")
+			カード略称 = %RESULTS%
+			HTML_PRINT @"<button value='{설정_ボタン:実カウンタ}' title='%カード名前%'><font color='#%TOSTR(설정色,"X6")%'> [%カード略称, 16, LEFT%]</font></button>",1
 			RESETCOLOR
 		ENDIF
 	ENDIF
@@ -3926,8 +4051,6 @@ IF RESULT == 9090
 			初期値 += 5
 		ENDIF
 	ENDIF
-	
-	
 
 ELSEIF RESULT == 8080
 	初期値 -= 5
@@ -4000,7 +4123,7 @@ ELSEIF RESULT == 9003
 	NEXT
 	RESETCOLOR
 	PRINTL
-	PRINTL [100] - 돌아간다
+	PRINTL 　[100] - 돌아간다
 	BINPUT
 	選択カード = RESULT
 	;돌아간다
@@ -4009,7 +4132,7 @@ ELSEIF RESULT == 9003
 	ELSEIF INRANGE (選択カード, 0,現山札数("자신"))
 		TRYCALLFORM CARD_UI(자신_덱:選択カード,2);　デバッグチェック用（受け渡し必要：듀얼리스트情報のみ）
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		IF RESULT == 100
 			PRINTL 
@@ -4017,9 +4140,9 @@ ELSEIF RESULT == 9003
 	ENDIF
 ;묘지落とし各種処理
 ELSEIF RESULT == 9004
-	PRINTL [0]장소 지정 묘지 보내기
-	PRINTL [4]덱 위에서 N장
-	PRINTL [100] - 돌아간다
+	PRINTL 　[0]장소 지정 묘지 보내기
+	PRINTL 　[4]덱 위에서 N장
+	PRINTL 　[100] - 돌아간다
 	BINPUT
 	;破壊処理
 	IF RESULT == 0
@@ -4048,7 +4171,7 @@ ELSEIF RESULT == 9004
 	ELSEIF RESULT == 4
 		$GYDROP_LOOP
 		PRINTFORML  몇 장 보낼까？ (1～{現山札数("자신")})
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		INPUT
 		選択カード = RESULT
 		IF 選択カード == 100
@@ -4111,9 +4234,9 @@ ELSEIF RESULT == 9007
 	ELSE
 		PRINTL 표시형식 선택：
 		PRINTL 
-		PRINTL [1] - 공격 표시
-		PRINTL [2] - 수비 표시
-		PRINTL [3] - 뒷면 표시
+		PRINTL 　[1] - 공격 표시
+		PRINTL 　[2] - 수비 표시
+		PRINTL 　[3] - 뒷면 표시
 		PRINTL 
 		BINPUT 
 		IF RESULT == 1
@@ -4162,9 +4285,9 @@ ELSEIF RESULT == 9008
 		選択カード -= 2000
 		PRINTL 표시형식선택：
 		PRINTL 
-		PRINTL [1] - 공격 표시
-		PRINTL [2] - 수비 표시
-		PRINTL [3] - 뒷면 표시
+		PRINTL 　[1] - 공격 표시
+		PRINTL 　[2] - 수비 표시
+		PRINTL 　[3] - 뒷면 표시
 		PRINTL 
 		BINPUT 
 		IF RESULT == 1
@@ -4235,8 +4358,8 @@ ELSEIF RESULT == 8888
 ;テスト終了
 ELSEIF RESULT == 999 || (詰め플래그 && RESULT == 1000)
 	PRINTFORML 듀얼을 종료하시겠습니까？
-	PRINTL [1] - 예
-	PRINTL [2] - 아니오
+	PRINTL 　[1] - 예
+	PRINTL 　[2] - 아니오
 	BINPUT
 	IF RESULT == 1
 		;PRINTFORML テスト終了
@@ -4269,7 +4392,7 @@ ELSE
 					VARSET RESULT
 
 				IF メインフェイズ == 1 && ターンプレイヤー == "자신"
-					TRYCALLFORM CARD_{選択カード_ID}, "종류"
+					TRYCALLFORM CARD_{選択カード_ID}("종류")
 					IF RESULT <= 通常モン
 						SETCOLOR C_GRAY
 						CALL CARD_NS_CHECK_OK("자신",選択カード)
@@ -4291,7 +4414,7 @@ ELSE
 							RESETCOLOR
 						ENDIF
 						VARSET RESULT
-						TRYCALLFORM CARD_{選択カード_ID}, "맥시멈"
+						TRYCALLFORM CARD_{選択カード_ID}("맥시멈")
 						IF RESULT >= 1
 							;PRINTFORML 選択カード:{選択カード}/選択カード_ID:{選択カード_ID}
 							TRYCALLFORM CARDSUMMON_{選択カード_ID}("자신",選択カード,1)
@@ -4331,6 +4454,7 @@ ELSE
 				ELSE
 					CALL CARD_SUMMON_SHORI("자신",選択カード,"攻撃표시")
 				ENDIF
+				RETURN 1
 			ELSEIF RESULT == 2
 				CALLFORM CARD_{選択カード_ID}("종류")
 				IF RESULT > 20
@@ -4343,23 +4467,27 @@ ELSE
 				ELSEIF RESULT < 20
 					CALL CARD_SUMMON_SHORI("자신",選択カード,"裏側守備표시")
 				ENDIF
+				RETURN 1
 			ELSEIF RESULT == 4
 				IF 자신_手_召可:選択カード >= 1
 					CALL CARD_SUMMON_SHORI("자신",選択カード,"攻撃표시",4)
 				ELSE	
 					CALL CARD_SUMMON_SHORI("자신",選択カード,"攻撃표시",2)
 				ENDIF
+				RETURN 1
 			ELSEIF RESULT == 3
 				발동カード_ID = 選択カード_ID
 				CALLFORM CARDNAME_{발동カード_ID}("名前")
 				PRINTFORMW 당신은 패에서 『{選択カード}』%RESULTS%의 효과 발동 선언을 했습니다！
 				CALLFORM CARD_STANBY(발동カード_ID,"자신",손패起動,"손패",選択カード)
 				CALL CARD_FINAL(ターンプレイヤー);자신ターン패의 起動後のチェック
+				RETURN 1
 
 			ELSEIF RESULT == 5
 				CALLFORM CARDNAME_{選択カード_ID}("名前")
 				PRINTFORMW 당신은 패에서 『{選択カード}』%RESULTS%의 맥시멈 선언을 했습니다！
 				CALL MAXSUMMON("자신", 選択カード, "손패")
+				RETURN 1
 			ENDIF
 		ELSEIF 現在モード == 1
 			選択カード = RESULT
@@ -4393,8 +4521,8 @@ ELSE
 				PRINTFORMW 당신은 묘지에서 『{選択カード}』%RESULTS%의 효과 발동 선언을 했습니다！
 				CALLFORM CARD_STANBY(발동カード_ID,"자신",묘지起動,"묘지",選択カード)
 				CALL CARD_FINAL(ターンプレイヤー);자신ターン묘지の起動後のチェック
+				RETURN 1
 			ENDIF
-
 		ENDIF
 	;フィールド上のモンスター발동・攻撃処理・状態변경処理――――――――――――――――――――――――
 	ELSEIF INRANGE (RESULT, 2000, 2005)
@@ -4419,6 +4547,7 @@ ELSE
 				CALL SET_FIELD_INFO("자신","필드",選択カード,"表",1,1)
 			ENDIF
 			자신_MZ_表変:選択カード = 0
+			RETURN 1
 		ELSEIF RESULT == 3
 			;효과발동処理
 			발동カード_ID = 자신_필드:選択カード
@@ -4426,9 +4555,11 @@ ELSE
 			PRINTFORMW 당신은 몬스터 존에서 『{選択カード}』%RESULTS%의 효과 발동 선언을 했습니다！
 			CALLFORM CARD_STANBY(발동カード_ID,"자신",필드起動,"필드",選択カード)
 			CALL CARD_FINAL(ターンプレイヤー);자신ターン필드의 起動後のチェック
+			RETURN 1
 		ELSEIF RESULT == 4
 			;효과발동処理
 			TRYCALLFORM CARDEFFECT_{자신_MZ_특수状態:選択カード}("자신",필드起動付与,"필드",選択カード)
+			RETURN 1
 
 		ELSEIF RESULT == 69
 			CALL CARD_REACT("자신",選択カード,"필드")
@@ -4437,7 +4568,6 @@ ELSE
 		ELSEIF RESULT == 5
 			CALL BATTLE_SETUP("자신",選択カード)
 			VARSET 攻撃誘導플래그
-
 			;攻撃モンスター選択
 			CUSTOMDRAWLINE —
 			PRINTFORML 「공격 몬스터 선택 화면」
@@ -4462,7 +4592,7 @@ ELSE
 					裏側플래그 = 상대_MZ_表:カウンタ
 					IF 상대_MZ_攻避:カウンタ >= 1
 						SETCOLOR C_GRAY
-						TRYCALLFORM CARDNAME_{상대_필드:カウンタ}, "名前"
+						TRYCALLFORM CARDNAME_{상대_필드:カウンタ}("名前")
 						CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ,6)
 					ELSE
 						CALL CARD_SETCOLOR("상대","상대필드",カウンタ)
@@ -4516,8 +4646,11 @@ ELSE
 			RESETCOLOR
 			CUSTOMDRAWLINE —
 			PRINTL
-			PRINTL [9999] - 돌아간다
+			PRINTL 　[9999] - 돌아간다
 			BINPUT
+			IF RESULT == 9999
+				RETURN 0
+			ENDIF	
 			SIF INRANGE(RESULT,2000,2500)
 				RESULT -= 2000
 			CALL CARD_FIGHT("자신",選択カード,RESULT)
@@ -4525,8 +4658,8 @@ ELSE
 				バトル強制終了 = 0
 				GOTO INPUT_MAIN2
 			ENDIF
+			RETURN 1
 		ENDIF
-
 	;――――――――――――フィールド上の마법함정발동・状態변경処理――――――――――――
 	ELSEIF INRANGE (RESULT, 3000, 3005)
 		選択カード = RESULT -3000
@@ -4545,7 +4678,7 @@ ELSE
 			PRINTFORMW 당신은 마법 / 함정 존에서 『{選択カード}』%RESULTS%의 효과 발동 선언을 했습니다！
 			CALLFORM CARD_STANBY(발동カード_ID,"자신",마함起動,"마함",選択カード)
 			CALL CARD_FINAL(ターンプレイヤー);자신ターン마함の起動後のチェック
-
+			RETURN 1
 		ELSEIF RESULT == 69
 			CALL CARD_REACT("자신",選択カード,"마함")
 		ENDIF
@@ -4611,7 +4744,7 @@ ELSE
 		NEXT
 		CUSTOMDRAWLINE —
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		選択カード = RESULT
 		;돌아간다
@@ -4646,6 +4779,7 @@ ELSE
 				PRINTFORMW 당신은 묘지에서『{選択カード}』%RESULTS%의 효과 발동 선언을 했습니다！
 				CALLFORM CARD_STANBY(발동カード_ID,"자신",묘지起動,"묘지",選択カード)
 				CALL CARD_FINAL(ターンプレイヤー);자신ターン묘지의 起動後のチェック
+				RETURN 1
 			ENDIF
 		ENDIF
 	ELSEIF RESULT == 803
@@ -4663,7 +4797,7 @@ ELSE
 		NEXT
 		CUSTOMDRAWLINE —
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		選択カード = RESULT
 		;돌아간다
@@ -4677,7 +4811,7 @@ ELSE
 			TRYCALLFORM CARD_UI(상대_묘지:選択カード,2); 自由確認での상대묘지確認（受け渡し必要：듀얼리스트情報のみ）
 			RESETCOLOR	
 			PRINTL
-			PRINTL [100] - 돌아간다
+			PRINTL 　[100] - 돌아간다
 			BINPUT
 			IF RESULT == 100
 				PRINTL 
@@ -4701,7 +4835,7 @@ ELSE
 		NEXT
 		CUSTOMDRAWLINE —
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		選択カード = RESULT
 		;돌아간다
@@ -4714,7 +4848,7 @@ ELSE
 			フリー確認 = 1
 			TRYCALLFORM CARD_UI(자신_제외:選択カード,2); 自由確認での자신제외確認（受け渡し必要：듀얼리스트情報のみ）
 			PRINTL
-			PRINTL [100] - 돌아간다
+			PRINTL 　[100] - 돌아간다
 			BINPUT
 			IF RESULT == 100
 				PRINTL 
@@ -4730,13 +4864,13 @@ ELSE
 				CONTINUE
 			VARSET RESULT	
 			CALL CARD_SETCOLOR("상대","제외",カウンタ)
-			TRYCALLFORM CARDNAME_{상대_제외:カウンタ}, "名前"
+			TRYCALLFORM CARDNAME_{상대_제외:カウンタ}("名前")
 			CALLFORM CARD_KANPRINT("상대제외",カウンタ + 2500,상대_제외:カウンタ)
 			RESETCOLOR	
 		NEXT
 		CUSTOMDRAWLINE —
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		選択カード = RESULT
 		;돌아간다
@@ -4750,12 +4884,13 @@ ELSE
 			TRYCALLFORM CARD_UI(상대_제외:選択カード,2); 自由確認での상대제외確認（受け渡し必要：듀얼리스트情報のみ）
 			RESETCOLOR	
 			PRINTL
-			PRINTL [100] - 돌아간다
+			PRINTL 　[100] - 돌아간다
 			BINPUT
 			IF RESULT == 100
 				PRINTL 
 			ENDIF
 		ENDIF
+;――――――――――――자신マシン性能――――――――――――
 	ELSEIF RESULT == 555
 		$MACHINE_LOOP
 		CUSTOMDRAWLINE —
@@ -4768,23 +4903,23 @@ ELSE
 		CUSTOMDRAWLINE —
 		PRINTL
 		VARSET RESULT
-		TRYCALLFORM CARDNAME_{자신_엔진}, "名前"
+		TRYCALLFORM CARDNAME_{자신_엔진}("名前")
 		PRINTFORML ENGINE[ 1] - %RESULTS%
 		VARSET RESULT
-		TRYCALLFORM CARDNAME_{자신_섀시}, "名前"
+		TRYCALLFORM CARDNAME_{자신_섀시}("名前")
 		PRINTFORML CHASIS[ 2] - %RESULTS%
 		VARSET RESULT
 		TRYCALLFORM CARDCAN_{자신_부스트}("자신",부스트起動,"")
 		IF RESULT == 1 && 설정플래그 == 0
 			SETCOLOR C_G_YELLOW
 		ENDIF
-		TRYCALLFORM CARDNAME_{자신_부스트}, "名前"
+		TRYCALLFORM CARDNAME_{자신_부스트}("名前")
 		PRINTFORML BOOST [ 3] - %RESULTS%
 		RESETCOLOR
 
 		CUSTOMDRAWLINE —
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		選択カード = RESULT
 		;돌아간다
@@ -4829,11 +4964,12 @@ ELSE
 				ELSEIF RESULT == 3
 					TRYCALLFORM CARDEFFECT_{자신_부스트}("자신",부스트起動,"")
 					CALL CARD_FINAL(ターンプレイヤー)
+					RETURN 1
 				ENDIF
 			ENDIF
 		ENDIF
 
-
+;――――――――――――상대マシン性能――――――――――――
 	ELSEIF RESULT == 556
 		$E_MACHINE_LOOP
 		CUSTOMDRAWLINE —
@@ -4841,18 +4977,18 @@ ELSE
 		CUSTOMDRAWLINE —
 		PRINTL
 		VARSET RESULT
-		TRYCALLFORM CARDNAME_{상대_엔진}, "名前"
+		TRYCALLFORM CARDNAME_{상대_엔진}("名前")
 		PRINTFORML ENGINE[ 1] - %RESULTS%
 		VARSET RESULT
-		TRYCALLFORM CARDNAME_{상대_섀시}, "名前"
+		TRYCALLFORM CARDNAME_{상대_섀시}("名前")
 		PRINTFORML CHASIS[ 2] - %RESULTS%
 		VARSET RESULT
-		TRYCALLFORM CARDNAME_{상대_부스트}, "名前"
+		TRYCALLFORM CARDNAME_{상대_부스트}("名前")
 		PRINTFORML BOOST [ 3] - %RESULTS%
 
 		CUSTOMDRAWLINE —
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		選択カード = RESULT
 		;돌아간다
@@ -4862,7 +4998,7 @@ ELSE
 				TRYCALLFORM CARD_UI(상대_엔진,2)
 				RESETCOLOR	
 				PRINTL
-				PRINTL [100] - 돌아간다
+				PRINTL 　[100] - 돌아간다
 				BINPUT
 				IF RESULT == 100
 					PRINTL 
@@ -4872,7 +5008,7 @@ ELSE
 				TRYCALLFORM CARD_UI(상대_섀시,2)
 				RESETCOLOR	
 				PRINTL
-				PRINTL [100] - 돌아간다
+				PRINTL 　[100] - 돌아간다
 				BINPUT
 				IF RESULT == 100
 					PRINTL 
@@ -4881,7 +5017,7 @@ ELSE
 				CALL CARD_UI_RESET
 				TRYCALLFORM CARD_UI(상대_부스트,2)
 				PRINTL
-				PRINTL [100] - 돌아간다
+				PRINTL 　[100] - 돌아간다
 				BINPUT
 				IF RESULT == 100
 					PRINTL 
@@ -4925,6 +5061,7 @@ ELSE
 			メインフェイズ２ = 1
 			バトルフェイズ = 0
 		ENDIF
+		RETURN 1
 	ELSEIF RESULT == 950
 		CALL CARD_CHECK_ATK_ABLE("자신")
 		IF ターンプレイヤー == "자신" && メインフェイズ２ != 1
@@ -4959,8 +5096,7 @@ ELSE
 		PRINTFORMW 『메인 페이즈２』
 		CALL CARD_TIMERLOOP("バトル終了時")
 		CALL CARD_FINAL(ターンプレイヤー);メインフェイズ２移行のフリーチェック
-
-
+		RETURN 1
 	;――――――――――――ターン終了――――――――――――
 	ELSEIF RESULT == 1000
 		CALL CARD_REACTION_EFFECT
@@ -4990,13 +5126,14 @@ ELSE
 		
 		CALL CARD_ENDPHASE
 		RETURN 1000
+;――――――――――――상대情報確認――――――――――――
 	ELSEIF RESULT == 1100
 		$INPUT_LOOP_OPCHECK
 		IF OPPOSER != -1
 			CALL PRINT_STATE(OPPOSER,3)
 			IF 상대_接可 >= 1 || オプション_いつでも触れる == 1
 				SETCOLOR C_PINK
-				PRINT [69] - 상대 플레이어를 만진다
+				PRINT 　[69] - 상대 플레이어를 만진다
 				RESETCOLOR
 			ENDIF
 		ELSE
@@ -5010,7 +5147,7 @@ ELSE
 			RESETCOLOR
 		ENDIF
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		IF RESULT == 100
 			PRINTL 
@@ -5026,7 +5163,7 @@ ELSE
 		ELSE
 			GOTO INPUT_LOOP_OPCHECK
 		ENDIF
-
+;――――――――――――자신情報確認――――――――――――
 	ELSEIF RESULT == 1101
 		$INPUT_LOOP_MASCHECK
 		CALL PRINT_STATE(MASTER,3)
@@ -5038,7 +5175,7 @@ ELSE
 			RESETCOLOR
 		ENDIF
 		PRINTL
-		PRINTL [100] - 돌아간다
+		PRINTL 　[100] - 돌아간다
 		BINPUT
 		IF RESULT == 100
 			PRINTL 

@@ -165,7 +165,7 @@ ELSEIF 종류 == 戦破壊→묘지
 효과条件カテゴリ = 플라즈마틱 모델
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			TRYCALLFORM CARD_{RESULT:1},"レベル"
+			TRYCALLFORM CARD_{RESULT:1}("レベル")
 			残りレベル = 8 - RESULT
 			CALL FULLRESET
 			효과範囲묘지 = 1
@@ -183,17 +183,17 @@ ELSEIF 종류 == 攻守変動
 		SIF GETVAR(@"%듀얼리스트%_魔_装:カウンタ") != 場所
 			CONTINUE
 		装備カードID = GETVAR(@"%듀얼리스트%_마함:カウンタ")
-		TRYCALLFORM CARDNAME_{装備カードID},"カテゴリ"
+		TRYCALLFORM CARDNAME_{装備カードID}("カテゴリ")
 		SIF !MATCH(RESULTS,"プラズマティックモデル")
 			CONTINUE
-		TRYCALLFORM CARD_{装備カードID},"攻撃力"
+		TRYCALLFORM CARD_{装備カードID}("攻撃力")
 		SIF RESULT >= 1300
 			CONTINUE
-		TRYCALLFORM CARD_{装備カードID},"종류"
+		TRYCALLFORM CARD_{装備カードID}("종류")
 		IF RESULT == 装備마법
 			攻撃力修正 += 4
 		ELSEIF RESULT == 효과モン
-			TRYCALLFORM CARDNAME_{装備カードID},"名前"
+			TRYCALLFORM CARDNAME_{装備カードID}("名前")
 			IF GROUPMATCH(RESULTS,"ＰＭ　タ-トグル","ＰＭ　バニッパ-")
 				攻撃力修正 += 2
 			ELSE

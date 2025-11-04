@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -34,7 +33,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  효과는 1턴에 1번 밖에 사용할 수 없다。
+PRINTL 이 카드명의 효과는 1턴에 1번 밖에 사용할 수 없다。
 CALL CARD_ABLE(1,攻撃後誘発)
 PRINTL ①：상대 몬스터가 공격 할 경우 발동할 수 있다,
 PRINTL 필드에 존재하는 모든 몬스터는 발정한다。
@@ -65,7 +64,8 @@ IF 종류 == 攻撃後誘発
 	SIF ターンプレイヤー == 듀얼리스트
 		RETURN 0
 	IF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
 	ELSEIF ゾーン == "손패"
 		SIF GETVARS(@"%듀얼리스트%_フィールド名") != "촉수궁"
@@ -105,6 +105,6 @@ IF 종류 == 攻撃後誘発
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"発情",99701)
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"発情")
 	ENDIF
 ENDIF

@@ -1,0 +1,147 @@
+﻿@CARDNAME_72750,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = KYOUTOU 워터프론트
+	CASE "略称"
+		RESULTS = KYOUTOU
+	CASE "カテゴリ"
+		RESULTS:0 = 파괴수
+ENDSELECT
+
+
+@CARD_72750(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "レア度"
+		RETURN CMN
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72750(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신 필드는 "KYOUTOU"가 된다.
+CALLFORM CARD_ABLE(10,발동強制誘発)
+PRINTL ①: 손패 이외에서 카드가 묘지로 보내질 때마다 발동한다.
+PRINTL 이 카드에 파괴수 카운터를 1개 올린다 (최대 5개까지).
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ②: 1턴에 1번, 이 카드의 파괴수 카운터가 3개 이상일 경우에 발동할 수 있다.
+PRINTL 자신은 덱 / 묘지에서 "파괴수" 몬스터 1장을 패에 추가한다.
+CALLFORM CARD_ABLE(2,身代효과)
+PRINTL ③: 이 카드가 효과로 파괴될 경우, 대신에 이 카드의 파괴수 카운터를 1개 제거할 수 있다.
+
+@CARDCAN_72750(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72750)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,72750)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") < 3
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 파괴수
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 5
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") < 0
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"효과")
+		RETURN 0
+	SIF 破壊대상ゾーン != "마함"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72750(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72750,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 파괴수
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 효과後強制誘発
+	CALL FULLRESET
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72750,10)
+	IF RESULT == 0
+		PRINTFORML KYOUTOU 워터프론트『{場所}』에 카운터가 놓였습니다。
+		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",1)
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72750)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72750)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",-1)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "KYOUTOU")
+ENDIF

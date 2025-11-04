@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 타주의 구체 -언홀리 비즈-
+		RESULTS = 타주의 구체 -언홀리 비즈-
 	CASE "略称"
-RESULTS = 언홀리 비즈
+		RESULTS = 언홀리 비즈
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:1 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
 ENDSELECT
 
 
@@ -41,7 +41,7 @@ CALL CARD_ABLE(2,효과後強制誘発)
 PRINTL ②：상대가 효과를 발동할 때마다, 장착 몬스터의 공격력을 700 내린다.
 CALL CARD_ABLE(3,효과後誘発)
 PRINTL ③：장착 몬스터의 공격력이 0 이하가 될 경우, 장착 몬스터를 파괴하고,
-PRINTL 　상대는 그 몬스터의 원래 공격력만큼의 대미지를 받는다.
+PRINTL 상대는 그 몬스터의 원래 공격력만큼의 대미지를 받는다.
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -63,18 +63,14 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79600)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과範囲상대필드 = 1	
 	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -135,7 +131,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 ELSEIF 종류 == 효과後強制誘発
 
 
-	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("名前")
 	PRINTFORML %RESULTS%의 국문에 큼직한 비즈가 삽입되어 간다…….
 	CALL SET_FIELD_INFO(装備者,"필드",装備先,"永攻",-700)
 	CALL CARD_EROTICS_FIELD(装備者,"필드",装備先)
@@ -147,7 +143,7 @@ ELSEIF 종류 == 효과後強制誘発
 	CALL CARD_LOADUP
 
 	IF GETVAR(@"%装備者%_MZ_攻:装備先") <= 0
-		TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("名前")
 		PRINTFORML 한계를 맞이한 %RESULTS%는 끝까지 삽입당한 비즈를 단번에 뽑혀졌고,
 		PRINTFORMW 장액을 흩뿌리면서 절정하고 말았다.
 		CALL CARD_EROTICS_FIELD(装備者,"필드",装備先)
@@ -155,13 +151,13 @@ ELSEIF 종류 == 효과後強制誘発
 			조교대상 = RESULT
 			CALL EROTIC_MOVE("애널解し",조교대상, -1, 500)
 		ENDIF
-		TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}, "攻撃力"
+		TRYCALLFORM CARD_{GETVAR(@"%装備者%_필드:装備先")}("攻撃力")
 		CALL LIFE_CHANGE(装備者,"減少","효과",RESULT)
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",装備先,"묘지")
 
 		IF GETVAR(@"%装備者%_필드:装備先") != -1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}, "名前"
+			TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("名前")
 			PRINTFORML 파괴되는 것을 받아들일 수 없었던 %RESULTS%의 애널에 비즈가 다시 삽입되고 있다.
 		ENDIF
 	ENDIF

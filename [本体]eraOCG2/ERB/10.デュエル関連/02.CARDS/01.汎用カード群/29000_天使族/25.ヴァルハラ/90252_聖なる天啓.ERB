@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 성스러운 천혜
+		RESULTS = 성스러운 천혜
 	CASE "略称"
-RESULTS = 성스러운 천혜
+		RESULTS = 성스러운 천혜
 	CASE "カテゴリ"
-RESULTS:0 = 발할라
-RESULTS:1 = 게임 오리지널
+		RESULTS:0 = 발할라
+		RESULTS:1 = 게임 오리지널
 ENDSELECT
 
 
@@ -24,7 +24,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -56,9 +55,8 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92962)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 攻撃時誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -102,7 +100,7 @@ IF 종류 == 攻撃時誘発
 			CALL FULLRESET
 			효과範囲마함 = 1
 			효과範囲묘지 = 1
-효과条件名前 = 신의 거성－발할라
+			효과条件名前 = 신의 거성－발할라
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1
 				IF ターンプレイヤー == 対面者 && 戦闘場所(듀얼리스트) == 5

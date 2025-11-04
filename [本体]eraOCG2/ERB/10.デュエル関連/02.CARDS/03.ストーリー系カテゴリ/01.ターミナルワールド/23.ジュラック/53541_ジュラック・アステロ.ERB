@@ -1,0 +1,214 @@
+﻿@CARDNAME_53541,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 아스테로
+	CASE "略称"
+		RESULTS = Ｊ 아스테로
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_53541(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2300
+	CASE "성별"
+		RETURN 無性
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN ULR
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_53541(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+CALL RESETCONDITION_MAT
+必要レベル数 = 10
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+	素材条件종족 = 비늘야수족
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,53541) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_53541(종류)
+#DIM DYNAMIC 종류
+PRINTL 튜너＋튜너以外の비늘야수족モンスター１体以上
+CALL CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがＳ소환した場合に발동できる。
+PRINTL 자신の덱・묘지から「쥬락」마법・함정カード１枚を자신フィールドにセットする。
+CALL CARD_ABLE(2,소환誘発)
+PRINTL ②：１ターンに１度、상대がモンスターを특수소환する際に、
+PRINTL 자신の묘지から恐竜族モンスター２体を제외して발동できる。
+PRINTL それを無効にし、そのモンスターを破壊する。
+CALL CARD_ABLE(3,묘지起動,フリー誘発)
+PRINTL ③：상대ターンに、자신の묘지からこのカードを含む「쥬락」モンスター２体を제외して발동できる。
+PRINTL ＥＸ덱から「쥬락 메테오」１体をＳ소환扱いで특수소환する。
+
+
+@CARDCAN_53541(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,53541)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 쥬락
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)	
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환誘発
+	SIF 발동済_2(듀얼리스트,53541)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 最終소환決者 == 듀얼리스트
+		RETURN 0
+	SIF 最終소환타입 != "특수"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 비늘야수족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)	
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 쥬락
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)	
+	SIF RESULT < 2
+		RETURN 0
+	CALL FULLRESET	
+	효과範囲EX덱 = 1
+	효과条件名前 = 쥬락 메테오
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)	
+	SIF RESULT < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_53541(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과先
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;PRINTFORMW 종류:{종류}
+
+IF  종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,53541,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 쥬락
+		효과条件종류 = 마함全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+	ENDIF
+ELSEIF 종류 == 소환誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,53541,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 비늘야수족
+		효과条件複数 = 2
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			효과先 = 最終소환場所
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"完全묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,53541,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 쥬락
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET	
+			효과条件名前 = 쥬락 메테오
+	    	CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+    		IF RESULT != 9999
+        		CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",RESULT)
+    		ENDIF
+		ENDIF
+	ENDIF
+ENDIF

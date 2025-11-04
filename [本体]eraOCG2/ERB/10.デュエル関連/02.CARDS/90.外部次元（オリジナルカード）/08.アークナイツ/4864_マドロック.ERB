@@ -1,0 +1,177 @@
+﻿@CARDNAME_4864,参照先
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 머드락
+	CASE "略称"
+		RESULTS = 머드락
+	CASE "カテゴリ"
+		RESULTS:0 = 로도스 아일랜드
+		RESULTS:1 = Defender
+		RESULTS:2 = 오퍼레이터
+		RESULTS:4 = 명일방주
+ENDSELECT
+
+
+@CARD_4864(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 2800
+	CASE "성별"
+		RETURN 牝性
+	CASE "単一存在"
+		RETURN 1
+	CASE "추가日"
+		RETURN 250406
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4864(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "머드락"은 자신 필드에 1장만 존재할 수 있고,
+PRINTL 이 ①의 효과는 1턴에 1번만 사용할 수 있다.
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①: 자신 필드에 "오퍼레이터"가 3장 이상,
+PRINTL 또는 "로도스 아일랜드" 몬스터 카드가 2장 이상 존재할 경우, 3200 LP를 지불하고 발동할 수 있다.
+PRINTL 이 카드를 패에서 특수 소환한다.
+CALLFORM CARD_ABLE(0,발동強制誘発)
+PRINTL ②: 상대의 효과가 발동할 때마다, 이 카드의 SP 카운터를 1개 늘린다 (최대 4).
+CALLFORM CARD_ABLE(0,필드起動,フリー誘発)
+PRINTL ③: 서로의 턴에, 이 카드의 SP 카운터를 4개 제거하고 발동할 수 있다.
+PRINTL 이 카드의 수비력 이하의 공격력을 가진 상대 필드의 몬스터 1장을 파괴한다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ④: 이 카드는 1턴에 1번만 전투 효과로는 파괴되지 않으며, 수비 표시 그대로 공격할 수 있다.
+
+
+@CARDCAN_4864(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4864)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,4864)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4864,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 3200
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 오퍼레이터
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT >= 3
+		RETURN 1
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 로도스 아일랜드
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT >= 2
+		RETURN 1
+	RETURN 0
+
+ELSEIF 종류 == 발동強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") >= 4
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA_2(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,4864)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") < 4
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件攻撃力 = GETVAR(@"%듀얼리스트%_MZ_守:場所")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4864(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4864,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",3200)
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+	ENDIF
+
+ELSEIF 종류 == 발동強制誘発
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"個Ｃ",1)
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4864,2)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"個Ｃ",-4)
+		CALL FULLRESET
+		효과条件攻撃力 = GETVAR(@"%듀얼리스트%_MZ_守:場所")
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"一破")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"守戦")
+ENDIF

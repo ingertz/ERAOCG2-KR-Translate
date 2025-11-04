@@ -64,13 +64,8 @@ IF 종류 == ターン開始時強制
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -89,27 +84,28 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == ターン開始時強制
-	PRINTW 不穏な音を立てながらスロットが回り始める・・・
+	PRINTW 불온한 소리를 내며 슬롯이 돌기 시작했다・・・
 	CALL DICE_ROLL(듀얼리스트,1)
 	IF RESULT == 1
-		PRINTW マシンがすごい勢いで周りの物を吸い込み始めた！
+		PRINTW 머신이 굉장한 기세로 주위의 물건을 흡수하기 시작했다！
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
 	ELSEIF RESULT == 2
-		PRINTW マシンがすごい勢いで周りの物を吸い込み始めた！
+		PRINTW 물건이 굉장한 기세로 주위의 물건을 흡수하기 시작했다！
 		CALL CARD_ADD_GY_BASIC(対面者,"손패",ゾーン,場所)
 	ELSEIF RESULT == 3
-		PRINTW マシンから카드가 吐き出された！
+		PRINTW 머신에서 카드가 배출됐다！
 		CALL CARDDRAW_BASIC(듀얼리스트,1)
 	ELSEIF RESULT == 4
-		PRINTW マシンから카드가 吐き出された！
+		PRINTW 머신에서 카드가 배출됐다！
 		CALL CARDDRAW_BASIC(対面者,1)
 	ELSEIF RESULT == 5
-		PRINTW マシンから電撃が迸る！
+		PRINTW 머신에서 전격이 오른다！
+		CALL FULLRESET
 		효과範囲상대필드 = 1
 		효과範囲상대마함 = 1
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 	ELSEIF RESULT == 6
-		PRINTW まずい！　爆発するっ────！
+		PRINTW 위험해！　폭발한닷────！
 		SETBGCOLOR 95,95,95
 		SETBGCOLOR 145,145,145
 		SETBGCOLOR 198,198,198

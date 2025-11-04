@@ -842,7 +842,7 @@ EXPLV:12 = 6000
 #DIM 기력_マスタ
 #DIM 발기_マスタ
 #DIM 표시サイズ
-#DIM 服装타입
+#DIM 복장타입
 
 표시サイズ = 20
 MAS_PORTRAIT_표시サイズ = 10
@@ -922,9 +922,9 @@ PRINTFORM ┃%"",표시サイズ,LEFT%┃
 IF !EQUIP:MASTER:0
 	PRINT 【전라】
 ELSE
-	FOR 服装타입,1,20
-		IF STRLENS(CLOTHNAME(服装타입,EQUIP:MASTER:服装타입))
-			PRINTFORM 【%CLOTHNAME(服装타입,EQUIP:MASTER:服装타입)%】
+	FOR 복장타입,1,20
+		IF STRLENS(CLOTHNAME(복장타입,EQUIP:MASTER:복장타입))
+			PRINTFORM 【%CLOTHNAME(복장타입,EQUIP:MASTER:복장타입)%】
 		ENDIF
 	NEXT
 ENDIF
@@ -1101,6 +1101,7 @@ NEXT
 #DIM DYNAMIC 選択数値
 #DIM DYNAMIC 설정数値
 
+
 SIF 禁止_등장작품:0 == ""
 	VARSET 禁止_등장작품, "NG"
 $INPUT_LOOP
@@ -1127,7 +1128,7 @@ FOR 캐릭터_ID,0,CHARANUM
 NEXT
 PRINTL
 ;CUSTOMDRAWLINE —
-FOR カウンタ,0,20
+FOR カウンタ,0,200
 	SIF 禁止_등장작품:カウンタ == ""
 		CONTINUE
 ;	PRINTFORM 【{カウンタ,2}】%禁止_등장작품:カウンタ%,
@@ -1137,7 +1138,7 @@ PRINTL
 ;PRINTFORML FINDELEMENT설정数値:{설정数値}
 
 CUSTOMDRAWLINE —
-PRINTL 　[1000] - 결정　　　　　　　　　 　[1001] - 리셋
+PRINTL 　[1000] - 결정　　　　　　[1001] - 모두선택　　　 　[1002] - 리셋
 PRINTL 
 
 BINPUT
@@ -1145,7 +1146,18 @@ IF RESULT == 1000
 	RETURN 0
 ELSEIF RESULT == 1001
 	VARSET 禁止_등장작품, "NG"
+	FOR カウンタ,0,200
+		IF 選択ワード:カウンタ != ""
+			禁止_등장작품:カウンタ = %選択ワード:カウンタ%
+		ELSE
+			禁止_등장작품:カウンタ = NG
+		ENDIF
+	NEXT
 	GOTO INPUT_LOOP
+ELSEIF RESULT == 1002
+	VARSET 禁止_등장작품, "NG"
+	GOTO INPUT_LOOP
+
 ELSE
 	選択数値 = RESULT
 	FOR カウンタ,0,200

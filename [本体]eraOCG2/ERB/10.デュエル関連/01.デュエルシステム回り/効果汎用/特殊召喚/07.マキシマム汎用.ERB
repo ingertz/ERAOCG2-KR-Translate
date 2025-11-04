@@ -16,6 +16,7 @@
 #DIM DYNAMIC 上級値
 #DIM DYNAMIC 選択カード,99
 #DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 選択カード_ID_保
 #DIM DYNAMIC 素材行先플래그
 #DIM DYNAMIC 속성의식플래그
 #DIMS DYNAMIC カテゴリ의식플래그 ;ザポルグ追記
@@ -42,7 +43,7 @@ FOR カウンタ,0,10
 	효과추가종류보존:カウンタ = 효과추가종류:カウンタ
 NEXT
 
-TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "맥시멈"
+TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("맥시멈")
 書き換えL파츠 = RESULT + 1
 書き換えR파츠 = RESULT + 2
 書き換えM파츠 = RESULT
@@ -55,7 +56,7 @@ VARSET 選択カード, -1
 VARSET 使用素材名前
 
 IF 条件無視 == 1
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("名前")
 	PRINTFORML MAXIMUM 소환、%RESULTS%！
 	CALL CARD_EX_SUMMON(듀얼리스트,出処,소환カード)
 	VARSET ALT条件
@@ -65,7 +66,7 @@ ENDIF
 
 $CHOICE_LOOP
 IF 듀얼리스트 == "자신"
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}, "名前"
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_%出処%:소환カード")}("名前")
 	カード名 = %RESULTS%
 	PRINTFORML 소환 카드：《%カード名%》
 
@@ -100,6 +101,15 @@ IF 듀얼리스트 == "자신"
 	選択カード:素材数 = RESULT
 ELSE
 	選択カード:素材数 = RESULT
+
+	CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
+	選択カード_ID_保 = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")
+	CALL SELECT_UI_SET(듀얼리스트,選択カード_ID_保,1)
+	IF RESULT == 1
+		選択カード:素材数 = -1
+		GOTO CHOICE_LOOP
+	ENDIF
+
 ENDIF
 IF 選択カード:素材数 == 9999
 	PRINTFORMW 돌아갑니다。
@@ -107,7 +117,7 @@ IF 選択カード:素材数 == 9999
 	RETURN 0
 ENDIF
 CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "名前"
+TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}("名前")
 使用素材名前:素材数 = %RESULTS%
 PRINTFORMW %使用素材名前:素材数%를 소재로 합니다({素材数+1}장째)
 
@@ -139,7 +149,7 @@ IF 素材数 >= 2
 	CALL CARD_RECONSTRUCT(듀얼리스트,出処, 소환カード,書き換えM파츠)
 
 
-	TRYCALLFORM CARDNAME_{書き換えM파츠}, "名前"
+	TRYCALLFORM CARDNAME_{書き換えM파츠}("名前")
 	カード名 = %RESULTS%
 	PRINTFORML 카드가 덮어씌워졌다！！
 
@@ -176,7 +186,7 @@ ENDIF
 #DIM DYNAMIC カウンタB
 #DIM DYNAMIC EX参照
 #DIM DYNAMIC 選択カード,99
-#DIM DYNAMIC 選択カード_ID,10
+#DIM DYNAMIC 選択カード_ID,99
 #DIM DYNAMIC 소환カード
 #DIM DYNAMIC 소환カード_ID
 #DIM DYNAMIC 素材数

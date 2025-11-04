@@ -1,0 +1,266 @@
+﻿@CARDNAME_40081,参照先
+;ココで指定卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 惑乱魔リセ
+	CASE "略称"
+		RESULTS = 惑リセ
+	CASE "カテゴリ"
+		RESULTS:0 = 惑乱魔
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_40081(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+	
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 植物族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 600
+	CASE "守備力"
+		RETURN 2200
+	CASE "性別"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1378
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_40081(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL このカード名の①③の効果は１ターンに１度、いずれか１つしか使用できない。
+CALLFORM CARD_ABLE(1,戦場起動)
+PRINTL ①：このカードが攻撃表示の場合、自分墓地の「落とし穴」通常罠カードまたは「蜜穴」通常罠カード１枚を対象として発動できる。
+PRINTL このカードをリリースし、そのカードを自分フィールドにセットする。この効果は相手ターンでも発動できる。
+PRINTL 相手フィールドに蟲紋カウンターが４種類以上置かれているモンスターが存在する場合、
+PRINTL この効果でセットしたカードはセットしたターンでも発動できる。
+CALLFORM CARD_ABLE(2,攻撃時誘発)
+SETCOLOR C_PINK
+PRINTL ②：攻撃表示のこのカードが攻撃対象として選択された時に発動できる。
+PRINTL その攻撃モンスターにこのカードの蟲紋カウンターを１つ置き、このカードは守備表示になる。
+RESETCOLOR
+CALLFORM CARD_ABLE(3,墓地起動)
+PRINTL ③：このカードが墓地に存在し、相手フィールドの表側表示モンスター１体を対象として発動できる。
+PRINTL そのモンスターにこのカードの蟲紋カウンターを１つ置き、このカードを特殊召喚する。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_40081(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件达成
+#DIM DYNAMIC 蟲纹数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,40081)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF 発動済_1(決闘者,40081)
+		RETURN 0
+	SIF 発動済_3(決闘者,40081)
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_表:場所") != 1
+		RETURN 0
+	SIF 魔罠数(決闘者) >= 5
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ:0 = 落とし穴
+	効果条件カテゴリ:1 = 蜜穴
+	効果条件種類 = 通常罠
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 攻撃時誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	SIF ターンプレイヤー == 決闘者
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_表:場所") == 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 攻撃時強制誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	SIF ターンプレイヤー == 決闘者
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_表:場所") == 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 墓地起動
+	SIF ゾーン != "墓地"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 発動済_1(決闘者,40081)
+		RETURN 0
+	SIF 発動済_3(決闘者,40081)
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,40081,"墓地")
+	SIF RESULT == 1
+    	RETURN 0
+	SIF モンスター数(決闘者) >= 5
+		RETURN 0
+
+    CALL FULLRESET
+    効果範囲相手戦場 = 1
+	効果条件表示 = 表側表示
+    CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 0
+		RETURN 0
+    RETURN 1
+ENDIF
+
+@CARDEFFECT_40081(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件达成
+#DIM DYNAMIC 选择卡片
+#DIM DYNAMIC 自己卡片
+#DIM DYNAMIC 自己守備力修正
+#DIM DYNAMIC 对方卡片
+#DIM DYNAMIC 对方攻撃力修正
+#DIM DYNAMIC 调教对象
+#DIM DYNAMIC 性別判定
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40081,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%対面者%_戦場:カウンタ") == -1
+				CONTINUE
+			SIF GETVAR(@"%対面者%_MZ_リ数:カウンタ") >= 10
+				CONTINUE
+			SIF GETVAR(@"%対面者%_MZ_表:カウンタ") == 3
+				CONTINUE
+
+			CALL TRAPSEX_FACETIRON1(対面者,カウンタ)
+			SIF RESULT >= 4
+				条件达成 = 1
+		NEXT
+
+		IF 条件达成 == 1
+			CALL FULLRESET
+			効果条件カテゴリ:0 = 落とし穴
+			効果条件カテゴリ:1 = 蜜穴
+			効果条件種類 = 通常罠
+			CALL CARD_SET_BASIC(決闘者,"墓地",ゾーン,場所,"使化裏側表示")
+		ELSE
+			CALL FULLRESET
+			効果条件カテゴリ:0 = 落とし穴
+			効果条件カテゴリ:1 = 蜜穴
+			効果条件種類 = 通常罠
+			CALL CARD_SET_BASIC(決闘者,"墓地",ゾーン,場所,"裏側表示")
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 攻撃時誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40081,2)
+	IF RESULT == 0
+		自己卡片 = 戦闘場所(決闘者)
+		自己守備力修正 = GETVAR(@"%決闘者%_MZ_守:自己卡片")
+		对方卡片 = 戦闘場所(決闘者,1)
+		对方攻撃力修正 = GETVAR(@"%対面者%_MZ_攻:对方卡片")
+		性別判定 = GETVAR(@"%対面者%_MZ_性:对方卡片")
+		IF 性別判定 == 牝性
+			调教对象 = GETVAR(@"%対面者%_戦場:对方卡片")
+			CALL SEXTEXT_40081_1_1(決闘者,调教对象,性別判定,对方卡片,自己守備力修正,对方攻撃力修正)
+		ELSEIF (性別判定 == 雄性 || 性別判定 == ふたなり) && 对方攻撃力修正 - 自己守備力修正 >= 1
+			调教对象 = GETVAR(@"%対面者%_戦場:对方卡片")
+			CALL SEXTEXT_40081_1_1(決闘者,调教对象,性別判定,对方卡片,自己守備力修正,对方攻撃力修正)
+			CALL CARD_EROTICS(调教对象)
+			IF RESULT != -1
+				SIF 魔罠数(対面者) < 5
+					CALL CARD_EQUIP_MONSTER(対面者,对方卡片,"相手戦場",自己卡片,1)
+			ELSE
+				SIF 魔罠数(対面者) < 5
+					CALL CARD_EQUIP_MONSTER(対面者,对方卡片,"相手戦場",自己卡片,1)
+			ENDIF
+		ELSEIF 性別判定 == 雄性 || 性別判定 == ふたなり
+			调教对象 = GETVAR(@"%対面者%_戦場:对方卡片")
+			CALL SEXTEXT_40081_1_1(決闘者,调教对象,性別判定,对方卡片,自己守備力修正,对方攻撃力修正)
+		ENDIF
+		CALL SET_FIELD_INFO(決闘者,"戦場",場所,"表",2,1)
+		CALL SET_FIELD_INFO(対面者,"戦場",对方卡片,"莉塞纹Ｃ",1)
+	ENDIF
+
+ELSEIF 種類 == 攻撃時強制誘発
+	CALL FULLRESET
+	IF RESULT == 0
+		IF 戦闘場所(決闘者,1) != 5
+			CALL CARD_EROTICS(戦闘カードID(決闘者,1))
+			IF RESULT != 0
+				调教对象 = RESULT
+			ENDIF
+		ENDIF
+		IF 调教对象 > 0
+			PRINTFORML
+			SETCOLOR C_PINK 
+			PRINTFORML %CALLNAME:调教对象%はリセの迷宮で道に迷い、深淵へと一歩一歩踏み込んでいく。
+			RESETCOLOR
+		ENDIF
+	ENDIF		
+
+ELSEIF 種類 == 墓地起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,40081,3)
+	IF RESULT == 0
+    	CALL FULLRESET
+        効果範囲相手戦場 = 1
+		効果条件表示 = 表側表示
+        CALL CARD_CHOOSE_BASIC(決闘者,"相手戦場",ゾーン,場所)
+        选择卡片 = RESULT
+        IF 选择卡片 != 9999
+        	CALL SET_FIELD_INFO(対面者,"戦場",选择卡片,"莉塞纹Ｃ",1)
+            CALL CARD_SP_SUMMON(決闘者,ゾーン,場所)
+        ENDIF
+    ENDIF
+ENDIF

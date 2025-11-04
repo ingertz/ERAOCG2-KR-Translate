@@ -1,0 +1,207 @@
+@CARDNAME_78722,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 7방패 여신의 집념
+	CASE "略称"
+		RESULTS = 7방패여신집념
+	CASE "カテゴリ"
+		RESULTS:0 = 7방패 동맹
+		RESULTS:1 = 쿠로이누
+ENDSELECT
+
+@CARD_78722(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_78722(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_78722(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신 필드에 "7방패 동맹의 상징 셀레스틴"이 존재할 경우, 이 카드는 상대 턴에도 패에서 발동할 수 있다.
+PRINTL 이 카드명의 ①② 효과는 각각 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：패 / 필드의 "7방패 동맹의 상징 셀레스틴" 이외의 "7방패 동맹"P몬스터 카드 1장을 EX덱에 보내고,
+PRINTL EX덱에서 그 카드명 이외이면서 EX몬스터 이외의 "7방패 동맹"P몬스터 1장을 특수 소환한다.
+CALL CARD_ABLE(2,身代효과)
+PRINTL ②：자신 필드의 "7방패 동맹의 상징 셀레스틴" 이외의 "7방패 동맹"몬스터가 전투 / 효과로 파괴되었을 때,
+PRINTL 대신에 묘지의 이 카드를 제외할 수 있다.
+
+@CARDCAN_78722(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 候補제외ID, VARSIZE("효과条件固ID")
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタB
+#DIMS DYNAMIC 대상ゾーン
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,78722)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,78722)
+		RETURN 0
+	FOR カウンタ, 0, 現EX山札数(듀얼리스트)
+		選択カードID = GETVAR(@"%듀얼리스트%_EX덱:カウンタ")
+		IF 選択カードID != -1
+			TRYCALLFORM CARD_{選択カードID}("종류")
+			SIF GROUPMATCH(RESULT, 융합, 싱크로, 엑시즈, 링크, 초차원)
+				CONTINUE
+			TRYCALLFORM CARD_{選択カードID}("分割")
+			SIF RESULT != 펜듈럼
+				CONTINUE
+			VARSET 条件달성
+			TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+			IF MATCH(RESULTS, "7방패 동맹")
+				候補제외ID:カウンタB = 選択カードID
+				カウンタB++
+				SIF カウンタB >= VARSIZE("효과条件固ID")
+					BREAK
+			ENDIF
+		ENDIF
+	NEXT
+	SIF カウンタB < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	IF モンスター数(듀얼리스트) < 5
+		효과範囲손패 = 1
+		효과範囲마함 = 1
+	ENDIF
+	효과条件分割 = 펜듈럼
+	효과条件固名前 = 7방패 동맹의 상징 셀레스틴
+	FOR カウンタ, 0, カウンタB
+		효과条件固ID:カウンタ = 候補제외ID:カウンタ
+	NEXT
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 身代효과
+	SIF 발동済_2(듀얼리스트,78722)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	IF 破壊대상ゾーン == "필드"
+		대상ゾーン = MZ
+	ELSE
+		대상ゾーン = 魔
+	ENDIF
+	IF 대상ゾーン != ""
+		SIF 破壊대상ID == 4716 || GETVAR(@"%듀얼리스트%_%대상ゾーン%_変化元ID:破壊대상場所") == 4716
+			RETURN 0
+	ENDIF
+	SIF !GROUPMATCH(破壊종류,"효과","戦闘")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_78722(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+#DIM DYNAMIC 候補제외ID, VARSIZE("효과条件固ID")
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタB
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78722,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		FOR カウンタ, 0, 現EX山札数(듀얼리스트)
+			選択カードID = GETVAR(@"%듀얼리스트%_EX덱:カウンタ")
+			IF 選択カードID != -1
+				TRYCALLFORM CARD_{選択カードID}("종류")
+				SIF GROUPMATCH(RESULT, 융합, 싱크로, 엑시즈, 링크, 초차원)
+					CONTINUE
+				TRYCALLFORM CARD_{選択カードID}("分割")
+				SIF RESULT != 펜듈럼
+					CONTINUE
+				VARSET 条件달성
+				TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+				IF MATCH(RESULTS, "7방패 동맹")
+					候補제외ID:カウンタB = 選択カードID
+					カウンタB++
+					SIF カウンタB >= VARSIZE("효과条件固ID") - 1
+						BREAK
+				ENDIF
+			ENDIF
+		NEXT
+		CALL FULLRESET
+		효과範囲필드 = 1
+		IF モンスター数(듀얼리스트) < 5
+			효과範囲손패 = 1
+			효과範囲마함 = 1
+		ENDIF
+		효과条件分割 = 펜듈럼
+		효과条件固名前 = 7방패 동맹의 상징 셀레스틴
+		FOR カウンタ, 0, カウンタB
+			효과条件固ID:カウンタ = 候補제외ID:カウンタ
+		NEXT
+		효과条件行先플래그 = EX덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		選択カードID = RESULT:1
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件종류 = EX以外全般
+			효과条件固ID = 選択カードID
+			효과条件分割 = 펜듈럼
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78722,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

@@ -33,10 +33,10 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의  카드는 1턴에 1번 바께 발동할 수 없다.
+PRINTL 이 카드명의 카드는 1턴에 1번 바께 발동할 수 없다.
 CALL CARD_ABLE(1,마함起動)
-PRINTL ①：자신 필드 위에"바르모니카" 몬스터 카드가 존재할 경우, 이하의 효과 중 1개를 선택해 발동할 수 있다.
-PRINTL 자신 필드 위에"바르모니카"싱크로/링크 몬스터가 존재할 경우, 양쪽 모두를 선택해 적용할 수 있다.
+PRINTL ①：자신 필드 위에 "바르모니카" 몬스터 카드가 존재할 경우, 이하의 효과 중 1개를 선택해 발동할 수 있다.
+PRINTL 자신 필드 위에 "바르모니카" 싱크로 / 링크 몬스터가 존재할 경우, 양쪽 모두를 선택해 적용할 수 있다.
 PRINTL ●자신은 500LP를 회복한다.
 PRINTL 그 후, 상대 필드의 앞면 표시의 마법 / 함정 카드를 모두 파괴한다.
 PRINTL ●자신은 500LP 데미지를 받는다.
@@ -59,7 +59,8 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -102,8 +103,8 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 
 		IF 듀얼리스트 == "자신"
 			PRINTL
-			PRINTL 어떤 느낌의
-			PRINTL 　음을 선택해?
+			PRINTL 　효과　
+			PRINTL 　소리　를 선택
 			PRINTL
 			PRINTL （속닥속닥…！）
 			PRINTL （회복하면서 상대의 마법 / 함정을 파괴해자…！）[0]
@@ -123,17 +124,17 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				CALL CARDEFFECT_99642_3(듀얼리스트,종류,ゾーン,場所)
 			ENDIF
 		ELSEIF 듀얼리스트 == "상대"
-			PRINTFORML 選ばれた효과 
+			PRINTFORML 선택된 효과 
 			IF 条件달성 == 1
-				PRINTFORMW ●両方適用する
+				PRINTFORMW ●둘다 적용한다
 				CALL CARDEFFECT_99642_3(듀얼리스트,종류,ゾーン,場所)
 			ELSE
 				SELECTCASE RAND:2
 					CASE 0
-						PRINTFORMW ●５００회복し、상대의 앞면 표시인 마법 / 함정 카드를 전부 파괴한다。
+						PRINTFORMW ●５００회복하고、상대의 앞면 표시인 마법 / 함정 카드를 전부 파괴한다。
 						CALL CARDEFFECT_99642_1(듀얼리스트,종류,ゾーン,場所)
 					CASE 1
-						PRINTFORMW ●５００데미지를 受け、상대 필드의  카드를 １장 제외한다。
+						PRINTFORMW ●５００데미지를 받고、상대 필드의 카드를 １장 제외한다。
 						CALL CARDEFFECT_99642_2(듀얼리스트,종류,ゾーン,場所)
 				ENDSELECT
 			ENDIF

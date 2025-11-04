@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 음마의 입맞춤
+		RESULTS = 음마의 입맞춤
 	CASE "略称"
-RESULTS = 음마의 입맞춤
+		RESULTS = 음마의 입맞춤
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:1 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
 ENDSELECT
 
 
@@ -39,7 +39,7 @@ CALL CARD_ABLE(1,攻守変動,지속효과)
 PRINTL ①：장착 몬스터는 공격력을 700 내리고, 전투로는 파괴되지 않는다.
 CALL CARD_ABLE(2,攻撃時誘発)
 PRINTL ②：장착 몬스터가 암컷 몬스터와 전투를 실행할 경우에 발동할 수 있다.
-PRINTL 　전투를 실행한 상대 몬스터를 발정시킨다.
+PRINTL 전투를 실행한 상대 몬스터를 발정시킨다.
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -64,17 +64,13 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79602)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

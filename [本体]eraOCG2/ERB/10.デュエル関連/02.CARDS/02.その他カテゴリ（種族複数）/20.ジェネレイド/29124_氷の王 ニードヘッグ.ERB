@@ -1,0 +1,179 @@
+﻿@CARDNAME_29124,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 얼음의 제너레이드 니드헥
+	CASE "略称"
+		RESULTS = 빙왕 니드헥
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_29124(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 2600
+	CASE "성별"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_29124(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL ①："얼음의 제너레이드 니드헥"은 자신 필드에 １장밖에 앞면 표시로 존재할 수 없다。
+CALLFORM CARD_ABLE(1,소환誘発)
+PRINTL ②：상대가 몬스터를 특수 소환할 때、
+PRINTL 자신 필드의 "제너레이드" 몬스터 또는 드래곤족 몬스터 １장을 릴리스하고 발동할 수 있다。
+PRINTL 그 특수 소환을 무효로 하고、그 몬스터를 파괴한다。
+
+@CARDCAN_29124(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29124)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,29124)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件スーパーカテゴリ = 제너레이드
+	효과条件종족 = 드래곤족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 最終소환決者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(最終소환타입,"특수","EX특수")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_29124(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 효과失敗
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29124,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件スーパーカテゴリ = 제너레이드
+		효과条件종족 = 드래곤족
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",最終소환場所,"完全묘지")
+		ENDIF
+	ENDIF
+ENDIF
+
+;----------------------------------------------------------------------------------------------------------------
+
+@CARDNAME_129124,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 빙룡왕의 권속
+	CASE "略称"
+		RESULTS = 빙왕병
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_129124(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 1100
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+@CARD_EXPLANATION_129124(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+
+@CARDCAN_129124(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+RETURN 0

@@ -1,0 +1,202 @@
+﻿@CARDNAME_71707,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = エレメント・クロス・セイバー
+	CASE "略称"
+		RESULTS = 霊神Ｘ字剣
+	CASE "カテゴリ"
+		RESULTS:0 = 霊神
+		RESULTS:1 = エレメント
+		RESULTS:3 = ゲームオリジナル
+ENDSELECT
+
+
+@CARD_71707(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 速攻魔法
+	CASE "追加日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71707(種類)
+#DIM DYNAMIC 種類
+PRINTL このカード名の①②の効果は１ターンに１度、いずれか１つしか使用できない。
+CALLFORM CARD_ABLE(1,手札起動,魔罠起動,フリー誘発)
+PRINTL ①：自分の手札・フィールドの「霊神」・「エレメント」モンスター１体をリリースし、
+PRINTL 相手フィールドのカード１枚を対象として発動できる。そのカードを破壊する。
+CALLFORM CARD_ABLE(2,墓地起動)
+PRINTL ②：自分メインフェイズに墓地のこのカードを除外して、自分の墓地の属性が異なる
+PRINTL 「霊神」・「エレメント」モンスター２体を対象にして発動できる。そのうち１体を手札に加え、残りの１体をデッキに戻す。
+
+;オリジナルの速攻魔法。テーマモンスターをコストにして１除去というスタンダードな2:1の除去効果。カテゴリもついてるのでデッキに１枚入れておくと何かと便利。
+;テーマ魔罠数が少ないため調整で追加したが、除去効果だけでは流石に味気ないので、墓地効果で少し属性要素を参照しつつ、リソースを回復できる効果を持たせている。
+;この手のテーマ専用の除去魔罠としては、モンスターと魔罠の両対応、手札コストでもＯＫ、速攻魔法で後攻捲りにも使えるなど、小粒ながら小回りが効く性能に調整。
+;これぐらいの性能が、現代遊戯王でのテーマ用の除去札の平均レベルかなーと思うところ。「エレメント」も対応範囲にしているため、少し抑え気味のパワーに。
+;コストの支払い手段が若干似ているので混同してしまいそうになるが、「霊神の聖殿」の③のコスト軽減の対象にはならない点は注意。いずれかターン１なのも注意。
+
+;この「霊神」に伝わる秘剣技は、元来「霊神Ｘ字剣（ぺけじけん）」というクソダサ……もとい古風な技名で、マカニとナルが技名を（無理矢理）変えたらしい。
+;ラパウィラくんは「ぺけじけん鬼カッケェ……」というタイプのネーミングセンスの持ち主なので不満げだったが、年上お姉さんの２人には逆らえなかったようだ。
+;　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　参考文献：民明書房刊　「六輪書 ～霊神之巻～」
+
+
+@CARDCAN_71707(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 効果制限達成
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 複数属性, 8
+
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,71707)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動 || 種類 == フリー誘発
+	CALL CARD_QUICK_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 発動済_1(決闘者,71707)
+		RETURN 0
+	SIF 発動済_2(決闘者,71707)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果範囲相手魔罠 = 1
+	効果条件除去種 = 墓地
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果範囲戦場 = 1
+	効果条件カテゴリ:0 = 霊神
+	効果条件カテゴリ:1 = エレメント
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 墓地起動
+	SIF 発動済_1(決闘者,71707)
+		RETURN 0
+	SIF 発動済_2(決闘者,71707)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0 
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	;自分墓地の「霊神」・「エレメント」モンスターの属性数を確認してRESULT:1の属性数が2未満の場合は発動できない。
+	CALL FULLRESET
+	効果条件カテゴリ:0 = 霊神
+	効果条件カテゴリ:1 = エレメント
+	CALL ELEMENTS_KIND_BASIC(決闘者,"墓地",複数属性)
+	SIF RESULT:1 < 2
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ:0 = 霊神
+	効果条件カテゴリ:1 = エレメント
+	効果条件種類 = モン全般
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_71707(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件達成フラグ = 0
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード属性
+#DIM DYNAMIC 複数属性, 8
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動 || 種類 == フリー誘発
+	;カード発動確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,71707,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果範囲戦場 = 1
+		効果条件カテゴリ:0 = 霊神
+		効果条件カテゴリ:1 = エレメント
+		効果条件種類 = モン全般
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲相手戦場 = 1
+			効果範囲相手魔罠 = 1
+			CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"墓地")
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 墓地起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,71707,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,除外行き)
+		
+		CUSTOMDRAWLINE —
+		PRINTFORML 手札に加える「霊神」・「エレメント」モンスター１体を選択してください。
+		CUSTOMDRAWLINE —
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件カテゴリ:0 = 霊神
+		効果条件カテゴリ:1 = エレメント
+		効果条件種類 = モン全般
+		効果条件行先フラグ = 手札行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			選択カードID = RESULT:1
+			TRYCALLFORM CARD_{選択カードID}, "属性"
+			選択カード属性 = RESULT
+			SIF RESULT:1 == 0
+				条件達成フラグ |= 1
+			;選択カード属性以外の属性で選ぶ処理（反転している）
+			VARSET 複数属性
+			FOR カウンタ,1,8
+				SIF 選択カード属性 != カウンタ
+					複数属性:(カウンタ) = 1
+			NEXT
+			CUSTOMDRAWLINE —
+			PRINTFORML デッキに戻す「霊神」・「エレメント」モンスター１体を選択してください。
+			CUSTOMDRAWLINE —
+			CALL FULLRESET
+			効果範囲墓地 = 1
+			効果条件カテゴリ:0 = 霊神
+			効果条件カテゴリ:1 = エレメント
+			SIF 条件達成フラグ & 1
+				CALL 効果条件属性_複数(複数属性)
+			効果条件種類 = モン全般
+			効果条件行先フラグ = デッキ行き
+			CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

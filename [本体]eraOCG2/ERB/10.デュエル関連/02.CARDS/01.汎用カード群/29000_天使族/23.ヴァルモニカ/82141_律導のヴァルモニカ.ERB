@@ -1,0 +1,186 @@
+@CARDNAME_82141,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 율도의 바르모니카
+	CASE "略称"
+		RESULTS = 율도
+	CASE "カテゴリ"
+		RESULTS:0 = 바르모니카
+ENDSELECT
+
+
+@CARD_82141(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_82141(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：자신 필드에 "바르모니카" 몬스터 카드가 존재할 경우, 이하의 효과에서 1개를 골라 적용한다.
+PRINTL 자신 필드에 "바르모니카" L몬스터가 존재할 경우, 양쪽을 모두 적용할 수 있다.
+PRINTL ●자신은 500LP 회복한다.
+PRINTL 그 후, 상대 필드의 마법 / 함정 카드 1장을 파괴할 수 있다.
+PRINTL ●자신은 500 데미지를 받는다.
+PRINTL 그 후, 상대 필드의 몬스터 1장을 패로 되돌릴 수 있다.
+
+@CARDCAN_82141(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,82141)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,82141)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 바르모니카
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_82141(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82141,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = 링크
+		효과条件カテゴリ = 바르모니카
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 = 1
+
+		IF 듀얼리스트 == "자신"
+			PRINTL
+			PRINTL 　효과
+			PRINTL 　소리　를 선택
+			PRINTL
+			PRINTL （속닥속닥…！）
+			PRINTL （회복하면서 상대 필드의 마법 / 함정 카드 1장을 파괴하자…！）[0]
+			PRINTL
+			PRINTL （소근소근…♪）
+			PRINTL （데미지는 신경쓰지 말고 상대 필드의 몬스터 1장을 패로 되돌리자…♪）[1]
+			IF 条件달성 == 1
+				PRINTL
+				PRINTL （（아니면, 둘다?））[2]
+			ENDIF
+			BINPUT
+			IF RESULT == 0
+				CALL CARDEFFECT_82141_1(듀얼리스트,종류,ゾーン,場所)
+			ELSEIF RESULT == 1
+				CALL CARDEFFECT_82141_2(듀얼리스트,종류,ゾーン,場所)
+			ELSEIF RESULT == 2
+				CALL CARDEFFECT_82141_1(듀얼리스트,종류,ゾーン,場所)
+				CALL CARDEFFECT_82141_2(듀얼리스트,종류,ゾーン,場所)
+			ENDIF
+		ELSEIF 듀얼리스트 == "상대"
+			IF 条件달성 == 1
+				PRINTFORML 선택된 효과 
+				PRINTFORMW ●둘다 적용한다
+				CALL CARDEFFECT_82141_1(듀얼리스트,종류,ゾーン,場所)
+				CALL CARDEFFECT_82141_2(듀얼리스트,종류,ゾーン,場所)
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORML 선택된 효과 
+						PRINTFORMW ●５００ＬＰ회복한다。그 후、상대 필드의  마법 / 함정 카드 １장을 파괴할 수 있다。
+						CALL CARDEFFECT_82141_1(듀얼리스트,종류,ゾーン,場所)
+					CASE 1
+						PRINTFORML 선택된 효과 
+						PRINTFORMW ●５００데미지를 받는다。그 후、상대 필드의 몬스터 １장을 패로 되돌릴 수 있다。
+						CALL CARDEFFECT_82141_2(듀얼리스트,종류,ゾーン,場所)
+				ENDSELECT
+			ENDIF
+
+		ENDIF
+	ENDIF
+ENDIF
+
+
+@CARDEFFECT_82141_1(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL FULLRESET
+CALL LIFE_CHANGE(듀얼리스트,"増加","효과",500)
+CALL FULLRESET
+효과条件任意 = 1
+CALL CARD_REMOVAL_BASIC(듀얼리스트,"마함単体",場所,"묘지",82141)
+
+RETURN
+
+
+@CARDEFFECT_82141_2(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL FULLRESET
+CALL LIFE_CHANGE(듀얼리스트,"減少","효과",500)
+CALL FULLRESET
+효과条件任意 = 1
+CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"손패")
+
+RETURN
+

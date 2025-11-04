@@ -1,0 +1,260 @@
+﻿@CARDNAME_62102,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엑소시스터 바트 마테르
+	CASE "略称"
+		RESULTS = 바트 마테르
+	CASE "カテゴリ"
+		RESULTS:0 = 엑소시스터
+ENDSELECT
+
+
+@CARD_62102(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62102(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드는 １턴에 １번밖에 발동할 수 없으며、②③의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：이 카드의 발동시의 효과 처리로서、
+PRINTL 덱에서 "엑소시스터" 몬스터 ２장을 패에 넣는다。
+PRINTL 그 후、자신의 패를 １장 고르고 버린다。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：자신 필드에 "엑소시스터" 몬스터가 존재하는 경우에 발동할 수 있다。
+PRINTL 그 몬스터 카드명이 적혀있는 "엑소시스터" 몬스터 １장을 소환한다。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：몬스터가 상대의 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL 상대는 이하의 효과를 적용한다。
+PRINTL ●자신 묘지의 몬스터 １장을 제외한다。
+
+
+@CARDCAN_62102(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62102)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,62102)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前:0 = 엑소시스터 스텔라
+	효과条件名前:1 = 엑소시스터 마르파
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前 = 엑소시스터 에리스
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 엑소시스터 에리스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前 = 엑소시스터 스텔라
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 엑소시스터 소피아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前 = 엑소시스터 이렌느
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 엑소시스터 이렌느
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前 = 엑소시스터 소피아
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 엑소시스터
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	SIF 듀얼리스트 == "상대"
+		효과条件固名前起動 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,62102)
+		RETURN 0
+	SIF GETVAR(@"%対面者%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般+HD",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대묘지 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_62102(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성,10
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62102,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前:0 = 엑소시스터 스텔라
+		효과条件名前:1 = 엑소시스터 마르파
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			条件달성:0 = 1 ;エリス
+		ENDIF
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 엑소시스터 에리스
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			条件달성:1 = 1 ;ステラ
+		ENDIF
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 엑소시스터 소피아
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			条件달성:2 = 1 ;イレーヌ
+		ENDIF
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 엑소시스터 이렌느
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			条件달성:3 = 1 ;ソフィア
+		ENDIF
+		CALL FULLRESET
+		효과条件名前:0 = 仮当て
+		SIF 条件달성:0 == 1
+			효과条件名前:1 = 엑소시스터 에리스
+		SIF 条件달성:1 == 1
+			효과条件名前:2 = 엑소시스터 스텔라
+		SIF 条件달성:2 == 1
+			효과条件名前:3 = 엑소시스터 이렌느
+		SIF 条件달성:3 == 1
+			효과条件名前:4 = 엑소시스터 소피아
+		효과条件종류 = モン全般
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62102,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 엑소시스터
+			효과条件종류 = モン全般
+			효과条件複数 = 2
+			SIF 듀얼리스트 == "상대"
+				효과条件固名前選択 = 1
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲손패 = 1
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62102,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(対面者,ゾーン,場所)
+	ENDIF
+ENDIF

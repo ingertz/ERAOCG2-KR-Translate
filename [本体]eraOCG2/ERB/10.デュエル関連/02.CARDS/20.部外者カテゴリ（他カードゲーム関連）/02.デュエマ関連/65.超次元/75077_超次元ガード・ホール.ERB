@@ -27,7 +27,6 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "종류"
 
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -62,9 +61,8 @@ SIF RESULT == 1
 IF 종류 == 마함起動 ||  종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,21504)
 		RETURN 0
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -87,7 +85,7 @@ IF 종류 == 마함起動 ||  종류 == フリー誘発
 	효과条件종류 = 초차원
 	효과条件속성:0 = 빛속성
 	효과条件속성:1 = 어둠속성
-효과条件カテゴリ = 사이킥
+	효과条件カテゴリ = 사이킥
 	CALL 효과条件レベル_ADV(10, "以下")
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -115,13 +113,13 @@ IF 종류 == 마함起動 ||  종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75077,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-PRINTL 효과를 선택해 주세요
+		PRINTL 효과를 선택해 주세요
 		CALL YN_CHOICE(듀얼리스트,"●빛속성「사이킥」몬스터를 특수 소환한다。","●어둠속성「사이킥」몬스터를 특수 소환한다。")
 		IF RESULT == 0
 			CALL FULLRESET
 			효과条件종류 = 초차원
 			효과条件속성 = 빛속성
-효과条件カテゴリ = 사이킥
+			효과条件カテゴリ = 사이킥
 			CALL 효과条件レベル_ADV(10, "以下")
 			CALL DIMSUMMON(듀얼리스트,ゾーン,場所,8)
 			CALL FULLRESET
@@ -131,7 +129,7 @@ PRINTL 효과를 선택해 주세요
 			CALL FULLRESET
 			효과条件종류 = 초차원
 			효과条件속성 = 어둠속성
-효과条件カテゴリ = 사이킥
+			효과条件カテゴリ = 사이킥
 			CALL 효과条件レベル_ADV(10, "以下")
 			CALL DIMSUMMON(듀얼리스트,ゾーン,場所,8)
 			CALL FULLRESET

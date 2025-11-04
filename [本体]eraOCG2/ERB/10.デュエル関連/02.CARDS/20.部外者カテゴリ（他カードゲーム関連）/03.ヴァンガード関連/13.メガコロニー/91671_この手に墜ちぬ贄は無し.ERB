@@ -26,8 +26,6 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "종류"
 		RETURN 通常함정
-	CASE "추가日"
-		RETURN 251010
 ENDSELECT
 RETURN 0
 
@@ -68,10 +66,10 @@ IF 종류 == 발동誘発
 		RETURN 0
 	SIF 발동済_2(듀얼리스트,91671)
 		RETURN 0
-	SIF ゾーン != "마함"
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1	
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
+
 	CALL FULLRESET
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	SIF RESULT != 1
@@ -133,7 +131,7 @@ IF 종류 == 발동誘発
 			효과条件除去種 = 選択
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1
-				PRINTL 悪性카운터を置くモンスターを選択してください。
+				PRINTL 악성 카운터를 놓을 몬스터를 선택해주세요。
 				CALL FULLRESET
 				효과条件任意 = 1
 				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"選択")

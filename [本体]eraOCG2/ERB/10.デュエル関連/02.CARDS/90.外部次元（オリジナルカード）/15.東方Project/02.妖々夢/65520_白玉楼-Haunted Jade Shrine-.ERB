@@ -1,0 +1,222 @@
+﻿@CARDNAME_65520,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 백옥루-Haunted Jade Shrine-
+	CASE "略称"
+		RESULTS = 『백옥루』
+	CASE "カテゴリ"
+		RESULTS:0 = 백옥루
+		RESULTS:4 = 동방 Project
+ENDSELECT
+
+
+@CARD_65520(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 250808
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_65520(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신 필드는 "백옥루"가 된다。
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+;気まぐれでアンデットや友達を呼ぶ
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①：자신 메인 페이즈에 패에서 언데드족 몬스터를 묘지로 보내고 발동할 수 있다。
+PRINTL 덱에서 레벨 ４인 언데드족 몬스터 １장을 패에 넣는다。
+PRINTL 자신 필드에 레벨 ８이상인 언데드족 몬스터가 존재하는 경우、
+PRINTL 대신에 "환상소녀" 몬스터 １장을 패에 넣을 수 있다。
+CALLFORM CARD_ABLE(2,ターン終了時)
+PRINTL ②：서로의 턴 종료시에 발동할 수 있다。
+PRINTL 자신 필드의 언데드족 몬스터 １장을 고른다。
+PRINTL 자신의 묘지에 존재하는、그 카드의 원래 코스트 미만의 레벨을 가진 언데드족 몬스터 １장을 특수 소환한다。
+;邪魔するお化けたち
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ③：상대 필드의 몬스터의 공격력은、서로의 묘지의 언데드족 몬스터의 수의 합계×１００포인트 내린다。
+
+
+
+@CARDCAN_65520(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과使用불가,3
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,65520)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,65520)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종족 = 언데드족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 언데드족
+	CALL 효과条件レベル_ADV(8, "以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件スーパーカテゴリ = 환상소녀
+		효과条件スーパー종류 = モン全般
+		효과条件レベル = 4
+		효과条件종족 = 언데드족
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件レベル = 4
+		효과条件종족 = 언데드족
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF 발동済_2(듀얼리스트,65520)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 언데드족
+	CALL 효과条件レベル_ADV(2, "以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 언데드족
+	효과条件종류 = レベル持ち
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_65520(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 효과使用불가,3
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択レベル
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65520,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종족 = 언데드족
+		CALL 효과条件レベル_ADV(8, "以上")
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 = 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件종족 = 언데드족
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件レベル = 4
+			효과条件종족 = 언데드족
+			IF 条件달성 == 1
+				효과条件スーパーカテゴリ = 환상소녀
+				효과条件スーパー종류 = モン全般
+			ENDIF
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65520)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65520,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종족 = 언데드족
+		CALL 효과条件レベル_ADV(2, "以上")
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARD_{RESULT:99}("レベル")
+			選択レベル = RESULT
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종족 = 언데드족
+			효과条件종류 = レベル持ち
+			CALL 효과条件レベル_ADV(選択レベル - 1, "以下")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과条件종족 = 언데드족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 100
+
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-攻撃力修正,0,65520)
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "백옥루")
+
+ENDIF

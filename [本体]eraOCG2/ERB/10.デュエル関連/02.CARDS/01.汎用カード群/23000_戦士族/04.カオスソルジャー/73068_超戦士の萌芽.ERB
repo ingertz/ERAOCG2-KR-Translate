@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 초전사의 맹아
+		RESULTS = 초전사의 맹아
 	CASE "略称"
-RESULTS = 초전사의 맹아
+		RESULTS = 초전사의 맹아
 	CASE "カテゴリ"
-RESULTS:0 = 카오스
-RESULTS:1 = 의식 마법
+		RESULTS:0 = 카오스
+		RESULTS:1 = 의식 마법
 ENDSELECT
 
 
@@ -73,7 +73,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	FOR カウンタ,0,紙束最大値
 		SIF GETVAR(@"%듀얼리스트%_손패:カウンタ") == -1
 			CONTINUE
-		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:カウンタ")},"속성"
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:カウンタ")}("속성")
 		IF RESULT == 빛속성
 			条件속성 = 어둠속성
 		ELSEIF RESULT == 어둠속성
@@ -81,7 +81,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		ELSE
 			CONTINUE
 		ENDIF
-		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:カウンタ")},"レベル"
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_손패:カウンタ")}("レベル")
 		대상レベル = RESULT - GETVAR(@"%듀얼리스트%_手_一星:カウンタ")
 		SIF 대상レベル > 7
 			CONTINUE
@@ -109,8 +109,8 @@ ENDIF
 #DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC 条件レベル
 #DIM DYNAMIC 条件속성
-#DIMS DYNAMIC 選択カード名前_A
-#DIMS DYNAMIC 選択カード名前_B
+#DIMS DYNAMIC 選択カード名_A
+#DIMS DYNAMIC 選択カード名_B
 
 
 IF 종류 == 마함起動 || 종류 == 손패起動
@@ -126,15 +126,15 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		選択カード = RESULT
 		IF 選択カード != 9999
 			選択カード_ID = RESULT:99
-			TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
-			選択カード名前_A = %RESULTS%
-			TRYCALLFORM CARD_{選択カード_ID},"속성"
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+			選択カード名_A = %RESULTS%
+			TRYCALLFORM CARD_{選択カード_ID}("속성")
 			IF RESULT == 빛속성
 				条件속성 = 어둠속성
 			ELSEIF RESULT == 어둠속성
 				条件속성 = 빛속성
 			ENDIF
-			TRYCALLFORM CARD_{選択カード_ID},"レベル"
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
 			条件レベル = 8 - (RESULT - GETVAR(@"%듀얼리스트%_手_一星:選択カード"))
 			CALL FULLRESET
 			효과条件속성 = 条件속성
@@ -143,8 +143,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			選択カード = RESULT
 			IF 選択カード != 9999
 				選択カード_ID = RESULT:1
-				TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
-				選択カード名前_B = %RESULTS%
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+				選択カード名_B = %RESULTS%
 				CALL RESETAREA_MAT
 				素材範囲손패 = 1
 				CALL FULLRESET
@@ -160,8 +160,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 					CALL RESETAREA_MAT
 					TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:{選択カード}")}(듀얼리스트,選択カード)
 					素材範囲손패 = 1
-					素材条件名前:0 = %選択カード名前_A%
-					素材条件名前:1 = %選択カード名前_B%
+					素材条件名前:0 = %選択カード名_A%
+					素材条件名前:1 = %選択カード名_B%
 					TRYCALLFORM RITSUMMON(듀얼리스트, 選択カード,参照先（CS）)
 				ENDIF
 			ENDIF

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 혜안의 마술사
+		RESULTS = 혜안의 마술사
 	CASE "略称"
-RESULTS = 혜안의 마술사
+		RESULTS = 혜안의 마술사
 	CASE "カテゴリ"
-RESULTS:0 = 마술사
+		RESULTS:0 = 마술사
 ENDSELECT
 
 
@@ -66,9 +66,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
@@ -134,7 +133,7 @@ ELSEIF 종류 == 戦破壊→묘지
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲EX덱 = 1
-효과条件名前 = 혜안의 마술사
+		효과条件名前 = 혜안의 마술사
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
 	ENDIF
 ENDIF

@@ -1,0 +1,204 @@
+﻿@CARDNAME_29123,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 검의 제너레이드 프로디
+	CASE "略称"
+		RESULTS = 검왕 프로디
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_29123(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 0
+	CASE "単一存在"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251006
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_29123(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL ①："검의 제너레이드 프로디"는 자신 필드에 １장밖에 앞면 표시로 존재할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動 ,フリー誘発)
+PRINTL ②：자신 / 상대 턴에、자신 필드의 "제너레이드" 몬스터 또는 전사족 몬스터를 임의의 수 만큼 릴리스하고、
+PRINTL 그 수 만큼 상대 필드의 몬스터를 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 파괴한다。
+PRINTL 그 후、서로의 플레이어는 １장 드로우할 수 있다。
+
+@CARDCAN_29123(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29123)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,29123)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件スーパーカテゴリ = 제너레이드
+	효과条件종족 = 전사족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_29123(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 효과失敗
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29123,1)
+	IF RESULT == 0
+		WHILE モンスター数(対面者) >= 1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件スーパーカテゴリ = 제너레이드
+			효과条件종족 = 전사족
+			효과条件任意 = 1
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+				SIF RESULT != 1
+					BREAK
+			ELSE
+				BREAK
+			ENDIF
+		WEND
+
+		SIF 듀얼리스트 == "자신"
+			PRINTL 드로우하시겠습니까？
+		CALL YN_CHOICE(듀얼리스트)
+		SIF RESULT == はい
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+
+		SIF 対面者 == "자신"
+			PRINTL 드로우하시겠습니까？
+		CALL YN_CHOICE(対面者)
+		SIF RESULT == はい
+			CALL CARDDRAW_BASIC(対面者,1)
+	ENDIF
+ENDIF
+
+;----------------------------------------------------------------------------------------------------------------
+
+@CARDNAME_129123,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 검익왕의 정위
+	CASE "略称"
+		RESULTS = 검왕병
+	CASE "カテゴリ"
+		RESULTS:0 = 제너레이드
+ENDSELECT
+
+
+@CARD_129123(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 1800
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+@CARD_EXPLANATION_129123(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+
+
+@CARDCAN_129123(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+RETURN 0

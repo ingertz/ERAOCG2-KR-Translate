@@ -65,7 +65,8 @@ IF 종류 == 효과後誘発
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,82301)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -91,7 +92,7 @@ ELSEIF 종류 == 묘지起動
 
 	CALL FULLRESET
 	효과範囲묘지 = 1
-효과条件名前 = 핸디레이디
+	효과条件名前 = 핸디레이디
 	효과条件CNT = 1	
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT <= 1
@@ -119,7 +120,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		CALL FULLRESET
 		효과範囲필드 = 1
 		효과範囲묘지 = 1
-효과条件固名前 = 뉴스타트
+		효과条件固名前 = 뉴스타트
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			選択カードID = RESULT:1
@@ -129,13 +130,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 			IF 選択カードID == 2300
 				CALL FULLRESET
 				효과範囲덱 = 1
-효과条件名前 = 시크릿오더
+				효과条件名前 = 시크릿오더
 				효과条件任意 = 1
 				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 
 				CALL FULLRESET
 				효과範囲덱 = 1
-효과条件名前 = 핸디레이디
+				효과条件名前 = 핸디레이디
 				효과条件任意 = 1
 				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 			ENDIF
@@ -145,7 +146,7 @@ ELSEIF 종류 == 묘지起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82301,2)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = 뉴스타트
+		효과条件名前 = 뉴스타트
 		CALL CARD_SET_BASIC(듀얼리스트,"묘지",ゾーン,場所,"裏側표시")
 	ENDIF
 ENDIF

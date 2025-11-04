@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 패왕문 제로
+		RESULTS = 패왕문 제로
 	CASE "略称"
-RESULTS = 패왕문 영
+		RESULTS = 패왕문 영
 	CASE "カテゴリ"
-RESULTS:0 = 패왕문
-RESULTS:1 = 패왕룡 즈아크
+		RESULTS:0 = 패왕문
+		RESULTS:1 = 패왕룡 즈아크
 ENDSELECT
 
 
@@ -70,9 +70,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
@@ -118,7 +117,7 @@ ELSEIF 종류 == 지속효과
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-효과条件名前 = 패왕룡 즈아크
+	효과条件名前 = 패왕룡 즈아크
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -158,11 +157,11 @@ ELSEIF 종류 == 戦破壊→묘지
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲EX덱 = 1
-효과条件名前 = 패왕문 제로
+		효과条件名前 = 패왕문 제로
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
 
 		CALL FULLRESET
-효과条件名前 = 패왕문 인피니티
+		효과条件名前 = 패왕문 인피니티
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 	ENDIF
 ELSEIF 종류 == 지속효과

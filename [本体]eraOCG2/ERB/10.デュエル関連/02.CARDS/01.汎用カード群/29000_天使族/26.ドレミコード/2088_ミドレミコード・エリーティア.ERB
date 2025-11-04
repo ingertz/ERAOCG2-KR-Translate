@@ -1,0 +1,216 @@
+﻿@CARDNAME_2088,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미도레미코드 엘리티아
+	CASE "略称"
+		RESULTS = 엘리티아
+	CASE "カテゴリ"
+		RESULTS:0 = 도레미코드
+ENDSELECT
+
+
+@CARD_2088(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1100
+	CASE "守備力"
+		RETURN 400
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2088(종류)
+#DIM DYNAMIC 종류
+
+
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 이 카드명의 ①의 P효과는 1턴에 1번밖에 사용할 수 없으며,
+PRINTL 자신의 마법 & 함정 존에 이 카드명이 존재하지 않을 경우에 패에서 지속 마법으로서 발동할 수 있다.
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①: 자신 메인 페이즈에 발동할 수 있다.
+PRINTL 패/EX덱에서 레벨이 짝수인 "도레미코드" 몬스터 1장을 특수 소환한다.
+CALLFORM CARD_ABLE(0,攻撃時強制誘発)
+PRINTL ②: 자신의 마법 & 함정 존에 다른 앞면 표시의 "도레미코드" 카드가 존재하는 한,
+PRINTL 자신의 "도레미코드" 몬스터의 전투로 발생하는 자신에게로의 데미지는 0이 된다.
+CALL TEXT_DECORATION("P_MAGIC_2")
+PRINTL 이 카드명의 ①의 몬스터 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(2,소환時 ,특수소환時)
+PRINTL ①: 이 카드가 소환 / 특수 소환에 성공했을 경우, 상대 필드의 마법 / 함정 카드 1장을 대상으로 하여 발동할 수 있다.
+PRINTL 그 카드를 주인의 패로 되돌린다.
+PRINTL 자신의 마법 & 함정 존에 레벨이 짝수인 "도레미코드" 몬스터가 존재할 경우,
+PRINTL 상대 필드의 몬스터 1장을 대상으로 할 수도 있다.
+
+
+
+@CARDSUMMON_AA_2088
+
+
+@CARDCAN_2088(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2088)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 미도레미코드 엘리티아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	SIF 발동済_1(듀얼리스트,2088)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = EX以外全般
+	효과条件レベル:0 = 2
+	효과条件レベル:1 = 4
+	효과条件レベル:2 = 6
+	효과条件レベル:3 = 8
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF RESULTS != "도레미코드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件他所 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,2088)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 도레미코드
+	효과条件종류 = EX以外全般
+	효과条件표시 = 表側표시
+	효과条件レベル:0 = 2
+	효과条件レベル:1 = 4
+	효과条件レベル:2 = 6
+	효과条件レベル:3 = 8
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件달성 = 1
+	CALL FULLRESET
+	효과範囲상대마함 = 1
+	SIF 条件달성 == 1
+		효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2088(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2088)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2088,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 도레미코드
+		효과条件종류 = EX以外全般
+		효과条件レベル:0 = 2
+		효과条件レベル:1 = 4
+		효과条件レベル:2 = 6
+		효과条件レベル:3 = 8
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL FULLRESET
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ無効",3)
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2088,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 도레미코드
+		효과条件종류 = EX以外全般
+		효과条件표시 = 表側표시
+		효과条件レベル:0 = 2
+		효과条件レベル:1 = 4
+		효과条件レベル:2 = 6
+		효과条件レベル:3 = 8
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 = 1
+		
+		CALL FULLRESET
+		IF 条件달성 == 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"손패")
+		ELSE
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"마함単体",場所,"손패")
+		ENDIF
+	ENDIF
+ENDIF
+

@@ -57,19 +57,9 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 발동誘発
-	SIF ゾーン != "마함"
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-		RETURN 0
-	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-		CALL FULLRESET
-		효과範囲손패 = 1
-		효과条件종족 = 마법사족
-		효과条件종류 = モン全般
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT != 1
-			RETURN 0
-	ENDIF
 	SIF 効後_カウンタ < 2
 		RETURN 0
 	CALL FULLRESET
@@ -77,7 +67,7 @@ IF 종류 == 발동誘発
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	SIF RESULT != 1
 		RETURN 0
-	TRYCALLFORM CARDNAME_{効後_효과ID:(効後_カウンタ - 2)},"カテゴリ"
+	TRYCALLFORM CARDNAME_{効後_효과ID:(効後_カウンタ - 2)}("カテゴリ")
 	SIF !MATCH(RESULTS,"블랙 매지션")
 		RETURN 0
 	RETURN 1
@@ -92,6 +82,17 @@ ELSEIF 종류 == 효과後誘発
 	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 2500
 		RETURN 0
 	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종족 = 마법사족
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -143,5 +144,8 @@ ELSEIF 종류 == 효과後誘発
 		효과条件名前 = 흑마술의 호부
 		CALL CARD_SET_BASIC(듀얼리스트,"묘지",ゾーン,場所,"裏側표시")
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"発可")
 ENDIF
 

@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 通常罠
 ENDSELECT
 
@@ -33,9 +32,9 @@ RETURN 0
 #DIM DYNAMIC 種類
 
 CALLFORM CARD_ABLE(0,魔罠起動 ,フリー誘発)
-PRINTL ①：자신 필드의 「RR」モンスター１体を対象として発動できる。
-PRINTL その同名モンスター１体を덱에서 特殊소환する。
-PRINTL この効果で特殊소환したモンスターは攻撃誘導を得る。
+PRINTL ①：自分フィールドの「RR」モンスター１体を対象として発動できる。
+PRINTL その同名モンスター１体をデッキから特殊召喚する。
+PRINTL この効果で特殊召喚したモンスターは攻撃誘導を得る。
 
 @CARDCAN_92665(決闘者,種類,ゾーン,場所)
 #DIMS DYNAMIC 決闘者
@@ -55,7 +54,8 @@ IF 種類 == 魔罠起動 || 種類 == フリー誘発
 	SIF ゾーン != "魔罠"
 		RETURN 0
 	IF ゾーン == "魔罠"
-	SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	ENDIF
 	SIF GETVAR(@"%決闘者%_魔_表:場所") == 1
@@ -93,7 +93,7 @@ IF 種類 == 魔罠起動 || 種類 == フリー誘発
 		選択カード = RESULT
 		IF 選択カード != 9999
 			選択カードID = RESULT:1
-			TRYCALLFORM CARDNAME_{選択カードID}, "名前"
+			TRYCALLFORM CARDNAME_{選択カードID}("名前")
 			選択カード名 = %RESULTS%
 			CALL FULLRESET
 			効果範囲デッキ = 1

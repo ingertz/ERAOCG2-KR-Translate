@@ -4,11 +4,14 @@
 #DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC ABL種
 #DIM DYNAMIC JUEL種
+#DIM DYNAMIC EXP種
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC JUEL不足
 #DIM DYNAMIC 경험不足
+#DIM DYNAMIC UP選択肢
 
-;オーとレベル상승はここ
+
+;オートレベル상승はここ
 FOR 캐릭터_ID,0,CHARANUM
 	FOR カウンタ,0,30
 		SELECTCASE カウンタ
@@ -73,17 +76,18 @@ FOR 캐릭터_ID,0,CHARANUM
 			CASEELSE
 				CONTINUE
 		ENDSELECT
-		FOR LOCAL,0,4
+		;UP選択肢、昔のERAで言う、どの球を使って上昇させるかを決める
+		FOR UP選択肢,0,4
 			JUEL不足 = 0
 			경험不足 = 0
-			SIF JUEL_DEMAND(ABL種,LOCAL,0,캐릭터_ID) == -2
+			SIF JUEL_DEMAND(ABL種,UP選択肢,0,캐릭터_ID) == -2
 				BREAK
-			SIF JUEL_DEMAND(ABL種,LOCAL,0,캐릭터_ID) < 0
+			SIF JUEL_DEMAND(ABL種,UP選択肢,0,캐릭터_ID) < 0
 				CONTINUE
 			;必要な宝珠を探す
 			FOR JUEL種,0,100
-				IF JUEL_DEMAND(ABL種,LOCAL,JUEL種,캐릭터_ID) > 0
-					IF JUEL:캐릭터_ID:JUEL種 < JUEL_DEMAND(ABL種,LOCAL,JUEL種,캐릭터_ID)
+				IF JUEL_DEMAND(ABL種,UP選択肢,JUEL種,캐릭터_ID) > 0
+					IF JUEL:캐릭터_ID:JUEL種 < JUEL_DEMAND(ABL種,UP選択肢,JUEL種,캐릭터_ID)
 						JUEL不足 ++
 						BREAK
 					ENDIF
@@ -92,9 +96,9 @@ FOR 캐릭터_ID,0,CHARANUM
 			SIF JUEL不足
 				CONTINUE
 			;必要な경험を探す
-			FOR JUEL種,0,100
-				IF EXP_DEMAND(ABL種,LOCAL,JUEL種,캐릭터_ID) > 0
-					IF  EXP:캐릭터_ID:JUEL種 < EXP_DEMAND(ABL種,LOCAL,JUEL種,캐릭터_ID)
+			FOR EXP種,0,100
+				IF EXP_DEMAND(ABL種,UP選択肢,EXP種,캐릭터_ID) > 0
+					IF EXP:캐릭터_ID:EXP種 < EXP_DEMAND(ABL種,UP選択肢,EXP種,캐릭터_ID)
 						경험不足 ++
 						BREAK
 					ENDIF
@@ -102,11 +106,12 @@ FOR 캐릭터_ID,0,CHARANUM
 			NEXT
 			SIF 경험不足
 				CONTINUE
+
 			FOR JUEL種,0,40
-				JUEL:캐릭터_ID:JUEL種 -= JUEL_DEMAND(ABL種,LOCAL,JUEL種,캐릭터_ID)
+				JUEL:캐릭터_ID:JUEL種 -= JUEL_DEMAND(ABL種,UP選択肢,JUEL種,캐릭터_ID)
 			NEXT
 			ABL:캐릭터_ID:ABL種 += 1
-			PRINTFORML %ABLNAME:ABL種%LVUP ( %CALLNAME:캐릭터_ID%)
+			PRINTFORML %ABLNAME:ABL種%LVUP (%CALLNAME:캐릭터_ID%)
 			BREAK
 		NEXT
 	NEXT

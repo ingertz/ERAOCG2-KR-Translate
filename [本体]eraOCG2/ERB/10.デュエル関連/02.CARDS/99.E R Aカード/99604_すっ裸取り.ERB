@@ -58,9 +58,8 @@ SIF RESULT == 1
 
 IF 종류 == 발동誘発
 	IF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
-			RETURN 0		
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0	
 		CALL FULLRESET
 		효과範囲손패 = 1
@@ -100,7 +99,7 @@ IF 종류 == 발동誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99604)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		TRYCALLFORM CARD_{効後_효과ID:(処理中番号 - 1)},"성별"
+		TRYCALLFORM CARD_{効後_효과ID:(処理中番号 - 1)}("성별")
 		IF RESULT == 牝性
 			選択カード = 効後_設場所:(処理中番号 - 1) 
 			CALL CARD_EROTICS_FIELD(듀얼리스트,"손패",選択カード,1)

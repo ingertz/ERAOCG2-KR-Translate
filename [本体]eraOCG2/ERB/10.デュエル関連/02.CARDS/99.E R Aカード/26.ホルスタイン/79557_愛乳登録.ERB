@@ -68,13 +68,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,79557) 
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	
 	CALL FULLRESET
@@ -241,7 +236,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			PRINTFORMW %암소名称%는 발밑에 준비되어있던 옷을 주워、그것이 당연하다는듯이 소모양 마이크로 비키니로 갈아입기 시작했다…
 			PRINTFORML 
 			
-			;◆服装の변경(牛柄ビキニと角)
+			;◆복장の변경(牛柄ビキニと角)
 			CALL HORUSTEIN_SET_CLOTHES(듀얼리스트,選択カードID)
 			
 			PRINTFORML 
@@ -361,7 +356,7 @@ SELECTCASE 参照先
 			RESULTS = %암소略称%
 	CASE "カテゴリ"
 		
-		TRYCALLFORM CARDNAME_{参照カードID}, "カテゴリ"
+		TRYCALLFORM CARDNAME_{参照カードID}("カテゴリ")
 		RESULTS:6 = %RESULTS:3%
 		RESULTS:5 = %RESULTS:2%
 		RESULTS:4 = %RESULTS:1%
@@ -397,10 +392,10 @@ SELECTCASE 参照先
 	CASE "종족"
 		RETURN 야수족
 	CASE "レベル"
-		TRYCALLFORM CARD_{参照カードID},"レベル"
+		TRYCALLFORM CARD_{参照カードID}("レベル")
 		RETURN RESULT
 	CASE "攻撃力"
-		TRYCALLFORM CARD_{参照カードID},"攻撃力"
+		TRYCALLFORM CARD_{参照カードID}("攻撃力")
 		;愛乳の攻守は0に近いほど高くなる
 		IF RESULT >= 3000
 			RETURN 0
@@ -408,7 +403,7 @@ SELECTCASE 参照先
 			RETURN 3000 - RESULT
 		ENDIF
 	CASE "守備力"
-		TRYCALLFORM CARD_{参照カードID},"守備力"
+		TRYCALLFORM CARD_{参照カードID}("守備力")
 		;愛乳の攻守は0に近いほど高くなる
 		IF RESULT >= 3000
 		RETURN 0
@@ -416,7 +411,7 @@ SELECTCASE 参照先
 			RETURN 3000 - RESULT
 		ENDIF
 	CASE "튜너"
-		TRYCALLFORM CARD_{参照カードID},"튜너"
+		TRYCALLFORM CARD_{参照カードID}("튜너")
 		RETURN RESULT
 	CASE "성별"
 		RETURN 牝性
@@ -629,7 +624,7 @@ IF 종류 == 攻撃後強制誘発 || 종류 == 효과後誘発
 		ENDIF
 	ELSE
 		攻撃대상カードID = GETVAR(@"%対面者%_MZ_ID:攻撃대상")
-		TRYCALLFORM CARDNAME_{攻撃대상カードID},"略称"
+		TRYCALLFORM CARDNAME_{攻撃대상カードID}("略称")
 		상대名称 = %RESULTS%
 	ENDIF
 ENDIF

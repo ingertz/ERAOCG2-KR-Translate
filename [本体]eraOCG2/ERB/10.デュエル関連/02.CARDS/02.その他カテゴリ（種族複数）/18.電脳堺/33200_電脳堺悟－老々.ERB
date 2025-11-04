@@ -1,0 +1,162 @@
+@CARDNAME_33200,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 전뇌계오－라오라오
+	CASE "略称"
+		RESULTS = 전뇌 라오라오
+	CASE "カテゴリ"
+		RESULTS:0 = 전뇌계
+ENDSELECT
+
+
+@CARD_33200(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 사이킥족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 2400
+	CASE "튜너"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_33200(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①: 이 카드가 패에 존재할 경우, 자신 필드의 "전뇌계" 카드 1장을 대상으로 발동할 수 있다.
+PRINTL 그 카드와는 종류(몬스터 마법 / 함정)가 다른 "전뇌계" 카드 1장을 덱에서 묘지로 보내고,
+PRINTL 이 카드를 특수 소환한다.
+
+PRINTL 그 후, 이 카드의 효과로 묘지로 보낸 카드와는 카드명이 다른 "전뇌계" 몬스터 1장을,
+PRINTL 자신 묘지에서 선택하여 효과를 무효로 하고 수비 표시로 특수 소환할 수 있다.
+PRINTL 이 턴에, 자신은 레벨 또는 랭크가 3 이상의 몬스터밖에 특수 소환할 수 없다.
+
+
+
+@CARDCAN_33200(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,33200)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,33200)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,33200,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 전뇌계
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 전뇌계
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_33200(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 選択カード名前
+
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC モン選択
+#DIM DYNAMIC 마법選択
+#DIM DYNAMIC 함정選択
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,33200,1)
+	IF RESULT == 0
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件カテゴリ = 전뇌계
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン, 場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL RESETCONDITION
+			CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{選択カード（CS）}")}("종류")
+			IF INRANGE(RESULT, 0, 10) 
+				モン選択 ++
+			ELSEIF INRANGE(RESULT, 20, 29) 
+				마법選択 ++
+			ELSEIF INRANGE(RESULT, 30, 39) 
+				함정選択 ++
+			ENDIF
+
+			CALL FULLRESET
+			효과条件カテゴリ = 전뇌계
+			효과条件종류:0 = 999
+			SIF モン選択 == 0
+				효과条件종류:1 = 효과モン
+			IF 마법選択 == 0
+				효과条件종류:2 = 通常마법
+				효과条件종류:3 = 지속마법
+			ENDIF
+			SIF 함정選択 == 0
+				효과条件종류:4 = 지속함정
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			選択カード_ID = RESULT:1
+			IF RESULT == 1
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+				選択カード名前 = %RESULTS%
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件固名前 = %選択カード名前%
+				효과条件任意 = 1
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+
+		CALLFORM SS소환可能レベル_ADV(3, "以上")
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF

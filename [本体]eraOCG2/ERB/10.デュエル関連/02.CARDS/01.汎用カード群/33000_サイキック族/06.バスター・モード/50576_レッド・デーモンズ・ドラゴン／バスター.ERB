@@ -13,6 +13,7 @@ SELECTCASE 参照先
 	CASE "カテゴリ"
 		RESULTS:0 = 레드 데몬
 		RESULTS:1 = 버스터
+		RESULTS:2 = /버스터
 ENDSELECT
 
 
@@ -37,6 +38,8 @@ SELECTCASE 参照先
 		RETURN 2500
 	CASE "성별"
 		RETURN 雄性
+	CASE "특수불가"
+		RETURN 1
 ENDSELECT
 
 RETURN 0
@@ -110,8 +113,12 @@ ELSEIF 종류 == 지속효과
 	RETURN 1
 
 ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
-	CALL CARD_SS_CHECK(듀얼리스트,50565,"묘지")
-	SIF RESULT == 1
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 레드 데몬즈 드래곤
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -163,7 +170,7 @@ ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲묘지 = 1
-효과条件名前 = 레드 데몬즈 드래곤
+		효과条件名前 = 레드 데몬즈 드래곤
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ENDIF

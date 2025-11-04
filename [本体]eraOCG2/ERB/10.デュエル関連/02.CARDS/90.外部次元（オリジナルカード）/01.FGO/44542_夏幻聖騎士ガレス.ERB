@@ -1,0 +1,172 @@
+﻿@CARDNAME_44542,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 여름 환성기사 가레스
+	CASE "略称"
+		RESULTS = 수영복 가레스
+	CASE "カテゴリ"
+		RESULTS:0 = 성기사
+		RESULTS:1 = 영령
+		RESULTS:2 = 세이버
+		RESULTS:3 = FATE
+ENDSELECT
+
+
+@CARD_44542(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RESULT:1 = 화염속성
+		RETURN 물속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 2000
+	CASE "튜너"
+		RETURN 1
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_44542(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 암컷 튜너 ＋ 튜너 이외의 전사족 몬스터 1체 이상
+PRINTL 이 카드의 속성은 "화염"으로도 취급한다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：자신 필드가 "바다"일 경우, 이 카드는 전투 / 효과로는 파괴되지 않는다.
+PRINTL 자신 필드가 "바다"가 아닐 경우, 이 내성은 1턴에 1번만 적용된다.
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ②：자신 / 상대 턴에 1번, 이 카드가 "성검" 카드를 장착하고 있을 경우,
+PRINTL 자신의 마법 & 함정 존의 카드 1장을 대상으로 하여 발동할 수 있다. 그 카드를 패로 되돌린다.
+PRINTL 그 후, 패에서 장착 마법 카드 1장을 이 카드에 장착할 수 있다.
+CALLFORM CARD_ABLE(2,S素材時효과)
+PRINTL ③：이 카드가 S 소재가 되었을 경우에 발동할 수 있다.
+PRINTL 덱에서 "성기사" 몬스터 1장을 패에 추가한다.
+
+
+@CARDSUMMON_44542(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 5
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+	素材条件성별 = 牝性
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+	素材条件종족 = 전사족
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,44542) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_44542(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,44542)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 성검
+	CALL CARD_EQUIP_CHECK(듀얼리스트,場所,ゾーン)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;追記
+ELSEIF 종류 == S素材時효과
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 성기사
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_44542(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 지속효과
+	IF GETVARS(@"%듀얼리스트%_フィールド名") == "바다"
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
+	ELSE
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"一破")
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44542,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_ADD_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件종류 = 装備마법
+			효과条件任意 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件固定 = 場所
+				CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"손패")
+			ENDIF
+		ENDIF
+	ENDIF
+;追記
+ELSEIF 종류 == S素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44542,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 성기사
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ENDIF

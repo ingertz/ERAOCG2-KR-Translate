@@ -73,16 +73,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,79653)
 		RETURN 0
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
-		RETURN 0
-	IF ゾーン == "마함"
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
 	CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件종류 = モン全般
@@ -253,7 +246,7 @@ ELSEIF 종류 == 묘지起動
 				CALL EROTIC_MOVE("全身애무",조교대상,-1,100)
 			ELSE
 				PRINTFORML 
-				CALLFORM CARDNAME_{選択カード_ID}, "名前"
+				CALLFORM CARDNAME_{選択カード_ID}("名前")
 				PRINTFORML %RESULTS%의 X소재를 소재로, 고삐 형태의 죄보가 부활한다…！
 			ENDIF
 			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)

@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 봉사거래
+		RESULTS = 봉사거래
 	CASE "略称"
-RESULTS = 봉사거래
+		RESULTS = 봉사거래
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:1 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
 ENDSELECT
 
 
@@ -37,7 +37,7 @@ RETURN 0
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,발동誘発)
-PRINTFORML ①： %CALLNAME:MASTER%이 마법 / 함정 / 몬스터의 효과를 발동했을 때 발동할 수 있다。
+PRINTFORML ①：%CALLNAME:MASTER%이 마법 / 함정 / 몬스터의 효과를 발동했을 때 발동할 수 있다。
 PRINTFORML %CALLNAME:MASTER%에게 봉사하는것으로、그 효과를 무효로하고 파괴하게 할 수 있다。
 ;상대의 ♀の使用しか想定してない。他の使い方したい人は加筆修正して♡
 PRINTL (상대 전용)
@@ -89,6 +89,11 @@ IF 종류 == 발동誘発
 	SIF 마함数(듀얼리스트) < 마함数(対面者)
 		使用率 += 4
 	SIF RAND:20 > 使用率
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -205,5 +210,9 @@ IF 종류 == 발동誘発
 				RESETCOLOR
 			ENDIF
 		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92921)
+	IF RESULT == 0
 	ENDIF
 ENDIF

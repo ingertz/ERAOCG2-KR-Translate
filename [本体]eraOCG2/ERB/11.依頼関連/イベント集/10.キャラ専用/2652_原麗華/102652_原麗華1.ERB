@@ -1,0 +1,434 @@
+@IRAI_EVENT_102652(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2652)
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2652-01)規律の庭の闖入者
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_学校内
+	CASE "詳細"
+		PRINTL アカデミアの学園祭を参加しましょう。
+		PRINTL 
+		PRINTL 報酬：1500DP、カードパック×5
+	CASE "条件"
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:이벤트主:호감도 < 100
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:이벤트主:반발각인 > 0
+			RESULTS = 彼女の記録簿には、あなたへの不信が明記されているだろう。冷静な判断を取り戻すまで待つべきだ。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_102652(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 威圧デュエリスト
+
+이벤트主 = NO_TO_CHARANUM(2652)
+威圧デュエリスト = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 学園祭の季節がやってきた。
+	PRINTFORML デュエル・アカデミアの敷地内は、色とりどりの装飾と活気に満ちている。
+	PRINTFORMW あなたは招待を受け、学園祭のデュエル大会エリアを訪れていた。
+	PRINTFORML
+	PRINTFORML 会場の一角で、見覚えがある姿を見つける。
+	PRINTFORML %CALLNAME:이벤트主%だ。彼女は風紀委員の腕章を付け、後輩らしき生徒たちに指導をしている。
+	PRINTFORMW メガネの奥の瞳は真剣そのもので、手元の端末に何かを記録しながら話している。
+	PRINTFORML
+	PRINTFORML 「…ですから、덱構築においてリソース관리は最優先事項です」
+	PRINTFORML %CALLNAME:이벤트主%は淡々と、しかし熱意を込めて説明している。
+	PRINTFORMW 「計画性のない展開は、必ず綻びを生みます。記録を見返してください」
+	PRINTFORML
+	PRINTFORML 後輩たちは真剣な表情で頷いている。
+	PRINTFORML その光景は微笑ましく、あなたは少し離れた場所から静かに見守っていた。
+	PRINTFORMW しかし、その平和な空気は唐突に破られることになる。
+	PRINTFORML
+	PRINTFORML 「はっ、何だよそのお堅い指導。つまんねーな」
+	PRINTFORML 横柄な声が響いた。
+	PRINTFORMW 振り向くと、派手な복장の男が腕を組んで立っている。
+    
+	PRINTFORMW 学園祭に招かれた外来者…だろうか？
+	PRINTFORML
+	PRINTFORML その男は後輩たちに近づき、威圧的な態度で話しかける。
+	PRINTFORML 「お前ら、そんな真面目にやってて楽しいのか？デュエルってのはもっと自由でいいんだよ」
+	PRINTFORMW 後輩たちは戸惑い、%CALLNAME:이벤트主%の方を見る。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は冷静に、しかし明らかに不快そうな表情で男に向き直る。
+	PRINTFORML 「…あなた、学園祭の参加者ですか？風紀を乱す行為は控えてください」
+	PRINTFORMW メガネを押し上げながら、風紀委員としての威厳を保とうとしている。
+	PRINTFORML
+	PRINTFORML しかし男は鼻で笑う。
+	PRINTFORML 「風紀？規律？そんなもんに縛られてるから弱いんだよ。デュエルは力が全てだ」
+	PRINTFORMW 男はデュエルディスクを誇示するように掲げる。
+	PRINTFORML
+	PRINTFORML 「お前ら、俺とデュエルしてみるか？この委員長様の教えがどれだけ役に立つか試してやるよ」
+	PRINTFORML 男の言葉に、後輩たちは明らかに怯えている。
+	PRINTFORMW %CALLNAME:이벤트主%の表情が険しくなる。
+	PRINTFORML
+	PRINTFORML 「…風紀委員として、これ以上の妨害行為は看過できません」
+	PRINTFORML %CALLNAME:이벤트主%がデュエルディスクを構えようとした、その時――
+	PRINTFORMW あなたは決断を迫られる。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「彼のやり方は見ていられないな」
+	PRINTL [1] - 「風紀委員の仕事だろう？」
+	PRINTL [2] - 静かに成り行きを見守る
+	PRINTL
+	BINPUT
+
+	IF RESULT == 0
+		PRINTFORML あなたは迷わず前に出た。
+		PRINTFORMW %CALLNAME:이벤트主%と男の間に割って入る。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は驚いたように目を見開く。
+		PRINTFORML 「%CALLNAME:MASTER%…あなた、なぜ…」
+		PRINTFORMW 彼女の声には戸惑いが滲んでいる。
+		CALL EVENT_FAVUP(이벤트主,50)
+
+		PRINTFORML 男はあなたを見て、興味深そうに笑う。
+		PRINTFORML 「おっ、正義の味方か？面白い。じゃあお前が상대してくれるんだな」
+		PRINTFORMW デュエルディスクの機械音が響く。
+		PRINTFORML
+		PRINTFORML 「いいぜ、お前がこのお嬢ちゃんたちの代わりに負けてくれるなら」
+		PRINTFORML 男の挑発的な笑みが広がる。
+		PRINTFORMW 「俺の実力、思い知らせてやるよ」
+		PRINTFORML
+		SETBIT 依頼_進行보존:102652, 0
+
+	ELSEIF RESULT == 1
+		PRINTFORML あなたは一歩引いて言った。
+		PRINTFORML 「風紀委員の仕事だろう？部外者が口を出すべきじゃない」
+		PRINTFORMW %CALLNAME:이벤트主%の方を見る。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%の表情が一瞬凍りつく。
+		PRINTFORML 「…ええ、そうですね。部外者は下がっていてください」
+		PRINTFORMW 彼女の声は氷のように冷たい。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は一人で男と対峙し、デュエルディスクを構える。
+		PRINTFORML しかし、その背中はどこか孤独に見えた。
+		PRINTFORMW あなたは何も言えず、その場を後にする。
+		PRINTFORML
+		PRINTFORML 後日、%CALLNAME:이벤트主%が一人で事態を収拾したと聞いた。
+		PRINTFORML しかし、彼女はあなたを見ても冷たい視線を向けるだけだった。
+		PRINTFORMW 「…計画性のない傍観者に、用はありません」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-30)
+		RETURN 3
+
+	ELSE
+		PRINTFORML あなたは静かに成り行きを見守ることにした。
+		PRINTFORML %CALLNAME:이벤트主%なら一人で対処できるはずだ。
+		PRINTFORMW そう判断し、少し離れた場所から様子を窺う。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は冷静にデュエルディスクを構える。
+		PRINTFORML 「…分かりました。風紀委員として、あなたの実力を確認させていただきます」
+		PRINTFORMW しかし、その瞬間――
+		PRINTFORML
+		PRINTFORML 男は突然大声で笑い始めた。
+		PRINTFORML 「委員長一人で俺に勝てると思ってんのか！？舐めんなよ！」
+		PRINTFORMW 男の態度が急変し、周囲の空気が険悪になる。
+		PRINTFORML
+		PRINTFORML 後輩たちは怯え、%CALLNAME:이벤트主%も予想外の展開に戸惑っている。
+		PRINTFORML 男は仲間らしき数人を呼び寄せ、상황は一気に悪化した。
+		PRINTFORMW これ以上放置できない。
+		PRINTFORML
+		PRINTFORML あなたは慌てて前に出る。
+		PRINTFORMW %CALLNAME:이벤트主%と男たちの間に割って入った。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は複雑な表情であなたを見る。
+		PRINTFORML 「%CALLNAME:MASTER%…？これはどういう…」
+		PRINTFORMW 彼女の声には少し動揺が混じっている。
+		PRINTFORML
+		PRINTFORML 男は面白そうに笑う。
+		PRINTFORML 「なんだなんだ？正義の味方か？じゃあお前が상대だ」
+		PRINTFORMW 男はあなたに向き直り、デュエルディスクを構える。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,10)
+	ENDIF
+
+	PRINTFORML デュエルの場が整う。
+	PRINTFORML 周囲には野次馬が集まり始め、緊張感が高まっていく。
+	PRINTFORMW %CALLNAME:이벤트主%と後輩たちは少し離れた場所から、固唾を呑んで見守っている。
+	PRINTFORML
+	PRINTFORML 男は不敵に笑う。
+	PRINTFORML 「いいか、俺のデュエルは容赦ねえぞ。泣いても知らねえからな」
+	PRINTFORMW 挑発的な言葉と共に、デュエルディスクが起動する。
+	PRINTFORML
+	PRINTFORML しかし、デュエルが始まると、男の戦術は予想以上に狡猾だった。
+	PRINTFORML 효과텍스트の曖昧な部分を突いたり、わざと遅延行為を繰り返したりする。
+	PRINTFORMW 明らかにフェアプレイとは言えない戦い方だ。
+	PRINTFORML
+	PRINTFORML 「おっと、そのカードの효과、ちゃんと理解してるか？」
+	PRINTFORML 男は嘲笑うように言う。
+	PRINTFORMW 「俺のターンはまだ終わってねえぞ。もう少し考えさせてくれよ」
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%が小さく혀打ちする音が聞こえた。
+	PRINTFORML 「…卑劣な戦術です。ルールの隙間を突くような真似を…」
+	PRINTFORMW 彼女の声には明確な분노が滲んでいる。
+	PRINTFORML
+	PRINTFORML しかし、あなたは冷静さを保つ。
+	PRINTFORML こんな상대に動揺していては、%CALLNAME:이벤트主%たちの期待に応えられない。
+	PRINTFORMW 深呼吸をして、デュエルに集中する。
+	PRINTFORML
+	TARGET = 威圧デュエリスト ;まあ-1です。これで見やすいと思うので…
+	CALL CHOICE_DUEL_TYPE(102652)
+
+	IF RESULT == 1
+		PRINTFORML デュエルに승리した。
+		PRINTFORML 男のライフポイントがゼロになり、周囲から歓声が上がる。
+		PRINTFORMW 男は信じられないという表情で立ち尽くしている。
+		PRINTFORML
+		PRINTFORML 「く、くそっ…！こんなはずじゃ…」
+		PRINTFORML 男は悔しそうに歯ぎしりする。
+		PRINTFORMW 「覚えてろよ…！」
+		PRINTFORML
+		PRINTFORML 捨て台詞を吐いて、男は仲間たちと共に逃げるように去っていく。
+		PRINTFORML 周囲の観客たちは拍手を送り、後輩たちは安堵の表情を浮かべている。
+		PRINTFORMW %CALLNAME:이벤트主%がゆっくりとこちらに歩いてくる。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%はメガネを押し上げ、冷静な表情であなたを見る。
+		PRINTFORML 「…見事な戦いぶりでした。あの狡猾な戦術に動じることなく、確実に승리を掴んだ」
+		PRINTFORMW 彼女の声には、わずかに感心の色が混じっている。
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:102652, 0)
+			PRINTFORML 「あなたの介入は想定外でしたが、結果として場の規律は守られました」
+			PRINTFORML %CALLNAME:이벤트主%は端末に何かを記録しながら続ける。
+			PRINTFORMW 「記録に値する行動です。感謝します」
+		    CALL EVENT_FAVUP(이벤트主,50)
+		ELSE
+			PRINTFORML 「何かともあれ、最終的には適切に対処していただけました」
+			PRINTFORML %CALLNAME:이벤트主%は少し辛口に評価する。
+			PRINTFORMW 「結果として、規律は守られました」
+		ENDIF
+
+		PRINTFORML 後輩たちもあなたに駆け寄ってくる。
+		PRINTFORML 「ありがとうございました！あんな상대に勝つなんて、すごいです！」
+
+		PRINTL
+		PRINTL [0] - 「君の助になれたなら幸いだ」
+		PRINTL [1] - 「当然のことをしたまでだ」
+		PRINTL [2] - 「後輩たちは大丈夫だったかい？」
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORMW 誠実な言葉に、%CALLNAME:이벤트主%は一瞬驚いたような表情を見せる。
+			PRINTFORML
+			PRINTFORML 「…れ、礼を言います、%CALLNAME:MASTER%」
+			PRINTFORML %CALLNAME:이벤트主%は珍しく、少し柔らかい表情を見せる。
+
+			PRINTFORML 彼女は端末に何かを入力し、あなたの方を見る。
+			PRINTFORML 「今後も、このような事態があれば…協力をお願いできますか？」
+			PRINTFORMW その言葉には、信頼の色が滲んでいる。
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,50)
+
+		ELSEIF RESULT == 1
+			PRINTFORML あなたは自信を持って言った。
+			PRINTFORML 「当然のことをしたまでだ」
+			PRINTFORMW %CALLNAME:이벤트主%は少し眉をひそめる。
+			PRINTFORML
+			PRINTFORML 「…自信は結構ですが、慢心は禁物です」
+			PRINTFORML %CALLNAME:이벤트主%は辛口に評価する。
+			PRINTFORMW 「ですが、行動には感謝します。記録しておきましょう」
+			PRINTFORML
+			PRINTFORML 彼女は端末に何かを入力し、あなたに一礼する。
+			PRINTFORML 「今回は助かりました。しかし、計画性のない自信は危険です」
+			PRINTFORMW 「次回は、もう少し慎重に行動してください」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,20)
+
+		ELSE
+			PRINTFORML あなたは後輩たちの方を見て言った。
+			PRINTFORMW %CALLNAME:이벤트主%は一瞬、驚いたような表情を見せる。
+			PRINTFORML
+			PRINTFORML 「…ええ。無事でしょう」
+			PRINTFORML %CALLNAME:이벤트主%の声が、わずかに柔らかくなる。
+			PRINTFORMW 「あなたの配慮にも感謝します」
+			PRINTFORML
+			PRINTFORML 後輩たちも嬉しそうに頷く。
+			PRINTFORML %CALLNAME:이벤트主%はメガネを外し、少し疲れたような表情を見せる。
+			PRINTFORMW 「…正直、一人では対処しきれなかったかもしれません」
+			PRINTFORML
+			PRINTFORML 「あなたの助けがなければ、守りきれなかったかもしれないですね」
+			PRINTFORML %CALLNAME:이벤트主%は珍しく、素直に感謝の言葉を口にする。
+			PRINTFORMW 「記録に残します。今後も、よろしくお願いします」
+		
+			PRINTFORML 彼女は端末から何かを取り出し、あなたに渡す。
+			CALL EVENT_FAVUP(이벤트主,50)
+			SETBIT 依頼_進行보존:102652, 1
+
+		ENDIF
+
+		IF 依頼_見返し中 == 0
+			PRINTFORML %CALLNAME:이벤트主%は端末を閉じ、あなたに向き直る。
+			PRINTFORML 「それでは、報酬をお渡しします」
+			PRINTFORMW 彼女は風紀委員としての表情に戻る。
+			PRINTFORML
+			PRINTFORML 「大会運営から、風紀を乱したデュエリストを諌め、이벤트の円滑な進行に貢献したことへの謝礼です」
+			PRINTFORML %CALLNAME:이벤트主%はカードパックの入った袋を手渡してくる。
+			PRINTFORMW 「プロモーションパックです。受け取ってください」
+			PRINTFORML
+			PRINTFORML あなたはカードパックを受け取った。
+			PRINTFORML %CALLNAME:이벤트主%は만족そうに頷く。
+			PRINTFORMW 「記録完了です。お疲れ様でした」
+		ENDIF
+
+		IF GETBIT(依頼_進行보존:102652, 1)
+			PRINTFORML %CALLNAME:이벤트主%は少し照れたような表情で付け加える。
+			PRINTFORML 「…もしよろしければ、今度カフェにでも。お礼をさせてください」
+			PRINTFORMW 彼女の頬が、わずかに赤く染まっている。
+			PRINTFORML
+			PRINTFORML 「風紀委員として、ではなく…個人的に、です」
+			PRINTFORML %CALLNAME:이벤트主%は少し恥ずかしそうに視線を逸らす。
+			PRINTFORMW 「…記録には残しませんので、ご安心を」
+		ELSE
+			PRINTFORML %CALLNAME:이벤트主%は端末を閉じ、一礼する。
+			PRINTFORML 「今後も、規律を守るためにご協力をお願いします」
+			PRINTFORMW 「では、失礼します」
+		ENDIF
+
+		PRINTFORML 後輩たちも深々と頭を下げる。
+		PRINTFORML 「本当にありがとうございました！」
+		PRINTFORMW 彼らの笑顔が、今日の出来事を物語っている。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%と後輩たちが去っていく。
+		PRINTFORML 学園祭の喧騒が戻り、平和な空気が流れる。
+		PRINTFORMW あなたは만족感と共に、その場を後にした。
+		PRINTFORML
+		CALL EVENT_TIMER(60)
+		RETURN 2
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、周囲から落胆の声が漏れる。
+		PRINTFORMW 男は勝ち誇ったように笑う。
+		PRINTFORML
+		PRINTFORML 「ははっ、やっぱりこんなもんか！所詮は口だけの正義漢ってわけだ」
+		PRINTFORML 男は周囲に向かって大声で叫ぶ。
+		PRINTFORMW 「見たか！これが俺の実力だ！」
+		PRINTFORML
+		PRINTFORML 場はさらに混乱し、後輩たちは怯えた表情を浮かべている。
+		PRINTFORML %CALLNAME:이벤트主%は険しい表情であなたを見ている。
+		PRINTFORMW その視線には、明確な失望の色が滲んでいる。
+		PRINTFORML
+		PRINTFORML 「…%CALLNAME:MASTER%、あなたは…」
+		PRINTFORML %CALLNAME:이벤트主%は言葉を切り、端末を操作する。
+		PRINTFORMW 「警備員を呼びます。これ以上の混乱は避けなければ」
+		PRINTFORML
+		PRINTFORML 程なくして警備員が到着し、男は連行されていく。
+		PRINTFORML 「ちっ、運が悪かったな！次は覚えてろよ！」
+		PRINTFORMW 男は悪態をつきながら去っていく。
+		PRINTFORML
+		PRINTFORML 事態は収拾されたが、%CALLNAME:이벤트主%の表情は厳しいままだ。
+		PRINTFORML 彼女はあなたに向き直り、冷たい声で言う。
+		PRINTFORMW 「…口先だけの介入でしたか」
+		PRINTFORML
+		PRINTFORML 「計画性のない行動は、かえって混乱を招きます」
+		PRINTFORML %CALLNAME:이벤트主%は端末に何かを記録しながら続ける。
+		PRINTFORMW 「今回の件、記録に残させていただきます。反省してください」
+		PRINTFORML
+		PRINTFORML 後輩たちも複雑な表情であなたを見ている。
+		PRINTFORML %CALLNAME:이벤트主%は一礼し、後輩たちを連れて立ち去っていく。
+		PRINTFORMW その背中は、どこか冷たく感じられた。
+		PRINTFORML
+		PRINTFORML あなたは패배の苦さを噛みしめながら、その場を後にする。
+		PRINTFORML 今回は失敗してしまった。
+		PRINTFORMW しかし、次こそは…そう心に誓う。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-50)
+		CALL EVENT_TIMER(60)
+		RETURN 3
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_102652
+CALL DP_GET(1500)
+CALL CARD_PACK_SHORI(5)
+
+@IRAI_DECK_102652(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 102652
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_102652
+
+PRINTFORML 
+PRINTFORML 威圧的なデュエリスト「へへっ、後悔すんなよ！」
+PRINTFORMW 
+
+;やや弱体化の雑魚ワイト
+@DUELDECK_102652(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 22001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22002
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22101
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22102
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22103
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22104
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22104
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22105
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22106
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22106
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 22106
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 23000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70016
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70019
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70018
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70018
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70018
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 71052
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 1431
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41657
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41255
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54001
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54004
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", -1
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", -1
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", -1
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", -1
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", -1
+

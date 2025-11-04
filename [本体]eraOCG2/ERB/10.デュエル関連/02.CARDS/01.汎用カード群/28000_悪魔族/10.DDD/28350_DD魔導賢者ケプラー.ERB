@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = DD 마도현자 케플러
+		RESULTS = DD 마도현자 케플러
 	CASE "略称"
-RESULTS = DD 케플러
+		RESULTS = DD 케플러
 	CASE "カテゴリ"
-RESULTS:0 = DD
+		RESULTS:0 = DD
 ENDSELECT
 
 
@@ -68,11 +68,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 손패起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
@@ -142,7 +139,7 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 		CALL FULLRESET
 		효과条件カテゴリ = 계약서
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
-PRINTL 다른 "DD" 카드를 패에 되돌리겠습니까?
+		PRINTL 다른 "DD" 카드를 패에 되돌리겠습니까?
 		CALL YN_CHOICE(듀얼리스트)
 		IF RESULT == はい
 			CALL FULLRESET

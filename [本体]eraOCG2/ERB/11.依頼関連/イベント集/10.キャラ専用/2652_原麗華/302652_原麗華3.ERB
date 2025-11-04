@@ -1,0 +1,1130 @@
+;規律ある委員長に難易度の規律がないクエストを。
+;実質最終ボス戦。難易度高めだけど頑張ってください。
+;まあスキルドレイン引けるかどうかは運なんだし、
+;封鎖と言っても封淫具とかで何とかできるんじゃない？
+
+@IRAI_EVENT_302652(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CH2652-03)錠前師の呪縛
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 場所_KCスタジアム
+	CASE "詳細"
+		PRINTL 公式大会の予選会場で、麗華の様子がおかしい。
+		PRINTL 
+		PRINTL 報酬：3000DP、カードパック×20
+	CASE "条件"
+		SIF 依頼_完了횟수:202652 == 0
+			RETURN 0
+		RETURN 1
+	CASE "추가条件"
+		IF CFLAG:NO_TO_CHARANUM(2652):호감도 < 1000
+			RESULTS = 호감도が不足しています
+			RETURN 1
+		ENDIF
+		IF MARK:NO_TO_CHARANUM(2652):반발각인 > 0
+			RESULTS = 彼女の記録簿には、あなたへの不信が明記されているだろう。冷静な判断を取り戻すまで待つべきだ。
+			RETURN 1
+		ENDIF
+		RETURN 0
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_302652(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 錠前師
+
+이벤트主 = NO_TO_CHARANUM(2652)
+錠前師 = -1
+
+IF 依頼_달성상황 == 0
+	PRINTFORML KCスタジアムは、今日も多くのデュエリストたちで賑わっている。
+	PRINTFORML 公式大会の予選が開催されており、会場には熱気が満ちている。
+	PRINTFORMW あなたは招待状を手に、エントランスを抜けた。
+	PRINTFORML
+	PRINTFORML 会場内のモニターには、様々なデュエルの映像が流れている。
+	PRINTFORML その中の一つに、見覚えのある姿が映し出されている。
+	PRINTFORMW %CALLNAME:이벤트主%だ。彼女は観客席の隅で、端末を握りしめている。
+	PRINTFORML
+	PRINTFORML しかし、その様子は明らかにおかしい。
+	PRINTFORML いつもの冷静さはどこへやら、メガネの奥の瞳は揺れ動いている。
+	PRINTFORMW 端末を操作する指先も、わずかに震えているように見える。
+	PRINTFORML
+	PRINTFORML あなたが近づくと、%CALLNAME:이벤트主%は顔を上げる。
+	PRINTFORML 「%CALLNAME:MASTER%…あなたも、この大会に」
+	PRINTFORMW 彼女の声には、いつもの凛とした響きがない。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%の視線は、メインステージの方を向いている。
+	PRINTFORML そこには、黒いコートを纏った人物が立っている。
+	PRINTFORMW 周囲のデュエリストたちは、その人物を畏敬の念を込めて見つめている。
+	PRINTFORML
+	PRINTFORML 「あの人が…『錠前師』です」
+	PRINTFORML %CALLNAME:이벤트主%は小さく呟く。
+	PRINTFORMW その声には、恐怖と憧憬が入り混じっている。
+	PRINTFORML
+	PRINTFORML 「私が尊敬していた先輩…彼女を引退に追い込んだ伝説のデュエリスト」
+	PRINTFORML %CALLNAME:이벤트主%の拳が小さく震えている。
+	PRINTFORMW 「完全なるロックコンボ。상대の全ての行動を封じ、じわじわとライフを削る…」
+	PRINTFORML
+	PRINTFORML 「私のバーン戦術の源流は、あの人の戦い方にあります」
+	PRINTFORML %CALLNAME:이벤트主%は端末を見つめる。
+	PRINTFORMW 「ですが、あの人は…先輩の心まで破壊してしまった」
+	PRINTFORML
+	IF GETBIT(依頼_進行보존:202652, 1)
+		PRINTFORML %CALLNAME:이벤트主%はあなたの方を向く。
+		PRINTFORML その瞳には、弱さと迷いが浮かんでいる。
+		PRINTFORMW 「%CALLNAME:MASTER%…」
+		PRINTFORML
+		PRINTL 
+		PRINTL [0] - 「だかろこそ、勝てないと」
+		BINPUT
+		PRINTFORML 「分かっています。あなたが教えてくれた、リスク관리の考え方」
+		PRINTFORML %CALLNAME:이벤트主%は深呼吸をする。
+		PRINTFORMW 「ですが、これは…私の計画における最大のリスクです」
+		PRINTFORML
+		PRINTFORML 「あのデュエルは…今も時々目の前に浮かぶほど、恐ろしかった…」
+		PRINTFORML 彼女の声が震える。
+		PRINTFORMW こんな弱音を吐露するのは初めてのことだ。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,100)
+	ELSE
+		PRINTFORML %CALLNAME:이벤트主%は端末を握りしめる。
+		PRINTFORML 「私は…先輩のようになりたくない」
+		PRINTFORMW 「でも、あの人を超えなければ、先輩の無念は晴らせない…」
+	ENDIF
+
+	PRINTFORML その時、会場のアナウンスが響く。
+	PRINTFORML 「本日のゲストデュエリスト、『錠前師』が特別エキシビションマッチを行います！」
+	PRINTFORMW 周囲から大きな歓声が上がる。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%の表情が、さらに険しくなる。
+	PRINTFORML 彼女は立ち上がろうとするが、足が震えて動けないようだ。
+	PRINTFORMW あなたは決断を迫られる。
+	PRINTFORML
+	PRINTL
+	PRINTL [0] - 「大丈夫か？」
+	PRINTL [1] - 「らしくないな。冷静さを欠いているぞ」
+	PRINTL [2] - 「君なら乗り越えられる」
+	PRINTL
+	BINPUT
+
+	IF RESULT == 1
+		PRINTFORML あなたは冷静に、しかし優しく指摘した。
+		PRINTFORMW %CALLNAME:이벤트主%は一瞬驚いたような表情を見せる。
+		PRINTFORML
+		PRINTFORML 「…！」
+		PRINTFORML %CALLNAME:이벤트主%は深呼吸をし、メガネを直す。
+		PRINTFORMW 「はい、その通りです。感謝します、少し頭が冷えました」
+		PRINTFORML
+		PRINTFORML 彼女はいつもの理知的な表情を取り戻していく。
+		PRINTFORML 「感情的になっていては、正確な判断はできません」
+		PRINTFORMW 「記録を見直し、冷静に分析すべきですね」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は端末を操作し始める。
+		PRINTFORML あなたの的確な指摘が、彼女の心を落ち着かせたようだ。
+		PRINTFORMW 「あなたは…私のことをよく理解してくれていますね」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,150)
+		SETBIT 依頼_進行보존:302652, 0
+
+	ELSEIF RESULT == 0
+		PRINTFORML あなたはシンプルに心配の言葉をかけた。
+		PRINTFORMW %CALLNAME:이벤트主%は一瞬、弱さを見せそうになる。
+		PRINTFORML
+		PRINTFORML 「…問題ありません」
+		PRINTFORML %CALLNAME:이벤트主%は気丈に振る舞う。
+		PRINTFORMW 「風紀委員として、私情を表に出すべきではありませんでした」
+		PRINTFORML
+		PRINTFORML 彼女はメガネを直し、冷静さを取り戻そうとする。
+		PRINTFORML 「ご心配をおかけしました」
+		PRINTFORMW しかし、その声にはまだ僅かな震えが残っている。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,50)
+
+	ELSE
+		PRINTFORML あなたは励ましの言葉をかけた。
+		PRINTFORMW %CALLNAME:이벤트主%は冷たい視線であなたを見る。
+		PRINTFORML
+		PRINTFORML 「…根拠のない精神論は不要です」
+		PRINTFORML %CALLNAME:이벤트主%の声は氷のように冷たい。
+		PRINTFORMW 彼女のトラウマの深さゆえに、安易な励ましを拒絶してしまう。
+		PRINTFORML
+		PRINTFORML 「私には、論理的な分析と計画が必要なのです」
+		PRINTFORML %CALLNAME:이벤트主%は視線を逸らす。
+		PRINTFORMW 「それ以外の言葉は、今の私には響きません」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-50)
+	ENDIF
+
+	PRINTFORML ステージでは、錠前師がデュエルディスクを構えている。
+	PRINTFORML 「さあ、誰か挑戦者はいないか？」
+	PRINTFORMW その声は、冷たく、そして絶対的な自信に満ちている。
+	PRINTFORML
+	PRINTFORML 周囲のデュエリストたちは、誰も手を挙げない。
+	PRINTFORML 錠前師の完全なるロックコンボは、伝説として語り継がれている。
+	PRINTFORMW 挑戦することは、패배を意味すると誰もが知っている。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%があなたの方を見る。
+	PRINTFORML その瞳には、期待と不安が入り混じっている。
+	PRINTFORMW 「%CALLNAME:MASTER%…もし、あなたが…」
+	PRINTFORML
+	PRINTFORML 彼女は言葉を続けられない。
+	PRINTFORML しかし、その視線は全てを物語っている。
+	PRINTFORMW あなたは、ステージへと歩み出した。
+	PRINTFORML
+    PRINTL
+    PRINTL [0] - 「俺が상대をしよう」
+    PRINTL
+    BINPUT
+	PRINTFORMW 会場がざわめく。
+	PRINTFORML
+	PRINTFORML 錠前師はあなたを見据える。
+	PRINTFORML 「ほう…面白い。では、後悔させてやろう」
+	PRINTFORMW 不敵な笑みを浮かべながら、デュエルディスクを起動する。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%は観客席から、固唾を呑んで見守っている。
+	PRINTFORML 彼女の端末には、錠前師の過去のデュエルデータが표시されている。
+	PRINTFORMW 「%CALLNAME:MASTER%…お願いします」
+	PRINTFORML
+	PRINTFORML デュエルの場が整う。
+	PRINTFORML 周囲には大勢の観客が集まり、モニターにはあなたたちの姿が映し出されている。
+	PRINTFORMW 錠前師は冷たい笑みを浮かべる。
+	PRINTFORML
+	PRINTFORML 「私のロックコンボは完璧だ。お前の全ての行動を封じてやる」
+	PRINTFORML 錠前師はカードを手に取る。
+	PRINTFORMW 「そして、じわじわとライフを削り、絶望を味わわせてやる」
+	PRINTFORML
+	PRINTFORML 会場の空気が緊張感に包まれる。
+	PRINTFORML %CALLNAME:이벤트主%の視線が、あなたに注がれている。
+	PRINTFORMW デュエルが、始まる。
+	PRINTFORML
+	PRINTFORML ステージ上で、デュエルが始まろうとしている。
+	PRINTFORML 錠前師は冷酷な笑みを浮かべながら、カードを引く。
+	PRINTFORMW 「さあ、絶望の始まりだ」
+	PRINTFORML
+	PRINTFORML 周囲の観客たちは息を呑んで見守っている。
+	PRINTFORML %CALLNAME:이벤트主%も、端末を握りしめながら固唾を呑んでいる。
+	PRINTFORMW 「%CALLNAME:MASTER%…」
+	PRINTFORML
+    CALLFORM ANIME_TEST("鉄壁の牢獄を築く者","　　錠　前　師　　","The Locksmith Who Builds Iron Prison")
+
+	TARGET = 錠前師
+	CALL CHOICE_DUEL_TYPE(302652)
+
+	IF RESULT == 1
+    
+		CALL FLASH(3)
+
+		PRINTFORML デュエルに승리した。
+		PRINTFORML 錠前師のライフポイントがゼロになり、会場が静まり返る。
+		PRINTFORMW そして、一瞬の沈黙の後、大きな歓声が爆発する。
+		PRINTFORML
+		PRINTFORML 「な…なんだと…！」
+		PRINTFORML 錠前師は信じられないという表情で立ち尽くしている。
+		PRINTFORMW 「私の完璧なロックコンボが…破られた…！」
+		PRINTFORML
+		PRINTFORML あなたは絶望的な상황から、僅かな活路を見出した。
+		PRINTFORML 奇跡的なトップドローとコンボで、鉄壁のロックを打ち破った。
+		PRINTFORMW 計画を「超える」一撃が、伝説を打ち砕いた。
+		PRINTFORML
+		PRINTFORML 錠前師はデュエルディスクを外し、深く息を吐く。
+		PRINTFORML 「…見事だ。私の負けだ」
+		PRINTFORMW 彼は一礼し、静かにステージを去っていく。
+		PRINTFORML
+		PRINTFORML 会場は拍手と歓声に包まれる。
+		PRINTFORML モニターには、あなたの승리が大きく映し出されている。
+		PRINTFORMW そして、観客席から一人の少女が駆け寄ってくる。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%だ。
+		PRINTFORML 彼女の瞳には、驚きと感動の涙が浮かんでいる。
+		PRINTFORMW 「%CALLNAME:MASTER%…！」
+		PRINTFORML
+		PRINTFORML 「あなたは…やってのけた」
+		PRINTFORML %CALLNAME:이벤트主%の声は震えている。
+		PRINTFORMW 「あの完璧なロックを、打ち破った…！」
+		PRINTFORML
+		PRINTFORML 彼女は端末を見つめる。
+		PRINTFORML 「私には見えなかった。あの상황からの活路が」
+		PRINTFORMW 「でも、あなたは…計画を超える一撃で、全てを覆した」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は深呼吸をし、吹っ切れたような表情を見せる。
+		PRINTFORML 過去の呪縛が、今、解放されたのだ。
+		PRINTFORMW 「ありがとうございます。私のトラウマを…破壊してくれて」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,150)
+
+		PRINTFORML %CALLNAME:이벤트主%はあなたの前に立つ。
+		PRINTFORML その瞳には、強い決意の光が宿っている。
+		PRINTFORMW 「ですが、まだ足りない」
+		PRINTFORML
+		PRINTFORML 「私の古い『計画』を完全に破壊し、新しい私を再構築してください」
+		PRINTFORML %CALLNAME:이벤트主%はデュエルディスクを構える。
+		PRINTFORMW 「…あなたと、全力で戦いたい」
+		PRINTFORML
+		PRINTFORML 会場がざわめく。
+		PRINTFORML 観客たちは、この展開に興奮している。
+		PRINTFORMW アナウンサーが叫ぶ。「これは…エキシビションマッチの続きか！？」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は真剣な表情であなたを見つめる。
+		PRINTFORML 「お願いします、%CALLNAME:MASTER%」
+		PRINTFORMW 「私の全てを受け止めて、そして…超えてください」
+		PRINTFORML
+		PRINTFORML あなたは頷いた。
+		PRINTFORML デュエルディスクを再び起動する。
+		PRINTFORMW %CALLNAME:이벤트主%との、真の決戦が始まる。
+		PRINTFORML
+		依頼_달성상황++
+		依頼_場所:0 = 場所_KCスタジアム
+		CALL EVENT_TIMER(180)
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、会場から落胆の声が漏れる。
+		PRINTFORMW 錠前師は冷たく笑う。
+		PRINTFORML
+		PRINTFORML 「やはりな。私のロックコンボは完璧だ」
+		PRINTFORML 錠前師は勝ち誇ったように腕を組む。
+		PRINTFORMW 「誰も、この壁を越えることはできない」
+		PRINTFORML
+		PRINTFORML 彼は만족そうに笑いながら、ステージを去っていく。
+		PRINTFORML 周囲の観客たちも、徐々に散っていく。
+		PRINTFORMW 会場には、重苦しい空気が漂っている。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%がゆっくりとこちらに歩いてくる。
+		PRINTFORML その表情は、深い絶望に染まっている。
+		PRINTFORMW 「あなたでも…勝てなかったのですか」
+		PRINTFORML
+		PRINTFORML 「やはり、あの壁は…」
+		PRINTFORML %CALLNAME:이벤트主%は端末を握りしめる。
+		PRINTFORMW 「誰にも越えられない、絶対的な存在なのですね」
+		PRINTFORML
+		PRINTFORML 彼女は視線を落とす。
+		PRINTFORML 「私の先輩も、あの完璧なロックの前に心を折られた」
+		PRINTFORMW 「そして今、あなたも…」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%の声は震えている。
+		PRINTFORML 「私には、どうすることもできない」
+		PRINTFORMW 「論理も、計画も、全てが無力だった…」
+		PRINTFORML
+		PRINTFORML 彼女は一礼し、その場を後にする。
+		PRINTFORML その背中は、深い絶望に沈んでいるように見えた。
+		PRINTFORMW あなたも、패배の苦さを噛みしめながら会場を後にする。
+		PRINTFORML
+		PRINTFORML 今回は失敗してしまった。
+		PRINTFORML しかし、次こそは…そう心に誓う。
+		PRINTFORMW %CALLNAME:이벤트主%の信頼を取り戻し、過去の呪縛を打ち破るために。
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,-150)
+		CALL EVENT_TIMER(180)
+		RETURN 3
+	ENDIF
+
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML ステージ上で、あなたと%CALLNAME:이벤트主%が向かい合っている。
+	PRINTFORML 周囲の観客たちは、この予想外の展開に興奮している。
+	PRINTFORMW モニターには、二人の姿が大きく映し出されている。
+	PRINTFORML
+	PRINTFORML %CALLNAME:이벤트主%はデュエルディスクを構える。
+	PRINTFORML その瞳には、強い決意と覚悟が宿っている。
+	PRINTFORMW 「%CALLNAME:MASTER%、私の全てを受け止めてください」
+	PRINTFORML
+	PRINTFORML 「私のバーン戦術、私の計画、私の全て」
+	PRINTFORML %CALLNAME:이벤트主%はカードを引く。
+	PRINTFORMW 「そして、それを超えてください」
+	PRINTFORML
+	PRINTFORML 会場の空気が、さらに緊張感に包まれる。
+	PRINTFORML これは、%CALLNAME:이벤트主%にとって過去との決別のデュエルだ。
+	PRINTFORMW そして、あなたにとっても、彼女の信頼に応える戦いだ。
+	PRINTFORML
+    SETBIT 依頼_進行보존:302652, 3
+	TARGET = 이벤트主
+	CALL CHOICE_DUEL_TYPE(302652)
+
+	IF RESULT == 1
+
+		CALL FLASH(5, 0xFFD700)
+
+		PRINTFORML デュエルに승리した。
+		PRINTFORML %CALLNAME:이벤트主%のライフポイントがゼロになり、会場から大きな歓声が上がる。
+		PRINTFORMW %CALLNAME:이벤트主%は、悔しさではなく、吹っ切れたような晴れやかな笑顔を見せる。
+		PRINTFORML
+		PRINTFORML 「…完敗です」
+		PRINTFORML %CALLNAME:이벤트主%はデュエルディスクを外し、深く息を吐く。
+		PRINTFORMW 「私の計画は、あなたの前では無力でした」
+		PRINTFORML
+		PRINTFORML しかし、彼女の表情には後悔の色はない。
+		PRINTFORML むしろ、清々しいような笑みを浮かべている。
+		PRINTFORMW 「ですが、不思議と心は晴れています」
+		PRINTFORML
+		PRINTFORML 周囲の観客たちは、感動の拍手を送っている。
+		PRINTFORML モニターには、二人の健闘が映し出されている。
+		PRINTFORMW アナウンサーが興奮した声で叫ぶ。「素晴らしいデュエルだ！」
+		PRINTFORML
+		CALL EVENT_FAVUP(이벤트主,150)
+
+		PRINTL
+		PRINTL [0] - 「君の全力、見事だった」
+		PRINTL [1] - 「これで만족か？」
+		PRINTL [2] - 何も言わず、手を差し伸べる
+		PRINTL
+		BINPUT
+
+		IF RESULT == 0
+			PRINTFORML あなたは%CALLNAME:이벤트主%の健闘を称えた。
+			PRINTFORMW %CALLNAME:이벤트主%は少し照れたような表情を見せる。
+			PRINTFORML
+			PRINTFORML 「完敗です。…ですが、不思議と心は晴れています」
+			PRINTFORML %CALLNAME:이벤트主%は端末を操作し、何かを記録する。
+			PRINTFORMW 「これで、私の更新は完了しました」
+			PRINTFORML
+			PRINTFORML 「新しい計画の第一項には…」
+			PRINTFORML %CALLNAME:이벤트主%は微笑む。
+			PRINTFORMW 「あなたの名前を記さなければなりませんね」
+			PRINTFORML
+			PRINTFORML 彼女の瞳には、新たな決意の光が宿っている。
+			PRINTFORML 過去の呪縛から解放され、新しい一歩を踏み出したのだ。
+			PRINTFORMW 「今後も、よろしくお願いします。%CALLNAME:MASTER%」
+			PRINTFORML
+            SETBIT 依頼_進行보존:302652, 2
+
+		ELSEIF RESULT == 1
+			PRINTFORML あなたは問いかけた。
+			PRINTFORMW %CALLNAME:이벤트主%は静かに、しかし熱の籠もった視線を向ける。
+			PRINTFORML
+			PRINTFORML 「はい。…만족、以上の感情です」
+			PRINTFORML %CALLNAME:이벤트主%は深く息を吐く。
+			PRINTFORMW 「私の古い『計画』は完全に破壊されました」
+			PRINTFORML
+			PRINTFORML 「そして、新しい私が再構築された」
+			PRINTFORML %CALLNAME:이벤트主%は端末を閉じる。
+			PRINTFORMW 「感謝します。あなたがいなければ、私はずっと過去に囚われていた」
+			PRINTFORML
+			PRINTFORML 彼女の表情は、穏やかで만족そうだ。
+			PRINTFORML 過去のトラウマは、完全に消え去ったようだ。
+			PRINTFORMW 「これからは、前を向いて進めます」
+			PRINTFORML
+		ELSE
+			PRINTFORML あなたは何も言わず、手を差し伸べた。
+			PRINTFORMW %CALLNAME:이벤트主%はその手を見つめ、ゆっくりと手を取る。
+			PRINTFORML
+			PRINTFORML 「…ありがとうございます」
+			PRINTFORML %CALLNAME:이벤트主%の声は、優しく温かい。
+			PRINTFORMW 彼女の手は、わずかに震えている。
+			PRINTFORML
+			PRINTFORML 「言葉は不要でした。あなたの全てが、私に伝わりました」
+			PRINTFORML %CALLNAME:이벤트主%は立ち上がり、あなたと並んで立つ。
+			PRINTFORMW 「これからは、一緒に前に進みましょう」
+			PRINTFORML
+			PRINTFORML 周囲の観客たちは、温かい拍手を送っている。
+			PRINTFORML 二人の姿が、モニターに映し出されている。
+			PRINTFORMW 新たな絆が、ここに生まれた。
+			PRINTFORML
+            SETBIT 依頼_進行보존:302652, 2
+
+		ENDIF
+
+		IF 依頼_見返し中 == 0
+			PRINTFORML その時、大会スタッフがステージに上がってくる。
+			PRINTFORML 「お二人とも、素晴らしいデュエルでした！」
+			PRINTFORMW スタッフは大きな箱を手渡してくる。
+			PRINTFORML
+			PRINTFORML 「本日の特別エキシビションマッチの優勝者として」
+			PRINTFORML スタッフは笑顔で説明する。
+			PRINTFORMW 「スポンサー企業から、特別賞品が贈られます」
+			PRINTFORML
+			PRINTFORML 箱の中には、大量のカードパックが入っている。
+			PRINTFORML 最新弾を含む、20パックもの豪華な賞品だ。
+			PRINTFORMW %CALLNAME:이벤트主%は驚いたような表情を見せる。
+			PRINTFORML
+			PRINTFORML 「おお、これは…」
+			PRINTFORML %CALLNAME:이벤트主%は少し考えた後、あなたに箱を手渡す。
+			PRINTFORMW 「%CALLNAME:MASTER%、受け取ってください」
+			PRINTFORML
+			PRINTFORML 「またあなたの승리によるものですね」
+			PRINTFORML %CALLNAME:이벤트主%は微笑む。
+			PRINTFORMW 「そして、私の新しい計画の第一歩でもあります」
+			PRINTFORML
+			PRINTFORML スタッフは一礼して去った。
+			PRINTFORMW 会場は落ち着きを取り戻していく。
+		ENDIF
+
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%はメガネをかけ直し、端末を操作する。
+		PRINTFORML 「今日のデュエルデータ、全て記録しました」
+        PRINTFORMW 「今後の参考に、必ず活用させていただきます」
+		PRINTFORML
+		PRINTFORML 彼女はあなたの方を向く。
+		PRINTFORML その瞳には、信頼と感謝の色が浮かんでいる。
+		PRINTFORMW 「%CALLNAME:MASTER%、本当にありがとうございました」
+		PRINTFORML
+		PRINTFORML 「あなたは、私の過去の呪縛を破壊してくれた」
+		PRINTFORML %CALLNAME:이벤트主%は深く一礼する。
+		PRINTFORMW 「そして、新しい私の再構築に、手助けをしてくれた」
+		PRINTFORML
+		PRINTFORML 「今後も、よろしくお願いします」
+		PRINTFORML %CALLNAME:이벤트主%は珍しく、柔らかい笑みを浮かべる。
+		PRINTFORMW 「あなたとなら、どんな困難も乗り越えられる気がします」
+		PRINTFORML
+		PRINTFORML 会場の外は、夕暮れに染まっている。
+		PRINTFORML 二人は並んで、スタジアムを後にする。
+		PRINTFORMW 新たな一歩を、共に踏み出すために。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は端末を見つめながら呟く。
+		PRINTFORML 「新しい計画の第一項…『信頼できるパートナーとの協力関係の構築』ですね」
+		PRINTFORML
+		IF GETBIT(依頼_進行보존:302652, 2)
+			PRINTFORML %CALLNAME:이벤트主%は立ち止まり、あなたの方を向く。
+			PRINTFORML 「%CALLNAME:MASTER%…一つ、お願いがあります」
+			PRINTFORMW その表情は、少し恥ずかしそうだ。
+			PRINTFORML
+			PRINTFORML 「今後も、私のデュエルを見守っていただけませんか？」
+			PRINTFORML %CALLNAME:이벤트主%は端末を握りしめる。
+			PRINTFORMW 「あなたがいれば、私はどんな상대にも立ち向かえる気がします」
+			PRINTFORML
+			PRINTFORML 彼女の瞳には、純粋な信頼の光が宿っている。
+			PRINTFORML 過去のトラウマは完全に消え去り、新しい未来への希望が満ちている。
+			PRINTFORMW あなたは頷いた。
+			PRINTFORML
+			PRINTFORML 「ありがとうございます」
+			PRINTFORML %CALLNAME:이벤트主%は만족そうに微笑む。
+			PRINTFORMW 「では、これからもよろしくお願いします。パートナー」
+			PRINTFORML
+			CALL EVENT_FAVUP(이벤트主,100)
+		ENDIF
+
+		PRINTFORML 夕日が、二人の姿を照らしている。
+		PRINTFORML 新たな絆が、ここに確かに生まれた。
+		PRINTFORMW そして、新たな物語が、始まろうとしている。
+		PRINTFORML
+        SETBIT 依頼_進行보존:302652, 1
+
+		CALL EVENT_TIMER(240)
+		RETURN 2
+
+	ELSE
+		PRINTFORML デュエルに패배してしまった。
+		PRINTFORML あなたのライフポイントがゼロになり、会場から驚きの声が上がる。
+		PRINTFORMW %CALLNAME:이벤트主%は、複雑な表情を浮かべている。
+		PRINTFORML
+		PRINTFORML 「…私の승리、ですか」
+		PRINTFORML %CALLNAME:이벤트主%はデュエルディスクを外す。
+		PRINTFORMW しかし、その表情には喜びの色がない。
+		PRINTFORML
+		PRINTFORML 「ですが、これでは…」
+		PRINTFORML %CALLNAME:이벤트主%は端末を見つめる。
+		PRINTFORMW 「私の古い計画が、まだ有効だということになってしまう」
+		PRINTFORML
+		PRINTFORML 彼女は視線を落とす。
+		PRINTFORML 「私は、この計画を破壊してほしかった」
+		PRINTFORMW 「新しい私に、再構築してほしかった…」
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%は深く息を吐く。
+		PRINTFORMW 「すみません。私の期待が、重すぎたのかもしれません」
+		PRINTFORML
+		PRINTFORML 「でも大丈夫。心配しないで」
+        PRINTFORML 「私자신で何とかする。必ず」
+		PRINTFORMW 彼女は一礼し、ステージを降りていく。
+		PRINTFORML
+		PRINTFORML 周囲の観客たちも、徐々に散っていく。
+		PRINTFORML 会場には、どこか物足りない空気が漂っている。
+		PRINTFORMW あなたも、패배の苦さを噛みしめながらステージを降りる。
+		PRINTFORML
+		PRINTFORML %CALLNAME:이벤트主%の期待に応え、彼女の過去を完全に破壊することはできなかったが、
+		PRINTFORMW それでも一歩前進かな？
+		PRINTFORML
+		CALL EVENT_TIMER(180)
+		RETURN 2
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@IRAI_REWARD_302652
+#DIM DYNAMIC 이벤트主
+
+이벤트主 = NO_TO_CHARANUM(2652)
+
+CALL DP_GET(3000)
+CALL CARD_PACK_SHORI(20)
+
+IF GETBIT(依頼_進行보존:302652, 1)
+	PRINTFORML 【特別ボーナス】
+	PRINTFORML %CALLNAME:이벤트主%との絆が深まった。
+	PRINTFORML 彼女の過去の呪縛を打ち破り、新たな未来への道を開いた。
+    CALL EVENT_FAVUP(이벤트主,500)
+ENDIF
+
+RETURN 1
+
+@IRAI_DECK_302652(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+    SIF !GETBIT(依頼_進行보존:302652, 3)
+	    RETURN 302652
+    RETURN 2652
+ENDIF
+RETURN 0
+
+;デュエル開始時
+@IRAI_DUEL_INTRO_302652
+
+IF !GETBIT(依頼_進行보존:302652, 3)
+    PRINTFORML 
+    PRINTFORML 錠前師「この完璧なロックの前に絶望せよ！」
+    PRINTFORMW 
+ELSE
+    PRINTFORML 
+    PRINTFORML 麗華「過去を…乗り越える！」
+    PRINTFORMW 
+ENDIF
+
+;ただのレアカード。チートとは言わないでほしい（は？）
+@DUELDECK_302652(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 70030
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70030
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70116
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70116
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70500
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70500
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70500
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 342652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 342652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 342652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91052
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91052
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 90201
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91300
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91300
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91502
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91502
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 91502
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 302652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 312652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 312652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 312652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 322652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 322652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 322652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 332652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 332652
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 332652
+
+@CARDNAME_302652,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 錠前師のスキルドレイン
+	CASE "略称"
+		RESULTS = 錠前師SD
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+@CARD_302652(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "生産불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_302652(종류)
+#DIM DYNAMIC 종류
+
+PRINTL ライフを倍にしてこのカードを발동できる。
+CALLFORM CARD_ABLE(0,常在無効)
+PRINTL ①：このカードが마법＆함정ゾーンに存在する限り、
+PRINTL フィールドの全ての表側표시モンスターの효과は無効化される。
+CALLFORM CARD_ABLE(0,ターン開始時強制)
+PRINTL ②：このカードが表側표시で存在する限り、자신スタンバイフェイズに상대は１０００LPを失う。
+
+
+@CARDCAN_302652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC EX条件달성
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,302652)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 常在無効
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時強制
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_302652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 素材数
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 설정종족
+#DIM DYNAMIC 選択효과
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,302652)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",GETVAR(@"ライフ_%듀얼리스트%"))
+	ENDIF
+ELSEIF 종류 == 常在無効
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"無効")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"無効",0,302652)
+ELSEIF 종류 == ターン開始時強制
+	CALL LIFE_CHANGE(対面者,"減少","コスト",1000)
+ENDIF
+
+@CARDNAME_312652,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 錠前師の賄賂
+	CASE "略称"
+		RESULTS = 錠前師の賄賂
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+@CARD_312652(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "生産불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_312652(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,발동誘発)
+PRINTL ①：상대の마법・함정カードが발동した時に발동できる。
+PRINTL その발동を無効にし、破壊する。
+PRINTL その後、자신は１枚ドローする。
+PRINTL 
+
+@CARDCAN_312652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,312652)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 발동誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_312652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 묘지送カード,5
+
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,312652)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ENDIF
+
+@CARDNAME_322652,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 錠前師の書
+	CASE "略称"
+		RESULTS = 錠前師の書
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+
+@CARD_322652(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "生産불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_322652(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,마함起動 ,손패起動,フリー誘発)
+PRINTL ①：상대フィールドの表側표시モンスターを全て裏側守備표시にする。
+PRINTL このターンのエンドフェイズに、상대フィールドの裏側守備표시モンスターを全て表側守備표시にし、
+PRINTL その後、この효과で表側守備표시にしたモンスターの数だけドローする。
+
+@CARDCAN_322652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,322652)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	IF ゾーン == "손패"
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時予約
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_322652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC ドロー枚数
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,322652)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"표시변경",1)
+		CALL CARD_RESERV(듀얼리스트,322652)
+	ENDIF
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 3
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	ドロー枚数 = RESULT
+
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_表:カウンタ") != 3
+			CONTINUE
+		CALL SET_FIELD_INFO(対面者,"필드",カウンタ,"表",2,1)
+	NEXT
+	CALL CARDDRAW_BASIC(듀얼리스트,ドロー枚数)
+ENDIF
+
+@CARDNAME_332652,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 錠前師の爆弾
+	CASE "略称"
+		RESULTS = 錠前師の爆弾
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+
+@CARD_332652(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "生産불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_332652(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,破壊→묘지 ,戦闘→묘지)
+PRINTL ①：フィールドのこのカードが破壊され묘지へ送られた場合に발동する。
+PRINTL 상대に3000ダメージを与える。
+
+@CARDCAN_332652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,332652)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_332652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 묘지送カード,5
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,332652)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",3000,1)
+	ENDIF
+ENDIF
+
+@CARDNAME_342652,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 錠前師のシリンダー
+	CASE "略称"
+		RESULTS = 錠前師の筒
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+
+@CARD_342652(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "生産불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_342652(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ①：상대モンスターの攻撃宣言時に발동できる。
+PRINTL その攻撃モンスターの攻撃を無効にし、
+PRINTL そのモンスターの攻撃力分のダメージを상대に与える。
+PRINTL 자신が2枚ドローする。
+PRINTL 
+
+
+@CARDCAN_342652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,342652)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 攻撃時誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_342652(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 묘지送カード,5
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻撃時誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,342652)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		ダメージ量 = GETVAR(@"%対面者%_MZ_攻:(%対面者%_戦闘カード)")
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = リローデッド・シリンダー
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1 && GETVAR(@"%듀얼리스트%_제외NG置換") == 0
+			PRINTL 묘지のリローデッド・シリンダーを제외しますか？
+			CALL YN_CHOICE(듀얼리스트)
+		ELSE
+			RESULT = いいえ
+		ENDIF
+		IF RESULT == はい
+			CALL FULLRESET
+			효과条件名前 = リローデッド・シリンダー
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+			SIF RESULT == 1
+				ダメージ量 = ダメージ量 * 2
+		ENDIF
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+
+		CALL EVADE_ATTACK(듀얼리스트)
+		
+		CALL CARDDRAW_BASIC(듀얼리스트,2)
+	ENDIF
+ENDIF

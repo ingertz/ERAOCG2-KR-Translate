@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 어비스팅－트리아이나
+		RESULTS = 어비스팅－트리아이나
 	CASE "略称"
-RESULTS = 어비스트리아이나
+		RESULTS = 어비스트리아이나
 	CASE "カテゴリ"
-RESULTS:0 = 어비스
+		RESULTS:0 = 어비스
 ENDSELECT
 
 
@@ -63,14 +63,9 @@ CALL 装備판정(듀얼리스트,場所,ゾーン)
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,73510)
 		RETURN 0
-	SIF メインフェイズ != 1
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲묘지 = 1

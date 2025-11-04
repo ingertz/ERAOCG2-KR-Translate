@@ -1,0 +1,155 @@
+﻿@CARDNAME_72482,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 모아이 레이저
+	CASE "略称"
+		RESULTS = 모아이 레이저
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+		RESULTS:1 = 모아이
+		RESULTS:2 = 게임 오리지널
+ENDSELECT
+
+
+@CARD_72482(参照先)
+;名前専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 装備마법
+	CASE "生産불가"
+		IF 依頼_完了횟수:515 == 0
+			RETURN 1
+		ELSE
+			RETURN 0
+		ENDIF
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72482(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "초시공 전투기 빅 바이퍼", "모아이" 몬스터, "신희" 몬스터에게만 장착 가능.
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①: 이 카드를 장착한 몬스터는 상대 몬스터의 효과를 받지 않는다.
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ②: 상대 필드의 카드 1장을 대상으로 발동할 수 있다.
+PRINTL 그 카드를 원래 주인의 패로 되돌린다.
+
+
+@CARDCAN_72482(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72482)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,72482)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(対面者) >= 1
+		条件달성 = 1
+	SIF モンスター数(対面者) >= 1
+		条件달성 = 1
+	SIF 条件달성 != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前:0 = 초시공 전투기 빅 바이퍼
+	효과条件名前:1 = 초시공 전투기 빅토리 바이퍼
+	효과条件名前:2 = 초차원전투기 레전드 빅토리 바이퍼
+	효과条件スーパーカテゴリ:0 = 모아이
+	효과条件スーパーカテゴリ:1 = 신희
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72482(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 装備者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力상승
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72482,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"손패")
+	ENDIF
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72482)
+	IF RESULT == 0
+		;패에서 발동 후、마법トラップ 존에 カード이동
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前:0 = 초시공 전투기 빅 바이퍼
+		효과条件名前:1 = 초시공 전투기 빅토리 바이퍼
+		효과条件名前:2 = 초차원전투기 레전드 빅토리 바이퍼
+		효과条件スーパーカテゴリ:0 = 모아이
+		효과条件スーパーカテゴリ:1 = 신희
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"モ耐")
+ENDIF
+

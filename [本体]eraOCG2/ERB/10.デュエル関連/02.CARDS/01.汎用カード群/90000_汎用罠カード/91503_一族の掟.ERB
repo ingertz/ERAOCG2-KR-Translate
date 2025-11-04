@@ -34,11 +34,11 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALLFORM CARD_ABLE(0,마함起動 ,フリー誘発)
-PRINTL ①：종족を１つ宣言して발동할 수 있다。
-PRINTL 선언한 종족の필드의 몬스터는 攻撃および효과の발동을 行えない。
+PRINTL ①：종족을 １개 선언하고 발동할 수 있다。
+PRINTL 선언한 종족의 필드의 몬스터는 공격 및 효과의 발동을 할 수 없다。
 CALLFORM CARD_ABLE(0,ターン開始時強制)
-PRINTL ②：자신 스탠바이 페이즈에、자신 필드의 몬스터 １장을 リリースできる。
-PRINTL リリースしなかった경우、이 카드는 파괴된다。
+PRINTL ②：자신 스탠바이 페이즈에、자신 필드의 몬스터 １장을 릴리스 할 수 있다。
+PRINTL 릴리스 하지 않았을 경우、이 카드는 파괴된다。
 
 @CARDCAN_91503(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -58,9 +58,8 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3	
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -143,9 +142,9 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		ENDIF
 		PRINTL
 		IF 宣言종족 == 21
-			PRINTFORML %듀얼리스트%は裸族を宣言しました
+			PRINTFORML %듀얼리스트%는 나체족을 선택했습니다
 		ELSE
-			PRINTFORML %듀얼리스트%は%GET_TALENTNAME(191,宣言종족)%を宣言しました
+			PRINTFORML %듀얼리스트%는 %GET_TALENTNAME(191,宣言종족)%을 선언했습니다
 		ENDIF
 		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"汎数",宣言종족)
 	ENDIF

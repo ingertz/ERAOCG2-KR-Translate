@@ -1,0 +1,144 @@
+﻿@CARDNAME_73216,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 블랙 로즈 가든
+	CASE "略称"
+		RESULTS = 흑장미의 정원
+	CASE "カテゴリ"
+		RESULTS:0 = 로즈
+ENDSELECT
+
+
+@CARD_73216(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "추가日"
+		RETURN 250726
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_73216(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없으며、이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：이 카드의 발동시의 효과 처리로서、
+PRINTL 자신의 덱 / 묘지에서 드래곤족의 "로즈"몬스터 １장을 패에 넣을 수 있다。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ②：필드의 앞면 표시 몬스터는 식물족이 된다。
+CALLFORM CARD_ABLE(2,破壊→묘지)
+PRINTL ③：이 카드가 파괴된 경우에 발동할 수 있다。
+PRINTL 자신의 묘지 / 제외 상태의 식물족 몬스터의 수×１００ 데미지를 상대에게 준다。
+PRINTL 자신의 묘지 또는 제외 상태의 "블랙 로즈 드래곤"이 존재하는 경우、추가로 상대에게 ２４００데미지를 준다。
+
+
+@CARDCAN_73216(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73216)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,73216)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 破壊→묘지
+    SIF 발동済_2(듀얼리스트,73216)
+		RETURN 0
+    CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件종족 = 식물족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+
+ENDIF	
+
+@CARDEFFECT_73216(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73126,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件종족 = 드래곤족
+		효과条件カテゴリ = 로즈
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_OTHER(듀얼리스트,"필드",場所,"種",식물족,73216)
+	CALL FULLRESET
+	;효과元カードID = 73216
+	CALL STATCHANGE_OTHER(듀얼리스트,"상대필드",場所,"種",식물족,73216)
+
+ELSEIF 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73216)
+	IF RESULT == 0
+	    CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件종족 = 식물족
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		ダメージ量 = RESULT * 100
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+		
+		CALL FULLRESET
+	    효과範囲묘지 = 1
+	    효과範囲제외 = 1
+	    효과条件名前 = 블랙 로즈 드래곤
+	    CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+		    CALL LIFE_CHANGE(듀얼리스트,"減少","효과",2400,1)
+	ENDIF
+
+ENDIF

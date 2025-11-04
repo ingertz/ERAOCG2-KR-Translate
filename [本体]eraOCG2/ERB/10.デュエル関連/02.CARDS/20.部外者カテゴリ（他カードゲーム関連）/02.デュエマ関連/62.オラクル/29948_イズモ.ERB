@@ -1,5 +1,5 @@
-﻿@CARDNAME_29948,参照先
-;ココで지정카드의 名前、略称を返す予定
+﻿@CARDNAME_29946,参照先
+;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -12,13 +12,16 @@ SELECTCASE 参照先
 		RESULTS = 이즈모
 	CASE "カテゴリ"
 		RESULTS:0 = 오라클
-		RESULTS:1 = 갓
-		RESULTS:2 = 갓 노바
+		RESULTS:1 = 갓 노바
 		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = 갓
+		RESULTS:6 = 중앙G 링크
+	CASE "맥시멈"
+		RESULTS = 중앙G 링크
 ENDSELECT
 
 
-@CARD_29948(参照先)
+@CARD_29946(参照先)
 
 #DIMS DYNAMIC 参照先
 VARSET RESULT
@@ -37,83 +40,72 @@ SELECTCASE 参照先
 	CASE "レベル"
 		RETURN 4
 	CASE "攻撃力"
-		RETURN 1200
+		RETURN 1000
 	CASE "守備力"
-		RETURN 1200
+		RETURN 1000
 	CASE "성별"
 		RETURN 雄性
-
+	CASE "レア度"
+		RETURN SPR
+	CASE "生成カード"
+		RESULT:3 = 229947
+		RESULT:2 = 229945
+		RESULT:1 = 129947
+		RETURN 129945
 ENDSELECT
 RETURN 0
 
-@CARD_EXPLANATION_29948(종류)
+@CARD_EXPLANATION_29946(종류)
 #DIM DYNAMIC 종류
 
-
-PRINTL 이 카드명의 ②③의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
-CALLFORM CARD_ABLE(1,소환時,특수소환時)
-PRINTL ①: 이 카드가 소환 / 특수 소환했을 경우에 발동할 수 있다.
-PRINTL 덱에서 "이즈모" 이외의 "갓 노바" 카드 1장을 패에 넣는다.
-CALLFORM CARD_ABLE(2,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지)
-PRINTL ②: 이 카드가 묘지로 보내졌을 경우, 자신 마법 & 함정 존에 앞면 표시의 "갓 노바" 카드가 2장 이상 존재할 경우 발동할 수 있다.
-PRINTL 이 카드를 패에 넣는다.
-CALLFORM CARD_ABLE(3,필드起動)
-PRINTL ③: 덱에서 "이즈모" 이외의 "갓" 몬스터 1장을 묘지로 보내고 발동할 수 있다.
-PRINTL 이 카드는 묘지로 보낸 몬스터와 같은 이름의 카드로 취급한다.
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動,필드起動)
+PRINTL ①：【G・MAXIMUM！！】「오라클」モンスターまたは「갓 노바」モンスター×２
+PRINTL 손패・フィールドに存在するほかの「오라클」モンスターまたは「갓 노바」モンスター２枚を書き換え、맥시멈소환を行う。
+PRINTL 맥시멈소환は無効化されない。
 
 
-@CARDCAN_29948(듀얼리스트,종류,ゾーン,場所)
+@CARDCAN_29946(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 
-CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29948)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29946)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 소환時 || 종류 == 특수소환時
-	SIF 발동済_1(듀얼리스트,29948)
-		RETURN 0
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件カテゴリ = 갓 노바
-	효과条件固名前 = 이즈모
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
-	SIF 발동済_2(듀얼리스트,29948)
-		RETURN 0
-	CALL FULLRESET
-	효과範囲마함 = 1
-	효과条件カテゴリ = 갓 노바
-	효과条件표시 = 表側표시
-	효과条件CNT = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT < 2
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 필드起動
-	SIF 발동済_3(듀얼리스트,29948)
+IF 종류 == 손패起動 || 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,29946)
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件カテゴリ = 갓
-	효과条件종류 = モン全般
-	효과条件固名前 = 이즈모
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件他所 = 1
+	효과条件カテゴリ:0 = 오라클
+	효과条件カテゴリ:1 = 갓 노바
+	효과条件CNT = 1	
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 맥시멈条件
+	SIF GETVAR(@"%듀얼리스트%_필드:2") != 29946
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:1")}("カテゴリ")
+	SIF !MATCH(RESULTS,"좌G 링크")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:3")}("カテゴリ")
+	SIF !MATCH(RESULTS,"우G 링크")
 		RETURN 0
 	RETURN 1
 ENDIF
 
-@CARDEFFECT_29948(듀얼리스트,종류,ゾーン,場所)
+@CARDEFFECT_29946(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者 
 #DIMS DYNAMIC ゾーン
@@ -121,37 +113,551 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 攻撃力修正
-#DIM DYNAMIC 選択カード
-#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC めくり数
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 소환時 || 종류 == 특수소환時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29948,1)
+IF 종류 == 손패起動 || 종류 == 필드起動
+	효과無効不能 = 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29946,1)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과範囲덱 = 1
-		효과条件カテゴリ = 갓 노바
-		효과条件固名前 = 이즈모
-		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-	ENDIF
-ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29948,2)
-	IF RESULT == 0
-		CALL FULLRESET
-효과条件名前 = 이즈모
-		CALL CARD_ADD_BASIC(듀얼리스트,"묘지",ゾーン,場所)
-	ENDIF
-ELSEIF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29948,3)
-	IF RESULT == 0
-		CALL FULLRESET
-		효과条件カテゴリ = 갓
-		효과条件종류 = モン全般
-		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件他所 = 1
+		효과条件カテゴリ:0 = 오라클
+		효과条件カテゴリ:1 = 갓 노바
+		효과条件複数 = 2
+		효과条件行先플래그 = 소멸行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"変化元ID",RESULT:1,1)
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(듀얼리스트,"필드",カウンタ)
+			NEXT
+			CALL FULLRESET
+			CALL CARD_GENERATE(듀얼리스트,29946,"攻撃표시")
+			IF 듀얼리스트 == "자신"
+				PRINTL どのモンスターを특수소환しますか？
+				PRINTL
+				PRINTL [0] - 쌍마좌신 디보
+				PRINTL [1] - 요정좌신 펄 잼
+				BINPUT
+			ELSE
+				RESULT = RAND:2
+			ENDIF
+
+			IF RESULT == 0
+				CALL FULLRESET
+				CALL CARD_GENERATE(듀얼리스트,129945,"守備표시")
+			ELSEIF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_GENERATE(듀얼리스트,229945,"守備표시")
+			ENDIF
+
+			IF 듀얼리스트 == "자신"
+				PRINTL どのモンスターを특수소환しますか？
+				PRINTL
+				PRINTL [0] - 쌍천우신 크라프트베르크
+				PRINTL [1] - 전공우신 매시브 어택
+				BINPUT
+			ELSE
+				RESULT = RAND:2
+			ENDIF
+
+			IF RESULT == 0
+				CALL FULLRESET
+				CALL CARD_GENERATE(듀얼리스트,129947,"守備표시")
+			ELSEIF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_GENERATE(듀얼리스트,229947,"守備표시")
+			ENDIF
 		ENDIF
 	ENDIF
 ENDIF
+
+
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_129945,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쌍마좌신 디보
+	CASE "略称"
+		RESULTS = 디보
+	CASE "カテゴリ"
+		RESULTS:0 = 갓 노바
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = 갓
+		RESULTS:6 = 좌G 링크
+	CASE "맥시멈"
+		RESULTS = 좌G 링크
+ENDSELECT
+
+
+@CARD_129945(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "파츠"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_129945(종류)
+#DIM DYNAMIC 종류
+
+PRINTL （맥시멈状態のこのカードは攻撃できない）
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 상대フィールドのモンスター１体を덱に戻す。
+PRINTL 
+
+@CARDCAN_129945(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,129945)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,129945)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 덱
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 맥시멈条件
+	SIF GETVAR(@"%듀얼리스트%_필드:1") != 129945
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"중앙G 링크")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:3")}("カテゴリ")
+	SIF !MATCH(RESULTS,"우G 링크")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_129945(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,129945,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")
+	ENDIF
+ELSEIF 종류 == 맥시멈条件
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_129947,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쌍천우신 크라프트베르크
+	CASE "略称"
+		RESULTS = 크라프트베르크
+	CASE "カテゴリ"
+		RESULTS:0 = 커맨드
+		RESULTS:1 = 갓 노바
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = 갓
+		RESULTS:6 = 우G 링크
+	CASE "맥시멈"
+		RESULTS = 우G 링크
+ENDSELECT
+
+
+@CARD_129947(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "파츠"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_129947(종류)
+#DIM DYNAMIC 종류
+
+PRINTL （맥시멈状態のこのカードは攻撃できない）
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 덱から１枚ドローし、손패を１枚捨てる。
+PRINTL その後、자신は２０００LP회복する。
+
+@CARDCAN_129947(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,129947)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,129947)
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == 맥시멈条件
+	SIF GETVAR(@"%듀얼리스트%_필드:3") != 129947
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:1")}("カテゴリ")
+	SIF !MATCH(RESULTS,"좌G 링크")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"중앙G 링크")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_129947(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,129947,1)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)	
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",2000)
+	ENDIF
+ELSEIF 종류 == 맥시멈条件
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+ENDIF
+
+
+
+
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_229945,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 요정좌신 펄 잼
+	CASE "略称"
+		RESULTS = 펄 잼
+	CASE "カテゴリ"
+		RESULTS:0 = 스노우 페어리
+		RESULTS:1 = 갓 노바
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = 갓
+		RESULTS:6 = 좌G 링크
+	CASE "맥시멈"
+		RESULTS = 좌G 링크
+ENDSELECT
+
+
+@CARD_229945(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "파츠"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_229945(종류)
+#DIM DYNAMIC 종류
+
+PRINTL （맥시멈状態のこのカードは攻撃できない）
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ①：このカードが특수소환した場合に발동できる。
+PRINTL 덱からレベル４以下の「오라클」モンスター１体を특수소환する。
+PRINTL 
+
+@CARDCAN_229945(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,229945)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,229945)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 오라클
+	CALLFORM 효과条件レベル_ADV(4,"以下")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 맥시멈条件
+	SIF GETVAR(@"%듀얼리스트%_필드:1") != 229945
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"중앙G 링크")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:3")}("カテゴリ")
+	SIF !MATCH(RESULTS,"우G 링크")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_229945(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,229945,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 오라클
+		CALL 효과条件レベル_ADV(4,"以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 맥시멈条件
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_229947,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 전공우신 매시브 어택
+	CASE "略称"
+		RESULTS = 매시브 어택
+	CASE "カテゴリ"
+		RESULTS:0 = 어스 이터
+		RESULTS:1 = 갓 노바
+		RESULTS:4 = DUEL MASTERS
+		RESULTS:5 = 갓
+		RESULTS:6 = 우G 링크
+	CASE "맥시멈"
+		RESULTS = 우G 링크
+ENDSELECT
+
+
+@CARD_229947(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "파츠"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_229947(종류)
+#DIM DYNAMIC 종류
+
+PRINTL （맥시멈状態のこのカードは攻撃できない）
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ①：このカードが특수소환した場合に발동できる。
+PRINTL 덱から１枚ドローする。
+PRINTL 
+
+@CARDCAN_229947(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,229947)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,229947)
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == 맥시멈条件
+	SIF GETVAR(@"%듀얼리스트%_필드:3") != 229947
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:1")}("カテゴリ")
+	SIF !MATCH(RESULTS,"좌G 링크")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:2")}("カテゴリ")
+	SIF !MATCH(RESULTS,"중앙G 링크")
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_229947(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,229947,1)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ELSEIF 종류 == 맥시멈条件
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+ENDIF
+

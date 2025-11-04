@@ -26,7 +26,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "種類"
-
 		RETURN 装備魔法
 ENDSELECT
 
@@ -35,12 +34,12 @@ RETURN 0
 @CARD_EXPLANATION_73187(種類)
 #DIM DYNAMIC 種類
 
-PRINTL 자신 필드의 「ギャラクシーアイズ」Xモンスターにのみ装備可能。
-PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다。
+PRINTL 自分フィールドの「ギャラクシーアイズ」Xモンスターにのみ装備可能。
+PRINTL このカード名の②の効果は１ターンに１度しか使用できない。
 CALLFORM CARD_ABLE(0,永続効果)
-PRINTL ①：装備モンスターは相手の마법 / 함정 카드 の効果を受けない。
+PRINTL ①：装備モンスターは相手の魔法・罠カードの効果を受けない。
 CALLFORM CARD_ABLE(1,魔罠起動 ,フリー誘発)
-PRINTL ②：自分・相手ターンに、자신의 묘지 / 제외 상태인光属性モンスター１体を対象として発動できる
+PRINTL ②：自分・相手ターンに、自分の墓地・除外状態の光属性モンスター１体を対象として発動できる
 PRINTL （「銀河眼の光子竜」を対象として発動した場合、装備モンスターを覚醒状態にする）。
 PRINTL そのカードをデッキに戻し、装備モンスターのX素材を１つ増やす。
 PRINTL その後、装備モンスターが覚醒状態の場合、装備モンスターのX素材を１つ増やし、
@@ -76,9 +75,8 @@ IF (種類 == 魔罠起動 || 種類 == フリー誘発) && GETVAR(@"%決闘者%
 	RETURN 1
 ELSEIF 種類 == 魔罠起動 || 種類 == 手札起動
 	IF ゾーン == "魔罠"
-		SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
-			RETURN 0
-		SIF GETVAR(@"%決闘者%_魔_表:場所") == 1
+		CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
 			RETURN 0
 	ENDIF
 	SIF メインフェイズ != 1
@@ -131,7 +129,7 @@ IF (種類 == 魔罠起動 || 種類 == フリー誘発) && GETVAR(@"%決闘者%
 		選択カード = RESULT
 		IF 選択カード != 9999
 			選択カードID = RESULT:1
-			TRYCALLFORM CARDNAME_{選択カードID}, "名前"
+			TRYCALLFORM CARDNAME_{選択カードID}("名前")
 			選択カード名 = %RESULTS%
 			SIF 選択カード名 == "ギャラクシーアイズ・フォトン・ドラゴン"
 				CALL SET_FIELD_INFO(決闘者,"戦場",装備先,"条達",2,1)

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 분보그 004
+		RESULTS = 분보그 004
 	CASE "略称"
-RESULTS = 분보그 004
+		RESULTS = 분보그 004
 	CASE "カテゴリ"
-RESULTS:0 = 분보그
+		RESULTS:0 = 분보그
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-	
 		RETURN 효과モン
 	CASE "속성"
 		RETURN 땅속성
@@ -35,6 +34,8 @@ SELECTCASE 参照先
 		RETURN 500
 	CASE "守備力"
 		RETURN 500
+	CASE "추가日"
+		RETURN 250514
 ENDSELECT
 
 RETURN 0
@@ -90,7 +91,7 @@ ELSEIF 종류 == 攻撃後誘発
 	효과範囲손패 = 1
 	효과範囲묘지 = 1
 	효과条件カテゴリ = 분보그
-	효과条件固名前起動 = 1
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
 	효과条件소환可 = 1
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -122,7 +123,7 @@ IF 종류 == 攻撃時誘発
 		효과条件固名前 = 분보그 004
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			CALLFORM CARD_{RESULT:1},"レベル"
+			CALLFORM CARD_{RESULT:1}("レベル")
 			攻撃力修正 = RESULT * 500
 			CALL FULLRESET
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",攻撃力修正)

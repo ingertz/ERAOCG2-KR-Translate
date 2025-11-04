@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 봄화정의 만개
+		RESULTS = 봄화정의 만개
 	CASE "略称"
-RESULTS = 봄화정의 만개
+		RESULTS = 봄화정의 만개
 	CASE "カテゴリ"
-RESULTS:0 = 봄화정
+		RESULTS:0 = 봄화정
 ENDSELECT
 
 
@@ -68,14 +68,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲묘지 = 1
-효과条件名前 = 봄화정과 꽃망울
+	효과条件名前 = 봄화정과 꽃망울
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲덱 = 1
-효과条件名前 = 봄화정의 여신 베라
+	효과条件名前 = 봄화정의 여신 베라
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -84,13 +84,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -158,14 +153,14 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		CALL FULLRESET
 		효과範囲손패 = 1
 		효과範囲묘지 = 1
-효과条件名前 = 봄화정과 꽃망울
+		효과条件名前 = 봄화정과 꽃망울
 		효과条件行先플래그 = 제외行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
 			효과範囲손패 = 1
 			효과範囲덱 = 1
-효과条件名前 = 봄화정의 여신 베라
+			효과条件名前 = 봄화정의 여신 베라
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
@@ -182,7 +177,7 @@ ELSEIF 종류 == 효과後誘発
 	IF RESULT == 0
 		IF 묘지数(듀얼리스트) > 0 || 묘지数(対面者) > 0
 			SIF 듀얼리스트 == "자신"
-PRINTL 필드의 몬스터를 되돌리겠습니까?
+				PRINTL 필드의 몬스터를 되돌리겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 		ELSE
 			RESULT = いいえ

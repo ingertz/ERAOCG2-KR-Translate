@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 아다마시아 라퓨타이트
+		RESULTS = 아다마시아 라퓨타이트
 	CASE "略称"
-RESULTS = 마구의 비광석
+		RESULTS = 마구의 비광석
 	CASE "カテゴリ"
-RESULTS:0 = 아다마시아
+		RESULTS:0 = 아다마시아
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN フィールド
 ENDSELECT
 
@@ -32,7 +31,7 @@ RETURN 0
 @CARD_EXPLANATION_73140(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 자신 필드는 "마구의 비광석"이 된다.
+PRINTL 자신 필드는 "아다마시아 라퓨타이트"가 된다.
 PRINTL 이 카드명의 ③의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(0,攻守変動)
 PRINTL ①: 자신 필드의 원소정령족 몬스터의 공격력 / 수비력은 500 올린다.
@@ -72,13 +71,8 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	RETURN 1
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
-	IF 종류 == 마함起動
-		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-			RETURN 0
-	ENDIF
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -121,7 +115,9 @@ ENDIF
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
 #DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID,10
 #DIMS DYNAMIC 選択カード名前,5
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC 条件달성
@@ -135,18 +131,23 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73140,10)
 	IF RESULT == 0
 		SIF 듀얼리스트 == "자신"
-			PRINTW 一番下に置く카드나 ら選んでください
-		REPEAT 5
+			PRINTFORML 가장 아래에 둘 카드를 골라주세요
+		FOR カウンタ,0,5
 			CALL FULLRESET
 			효과条件カテゴリ = 아다마시아
 			;효과条件複数 = 5
 			효과条件任意 = 1
+			FOR カウンタB,0,5
+				SIF 選択カード_ID:カウンタB && 듀얼리스트 == "상대"
+					효과条件固ID:カウンタB = 選択カード_ID:カウンタB
+			NEXT
 			CALL CARD_CHOOSE_BASIC(듀얼리스트,"덱",ゾーン,場所)
 			SIF RESULT == 9999
 				BREAK
 			選択カード = RESULT
+			選択カード_ID:カウンタ = RESULT:99
 			CALL CARD_ADD_DECK_SPC(듀얼리스트,"덱",選択カード)
-		REND
+		NEXT
 	ENDIF
 
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
@@ -168,5 +169,5 @@ ELSEIF 종류 == 攻守変動
 	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,500,500)
 
 ELSEIF 종류 == 지속효과
-	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "마구의 비광석")
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "아다마시아 라퓨타이트")
 ENDIF

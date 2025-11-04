@@ -52,23 +52,6 @@ ENDSELECT
 RETURN 0
 
 
-@CARDSUMMON_57852(듀얼리스트,소환カード,EX参照)
-#DIMS DYNAMIC 듀얼리스트
-#DIM DYNAMIC カウンタ
-#DIM DYNAMIC 소환カード
-#DIM DYNAMIC EX参照
-;素材条件
-
-
-CALL RESETCONDITION_MAT
-必要素材数 = 1
-素材条件カテゴリ = 도기라곤
-
-IF EX参照 == 1
-	CALL STRIDECAN(듀얼리스트,소환カード,57852) 
-	RETURN RESULT
-ENDIF
-
 
 @CARD_EXPLANATION_57852(종류)
 #DIM DYNAMIC 종류
@@ -82,7 +65,6 @@ PRINTL ①：이 카드가 『초월』했을 경우에 발동할 수 있다.
 PRINTL 상대 필드의 카드 1장을 주인의 덱으로 되돌린다. 그 후, 상대 필드의 "금단" 몬스터 1장을 파괴한다.
 CALLFORM CARD_ABLE(20,ターン開始時)
 PRINTL ②：『극한 파이널 혁명』
-PRINTL 상대의 턴 개시 시에 발동할 수 있다.
 PRINTL 이 턴, 상대는 공격력 100000 이하의 몬스터로 공격 선언할 수 없다.
 PRINTL 『극한 파이널 혁명』은 듀얼 중에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(0,攻守変動)
@@ -106,14 +88,29 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX덱起動
- 	SIF 발동済_1(듀얼리스트,52082)
+ 	SIF 발동済_1(듀얼리스트,57852)
  		RETURN 0
  	SIF メインフェイズ != 1
  		RETURN 0
  	SIF ターンプレイヤー != 듀얼리스트
  		RETURN 0
- 	TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:場所")}(듀얼리스트,場所,1)
+ 	SIF ターン数 <= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트)
+	SIF RESULT != 1
+		RETURN 0
+	SIF ゾーン != "EX덱"
+		 RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = ドギラゴン
+	CALL CARD_CHECK_ADV(듀얼리스트)
  	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_超越済") != 0
  		RETURN 0
  	RETURN 1
 ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
@@ -127,12 +124,6 @@ ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == ターン開始時
-	SIF ゾーン != "필드"
-		RETURN 0
-	SIF ターンプレイヤー == 듀얼리스트
-		RETURN 0
-	SIF 발동済_D1(듀얼리스트,57852)
-		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 短紋章起動
 	RETURN 1
@@ -157,7 +148,7 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == EX덱起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52082,1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57852,1)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과条件종류 = モン全般
@@ -165,14 +156,16 @@ IF 종류 == EX덱起動
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
+			효과範囲필드 = 1
 			효과条件カテゴリ = 도기라곤
 			CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)
 			IF RESULT == 1
 				CALL FULLRESET
 				효과範囲EX덱 = 1
-효과条件名前 = 파이널 도기라골든
+				효과条件名前 = 파이널 도기라골든
 				효과条件特不無視 = 1
 				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+				CALL SET_PLAYER_INFO(듀얼리스트,"超越済",1)
 			ENDIF
 		ENDIF
 	ENDIF
@@ -180,17 +173,28 @@ ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57852,1)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"덱")
 
 		CALL FULLRESET
+		효과範囲상대필드 = 1
 		효과条件カテゴリ = 금단
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+
+		IF 발동済_D1(듀얼리스트,57852) == 0
+			CALL CARD_EFFECT_D1USE(듀얼리스트,57852)
+			SETCOLOR C_YELLOW
+			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+			PRINTL
+			PRINTFORMW 「극한（파이널）、파이널 혁명！」
+			PRINTL
+			CUSTOMDRAWLINE ―	
+			CALL CARD_RESERV(듀얼리스트,57852,スタン予約)
+		ENDIF
 	ENDIF
-ELSEIF 종류 == ターン開始時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57852,20)
-	IF RESULT == 0
-		CALL CARD_RESERV(듀얼리스트,57852,短紋章予約)
-	ENDIF
+ELSEIF 종류 == ターン開始時予約
+	CALL CARD_RESERV(듀얼리스트,57852,短紋章起動)
 ELSEIF 종류 == 短紋章起動
 	CALL FULLRESET
 	효과条件攻撃力 = 100000

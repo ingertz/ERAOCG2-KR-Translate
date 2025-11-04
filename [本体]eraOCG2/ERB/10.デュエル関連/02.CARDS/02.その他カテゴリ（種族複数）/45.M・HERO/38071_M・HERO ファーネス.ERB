@@ -1,0 +1,145 @@
+﻿@CARDNAME_38071,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 마스크드 히어로 퍼네스
+	CASE "略称"
+		RESULTS = MH퍼네스
+	CASE "カテゴリ"
+		RESULTS:0 = HERO
+		RESULTS:1 = M•HERO
+ENDSELECT
+
+
+@CARD_38071(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2200
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 雄性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_38071(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 １턴에 각각 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：패의 이 카드를 상대에게 보여주고 발동할 수 있다
+PRINTL （이 효과를 발동하는 턴、자신은 "HERO"몬스터밖에 ＥＸ덱에서 특수 소환할 수 없다）。
+PRINTL 덱에서 "마스크 체인지"나 "융합" １장을 패에 넣는다。
+PRINTL 그 후、자신의 패를 １장 고르고 버린다。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：자신이 화염속성 이외의 "HERO" 융합 몬스터를 특수 소환한 경우에 발동할 수 있다。
+PRINTL 이 카드를 손패 / 묘지에서 특수 소환한다。
+PRINTL 이 효과로 특수 소환된 이 카드는、필드에서 벗어난 경우에 제외된다。
+
+@CARDCAN_38071(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,38071)
+SIF RESULT == 1
+	RETURN 0
+
+
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,38071)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前:0 = 융합
+	효과条件名前:1 = 마스크 체인지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件固カテゴリ = HERO
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"EX이력")
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,38071)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"손패","묘지")
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = HERO
+	효과条件종류 = 융합
+	CALL 효과条件속성_ADV(화염속성, "以外")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_38071(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前
+#DIM DYNAMIC 条件カード数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38071,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前:0 = 융합
+		효과条件名前:1 = 마스크 체인지
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			CALL CARD_EX_RESTRICTION(듀얼리스트,"HERO")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38071,2)
+	IF RESULT == 0
+		효과추가종류:0 = 効追除処
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

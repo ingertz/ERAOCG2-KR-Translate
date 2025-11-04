@@ -1,0 +1,140 @@
+﻿@CARDNAME_1725,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 천뢰의 쌍풍신 시나
+	CASE "略称"
+		RESULTS = 쌍풍신 시나
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_1725(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2900
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251028
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_1725(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：자신フィールドに바람속성モンスターが存在し、
+PRINTL 상대が마법・함정・モンスターの효과を발동した時に발동できる。
+PRINTL このカードを손패から특수소환する。
+PRINTL その後、その상대の효과の종류によって以下の효과を適用する。
+PRINTL ●モンスター：「천뢰의 쌍풍신 시나」以外のフィールドの表側표시モンスターを全て손패に戻す。
+PRINTL ●마법・함정：フィールドの마법・함정カードを全て손패に戻す。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：このカードは１ターンに１度だけ戦闘・효과では破壊されない。
+
+
+@CARDCAN_1725(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1725)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,1725)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1725,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件속성 = 바람속성
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_1725(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1725,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件종류 = モン全般
+			CALL CARD_CHECK_START_DATA(듀얼리스트,1,2)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과範囲상대필드 = 1
+				효과条件固名前 = 천뢰의 쌍풍신 시나
+				효과条件표시 = 表側표시
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"손패")
+			ELSE
+				CALL FULLRESET
+				효과範囲마함 = 1
+				효과範囲상대마함 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"손패")
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"一破")
+ENDIF
+
+

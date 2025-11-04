@@ -1,0 +1,126 @@
+﻿@CARDNAME_27605,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 쥬락 타니탄
+	CASE "略称"
+		RESULTS = Ｊ 타니탄
+	CASE "カテゴリ"
+		RESULTS:0 = 쥬락
+ENDSELECT
+
+
+@CARD_27605(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2800
+	CASE "특수불가"
+		RETURN 1
+	CASE "성별"
+		RETURN 無性
+	CASE "추가日"
+		RETURN 251026
+	CASE "レア度"
+		RETURN RARE
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27605(종류)
+#DIM DYNAMIC 종류
+PRINTL このカードは특수소환できない。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ①：お互いにフィールドのこのカードを효과の대상にできない。
+;お互いはフィールドのこのカードを함정・モンスターの효과の대상にできない。
+CALL CARD_ABLE(1,필드起動)
+PRINTL ②：１ターンに１度、자신の묘지から攻撃力１７００以下の「쥬락」モンスター１体を제외して발동できる。
+PRINTL このカードの攻撃力はターン終了時まで１０００アップする。
+
+@CARDCAN_27605(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27605)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,27605)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 쥬락
+	효과条件攻撃力 = 1700
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)	
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_27605(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 強化値
+#DIM DYNAMIC バウンスカード
+#DIM DYNAMIC バウンスカードレベル
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;PRINTFORMW 종류:{종류}
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"対耐")
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27605,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 쥬락
+		효과条件攻撃力 = 1700
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET	
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",1000)
+		ENDIF
+	ENDIF
+ENDIF

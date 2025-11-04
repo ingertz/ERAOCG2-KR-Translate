@@ -1,0 +1,125 @@
+﻿@CARDNAME_73184,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 갤럭시 헌드레드
+	CASE "略称"
+		RESULTS = 은하 백식
+	CASE "カテゴリ"
+		RESULTS:0 = 갤럭시
+ENDSELECT
+
+
+@CARD_73184(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_73184(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없으며,
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①: 이 카드의 발동 시 효과 처리로서, 덱에서 "포톤" "갤럭시" 카드 1장을 묘지로 보낼 수 있다.
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②: 자신 필드에 "은하안의 광자룡"이 특수 소환되었을 경우에 발동할 수 있다.
+PRINTL 상대 엑스트라 덱에서, 몬스터 1장을 제외하거나, "No." 몬스터 1장을 자신 필드에 특수 소환한다.
+
+
+@CARDCAN_73184(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73184)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,73184)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,73184)
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = 갤럭시아이즈 포톤 드래곤
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대EX덱 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_73184(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73184,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과条件カテゴリ:0 = 포톤
+		효과条件カテゴリ:1 = 갤럭시
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73184,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종류 = モン全般
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대EX덱",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			選択カードID = RESULT:99
+			TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+			IF RESULTS == "넘버즈" && モンスター数(듀얼리스트) < 5
+				PRINTL 넘버즈를 선택했습니다. 자신 필드에 특수 소환합니까?
+				CALL YN_CHOICE(듀얼리스트)
+				IF RESULT == はい
+					PRINTL "사냥해 주지, 네놈의 넘버즈를!"
+					CALL FULLRESET
+					CALL CARD_SP_SUMMON(듀얼리스트,"상대EX덱",選択カード)
+				ENDIF
+			ENDIF
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"상대EX덱",ゾーン,選択カード)
+		ENDIF
+	ENDIF
+ENDIF

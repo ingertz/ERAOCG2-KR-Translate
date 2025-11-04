@@ -1,0 +1,249 @@
+; ============================================================
+; 46470_光導の創界神帝 レピィ・アーズ
+; ============================================================
+
+@CARDNAME_46470,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 光導の創界神帝 レピィ・アーズ
+	CASE "略称"
+		RESULTS = レピオーズ
+	CASE "カテゴリ"
+		RESULTS:0 = 創界神
+        RESULTS:1 = CoZ12
+		RESULTS:2 = 光導
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+
+
+@CARD_46470(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 超次元
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 鱗獣族
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "性別"
+		RETURN 牝性
+	CASE "特殊不可"
+		RETURN 1
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_46470(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①③の効果はそれぞれ１ターンに１度しか使用できない。
+PRINTL 「創界神」は対象耐性・破壊耐性を持つ。
+
+CALLFORM CARD_ABLE(1,EXデッキ起動)
+PRINTL ①：自分のEXデッキに「創界神」が１種類のみで、
+PRINTL 自分フィールドに「創界神」が存在しない場合に発動できる。
+PRINTL 手札１枚をデッキに加え、EXデッキのこのカードを自分の魔法＆罠ゾーンに表側表示でセットする。
+PRINTL その後、自分のデッキの上からカードを３枚墓地へ送る。
+PRINTL その中に「光導」カードがあった場合、その数だけこのカードにコアカウンターを置く。
+
+CALLFORM CARD_ABLE(2,魔罠起動)
+PRINTL ②：このカードが魔法・罠ゾーンに存在する限り、
+PRINTL 自分のメインフェイズに、墓地の「光導」カード２枚をデッキに戻して発動できる。
+PRINTL このカードにコアカウンターを４つ置く。
+
+CALLFORM CARD_ABLE(0,身代効果)
+PRINTL ③：自分フィールドの「CoZ12」モンスターが破壊される場合、
+PRINTL 代わりにこのカードのコアカウンターを１つ取り除く事ができる。
+
+
+@CARDSUMMON_46470(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+RETURN 0
+
+
+@CARDCAN_46470(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46470)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF 発動済_1(決闘者,46470)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 手札数(決闘者) == 0
+		RETURN 0
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件カテゴリ = 創界神
+	効果条件固名前起動 = 1
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT >= 2
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果範囲魔罠 = 1
+	効果条件カテゴリ = 創界神
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+
+	RETURN 1
+
+ELSEIF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	SIF 発動済_2(決闘者,46470)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = 光導
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+
+	RETURN 1
+
+ELSEIF 種類 == 身代効果
+	SIF 発動済_3(決闘者,46470)
+		RETURN 0
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_個Ｃ:場所") < 1
+		RETURN 0
+	SIF 破壊対象ゾーン != "戦場"
+		RETURN 0
+	TRYCALLFORM CARDNAME_{破壊対象ID}("カテゴリ")
+	SIF !MATCH(RESULTS,"CoZ12")
+		RETURN 0
+
+	SIF 発動済_3(決闘者,46470)
+		RETURN 0
+
+	RETURN 1
+
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_46470(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 光導回数
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46470,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果条件行先フラグ = デッキ行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_ADD(決闘者,"EXデッキ","魔罠",場所,"表側表示")
+
+			光導回数 = 0
+			REPEAT 3
+				VARSET RESULTS
+				TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_デッキ:0")}("カテゴリ")
+				SIF MATCH(RESULTS,"光導")
+					光導回数 ++
+				CALL CARD_DECK_DISPOSE(決闘者,"デッキ",0)
+			REND
+
+			IF 光導回数 >= 1
+				CALL FULLRESET
+				効果条件名前:0 = 光導の創界神帝 レピィ・アーズ
+				CALL CARD_CHOOSE_BASIC(決闘者,"魔罠",ゾーン,場所)
+				選択カード = RESULT
+				IF 選択カード != 9999
+					CALL SET_FIELD_INFO(決闘者,"魔罠",選択カード,"個Ｃ",光導回数)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 魔罠起動 && GETVAR(@"%決闘者%_魔_表:場所") == 1
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46470,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件カテゴリ = 光導
+		効果条件複数 = 2
+		効果条件行先フラグ = デッキ行き
+		CALL CARD_ADD_GY_BASIC(決闘者,"墓地",ゾーン,場所)
+		IF RESULT == 1
+			CALL SET_FIELD_INFO(決闘者,"魔罠",場所,"個Ｃ",4)
+		ENDIF
+	ENDIF
+
+ELSEIF 種類 == 身代効果
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46470,3)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(決闘者,"魔罠",場所,"個Ｃ",-1)
+		RETURN 1
+	ENDIF
+	RETURN 0
+
+ELSEIF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"魔自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(決闘者,"魔自身",場所,"破耐")
+ENDIF

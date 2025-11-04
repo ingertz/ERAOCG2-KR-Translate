@@ -1,0 +1,182 @@
+; ============================================================
+; 46495_太陽石の神殿
+; ============================================================
+
+@CARDNAME_46495,参照先
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 太陽石の神殿
+	CASE "略称"
+		RESULTS = 太陽石の神殿
+	CASE "カテゴリ"
+		RESULTS:0 = 星竜
+		RESULTS:1 = 超星
+		RESULTS:4 = バトルスピリッツ
+ENDSELECT
+
+
+@CARD_46495(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN フィールド
+	CASE "追加日"
+		RETURN 250814
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_46495(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 自分フィールドは「太陽石の神殿」となる。
+PRINTL このカード名の①②③の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,魔罠起動 ,手札起動)
+PRINTL ①：このカードの発動時の効果処理として、デッキからドラゴン族１体を手札に加える。
+CALLFORM CARD_ABLE(2,魔罠起動)
+PRINTL ②：自分または相手のバトルフェイズに発動できる。
+PRINTL 手札の「星竜」または「超星」モンスター１体を特殊召喚する。
+CALLFORM CARD_ABLE(3,身代効果)
+PRINTL ③：自分の「星竜」モンスターが戦闘・効果によって破壊される場合に発動できる。
+PRINTL 代わりに１０００ＬＰを払う。
+PRINTL その後、そのモンスターにコアカウンターを１つ置き、攻撃回数を＋１する。
+RETURN 0
+
+
+@CARDCAN_46495(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIM  DYNAMIC カウンタ
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,46495)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF 発動済_1(決闘者,46495)
+		RETURN 0
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 魔罠起動
+	SIF 発動済_2(決闘者,46495)
+		RETURN 0
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+	SIF バトルフェイズ != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件種類 = モン全般
+	効果条件カテゴリ = 星竜
+	効果条件カテゴリ:1 = 超星
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+IF 種類 == 身代効果
+    SIF ゾーン != "魔罠"
+        RETURN 0
+    SIF 発動済_3(決闘者,46495)
+        RETURN 0
+	SIF 破壊対象ゾーン != "戦場"
+        RETURN 0
+    SIF !GROUPMATCH(破壊種類,"戦闘","効果")
+        RETURN 0
+    TRYCALLFORM CARDNAME_{破壊対象ID}("カテゴリ")
+    SIF !GROUPMATCH(RESULTS,"星竜")
+        RETURN 0
+    RETURN 1
+ENDIF
+
+IF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+@CARDEFFECT_46495(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM  DYNAMIC 種類
+#DIM  DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM  DYNAMIC 選択カード
+#DIM  DYNAMIC カウンタ
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46495,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件種類 = モン全般
+		効果条件種族 = ドラゴン族
+		効果条件任意 = 1
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+		CALL CARD_EFFECT_USE(決闘者,46495,1)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 魔罠起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46495,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果条件種類 = モン全般
+		効果条件カテゴリ = 星竜
+		効果条件カテゴリ:1 = 超星
+		効果条件召喚可 = 1
+		CALL CARD_SP_SUMMON_ADV(決闘者,"手札",場所)
+		CALL CARD_EFFECT_USE(決闘者,46495,2)
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF 種類 == 身代効果
+    CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,46495,3)
+    IF RESULT == 0
+        ; 代替成立：LP1000支払い → 対象を強化してリターン
+        CALL LIFE_CHANGE(決闘者,"減少","効果",1000,0)
+        CALL SET_FIELD_INFO(決闘者,"戦場",破壊対象場所,"個Ｃ",1)
+        CALL SET_FIELD_INFO(決闘者,"戦場",破壊対象場所,"戦",1)
+        CALL CARD_EFFECT_USE(決闘者,46495,3)
+        RETURN 1
+    ENDIF
+    RETURN 0
+ENDIF
+
+IF 種類 == 永続効果
+	CALL SET_FIELD_MAGIC_INFO(決闘者,"太陽石の神殿")
+	RETURN 0
+ENDIF
+
+RETURN 0

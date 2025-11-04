@@ -37,6 +37,8 @@ SELECTCASE 参照先
 		RETURN 1200
 	CASE "성별"
 		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1093
 ENDSELECT
 
 RETURN 0
@@ -73,11 +75,12 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
+	효과範囲묘지 = 1
 	효과条件名前 = 버스터 모드
+	효과条件セット = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	CALL CARD_DRAW_CHECK(1)
 	RETURN 1
 ELSEIF 종류 == 필드起動
 	SIF 발동済_2(듀얼리스트,33152)
@@ -123,7 +126,9 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,33152,1)
 	IF RESULT == 0
 		CALL FULLRESET
-효과条件名前 = 버스터 모드
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件名前 = 버스터 모드
 		CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"使化裏側표시")
 	ENDIF
 ELSEIF 종류 == 필드起動

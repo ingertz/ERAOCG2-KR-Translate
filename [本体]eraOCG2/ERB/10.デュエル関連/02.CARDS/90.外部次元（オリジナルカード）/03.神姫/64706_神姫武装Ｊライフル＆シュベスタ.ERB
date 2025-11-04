@@ -1,0 +1,207 @@
+﻿@CARDNAME_64706,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 신희무장 J 라이플 & 슈베스타
+	CASE "略称"
+		RESULTS = J 라이플 & 슈
+	CASE "カテゴリ"
+		RESULTS:0 = 신희
+ENDSELECT
+
+
+@CARD_64706(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 装備마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_64706(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "신희" 몬스터에만 장착 가능.
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①: 패의 이 카드를 상대에게 보여주고 발동할 수 있다.
+PRINTL 덱에서 "신희 에델바이스" 1장을 패에 더하고, 이 카드를 주인의 덱으로 되돌린다.
+CALLFORM CARD_ABLE(0,攻守変動,지속효과)
+PRINTL ②: 장착 몬스터의 공격력 / 수비력은 500 상승하고, 1번의 배틀 페이즈 중에 2번 공격할 수 있다.
+PRINTL 장착 몬스터가 "차세대형 신희" 몬스터일 경우,
+PRINTL 게다가 공격력 / 수비력이 1000 상승하고, 전투 저해를 얻는다.
+
+
+@CARDCAN_64706(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件チェック,5
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+
+装備者 = %RESULTS%
+装備先 = RESULT
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,64706)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	IF 종류 == 손패起動
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 신희
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			条件チェック:0 = 1
+		
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件名前 = 신희 에델바이스
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1 || 발동済_1(듀얼리스트,64706)
+			条件チェック:1 = 1
+
+		IF 条件チェック:0 == 1 && 条件チェック:1 == 1
+			RETURN 0
+		ENDIF
+	ELSEIF 종류 == 마함起動
+		
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 신희
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%装備者%_필드:装備先") == -1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_64706(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+#DIM DYNAMIC 条件チェック,5
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 손패起動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 신희
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		条件チェック:0 = 1
+	
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件固名前 = 신희 에델바이스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1 || 발동済_1(듀얼리스트,64706)
+		条件チェック:1 = 1
+
+	IF 条件チェック:0 != 1 && 条件チェック:1 != 1
+		PRINTL 어느 효과를 발동합니까?
+		CALL YN_CHOICE(듀얼리스트,"이 카드를 장착한다","덱에서 「에델바이스」를 패에 넣는다")
+	ELSEIF 条件チェック:0 != 1 && 条件チェック:1 == 1
+		RESULT = 0
+	ELSE
+		RESULT = 1
+	ENDIF
+
+	IF RESULT == 0
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,64706)
+		IF RESULT == 0
+			;패에서 발동 후、마법トラップ 존에 カード이동
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = 신희
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+		ENDIF
+	ELSE
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,64706,1)
+		IF RESULT == 0
+			CALL FULLRESET
+			효과条件名前 = 신희 에델바이스
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,2)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,64706)
+	IF RESULT == 0
+		;패에서 발동 후、마법トラップ 존에 カード이동
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 신희
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,500,500)
+	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("カテゴリ")
+	SIF MATCH(RESULTS, "차세대형 신희")
+		CALL STATCHANGE_BASIC(듀얼리스트,"装備",場所,1000,1000)
+ELSEIF 종류 == 지속효과
+	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("カテゴリ")
+	SIF MATCH(RESULTS, "차세대형 신희")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"戦阻")
+ELSEIF 종류 == 攻撃後強制誘発
+	CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"効済",1)
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",装備先,"戦",1)
+ENDIF
+

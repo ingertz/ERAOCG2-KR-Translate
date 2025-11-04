@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 성스러운 배리어 －거울의 힘－
+		RESULTS = 성스러운 배리어 －거울의 힘－
 	CASE "略称"
-RESULTS = 미러포
+		RESULTS = 미러포스
 	CASE "カテゴリ"
-RESULTS:0 = 없음
+		RESULTS:0 = 없음
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-
 		RETURN 通常함정
 ENDSELECT
 
@@ -47,9 +46,8 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91001)
 SIF RESULT == 1
 	RETURN 0
 IF 종류 == 攻撃時誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0

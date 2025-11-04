@@ -1,0 +1,796 @@
+﻿@CARD_PACK_SHORI(パック_구입数,パック_종류,カード数,청소플래그,倍率설정)
+#DIM DYNAMIC パック_구입数
+#DIM DYNAMIC パック_종류
+#DIM DYNAMIC パック_抽選結果
+#DIM DYNAMIC カード数
+#DIM DYNAMIC 캐릭터クター
+#DIM DYNAMIC UR카드_GET
+#DIM DYNAMIC SR카드_GET
+#DIM DYNAMIC R카드_GET
+#DIM DYNAMIC N카드_GET
+#DIM DYNAMIC GETカードリスト,500
+#DIM DYNAMIC GETカードレア度,500
+
+#DIM DYNAMIC UR倍率
+#DIM DYNAMIC SR倍率
+#DIM DYNAMIC R倍率
+
+#DIM DYNAMIC ゲットカード
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 청소플래그
+#DIM DYNAMIC 倍率설정
+
+SIF 依頼_見返し中 == 1
+	RETURN 0
+	
+
+IF 倍率설정 == 0
+	UR倍率 = 20
+	SR倍率 = 120
+	R倍率 = 500
+ELSEIF 倍率설정 == 1
+	UR倍率 = 30
+	SR倍率 = 180
+	R倍率 = 500
+ENDIF
+IF パック_종류 >= 1
+	CALL SP_PACKPOOL_LOAD(パック_종류)
+ELSE
+	CALL RESETPACKCON
+	パック条件URSR = 1
+	パック条件CMN = 1
+	CALL PACKPOOL_LOAD()
+ENDIF
+
+SIF カード数 == 0
+	カード数 = 5
+
+;UR:2%
+;SR:10%
+; R:38%
+;CM:50%
+FOR カウンタ,0,(パック_구입数) * カード数
+	パック_抽選結果 = RAND:1000
+	IF パック_抽選結果 <= UR倍率
+		ゲットカード = URプール:(RAND:URプール最大値())
+		SETCOLOR C_ROYAL_BLUE
+		PRINTFORMW UR겟 카드！！！！
+		CUSTOMDRAWLINE —
+		TRYCALLFORM CARDNAME_{ゲットカード}("名前")
+		PRINTFORMW <<%RESULTS%>>
+		CUSTOMDRAWLINE —
+		RESETCOLOR
+		ITEM:ゲットカード += 1
+		ITEM:UR카드 += 1
+		UR카드_GET += 1
+		GETカードレア度:カウンタ = 3
+		GETカードリスト:カウンタ = ゲットカード
+	ELSEIF パック_抽選結果 <= SR倍率
+		ゲットカード = SRプール:(RAND:SRプール最大値())
+		ITEM:ゲットカード += 1
+		ITEM:SR카드 += 1
+		SR카드_GET += 1
+		GETカードレア度:カウンタ = 2
+		GETカードリスト:カウンタ = ゲットカード
+	ELSEIF パック_抽選結果 <= R倍率
+		ゲットカード = Rプール:(RAND:Rプール最大値())
+		;PRINTFORML  R겟 카드ID:{ゲットカード}
+		ITEM:ゲットカード += 1
+		ITEM:R카드 += 1
+		R카드_GET += 1
+		GETカードレア度:カウンタ = 1
+		GETカードリスト:カウンタ = ゲットカード
+	ELSE
+		ゲットカード = CMプール:(RAND:CMプール最大値())
+		;PRINTFORML CMゲットカードID:{ゲットカード}
+		ITEM:ゲットカード += 1
+		ITEM:N카드 += 1
+		N카드_GET += 1
+		GETカードレア度:カウンタ = 0
+		GETカードリスト:カウンタ = ゲットカード
+	ENDIF
+
+	IF オプション_パック취득止 == 0
+		;5パーセントの確率
+		IF RAND:20 == 0
+			CALL CARD_EROTICS(ゲットカード,,1)
+			IF RESULT != -1
+				캐릭터クター = RESULT
+				IF CFLAG:캐릭터クター:소유함 == 0
+					CFLAG:캐릭터クター:소유함 = 1
+					SETCOLOR C_YELLOW
+					CUSTOMDRAWLINE —
+					PRINTFORMW 이 카드에서는 《%NAME:캐릭터クター%》의 영혼이 느껴진다……。
+					CUSTOMDRAWLINE —
+					RESETCOLOR
+				ENDIF
+			ENDIF
+		ENDIF
+
+	ENDIF
+NEXT
+
+
+PRINTL
+PRINTFORMW CARD GET !
+IF 청소플래그
+	TRYCALLFORM CARDNAME_{GETカードリスト:0}("略称")
+	IF GETカードレア度:カウンタB == 3
+		SETCOLOR C_ROYAL_BLUE
+		PRINTFORML [ULR]-%RESULTS,16,LEFT%
+	ELSEIF GETカードレア度:カウンタB == 2
+		SETCOLOR C_GOLD
+		PRINTFORML [SPR]-%RESULTS,16,LEFT%
+	ELSEIF GETカードレア度:カウンタB == 1
+		SETCOLOR C_SILVER
+		PRINTFORML [ R ]-%RESULTS,16,LEFT%
+	ELSE
+		PRINTFORML [CMN]-%RESULTS,16,LEFT%
+	ENDIF
+	RESETCOLOR
+	WAIT
+	RETURN 0
+ENDIF
+
+PRINTFORM UR카드×【{UR카드_GET}】
+PRINTFORM SR카드×【{SR카드_GET}】
+PRINTFORM R카드×【{R카드_GET}】
+PRINTFORM N카드×【{N카드_GET}】
+PRINTW
+$INPUTLOOP
+
+CALL CARD_PACK_NAME(パック_종류)
+CUSTOMDRAWLINE —
+PRINTL 획득 카드리스트
+CUSTOMDRAWLINE —
+VARSET カウンタB
+FOR カウンタ,0,パック_구입数
+	PRINTFORM 팩{(カウンタ + 1),3}｜　
+	REPEAT カード数
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{GETカードリスト:カウンタB}("略称")
+		IF GETカードレア度:カウンタB == 3
+			SETCOLOR C_ROYAL_BLUE
+			PRINTBUTTON @"[ULR]-%RESULTS,16,LEFT%　" ,カウンタB
+		ELSEIF GETカードレア度:カウンタB == 2
+			SETCOLOR C_GOLD
+			PRINTBUTTON @"[SPR]-%RESULTS,16,LEFT%　" ,カウンタB
+		ELSEIF GETカードレア度:カウンタB == 1
+			SETCOLOR C_SILVER
+			PRINTBUTTON @"[ R ]-%RESULTS,16,LEFT%　" ,カウンタB
+		ELSE
+			PRINTBUTTON @"[CMN]-%RESULTS,16,LEFT%　" ,カウンタB
+		ENDIF
+		PRINTFORM 
+		カウンタB ++
+		RESETCOLOR
+	REND
+	PRINTPLAIN ｜
+	PRINTL
+NEXT
+CUSTOMDRAWLINE —
+
+PRINTL [1000] - 돌아간다
+BINPUT
+IF RESULT != 1000
+	TRYCALLFORM CARD_UI(GETカードリスト:RESULT,1);　획득カードでのカード情報確認
+	GOTO INPUTLOOP
+ELSE
+	RETURN 0
+ENDIF
+
+
+
+@PACKPOOL_LOAD(ERAパック)
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタUR
+#DIM DYNAMIC カウンタSR
+#DIM DYNAMIC カウンタR
+#DIM DYNAMIC カウンタCM
+#DIM DYNAMIC パック_종류
+#DIM DYNAMIC レアリティ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC ERAパック
+;UR카드판정：
+;11000~15000　攻略대상ALT姿モンスター枠
+;41000~45000　攻略대상ALTEXモンスター枠
+;70000~71000 　UR마법集
+;90000~91000 　UR함정集
+
+;SR카드판정：
+;1000~5000　攻略대상モンスター枠
+;20000~39000　レベル7以上、その他カード
+;50000~58000 EXモンスター、その他カード
+;45000~49999 EXモンスター、その他カード
+
+;R카드판정：
+;16000~20000　攻略대상ALT姿モンスター枠
+;61000~65000  攻略대상ALT마법枠
+;81000~85000　攻略대상ALT함정枠
+
+;CMカード판정：
+;20000~39000　レベル6以下、その他カード
+;70000~75000  その他마법枠
+;90000~95000  その他함정枠
+
+;違法カード판정：別の카드를 설정する
+;39600~39699 違法몬스터 카드 
+;59600~59999 違法EXカード
+;79600~79699 違法마법 카드
+;99600~99699 違法 함정 카드 
+
+
+;UR用：主に女の子のALT姿カード
+VARSET URプール,-1
+VARSET SRプール,-1
+VARSET Rプール,-1
+VARSET CMプール,-1
+
+;UR用：主に女の子のURあたりのEXカード
+FOR カウンタ,1000,100000
+	CALL CARDPRICE(カウンタ,"レア度",ERAパック)
+	レアリティ = RESULT
+	SELECTCASE レアリティ
+	CASE 5
+		CONTINUE
+	CASE 4
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{カウンタ}("名前")
+		SIF RESULTS == ""
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("トークン")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("生産불가")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("듀얼리스트")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM PACK_CAT_SET(カウンタ)
+		SIF RESULT == 0				
+			CONTINUE
+		VARSET RESULT
+		TRYCALLFORM CARD_{カウンタ}("종류")
+		IF RESULT != 0
+			URプール:カウンタUR = カウンタ
+				カウンタUR ++
+		ELSE
+			CONTINUE
+		ENDIF
+	CASE 3
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{カウンタ}("名前")
+		SIF RESULTS == ""
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("トークン")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("生産불가")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("듀얼리스트")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM PACK_CAT_SET(カウンタ)
+		SIF RESULT == 0					
+			CONTINUE
+		VARSET RESULT
+		TRYCALLFORM CARD_{カウンタ}("종류")
+		IF RESULT != 0
+			SRプール:カウンタSR = カウンタ
+				カウンタSR ++
+		ELSE
+			CONTINUE
+		ENDIF
+	CASE 2
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{カウンタ}("名前")
+		SIF RESULTS == ""
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("トークン")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("生産불가")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("듀얼리스트")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM PACK_CAT_SET(カウンタ)
+		SIF RESULT == 0			
+			CONTINUE
+
+		VARSET RESULT
+		TRYCALLFORM CARD_{カウンタ}("종류")
+		IF RESULT != 0
+			Rプール:カウンタR = カウンタ
+				カウンタR ++
+		ELSE
+			CONTINUE
+		ENDIF
+	CASE 1
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{カウンタ}("名前")
+		SIF RESULTS == ""
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("トークン")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("レベル")
+		SIF RESULT >= 7
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("生産불가")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM CARD_{カウンタ}("듀얼리스트")
+		SIF RESULT == 1
+			CONTINUE
+		TRYCALLFORM PACK_CAT_SET(カウンタ)
+		SIF RESULT == 0			
+			CONTINUE
+
+		VARSET RESULT
+		TRYCALLFORM CARD_{カウンタ}("종류")
+		IF RESULT != 0
+			CMプール:カウンタCM = カウンタ
+				カウンタCM ++
+		ELSE
+			CONTINUE
+		ENDIF
+	ENDSELECT
+NEXT
+
+
+
+@CARDPRICE(選択カード_ID,売買種,ERAパック)
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC レアリティ
+#DIMS DYNAMIC 売買種
+#DIM DYNAMIC ERAパック
+#DIM DYNAMIC カードレベル
+
+
+
+SELECTCASE 選択カード_ID
+;―몬스터 카드 ―――――――――――――――――――――――――――――――――――――――
+	;ID持ちの캐릭터
+	CASE 1000 TO 9999
+		TRYCALLFORM CARD_{選択カード_ID}("종류")
+		カードレベル = RESULT
+		IF INRANGE(カードレベル,의식,초차원)
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
+			IF RESULT >= 7
+				レアリティ = 4
+			ELSE
+				IF カードレベル == 링크
+					TRYCALLFORM CARD_{選択カード_ID}("レベル")
+					IF RESULT >= 3
+						レアリティ = 4
+					ELSE
+						レアリティ = 3
+					ENDIF
+				ELSE
+					レアリティ = 3
+				ENDIF
+			ENDIF
+		ELSE
+			レアリティ = 3
+		ENDIF
+	;확장IDカード群
+	CASE 10000 TO 14999
+		TRYCALLFORM CARD_{選択カード_ID}("レベル")
+		IF RESULT >= 7
+			TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
+			IF RESULT == 0 || RESULT == 2500 || RESULT >= 3000
+				レアリティ = 4
+			ELSE
+				レアリティ = 3
+			ENDIF
+		ELSE
+			レアリティ = 3
+		ENDIF
+	CASE 15000 TO 19999
+		レアリティ = 2
+	;その他モンスター群
+	CASE 20000 TO 39999
+		TRYCALLFORM CARD_{選択カード_ID}("レベル")
+		IF RESULT >= 7
+			TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
+			IF RESULT == 0 || RESULT == 2500 || RESULT >= 3000
+				レアリティ = 4
+			ELSE
+				レアリティ = 2
+			ENDIF
+		ELSE
+			レアリティ = 1
+		ENDIF
+
+
+;―EX몬스터 카드 ―――――――――――――――――――――――――――――――――――――――
+	;EX확장IDカード群
+	CASE 40000 TO 45000
+		レアリティ = 4
+	;そのID関連EXモンスター群
+	CASE 45000 TO 49999
+		レアリティ = 3
+	;その他EXモンスター群
+	CASE 50000 TO 59999
+		TRYCALLFORM CARD_{選択カード_ID}("종류")
+		IF GROUPMATCH(RESULT,융합,싱크로,의식)
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
+			IF RESULT >= 8
+				レアリティ = 4
+			ELSEIF RESULT >= 5
+				レアリティ = 3
+			ELSE
+				レアリティ = 2
+			ENDIF
+		ELSEIF RESULT == 엑시즈
+			TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
+			IF RESULT >= 2800
+				レアリティ = 4
+			ELSEIF RESULT >= 2000
+				レアリティ = 3
+			ELSE
+				レアリティ = 2
+			ENDIF
+		ELSEIF RESULT == 링크
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
+			IF RESULT >= 4
+				レアリティ = 4
+			ELSEIF GROUPMATCH(RESULT,1,3)
+				レアリティ = 3
+			ELSE
+				レアリティ = 2
+			ENDIF
+		ELSEIF RESULT == 초차원
+			レアリティ = 4
+		ELSE
+			レアリティ = 3
+		ENDIF
+
+;―마법 카드―――――――――――――――――――――――――――――――――――――――
+	;캐릭터ID関連마법
+	CASE 61000 TO 69999
+		レアリティ = 2
+	;ハイレア마법
+	CASE 70000 TO 71000
+		レアリティ = 4
+	;その他마법
+	CASE 71000 TO 79999
+		TRYCALLFORM CARD_{選択カード_ID}("종류")
+		IF RESULT == フィールド
+			レアリティ = 3
+		ELSEIF RESULT == 通常마법
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+			IF GROUPMATCH(RESULTS, "융합","의식 마법")
+				レアリティ = 2
+			ELSE
+				レアリティ = 1
+			ENDIF
+		ELSE
+			レアリティ = 2
+		ENDIF
+;― 함정 카드 ―――――――――――――――――――――――――――――――――――――――
+	;캐릭터ID関連함정
+	CASE 81000 TO 89999
+		レアリティ = 2
+	;ハイレア함정
+	CASE 90000 TO 91000
+		レアリティ = 4
+	;その他함정
+	CASE 91000 TO 99999
+		TRYCALLFORM CARD_{選択カード_ID}("종류")
+		IF RESULT == 通常함정
+			レアリティ = 1
+		ELSE
+			レアリティ = 2
+		ENDIF
+ENDSELECT
+
+TRYCALLFORM CARD_{選択カード_ID}("生産불가")
+IF RESULT == 1
+	レアリティ = 4
+ENDIF
+
+IF ERAパック == 0
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+	SIF MATCH(RESULTS, "E.R.A")
+		レアリティ = 5
+ELSEIF ERAパック == 1 || ERAパック == 2
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+	IF MATCH(RESULTS, "E.R.A")
+		TRYCALLFORM CARD_{選択カード_ID}("종류")
+		IF INRANGE(RESULT,의식,초차원)
+			レアリティ = 4
+		ELSE
+			レアリティ = 3
+		ENDIF
+	ENDIF
+ENDIF
+
+;Anonym추가
+TRYCALLFORM CARD_{選択カード_ID}("レア度")
+IF RESULT != 0
+	レアリティ = RESULT
+ENDIF
+
+SIF 売買種 == "レア度"
+	RETURN レアリティ
+
+SELECTCASE レアリティ
+CASE 4
+	IF ERAパック == 2
+		IF 売買種 == "구입"
+			RETURN 7500
+		ELSE
+			RETURN 100
+		ENDIF
+	ELSE
+		IF 売買種 == "구입"
+			RETURN 3500
+		ELSE
+			RETURN 1000
+		ENDIF
+	ENDIF
+
+CASE 3
+	IF ERAパック == 2
+		IF 売買種 == "구입"
+			RETURN 4000
+		ELSE
+			RETURN 100
+		ENDIF
+	ELSE
+		IF 売買種 == "구입"
+			RETURN 1200
+		ELSE
+			RETURN 250
+		ENDIF
+	ENDIF
+CASE 2
+	IF 売買種 == "구입"
+		RETURN 200
+	ELSE
+		RETURN 50
+	ENDIF
+CASE 1
+	IF 売買種 == "구입"
+		RETURN 50
+	ELSE
+		RETURN 10
+	ENDIF
+CASE 5
+	IF 売買種 == "구입"
+		RETURN 7500
+	ELSE
+		RETURN 100
+	ENDIF
+ENDSELECT
+
+RETURN 0
+
+
+
+@RESETPACKCON
+VARSET パック条件名前
+VARSET パック条件カテゴリ
+VARSET パック条件종족,-1
+VARSET パック条件속성,-1
+VARSET パック条件CT無종족,-1
+
+VARSET パック条件ERA
+VARSET パック条件URSR
+VARSET パック条件CMN
+VARSET パック条件反カテゴリ
+VARSET パック条件외부자
+
+@PACK_CAT_SET(カードID)
+#DIM DYNAMIC カードID
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 条件달성B
+#DIM DYNAMIC 行数カウント
+#DIM DYNAMIC 行数カウント（終）
+#DIM DYNAMIC 使用行数
+#DIMS DYNAMIC 종족ワード,20
+#DIM DYNAMIC 入力CNT
+#DIM DYNAMIC システム起動
+
+システム起動 = 1
+
+IF パック条件名前 != ""
+	TRYCALLFORM CARDNAME_{カードID}("名前")
+	SIF MATCH(パック条件名前, RESULTS)
+		条件달성 ++
+ENDIF
+
+
+IF パック条件カテゴリ != ""
+	TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
+	FOR カウンタB,0,5
+		IF RESULTS:カウンタB != ""
+			IF MATCH(RESULTS:カウンタB, パック条件カテゴリ)
+				条件달성 ++
+			ENDIF
+			IF MATCH(パック条件カテゴリ, RESULTS:カウンタB)
+				条件달성 ++
+			ENDIF
+		ENDIF
+	TRYCALLFORM CARDNAME_{カードID}("検索カテゴリ")
+	FOR カウンタB,0,5
+		IF RESULTS:カウンタB != ""
+			IF MATCH(RESULTS:カウンタB, パック条件カテゴリ)
+				条件달성 ++
+			ENDIF
+			IF MATCH(パック条件カテゴリ, RESULTS:カウンタB)
+				条件달성 ++
+			ENDIF
+		ENDIF
+	NEXT
+	NEXT
+ENDIF
+
+IF 효과条件종족 > 0
+	TRYCALLFORM CARD_{カードID}("종족")
+	SIF MATCH(パック条件종족, RESULT)
+		条件달성 ++
+ENDIF
+
+IF パック条件속성 > 0
+	TRYCALLFORM CARD_{カードID}("속성")
+	SIF MATCH(パック条件속성, RESULT)
+		条件달성 ++
+ENDIF
+
+IF パック条件CT無종족 > 0
+	VARSET 条件달성B
+	TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
+	FOR カウンタB,0,5
+		IF RESULTS:カウンタB != ""
+			IF MATCH(RESULTS:カウンタB, "なし")
+				条件달성B ++
+				BREAK
+			ENDIF
+		ENDIF
+	NEXT
+
+	IF 条件달성B >= 1
+		TRYCALLFORM CARD_{カードID}("종족")
+		IF MATCH(パック条件CT無종족, RESULT)
+			条件달성 ++
+		ENDIF
+		IF システム起動 == 1
+			REDRAW 0
+			FOR カウンタ,1,18
+				IF MATCH(パック条件CT無종족,カウンタ)
+					SELECTCASE カウンタ
+					CASE 마법사족
+						종족ワード:入力CNT = 마법사족 
+					CASE 드래곤족
+						종족ワード:入力CNT = 드래곤족 
+					CASE 언데드족
+						종족ワード:入力CNT = 언데드족
+					CASE 전사족
+						종족ワード:入力CNT = 전사족
+					CASE 기계족
+						종족ワード:入力CNT = 기계족
+					CASE 야수족
+						종족ワード:入力CNT = 야수족 
+					CASE 비행야수족
+						종족ワード:入力CNT = 비행야수족 
+					CASE 비늘야수족
+						종족ワード:入力CNT = 비늘야수족
+					CASE 악마족
+						종족ワード:入力CNT = 악마족
+					CASE 천사족
+						종족ワード:入力CNT = 천사족
+					CASE 곤충족
+						종족ワード:入力CNT = 곤충족
+					CASE 원소정령족
+						종족ワード:入力CNT = 원소정령족
+					CASE 식물족
+						종족ワード:入力CNT = 식물족
+					CASE 사이킥족
+						종족ワード:入力CNT = 사이킥족
+					CASE 사이버스족
+						종족ワード:入力CNT = 사이버스족
+					CASE 바다생물족
+						종족ワード:入力CNT = 바다생물족
+					CASE 미확인족
+						종족ワード:入力CNT = 미확인족
+					ENDSELECT
+					入力CNT ++
+				ENDIF
+			NEXT
+
+			行数カウント = LINECOUNT
+			TRYCALLFORM CARD_EXPLANATION_{カードID}
+			行数カウント（終） = LINECOUNT
+			使用行数 = 行数カウント（終） - 行数カウント
+			FOR カウンタ,1000, (1000 - (使用行数 + 1)), -1 
+				IF 종족ワード:0 != ""
+					IF STRFIND(GETDISPLAYLINE(カウンタ), 종족ワード:0)  != -1
+						条件달성 ++
+						BREAK
+					ENDIF
+				ENDIF
+				IF 종족ワード:1 != ""
+					IF STRFIND(GETDISPLAYLINE(カウンタ), 종족ワード:1)  != -1
+						条件달성 ++
+						BREAK
+					ENDIF
+				ENDIF
+				IF 종족ワード:2 != ""
+					IF STRFIND(GETDISPLAYLINE(カウンタ), 종족ワード:2)  != -1
+						条件달성 ++
+						BREAK
+					ENDIF
+				ENDIF
+			NEXT
+			CLEARLINE 使用行数
+		ENDIF
+	ENDIF
+ENDIF
+
+IF パック条件CMN >= 1
+	CALL CARDPRICE(カードID,"レア度")
+	IF GROUPMATCH(RESULT,1,2)
+		条件달성 ++
+	ENDIF
+ENDIF
+
+IF パック条件URSR >= 1
+	CALL CARDPRICE(カードID,"レア度")
+	IF GROUPMATCH(RESULT,3,4)
+		条件달성 ++
+	ENDIF
+ENDIF
+
+IF パック条件ERA >= 1
+	CALL CARDPRICE(カードID,"レア度")
+	IF GROUPMATCH(RESULT,5)
+		条件달성 ++
+	ENDIF
+ENDIF
+
+
+
+;Anonym추가
+IF パック条件反カテゴリ != ""
+	TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
+	FOR カウンタB,0,5
+		IF RESULTS:カウンタB != ""
+			SIF MATCH(RESULTS:カウンタB, パック条件反カテゴリ)
+				条件달성 = 0
+			SIF MATCH(パック条件反カテゴリ, RESULTS:カウンタB)
+				条件달성 = 0
+		ENDIF
+	NEXT
+ENDIF
+
+
+
+IF パック条件외부자 == 0
+	VARSET RESULT
+	TRYCALLFORM CARD_{カードID}("외부자")
+	IF RESULT == 1
+		VARSET 条件달성
+	ENDIF
+ENDIF
+
+
+
+VARSET RESULT
+SIF 条件달성 == 0					
+	RETURN 0
+RETURN 1

@@ -1,0 +1,600 @@
+﻿@CARDNAME_35005,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 「디비니티 엔드」
+	CASE "略称"
+		RESULTS = Divinity End
+	CASE "カテゴリ"
+		RESULTS:0 = 시본
+		RESULTS:4 = 명일방주
+ENDSELECT
+
+
+@CARD_35005(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1200
+	CASE "맥시멈"
+		RETURN 135005
+	CASE "生成カード"
+		RESULT:2 = 135007
+		RESULT:1 = 135006
+		RETURN 135005
+	CASE "추가日"
+		RETURN 250703
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_35005(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 【MAXIMUM！！】바다생물족 몬스터×２
+PRINTL 패에 존재하는 다른 바다생물족 몬스터２장을 덮어씌워、맥시멈 소환을 한다。
+PRINTL 맥시멈 소환은 무효화되지 않는다。
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신 메인 페이즈에 할 수 있다。
+PRINTL 필드의 이 카드를 패로 되돌린다。
+PRINTL 그 후、덱에서 「디비니티 엔드」이외의 레벨３이하의 바다생물족 몬스터 １장을 패에 넣을 수 있다。
+
+
+@CARDSUMMON_35005(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件종족 = 바다생물족
+
+IF EX参照 == 1
+	CALL MAXCAN(듀얼리스트,소환カード,35005) 
+	RETURN RESULT
+
+ENDIF
+
+@CARDCAN_35005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35005)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,35005)
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35005,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종족 = 바다생물족
+		효과条件固名前 = 「디비니티 엔드」
+		CALLFORM 효과条件レベル_ADV(3,"以下")
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_135005,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 『디비니티 엔드』、대군의 의지
+	CASE "略称"
+		RESULTS = The End Speaker
+	CASE "カテゴリ"
+		RESULTS:0 = 시본
+		RESULTS:4 = 명일방주
+	CASE "맥시멈"
+		RESULTS = 대군의 의지
+ENDSELECT
+
+
+@CARD_135005(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1200
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_135005(종류)
+#DIM DYNAMIC 종류
+CALL TEXT_DECORATION("MAXIMUM")
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ①：이 카드가 전투로 몬스터를 파괴한 경우에 발동할 수 있다。
+PRINTL 그 몬스터를 자신의 마법＆함정 존에 앞면 표시로 둔다。
+PRINTL ②：『전향진화』
+PRINTL 이 카드의 맥시멈파츠가 자신의 효과로 특수소환될 때 마다、
+PRINTL 이 카드는 그 횟수에 따라 이하의 효과를 얻는다。
+PRINTL ●１회 이상：이 카드의 공격은 관통한다。
+PRINTL ●２회 이상：이 카드는 모든 몬스터에게 공격할 수 있다。
+CALLFORM CARD_ABLE(10,발동誘発)
+PRINTL ●３회 이상：상대 몬스터의 효과가 발동했을때에 발동할 수 있다。
+PRINTL 　　　　　　그 발동을 무효로 하고 제외한다（이 효과는 １턴에 ２번까지밖에 적용할 수 없다）。
+
+
+@CARDCAN_135005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,135005)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") < 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") >= 2
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") < 3
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 맥시멈条件
+	CALL CARD_CHECK_MAXX(듀얼리스트,ゾーン,場所,"「동포」")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_135005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 戦闘カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") >= 1
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"貫通")
+	SIF GETVAR(@"%듀얼리스트%_MZ_個Ｃ:場所") >= 2
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"連戦")
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,135005)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"제외")
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"T1汎数",1)
+		SIF GETVAR(@"%듀얼리스트%_MZ_T1汎数:場所") >= 3
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"効済",1)
+	ENDIF
+
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35005)
+	IF RESULT == 0
+		TRYCALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트,1)}("名前")
+		戦闘カード名前 = %RESULTS%
+		CALL FULLRESET
+		효과範囲상대묘지 = 1
+		효과条件名前 = %戦闘カード名前%
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+	ENDIF
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_135006,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 대군의 의지『진화』
+	CASE "略称"
+		RESULTS = 『진화』
+	CASE "カテゴリ"
+		RESULTS:0 = 시본
+		RESULTS:4 = 명일방주
+	CASE "맥시멈"
+		RESULTS = 「동포」
+ENDSELECT
+
+
+@CARD_135006(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 0
+	CASE "파츠"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_135006(종류)
+#DIM DYNAMIC 종류
+
+PRINTL （맥시멈 상태의 이 카드는 공격할 수 없다）
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：상대 몬스터의 공격력 / 수비력은 이 카드의 공격력의 절반 내린다。
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ②：맥시멈状態の이 카드가 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL （이 효과는 자신몬스터 존의 중앙에「『디비니티 엔드』、대군의 의지」가 존재하고、
+PRINTL 　그 좌우 어느쪽인가가 비어있는 경우에만 처리할 수 있다。）
+PRINTL 자신의 패 / 필드에서 「시본」이외의 몬스터 카드 １장을 묘지로 보내고、이 카드를 특수 소환한다。
+PRINTL 이 효과로 특수 소환한 이 카드의 공격력은、［묘지로 보낸 몬스터의 원래 코스트］×３００올린다。
+PRINTL 이 효과로 원래 공격력이 ２５００이상인 몬스터를 묘지로 보낸 경우、
+PRINTL 추가로 상대 필드의 몬스터 １장을 묘지로 보낼 수 있다。
+
+@CARDCAN_135006(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,135006)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊","リリース")
+		RETURN 0
+	CALL CARD_CHECK_MAXX(듀얼리스트,ゾーン,場所,"대군의 의지")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件종류 = モン全般
+	효과条件固カテゴリ = 시본
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 맥시멈条件
+	CALL CARD_CHECK_MAXX(듀얼리스트,ゾーン,場所,"대군의 의지")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_135006(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻守変動
+	攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:場所") / 2
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-攻撃力修正,-攻撃力修正,135006)
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,135006)
+	IF RESULT == 0
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:2")}("名前")
+		SIF RESULTS != "『디비니티 엔드』、대군의 의지"
+			RETURN 0
+		SIF GETVAR(@"%듀얼리스트%_필드:1") != -1 && GETVAR(@"%듀얼리스트%_필드:3") != -1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件종류 = モン全般
+		효과条件固カテゴリ = 시본
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
+			攻撃力修正 = RESULT * 300
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 대군의 의지『진화』
+			효과추가종류 = 効追永攻 + 攻撃力修正
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",2,"個Ｃ",1)
+				TRYCALLFORM CARD_{選択カード_ID}("攻撃力")
+				IF RESULT >= 2500
+					CALL FULLRESET
+					효과条件任意 = 1
+					CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 맥시멈条件
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_135007,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 대군의 의지『존속』
+	CASE "略称"
+		RESULTS = 『존속』
+	CASE "カテゴリ"
+		RESULTS:0 = 시본
+		RESULTS:4 = 명일방주
+	CASE "맥시멈"
+		RESULTS = 「동포」
+ENDSELECT
+
+
+@CARD_135007(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 1200
+	CASE "파츠"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_135007(종류)
+#DIM DYNAMIC 종류
+
+PRINTL （맥시멈 상태의 이 카드는 공격할 수 없다）
+PRINTL ①：이 카드가 맥시멈 상태인 경우、상대는 자신의 「『디비니티 엔드』、대군의 의지」를 공격 / 효과의 대상으로 할 수 없다。
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ②：맥시멈 상태인 이 카드가 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL （이 효과는 자신몬스터 존의 중앙에「『디비니티 엔드』、대군의 의지」가 존재하고、
+PRINTL 　그 좌우 어느쪽인가가 비어있는 경우에만 처리할 수 있다。）
+PRINTL 자신의 패 / 필드에서 「시본」이외의 몬스터 카드 １장을 묘지로 보내고、이 카드를 특수 소환한다。
+PRINTL 이 효과로 특수 소환한 이 카드의 수비력은 、［묘지로 보낸 몬스터의 원래 코스트］×３００올린다。
+PRINTL 이 효과로 원래 수비력이 ２５００이상인 몬스터를 묘지로 보낸 경우、추가로 그종족에 따라 이 카드는 이하의 내성을 얻는다。
+PRINTL ●드래곤족 / 악마족 / 야수족　　：몬스터 내성
+PRINTL ●마법사족 / 천사족 / 미확인족：마법 내성
+PRINTL ●전사족 / 비행야수족 / 비늘야수족　　　：함정 내성
+
+@CARDCAN_135007(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,135007)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊","リリース")
+		RETURN 0
+	CALL CARD_CHECK_MAXX(듀얼리스트,ゾーン,場所,"대군의 의지")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件종류 = モン全般
+	효과条件固カテゴリ = 시본
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 맥시멈条件
+	CALL CARD_CHECK_MAXX(듀얼리스트,ゾーン,場所,"대군의 의지")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_135007(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 耐性추가종류,4
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,135007)
+	IF RESULT == 0
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:2")}("名前")
+		SIF RESULTS != "『디비니티 엔드』、대군의 의지"
+			RETURN 0
+		SIF GETVAR(@"%듀얼리스트%_필드:1") != -1 && GETVAR(@"%듀얼리스트%_필드:3") != -1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件종류 = モン全般
+		효과条件固カテゴリ = 시본
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
+			攻撃力修正 = RESULT * 300
+
+			TRYCALLFORM CARD_{選択カード_ID}("守備力")
+			IF RESULT >= 2500
+				TRYCALLFORM CARD_{選択カード_ID}("종족")
+				SIF GROUPMATCH(RESULT,드래곤족,악마족,야수족)
+					耐性추가종류:1 = 効追永モ耐
+				SIF GROUPMATCH(RESULT,마법사족,천사족,미확인족)
+					耐性추가종류:2 = 効追永魔耐
+				SIF GROUPMATCH(RESULT,전사족,비늘야수족,비행야수족)
+					耐性추가종류:3 = 効追永함정耐
+			ENDIF
+
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 대군의 의지『존속』
+			효과추가종류:0 = 効追永守 + 攻撃力修正
+			SIF 耐性추가종류:1 != 0
+				효과추가종류:1 = 耐性추가종류:1
+			SIF 耐性추가종류:2 != 0
+				효과추가종류:2 = 耐性추가종류:2
+			SIF 耐性추가종류:3 != 0
+				효과추가종류:3 = 耐性추가종류:3
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			SIF RESULT == 1
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",2,"個Ｃ",1)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 맥시멈条件
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無")
+	CALL FULLRESET
+	효과条件名前 = 『디비니티 엔드』、대군의 의지
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"攻避")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+ENDIF
+
+

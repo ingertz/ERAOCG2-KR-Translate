@@ -1,0 +1,184 @@
+@CARDNAME_82143,参照先
+;ココで지정 카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 바르모니카 에레디타레
+	CASE "略称"
+		RESULTS = 계승되는 소리
+	CASE "カテゴリ"
+		RESULTS:0 = 바르모니카
+ENDSELECT
+
+
+@CARD_82143(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_82143(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는1턴에 1번, 어느 쪽인가 1개밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：자신 필드에 "바르모니카" L몬스터가 존재하고,
+PRINTL 상대의 몬스터의 효과 / 마법 / 함정 카드가 발동했을 때 발동할 수 있다.
+PRINTL 그 발동을 무효로 하고 파괴한다.
+CALLFORM CARD_ABLE(2,묘지起動,フリー誘発)
+PRINTL ②：묘지의 이 카드를 제외하고 발동할 수 있다.
+PRINTL 자신 필드의 향명 카운터의 수까지,
+PRINTL "바르모니카 에레디타레" 이외의 자신의 EX덱(링크 이외) / 묘지 / 제외 상태인 "바르모니카" 카드를 덱으로 되돌린다.
+PRINTL 그 후, 자신은 되돌린 카드 3장당 1장 드로우 한다.
+
+@CARDCAN_82143(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,82143)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,82143) || 발동済_2(듀얼리스트,82143)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 바르모니카
+	효과条件종류 = 링크
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF 발동済_1(듀얼리스트,82143) || 발동済_2(듀얼리스트,82143)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 바르모니카
+	효과条件個Ｃ所持 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件종류 = 링크以外
+	효과条件カテゴリ = 바르모니카
+	효과条件固名前 = 바르모니카 에레디타레
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_82143(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 響鳴카운터
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82143,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+		RETURN 1
+	ENDIF
+	RETURN 0
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82143,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 바르모니카
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		響鳴카운터 = RESULT:9
+
+
+$響鳴loop
+		IF 響鳴카운터 > 10
+			カウンタ = 10
+			響鳴카운터 -= 10
+		ELSE
+			カウンタ  = 響鳴카운터
+		ENDIF
+
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件종류 = 링크以外
+		효과条件カテゴリ = 바르모니카
+		효과条件固名前 = 바르모니카 에레디타레
+		효과条件複数 = 100 - カウンタ
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		条件달성 += RESULT:2
+		SIF RESULT:2 == 10
+			GOTO 響鳴loop
+
+;		FOR カウンタ,0,響鳴카운터
+;			CALL FULLRESET
+;			효과範囲EX덱 = 1
+;			효과範囲묘지 = 1
+;			효과範囲제외 = 1
+;			효과条件종류 = 링크以外
+;			효과条件カテゴリ = 바르모니카
+;			효과条件固名前 = 바르모니카 에레디타레
+;			효과条件行先플래그 = 덱行き
+;			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+;			SIF RESULT == 1
+;				条件달성++
+;		NEXT
+
+
+		IF 条件달성 >= 3
+			条件달성 = 条件달성 / 3
+			CALL CARDDRAW_BASIC(듀얼리스트,条件달성)
+		ENDIF
+	ENDIF
+ENDIF
+

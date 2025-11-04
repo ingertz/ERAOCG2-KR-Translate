@@ -21,6 +21,7 @@
 #DIM DYNAMIC 素材数確認
 #DIM DYNAMIC 選択カード,99
 #DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 選択カード_ID_保
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 素材数
 #DIM DYNAMIC 選択済カード
@@ -123,7 +124,7 @@ ENDIF
 
 
 IF 듀얼리스트 == "자신"
-	TRYCALLFORM CARDNAME_{소환待機}, "名前"
+	TRYCALLFORM CARDNAME_{소환待機}("名前")
 	カード名 = %RESULTS%
 	PRINTFORML 소환 카드：《%カード名%》
 
@@ -197,36 +198,41 @@ IF 選択カード:素材数 == 9999
 		GOTO CHOICE_LOOP
 	ENDIF
 ELSEIF 選択カード:素材数 != 8888
+	CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
+	選択カード_ID_保 = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")
+
+	CALL SELECT_UI_SET(듀얼리스트,選択カード_ID_保,1)
+	IF RESULT == 1
+		選択カード:素材数 = -1
+		GOTO CHOICE_LOOP
+	ENDIF
+
+
 	IF 素材条件固名前起動 == 1
-		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "名前"
+		TRYCALLFORM CARDNAME_{選択カード_ID_保}("名前")
 		素材条件固名前설정:固名前CNT = %RESULTS%
 		固名前CNT ++
 	ENDIF
 	IF 素材条件R종족起動 == 1
-		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "종족"
+		TRYCALLFORM CARD_{選択カード_ID_保}("종족")
 		素材条件R종족설정:R종족CNT = RESULT
 		R종족CNT ++
 	ENDIF
 	IF 素材条件R속성起動 == 1
-		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "속성"
+		TRYCALLFORM CARD_{選択カード_ID_保}("속성")
 		素材条件R속성설정:R속성CNT = RESULT
 		R속성CNT ++
 	ENDIF
 
 	;Anonym추가
-	CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-	TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "名前"
+	TRYCALLFORM CARDNAME_{選択カード_ID_保}("名前")
 	SIF RESULTS != ""
 		使用素材名前:素材数 = %RESULTS%
 	PRINTFORMW %使用素材名前:素材数%를 소재로합니다({素材数+1}체째)
 
 	;현재의 소재의 수と、素材条件素材ID起動で지정した数が同じなら起動
 	IF 素材ID起動 == 素材数 + 1
-		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		보존素材ID = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")
+		보존素材ID = 選択カード_ID_保
 	ENDIF
 
 	素材数 ++
@@ -265,12 +271,12 @@ IF 素材数 == 必要素材数 || 素材数 == 代替素材数 || 選択カー�
 		選択カード_ID:カウンタ = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{選択カード（CS）}")
 		;カードIDを見て覚醒状態を確認
 		IF 지정素材名前 != ""
-			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}, "名前"
+			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}("名前")
 			SIF RESULTS == 지정素材名前
 				条件달성 = 1
 		ENDIF
 		IF 지정素材カテゴリ != ""
-			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}, "カテゴリ"
+			TRYCALLFORM CARDNAME_{選択カード_ID:カウンタ}("カテゴリ")
 			FOR カウンタC,0,5
 				IF RESULTS:カウンタC != ""
 					SIF MATCH(RESULTS:カウンタC, 지정素材カテゴリ)
@@ -281,20 +287,20 @@ IF 素材数 == 必要素材数 || 素材数 == 代替素材数 || 選択カー�
 			NEXT
 		ENDIF
 		IF 지정素材속성 != 0
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "속성"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("속성")
 			IF MATCH(지정素材속성, RESULT)
 				条件달성 = 1
 			ENDIF
 		ENDIF
 		IF 지정素材종족 != 0
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "종족"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("종족")
 			IF MATCH(지정素材종족, RESULT)
 				条件달성 = 1
 			ENDIF
 		ENDIF
 
 		IF 素材攻撃力起動 == 1
-			TRYCALLFORM CARD_{選択カード_ID:カウンタ}, "攻撃力"
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("攻撃力")
 			合計攻撃力 += RESULT
 		ENDIF
 	NEXT
@@ -317,7 +323,7 @@ IF 素材数 == 必要素材数 || 素材数 == 代替素材数 || 選択カー�
 	소환カード_ID = GETVAR(@"%듀얼리스트%_EX덱:{소환カード}")
 	TRYCALLFORM CARD_FINISHER_SHOKO(듀얼리스트,소환カード_ID)
 
-	TRYCALLFORM CARDNAME_{소환待機}, "名前"
+	TRYCALLFORM CARDNAME_{소환待機}("名前")
 	カード名 = %RESULTS%
 	CALL MAT_EVENT_CHECK(듀얼리스트,カード名,使用素材名前)
 	PRINTFORML 융합 소환、%カード名%！
@@ -374,7 +380,7 @@ ENDIF
 #DIM DYNAMIC 素材数確認
 #DIM DYNAMIC EX参照
 #DIM DYNAMIC 選択カード,99
-#DIM DYNAMIC 選択カード_ID,10
+#DIM DYNAMIC 選択カード_ID,99
 #DIM DYNAMIC 소환カード
 #DIM DYNAMIC 소환カード_ID
 #DIM DYNAMIC 素材数
@@ -454,19 +460,19 @@ IF RESULT == 1
 
 	IF 素材条件固名前起動 == 1
 		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "名前"
+		TRYCALLFORM CARDNAME_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}("名前")
 		素材条件固名前설정:固名前CNT = %RESULTS%
 		固名前CNT ++
 	ENDIF
 	IF 素材条件R종족起動 == 1
 		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "종족"
+		TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}("종족")
 		素材条件R종족설정:R종족CNT = RESULT
 		R종족CNT ++
 	ENDIF
 	IF 素材条件R속성起動 == 1
 		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
-		TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}, "속성"
+		TRYCALLFORM CARD_{GETVAR(@"%대상者（CS）%_%参照先（CS）%:{RESULT}")}("속성")
 		素材条件R속성설정:R속성CNT = RESULT
 		R속성CNT ++
 	ENDIF
