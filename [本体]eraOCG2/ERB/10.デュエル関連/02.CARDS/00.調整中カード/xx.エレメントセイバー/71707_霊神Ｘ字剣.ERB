@@ -1,0 +1,223 @@
+﻿@CARDNAME_71707,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘리멘트 크로스 세이버
+	CASE "略称"
+		RESULTS = 령신Ｘ자검
+	CASE "カテゴリ"
+		RESULTS:0 = 령신
+		RESULTS:1 = 엘리멘트
+		RESULTS:3 = 게임 오리지널
+ENDSELECT
+
+
+@CARD_71707(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71707(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느쪽인가 １개밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動,마함起動,フリー誘発)
+PRINTL ①：자신의 패 / 필드의 "령신" / "엘리멘트" 몬스터 １장을 릴리스 하고、
+PRINTL 상대 필드의 카드 １장을 대상으로 하고 발동할 수 있다。그 카드를 파괴한다。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신 메인 페이즈에 묘지의 이 카드를 제외하고、자신 묘지의 원래 속성이 다른
+PRINTL "령신" / "엘리멘트" 몬스터 ２장을 대상으로 하고 발동할 수 있다。그 중１장을 패에 넣고、남은 １장을 덱으로 되돌린다。
+
+;オリジナルの速攻마법。テーマモンスターをコストにして１除去というスタンダードな2:1の除去효과。カテゴリもついてるので덱に１枚入れておくと何かと便利。
+;テーマ마함数が少ないため調整で추가したが、除去효과だけでは流石に味気ないので、묘지효과で少し속성要素を参照しつつ、リソースを회복できる효과を持たせている。
+;この手のテーマ専用の除去마함としては、モンスターと마함の両対応、손패コストでもＯＫ、速攻마법で後攻捲りにも使えるなど、小粒ながら小回りが効く性能に調整。
+;これぐらいの性能が、現代遊戯王でのテーマ用の除去札の平均レベルかなーと思うところ。「엘리멘트」も対応範囲にしているため、少し抑え気味のパワーに。
+;コストの支払い手段が若干似ているので混同してしまいそうになるが、「령신의 성전」の③のコスト軽減の대상にはならない点は注意。いずれかターン１なのも注意。
+
+;この「령신」に伝わる秘剣技は、元来「령신Ｘ字剣（ぺけじけん）」というクソダサ……もとい古風な技名で、마카니とナルが技名を（無理矢理）変えたらしい。
+;라파위라くんは「ぺけじけん鬼カッケェ……」という타입のネーミングセンスの持ち主なので不満げだったが、年上お姉さんの２人には逆らえなかったようだ。
+;　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　参考文献：民明書房刊　「六輪書 ～령신之巻～」
+
+
+@CARDCAN_71707(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 複数속성, 8
+
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71707)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,71707)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,71707)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件カテゴリ:0 = 령신
+	효과条件カテゴリ:1 = 엘리멘트
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,71707)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,71707)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0 
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	;자신묘지の「령신」・「엘리멘트」モンスターの속성数を確認してRESULT:1の속성数が2未満の場合は발동できない。
+	CALL FULLRESET
+	효과条件カテゴリ:0 = 령신
+	효과条件カテゴリ:1 = 엘리멘트
+	CALL ELEMENTS_KIND_BASIC(듀얼리스트,"묘지",複数속성)
+	SIF RESULT:1 < 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ:0 = 령신
+	효과条件カテゴリ:1 = 엘리멘트
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_71707(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성플래그 = 0
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 제외カード名称
+#DIM DYNAMIC 選択カード속성
+#DIM DYNAMIC 複数속성, 8
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71707,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71707,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+		
+		CUSTOMDRAWLINE —
+		PRINTFORML 패에 넣을 "령신" / "엘리멘트" 몬스터 １장을 선택해주세요。
+		CUSTOMDRAWLINE —
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 손패行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カードID = RESULT:1
+			TRYCALLFORM CARD_{選択カードID}, "속성"
+			選択カード속성 = RESULT
+			SIF RESULT:1 == 0
+				条件달성플래그 |= 1
+			;選択カード속성以外の속성で選ぶ処理（反転している）
+			VARSET 複数속성
+			FOR カウンタ,1,8
+				SIF 選択カード속성 != カウンタ
+					複数속성:(カウンタ) = 1
+			NEXT
+			
+			;령신속성対応。先に選択したカード속성の엘리멘트세이버は효과条件固名前で弾く。
+			SELECTCASE 選択カード속성
+				CASE 빛속성
+					제외カード名称 = 엘리멘트세이버 라파위라
+				CASE 어둠속성
+					제외カード名称 = 엘리멘트세이버 모레프
+				CASE 땅속성
+					제외カード名称 = 엘리멘트세이버 아이나
+				CASE 물속성
+					제외カード名称 = 엘리멘트세이버 나르
+				CASE 화염속성
+					제외カード名称 = 엘리멘트세이버 마로우
+				CASE 바람속성
+					제외カード名称 = 엘리멘트세이버 마카니
+				CASEELSE
+					제외カード名称 = 더미
+			ENDSELECT
+			
+			CUSTOMDRAWLINE —
+			PRINTFORML 덱으로 되돌릴 "령신" / "엘리멘트" 몬스터 １장을 선택해주세요。
+			CUSTOMDRAWLINE —
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ:0 = 령신
+			효과条件カテゴリ:1 = 엘리멘트
+			SIF 条件달성플래그 & 1
+				CALL 효과条件속성_複数(複数속성)
+			효과条件종류 = モン全般
+			효과条件固名前 = %제외カード名称%
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

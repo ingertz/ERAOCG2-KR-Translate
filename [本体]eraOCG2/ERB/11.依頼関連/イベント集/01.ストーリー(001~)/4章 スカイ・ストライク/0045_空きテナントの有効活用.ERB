@@ -1,0 +1,115 @@
+@IRAI_EVENT_45(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (ST4-SP1)빈 테넌트의 유효활용
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL マンション下のテナントが空いた、特に何とも思っていなかったが……
+		PRINTL 하얀 소녀に妙な商材を押し付けられる。
+		PRINTL 
+	CASE "条件"
+		SIF 依頼_完了횟수:44 == 0
+			RETURN 0
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_45(参照)
+#DIM DYNAMIC 参照
+
+
+IF 依頼_進行보존:依頼_受領中 == 1
+	PRINTFORMW 「おはようございます！　マスターさん！」
+	PRINTFORMW また怖い人に絡まれてしまった……断ったのにしつこい人だ。
+	PRINTFORMW 「どうですか？　計画書はポストに入れたので理解してもらえますが……実質タダで貰えますよ！」
+	PRINTFORML 
+	PRINTFORML [0] - やる
+	PRINTFORML [1] - やらない
+	BINPUT
+	IF RESULT == 0
+		PRINTFORMW 「欲望に素直に素晴らしいですね！
+		PRINTFORMW 　ではこちらに名前を書いていただいて――こちらは保険でして、こっちは……」
+		PRINTFORMW KCのテナント契約の元に、マンションの下のカードショップの経営権を手に入れた！
+		PRINTFORML
+		PRINTFORMW ……そしてガイドさんにこのことを話したところ。
+		PRINTFORMW 「あっ、契約したデースか？　計画書は読んだけど、KCにしては問題なさそうですし、いいジャネ？」
+		PRINTFORMW 珍しく慎重に決めたことを褒められた。
+		CALL ITEM_GET(511)
+		RETURN 2
+	ELSEIF RESULT == 1
+		PRINTFORMW 「もう、残念ですわね……」
+		PRINTFORML
+		PRINTFORML ……………
+		PRINTFORML ………
+		PRINTFORML …
+		PRINTFORML
+		PRINTFORMW ……そしてガイドさんにこのことを話したところ。
+		PRINTFORMW 「あっ、契約しなかったデースか？　結構メリット多いのに勿体ないゼー」
+		RETURN 3
+	ENDIF
+ELSE
+	PRINTFORMW 「おはようございます！　マスターさん！」
+	PRINTFORMW コンビニから帰って来ていたら怖い人に絡まれてしまった。
+	PRINTFORML 
+	PRINTFORMW 「そんな詐欺師を見る顔はやめてください……それより、良いテナントですね」
+	PRINTFORMW と視線を空きテナントに向けた。
+	PRINTFORMW 元々は電機屋だったが、運営していた老夫婦が定年退職したようだ。
+	PRINTFORMW 最近臨時収入、が入ったとも言っていたが……。
+	PRINTFORML
+	PRINTFORMW 「実は最近フル電化のショップを企画していまして、どうでしょうか？」
+	PRINTFORMW どうでしょうか？　とは何だろうか？　と考える前に紙とペンを突き付けてきた。
+	PRINTFORMW いつも通り強引な手腕だが……
+	PRINTFORMW 要するにカードショップを運営してみないかとのことだろうか？
+	PRINTFORML
+
+	PRINTFORML [0] - 乗った！
+	PRINTFORML [1] - ロクでもないのでやめておこう
+	BINPUT
+	IF RESULT == 0
+		PRINTFORMW 「欲望に素直に素晴らしいですね！
+		PRINTFORMW 　ではこちらに名前を書いていただいて――こちらは保険でして、こっちは……」
+		PRINTFORMW KCのテナント契約の元に、マンションの下のカードショップの経営権を手に入れた！
+		PRINTFORML
+		PRINTFORMW ……そしてガイドさんにこのことを話したところ、軽率に契約したことに怒られた。
+
+	ELSEIF RESULT == 1
+		PRINTFORMW 「そうですか……いえ、それでも問題ありません。
+		PRINTFORMW 　ただ、このショップでKCが得た利益はこの世界に迷い込んだ人たちの補助に充てたいと思っていたので
+		PRINTFORMW 　もちろんKC自体、人を派遣して運営しても問題は無いのですが
+		PRINTFORMW 　事情を知るマスターさんならば仕事に困った異世界人を少しでも助けられると思いまして」
+		PRINTFORMW 突然手を握られてしまう、不思議なことにいつものうさん臭さはなく、真面目な視線は向けられた……。
+		PRINTFORMW 「協力いただけませんか？」
+		PRINTFORML
+		PRINTFORML [0] - 協力する
+		PRINTFORML [1] - 逃げる
+		BINPUT
+		IF RESULT == 0
+			PRINTFORMW 「ふふっ、ありがとうございます救世主様！
+			PRINTFORMW 　ではこちらに名前を書いていただいて――こちらは保険でして、こっちは……」
+			PRINTFORMW KCのテナント契約の元に、マンションの下のカードショップの経営権を手に入れた！
+			PRINTFORML
+			PRINTFORMW ……そしてガイドさんにこのことを話したところ、怒られた。
+		ELSEIF RESULT == 1
+			依頼_進行보존:依頼_受領中 = 1
+			PRINTFORMW 「あっ、もう……安めの労働力確保できたと思ったのに……次は逃がしませんよ～」
+			RETURN 3
+		ENDIF
+	ENDIF
+	CALL ITEM_GET(511)
+	RETURN 2
+ENDIF
+
+@IRAI_REWARD_45
+CALL ITEM_GET(511)
+

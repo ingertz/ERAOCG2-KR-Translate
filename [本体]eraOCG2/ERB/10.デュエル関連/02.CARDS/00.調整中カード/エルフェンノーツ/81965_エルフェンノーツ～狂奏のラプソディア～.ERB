@@ -1,0 +1,173 @@
+﻿@CARDNAME_81965,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘펜노츠～광주의 랩소디아～
+	CASE "略称"
+		RESULTS = ～랩소디아～
+	CASE "カテゴリ"
+		RESULTS:0 = 엘펜노츠
+ENDSELECT
+
+
+@CARD_81965(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "추가日"
+		RETURN 251106
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_81965(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：자신의 중앙 메인 몬스터 존에 몬스터가 존재하는 한、
+PRINTL 상대 몬스터는 그 몬스터밖에 공격할 수 없다。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：자신의 패 / 필드에서 몬스터 １장을 묘지로 보내고、
+PRINTL 그 몬스터와는 원래 속성이 다른 자신 묘지의 "엘펜노츠" 몬스터 １장을 특수 소환한다。
+PRINTL 그 후、중앙 몬스터 존의 몬스터 １장을 、중앙 이외의 몬스터 존으로 이동할 수 있다。
+PRINTL 추가로、자신 필드에 Ｓ몬스터가 존재하는 경우、
+PRINTL 상대 필드의 앞면 표시 카드 １장의 효과를 턴 종료시까지 무효로 할 수 있다。
+PRINTL （이동에는、지정한 몬스터를 제외하고 이루어진다）
+
+
+@CARDCAN_81965(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,81965)
+SIF RESULT == 1
+	RETURN 0
+
+IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,81965)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 엘펜노츠
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_필드:2") == -1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_81965(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択カード속성
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 속성数
+
+
+IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81965,2)
+	IF RESULT == 0
+		$USE_EFFECT
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARD_{選択カード_ID},"속성"
+			選択カード속성 = RESULT
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 엘펜노츠
+			CALLFORM 효과条件속성_ADV(選択カード속성,"以外")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				IF GETVAR(@"%듀얼리스트%_필드:2") != -1
+					PRINTL
+					PRINTL 중앙 몬스터 존의 몬스터 １장을 이동시키시겠습니까？
+					PRINTL
+					CALL YN_CHOICE(듀얼리스트,"이동한다","이동하지않는다")
+					IF RESULT == 0
+						カウンタ = 現필드(듀얼리스트)
+						CALL FULLRESET
+						CALL CARD_SET_MOVE(듀얼리스트,2,10)
+					ENDIF
+				ENDIF
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件종류 = 싱크로
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과範囲상대마함 = 1
+					효과条件표시 = 10
+					효과条件任意 = 1
+					CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"無効")
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 2
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81965)
+	IF RESULT == 0
+		TRYCALLFORM CARDCAN_81965(듀얼리스트,마함起動,"마함",場所)
+		IF RESULT == 1
+			PRINTFORML 
+			PRINTFORML 지금、효과를 사용하시겠습니까？
+			PRINTFORML 
+			CALL YN_CHOICE(듀얼리스트)
+			IF RESULT == 0
+				CALL CARD_EFFECT_USE(듀얼리스트,81965,2)
+				GOTO USE_EFFECT
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",2,"攻誘")
+ENDIF

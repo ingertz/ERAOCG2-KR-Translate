@@ -1,0 +1,216 @@
+﻿@CARDNAME_1697,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘리멘트세이버 마카니
+	CASE "略称"
+		RESULTS = ElmS 마카니
+	CASE "カテゴリ"
+		RESULTS:0 = 엘리멘트세이버
+		RESULTS:1 = 엘리멘트
+		;カテゴリ縛りのSS、EX소환のために설정
+		RESULTS:4 = 령신
+ENDSELECT
+
+
+@CARD_1697(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1300
+	CASE "守備力"
+		RETURN 1200
+	CASE "령신속성"
+		RETURN 1
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1697(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。자신의 덱에서 "령신" / "엘리멘트세이버" 몬스터 １장을 묘지로 보낸다。
+PRINTL 그 후、이 효과로 묘지로 보낸 몬스터와 같은 속성을 가진 상대 필드의 몬스터 １장을 골라、공격력 / 수비력을 ５００내릴 수 있다。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：１턴에 １번、페에서 "엘리멘트세이버" 몬스터 １장을 묘지로 보내고 발동할 수 있다。
+PRINTL 자신의 덱에서 "엘리멘트세이버 마카니" 이외의 "엘리멘트세이버" 몬스터 １장을 패에 넣는다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：묘지의 이 카드는、모든 속성을 가진 몬스터로서 취급한다。
+
+;「엘리멘트세이버」モンスターのサーチ효과を持つ重要な潤滑役をこなす女戦士。出たとき효과でも덱に触ってくれるようになっている。
+;サーチ효과は손패コストがあるためアドバンテージを稼げているわけではないが、덱内のテーマモンスターを自由に묘지や손패に이동させる효과はちゃんと有能。
+;ほぼおまけのような상대の攻守ダウンは「상대に合わせて속성を選ぶ」という要素をつけるために추가している。ささやかな효과だがこのぐらいが丁度いいだろう。
+
+;なお、「마카니って男（男の娘）じゃね？」という意見も当然あると思うが、それに対して女の子であることを盤石とする完璧な回答は準備されている。
+;中国語版ＭＤの마카니は「元素軍刀 瑪卡妮」というカード名の表記であり、この「妮」という字は「女の子、少女」という意味の漢字である。Q.E.D.
+
+
+@CARDCAN_1697(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 추가条件플래그 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1697)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,1697)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ:0 = 령신
+	효과条件カテゴリ:1 = 엘리멘트세이버
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 령신의 성전
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1 && !(발동済_3(듀얼리스트,71705))
+		추가条件플래그 |= 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	SIF 추가条件플래그 & 1
+		효과範囲덱 = 1
+	효과条件カテゴリ = 엘리멘트세이버
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 엘리멘트세이버
+	효과条件종류 = モン全般
+	효과条件固名前 = 엘리멘트세이버 마카니
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1697(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 추가条件플래그 = 0
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 묘지送り속성
+#DIM DYNAMIC 손패枚数＿前
+#DIM DYNAMIC 손패枚数＿後
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1697,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			;상대の攻守ダウンの추가효과の処理
+			カードID = RESULT:1
+			TRYCALLFORM CARD_{カードID}, "속성"
+			묘지送り속성 = RESULT
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件속성 = 묘지送り속성
+			효과条件종류 = モン全般
+			효과条件除去種 = 永攻DOWN
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				;속성の合った상대フィールドのモンスター１体を選んで攻守500ダウン。추가종류=10で守備もダウンする
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과条件속성 = 묘지送り속성
+				효과条件종류 = モン全般
+				효과추가종류 = 10
+				효과条件任意 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"永攻DOWN",500)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1697,10)
+	IF RESULT == 0
+		손패枚数＿前 = 손패数(듀얼리스트)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 령신의 성전
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1 && !(발동済_3(듀얼리스트,71705))
+			추가条件플래그 |= 1
+		;손패の엘리멘트세이버を묘지へ送る。(条件次第で덱からも送れる)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		SIF 추가条件플래그 & 1
+			효과範囲덱 = 1
+		효과条件カテゴリ = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			;묘지へ送る前後で손패の枚数を確認し、減っていない場合は덱から送ったと판정し령신의 성전の효과③を使用した扱いに。
+			손패枚数＿後 = 손패数(듀얼리스트)
+			IF 손패枚数＿前 == 손패枚数＿後
+				;령신의 성전の효과を발동した！
+				SETCOLOR C_YELLOW
+				PRINTFORML "령신의 성전"의 효과에 의해 덱에서 직접 몬스터를 묘지로 보냈다！！
+				RESETCOLOR
+				CALL CARD_EFFECT_USE(듀얼리스트,71705,3)
+			ENDIF
+			;덱から손패に加える。
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 엘리멘트세이버
+			효과条件종류 = モン全般
+			효과条件固名前 = 엘리멘트세이버 마카니
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

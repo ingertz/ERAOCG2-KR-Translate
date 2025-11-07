@@ -173,6 +173,8 @@ SIF 使用場所 == 15
 
 SIF 使用場所 == 6 || 使用場所 == 7
 	VARSET 필터_연모,1
+SIF 使用場所 == 22
+	VARSET 필터_연모,2
 
 SIF 使用場所 == 8
 	VARSET 필터_덱所持,1
@@ -818,7 +820,7 @@ SELECTCASE 使用場所
 		RESETCOLOR
 	CASE 6
 		PRINTFORM 현재 침상 ：
-		IF CFLAG:캐릭터_ID:시작위치 == 100
+		IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
 			IF TALENT:캐릭터_ID:듀얼리스트 == 0
 				PRINTFORM [%"카드 안",16,left%]
 			ELSEIF TALENT:캐릭터_ID:듀얼리스트 >= 1
@@ -831,9 +833,9 @@ SELECTCASE 使用場所
 	CASE 7
 		SETCOLOR C_PINK
 		IF CFLAG:캐릭터_ID:카드화됨 != 1
-			PRINTFORM %"[연모❤]",28,RIGHT% 
+			PRINTFORM %"[연모❤]",30,RIGHT% 
 		ELSEIF CFLAG:캐릭터_ID:카드화됨 == 1
-			PRINTFORM %"[카드화됨❤]",28,RIGHT% 
+			PRINTFORM %"[카드화됨❤]",30,RIGHT% 
 		ENDIF
 		RESETCOLOR
 
@@ -851,6 +853,14 @@ SELECTCASE 使用場所
 	CASE 20
 		PRINTFORM 저장 우유량：
 		PRINTFORM {CFLAG:캐릭터_ID:저장모유량,14}ml
+	CASE 22
+		IF CFLAG:캐릭터_ID:아르바이트 == PT_カドショ
+			SETCOLOR C_YELLOW
+			PRINTFORM %"[시프트 등록됨]",30,RIGHT%
+		ELSE
+			PRINTFORM %"",30,RIGHT%
+		ENDIF
+		RESETCOLOR
 		
 	CASE 10,11,12
 		IF CFLAG:캐릭터_ID:전화번호 == 1

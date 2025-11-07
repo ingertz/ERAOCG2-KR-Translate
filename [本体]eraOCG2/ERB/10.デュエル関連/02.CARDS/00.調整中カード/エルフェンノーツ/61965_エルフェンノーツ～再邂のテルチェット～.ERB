@@ -1,0 +1,112 @@
+﻿@CARDNAME_61965,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘펜노츠～재해의 테르쳇～
+	CASE "略称"
+		RESULTS = ～테르쳇～
+	CASE "カテゴリ"
+		RESULTS:0 = 엘펜노츠
+ENDSELECT
+
+
+@CARD_61965(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "추가日"
+		RETURN 251106
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61965(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：자신의 중앙 메인 몬스터 존의 몬스터를 상대는 효과의 대상으로 할 수 없다。
+CALLFORM CARD_ABLE(2,지속효과)
+PRINTL ②：자신의 중앙 메인 몬스터 존의 몬스터의 속성에 따라、이 카드는 이하의 효과를 얻는다。
+PRINTL ●화염 / 땅：자신으 Ｓ몬스터는 관통 공격을 얻는다。
+PRINTL ●물 / 바람：자신 필드의 다른 앞면 표시인 마법 / 함정 카드는 상대의 효과로는 파괴되지 않는다。
+PRINTL ●빛 / 어둠：자신이 받는 전투 데미지는 ０이된다。
+ 
+
+@CARDCAN_61965(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,61965)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,61965)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_필드:2") == -1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_61965(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択カード속성
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61965)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",2,"対耐")
+	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:2")}("속성")
+	SELECTCASE RESULT
+		CASE 화염속성, 땅속성
+			CALL FULLRESET
+			효과条件종류 = 싱크로
+			CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"貫通")
+		CASE 물속성, 바람속성
+			CALL FULLRESET
+			효과条件표시 = 10
+			효과条件他所 = 1
+			CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐")
+		CASE 빛속성, 어둠속성
+			CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ無効",3)
+	ENDSELECT
+ENDIF

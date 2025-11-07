@@ -1,0 +1,420 @@
+﻿@CARDNAME_55595,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘리멘트세이버 위라드
+	CASE "略称"
+		RESULTS = ElmS 위라드
+	CASE "カテゴリ"
+		RESULTS:0 = 엘리멘트세이버
+		RESULTS:1 = 엘리멘트
+		;カテゴリ縛りのSS、EX소환のために설정
+		RESULTS:4 = 령신
+ENDSELECT
+
+
+@CARD_55595(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 2100
+	CASE "특수불가"
+		RETURN 1
+	CASE "単一存在"
+		RETURN 1
+	CASE "성별"
+		RETURN 雄性
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+
+
+@CARDSUMMON_55595(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	CALLFORM 素材条件レベル_ADV(8, "以上")
+	素材条件カテゴリ = 령신
+ELSEIF EX参照 >= 10
+	素材条件名前 = 엘리멘트세이버 라파위라
+ENDIF
+
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,55595) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_55595(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨８ 이상의 "령신" 몬스터 ＋ "엘리멘트세이버 라파위라"
+PRINTL "엘리멘트세이버 위라드"는、자신 필드에 １장밖에 앞면 표시로 존재할 수 없으며、융합 소환 및 이하의 방법으로만 특수 소환할 수 있다。
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL ●자신 패 / 필드의 "령신" / "엘리멘트세이버" 몬스터 ２장을 묘지로 보낸 경우에 ＥＸ덱에서 특수 소환할 수 있다。
+PRINTL 　（이 방법에 의한 특수 소환은 １턴에 １번밖에 할 수 없다。）
+CALLFORM CARD_ABLE(0,EX소환時強制,특수소환時強制)
+PRINTL ①：이 카드가 특수 소환된 경우에 발동한다。
+PRINTL 자신 묘지의 "령신" / "엘리멘트세이버" 몬스터를 ２장까지 골라、그 몬스터의 원래 속성에 따라、
+PRINTL 이 몬스터가 필드에 존재하는 동안、자신 필드의 "령신" / "엘리멘트세이버" 몬스터에 대해 이하의 효과를 적용한다。
+PRINTL ●땅 또는 바람：전투내성을 얻고、공격력 / 수비력이 ３００ 오른다。
+PRINTL ●물 또는 화염：효과파괴내성을 얻고、공격력 / 수비력이 ３００ 오른다。
+PRINTL ●빛 또는 어둠：대상내성을 얻는다。
+CALLFORM CARD_ABLE(10,효과後誘発)
+PRINTL ②：１턴에 １번、자신 묘지의 "령신" / "엘리멘트세이버" 몬스터의 원래 속성과 같은 속성을 가진 몬스터를
+PRINTL 상대가 특수 소환한 경우에 발동할 수 있다。그 몬스터를 파괴한다。
+
+;【엘리멘트세이버】のエースモンスター。出すだけであれば덱に「엘리멘트세이버」モンスターを多く採用すれば難しくはない。
+;テーマ内の正規융합手段が殆どないため、一般的な「융합」마법カードを使った융합소환をせず、소환条件による특수소환で出す機会が殆どだろう。
+;「령신의 성전」の③の使用は위라드の소환コストの支払いにも対応している。この処理は元々のOCGでも可能であるため효과再現でそうなっている。
+;テーマとして「엘리멘트세이버」モンスターを손패に集めやすいようになってはいるので、うまく효과を使ってかき集めて위라드を出せるようにしたい。
+;とはいえ、これを単体で出しても특수소환反応型モンスター破壊の１妨害で속성にも依存するので、出来るだけ묘지にテーマモンスターを送る事も必要になる。
+;出した時に묘지に存在するテーマモンスターの中から耐性をつけるための속성を選べるので、出す前に묘지を肥やす動きをしてから降臨させるとよい。
+;「聖殿」や지속마법함정もしっかり構えたうえで降臨させれば、強固な耐性つきの妨害효과持ち大型モンスターとなり、なかなか突破されにくい盤面にできる。
+
+
+@CARDCAN_55595(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 추가条件플래그 = 0
+#DIM DYNAMIC 条件달성 = 0
+#DIM DYNAMIC 複数속성, 8
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55595)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,55595)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,55595)
+	SIF RESULT == 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 령신의 성전
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1 && !(발동済_3(듀얼리스트,71705))
+		추가条件플래그 |= 1
+	
+	;CALL FULLRESET
+	;효과範囲필드 = 1
+	;효과条件カテゴリ = 엘리멘트세이버
+	;CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	;SIF RESULT == 1
+	;	추가条件플래그 |= 2
+	
+	IF 추가条件플래그 & 2
+		;2025/11/1 :こっちは死に분기に。
+		;条件1：손패にモンスターが必要。
+		;条件2：손패（＋条件플래그&1で덱）にテーマモンスターが必要。
+		;条件3：손패（＋条件플래그&1で덱）に2体以上のモンスターが必要。
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		SIF 추가条件플래그 & 1
+			효과範囲덱 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		SIF 추가条件플래그 & 1
+			효과範囲덱 = 1
+		효과条件종류 = モン全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT <= 1
+			RETURN 0
+	ELSE
+		;条件1：손패・フィールドにテーマモンスターが1体必要。
+		;条件2：손패・フィールド（＋条件플래그&1で덱）でテーマモンスターが合計2体以上必要。
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		SIF 추가条件플래그 & 1
+			효과範囲덱 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT <= 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == EX소환時強制 || 종류 == 특수소환時強制
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	
+	;묘지のカテゴリの속성を確認して「複数속성」の変数に설정を格納。下の효과条件속성_複数にて利用。
+	CALL FULLRESET
+	효과条件カテゴリ:0 = 령신
+	효과条件カテゴリ:1 = 엘리멘트세이버
+	CALL ELEMENTS_KIND_BASIC(듀얼리스트,"묘지",複数속성)
+	
+	CALL FULLRESET
+	CALL 효과条件속성_複数(複数속성)
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_55595(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 추가条件플래그 = 0
+#DIM DYNAMIC 条件달성 = 0
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択속성
+#DIM DYNAMIC 손패枚数＿前
+#DIM DYNAMIC 손패枚数＿後
+#DIM DYNAMIC 攻守修正値 = 0
+#DIM DYNAMIC 複数속성, 8
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55595,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 령신의 성전
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1 && !(발동済_3(듀얼리스트,71705))
+			추가条件플래그 |= 1
+		;CALL FULLRESET
+		;효과範囲필드 = 1
+		;효과条件カテゴリ = 엘리멘트세이버
+		;CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		;SIF RESULT == 1
+		;	추가条件플래그 |= 2
+		
+		;まずは손패・フィールドの「령신」・「엘리멘트세이버」モンスター1体を묘지へ送る。（聖殿の③も対応不要）
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			;２体目の際は、霊殿の③での덱範囲지정を可能にする。
+			손패枚数＿前 = 손패数(듀얼리스트)
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲필드 = 1
+			SIF 추가条件플래그 & 1
+				효과範囲덱 = 1
+			효과条件カテゴリ:0 = 령신
+			효과条件カテゴリ:1 = 엘리멘트세이버
+			효과条件종류 = モン全般
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				;묘지へ送る前後で손패の枚数を確認し、減っていない場合は덱から送ったと판정し령신의 성전の효과③を使用した扱いに。
+				손패枚数＿後 = 손패数(듀얼리스트)
+				IF 손패枚数＿前 == 손패枚数＿後
+					;령신의 성전の효과を발동した！
+					SETCOLOR C_YELLOW
+					PRINTFORML "령신의 성전"의 효과에 의해 덱에서 직접 몬스터를 묘지로 보냈다！！
+					RESETCOLOR
+					CALL CARD_EFFECT_USE(듀얼리스트,71705,3)
+				ENDIF
+				CALL FULLRESET
+				CALL CARD_SP_SUMMON(듀얼리스트,"EX덱",場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == EX소환時強制 || 종류 == 특수소환時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55595)
+	IF RESULT == 0
+		;묘지のカテゴリのモンスターを2体選んで、その속성に応じて汎数を설정する。
+		;汎数bit1(1):●地または風：戦闘耐性を得て、攻撃力・守備力が３００アップする。
+		;汎数bit2(2):●水または炎：효과破壊耐性を得て、攻撃力・守備力が３００アップする。
+		;汎数bit3(4):●光または闇：대상耐性を得る。
+		
+		CALL FULLRESET
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			選択カードID = RESULT:99
+			TRYCALLFORM CARD_{選択カードID}, "속성"
+			選択속성 = RESULT
+			SELECTCASE 選択속성
+				CASE 땅속성,바람속성
+					;汎数に1を立てる
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",1)
+				CASE 물속성,화염속성
+					;汎数に2を立てる
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",2)
+				CASE 빛속성,어둠속성
+					;汎数に4を立てる
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",4)
+			ENDSELECT
+			CALL FULLRESET
+			효과条件カテゴリ:0 = 령신
+			효과条件カテゴリ:1 = 엘리멘트세이버
+			효과条件종류 = モン全般
+			효과条件속성:0 = 신속성
+			IF !(GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 1)
+				효과条件속성:1 = 땅속성
+				효과条件속성:2 = 바람속성
+			ELSE
+				효과条件固名前:0 = 엘리멘트세이버 아이나
+				효과条件固名前:1 = 엘리멘트세이버 마카니
+			ENDIF
+			IF !(GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 2)
+				효과条件속성:3 = 화염속성
+				효과条件속성:4 = 물속성
+			ELSE
+				효과条件固名前:0 = 엘리멘트세이버 마로우
+				효과条件固名前:1 = 엘리멘트세이버 나르
+			ENDIF
+			IF !(GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 4)
+				효과条件속성:5 = 빛속성
+				효과条件속성:6 = 어둠속성
+			ELSE
+				효과条件固名前:0 = 엘리멘트세이버 라파위라
+				효과条件固名前:1 = 엘리멘트세이버 모레프
+			ENDIF
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+			IF RESULT != 9999
+				選択カード = RESULT
+				選択カードID = RESULT:99
+				TRYCALLFORM CARD_{選択カードID}, "속성"
+				選択속성 = RESULT
+				SELECTCASE 選択속성
+					CASE 땅속성,바람속성
+						;汎数に1を立てる
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",1)
+					CASE 물속성,화염속성
+						;汎数に2を立てる
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",2)
+					CASE 빛속성,어둠속성
+						;汎数に4を立てる
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",4)
+				ENDSELECT
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55595,10)
+	IF RESULT == 0
+		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+	ENDIF
+ELSEIF 종류 == 지속효과
+	;CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
+	
+	IF GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 1
+		CALL FULLRESET
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦耐")
+	ENDIF
+	IF GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 2
+		CALL FULLRESET
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+	ENDIF
+	IF GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 4
+		CALL FULLRESET
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+	ENDIF
+	
+ELSEIF 종류 == 攻守変動
+	SIF GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 1
+		攻守修正値 += 300
+	SIF GETVAR(@"%듀얼리스트%_MZ_汎数:{場所}") & 2
+		攻守修正値 += 300
+	CALL FULLRESET
+	효과条件カテゴリ:0 = 령신
+	효과条件カテゴリ:1 = 엘리멘트세이버
+	효과条件종류 = モン全般
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻守修正値,攻守修正値)
+ENDIF

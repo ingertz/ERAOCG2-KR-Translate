@@ -1,0 +1,190 @@
+﻿@CARDNAME_50519,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 격멸룡 다크 암드
+	CASE "略称"
+		RESULTS = 격멸룡 Ｄ Ａ
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_50519(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 1000
+	CASE "レア度"
+		RETURN RARE
+	CASE "추가日"
+		RETURN 251101
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50519(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 99
+素材条件レベル = 7
+素材条件数自由 = 1
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,50519) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50519(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨７ 몬스터 ×２장 이상
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL "격멸룡 다크 암드"는 １턴에 １번、자신 묘지의 어둠속성 몬스터가 ５장 뿐일 경우、
+PRINTL 자신 필드의 레벨５ 이상의 드래곤족 / 어둠속성 몬스터 위에 겹쳐진 Ｘ소환할 수 있다。
+CALLFORM CARD_ABLE(0,필드起動)
+PRINTL ③：이 카드의 Ｘ소재를 １개 제거하고、상대 필드의 카드 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 카드를 파괴한다。그 후、자신의 묘지에서 카드 １장을 골라 제외한다。
+PRINTL 이 효과의 발동 후、턴 종료시까지 이 카드는 공격할 수 없다。
+
+
+@CARDCAN_50519(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 속성数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50519)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,50519)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,50519)
+	SIF RESULT == 1
+		RETURN 0
+	;자신の묘지に어둠속성モンスターが５体存在する場合のみEX起動효과での重ねてＸ소환が可能
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 5
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 드래곤족
+	효과条件속성 = 어둠속성
+	효과条件종류 = レベル持ち
+	CALL 효과条件レベル_ADV(5, "以上")
+	효과条件重ねてＸ = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	
+	;발동する時点で묘지に１枚以上のカードが必要
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_50519(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50519,1)
+	IF RESULT == 0
+		CALL RESETCONDITION_MAT
+		必要素材数 = 1
+		素材条件종족 = 드래곤족
+		素材条件속성 = 어둠속성
+		素材条件종류 = レベル持ち
+		CALL 素材条件レベル_ADV(5, "以上")
+		重ねてＸ = 1
+		TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50519,0,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件行先플래그 = 제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦無",1)
+	ENDIF
+ENDIF
+

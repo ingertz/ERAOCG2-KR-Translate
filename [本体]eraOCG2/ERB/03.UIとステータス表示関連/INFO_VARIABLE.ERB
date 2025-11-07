@@ -682,27 +682,35 @@ SELECTCASE TIME
 	;AM4~6　早朝
 	CASE 240 TO 359
 		時間帯변경 = 1
-	;AM6~9　朝
-	CASE 360 TO 539
+	;AM6~8　朝
+	CASE 360 TO 479
 		時間帯변경 = 2
-	;AM9~12　正午前
-	CASE 540 TO 719
+	;AM8~10　正午前A
+	CASE 480 TO 599
 		時間帯변경 = 3
-	;PM12~3　昼
-	CASE 720 TO 899
+	;AM10~12　昼前
+	CASE 540 TO 719
 		時間帯변경 = 4
-	;PM3~6　昼下がり
-	CASE 900 TO 1079
+	;PM12~14　昼
+	CASE 720 TO 839
 		時間帯변경 = 5
-	;PM6~8　夕
-	CASE 1080 TO 1199
+	;PM14~16　昼下がり
+	CASE 840 TO 959
 		時間帯변경 = 6
-	;PM8~11　夜
-	CASE 1200 TO 1379
+	;PM16~18　夕
+	CASE 960 TO 1079
 		時間帯변경 = 7
+	;PM18~20　夜
+	CASE 1080 TO 1199
+		時間帯변경 = 8
+	;PM20~22　夜
+	CASE 1200 TO 1319
+		時間帯변경 = 9
+	CASE 1320 TO 1439
+		時間帯변경 = 10
 	;PM11~AM4　深夜
 	CASE 0 TO 239, IS >= 1380
-		時間帯변경 = 8
+		時間帯변경 = 10
 ENDSELECT
 
 IF 時間帯변경 != TIME:2
@@ -711,7 +719,7 @@ IF 時間帯변경 != TIME:2
 	CALL CHARA_MOVE_OUTSIDE(時間帯변경)
 	;우후후中じゃない＆＆듀얼モードじゃない
 	IF 듀얼モード == 0 && CFLAG:MASTER:우후후 == 0
-		IF !GROUPMATCH(GET_DAY(), "토", "일") && 時間帯변경 == 3 && オプション_自動通勤 == 1
+		IF !GROUPMATCH(GET_DAY(), "토", "일") && 時間帯변경 == 3 && オプション_自動通勤 == 1 && 依頼_受領中 == 0 && CFLAG:MASTER:감기플래그 < 3 && 仕事_出席 == 0
 			CALL COM465
 			PRINTW 몸이…… 몸이！　마음대로 움직여버려！！			
 			PRINTW ・・・・・・・・・・・・
@@ -745,7 +753,7 @@ ENDIF
 
 ;営業時間
 IF 時間帯플래그 == 1
-	SIF GROUPMATCH(TIME:2,3,4,5,6)
+	SIF GROUPMATCH(TIME:2, 3,4,5,6,7,8)
 		RETURNF 1
 	RETURNF 0
 ENDIF
@@ -756,10 +764,10 @@ SIF GROUPMATCH(TIME:2,2,3)
 SIF GROUPMATCH(TIME:2,4,5)
 	RETURNF T_昼時間
 
-SIF GROUPMATCH(TIME:2,6)
+SIF GROUPMATCH(TIME:2,6,7)
 	RETURNF T_夕時間
 
-SIF GROUPMATCH(TIME:2,7,8,1)
+SIF GROUPMATCH(TIME:2,8,9,10,1)
 	RETURNF T_夜時間
 
 
@@ -893,15 +901,54 @@ ENDSELECT
 #DIM DYNAMIC バイト終了
 #DIM DYNAMIC 時間帯변경
 #DIM DYNAMIC 개시시간
+#DIM DYNAMIC カドショ宣伝효과
+#DIM DYNAMIC ショップ満員
+#DIM DYNAMIC ショップ在住
+#DIM DYNAMIC 설정値
+
+FOR 캐릭터_ID,1,CHARANUM
+	IF CFLAG:캐릭터_ID:아르바이트 == PT_カドショ
+		カドショ宣伝효과 += 5
+	ENDIF
+	SIF INRANGE(CFLAG:캐릭터_ID:현재위치,場所_CDS入口,場所_CDSレジ裏)
+		ショップ在住 ++
+	IF ショップ在住 >= 15
+		ショップ満員 = 1
+	ENDIF
+NEXT
+
+
+カドショ宣伝효과 += カドショ宣伝
+
+FOR カウンタ,場所_CDS入口,場所_CDSレジ裏
+	IF FLAG:(1000 + カウンタ) <= 100
+		カドショ宣伝효과 += 10
+	ELSEIF FLAG:(1000 + カウンタ) <= 500
+		カドショ宣伝효과 += 7
+	ELSEIF FLAG:(1000 + カウンタ) <= 1000
+		カドショ宣伝효과 += 5
+	ELSEIF FLAG:(1000 + カウンタ) <= 2000
+		カドショ宣伝효과 += 0
+	ELSEIF FLAG:(1000 + カウンタ) <= 3500
+		カドショ宣伝효과 -= 5
+	ELSEIF FLAG:(1000 + カウンタ) <= 5000
+		カドショ宣伝효과 -= 10
+	ENDIF
+NEXT
+
+
+SIF カドショ宣伝효과 <= 10
+	カドショ宣伝효과 = 10
+
 
 IF GROUPMATCH(GET_DAY(), "토", "일")
-	개시시간 = 3
+	개시시간 = 4
 ELSE
-	개시시간 = 5
+	개시시간 = 6
 ENDIF
 
 IF RAND:3 == 0
-	IF 訪問캐릭터_ID >= 0 && INRANGE(時間帯변경,개시시간,6) && CFLAG:MASTER:현재위치 <= 自宅部屋最大値 && CFLAG:訪問캐릭터_ID:현재위치 >= 自宅部屋最大値
+	IF 訪問캐릭터_ID >= 0 && INRANGE(時間帯변경,개시시간,8) && CFLAG:MASTER:현재위치 <= 自宅部屋最大値 && CFLAG:訪問캐릭터_ID:현재위치 >= 自宅部屋最大値
 		PRINTFORMW %CALLNAME:訪問캐릭터_ID%가 방문한 것 같다。
 		IF CFLAG:MASTER:우후후 == 0
 			CALL KOJO_MESSAGE_SEND("EVENT", 訪問캐릭터_ID, 11, 5)
@@ -939,8 +986,27 @@ FOR 캐릭터_ID,1,CHARANUM
 	SIF CFLAG:캐릭터_ID:현재위치 <= 自宅部屋最大値
 		CONTINUE
 	;현재위치が100なら動かない
-	SIF CFLAG:캐릭터_ID:현재위치 == 場所_VOID
+	SIF CFLAG:캐릭터_ID:현재위치 == 場所_NULLVOID
 		CONTINUE
+
+		IF CFLAG:캐릭터_ID:현재위치 == 場所_VOID
+		IF TALENT:캐릭터_ID:듀얼리스트 >= 1 && ショップ満員 != 1 && INRANGE(TIME,KANTAN_TIME(10,00),KANTAN_TIME(20,00))
+			설정値 = RAND:250
+			;PRINTFORML 설정値:{설정値} / カドショ宣伝효과:{カドショ宣伝효과}
+			IF 설정値 <= カドショ宣伝효과
+				IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
+					PRINTFORML %CALLNAME:캐릭터_ID%가 카드샵에 방문했다。
+				ENDIF
+				CFLAG:캐릭터_ID:현재위치 = 場所_CDS入口 + RAND:3
+				売れたカード:(RAND:30) = 1
+				来客者数 ++
+			ELSE
+				CONTINUE
+			ENDIF
+		ELSE
+			CONTINUE
+		ENDIF
+	ENDIF
 	;데이트중の子は動かない
 	SIF CFLAG:캐릭터_ID:데이트중 == 1
 		CONTINUE
@@ -949,6 +1015,7 @@ FOR 캐릭터_ID,1,CHARANUM
 	;알바중の子は動かない
 	IF CFLAG:캐릭터_ID:아르바이트 >= 1
 		IF CFLAG:캐릭터_ID:알바중 == 1
+			CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
 			CONTINUE
 		ENDIF
 	ENDIF
@@ -968,12 +1035,14 @@ FOR 캐릭터_ID,1,CHARANUM
 				CONTINUE
 		ELSE
 			IF CFLAG:캐릭터_ID:현재위치 == 場所_学校内
-				IF RAND:4 == 0
+				IF RAND:5 == 0
 					CFLAG:캐릭터_ID:현재위치 = 場所_VOID
+				ELSEIF RAND:4 == 0
+					CFLAG:캐릭터_ID:현재위치 = RAND:15 + 50
 				ELSEIF RAND:3 == 0
-						CFLAG:캐릭터_ID:현재위치 = RAND:15 + 50
+						CFLAG:캐릭터_ID:현재위치 = RAND:10 + 110
 				ELSEIF RAND:2 == 0
-					CFLAG:캐릭터_ID:현재위치 = RAND:10 + 110
+					CFLAG:캐릭터_ID:현재위치 = RAND:9 + 210
 				ELSE
 					CFLAG:캐릭터_ID:현재위치 = 場所_学校内
 				ENDIF
@@ -990,6 +1059,19 @@ FOR 캐릭터_ID,1,CHARANUM
 		CFLAG:캐릭터_ID:현재위치 = CFLAG:캐릭터_ID:현재위치 - 1
 	ELSE
 		CFLAG:캐릭터_ID:현재위치 = CFLAG:캐릭터_ID:현재위치
+	ENDIF
+
+	IF INRANGE(CFLAG:캐릭터_ID:현재위치,50,69)
+		IF RAND:10 == 0
+			IF ショップ運営中 == 1 && INRANGE(TIME,KANTAN_TIME(10,00),KANTAN_TIME(20,00))
+				IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
+					PRINTFORML %CALLNAME:캐릭터_ID%가 카드샵에 방문했다。
+				ENDIF
+				CFLAG:캐릭터_ID:현재위치 = 場所_CDS入口 + RAND:3
+				売れたカード:(RAND:30) = 1
+				来客者数 ++
+			ENDIF
+		ENDIF
 	ENDIF
 
 	;変な場所に行った人はVOID行き
@@ -1016,3 +1098,5 @@ FOR 캐릭터_ID,1,CHARANUM
 		CFLAG:캐릭터_ID:현재위치 = 場所_VOID
 	ENDIF
 NEXT
+
+

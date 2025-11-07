@@ -16,11 +16,17 @@
 #DIM DYNAMIC 寝室人数
 ;원거리이동中の処理
 
+
+
+$RESTART_NEW
 VARSET マップモード
 VARSET トイレ사용중
 VARSET 浴室사용중
 VARSET 자위中
 VARSET 寝室人数
+
+
+
 FOR 캐릭터_ID,1,CHARANUM
 	IF CFLAG:캐릭터_ID:현재위치 == 場所_トイレ
 		SIF CFLAG:캐릭터_ID:변기화 != 1
@@ -44,10 +50,10 @@ SIF 寝室人数 >= 2
 
 
 
-IF TFLAG:195
+IF TFLAG:원거리이동
 	TIME += 1
-	IF TFLAG:195 == CFLAG:MASTER:현재위치
-		TFLAG:195 = 0
+	IF TFLAG:원거리이동 == CFLAG:MASTER:현재위치
+		TFLAG:원거리이동 = 0
 		RETURN 0
 	ENDIF
 	CALL CHARA_MOVEMENT("이동")
@@ -77,7 +83,7 @@ IF TFLAG:195
 	NEXT
 
 	IF 캐릭터_ID
-		PRINTFORM %GETPLACENAME(CFLAG:MASTER:현재위치)%에서 %CALLNAME:캐릭터_ID%를 만나다
+		PRINTFORM %GETPLACENAME(CFLAG:MASTER:현재위치)%에서 %CALLNAME:캐릭터_ID%를 만났다
 		IF STRLENS(CSTR:MASTER:모은팬티) && RAND:2 && !CFLAG:캐릭터_ID:수면
 			PRINTL 
 			PRINTFORMW %CALLNAME:캐릭터_ID%에게 발각되어 신체검사를 받았다…
@@ -90,7 +96,7 @@ IF TFLAG:195
 			CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 0)
 			SETBIT CFLAG:캐릭터_ID:10 ,0
 			CSTR:MASTER:모은팬티 =
-			TFLAG:195 = 0
+			TFLAG:원거리이동 = 0
 			RETURN 0
 		ELSE
 			PRINTL ……　어떻게 할까요？
@@ -101,48 +107,27 @@ IF TFLAG:195
 				CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 4, 2)
 			ELSE
 				CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 4, 1)
-				TFLAG:195 = 0
+				TFLAG:원거리이동 = 0
 				RETURN 0
 			ENDIF
 		ENDIF
 	ENDIF
-	LOCAL:1 = IN_ROOM("MIN", 18, "CFLAG", 6)
-	;원거리이동
-	IF CAN_MOVE(CFLAG:MASTER:현재위치, TFLAG:195) & 1
-		;땅下室
-		IF TFLAG:195 == 17 && ABL:MASTER:신체능력 <= 0
-			PRINTW 문 안쪽에서 불길한 기운이 느껴진다…
-			TFLAG:195 = 0
-			RETURN 0
 
-		ELSEIF FLAG:(300 + TFLAG:195) && !HAS_DUPLICATE_KEY(TFLAG:195)
-			PRINTW 안쪽에서 자물쇠로 잠겨 있다…
-			TFLAG:195 = 0
-			RETURN 0
-		ELSE
-			CFLAG:MASTER:현재위치 = (TFLAG:195)
-			IF FLAG:(300 + TFLAG:195) && HAS_DUPLICATE_KEY(TFLAG:195)
-				PRINTFORML 여벌 열쇠를 사용하여 들어갔다
-				FOR 캐릭터_ID, 1,CHARANUM
-					IF CFLAG:캐릭터_ID:311 == TFLAG:195
-						PRINTFORMW %CALLNAME:캐릭터_ID%는 자고 있다
-						CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 3, 3)
-					ENDIF
-				NEXT
-			ENDIF			
-			TFLAG:195 = 0
-			RETURN 0
-		ENDIF
+	LOCAL:1 = IN_ROOM("MIN", 18, "CFLAG", 6)
+
+	;원거리이동(Bit1が上がってるとき：1か2が返される時)
+	IF CAN_MOVE(CFLAG:MASTER:현재위치, TFLAG:원거리이동) & 1
+		CFLAG:MASTER:현재위치 = TFLAG:遠距離이동
 		FOR 캐릭터_ID,1,CHARANUM
 			SIF CFLAG:캐릭터_ID:동행
 				CFLAG:캐릭터_ID:현재위치 = CFLAG:MASTER:현재위치
 		NEXT
-	ELSEIF TFLAG:195 == 場所_トイレ && トイレ사용중
+	ELSEIF TFLAG:원거리이동 == 場所_トイレ && トイレ사용중
 		CFLAG:MASTER:현재위치 = 3
 		PRINTW 현재 사용중인 것 같다……。
-		TFLAG:195 = 0
+		TFLAG:원거리이동 = 0
 		RETURN 0
-	ELSEIF TFLAG:195 == 場所_浴室 && 浴室사용중 >= 1
+	ELSEIF TFLAG:원거리이동 == 場所_浴室 && 浴室사용중 >= 1
 		PRINTFORMW 현재 목욕탕은 %CALLNAME:浴室사용중%가 사용 중인 것 같다。
 		PRINTFORML [1] - 들어간다！
 		PRINTFORML [2] - 그만두자……
@@ -166,15 +151,15 @@ IF TFLAG:195
 		ELSEIF RESULT == 2
 			CFLAG:MASTER:현재위치 = 3
 		ENDIF
-		TFLAG:195 = 0
+		TFLAG:원거리이동 = 0
 		RETURN 0
 
-	ELSEIF TFLAG:195 == 場所_寝室 && 자위中 >= 1
+	ELSEIF TFLAG:원거리이동 == 場所_寝室 && 자위中 >= 1
 		CALLFORM ONANII_EVENT(자위中)
-		TFLAG:195 = 0
+		TFLAG:원거리이동 = 0
 		RETURN 0
 	ELSE
-		CALL FARMOVE(TFLAG:195)
+		CALL FARMOVE(TFLAG:원거리이동)
 		CFLAG:MASTER:현재위치 = RESULT
 	ENDIF
 	RESTART
@@ -185,11 +170,7 @@ PRINTL
 PRINTL 이동 장소 선택
 PRINTL
 IF CFLAG:MASTER:현재위치 < 自宅部屋最大値
-	IF CFLAG:MASTER:현재위치 == 14
-		CALLFORM MAP_PRINT_SHOP
-	ELSE
-		CALLFORM MAP_PRINT_1
-	ENDIF
+	CALLFORM MAP_PRINT_1
 ENDIF
 PRINTL 
 CUSTOMDRAWLINE ―
@@ -224,35 +205,33 @@ FOR LOCAL,0, 20+1
 NEXT
 CUSTOMDRAWLINE ―
 
-SIF ITEM:천년도어 >= 1
-	PRINTFORML [500] - 차원 여행하기
+IF ITEM:천년도어 >= 1
+	PRINTFORM [500] - 차원 여행하기
+	PRINTFORM %"",20%
+ENDIF
+SIF ITEM:샵운영권 == 1
+	PRINTBUTTON @"[510] - 마이샵으로 간다",913
+PRINTFORM 
+PRINTFORML 
 CUSTOMDRAWLINE ―
-
 PRINT [100] - 뒤로
-
 BINPUT
+
+
 IF RESULT == 100
 	RETURN 0
 ELSEIF CFLAG:MASTER:현재위치 == RESULT
 	RETURN 0
 ELSEIF CAN_MOVE(CFLAG:MASTER:현재위치, RESULT) & 1
 	VARSET 追跡설정_ID
-	IF FLAG:(300 + RESULT) && !HAS_DUPLICATE_KEY(RESULT)
-		PRINTW 안쪽에서 자물쇠로 잠겨 있다…
-		RESTART
-	ELSE
-		CFLAG:MASTER:현재위치 = RESULT
-		IF FLAG:(300 + RESULT) && HAS_DUPLICATE_KEY(RESULT)
-			PRINTFORML 여벌 열쇠를 사용하여 들어갔다
-		ENDIF
-	ENDIF
+	;PRINTFORML ココを通過！
 
-	IF RESULT == 11 && トイレ사용중
-		CFLAG:MASTER:현재위치 = 3
+	CFLAG:MASTER:현재위치 = RESULT
+
+	IF RESULT == 場所_トイレ && トイレ사용중
+		CFLAG:MASTER:현재위치 = 場所_洗面所
 		PRINTW 현재 사용중인 것 같다……。
-		RESTART
-
-
+		GOTO RESTART_NEW
 	ELSEIF RESULT == 場所_浴室 && 浴室사용중 >= 1
 		PRINTFORMW 현재 목욕탕은 %CALLNAME:浴室사용중%가 사용 중인 것 같다。
 		PRINTFORML [1] - 들어간다！
@@ -286,7 +265,7 @@ ELSEIF CAN_MOVE(CFLAG:MASTER:현재위치, RESULT) & 1
 	ENDIF
 ELSE
 	VARSET 追跡설정_ID
-	TFLAG:195 = RESULT
+	TFLAG:원거리이동 = RESULT
 	CALL FARMOVE(RESULT)
 	;현재위치を更新し、次も이동の扱いにする
 	CFLAG:MASTER:현재위치 = RESULT
@@ -310,6 +289,8 @@ IF INRANGE(マップモード,1,2)
 	보정 = 100
 ELSEIF INRANGE(マップモード,3,4)
 	보정 = 200
+ELSEIF マップモード == 90
+	보정 = 900
 ENDIF
 
 ;천년スマホを所持していたら、外にいる캐릭터も見れる
@@ -345,26 +326,30 @@ IF 色취득플래그 == 0
 ENDIF
 
 ;MASTER원거리이동
-;ARG:0	最終目的땅
-;RETURN	今回이동するところ
-@FARMOVE(ARG:0)
+@FARMOVE(이동_最終目的地)
 ;LOCAL一覧
-
-;0	현재의 위치
-;1	暫定目的땅
 #DIM 이동_현재위치
-#DIM 이동_暫定目的땅
-
+#DIM 이동_暫定目的地
+#DIM DYNAMIC 이동_最終目的地
+#DIM DYNAMIC 連続カウンタ
 ;현재위치취득
 이동_현재위치 = CFLAG:MASTER:현재위치
+;暫定目的地결정
+이동_暫定目的地 = 이동_最終目的地
 
-;暫定目的땅결정
-이동_暫定目的땅 = ARG:0
 $INPUT_LOOP
-;暫定目的땅に直接이동できる場合
-IF CAN_MOVE(CFLAG:MASTER:현재위치, 이동_暫定目的땅) & 1
+
+IF 連続カウンタ >= 10
+	PRINTFORML 행선지가 없습니다！　방으로 돌아갑니다
+	CFLAG:MASTER:현재위치 = 場所_寝室
+	RETURN 場所_寝室
+ENDIF
+
+
+;暫定目的地に直接이동できる場合
+IF CAN_MOVE(CFLAG:MASTER:현재위치, 이동_暫定目的地) & 1
 	;そこに이동
-	RETURN 이동_暫定目的땅
+	RETURN 이동_暫定目的地
 ENDIF
 
 ;袋小路から行ける場所は固定なので、そこを目손가락す
@@ -377,88 +362,98 @@ IF 이동_현재위치 == 場所_キッチン
 	RETURN 場所_ダイニング
 ENDIF
 ;ベランダからはリビングのみ
-IF (이동_현재위치 == 場所_ベランダ)
+IF 이동_현재위치 == 場所_ベランダ
 	RETURN 場所_リビング
 ENDIF
 
-IF (이동_현재위치 == 場所_車庫)
+IF 이동_현재위치 == 場所_車庫
 	RETURN 場所_玄関
 ENDIF
 
-IF (이동_현재위치 == 場所_子供部屋)
+IF 이동_현재위치 == 場所_子供部屋
 	RETURN 場所_リビング
 ENDIF
 
-;直接이동できない경우、1つ近い위치を暫定目的땅に설정し直してループ
-SELECTCASE 이동_暫定目的땅
+IF 이동_현재위치 == 場所_CDS入口
+	RETURN 場所_玄関
+ENDIF
+
+IF 이동_현재위치 == 場所_CDSレジ裏
+	RETURN 場所_玄関
+ENDIF
+
+;直接이동できない경우、1つ近い위치を暫定目的地に설정し直してループ
+SELECTCASE 이동_暫定目的地
 	CASE 場所_玄関
 		;玄関に直接行けない경우、廊下を目손가락す
-		이동_暫定目的땅 = 場所_廊下
+		이동_暫定目的地 = 場所_廊下
 	CASE 場所_廊下
 		;廊下を目손가락す경우、現在땅が2か4なら3を目손가락す
 		IF (이동_현재위치 ==場所_トイレ) || (이동_현재위치 == 場所_浴室)
-			이동_暫定目的땅 = 場所_洗面所
+			이동_暫定目的地 = 場所_洗面所
 		ELSE
 		;それ 이외의 (直接行けない)場所からは、5を目손가락す
-			이동_暫定目的땅 = 場所_ダイニング
+			이동_暫定目的地 = 場所_ダイニング
 		ENDIF
 	CASE 場所_洗面所 
 		;洗面所に直接行けない경우、2を目손가락す
-		이동_暫定目的땅 = 場所_廊下 
+		이동_暫定目的地 = 場所_廊下 
 	CASE 場所_浴室
 		;浴室に直接行けない경우、3を目손가락す
-		이동_暫定目的땅 = 場所_洗面所 
+		이동_暫定目的地 = 場所_洗面所 
 	CASE 場所_ダイニング
 		;ダイニングに直接行けない경우、7を目손가락す
 		IF (이동_현재위치 == 場所_寝室) || (이동_현재위치 == 場所_収納) || (이동_현재위치 == 場所_ベランダ)
-			이동_暫定目的땅 = 場所_リビング
+			이동_暫定目的地 = 場所_リビング
 		;それ 이외의 (直接行けない)場所からは、2を目손가락す
 		ELSE
-			이동_暫定目的땅 = 場所_廊下 
+			이동_暫定目的地 = 場所_廊下 
 		ENDIF
 	CASE 場所_キッチン
 		;キッチンに直接行けない경우、5を目손가락す
-		이동_暫定目的땅 = 場所_ダイニング
+		이동_暫定目的地 = 場所_ダイニング
 	CASE 場所_リビング
 		;リビングに直接行けない경우、8を目손가락す
 		IF (이동_현재위치 == 場所_収納)
-			이동_暫定目的땅 = 場所_寝室
+			이동_暫定目的地 = 場所_寝室
 		;それ 이외의 (直接行けない)場所からは、5を目손가락す
 		ELSE
-			이동_暫定目的땅 = 場所_ダイニング 
+			이동_暫定目的地 = 場所_ダイニング 
 		ENDIF
 	CASE 場所_寝室 
 		;寝室に直接行けない경우、7を目손가락す
-		이동_暫定目的땅 = 場所_リビング
+		이동_暫定目的地 = 場所_リビング
 	CASE 場所_収納
 		;クローゼットに直接行けない경우、8を目손가락す
-		이동_暫定目的땅 = 8
+		이동_暫定目的地 = 8
 	CASE 場所_ベランダ
 		;ベランダに直接行けない경우、7を目손가락す
-		이동_暫定目的땅 = 場所_リビング
+		이동_暫定目的地 = 場所_リビング
 	CASE 場所_トイレ
 		;トイレに直接行けない경우、3を目손가락す
-		이동_暫定目的땅 = 場所_洗面所 
+		이동_暫定目的地 = 場所_洗面所 
 	CASE 場所_子供部屋
 		;子供部屋に直接行けない경우、7を目손가락す
-		이동_暫定目的땅 = 場所_リビング
+		이동_暫定目的地 = 場所_リビング
 		
 	CASE 場所_車庫
-		이동_暫定目的땅 = 場所_玄関
-
-
-
+		이동_暫定目的地 = 場所_玄関
 	CASE 場所_中継地点
-		;子供部屋に直接行けない경우、7を目손가락す
-		이동_暫定目的땅 = 場所_収納
+		이동_暫定目的地 = 場所_収納
+
+		CASE 場所_CDSレジ裏
+		이동_暫定目的地 = 場所_玄関
+	CASE 場所_CDS入口
+		이동_暫定目的地 = 場所_玄関
 		
 ENDSELECT
+連続カウンタ ++
 GOTO INPUT_LOOP
 
 @HAS_DUPLICATE_KEY, ARG
 #FUNCTION
 FOR LOCAL, 1,CHARANUM
-	IF CFLAG:LOCAL:311 == ARG
+	IF CFLAG:LOCAL:시작위치 == ARG
 		SIF TALENT:LOCAL:연모
 			RETURNF 1
 	ENDIF

@@ -243,72 +243,76 @@ RETURN 1
 SELECTCASE ARG
 	;玄関
 	;2廊下と直通
-	CASE 1
-		SIF ARG:1 == 2
+	CASE 場所_玄関
+		SIF ARG:1 == 場所_廊下
 			RETURNF 1
-		SIF ARG:1 == 13
+		SIF ARG:1 == 場所_車庫
+			RETURNF 1
+		SIF ARG:1 == 場所_CDS入口
+			RETURNF 1
+		SIF ARG:1 == 場所_CDSレジ裏
 			RETURNF 1
 	;廊下
 	;1玄関、3洗面所、5ダイニングと直通
-	CASE 2
-		SIF ARG:1 == 1
+	CASE 場所_廊下
+		SIF ARG:1 == 場所_玄関
 			RETURNF 1
-		SIF ARG:1 == 3
+		SIF ARG:1 == 場所_洗面所
 			RETURNF 1
-		SIF ARG:1 == 5
+		SIF ARG:1 == 場所_ダイニング
 			RETURNF 1
 	;洗面所
 	;2広間、5주방、9守衛小屋に이동可能、10庭と直通
-	CASE 3
-		SIF ARG:1 == 2
+	CASE 場所_洗面所
+		SIF ARG:1 == 場所_廊下
 			RETURNF 1
-		SIF ARG:1 == 4
+		SIF ARG:1 == 場所_浴室
 			RETURNF 3
-		SIF ARG:1 == 11
+		SIF ARG:1 == 場所_トイレ
 			RETURNF 1
 	;浴室
 	;3洗面所に이동可能
-	CASE 4
+	CASE 場所_浴室
 		SIF ARG:1 == 3
 			RETURNF 1
 	;ダイニング
 	;2廊下、6キッチン、7リビング、8寝室に이동可能
-	CASE 5
-		SIF ARG:1 == 2
+	CASE 場所_ダイニング
+		SIF ARG:1 == 場所_廊下
 			RETURNF 1
-		SIF ARG:1 == 6
+		SIF ARG:1 == 場所_キッチン
 			RETURNF 1
-		SIF ARG:1 == 7
+		SIF ARG:1 == 場所_リビング
 			RETURNF 1
-		SIF ARG:1 == 8
+		SIF ARG:1 == 場所_寝室
 			RETURNF 1
 	;キッチン
 	;5ダイニングに이동可能
-	CASE 6
-		SIF ARG:1 == 5
+	CASE 場所_キッチン
+		SIF ARG:1 == 場所_ダイニング
 			RETURNF 1
 	;リビング
 	;5ダイニング、8寝室、10ベランダに이동可能
-	CASE 7
-		SIF ARG:1 == 5
+	CASE 場所_リビング
+		SIF ARG:1 == 場所_ダイニング
 			RETURNF 1
-		SIF ARG:1 == 8
+		SIF ARG:1 == 場所_寝室
 			RETURNF 1
-		SIF ARG:1 == 10
+		SIF ARG:1 == 場所_ベランダ
 			RETURNF 3
-		SIF ARG:1 == 12
+		SIF ARG:1 == 場所_子供部屋
 			RETURNF 3
 	;寝室
 	;7リビング、9クローゼットに이동可能
-	CASE 8
-		SIF ARG:1 == 7
+	CASE 場所_寝室
+		SIF ARG:1 == 場所_リビング
 			RETURNF 1
-		SIF ARG:1 == 9
+		SIF ARG:1 == 場所_収納
 			RETURNF 1
 	;クローゼット
 	;8寝室に이동可能&천년ドアで中継点へ
-	CASE 9
-		SIF ARG:1 == 8
+	CASE 場所_収納
+		SIF ARG:1 == 場所_寝室
 			RETURNF 1
 
 		IF ITEM:천년도어 >= 1
@@ -317,19 +321,26 @@ SELECTCASE ARG
 		ENDIF
 	;ベランダ
 	;7リビングと直通
-	CASE 10
-		SIF ARG:1 == 7
+	CASE 場所_ベランダ
+		SIF ARG:1 == 場所_リビング
 			RETURNF 3
 	;トイレ
 	;3洗面所に이동可能
-	CASE 11
-		SIF ARG:1 == 3
+	CASE 場所_トイレ
+		SIF ARG:1 == 場所_洗面所
 			RETURNF 1
-	CASE 12
-		SIF ARG:1 == 7
+	CASE 場所_子供部屋
+		SIF ARG:1 == 場所_リビング
 			RETURNF 1
-	CASE 13
-		SIF ARG:1 == 1
+	CASE 場所_車庫
+		SIF ARG:1 == 場所_玄関
+			RETURNF 1
+
+	CASE 場所_CDSレジ裏
+		SIF ARG:1 == 場所_玄関
+			RETURNF 1
+	CASE 場所_CDS入口
+		SIF ARG:1 == 場所_玄関
 			RETURNF 1
 ENDSELECT
 
@@ -372,7 +383,7 @@ IF (CAN_MOVE(CFLAG:MASTER:현재위치, CFLAG:캐릭터_ID:현재위치) == 2 ||
 				;CALL REMOVE_CHARACTER_TO_ROOM(캐릭터_ID)
 
 			ELSE
-				IF CFLAG:캐릭터_ID:시작위치 == 100
+				IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
 					IF TALENT:캐릭터_ID:듀얼리스트
 						PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 자신의 집으로 돌아왔다。
 						CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 6)
@@ -404,7 +415,7 @@ CFLAG:캐릭터_ID:데이트중 = 0
 CFLAG:캐릭터_ID:수면 = 1
 CALL RESET_SEXCON(캐릭터_ID)
 
-@CHARA_AWAKE, ARG
+@CHARA_AWAKE(ARG)
 IF CFLAG:ARG:수면 && CFLAG:ARG:현재위치 == CFLAG:MASTER:현재위치
 	SIF ARG > 0
 		PRINTFORMW %CALLNAME:ARG%가 눈을 떴다
@@ -426,7 +437,7 @@ FLAG:(300 + CFLAG:ARG:현재위치) = 0
 SIF CFLAG:ARG:알바중 == 1
 	RETURN 0
 ;0時～7の時間帯(or쇠약)は流石に寝てる
-SIF GROUPMATCH(TIME:2,8,1) || CFLAG:ARG:쇠약
+SIF GROUPMATCH(TIME:2,9,1) || CFLAG:ARG:쇠약
 	RETURN 1
 RETURN 0
 
@@ -444,11 +455,11 @@ SIF TALENT:ARG:연모 >= 1 && (CFLAG:ARG:데이트중 == 1 || CFLAG:ARG:현재�
 
 IF TALENT:ARG:연령 <= -1
 	;子供は18時～7の時間帯(or쇠약)には帰る
-	SIF GROUPMATCH(TIME:2,6,7,8,1)
+	SIF GROUPMATCH(TIME:2,7,8,9,10,1)
 		RETURN 1
 ELSE
 	;それ以外は20時～7の時間帯(or쇠약)には帰る
-	SIF GROUPMATCH(TIME:2,7,8,1)
+	SIF GROUPMATCH(TIME:2,8,9,10,1)
 		RETURN 1
 ENDIF
 RETURN 0

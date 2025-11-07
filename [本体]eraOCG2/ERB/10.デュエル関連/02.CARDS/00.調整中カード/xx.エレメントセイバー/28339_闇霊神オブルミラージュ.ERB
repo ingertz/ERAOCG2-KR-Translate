@@ -1,0 +1,172 @@
+﻿@CARDNAME_28339,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 암령신 오블미라지
+	CASE "略称"
+		RESULTS = 암령신ＵＭ
+	CASE "カテゴリ"
+		RESULTS:0 = 령신
+ENDSELECT
+
+
+@CARD_28339(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2200
+	CASE "특수불가"
+		RETURN 1
+	CASE "소환불가"
+		RETURN 1
+	CASE "レア度"
+		RETURN RARE
+	CASE "추가日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28339(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드는 일반 소환할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL 자신 묘지의 어둠속성 몬스터가 ５장인 경우에만 특수 소환할 수 있다。
+PRINTL 이 방법에 의한 "암령신 오블미라지"의 특수 소환은 １턴에 １번밖에 할 수 없으며、
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(2,특수소환時)
+PRINTL ①：이 카드가 특수 소환된 경우에 발동할 수 있다。자신의 덱에서 공격력 １５００ 이하의 몬스터 １장을 패에 넣는다。
+CALLFORM CARD_ABLE(3,戦破壊→묘지)
+PRINTL ②：이 카드가 필드에서 벗어난 경우에 발동한다。이 턴、이하의 효과를 적용한다。
+PRINTL ●서로의 플레이어는 어둠속성 몬스터로 공격할 수 없다。
+
+@CARDCAN_28339(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 속성数 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28339)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,28339)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,28339,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	;자신の묘지に어둠속성モンスターが５体存在する場合のみ특수소환可能
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,28339)
+		RETURN 0
+	;「クリッター」の条件と同等
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件攻撃力 = 1500
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_3(듀얼리스트,28339)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 短紋章起動
+	RETURN 1
+ENDIF
+
+@CARDFORCE_28339(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+VARSET RESULT
+IF 종류 == 戦破壊→묘지
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28339(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28339,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+	ENDIF
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28339,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件攻撃力 = 1500
+		효과条件종류 = モン全般
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28339,3)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,28339,短紋章予約)
+	ENDIF
+ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과条件속성 = 어둠속성
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦無")
+	CALL FULLRESET
+	효과条件속성 = 어둠속성
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"戦無")
+ENDIF
+
+

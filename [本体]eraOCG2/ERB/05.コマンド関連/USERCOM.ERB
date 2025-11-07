@@ -43,7 +43,7 @@ IF 듀얼モード == 0
 			ENDIF
 			PRINTC 이동[400]
 			RESETCOLOR
-		ELSEIF CFLAG:MASTER:현재위치 >= 50
+		ELSEIF SANSAKU_AREA(CFLAG:MASTER:현재위치)
 			CALL COM_ABLE600
 			IF RESULT == 1
 				SETCOLOR C_GREEN
@@ -51,6 +51,15 @@ IF 듀얼モード == 0
 				SETCOLOR C_GRAY
 			ENDIF
 			PRINTC 산책한다[600]
+			RESETCOLOR
+		ELSEIF INRANGE(CFLAG:MASTER:현재위치,500,600)
+			CALL COM_ABLE610
+			IF RESULT == 1
+				SETCOLOR C_GREEN
+			ELSE 
+				SETCOLOR C_GRAY
+			ENDIF
+			PRINTC 바깥세계산책[610]
 			RESETCOLOR
 		ENDIF
 		CALL COM_ABLE402
@@ -439,11 +448,11 @@ FOR  カウンタ,0,799
 		PRINTL
 
 	;표시しないように
-	SIF カウンタ == 200 || カウンタ == 201 || カウンタ == 202 || カウンタ == 203
+	SIF GROUPMATCH(カウンタ,200,201,202,203)
 		CONTINUE
 
 	;EXCom組
-	SIF カウンタ == 400 || カウンタ == 402 || カウンタ == 456 || カウンタ == 460 || カウンタ == 435 || カウンタ == 490 || カウンタ == 600
+	SIF GROUPMATCH(カウンタ,400,402,456,460,435,490,600,610)
 		CONTINUE
 
 	TRYCALLFORM COM_ABLE{カウンタ}
@@ -538,6 +547,11 @@ FOR  カウンタ,0,799
 
 		ELSEIF カウンタ == 403 && BATHROOM(CFLAG:MASTER:현재위치)
 			PRINTFORMC 목욕탕에서 쉰다[{カウンタ,3}]
+		ELSEIF カウンタ == 419
+
+			CALLFORM COMNAME_SHISETU
+			PRINTFORMC %RESULTS%[{カウンタ,3}]
+			
 		ELSEIF カウンタ == 431
 			SETCOLOR C_GREEN
 			PRINTFORMC 의뢰를 해낸다[{カウンタ,3}]

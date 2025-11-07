@@ -12,14 +12,21 @@ CUSTOMDRAWLINE —
 PRINTFORML "카드샵"
 CUSTOMDRAWLINE —
 PRINTFORML 
-PRINTFORML [1] - 팩의 보충을 한다
-PRINTFORML [2] - 싱글 카드를 놓는다
-PRINTFORML [3] - 알바를 파견한다
+PRINTFORML [ 1] - 팩의 보충을 한다
+PRINTFORML [ 2] - 싱글 카드를 놓는다
+PRINTFORML [ 3] - 알바를 파견한다
+
+PRINTFORML 
 IF ショップ運営中 == 0
-	PRINTFORML [4] - 샵을 재개한다
+	SETCOLOR C_YELLOW
+	PRINTFORML [10] - 샵을 재개한다
 ELSE
-	PRINTFORML [4] - 샵을 휴업한다
+	SETCOLOR C_GRAY
+	PRINTFORML [10] - 샵을 휴업한다
 ENDIF
+RESETCOLOR
+
+PRINTFORML 
 CUSTOMDRAWLINE —
 PRINTL
 PRINTL [100] - 돌아간다
@@ -32,8 +39,23 @@ ELSEIF RESULT == 1
 ELSEIF RESULT == 2
 	CALL CARDSHOP_SET_SINGLES
 ELSEIF RESULT == 3
-	CALL MONSTER_LIST(22)
-ELSEIF RESULT == 4
+	CUSTOMDRAWLINE —
+	PRINTFORML [ 1] - 알바를 파견한다
+	PRINTFORML [ 2] - 알바 복장을 변경한다
+	PRINTFORML 
+	CUSTOMDRAWLINE —
+	PRINTL
+	PRINTL [100] - 돌아간다
+	BINPUT
+	IF RESULT == 100
+		GOTO CHOICE_LOOP
+	ELSEIF RESULT == 1
+		CALL MONSTER_LIST(22)
+	ELSEIF RESULT == 2
+		CALL CARDSHOP_CHARA_CLOTHES
+	ENDIF
+	GOTO CHOICE_LOOP
+ELSEIF RESULT == 10
 	ショップ運営中 ^= 1
 ENDIF
 GOTO CHOICE_LOOP
@@ -103,6 +125,7 @@ ELSEIF RESULT == 8888
 	選択モード ++
 	SIF 選択モード > 3
 		選択モード = 0
+	GOTO PACK_LOOP
 ELSEIF INRANGE(RESULT,0,1000)
 	選択パック_ID = パックセット:RESULT
 	SELECTCASE 選択モード
@@ -150,6 +173,9 @@ ENDIF
 #DIM DYNAMIC カード_ID
 #DIM DYNAMIC 選択カードID
 #DIM DYNAMIC 選択位置
+#DIM DYNAMIC 설정RND
+#DIM DYNAMIC 설정可能カード,100000
+
 
 $DECK_LOOP
 CUSTOMDRAWLINE ―
@@ -167,7 +193,7 @@ FOR カウンタ,0,30
 		CALLFORM CARDNAME_{カード_ID}("名前")
 		STRLENS RESULTS
 		IF RESULT >= 41
-			SUBSTRING RESULTS, 0, 39
+			SUBSTRING RESULTS, 0, 38
 			RESULTS = 《%RESULTS%…》
 			PRINTFORM [{カウンタ,3}] %RESULTS,45,LEFT%
 		ELSE
@@ -178,10 +204,58 @@ FOR カウンタ,0,30
 NEXT
 PRINTL
 CUSTOMDRAWLINE ―
-PRINTL [9999] - 戻る
+PRINTFORML [9999] - 돌아간다　　　　　　　　　　[7777] - 무작위로 설정　　　　　　　　　　[8888] - 리셋한다
 BINPUT
 IF RESULT == 9999
 	RETURN 0
+
+ELSEIF RESULT == 7777
+	PRINTFORML 무작위로 싱글 카들르 세트하시겠습니까？
+	PRINTFORML [0] - 예
+	PRINTFORML [1] - 아니오
+	BINPUT
+	SIF RESULT == 1
+		GOTO DECK_LOOP
+
+	FOR カード_ID,1000,100000
+		TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
+		SIF MATCH(RESULTS,"듀얼리스트")
+			CONTINUE
+		TRYCALLFORM CARD_{カード_ID}("生産불가")
+		SIF RESULT == 1
+			CONTINUE
+
+		CALL CARDPRICE(カード_ID,"レア度")
+		SIF !GROUPMATCH(RESULT,3,4)
+			CONTINUE
+		SIF ITEM:カード_ID <= 1
+			CONTINUE
+		설정可能カード:カウンタB = カード_ID
+		カウンタB ++
+	NEXT
+	
+	FOR カウンタ,0,30
+		SIF 売出カード:カウンタ >= 1
+			CONTINUE
+		설정RND = RAND:カウンタB
+		選択カードID = 설정可能カード:설정RND
+		IF ITEM:選択カードID >= 1
+			売出カード:カウンタ = 選択カードID
+			ITEM:選択カードID --
+			ARRAYREMOVE 설정可能カード, 설정RND, 1
+			カウンタB --
+		ENDIF
+	NEXT
+
+	GOTO DECK_LOOP
+ELSEIF RESULT == 8888
+	FOR カウンタ,0,30
+		SIF 売出カード:カウンタ <= 0
+			CONTINUE
+		ITEM:(売出カード:カウンタ) ++
+		売出カード:カウンタ = 0
+	NEXT
+	GOTO DECK_LOOP
 ELSE
 	選択位置 = RESULT
 	;選択位置にカードが存在していたら、そのカードを置く。
@@ -199,6 +273,8 @@ ELSE
 		;選択位置にカードが存在していたら、そのカードを置く。
 		選択カードID = RESULT
 		売出カード:選択位置 = 選択カードID
+		;PRINTFORML 選択カードID:{選択カードID}
+
 		ITEM:選択カードID --
 		GOTO DECK_LOOP
 	ELSE
@@ -208,6 +284,58 @@ ELSE
 ENDIF
 
 
+
+@CARDSHOP_CHARA_CLOTHES
+#DIM DYNAMIC 캐릭터_ID
+
+
+$CHOICE_LOOP
+CUSTOMDRAWLINE —
+PRINTFORML 
+FOR 캐릭터_ID,0,CHARANUM
+	SIF CFLAG:캐릭터_ID:아르바이트 != PT_カドショ
+		CONTINUE
+	PRINTFORM [{캐릭터_ID,4}] - %CALLNAME:캐릭터_ID,40,LEFT%　
+	IF CFLAG:캐릭터_ID:알바의상 == 511 || CFLAG:캐릭터_ID:알바의상 == 0
+		PRINTFORM 「앞치마」
+	ELSEIF CFLAG:캐릭터_ID:알바의상 == 500
+		PRINTFORM 「바니걸」
+	ELSEIF CFLAG:캐릭터_ID:알바의상 == 501
+		PRINTFORM 「메이드의상」
+	ELSEIF CFLAG:캐릭터_ID:알바의상 == 502
+		PRINTFORM 「차이나의상」
+	ELSEIF CFLAG:캐릭터_ID:알바의상 == 504
+		PRINTFORM 「마법소녀」
+	ELSEIF CFLAG:캐릭터_ID:알바의상 == 506
+		PRINTFORM 「무녀복」
+	ENDIF
+	PRINTFORML 
+NEXT
+CUSTOMDRAWLINE —
+PRINTL
+PRINTL [100] - 戻る
+BINPUT
+IF RESULT == 100
+	RETURN 0
+ELSE
+	CUSTOMDRAWLINE —
+	PRINTFORML　어느 의상을 입히시겠습니까？
+	CUSTOMDRAWLINE —
+	PRINTFORML [511] - 「앞치마」
+	PRINTFORML [500] - 「바니걸」
+	PRINTFORML [501] - 「메이드의상」
+	PRINTFORML [502] - 「차이나의상」
+	PRINTFORML [504] - 「마법소녀」
+	PRINTFORML [506] - 「무녀복」
+	CUSTOMDRAWLINE —
+	PRINTL
+	PRINTL [100] - 돌아간다
+	SIF RESULT == 100
+		GOTO CHOICE_LOOP
+	SIF CFLAG:캐릭터_ID:알바의상 == 0
+		CFLAG:캐릭터_ID:알바의상 = RESULT
+	CALL CLOTHES_SETTING(캐릭터_ID,CFLAG:캐릭터_ID:알바의상)
+ENDIF
 
 
 
@@ -229,32 +357,26 @@ ENDIF
 #DIM DYNAMIC パック_ID
 #DIM DYNAMIC 実売却数
 #DIM DYNAMIC 売却金額
-
+#DIM DYNAMIC シングル価格
 IF ショップ運営中 == 1
 	FOR パック_ID,0,1000
 		SIF 残BOX数:パック_ID <= 0
-			RETURN 0
-		IF RAND:3 == 0
-			売却変動値 = 20
-		ELSEIF RAND:2 == 0
-			売却変動値 = 10
-		ELSE
-			売却変動値 = 5
-		ENDIF
-
-		IF 売れ筋パック:パック_ID >= 1
+			CONTINUE
+		売却変動値 = 来客者数
+		IF MATCH(売れ筋パック,パック_ID)
 			売却変動値 = 売却変動値 * 2
 		ENDIF
 		実売却数 = RAND:売却変動値
 		SIF 実売却数 <= 残BOX数:パック_ID
 			実売却数 = 残BOX数:パック_ID
-		売却金額 += 実売却数 * 1500
 		残BOX数:パック_ID -= 実売却数
+		売却金額 += 実売却数 * 1500
+
 		SIF 残BOX数:パック_ID <= 0
 			残BOX数:パック_ID = 0
 	NEXT
 ENDIF
-
+VARSET 来客者数
 
 ;売れ筋パック설정
 IF DAY:3 == 30
@@ -273,6 +395,28 @@ IF DAY:3 == 30
 		売れ筋パック:カウンタ = 既存パック:(RAND:カウンタB)
 	NEXT
 ENDIF
+
+
+FOR カウンタ,0,30
+	VARSET シングル価格
+	;PRINTFORML [{カウンタ}]売れたカード:カウンタ:{売れたカード:カウンタ} / 売出カード:カウンタ:{売出カード:カウンタ}
+	IF 売れたカード:カウンタ == 1 && 売出カード:カウンタ >= 1
+		TRYCALLFORM CARDNAME_{売出カード:カウンタ}("名前")
+		PRINTFORML 쇼케이스의 %RESULTS%가 팔렸습니다
+		売出カード:カウンタ = 0
+		IF RAND:3 == 0
+			シングル価格 = 200 + (RAND:50) * 100
+		ELSEIF RAND:2 == 0
+			シングル価格 = 500 + (RAND:50) * 100
+		ELSE
+			シングル価格 = 1500 + (RAND:50) * 100
+		ENDIF
+		売却金額 += シングル価格
+	ENDIF
+NEXT
+VARSET 売れたカード
+
+
 
 IF ショップ運営中 == 1
 	IF DAY:3 == 15 || DAY:3 == 29

@@ -1,0 +1,192 @@
+@CARDNAME_54061,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 사령 공작
+	CASE "略称"
+		RESULTS = 사령 공작
+	CASE "カテゴリ"
+ 		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_54061(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1700
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_54061(종류)
+#DIM DYNAMIC 종류
+
+
+PRINTL 악마족 / 언데드족 몬스터×２
+PRINTL 이 카드의 컨트롤러는 자신 스탠바이 페이즈마다、５００LP를 지불하거나 이 카드를 파괴한다。
+PRINTL 이 카드명의 ②③의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(0, 지속효과)
+PRINTL ①：이 카드는 전투로는 파괴되지 않는다。
+CALL CARD_ABLE(2, 필드起動)
+PRINTL ②：자신 메인 페이즈에 발동할 수 있다。몬스터 １장을 소환한다。
+CALL CARD_ABLE(3, 묘지起動)
+PRINTL ③：묘지의 이 카드를 제외하고、자신 묘지의 레벨４ 이상의 악마족 / 언데드족 몬스터 １장을 대상으로 하고 발동할 수 있다。그 몬스터를 패에 넣는다。
+
+
+@CARDSUMMON_54061(듀얼리스트, 소환カード, EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件종족:0 = 악마족
+素材条件종족:1 = 언데드족
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트, 소환カード, 54061) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_54061(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 54061)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트, 54061)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트, 54061)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件종족:0 = 악마족
+	효과条件종족:1 = 언데드족
+	CALL 효과条件レベル_ADV(4, "以上")
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == ターン開始時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54061(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트, "自身", 場所, "戦耐")
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 54061, 2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종류 = モン全般
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트, "손패", ゾーン, 場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SUMMON_SHORI(듀얼리스트, 選択カード, "攻撃표시", 5)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 54061, 3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所)
+		CALL FULLRESET
+		효과条件종류 = モン全般
+		효과条件종족:0 = 악마족
+		효과条件종족:1 = 언데드족
+		CALL 효과条件レベル_ADV(4, "以上")
+		CALL CARD_ADD_BASIC(듀얼리스트, "묘지", ゾーン, 場所)
+	ENDIF
+ELSEIF 종류 == ターン開始時強制
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 54061)
+	IF RESULT == 0
+		IF GETVAR(@"ライフ_%듀얼리스트%") <= 500
+			CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 破壊行き)
+			RETURN 0
+		ENDIF
+		
+		PRINTL 라이프 포인트를 지불하시겠습니까？
+		CALL YN_CHOICE(듀얼리스트)
+		IF RESULT == はい
+			CALL LIFE_CHANGE(듀얼리스트, "減少", "コスト", 500)
+		ELSE
+			CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 破壊行き)
+		ENDIF
+	ENDIF
+ENDIF
+
+

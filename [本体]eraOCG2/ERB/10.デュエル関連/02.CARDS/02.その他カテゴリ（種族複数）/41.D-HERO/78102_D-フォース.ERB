@@ -73,20 +73,6 @@ ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == ターン終了時強制
-	SIF ターンプレイヤー == 듀얼리스트
-		RETURN 0
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件名前 = 데스티니 히어로 블루-D
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
 ENDIF
 
 @CARDEFFECT_78102(듀얼리스트,종류,ゾーン,場所)
@@ -121,6 +107,7 @@ ELSEIF 종류 == 지속효과
 	효과条件名前 = 데스티니 히어로 블루-D
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"追戦",1)
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+	CALL SET_PLAYER_INFO(듀얼리스트,"ドロースキップ", 3)
 ELSEIF 종류 == 攻守変動
 	CALL FULLRESET
 	효과範囲묘지 = 1
@@ -134,6 +121,4 @@ ELSEIF 종류 == 攻守変動
 		효과条件名前 = 데스티니 히어로 블루-D
 		CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻撃力修正)
 	ENDIF
-ELSEIF 종류 == ターン終了時強制
-	CALL SET_PLAYER_INFO(듀얼리스트,"ドロースキップ", 1)
 ENDIF

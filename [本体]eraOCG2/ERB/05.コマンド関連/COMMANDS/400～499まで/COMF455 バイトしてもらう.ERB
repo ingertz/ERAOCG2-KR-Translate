@@ -43,8 +43,6 @@ IF CFLAG:TARGET:아르바이트
 	BINPUT
 	IF RESULT == 0
 		CFLAG:TARGET:아르바이트 = 0
-;		CFLAG:TARGET:バイト衣装 = 0
-;		CFLAG:TARGET:バ先 = 0
 		RETURN 0
 	ELSEIF RESULT == 2
 		RETURN 0
@@ -189,6 +187,8 @@ ENDIF
 #DIMS DYNAMIC 参照先
 #DIM DYNAMIC 汎用플래그
 
+VARSET RESULT
+
 バイト종류 = CFLAG:캐릭터_ID:아르바이트
 SIF バイト종류 == 0
 	RETURN 0
@@ -214,6 +214,9 @@ CASE PT_바니
 		RETURN KANTAN_TIME(17,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(23,30)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "금", "토", "일")
+			RETURN 1
 	ENDIF
 CASE PT_메이드
 	IF 参照先 == "名前"
@@ -235,6 +238,9 @@ CASE PT_메이드
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(17,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "월", "수", "금")
+			RETURN 1
 	ENDIF
 CASE PT_巫女
 	IF 参照先 == "名前"
@@ -255,6 +261,9 @@ CASE PT_巫女
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(17,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "화", "목", "토")
+			RETURN 1
 	ENDIF
 CASE PT_편의점
 	IF 参照先 == "名前"
@@ -275,6 +284,9 @@ CASE PT_편의점
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(17,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "월", "수", "금")
+			RETURN 1
 	ENDIF
 CASE PT_スーパー
 	IF 参照先 == "名前"
@@ -295,6 +307,9 @@ CASE PT_スーパー
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(17,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "월", "수", "금")
+			RETURN 1
 	ENDIF
 CASE PT_ジム
 	IF 参照先 == "名前"
@@ -318,6 +333,9 @@ CASE PT_ジム
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(17,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "월", "수", "금")
+			RETURN 1
 	ENDIF
 CASE PT_ファミレス
 	IF 参照先 == "名前"
@@ -339,6 +357,9 @@ CASE PT_ファミレス
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(17,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "월", "수", "금")
+			RETURN 1
 	ENDIF
 CASE PT_教会
 	IF 参照先 == "名前"
@@ -364,6 +385,9 @@ CASE PT_教会
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(17,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "월", "수", "금")
+			RETURN 1
 	ENDIF
 CASE PT_使用人
 	IF 参照先 == "名前"
@@ -390,6 +414,8 @@ CASE PT_使用人
 		RETURN KANTAN_TIME(8,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(22,00)
+	ELSEIF 参照先 == "勤務日"
+		RETURN 1
 	ENDIF
 CASE PT_グラビア
 	IF 参照先 == "名前"
@@ -411,6 +437,9 @@ CASE PT_グラビア
 		RETURN KANTAN_TIME(15,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(20,00)
+	ELSEIF 参照先 == "勤務日"
+		SIF GROUPMATCH(GET_DAY(), "월", "수", "금")
+			RETURN 
 	ENDIF
 CASE PT_착유
 	IF 参照先 == "名前"
@@ -442,6 +471,8 @@ CASE PT_착유
 		RETURN KANTAN_TIME(17,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(23,30)
+	ELSEIF 参照先 == "勤務日"
+		RETURN 1
 	ENDIF
 CASE PT_信徒
 	IF 参照先 == "名前"
@@ -460,6 +491,8 @@ CASE PT_信徒
 		RETURN -1
 	ELSEIF 参照先 == "終了"
 		RETURN -1
+	ELSEIF 参照先 == "勤務日"
+		RETURN 1
 	ENDIF
 CASE PT_エロ配信者
 	IF 参照先 == "名前"
@@ -481,17 +514,22 @@ CASE PT_エロ配信者
 		RETURN KANTAN_TIME(23,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(24,00)
+	ELSEIF 参照先 == "勤務日"
+		RETURN 1
 	ENDIF
 CASE PT_カドショ
 	IF 参照先 == "名前"
 		RESULTS = 카드샵 점원
 	ELSEIF 参照先 == "衣装"
 		;メイドセット
+	SIF CFLAG:캐릭터_ID:알바의상 == 0
+			CFLAG:캐릭터_ID:알바의상 = 511
+		CALL CLOTHES_SETTING(캐릭터_ID,CFLAG:캐릭터_ID:알바의상)
 		RETURN 1
 	ELSEIF 参照先 == "行先"
 		SIF 汎用플래그 == 1
-			CFLAG:캐릭터_ID:현재위치 = 場所_식사通り
-		RETURN 場所_식사通り
+			CFLAG:캐릭터_ID:현재위치 = 場所_CDS入口 + RAND:3
+		RETURN 場所_CDS入口
 	ELSEIF 参照先 == "給与"
 		RETURN 0
 	ELSEIF 参照先 == "경험"
@@ -501,6 +539,8 @@ CASE PT_カドショ
 		RETURN KANTAN_TIME(10,00)
 	ELSEIF 参照先 == "終了"
 		RETURN KANTAN_TIME(22,00)
+	ELSEIF 参照先 == "勤務日"
+		RETURN 1
 	ENDIF
 ENDSELECT
 

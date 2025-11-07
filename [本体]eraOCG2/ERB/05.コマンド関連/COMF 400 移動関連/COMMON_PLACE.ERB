@@ -193,6 +193,14 @@ SELECTCASE ARG
 		RETURNF "근미래 도시"
 
 
+	CASE 場所_CDS入口
+		RETURNF "마이카드샵"
+	CASE 場所_CDSケース
+		RETURNF "쇼케이스앞"
+	CASE 場所_CDS듀얼
+		RETURNF "듀얼에리어"
+	CASE 場所_CDSレジ裏
+		RETURNF "카드샵 레지"
 
 
 	[SKIPSTART]
@@ -237,7 +245,7 @@ SELECTCASE ARG
 	CASE 場所_캐릭터家
 		RETURNF 캐릭터家_名称
 
-	CASE 場所_VOID
+	CASE 場所_VOID,場所_NULLVOID
 		RETURNF "카드 안"
 ENDSELECT
 RETURNF ""
@@ -249,98 +257,106 @@ RETURNF ""
 ;ARGS:1 대상となる変数の名前
 ;ARG:1 変数の番号
 ;-------------------------------------------------
-@IN_ROOM, ARGS, ARG, ARGS:1, ARG:1
+@IN_ROOM(MAXMIN설정, 部屋番号, 설정플래그, 変数値)
 #FUNCTION
+#DIMS DYNAMIC MAXMIN설정
+#DIMS DYNAMIC 설정플래그
+#DIM DYNAMIC 部屋番号
+#DIM DYNAMIC 変数値
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC 変数_설정値
+#DIM DYNAMIC 返し値
+
 VARSET LOCAL, 0
-SELECTCASE ARGS:1
+SELECTCASE 설정플래그
 	CASE "CFLAG"
-		FOR LOCAL, 1,CHARANUM
-			SIF LOCAL == MASTER
+		FOR 캐릭터_ID, 1,CHARANUM
+			SIF 캐릭터_ID == MASTER
 				CONTINUE
-			SIF CFLAG:LOCAL:현재위치 != ARG
+			SIF CFLAG:캐릭터_ID:현재위치 != 部屋番号
 				CONTINUE
 			IF LOCAL:3++ == 0
-				LOCAL:1 = CFLAG:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MAX" && LOCAL:1 < CFLAG:LOCAL:(ARG:1)
-				LOCAL:1 = CFLAG:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MIN" && LOCAL:1 > CFLAG:LOCAL:(ARG:1)
-				LOCAL:1 = CFLAG:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF LOCAL:1 == CFLAG:LOCAL:(ARG:1) && RAND:2
-				LOCAL:1 = CFLAG:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
+				変数_설정値 = CFLAG:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MAX" && 変数_설정値 < CFLAG:캐릭터_ID:変数値
+				変数_설정値 = CFLAG:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MIN" && 変数_설정値 > CFLAG:캐릭터_ID:変数値
+				変数_설정値 = CFLAG:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF 変数_설정値 == CFLAG:캐릭터_ID:変数値 && RAND:2
+				変数_설정値 = CFLAG:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
 			ENDIF
 		NEXT
-		RETURNF LOCAL:2
+		RETURNF 返し値
 	CASE "TCVAR"
-		FOR LOCAL, 1,CHARANUM
-			SIF LOCAL == MASTER
+		FOR 캐릭터_ID, 1,CHARANUM
+			SIF 캐릭터_ID == MASTER
 				CONTINUE
 			IF 人祓いモード == 1
-				SIF CFLAG:LOCAL:데이트중 != 1
+				SIF CFLAG:캐릭터_ID:데이트중 != 1
 					CONTINUE
 			ELSE
-				SIF CFLAG:LOCAL:현재위치 != ARG
+				SIF CFLAG:캐릭터_ID:현재위치 != 部屋番号
 					CONTINUE
 			ENDIF
 			IF LOCAL:3++ == 0
-				LOCAL:1 = TCVAR:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MAX" && LOCAL:1 < TCVAR:LOCAL:(ARG:1)
-				LOCAL:1 = TCVAR:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MIN" && LOCAL:1 > TCVAR:LOCAL:(ARG:1)
-				LOCAL:1 = TCVAR:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF LOCAL:1 == TCVAR:LOCAL:(ARG:1) && RAND:2
-				LOCAL:1 = TCVAR:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
+				変数_설정値 = TCVAR:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MAX" && 変数_설정値 < TCVAR:캐릭터_ID:変数値
+				変数_설정値 = TCVAR:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MIN" && 変数_설정値 > TCVAR:캐릭터_ID:変数値
+				変数_설정値 = TCVAR:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF 変数_설정値 == TCVAR:캐릭터_ID:変数値 && RAND:2
+				変数_설정値 = TCVAR:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
 			ENDIF
 		NEXT
-		RETURNF LOCAL:2
+		RETURNF 返し値
 	CASE "ABL"
-		FOR LOCAL, 1,CHARANUM
-			SIF LOCAL == MASTER
+		FOR 캐릭터_ID, 1,CHARANUM
+			SIF 캐릭터_ID == MASTER
 				CONTINUE
-			SIF CFLAG:LOCAL:현재위치 != ARG
+			SIF CFLAG:캐릭터_ID:현재위치 != 部屋番号
 				CONTINUE
 			IF LOCAL:3++ == 0
-				LOCAL:1 = ABL:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MAX" && LOCAL:1 < ABL:LOCAL:(ARG:1)
-				LOCAL:1 = ABL:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MIN" && LOCAL:1 > ABL:LOCAL:(ARG:1)
-				LOCAL:1 = ABL:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF LOCAL:1 == ABL:LOCAL:(ARG:1) && RAND:2
-				LOCAL:1 = ABL:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
+				変数_설정値 = ABL:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MAX" && 変数_설정値 < ABL:캐릭터_ID:変数値
+				変数_설정値 = ABL:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MIN" && 変数_설정値 > ABL:캐릭터_ID:変数値
+				変数_설정値 = ABL:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF 変数_설정値 == ABL:캐릭터_ID:変数値 && RAND:2
+				変数_설정値 = ABL:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
 			ENDIF
 		NEXT
-		RETURNF LOCAL:2
+		RETURNF 返し値
 	CASE "TALENT"
-		FOR LOCAL, 1,CHARANUM
+		FOR 캐릭터_ID, 1,CHARANUM
 
-			SIF CFLAG:LOCAL:현재위치 != ARG
+			SIF CFLAG:캐릭터_ID:현재위치 != 部屋番号
 				CONTINUE
 			IF LOCAL:3++ == 0
-				LOCAL:1 = TALENT:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MAX" && LOCAL:1 < TALENT:LOCAL:(ARG:1)
-				LOCAL:1 = TALENT:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF ARGS == "MIN" && LOCAL:1 > TALENT:LOCAL:(ARG:1)
-				LOCAL:1 = TALENT:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
-			ELSEIF LOCAL:1 == TALENT:LOCAL:(ARG:1) && RAND:2
-				LOCAL:1 = TALENT:LOCAL:(ARG:1)
-				LOCAL:2 = LOCAL
+				変数_설정値 = TALENT:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MAX" && 変数_설정値 < TALENT:캐릭터_ID:変数値
+				変数_설정値 = TALENT:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF MAXMIN설정 == "MIN" && 変数_설정値 > TALENT:캐릭터_ID:変数値
+				変数_설정値 = TALENT:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
+			ELSEIF 変数_설정値 == TALENT:캐릭터_ID:変数値 && RAND:2
+				変数_설정値 = TALENT:캐릭터_ID:変数値
+				返し値 = 캐릭터_ID
 			ENDIF
 		NEXT
-		RETURNF LOCAL:2
+		RETURNF 返し値
 ENDSELECT
 
 
@@ -356,10 +372,28 @@ SELECTCASE ARG
 	RETURNF 1
 	CASE 場所_依頼用寝室エリア
 		RETURNF 1
-	CASE 4
+	CASE 場所_浴室
 		;플레이매트
 		SIF ITEM:20
 			RETURNF 1
+ENDSELECT
+RETURNF 0
+
+
+;휴식エリア
+@RESTAREA(ARG)
+#FUNCTION
+SELECTCASE ARG
+	CASE 場所_リビング,場所_寝室,場所_휴식室,場所_学校内,場所_ラブホ,場所_子供部屋,場所_中継地点
+		RETURNF 1
+	CASE 場所_캐릭터家
+		RETURNF 1
+	CASE 場所_依頼用寝室エリア
+		RETURNF 1
+	CASE 場所_浴室,場所_依頼用浴室エリア
+		RETURNF 1
+	CASE 場所_公園, 場所_カフェ, 場所_モール, 場所_KC売店, 場所_CDSレジ裏
+		RETURNF 1
 ENDSELECT
 RETURNF 0
 
@@ -492,7 +526,34 @@ SELECTCASE ARG
 		RETURNF 1
 	CASE 場所_南駅
 		RETURNF 1
+	CASE 場所_西駅
+		RETURNF 1
+	CASE 場所_北駅
+		RETURNF 1
 ENDSELECT
+RETURNF 0
+
+@WORKAREA(ARG)
+#FUNCTION
+SELECTCASE ARG
+	CASE 場所_寝室
+		SIF ITEM:고성능크리에이티브PC == 1 && EXP:MASTER:학습경험 >=100
+			RETURNF 1
+	CASE 場所_직장
+		RETURNF 1
+	CASE 場所_CDSレジ裏
+		RETURNF 1
+ENDSELECT
+RETURNF 0
+
+
+@SANSAKU_AREA(ARG)
+#FUNCTION
+SIF INRANGE(ARG,50,499)
+	RETURNF 1
+SIF INRANGE(ARG,910,920)
+	RETURNF 1
+
 RETURNF 0
 
 ;아르바이트先

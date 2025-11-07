@@ -1233,22 +1233,31 @@ RETURN 1
 #DIM DYNAMIC カード지정１
 #DIM DYNAMIC カード지정２
 
+;選択場所１ == 2
+
+
+
 カード지정１ = 現제외数(듀얼리스트)
 CALL CARD_DISPOSE(듀얼리스트,"필드",選択場所１,제외行き)
-SIF RESULT == 0
-	RETURN 0
-カード지정２ = 現제외数(듀얼리스트)
-CALL CARD_DISPOSE(듀얼리스트,"필드",選択場所２,제외行き)
-SIF RESULT == 0
-	RETURN 0
+
+IF 選択場所２ == 10
+	カード지정２ = 現필드(듀얼리스트)
+	CALL FULLRESET
+	CALL RESRICT_FIELD(듀얼리스트,"",0,1)
+ELSE
+	カード지정２ = 現제외数(듀얼리스트)
+	CALL CARD_DISPOSE(듀얼리스트,"필드",選択場所２,제외行き)
+ENDIF
 
 ;チェーン/情報보존などを挟まないSS
-CALL CARD_SP_SUMMON("자신", "제외", カード지정１, "", 0, 2)
-CALL CARD_SP_SUMMON("자신", "제외", カード지정２, "", 0, 2)
+CALL CARD_SP_SUMMON("자신", "제외", カード지정１, "攻撃표시", 0, 2)
+IF 選択場所２ == 10
+	SETVAR @"%듀얼리스트%_필드:カード지정２", -1
+ELSE
+	CALL CARD_SP_SUMMON("자신", "제외", カード지정２, "攻撃표시", 0, 2)
+ENDIF
 
 RETURN 1
-
-
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 

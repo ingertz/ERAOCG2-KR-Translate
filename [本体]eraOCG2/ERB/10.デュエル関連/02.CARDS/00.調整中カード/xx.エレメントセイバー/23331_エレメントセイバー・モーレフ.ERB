@@ -1,0 +1,196 @@
+﻿@CARDNAME_23331,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘리멘트세이버 모레프
+	CASE "略称"
+		RESULTS = ElmS 모레프
+	CASE "カテゴリ"
+		RESULTS:0 = 엘리멘트세이버
+		RESULTS:1 = 엘리멘트
+		;カテゴリ縛りのSS、EX소환のために설정
+		RESULTS:4 = 령신
+ENDSELECT
+
+
+@CARD_23331(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1900
+	CASE "守備力"
+		RETURN 0
+	CASE "령신속성"
+		RETURN 1
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_23331(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ①：１턴에 １번、패에서 "엘리멘트세이버" 몬스터 １장을 묘지로 보내고、
+PRINTL 상대 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。（이 효과는 상대 턴에도 발동할 수 있다。）
+PRINTL 그 몬스터를 뒷면 수비 표시로 한다。
+CALLFORM CARD_ABLE(2,戦破壊→묘지)
+PRINTL ②：이 카드가 필드에서 묘지로 보내진 경우에 발동할 수 있다。자신 묘지의 "엘리멘트세이버 모레프" 이외의
+PRINTL "령신" / "엘리멘트세이버" 몬스터 １장을 패에 넣는다。
+PRINTL 이 효과의 발동 후、턴 종료시까지 자신은 "령신" / "엘리멘트세이버" 몬스터밖에 특수 소환할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：묘지의 이 카드는、모든 속성을 가진 몬스터로서 취급한다。
+
+;「엘리멘트세이버」の妨害の要になる어둠속성の戦士。상대モンスターを裏側守備표시にする妨害はフリチェで撃てるため、
+;テーマモンスターの中ではほぼ唯一の、能動的な妨害효과を撃てるモンスターである。そのため盤面に出力したいところではあるが、
+;このモンスター自体は展開に関与する能力に乏しいので、先攻展開で盤面に残すのは難しい。지속함정の효과で상대ターンにリクルートするのがよいだろう。
+;その際には、상대がフィールドで어둠속성モンスターの효과を발동したいタイミングでリクルートできれば、지속함정の추가효과での妨害も狙う事が可能。
+
+
+@CARDCAN_23331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 추가条件플래그 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23331)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 령신의 성전
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1 && !(발동済_3(듀얼리스트,71705))
+		추가条件플래그 |= 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	SIF 추가条件플래그 & 1
+		효과範囲덱 = 1
+	효과条件カテゴリ = 엘리멘트세이버
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 = モン全般
+	효과条件표시 = 表側표시
+	효과条件除去種 = 표시변경
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_2(듀얼리스트,23331)
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"リリース","破壊","戦闘破壊")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ:0 = 령신
+	효과条件カテゴリ:1 = 엘리멘트세이버
+	효과条件종류 = モン全般
+	효과条件固名前 = 엘리멘트세이버 모레프
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_23331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 추가条件플래그 = 0
+#DIM DYNAMIC 손패枚数＿前
+#DIM DYNAMIC 손패枚数＿後
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23331,10)
+	IF RESULT == 0
+		손패枚数＿前 = 손패数(듀얼리스트)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 령신의 성전
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1 && !(발동済_3(듀얼리스트,71705))
+			추가条件플래그 |= 1
+		;손패の엘리멘트세이버を묘지へ送る。(条件次第で덱からも送れる)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		SIF 추가条件플래그 & 1
+			효과範囲덱 = 1
+		효과条件カテゴリ = 엘리멘트세이버
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			;묘지へ送る前後で손패の枚数を確認し、減っていない場合は덱から送ったと판정し령신의 성전の효과③を使用した扱いに。
+			손패枚数＿後 = 손패数(듀얼리스트)
+			IF 손패枚数＿前 == 손패枚数＿後
+				;령신의 성전の효과を발동した！
+				SETCOLOR C_YELLOW
+				PRINTFORML "령신의 성전"의 효과에 의해 덱에서 직접 몬스터를 묘지로 보냈다！！
+				RESETCOLOR
+				CALL CARD_EFFECT_USE(듀얼리스트,71705,3)
+			ENDIF
+			;상대のモンスター１体を裏側守備표시に변경する。
+			CALL FULLRESET
+			효과条件표시 = 表側표시
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"표시변경")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23331,2)
+	IF RESULT == 0
+		;묘지のモンスターをサルベージ
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ:0 = 령신
+		효과条件カテゴリ:1 = 엘리멘트세이버
+		효과条件종류 = モン全般
+		효과条件固名前 = 엘리멘트세이버 모레프
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		;縛り。※カテゴリ縛りの설정は「령신」で설정する。
+		;「엘리멘트세이버」モンスターは全て隠しで「령신」カテゴリにも所属させる。
+		CALL FULLRESET
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"령신")
+	ENDIF
+ENDIF

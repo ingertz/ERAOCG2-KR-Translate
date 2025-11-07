@@ -1,0 +1,160 @@
+﻿@CARDNAME_56001,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘펜노츠 세라핌 스트리치아
+	CASE "略称"
+		RESULTS = 스트리치아
+	CASE "カテゴリ"
+		RESULTS:0 = 엘펜노츠
+ENDSELECT
+
+
+@CARD_56001(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 식물족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 3000
+	CASE "튜너"
+		RETURN 0
+	CASE "추가日"
+		RETURN 251106
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_56001(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 7
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,56001) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_56001(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 튜너＋튜너 이외의 몬스터 １장 이상
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：이 카드는 중앙 메인 몬스터 존에 존재하는 한、공격력이 ３０００이 된다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신 / 상대 메인 페이즈에 발동할 수 있다。
+PRINTL 자신의 패 / 묘지에서 레벨６ 이하의 "엘펜노츠" 몬스터 １장을 특수 소환한다。
+PRINTL 그 후、필드의 모든 레벨４ 이상인 몬스터의 레벨을 턴 종료시까지 ３개 내릴 수 있다。
+PRINTL 이 턴、자신은 S몬스터밖에 EX덱에서 특수 소환할 수 없다。
+
+
+@CARDCAN_56001(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,56001)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF 場所 != 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,56001)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	CALLFORM 효과条件レベル_ADV(6,"以下")
+	효과条件カテゴリ = 엘펜노츠
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_56001(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM 選択カード
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻守変動
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,3000)
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56001,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		CALLFORM 효과条件レベル_ADV(6,"以下")
+		효과条件カテゴリ = 엘펜노츠
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			PRINTL
+			PRINTL 필드의 모든 레벨４ 이상인 몬스터의 레벨을 턴 종료시까지 ３개 내리시겠습니까？
+			PRINTL
+			CALL YN_CHOICE(듀얼리스트,"내린다","내리지않는다")
+			IF RESULT == 0
+				CALL FULLRESET
+				CALLFORM 효과条件レベル_ADV(4,"以上")
+				효과条件종류 = レベル持ち
+				CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"永星",-3)
+				CALL FULLRESET
+				CALLFORM 효과条件レベル_ADV(4,"以上")
+				효과条件종류 = レベル持ち
+				CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"永星",-3,56001)
+			ENDIF
+		ENDIF
+		EX소환可能종류 = 싱크로
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF

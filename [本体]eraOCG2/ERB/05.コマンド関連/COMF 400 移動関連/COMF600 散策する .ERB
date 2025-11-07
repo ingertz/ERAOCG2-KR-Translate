@@ -6,8 +6,6 @@
 #DIM DYNAMIC 選択行先
 #DIM DYNAMIC 依頼_ID_C
 #DIM DYNAMIC 施設アリ,1000
-#DIM DYNAMIC C_開始
-#DIM DYNAMIC C_終了
 #DIM DYNAMIC 캐릭터_ID
 
 VARSET マップモード
@@ -19,23 +17,14 @@ ELSEIF INRANGE(CFLAG:MASTER:현재위치,150,200)
 	マップモード = 2
 ELSEIF INRANGE(CFLAG:MASTER:현재위치,200,250)
 	マップモード = 3
+ELSEIF INRANGE(CFLAG:MASTER:현재위치,910,920)
+	マップモード = 90
 ENDIF
 
 $INPUT_LOOP
 
-IF マップモード == 0
-	C_開始 = 50
-	C_終了 = 80
-ELSEIF マップモード == 1
-	C_開始 = 101
-	C_終了 = 150
-ELSEIF マップモード == 2
-	C_開始 = 151
-	C_終了 = 200
-ELSEIF マップモード == 3
-	C_開始 = 201
-	C_終了 = 250
-ENDIF
+
+
 
 FOR 依頼_ID_C,0,1000
 	TRYCALLFORM IRAI_EVENT_{依頼_ID_C}("이벤트種")
@@ -62,6 +51,9 @@ ELSEIF マップモード == 2
 	CALLFORM MAP_PRINT_OUTSKIRTS
 ELSEIF マップモード == 3
 	CALLFORM MAP_PRINT_KAIBALAND
+
+ELSEIF マップモード == 90
+	CALLFORM MAP_PRINT_SHOP
 ENDIF
 
 CUSTOMDRAWLINE ―
@@ -86,7 +78,8 @@ CUSTOMDRAWLINE ―
 IF マップモード == 0
 	FOR カウンタ,50,80
 		SIF CFLAG:MASTER:현재위치 == カウンタ
-			CONTINUE
+			SETCOLOR C_GREEN
+
 		SIF カウンタ == 場所_学校教室
 			CONTINUE
 		SIF カウンタ == 場所_휴식室
@@ -107,11 +100,12 @@ IF マップモード == 0
 			PRINTFORM %"",4%
 		ENDIF
 		PRINTFORM / 
+
 	NEXT
 ELSEIF マップモード == 1
 	FOR カウンタ,101,150
 		SIF CFLAG:MASTER:현재위치 == カウンタ
-			CONTINUE
+			SETCOLOR C_GREEN
 		SIF GETPLACENAME(カウンタ) == ""
 			CONTINUE
 		CALL GETMAP(カウンタ,1)
@@ -125,6 +119,7 @@ ELSEIF マップモード == 1
 			PRINTFORM %"",4%
 		ENDIF
 		PRINTFORM / 
+
 	NEXT
 	CALL GETMAP(カウンタ,1)
 	PRINTFORM [{73,3}] - %GETPLACENAME(73),20,LEFT%	
@@ -139,7 +134,8 @@ ELSEIF マップモード == 1
 ELSEIF マップモード == 2
 	FOR カウンタ,151,200
 		SIF CFLAG:MASTER:현재위치 == カウンタ
-			CONTINUE
+			SETCOLOR C_GREEN
+
 		SIF GETPLACENAME(カウンタ) == ""
 			CONTINUE
 		CALL GETMAP(カウンタ,1)
@@ -157,7 +153,28 @@ ELSEIF マップモード == 2
 ELSEIF マップモード == 3
 	FOR カウンタ,201,250
 		SIF CFLAG:MASTER:현재위치 == カウンタ
+		SETCOLOR C_GREEN
+
+		SIF GETPLACENAME(カウンタ) == ""
 			CONTINUE
+		CALL GETMAP(カウンタ,1)
+		PRINTFORM [{カウンタ,3}] - %GETPLACENAME(カウンタ),20,LEFT%	
+		RESETCOLOR
+		IF 施設アリ:カウンタ == 1
+			SETCOLOR C_ORANGE
+			PRINT (！)
+			RESETCOLOR
+		ELSE
+			PRINTFORM %"",4%
+		ENDIF
+		PRINTFORM / 
+
+	NEXT
+ELSEIF マップモード == 90
+	FOR カウンタ,910,920
+		SIF CFLAG:MASTER:현재위치 == カウンタ
+			SETCOLOR C_GREEN
+
 		SIF GETPLACENAME(カウンタ) == ""
 			CONTINUE
 		CALL GETMAP(カウンタ,1)
@@ -176,9 +193,9 @@ ENDIF
 
 
 
-PRINTL
-PRINTL 
-
+PRINTFORML
+PRINTFORML 
+PRINTFORML [99] - 귀가한다
 CUSTOMDRAWLINE ―
 
 PRINT [9999] - 맵 전환
@@ -226,6 +243,9 @@ ELSE
 	ELSEIF GROUPMATCH(マップモード,3,4)
 		SIF RESULT <= 200
 			RESULT += 200
+	ELSEIF GROUPMATCH(マップモード,90)
+		SIF RESULT <= 900
+			RESULT += 900
 	ENDIF
 	選択行先 = RESULT
 
@@ -246,10 +266,10 @@ ELSE
 				데이트_ホテル플래그 = 1
 			ENDIF
 			CFLAG:MASTER:현재위치 = RESULT
-			FOR LOCAL,1,CHARANUM
-				SIF !CFLAG:LOCAL:데이트중 == 1
+			FOR 캐릭터_ID,1,CHARANUM
+				SIF !CFLAG:캐릭터_ID:데이트중 == 1
 					CONTINUE
-				CFLAG:LOCAL:현재위치 = RESULT
+				CFLAG:캐릭터_ID:현재위치 = RESULT
 			NEXT    
 		ELSE
 			GOTO INPUT_LOOP
@@ -257,12 +277,14 @@ ELSE
 	ENDIF
 
 	ABS PLACEPARAMATOR(CFLAG:MASTER:현재위치) - PLACEPARAMATOR(選択行先)
+	SIF RESULT >= 180
+		RESULT = 180
 	TIME += RESULT
 	CFLAG:MASTER:현재위치 = 選択行先
-	FOR LOCAL,1,CHARANUM
-		SIF !CFLAG:LOCAL:데이트중 == 1
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF !CFLAG:캐릭터_ID:데이트중 == 1
 			CONTINUE
-		CFLAG:LOCAL:현재위치 = 選択行先
+		CFLAG:캐릭터_ID:현재위치 = 選択行先
 		PRINTFORML %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%와의 투어링을 즐겼다。
 		CALL SOURCE_CALC_환락(캐릭터_ID, MASTER, 20)
 		CALL SOURCE_CALC_수동(캐릭터_ID, MASTER, 20)
@@ -283,7 +305,7 @@ RETURN 1
 SIF !TFLAG:100
 	RETURN 0
 ;외출以外
-SIF !INRANGE(CFLAG:MASTER:현재위치,50,499)
+SIF !SANSAKU_AREA(CFLAG:MASTER:현재위치)
 	RETURN 0
 SIF CFLAG:MASTER:현재위치 == 99
 	RETURN 0

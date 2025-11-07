@@ -2,8 +2,14 @@
 ;일
 ;-------------------------------------------------
 @COM466
-CALL RECOVER_PERMIL(MASTER,-200,"체력")
-CALL RECOVER_PERMIL(MASTER,-300,"기력")
+IF CFLAG:MASTER:현재위치 != 場所_직장
+	;自宅だと消費が少ない
+	CALL RECOVER_PERMIL(MASTER,-50,"체력")
+	CALL RECOVER_PERMIL(MASTER,-100,"기력")
+ELSE
+	CALL RECOVER_PERMIL(MASTER,-200,"체력")
+	CALL RECOVER_PERMIL(MASTER,-300,"기력")
+ENDIF
 
 IF TARGET > 0 && !CFLAG:수면
 	CALL SOURCE_CALC_환락(TARGET, MASTER, 300)
@@ -11,15 +17,24 @@ IF TARGET > 0 && !CFLAG:수면
 	EXP:MASTER:학습경험 ++
 ENDIF
 
-TIME += 240
-仕事_工数 += 4
+
+IF CFLAG:MASTER:현재위치 != 場所_직장
+;自宅だとあまり仕事ができない。학습경험が一定以上なら自宅の方が効率がよくなる。학습경험400でトントン
+;학습경험100未満だとそもそも仕事にならない。
+;직장で仕事しないと悪辣度が下がらない。
+	TIME += 120
+ELSE
+	TIME += 240
+	仕事_工数 += 4
+	CALL EVILTY_POINT(-5)
+ENDIF
+
 仕事_出席 = 2
-CALL EVILTY_POINT(-5)
+
 
 SIF EXP:MASTER:학습경험 >=100
 	仕事_工数 += (EXP:MASTER:학습경험 / 100)
-SIF 仕事_工数 == 8
-	EXP:MASTER:학습경험 ++
+
 RETURN 1
 
 ;-------------------------------------------------
@@ -33,11 +48,10 @@ SIF !TFLAG:100
 ;一括관리
 SIF GLOBAL_COMABLE(466)
 	RETURN RESULT
-
-SIF 仕事_出席 == 0
+;휴식場所
+SIF !WORKAREA(CFLAG:MASTER:현재위치)
 	RETURN 0
-;PRINTL 직장でしかできない
-SIF CFLAG:MASTER:현재위치 != 場所_직장
+SIF 仕事_出席 == 0
 	RETURN 0
 SIF CFLAG:우후후 == 2
 	RETURN 0

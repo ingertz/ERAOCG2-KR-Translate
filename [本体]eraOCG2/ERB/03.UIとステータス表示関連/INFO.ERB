@@ -97,10 +97,11 @@ FOR 캐릭터_ID,1,CHARANUM
 	SIF TALENT:캐릭터_ID:듀얼리스트 == 0 && CFLAG:캐릭터_ID:아르바이트 <= 1
 		CONTINUE
 	;平日である
-	IF !GROUPMATCH(GET_DAY(), "토", "일") && CFLAG:캐릭터_ID:변기화 == 0
+	IF CFLAG:캐릭터_ID:변기화 == 0
 		IF TALENT:캐릭터_ID:듀얼리스트 >= 1
 			IF INRANGE(TIME,480,720)
-				IF TALENT:캐릭터_ID:연령 <= -1
+				IF TALENT:캐릭터_ID:연령 <= -1 && !GROUPMATCH(GET_DAY(), "토", "일")
+					;현재위치があなたの家であり、あなたが家にいる場合、外に出るアナウンスが入る
 					SIF CFLAG:캐릭터_ID:현재위치 <= 自宅部屋最大値
 						CALL CHAR_GOINGOUT(캐릭터_ID)	
 					CFLAG:캐릭터_ID:현재위치 = 場所_学校内
@@ -110,18 +111,28 @@ FOR 캐릭터_ID,1,CHARANUM
 						CALL CHAR_GOINGOUT(캐릭터_ID)			
 					CFLAG:캐릭터_ID:현재위치 = 50 + RAND:15
 				ENDIF
+
 			ENDIF
 		ELSE
-			CALL PTJ_SETTINGS(캐릭터_ID,"行先")
-			IF CFLAG:캐릭터_ID:아르바이트 >= 1 && RESULT >= 自宅部屋最大値
-				CALL PTJ_SETTINGS(캐릭터_ID, "開始")
-				IF RESULT != -1 && TIME >= RESULT && CFLAG:캐릭터_ID:일했음 == 0
-					CFLAG:캐릭터_ID:알바중 = 1
-					SIF CFLAG:캐릭터_ID:현재위치 <= 自宅部屋最大値
-						CALL CHAR_GOINGOUT(캐릭터_ID)
-					CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
-					CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
+			CALL PTJ_SETTINGS(캐릭터_ID,"勤務日")
+			IF CFLAG:캐릭터_ID:아르바이트 >= 1 && RESULT == 1
+				;PRINTFORML 캐릭터_ID：{CFLAG:캐릭터_ID:아르바이트} / RESULT:{RESULT}
+				CALL PTJ_SETTINGS(캐릭터_ID,"行先")
+				IF CFLAG:캐릭터_ID:아르바이트 >= 1 && RESULT >= 自宅部屋最大値
+					CALL PTJ_SETTINGS(캐릭터_ID, "開始")
+					IF RESULT != -1 && CFLAG:캐릭터_ID:일했음 == 0 && CFLAG:캐릭터_ID:알바중 != 1 && TIME >= RESULT
+						CFLAG:캐릭터_ID:알바중 = 1
+						;현재위치があなたの家であり、あなたが家にいる場合、外に出るアナウンスが入る
+						SIF CFLAG:캐릭터_ID:현재위치 <= 自宅部屋最大値
+							CALL CHAR_GOINGOUT(캐릭터_ID)
+						CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
+						CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
+						IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
+							PRINTFORML %CALLNAME:캐릭터_ID%가 출근했다。
+						ENDIF
+					ENDIF
 				ENDIF
+
 			ENDIF
 		ENDIF
 	ENDIF
@@ -140,17 +151,16 @@ FOR 캐릭터_ID,1,CHARANUM
 	;憑依몬스터는 NG
 	SIF 캐릭터_ID == MASTER
 		CONTINUE
-	SIF CFLAG:캐릭터_ID:시작위치 >= 20
-		CONTINUE
 	SIF CFLAG:캐릭터_ID:데이트중 == 1
 		CONTINUE
+
 	IF CFLAG:캐릭터_ID:현재위치 >= 50
 		IF CFLAG:캐릭터_ID:아르바이트 >= 1
 			CALL PTJ_SETTINGS(캐릭터_ID,"終了")
 			IF TIME >= RESULT && CFLAG:캐릭터_ID:일했음 == 0
 				IF CFLAG:캐릭터_ID:시작위치 <= 20
 					PRINTFORMW %CALLNAME:캐릭터_ID%는 아르바이트에서 돌아온 모양이다。
-					CFLAG:캐릭터_ID:현재위치 = 1
+					CFLAG:캐릭터_ID:현재위치 = 場所_ダイニング
 					CFLAG:캐릭터_ID:알바중 = 0
 					CFLAG:캐릭터_ID:일했음 = 1
 					CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 4)
@@ -160,7 +170,7 @@ FOR 캐릭터_ID,1,CHARANUM
 					CFLAG:캐릭터_ID:일했음 = 1
 				ENDIF
 			ENDIF
-		ELSEIF TIME >= KANTAN_TIME(17,00)
+		ELSEIF TIME >= KANTAN_TIME(17,00) && CFLAG:캐릭터_ID:시작위치 <= 自宅部屋最大値
 			PRINTFORMW %CALLNAME:캐릭터_ID%는 외출에서 돌아온 것 같다。
 			CFLAG:캐릭터_ID:현재위치 = 1
 			CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 3)

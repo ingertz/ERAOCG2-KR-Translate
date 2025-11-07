@@ -230,10 +230,17 @@ ENDIF
 
 VARSET 条件달성
 IF 필터_연모 > 0
-	SIF TALENT:캐릭터_ID:연모 != 0
-		条件달성 = 1
-	SIF TALENT:캐릭터_ID:굴복됨 != 0
-		条件달성 = 1
+	IF 필터_연모 >= 1
+		SIF TALENT:캐릭터_ID:연모 != 0
+			条件달성 = 1
+		SIF TALENT:캐릭터_ID:굴복됨 != 0
+			条件달성 = 1
+	ENDIF
+
+	IF 필터_연모 == 2
+		SIF CFLAG:캐릭터_ID:호감도 >= 2000
+			条件달성 = 1
+	ENDIF
 	SIF 条件달성 == 0
 		RETURN 0
 ENDIF
@@ -684,6 +691,7 @@ ENDIF
 #DIMS DYNAMIC 元バスト数値
 #DIMS DYNAMIC 元가슴사이즈
 #DIMS DYNAMIC 元カップ
+#DIM DYNAMIC カウント数
 
 SELECTCASE 使用場所
 	;カード소환（使用場所 0）
@@ -760,7 +768,7 @@ SELECTCASE 使用場所
 		PRINTL
 		RESETCOLOR
 		PRINTFORM [1] - %"침상을 변경한다",30,LEFT%
-		IF CFLAG:캐릭터_ID:시작위치 == 100
+		IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
 			IF TALENT:캐릭터_ID:듀얼리스트 == 0
 				PRINTFORM [%"카드 안",16,left%]
 			ELSEIF TALENT:캐릭터_ID:듀얼리스트 >= 1
@@ -776,7 +784,7 @@ SELECTCASE 使用場所
 		PRINTFORML [100] - 돌아간다
 		BINPUT
 		IF RESULT == 1
-			IF CFLAG:캐릭터_ID:시작위치 == 100
+			IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
 				PRINTFORML %NAME:캐릭터_ID%를 침대로 수비표시로 소환！！
 				CFLAG:캐릭터_ID:시작위치 = CFLAG:MASTER:시작위치
 				CFLAG:캐릭터_ID:현재위치 = CFLAG:MASTER:현재위치
@@ -843,7 +851,7 @@ SELECTCASE 使用場所
 
 
 	CASE 12
-		IF CFLAG:캐릭터_ID:수면 == 1 || CFLAG:캐릭터_ID:현재위치 == 100
+		IF CFLAG:캐릭터_ID:수면 == 1 || GROUPMATCH(CFLAG:캐릭터_ID:현재위치,場所_VOID,場所_NULLVOID)
 			PRINTFORML %CALLNAME:캐릭터_ID%의 집을 방문했지만 아무도 대답하지 않는다、아마 자고 있겠지。
 		ELSEIF CFLAG:캐릭터_ID:방문했음 >= 1
 			PRINTFORMW 오늘은 이제 그만두자。
@@ -1006,17 +1014,30 @@ SELECTCASE 使用場所
 	CASE 30
 		CALL HAN_KOJO_OPTION(캐릭터_ID)
 
-	CASE 31
+	CASE 22
 		IF CFLAG:캐릭터_ID:아르바이트 == PT_カドショ
-			CFLAG:캐릭터_ID:아르바イト = 0
+			CFLAG:캐릭터_ID:아르바이트 = 0
 			PRINTFORML %CALLNAME:캐릭터_ID%에게 아르바이트를 그만두게 했다.
 		ELSE
+
+			FOR カウンタ,0,CHARANUM
+				SIF CFLAG:カウンタ:아르바이트 != PT_カドショ
+					CONTINUE
+				カウント数 ++
+				IF カウント数 >= 3
+					PRINTFORML 이미 알바는 꽉찼습니다！
+					RETURN 0			
+				ENDIF
+			NEXT
+
 			CFLAG:캐릭터_ID:아르바이트 = PT_カドショ
 			CALL PTJ_SETTINGS(캐릭터_ID,"名前")
 			PRINTFORML %CALLNAME:캐릭터_ID%는 간결하게 승낙하고、오늘부터 %RESULTS%로서 일하게 되었다。
 			CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
-			CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
+			CALL PTJ_SETTINGS(캐릭터_ID,"行先")
+			CFLAG:캐릭터_ID:현재위치 = RESULT
 		ENDIF
+		RETURN 1
 	CASE 3
 		IF TALENT:캐릭터_ID:듀얼리스트 == 0 && CFLAG:캐릭터_ID:소유함 == 0
 			PRINTFORML 이 캐릭터는 소유하고 있지 않습니다。			

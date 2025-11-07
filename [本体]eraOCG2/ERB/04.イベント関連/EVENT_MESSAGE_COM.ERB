@@ -1624,10 +1624,10 @@ ELSEIF BUST_SIZE(TARGET) == 3
 		PRINT 그 너무나 큰 마유로 단단히 거근을 잡아내고
 	;カス
 	ELSEIF TALENT:MASTER:형태 <= 3
-		PRINT 그 너무나 큰 마유로 페니스 따위는 존재하지 않는 것처럼・・・
+		PRINT 그 너무나 큰 마유로 페니스 따위는 존재하지 않는 것처럼……
 	;デフォ
 	ELSE
-		PRINT 그 너무나 큰 마유가 페니스를 삼킬 듯이・・・
+		PRINT 그 너무나 큰 마유가 페니스를 삼킬 듯이……
 	ENDIF
 ELSE
 	PRINT 가슴에 페니스를 끼고
@@ -3504,9 +3504,14 @@ ELSEIF TARGET > 1 && CFLAG:TARGET:수면 == 1
 ELSEIF TARGET > 1
 	PRINTFORML %CALLNAME:MASTER%는 %CALLNAME:TARGET%와 함께 여유로운 시간을 보냈다
 ELSE
-	PRINTFORML %CALLNAME:MASTER%는 한숨 돌렸다
+	IF RAND:3 == 0
+		PRINTFORML %CALLNAME:MASTER%는 %GETPLACENAME(CFLAG:MASTER:현재위치)%에서 크게 하품을 했다
+	ELSEIF RAND:2 == 0
+		PRINTFORML %CALLNAME:MASTER%는 %GETPLACENAME(CFLAG:MASTER:현재위치)%에서 한숨 돌렸다
+	ELSE
+		PRINTFORML %CALLNAME:MASTER%는 %GETPLACENAME(CFLAG:MASTER:현재위치)%에서 멍때렸다
+	ENDIF
 ENDIF
-
 IF 	BATHROOM(CFLAG:MASTER:현재위치) && CFLAG:MASTER:빙의중 == 1
 	PRINTFORML 당신은 %CALLNAME:MASTER%의 옷을 벗기고、천천히 욕조에 몸을 담갔다……
 	PRINTFORML 당신과는 다른 여성의 섬세한 피부에 물방울이 맺히는 것을 보며、 %CALLNAME:MASTER%의 가랑이 사이로 꿀이 살짝 새어 나와、욕조에 녹아 들어갔다……
@@ -3719,7 +3724,7 @@ ENDSELECT
 ;420,AIとと話す
 ;-------------------------------------------------
 @MESSAGE_COM420
-PRINTFORML 돌고래 AI 「이상과 같이 되어 있어！\@ TFLAG:195 != 0 && TFLAG:195 != 14 ? 그럼、잘 다녀와！ # 다른 질문은 없어？\@」
+PRINTFORML 돌고래 AI 「이상과 같이 되어 있어！\@ TFLAG:원거리이동 != 0 && TFLAG:원거리이동 != 14 ? 그럼、잘 다녀와！ # 다른 질문은 없어？\@」
 
 
 
@@ -3793,7 +3798,7 @@ ELSE
 		PRINTL 오늘은 주말、학교는 쉬는 날이다。
 	ELSEIF TIME:2 == 1
 		PRINTFORMW 아직은 학교에 가기엔 이른 것 같다。
-	ELSEIF TIME:2 >= 6
+	ELSEIF TIME:2 >= 8
 		PRINTFORMW 아무리 그래도 지금부터 학교에 가는 건 무섭다…。
 	ELSEIF TIME_ZONE() == T_夜時間
 		PRINTFORMW 아무리 그래도 지금 학교에 가는 것은 늦었다고 생각한다。
@@ -3830,22 +3835,36 @@ PRINTDATA
 	DATAFORM 집에 돌아가고 싶다
 	DATAFORM 형광등 깜빡이는 소리가아아아아아아아
 	DATAFORM 나는 이대로 괜찮은 걸까 2시간 정도 고민했다.
-	DATAFORM 햇볕이 따뜻하다・・・
-	DATAFORM 카드를 만지고 싶다・・・
+	DATAFORM 햇볕이 따뜻하다……
+	DATAFORM 카드를 만지고 싶다……
 ENDDATA
-ELSEIF CFLAG:MASTER:현재위치 != 場所_직장
+ELSEIF CFLAG:MASTER:현재위치 == 場所_寝室
 	PRINTFORML %CALLNAME:MASTER%는 자택에서 일에 몰두하고 있는 중、갑자기 생각났다…
 	PRINTDATA
-		DATAFORM 왜 집에서 일을 하고 있는거지・・・
+		DATAFORM 왜 집에서 일을 하고 있는거지……
 		DATAFORM 이런 고성능의 컴퓨터로、왜 게임이 아니라 일을？
 		DATAFORM 데이터 입력이 무한으로 계속되서 힘들다
-		DATAFORM 집에서 느긋하게 작업할수 있어서 편하다・・・
-		DATAFORM 목이 말라왔다・・・
+		DATAFORM 집에서 느긋하게 작업할수 있어서 편하다……
+		DATAFORM 목이 말라왔다……
 		DATAFORM 집가고싶다　　　　　　　　여기가 집이었구나
-		DATAFORM 동료는 지금쯤 회사인가・・・
+		DATAFORM 동료는 지금쯤 회사인가……
 		DATAFORM 자신은 이대로 괜찮은가 하고 1시간정도 생각했다
 		DATAFORM 만나야할것은 일이 아닌건가？
-		DATAFORM 카드 만지고싶다・・・
+		DATAFORM 카드 만지고싶다……
+	ENDDATA
+ELSEIF CFLAG:MASTER:현재위치 == 場所_CDSレジ裏
+	PRINTFORML %CALLNAME:MASTER%는 카드샵의 일을 하고있다。
+	PRINTDATA
+		DATAFORM 카드샵이란건 의외로 데이터작업이 많구나
+		DATAFORM 또 다루고있는 카드가 폭등했다……
+		DATAFORM 프로의 게임 관전도 큰 일중 하나다……앗
+		DATAFORM 직장이 집 바로 밑에있는건 이상한 기분이다……
+		DATAFORM 창고 정리가 무한히 이어진다……
+		DATAFORM 이 카드 갖고싶네……
+		DATAFORM 이 카드……엄청 상태가 안좋아！！　역전의 전사다
+		DATAFORM 디지털 주류여도 꽤나 물리카드의 수요가 떨어지지 않네
+		DATAFORM 상자를 놓을 장소가 너무나도 부족하다……
+		DATAFORM 이 카드、개인적으로 갖고싶다……
 	ENDDATA
 ENDIF
 

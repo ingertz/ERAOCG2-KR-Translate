@@ -1,0 +1,42 @@
+﻿;-------------------------------------------------
+;仕事を始める
+;-------------------------------------------------
+@COM469
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 캐릭터セット,1000
+#DIM DYNAMIC 지정캐릭터
+#DIM DYNAMIC 지정캐릭터_ID
+#DIM DYNAMIC ランダムセット
+#DIM DYNAMIC 成功率
+#DIM DYNAMIC 失敗率
+#DIM DYNAMIC 成功판정
+
+;大人は仕事
+
+PRINTFORML %CALLNAME:MASTER%는 일을 할 준비를 시작했다。
+仕事_出席 = 1
+
+TIME += 10
+RETURN 1
+
+
+;-------------------------------------------------
+;実行판정
+;-------------------------------------------------
+;お仕事に行く
+@COM_ABLE469
+;이동実行판정
+SIF !TFLAG:100
+	RETURN 0
+;一括管理
+SIF GLOBAL_COMABLE(469)
+	RETURN RESULT
+;휴식場所
+SIF !WORKAREA(CFLAG:MASTER:현재위치)
+	RETURN 0
+SIF 仕事_出席 != 0
+	RETURN 0
+SIF CFLAG:우후후 == 2
+	RETURN 0
+RETURN 1

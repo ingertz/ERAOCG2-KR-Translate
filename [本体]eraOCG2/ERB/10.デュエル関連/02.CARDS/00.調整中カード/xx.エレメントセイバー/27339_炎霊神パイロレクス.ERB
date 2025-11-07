@@ -1,0 +1,177 @@
+﻿@CARDNAME_27339,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 염령신 파이로렉스
+	CASE "略称"
+		RESULTS = 염령신ＰＲ
+	CASE "カテゴリ"
+		RESULTS:0 = 령신
+ENDSELECT
+
+
+@CARD_27339(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2200
+	CASE "특수불가"
+		RETURN 1
+	CASE "소환불가"
+		RETURN 1
+	CASE "レア度"
+		RETURN RARE
+	CASE "추가日"
+		RETURN 251030
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27339(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드는 일반 소환할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL 자신 묘지의 화염속성 몬스터가 ５장인 경우에만 특수 소환할 수 있다。
+PRINTL 이 방법에 의한 "염령신 파이로렉스"의 특수 소환은 １턴에 １번밖에 할 수 없으며、
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(2,특수소환時)
+PRINTL ①：이 카드가 특수 소환된 경우에 상대 필드의 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 파괴하고、원래 공격력의 데미지를 상대에게 준다。
+CALLFORM CARD_ABLE(3,戦破壊→묘지)
+PRINTL ②：이 카드가 필드에서 벗어난 경우에 발동한다。이 턴、이하의 효과를 적용한다。
+PRINTL ●서로의 플레이어는 화염속성 몬스터로 공격할 수 없다。
+
+;「破壊輪」互換のモンスター除去は、OCG本家のパイロレクスの효과自体が破壊輪と違っていて、
+;元々の攻撃力の半分のダメージを상대に与える효과になっている。同一条件の除去추가효과はeraOCG2には無く、
+;完全再現する程でもないので、最も近い「RR－エトランゼ・ファルコン」の효과に準拠したものに上方修正（상대のみバーンダメージを与える形式に）
+;「破壊輪」と同じ추가효과でも良かったのだが、お互いにバーンダメージを受ける部分よりも『元々の』攻撃力を参照する部分を重く見た。
+
+@CARDCAN_27339(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 속성数 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27339)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,27339)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,27339,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	;자신の묘지に화염속성モンスターが５体存在する場合のみ특수소환可能
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 화염속성
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,27339)
+		RETURN 0
+	;「破壊輪」の条件と同等
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_3(듀얼리스트,27339)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 短紋章起動
+	RETURN 1
+ENDIF
+
+@CARDFORCE_27339(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+VARSET RESULT
+IF 종류 == 戦破壊→묘지
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_27339(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27339,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+	ENDIF
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27339,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과추가종류 = 4
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27339,3)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,27339,短紋章予約)
+	ENDIF
+ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과条件속성 = 화염속성
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦無")
+	CALL FULLRESET
+	효과条件속성 = 화염속성
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"戦無")
+ENDIF
+
+
+
