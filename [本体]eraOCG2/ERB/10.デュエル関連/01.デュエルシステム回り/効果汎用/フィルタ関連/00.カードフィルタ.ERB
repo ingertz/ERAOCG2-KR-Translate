@@ -224,7 +224,7 @@ SIF 上級플래그 == 0
 FOR カウンタ,0,サーチ範囲
 	SIF GETVAR(@"%実行者%_%参照先%:カウンタ") <= -1
 		CONTINUE
-		대상カードID = GETVAR(@"%実行者%_%参照先%:カウンタ")
+	대상カードID = GETVAR(@"%実行者%_%参照先%:カウンタ")
 
 	IF 효과条件固定 > -1
 		SIF 효과条件固定 != カウンタ
@@ -241,7 +241,7 @@ FOR カウンタ,0,サーチ範囲
 		ENDIF
 	ENDIF
 	IF GROUPMATCH(듀얼리스트,"자신","상대")
-		IF GETVAR(@"%듀얼리스트%_アザミナ呪") >= 1 && ゾーン != "어드밴스"
+		IF GETVAR(@"%듀얼리스트%_アザミナ呪") >= 1 && ゾーン != "アドバンス"
 			IF 元参照先 == "묘지" || 元参照先 == "제외" || 元参照先 == "필드"
 				CONTINUE
 			ENDIF
@@ -259,7 +259,7 @@ FOR カウンタ,0,サーチ範囲
 	SIF 条件달성 != 1
 		CONTINUE
 
-	IF ゾーン == "어드밴스"
+	IF ゾーン == "アドバンス"
 		SIF GETVAR(@"%実行者%_MZ_不材:カウンタ") >= 1
 			CONTINUE
 	ENDIF
@@ -273,11 +273,11 @@ FOR カウンタ,0,サーチ範囲
 			SKIPDISP チェック플래그
 		;상대カードの場合（上級値＋2000）
 		IF (参照先 == "필드" || 参照先 == "마함") && 上級値 >= 2000
-			IF 参照先 == "필드"		
+			IF 参照先 == "필드"
 				CALL CARD_SETCOLOR(実行者,参照先,カウンタ)
 				;上級値を使い、裏側플래그まで確認している。
 				TRYCALLFORM CARD_KANPRINT("상대필드",(カウンタ + 上級値),대상カードID)
-			ELSEIF 参照先 == "마함"		
+			ELSEIF 参照先 == "마함"
 				CALL CARD_SETCOLOR(実行者,参照先,カウンタ)
 				;上級値を使い、裏側플래그まで確認している。
 				TRYCALLFORM CARD_KANPRINT("상대마함",(カウンタ + 上級値),대상カードID)
@@ -291,8 +291,8 @@ FOR カウンタ,0,サーチ範囲
 		ENDIF
 
 	ELSEIF 듀얼리스트 == "상대"
-		;ゾーン특수：上級소환の릴리스、モンスター묘지送りのためのやつ
-		IF ゾーン == "어드밴스"
+		;ゾーン특수：上級소환のリリース、モンスター묘지送りのためのやつ
+		IF ゾーン == "アドバンス"
 			IF 参照先 == "필드"
 				IF GETVAR(@"%実行者%_MZ_攻:カウンタ") < 現在最小攻撃力
 					現在最小攻撃力 = RESULT
@@ -308,18 +308,18 @@ FOR カウンタ,0,サーチ範囲
 			ENDIF
 		ELSE
 			IF 효과条件大小反転 == 1
-					VARSET RESULT
-					CALL ENEMY_PRIORITY_FILTER(대상カードID,元参照先,カウンタ)
+				VARSET RESULT
+				CALL ENEMY_PRIORITY_FILTER(대상カードID,元参照先,カウンタ)
 				IF RESULT < 現在最小攻撃力
 					現在最小攻撃力 = RESULT
-						選択カード = カウンタ + 上級値
-					ENDIF
-				ELSE
-					VARSET RESULT
-					CALL ENEMY_PRIORITY_FILTER(대상カードID,元参照先,カウンタ)
-					IF RESULT > 現在最大攻撃力
-						現在最大攻撃力 = RESULT
-						選択カード = カウンタ + 上級値
+					選択カード = カウンタ + 上級値
+				ENDIF
+			ELSE
+				VARSET RESULT
+				CALL ENEMY_PRIORITY_FILTER(대상カードID,元参照先,カウンタ)
+				IF RESULT > 現在最大攻撃力
+					現在最大攻撃力 = RESULT
+					選択カード = カウンタ + 上級値
 				ENDIF
 			ENDIF
 		ENDIF
@@ -441,7 +441,7 @@ IF チェック플래그 == 5
 ELSE
 	戻り値 = 0
 ENDIF
-SIF 듀얼리스트 == "" ;Anonym추가
+SIF 듀얼리스트 == "" ;Anonym追加
 	듀얼리스트 = %実行者%
 ;
 IF チェック플래그 == 6
@@ -616,10 +616,10 @@ IF 효과条件カテゴリ != ""
 				条件달성 ++
 		ENDIF
 	NEXT
-	;PRINTFORML ここ通過２A　：효과条件カテゴリ：%효과条件カテゴリ%
+	;;PRINTFORML ここ通過２A　：효과条件カテゴリ：%효과条件カテゴリ%
 
 	IF 参照先 == "필드" && 효과条件元々 == 0
-		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
 			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			SIF MATCH(효과条件カテゴリ, RESULTS)
@@ -645,7 +645,7 @@ IF 효과条件カテゴリ != ""
 		ENDIF
 
 	ELSEIF 参照先 == "마함"
-		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
 		IF GETVARS(@"%実行者%_魔_改名:カウンタ") != ""
 			VARSET 条件달성
 		ENDIF
@@ -682,11 +682,11 @@ IF 효과条件固カテゴリ != ""
 				条件달성 ++
 		ENDIF
 
-		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
 		IF GETVARS(@"%実行者%_MZ_改名:カウンタ") != ""
 			VARSET 条件달성
 		ENDIF
-		
+
 		VARSET カード追カテ
 		カード追カテ = %GETVARS(@"%実行者%_MZ_追カテ:カウンタ")%
 		カード追カテ:1 = %GETVARS(@"%実行者%_MZ_追カテ2:カウンタ")%
@@ -698,9 +698,9 @@ IF 효과条件固カテゴリ != ""
 				条件달성 ++
 			ENDIF
 		ENDIF
-		
+
 	ELSEIF 参照先 == "마함"
-		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
 		IF GETVARS(@"%実行者%_魔_改名:カウンタ") != ""
 			VARSET 条件달성
 		ENDIF
@@ -738,7 +738,7 @@ IF 효과条件分割 > 0
 ENDIF
 
 
-
+;PRINTFORML ここ通過５
 IF 효과条件종류  > 0
 	VARSET 条件달성
 	TRYCALLFORM CARD_{설정カードID}("종류")
@@ -817,13 +817,13 @@ IF GROUPMATCH(チェック플래그,2,7)
 		SIF RESULT == 1
 			RETURN 戻り値
 		IF チェック플래그 == 2
-		CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
-		SIF RESULT == 1
-			RETURN 戻り値
-	ELSE
-		CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
-		SIF RESULT == 1
-			RETURN 戻り値
+			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
+			SIF RESULT == 1
+				RETURN 戻り値
+		ELSE
+			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
+			SIF RESULT == 1
+				RETURN 戻り値
 		ENDIF
 	ELSE
 		SIF モンスター数(듀얼리스트) >= 5
@@ -916,17 +916,17 @@ IF 参照先 == "필드" || 参照先 == "마함"
 				RETURN 戻り値
 		ENDIF
 	ENDIF
-	IF 효과条件悪Ｃ所持 > 0
-		IF 효과条件悪Ｃ所持 == 999
-			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") == 0
+	IF 효과条件薬Ｃ所持 > 0
+		IF 효과条件薬Ｃ所持 == 999
+			SIF GETVAR(@"%実行者%_%MZ魔판정%_薬Ｃ:カウンタ") == 0
 				RETURN 戻り値
 		ELSE
-			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") < 효과条件薬Ｃ所持
+			SIF GETVAR(@"%実行者%_%MZ魔판정%_薬Ｃ:カウンタ") < 효과条件薬Ｃ所持
 				RETURN 戻り値
 		ENDIF
 	ENDIF
 	IF 효과条件悪Ｃ所持 > 0
-		IF 효과条件条件達生 == 888
+		IF 효과条件悪Ｃ所持 == 888
 			SIF GETVAR(@"%実行者%_%MZ魔판정%_悪Ｃ:カウンタ") >= 1
 				RETURN 戻り値
 		ELSEIF 효과条件悪Ｃ所持 == 999
@@ -975,7 +975,7 @@ IF 参照先 == "필드" || 参照先 == "마함"
 				RETURN 戻り値
 		ENDIF
 	ENDIF
-	
+
 	IF 효과条件所有 >= 1
 		IF 효과条件所有 == 1
 			IF 듀얼리스트 == "자신"
@@ -1033,7 +1033,7 @@ IF 参照先 == "필드"
 		VARSET 条件달성
 		SIF MATCH(효과条件속성, GETVAR(@"%実行者%_MZ_属:カウンタ"))
 			条件달성 ++
-		;複数속성チェック
+		;複数속성チェック		
 		TRYCALLFORM CARD_{설정カードID}("속성")
 		IF RESULT:1 >= 1
 			VARSET 検出속성, -1
@@ -1084,7 +1084,7 @@ IF 参照先 == "필드"
 		VARSET 条件달성
 		SIF MATCH(효과条件レベル, GETVAR(@"%実行者%_MZ_星:カウンタ"))
 			条件달성 ++
-		SIF 条件달성 == 0		
+		SIF 条件달성 == 0
 			RETURN 戻り値
 	ENDIF
 	IF 효과条件固レベル > 0
@@ -1099,7 +1099,7 @@ IF 参照先 == "필드"
 	IF 효과条件変レベル > 0
 		TRYCALLFORM CARD_{설정カードID}("レベル")
 		元レベル = RESULT
-		現レベル = GETVAR(@"%듀얼리스트%_MZ_星:カウンタ")
+		現レベル = GETVAR(@"%実行者%_MZ_星:カウンタ")
 		IF 효과条件変レベル == 1
 			SIF 元レベル >= 現レベル
 				RETURN 戻り値
@@ -1209,7 +1209,7 @@ IF 参照先 == "필드"
 				RETURN 戻り値
 		ENDIF
 	ENDIF
-
+	
 ELSE
 	IF 효과条件튜너 > 0
 		TRYCALLFORM CARD_{설정カードID}("튜너")
@@ -1242,7 +1242,7 @@ ELSE
 		NEXT
 		IF 参照先 == "묘지"
 			VARSET RESULT
-			TRYCALLFORM CARD_{설정カードID}("霊신속성")
+			TRYCALLFORM CARD_{설정カードID}("령신속성")
 			SIF RESULT == 1
 				条件달성 ++
 		ENDIF
@@ -1253,7 +1253,7 @@ ELSE
 		VARSET 条件달성
 		;複数속성チェック
 		TRYCALLFORM CARD_{설정カードID}("종족")
-		
+
 		VARSET 検出종족, -1
 		FOR カウンタB,0,10
 			SIF RESULT:カウンタB <= 0
@@ -1308,7 +1308,7 @@ ELSE
 		SIF RESULT != 효과条件固攻撃力
 			RETURN 戻り値
 	ENDIF
-	
+
 	IF 효과条件以攻撃力 > 0
 		TRYCALLFORM CARD_{설정カードID}("攻撃力")
 		SIF RESULT < 효과条件以攻撃力
@@ -1406,19 +1406,19 @@ ELSE
 			ENDIF
 		ENDIF
 	ENDIF
-
+	
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
 			TRYCALLFORM CARD_{설정カードID}("종류")
 			IF RESULT < 3 || RESULT == 초차원
 				IF 효과条件소환可 == 1 || 효과条件소환可 == 3
-					CALL CARD_SS_CHECK(実行者,설정カードID,参照先)
+					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 					SIF RESULT == 1
 						RETURN 戻り値
 				ELSEIF 효과条件소환可 == 2
-					CALL CARD_SS_CHECK(実行者,설정カードID,参照先,1)
+					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
 					SIF RESULT == 1
-						RETURN 戻り値	
+						RETURN 戻り値
 				ENDIF
 			ELSEIF INRANGE(RESULT,3,10)
 
@@ -1445,7 +1445,7 @@ ELSE
 					TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_EX덱:カウンタ")}(実行者,カウンタ,1)
 					SIF RESULT != 1
 						RETURN 戻り値
-				ELSEIF 参照先 != "EX덱" ;Anonym추가
+				ELSEIF 参照先 != "EX덱" ;Anonym追加
 					IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 						SIF RESULT == 1
@@ -1453,12 +1453,12 @@ ELSE
 					ELSEIF 효과条件소환可 == 2
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
 						SIF RESULT == 1
-						RETURN 戻り値
+							RETURN 戻り値
 					ENDIF
 				ENDIF
 			ELSE
 				IF 효과条件소환可 == 3
-					CALL CARD_SS_CHECK(実行者,설정カードID,参照先)
+					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 					SIF RESULT == 1
 						RETURN 戻り値
 				ELSE
@@ -1773,7 +1773,7 @@ ELSEIF 효과条件スーパー튜너 == -1
 		RETURN 0
 ENDIF
 
-;Anonym추가
+;Anonym追加
 IF 参照先 == "필드" || 参照先 == "마함"
 	IF 参照先 == "필드"
 		MZ魔판정 = MZ
@@ -1828,7 +1828,7 @@ IF 参照先 == "필드" || 参照先 == "마함"
 		SIF 효과条件표시 != 0 && 효과条件표시 <= 9 && GETVAR(@"%実行者%_%MZ魔판정%_表:カウンタ") != 효과条件표시
 			RETURN 0
 	ENDIF
-	
+
 ENDIF
 
 
@@ -1862,7 +1862,7 @@ IF チェック플래그 == 2
 			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 			SIF RESULT == 1
 				RETURN 0
-			ELSE
+		ELSE
 			SIF モンスター数(듀얼리스트) >= 5
 				RETURN 0
 			SIF GETVAR(@"%듀얼리스트%_SS阻害状態") >= 1
@@ -1915,7 +1915,7 @@ IF 参照先 != "필드"
 					SIF RESULT != 1
 						RETURN 0
 				;EX덱以外を参照に確認
-				ELSEIF 参照先 != "EX덱" ;Anonym추가
+				ELSEIF 参照先 != "EX덱" ;Anonym追加
 					IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 						SIF RESULT == 1
@@ -1965,7 +1965,7 @@ SIF 효과条件スーパー攻撃力 > 0
 	RETURN 1
 RETURN 0
 
-;待機された효과를 待機する場所。
+;待機された효과を待機する場所。
 @SELECT_UI_SET(実行者,選択カード_ID,설정타입,選択カード,종류,ゾーン)
 #DIMS DYNAMIC 実行者
 #DIMS DYNAMIC ゾーン
@@ -2017,7 +2017,7 @@ CASE 9
 	確認ゾーン = %参照先（CS）%
 	確認場所 = 選択カード
 CASE 10
-	PRINT 【효과 후 유발】
+	PRINT 【효과후유발】
 	確認듀얼리스트 = %実行者%
 	確認종류 = 효과後誘発
 	確認ゾーン = %参照先（CS）%
@@ -2026,20 +2026,20 @@ CASE 10
 CASE 15
 	PRINT 【발동유발】
 	確認듀얼리스트 = %実行者%
-	確認종류 = 발동誘発
+	確認종류 = 発動誘発
 	確認ゾーン = %参照先（CS）%
 	確認場所 = 選択カード
 
 
 CASE 11
-	PRINT 【제외】
+	PRINT 【제거】
 	CALL CARD_SELECT(実行者,(選択カード + 2000))
 	確認듀얼리스트 = %대상者（CS）%
 	確認ゾーン = %参照先（CS）%
 	確認場所 = 選択カード（CS）
 CASE 12
 	;両者確認
-	PRINT 【제외】
+	PRINT 【제거】
 	CALL CARD_SELECT(実行者,選択カード)
 	確認듀얼리스트 = %대상者（CS）%
 	確認ゾーン = %参照先（CS）%
@@ -2084,7 +2084,7 @@ SIF 설정타입 == 99
 IF 実行者 == "자신"
 	PRINTL
 	CUSTOMDRAWLINE —
-	PRINTL 이 카드로 괜찮겠습니까？
+	PRINTL 이 카드로 괜찮으시겠습니까？
 	PRINTL [0] - 예
 	PRINTL [1] - 아니오
 	BINPUT
