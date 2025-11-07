@@ -1412,3 +1412,39 @@ ENDSELECT
 
 
 
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+;CARD_GET_EMBLEM_VALUES
+;仕様：
+;永紋章に紐づく汎数１～３をすべて取得する処理。
+;一旦こっちで管理。本来の場所は「21.カード誘発効果.ERB」
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@CARD_GET_EMBLEM_VALUES(듀얼리스트,カードID,永短설정)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カードID
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 永短설정
+
+IF 永短설정 == 1
+	FOR カウンタ,0,99
+		SIF GETVAR(@"%듀얼리스트%_短紋章:カウンタ") != カードID
+			CONTINUE
+		;見つかったら値を설정
+		RESULT:1 = GETVAR(@"%듀얼리스트%_短紋_汎数１:カウンタ")
+		RESULT:2 = GETVAR(@"%듀얼리스트%_短紋_汎数２:カウンタ")
+		RETURN カウンタ
+	NEXT
+ELSE
+	FOR カウンタ,0,99
+		SIF GETVAR(@"%듀얼리스트%_永紋章:カウンタ") != カードID
+			CONTINUE
+		;見つかったら値を설정
+		RESULT:1 = GETVAR(@"%듀얼리스트%_永紋_汎数１:カウンタ")
+		RESULT:2 = GETVAR(@"%듀얼리스트%_永紋_汎数２:カウンタ")
+		RESULT:3 = GETVAR(@"%듀얼리스트%_永紋_汎数３:カウンタ")
+		RETURN カウンタ
+	NEXT
+ENDIF
+;見つからなかったら-1を返す
+RETURN -1
