@@ -1,0 +1,145 @@
+﻿@CARDNAME_16884,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 흑의룡 알비온
+	CASE "略称"
+		RESULTS = 흑의룡 알비온
+	CASE "カテゴリ"
+		RESULTS:0 = 알버스의 낙윤
+		RESULTS:1 = 알버스
+ENDSELECT
+
+
+@CARD_16884(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 雄性
+	CASE "連動ID"
+		RETURN 1884
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_16884(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드의 카드명은、필드에 존재하는 한 "알버스의 낙윤"으로 취급한다。
+CALLFORM CARD_ABLE(2,손패起動,묘지起動)
+PRINTL ②：이 카드가 패 / 묘지에 존재하는 경우에 발동할 수 있다。
+PRINTL "알버스의 낙윤" １장 또는 "낙인" 마법 / 함정 카드 １장을 패 / 덱에서 묘지로 보내고、
+PRINTL 그 카드를 어디에서 묘지로 보냈는지에 따라 이하의 효과를 적용한다。
+PRINTL ●패：이 카드를 특수 소환한다。
+PRINTL ●덱：이 카드를 덱 가장 아래로 되돌린다。패에서 되돌린 경우、추가로 자신은 １장 드로우 한다。
+
+
+@CARDCAN_16884(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,16884)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패起動 || 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,16884)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,16884,"손패")
+	SIF RESULT != 1
+		条件달성 = 1
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	SIF 条件달성 == 1
+		효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件スーパー名前 = 알버스의 낙윤
+	효과条件カテゴリ = 낙인
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_16884(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"変化元ID",1884)
+ELSEIF 종류 == 손패起動 || 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,16884,2)
+	IF RESULT == 0
+		CALL CARD_SS_CHECK(듀얼리스트,16884,"손패")
+		SIF RESULT != 1
+			条件달성 = 1
+		CALL FULLRESET
+		SIF 条件달성 == 1
+			효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件スーパー名前 = 알버스의 낙윤
+		효과条件カテゴリ = 낙인
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			IF 参照先（CS） == "손패"
+				CALL FULLRESET
+				CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+			ELSE
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+				SIF 종류 == 손패起動
+					CALL CARDDRAW_BASIC(듀얼리스트,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

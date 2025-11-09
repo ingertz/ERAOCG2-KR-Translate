@@ -1,0 +1,135 @@
+﻿@CARDNAME_29506,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 타락천사 제프티
+	CASE "略称"
+		RESULTS = 제프티
+	CASE "カテゴリ"
+		RESULTS:0 = 타락천사
+ENDSELECT
+
+
+@CARD_29506(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_29506(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 덱에서 "타락천사 제프티" 이외의 "타락천사" 몬스터 １장을 수비 표시로 특수 소환한다。
+PRINTL 이 효과의 발동 후、턴 종료시까지 자신은 천사족 몬스터밖에 특수 소환할 수 없다。
+CALL CARD_ABLE(2,묘지起動)
+PRINTL ②：자신 필드에 천사족 / 어둠속성인 융합 몬스터가 존재하는 경우、
+PRINTL 묘지의 이 카드를 제외하고、자신의 묘지의 "타락천사" 카드나 "금지된" 속공 마법 카드 １장을 대상으로 발동할 수 있다。
+PRINTL 그 카드를 패에 넣는다.
+
+
+@CARDCAN_29506(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,29506)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,29506)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 타락천사
+	효과条件固名前 = 타락천사 제프티
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,29506)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_除外NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 천사족
+	효과条件종류 = 융합
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ:0 = 타락천사
+	효과条件カテゴリ:1 = 금지된
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_29506(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29506,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 타락천사
+		효과条件固名前 = 타락천사 제프티
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		SS소환可能종족 = 천사족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,29506,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ:0 = 타락천사
+		효과条件カテゴリ:1 = 금지된
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

@@ -1,0 +1,194 @@
+﻿@CARDNAME_52541,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 공아단의 선장　킬
+	CASE "略称"
+		RESULTS = 선장 킬
+	CASE "カテゴリ"
+		RESULTS:0 = 공아단
+ENDSELECT
+
+
+@CARD_52541(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 1300
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_52541(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+素材条件R종족起動 = 1
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,52541) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_52541(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 종족이 다른 몬스터 ２장 이상
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：이 카드가 Ｌ소환된 경우에 발동할 수 있다。
+PRINTL 덱에서 "공아단" 마법 / 함정 카드 １장을 자신 필드에 세트한다。
+PRINTL 이 턴、자신은 "공아단" 몬스터밖에 특수 소환할 수 없다。
+CALLFORM CARD_ABLE(2,묘지起動,フリー誘発)
+PRINTL ②：상대 턴에 발동할 수 있다。
+PRINTL 묘지의 이 카드를 제외하고、패에서 "공아단" 몬스터 １장을 특수 소환한다。
+PRINTL 그 후、필드의 원래 공격력이 가장 높은 몬스터가 상대 필드에 존재하는 경우、１장 더 특수 소환할 수 있다。
+
+
+@CARDCAN_52541(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,52541)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,52541)
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 공아단
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,52541)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 공아단
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_52541(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 最大攻撃力
+#DIMS DYNAMIC 最大攻撃力듀얼리스트
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52541,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 공아단
+		효과条件종류 = 마함全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"공아단")
+	ENDIF
+
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52541,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ = 공아단
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%듀얼리스트%_戦場:カウンタ") == -1
+					CONTINUE
+				SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 3
+					CONTINUE
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_戦場:カウンタ")},"攻撃力"
+				IF RESULT > 最大攻撃力
+					最大攻撃力 = RESULT
+					最大攻撃力듀얼리스트 = %듀얼리스트%
+				ENDIF
+			NEXT
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%対面者%_戦場:カウンタ") == -1
+					CONTINUE
+				SIF GETVAR(@"%対面者%_MZ_表:場所") == 3
+					CONTINUE
+				TRYCALLFORM CARD_{GETVAR(@"%対面者%_戦場:カウンタ")},"攻撃力"
+				IF RESULT > 最大攻撃力
+					最大攻撃力 = RESULT
+					最大攻撃力듀얼리스트 = %対面者%
+				ENDIF
+			NEXT
+
+			SIF 最大攻撃力듀얼리스트 == 듀얼리스트
+				RETURN 0
+			
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件カテゴリ = 공아단
+			효과条件任意 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+
+

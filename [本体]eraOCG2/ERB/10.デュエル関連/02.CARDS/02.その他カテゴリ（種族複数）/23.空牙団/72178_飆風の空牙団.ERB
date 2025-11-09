@@ -1,0 +1,113 @@
+﻿@CARDNAME_72178,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 표풍의 공아단
+	CASE "略称"
+		RESULTS = 표풍의 공아단
+	CASE "カテゴリ"
+		RESULTS:0 = 공아단
+ENDSELECT
+
+
+@CARD_72178(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72178(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②는 각각 １턴에 １장밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：자신 필드에 몬스터가 존재하지 않는 경우에 발동할 수 있다。
+PRINTL 덱에서 레벨４ 이하인 "공아단" 몬스터 １장을 특수 소환한다。
+PRINTL 상대 필드에 몬스터가 ２장 이상 존재하는 경우、
+PRINTL 추가로 덱에서 "공아단" 몬스터 １장을 특수 소환할 수 있다。
+PRINTL 이 턴, 자신은 "공아단" 몬스터밖에 특수 소환할 수 없다。
+;処理はそれぞれの対応カードへ
+CALLFORM CARD_ABLE(2,身代효과)
+PRINTL ②：자신이 "공아단" 몬스터의 효과를 발동하기 위해 패를 버릴 경우、
+PRINTL 그 카드 １장 대신에 묘지의 이 카드를 제외할 수 있다。
+
+
+@CARDCAN_72178(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72178)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,72178)
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 공아단
+	CALLFORM 효과条件レベル_ADV(4,"以下")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_72178(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72178,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 공아단
+		CALLFORM 효과条件レベル_ADV(4,"以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			SIF モンスター数(듀얼리스트) < 2
+				RETURN 0
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 공아단
+			효과条件任意 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"공아단")
+	ENDIF
+ENDIF
+

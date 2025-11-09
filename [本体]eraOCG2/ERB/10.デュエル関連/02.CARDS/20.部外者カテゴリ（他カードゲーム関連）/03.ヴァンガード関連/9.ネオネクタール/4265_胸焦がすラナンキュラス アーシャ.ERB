@@ -7,7 +7,7 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 라넌큘러스의 꽃소녀 아샤
+		RESULTS = 애타는 라넌큘러스 아샤
 	CASE "略称"
 		RESULTS = 아샤
 	CASE "カテゴリ"
@@ -27,8 +27,7 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
-		RETURN 엑시즈
+		RETURN 링크
 	CASE "속성"
 		RETURN 땅속성
 	CASE "종족"
@@ -41,6 +40,8 @@ SELECTCASE 参照先
 		RETURN 2000
 	CASE "성별"
 		RETURN 牝性
+	CASE "レア度"
+		RETURN SPR
 ENDSELECT
 
 RETURN 0
@@ -52,12 +53,11 @@ RETURN 0
 #DIM DYNAMIC カウンタ
 
 CALL RESETCONDITION_MAT
-必要素材数 = 2
-素材条件レベル = 4
+必要링크数 = 3
 素材条件종족 = 식물족
 
 IF EX参照 == 1
-	CALL XYZCAN(듀얼리스트,소환カード,4265) 
+	CALL LINCAN(듀얼리스트,소환カード,4265) 
 	RETURN RESULT
 ENDIF
 
@@ -66,13 +66,16 @@ ENDIF
 @CARD_EXPLANATION_4265(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 레벨 4 식물족 몬스터 × 2
+PRINTL 식물족 몬스터 2장 이상
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번만 사용할 수 있다.
-CALLFORM CARD_ABLE(1,필드起動)
-PRINTL ①: 이 카드의 엑시즈 소재를 1개 제거하고, 자신 필드의 식물족 몬스터 1장을 대상으로 하여 발동할 수 있다.
-PRINTL 그 동명 몬스터 1장을 덱에서 특수 소환한다.
-CALLFORM CARD_ABLE(0,지속효과 ,攻守変動)
-PRINTL ②: 자신 필드의 다른 "아샤" 몬스터의 공격력은 1000 올리고, 대상 내성을 얻는다.
+CALLFORM CARD_ABLE(1,ターン開始時)
+PRINTL ①：자신 / 상대의 스탠바이 페이즈에 발동할 수 있다。
+PRINTL 패에서 식물족 몬스터 １장을 특수 소환한다。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：패를 １장 버리고、자신 필드의 초차원 몬스터 이외의 "네오 넥타르" 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 같은 이름의 몬스터 １장을 덱 / ＥＸ덱에서 특수 소환한다。
+PRINTL 그 후、자신 필드에 다른 "애타는 라넌큘러스 아샤"가 존재하는 경우、
+PRINTL 자신은 덱에서 １장 드로우한다。
 
 @CARDCAN_4265(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -85,33 +88,34 @@ PRINTL ②: 자신 필드의 다른 "아샤" 몬스터의 공격력은 1000 올�
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4265)
 SIF RESULT == 1
 	RETURN 0
-IF 종류 == 필드起動
+IF 종류 == ターン開始時
 	SIF 발동済_1(듀얼리스트,4265)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종족 = 식물족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,4265)
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+	SIF 손패数(듀얼리스트) == 0
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-	효과条件종족 = 식물족
-	효과条件종류 = EX以外全般
-	효과条件他所 = 1
+	효과条件カテゴリ = 네오 넥타르
+	효과条件종류:0 = 효과モン
+	효과条件종류:1 = 링크
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件종족 = 식물족
-	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
-	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -130,31 +134,43 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4265,1,X消費1)
+IF 종류 == ターン開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4265,1)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲손패 = 1
 		효과条件종족 = 식물족
-		효과条件종류 = EX以外全般
-		효과条件他所 = 1
-		CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)	
-		選択カード = RESULT
-		IF 選択カード != 9999
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4265,2)
+	IF RESULT == 0
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
 			CALL FULLRESET
-			효과範囲덱 = 1
-			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{選択カード}")}("名前")
-			효과条件名前 = 라넌큘러스의 꽃소녀 아샤
-			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+			효과条件カテゴリ = 네오 넥타르
+			효과条件종류:0 = 효과モン
+			효과条件종류:1 = 링크
+			CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)	
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALL FULLRESET
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:{選択カード}")}("名前")
+				효과条件名前 = %RESULTS%
+				효과範囲덱 = 1
+				효과範囲EX덱 = 1
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件他所 = 1
+				효과条件名前 = 애타는 라넌큘러스 아샤
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					CALL CARDDRAW_BASIC(듀얼리스트,1)
+				ENDIF
+			ENDIF
 		ENDIF
 	ENDIF
-ELSEIF 종류 == 지속효과
-	CALL FULLRESET
-	효과条件他所 = 1
-	효과条件カテゴリ = 아샤
-	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
-ELSEIF 종류 == 攻守変動
-	CALL FULLRESET
-	효과条件他所 = 1
-	효과条件カテゴリ = 아샤
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000)
 ENDIF

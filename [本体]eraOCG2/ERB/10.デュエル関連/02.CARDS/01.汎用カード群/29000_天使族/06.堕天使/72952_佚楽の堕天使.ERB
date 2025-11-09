@@ -1,0 +1,138 @@
+﻿@CARDNAME_72952,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 일락의 타락천사
+	CASE "略称"
+		RESULTS = 일락의 타락천사
+	CASE "カテゴリ"
+		RESULTS:0 = 타락천사
+ENDSELECT
+
+
+@CARD_72952(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72952(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없다。
+CALL CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：자신의 패 / 필드 / 묘지 및 상대 필드의 몬스터를 융합 소재로서 제외하고、
+PRINTL 천사족 / 어둠속성 융합 몬스터 １장을 융합 소환한다。
+PRINTL 이 효과로 특수 소환한 몬스터의 공격력은 １０００오른다。
+
+@CARDCAN_72952(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72952)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,72952)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲손패 = 1
+	素材範囲필드 = 1
+	素材範囲묘지 = 1
+	素材範囲상대필드 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
+	효과条件속성 = 어둠속성
+	효과条件종족 = 천사족
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 他효과起動
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_72952(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;上級타락천사효과時は필드起動で処理し、묘지送り処理を防ぐ
+	;カード발동確認　※필드起動時はターン1制限を回避
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72952,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+		素材範囲묘지 = 1
+		素材範囲상대필드 = 1
+		CALL FULLRESET
+		효과条件종류 = 융합
+		효과条件속성 = 어둠속성
+		효과条件종족 = 천사족
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			효과추가종류 = 効追永攻 + 1000
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:選択カード")}(듀얼리스트,選択カード)
+			CALL FUSSUMMON(듀얼리스트, 選択カード,제외行き)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 他효과起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72952)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+		素材範囲묘지 = 1
+		素材範囲상대필드 = 1
+		CALL FULLRESET
+		효과条件종류 = 융합
+		효과条件속성 = 어둠속성
+		효과条件종족 = 천사족
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			효과추가종류 = 効追永攻 + 1000
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:選択カード")}(듀얼리스트,選択カード)
+			CALL FUSSUMMON(듀얼리스트, 選択カード,제외行き)
+		ENDIF
+	ENDIF
+ENDIF

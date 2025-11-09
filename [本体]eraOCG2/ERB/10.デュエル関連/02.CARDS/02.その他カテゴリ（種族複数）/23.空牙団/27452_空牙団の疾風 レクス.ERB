@@ -1,0 +1,151 @@
+﻿@CARDNAME_27452,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 공아단의 질풍　렉스
+	CASE "略称"
+		RESULTS = 질풍 렉스
+	CASE "カテゴリ"
+		RESULTS:0 = 공아단
+ENDSELECT
+
+
+@CARD_27452(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1200
+	CASE "성별"
+		RETURN 雄性
+	CASE "追加日"
+		RETURN 251025
+ENDSELECT
+
+RETURN 0
+@CARD_EXPLANATION_27452(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：패의 이 카드를 상대에게 보여주고 발동할 수 있다。
+PRINTL 패에서 "공아단의 질풍 렉스" 이외의 "공아단" 몬스터 １장을 특수 소환한다。
+PRINTL 그 후、이 카드를 특수 소환한다。
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ②："공아단" 카드 이외의 효과로 덱에서 카득 상대의 패에 넣어진 경우、
+PRINTL 자신 필드에 다른 "공아단" 몬스터가 존재하고 있다면 발동할 수 있다。
+PRINTL 자신은 １장 드로우한다。
+
+@CARDCAN_27452(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27452)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,27452)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 4
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,27452,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 공아단
+	효과条件固名前 = 공아단의 질풍　렉스
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,27452)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 処理中_효과ID <= 0
+		RETURN 0
+	TRYCALLFORM CARDNAME_{処理中_효과ID},"カテゴリ"
+	SIF MATCH(RESULTS,"공아단")
+		RETURN 0
+	CALL CARD_CHECK_FIN_BIT(듀얼리스트,"離이동元",4,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 공아단
+	효과条件표시 = 表側표시
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득+D",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_27452(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27452,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ = 공아단
+		효과条件固名前 = 공아단의 질풍　렉스
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27452)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ENDIF
+
