@@ -7,14 +7,14 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = (CH2641-03)花と歯車のテヰサロン
+		RESULTS = (CH2641-03)꽃과 톱니바퀴의 티살롱
 	CASE "이벤트種"
 		RETURN 이벤트_通常
 	CASE "依頼先"
 		RETURN 即時開始
 	CASE "詳細"
-		PRINTL カラットの家が主催する私的ティーサロンへ招待された。
-		PRINTL サロン庭園で祖母に拝謁しよう。
+		PRINTL 캐럿 가문이 주최하는 사적인 티살롱에 초대받았다.
+		PRINTL 살롱 정원에서 할머니를 배알하자.
 		PRINTL 
 		PRINTL 報酬：5000DP
 	CASE "条件"
@@ -23,12 +23,12 @@ SELECTCASE 参照先
         RETURN 1
 	CASE "추가条件"
 		IF CFLAG:NO_TO_CHARANUM(2641):호감도 < 1000
-			RESULTS = 호감도が不足しています
+			RESULTS = 호감도가 부족합니다
 			RETURN 1
 		ENDIF
 		IF MARK:NO_TO_CHARANUM(2641):반발각인 > 0
 			;ちょっと変化を入れよう
-			RESULTS = ご機嫌麗しからず、招きを見合わせるべきかもしれません。
+			RESULTS = 심기가 불편하신 듯하니, 초대를 보류하는 것이 좋을지도 모릅니다.
 			RETURN 1
 		ENDIF
 		RETURN 0
@@ -45,44 +45,44 @@ RETURN 0
 이벤트主 = NO_TO_CHARANUM(2641)
 
 IF 依頼_달성상황 == 0
-	PRINTFORML 朝、あなたのポストに重厚な封筒が届いた。
-	PRINTFORMW 封蝋には花と歯車の紋章—%CALLNAME:이벤트主%の家の印が刻まれている。
+	PRINTFORML 아침, 당신의 우편함에 묵직한 봉투가 도착했다.
+	PRINTFORMW 봉랍에는 꽃과 톱니바퀴 문양—%CALLNAME:이벤트主% 가문의 인장이 새겨져 있다.
 	
-	PRINTFORML 「%CALLNAME:MASTER%様へ。祖母主催の私的ティーサロンにて、
-	PRINTFORMW 　改めてご挨拶を賜りたく存じます——%CALLNAME:이벤트主%」
+	PRINTFORML 「%CALLNAME:MASTER%님께. 할머님께서 주최하시는 사적인 티살롱에서,
+	PRINTFORMW 　다시 한번 인사를 드리고 싶사옵니다——%CALLNAME:이벤트主%」
 	
-	PRINTFORML 身支度を整える前に、手土産を用意するべきだろうか。
-	PRINTFORMW 礼に過不足なき選び方が求められそうだ。
+	PRINTFORML 몸단장을 하기 전에, 선물을 준비해야 할까.
+	PRINTFORMW 예의에 어긋나지 않는 선택이 필요해 보인다.
 	
     $INPUT_LOOP
 	PRINTL
-	PRINTL [0] - 何も持たず、身だしなみを徹底する
+	PRINTL [0] - 아무것도 가져가지 않고, 몸가짐을 단정히 한다
     SIF MONEY > 10000
-	    PRINTL [1] - 上質な茶葉の詰め合わせを選ぶ（10000円）
+	    PRINTL [1] - 고급 찻잎 세트를 고른다 (10000엔)
     SIF MONEY > 15000
-	    PRINTL [2] - 上品な菓子折りを選ぶ（15000円）
+	    PRINTL [2] - 품위 있는 과자 상자를 고른다 (15000엔)
 	BINPUT
 	
 	IF RESULT == 0
-        PRINTFORML 礼は所作に宿る。無駄を削ぎ、身なりを整え、所作を正す。
-        PRINTFORMW 余計な手数を省き、心を澄ませることにした。
+        PRINTFORML 예의는 몸가짐에 깃든다. 군더더기를 없애고, 몸가짐을 단정히 하며, 행동을 바로 한다.
+        PRINTFORMW 불필요한 수고를 덜고, 마음을 맑게 하기로 했다.
         依頼_進行보존:302641 = 0
 	ELSEIF RESULT == 1
         SIF 依頼_見返し中 == 0
             CALL MONEY_GET(-10000)
-        PRINTFORML 気取らないが確かな品質の茶葉を選んだ。渋みと香りの均衡が美しい。
-        PRINTFORMW 「礼は形にあらず、心に宿るもの」——そんな言葉がふと胸を過る。
+        PRINTFORML 꾸밈없지만 확실한 품질의 찻잎을 골랐다. 떫은맛과 향의 균형이 아름답다.
+        PRINTFORMW 「예의는 형태가 아니라, 마음에 깃드는 것」——그런 말이 문득 가슴을 스친다.
         依頼_進行보존:302641 = 10
 	ELSE
         SIF 依頼_見返し中 == 0
 			CALL MONEY_GET(-15000)
-        PRINTFORML 焼き手の銘が入った菓子折りを選んだ。見目も味も相応だ。
-        PRINTFORMW 箱を抱え、深呼吸して気を引き締める。
+        PRINTFORML 장인의 이름이 새겨진 과자 상자를 골랐다. 모양새도 맛도 그에 걸맞다.
+        PRINTFORMW 상자를 안고, 심호흡하며 마음을 다잡는다.
         依頼_進行보존:302641 = 11
 	ENDIF
 	
-	PRINTFORML 迎えの車に乗り込み、会場へ向かう。
-	PRINTFORMW あなたは車窓に流れる街並みを静かに見送った。
+	PRINTFORML 마중 나온 차에 올라, 행사장으로 향한다.
+	PRINTFORMW 당신은 차창으로 스쳐 지나가는 거리 풍경을 조용히 지켜보았다.
 	
 	依頼_달성상황 ++
 	依頼_場所 = 場所_高級ホテル
@@ -92,76 +92,76 @@ IF 依頼_달성상황 == 0
 ELSEIF 依頼_달성상황 == 1
 	依頼_場所 = 場所_高級ホテル
 	
-	PRINTFORML サロン庭園。白い天幕の下、緑陰と風鈴の音が涼やかに交わる。
-	PRINTFORMW %CALLNAME:이벤트主%の祖母が温かくも厳しい眼差しであなたを迎える。
+	PRINTFORML 살롱 정원. 하얀 천막 아래, 녹음과 풍경 소리가 시원하게 어우러진다.
+	PRINTFORMW %CALLNAME:이벤트主%의 할머니가 따뜻하면서도 엄한 눈빛으로 당신을 맞이한다.
 	
-	PRINTFORML 祖母「礼は形にあらず、心に宿るもの——忘れなさるな」
-	PRINTFORMW あなたは深く頭を垂れ、胸の内でその言葉を反芻した。
+	PRINTFORML 할머니「예의는 형태가 아니라, 마음에 깃드는 것——잊지 말거라」
+	PRINTFORMW 당신은 깊이 고개를 숙이고, 가슴속으로 그 말을 되새겼다.
 	
 	IF 依頼_進行보존:302641 == 10
-		PRINTFORML 祖母は茶葉の包みを手に取り、僅かに目を細めた。
-		PRINTFORMW 祖母「渋みは心、香りは誠。よう選ばれた」
+		PRINTFORML 할머니는 찻잎 꾸러미를 손에 들고, 살짝 눈을 가늘게 떴다.
+		PRINTFORMW 할머니「떫은맛은 마음, 향기는 정성. 잘 골랐구나」
 		CALL EVENT_FAVUP(이벤트主, 200)
 	ELSEIF 依頼_進行보존:302641 == 11
-		PRINTFORML 祖母は菓子折りの意匠を眺め、口元に微笑を浮かべた。
-		PRINTFORMW 祖母「甘やかであれど、品を失わず。よろしい」
+		PRINTFORML 할머니는 과자 상자의 디자인을 바라보며, 입가에 미소를 띠었다.
+		PRINTFORMW 할머니「달콤하지만, 품위를 잃지 않았구나. 좋도다」
 		CALL EVENT_FAVUP(이벤트主, 200)
 	ELSE
-		PRINTFORML 祖母はあなたの所作を一瞥し、短く頷いた。
-		PRINTFORMW 祖母「身は正しく、息は静かに。それでよい」
+		PRINTFORML 할머니는 당신의 몸가짐을 힐끗 보고, 짧게 고개를 끄덕였다.
+		PRINTFORMW 할머니「몸은 바르게, 숨은 조용히. 그러면 좋다」
 	ENDIF
 	
-	PRINTFORML %CALLNAME:이벤트主%「%CALLNAME:MASTER%様……本日はよくお越しくださいました」
-	PRINTFORMW %CALLNAME:이벤트主%「至らぬ点多々あれど、どうぞよろしくてよ」
+	PRINTFORML %CALLNAME:이벤트主%「%CALLNAME:MASTER%님…… 오늘 왕림해주셔서 감사하옵니다」
+	PRINTFORMW %CALLNAME:이벤트主%「미숙한 점이 많사오나, 부디 잘 부탁드리옵니다」
 	
-	PRINTFORML そこへ、燕尾服の執事・鴻巣が一歩進み出た。
-	PRINTFORMW 鴻巣「旦那様よりの仰せ——御手並み、拝見仕る」
+	PRINTFORML 그때, 연미복을 입은 집사 코노스가 한 걸음 나섰다.
+	PRINTFORMW 코노스「주인님의 분부시옵니다——솜씨를, 뵙고자 하옵니다」
 	
-	PRINTFORML %CALLNAME:이벤트主%「焦りは禁物、いと危（あや）うし。間合いを詰めすぎませぬよう」
-	PRINTFORMW %CALLNAME:이벤트主%は扇子で口元を隠し、あなたにだけ聞こえる声でそっと囁いた。
+	PRINTFORML %CALLNAME:이벤트主%「조급함은 금물, 실로 위험하옵니다. 거리를 너무 좁히지 마시옵소서」
+	PRINTFORMW %CALLNAME:이벤트主%는 부채로 입가를 가리고, 당신에게만 들리는 목소리로 살며시 속삭였다.
 	
 	PRINTL
-	PRINTL [0] - 黙礼して構える
-	PRINTL [1] - 胸に手を当て、礼を尽くして構える
-	PRINTL [2] - 無駄口を叩かず、静かにディスクを起動する
+	PRINTL [0] - 묵례하고 자세를 잡는다
+	PRINTL [1] - 가슴에 손을 얹고, 예를 다해 자세를 잡는다
+	PRINTL [2] - 군말 없이, 조용히 디스크를 기동한다
 	BINPUT
 	
 	IF RESULT == 0
-		PRINTFORML あなたは静かに黙礼し、気を一点に集めた。
-		PRINTFORMW 鴻巣「うむ……よい姿勢だ」
+		PRINTFORML 당신은 조용히 묵례하고, 정신을 한곳에 모았다.
+		PRINTFORMW 코노스「음…… 좋은 자세로다」
 		CALL EVENT_FAVUP(이벤트主, 100)
 	ELSEIF RESULT == 1
-		PRINTFORML あなたは胸に手を当て、礼を尽くした。
-		PRINTFORMW 祖母「礼は心より出でて、形に兆（きざ）す。よろしい」
+		PRINTFORML 당신은 가슴에 손을 얹고, 예를 다했다.
+		PRINTFORMW 할머니「예는 마음에서 우러나와, 형태로 드러나는 법. 좋도다」
 		CALL EVENT_FAVUP(이벤트主, 150)
 	ELSE
-		PRINTFORML あなたは余計な所作を捨て、ただ静謐にディスクを起動する。
-		PRINTFORMW 鴻巣「剣呑、されど佳き集中だ」
+		PRINTFORML 당신은 불필요한 동작을 버리고, 그저 고요하게 디스크를 기동한다.
+		PRINTFORMW 코노스「험악하도다, 허나 좋은 집중력이로다」
 	ENDIF
 	
-	PRINTFORML 鴻巣「では——御試合（おたしなみ）、始めさせていただこう」
-	PRINTFORMW あなたはデュエルディスクを起動した。
+	PRINTFORML 코노스「그럼——어전시합(御試合), 시작하도록 하겠사옵니다」
+	PRINTFORMW 당신은 듀얼 디스크를 기동했다.
 	
 	TARGET = -1
 	CALL CHOICE_DUEL_TYPE(302641)
 	
 	IF RESULT == 1
 		; 승리
-		PRINTFORML 鴻巣「見事。高打点も除去も、焦らず捌かれたか」
-		PRINTFORMW 鴻巣は恭しく一礼し、승리を称えた。
+		PRINTFORML 코노스「훌륭하도다. 높은 타점도 제거도, 서두르지 않고 처리했는가」
+		PRINTFORMW 코노스는 공손히 절하며, 승리를 칭송했다.
 		
-		PRINTFORML 祖母「此度の縁、まこと悦ばし。——家の信、預けてもよいかと存ずる」
-		PRINTFORMW 祖母は穏やかに微笑み、あなたの目をまっすぐに見つめる。
+		PRINTFORML 할머니「이번 인연, 실로 기쁘도다. ——가문의 신뢰를, 맡겨도 좋을 듯하구나」
+		PRINTFORMW 할머니는 온화하게 미소 지으며, 당신의 눈을 똑바로 바라본다.
 		
-		PRINTFORML %CALLNAME:이벤트主%「……これより一層、頼もしゅうございますわ」
-		PRINTFORMW %CALLNAME:이벤트主%は頬を染め、扇子の陰でそっと微笑んだ。
+		PRINTFORML %CALLNAME:이벤트主%「……이보다 더, 든든할 수 없사옵니다」
+		PRINTFORMW %CALLNAME:이벤트主%는 뺨을 붉히고, 부채 그늘에서 살며시 미소 지었다.
 		
 		IF 依頼_進行보존:302641 >= 10
-			PRINTFORML 帰り際、祖母から小さな包みを手渡された。香り高い茶と焼き菓子の詰め合わせだ。
-			PRINTFORMW 「気持ちは受け取り、気持ちで返す」——その余韻がいつまでも心に残った。
+			PRINTFORML 돌아가는 길, 할머니에게서 작은 꾸러미를 건네받았다. 향기로운 차와 구운 과자 세트다.
+			PRINTFORMW 「마음은 받고, 마음으로 돌려준다」——그 여운이 언제까지나 마음에 남았다.
             IF 依頼_見返し中 == 0
                 SETCOLOR C_YELLOW
-                PRINTFORML 체력と기력が上昇しました（+100）
+                PRINTFORML 체력과 기력이 상승했습니다 (+100)
                 MAXBASE:MASTER:체력 += 100
                 MAXBASE:MASTER:기력 += 100
             ENDIF
@@ -171,11 +171,11 @@ ELSEIF 依頼_달성상황 == 1
 		RETURN 2
 	ELSE
 		; 패배
-		PRINTFORML 鴻巣「詰めの一手——焦りにほころびが出たか。然れど資質は十二分」
-		PRINTFORMW 祖母「負けを知りて、勝ちを知る。——次（つい）でよい」
+		PRINTFORML 코노스「마지막 한 수——조급함에 허점이 보였는가. 허나 자질은 충분하도다」
+		PRINTFORMW 할머니「패배를 알아야, 승리를 아는 법. ——다음이면 좋다」
 		
-		PRINTFORML %CALLNAME:이벤트主%「%CALLNAME:MASTER%様……無理はなりませぬ。次こそは」
-		PRINTFORMW あなたは拳を軽く握り、鴻巣と次の再戦の約束をした。
+		PRINTFORML %CALLNAME:이벤트主%「%CALLNAME:MASTER%님…… 무리는 금물이옵니다. 다음이야말로」
+		PRINTFORMW 당신은 주먹을 가볍게 쥐고, 코노스와 다음 재대결을 약속했다.
 		
 		CALL EVENT_TIMER(30)
 		RETURN 3
@@ -200,7 +200,7 @@ RETURN 0
 ; デュエル開始時台詞
 @IRAI_DUEL_INTRO_302641
 PRINTFORML 
-PRINTFORML 執事・鴻巣「僭越ながら、御手並み拝見つかまつる」
+PRINTFORML 집사 코노스「외람되오나, 솜씨를 뵙겠사옵니다」
 PRINTFORMW 
 
 @DUELDECK_302641(듀얼리스트)

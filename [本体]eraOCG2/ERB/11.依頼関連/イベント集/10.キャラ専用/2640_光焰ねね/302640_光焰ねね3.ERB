@@ -7,28 +7,28 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = (CH2640-03)シャドールの試練
+		RESULTS = (CH2640-03)섀도르의 시련
 	CASE "이벤트種"
 		RETURN 이벤트_通常
 	CASE "依頼先"
 		RETURN 即時開始
 	CASE "詳細"
 		PRINTL
-		PRINTL ねねが新しい덱【シャドール】の使い方に悩んでいる。
-		PRINTL 彼女と特訓デュエルを行い、덱の完成度を高めてあげよう。
+		PRINTL 네네가 새로운 덱【섀도르】의 사용법에 대해 고민하고 있다.
+		PRINTL 그녀와 특훈 듀얼을 하여, 덱의 완성도를 높여주자.
 		PRINTL
-		PRINTL 報酬：5000DP
+		PRINTL 보상：5000DP
 	CASE "条件"
 		SIF 依頼_完了횟수:202640 == 0
 			RETURN 0
 		RETURN 1
 	CASE "추가条件"
 		IF CFLAG:NO_TO_CHARANUM(2640):호감도 < 1000
-            RESULTS = 호감도が不足しています
+            RESULTS = 호감도가 부족합니다
             RETURN 1
         ENDIF
 		IF MARK:NO_TO_CHARANUM(2640):반발각인 > 0
-			RESULTS = 怒っているようです。분노が収まるまで待ちましょう。
+			RESULTS = 화가 난 것 같습니다. 분노가 가라앉을 때까지 기다립시다.
 			RETURN 1
 		ENDIF
 		RETURN 0
@@ -46,79 +46,79 @@ RETURN 0
 
 IF 依頼_달성상황 == 0
 	; 自宅での導入（即時開始）
-	PRINTFORML 玄関のチャイムが鳴った。
-	PRINTFORMW 扉を開けると、どこか決意を宿した%CALLNAME:이벤트主%が立っている。
-	PRINTFORML 「%CALLNAME:MASTER%……少し、時間いいかな？」
-	PRINTFORMW %CALLNAME:이벤트主%は小さく頭を下げ、リビングへと通された。
-	PRINTFORML 「あなたにだけは、本当のことを話したいの」
-	PRINTFORMW 「最近、謎の人から【シャドール】の덱を託されたんだ。でも、上手く使いこなせなくて……」
-	PRINTFORML 「この덱には、なにか“秘密”がある気がする」
-	PRINTFORMW 「怖いけど……%CALLNAME:MASTER%となら、向き合えるかもしれない」
-	PRINTFORML %CALLNAME:이벤트主%は手にしたカードをぎゅっと握りしめ、あなたを真っ直ぐに見つめた。
-	PRINTFORMW 「お願い。特訓、付き合ってくれる？」
+	PRINTFORML 현관 벨이 울렸다.
+	PRINTFORMW 문을 열자, 어딘가 결의를 다진 %CALLNAME:이벤트主%가 서 있다.
+	PRINTFORML 「%CALLNAME:MASTER%…… 잠깐, 시간 괜찮을까?」
+	PRINTFORMW %CALLNAME:이벤트主%는 작게 고개를 숙이고, 거실로 안내되었다.
+	PRINTFORML 「너에게만은, 진실을 이야기하고 싶어」
+	PRINTFORMW 「최근에, 수수께끼의 사람에게 【섀도르】 덱을 받았어. 하지만, 잘 다루지 못해서……」
+	PRINTFORML 「이 덱에는, 무언가 "비밀"이 있는 것 같아」
+	PRINTFORMW 「무섭지만…… %CALLNAME:MASTER%와 함께라면, 마주할 수 있을지도 몰라」
+	PRINTFORML %CALLNAME:이벤트主%는 손에 든 카드를 꽉 쥐고, 당신을 똑바로 바라보았다.
+	PRINTFORMW 「부탁이야. 특훈, 함께 해줄래?」
 	PRINTL
-	PRINTL [0] - 「一緒に掴もう、シャドールの真価」
-	PRINTL [1] - 「無理はしない。少しずつ慣れていこう」
-	PRINTL [2] - 黙って頷き、手を差し伸べる
+	PRINTL [0] - 「함께 잡자, 섀도르의 진가」
+	PRINTL [1] - 「무리하지 않아. 조금씩 익숙해지자」
+	PRINTL [2] - 말없이 고개를 끄덕이고, 손을 내민다
 	BINPUT
 	IF RESULT == 0
-		PRINTFORML あなたは力強く頷き、%CALLNAME:이벤트主%の手元の덱ケースをそっと支えた。
-		PRINTFORMW %CALLNAME:이벤트主%の頬に安堵と高揚が混ざった笑みが灯る。
+		PRINTFORML 당신은 힘차게 고개를 끄덕이고, %CALLNAME:이벤트主%의 손에 든 덱 케이스를 살며시 받쳤다.
+		PRINTFORMW %CALLNAME:이벤트主%의 뺨에 안도와 고양이 섞인 미소가 떠오른다.
 		CALL EVENT_FAVUP(이벤트主,150)
 		依頼_進行보존:302640 = 1
 	ELSEIF RESULT == 1
-		PRINTFORML あなたは焦らず段階を踏むべきだと伝える。
-		PRINTFORMW %CALLNAME:이벤트主%は深呼吸し、「うん、隣にいてね」と小さく頷いた。
+		PRINTFORML 당신은 서두르지 말고 단계를 밟아야 한다고 전한다.
+		PRINTFORMW %CALLNAME:이벤트主%는 심호흡하고, 「응, 옆에 있어줘」라고 작게 고개를 끄덕였다.
 		CALL EVENT_FAVUP(이벤트主,50)
 		依頼_進行보존:302640 = 2
 	ELSE
-		PRINTFORML あなたは言葉より先に行動で示した。
-		PRINTFORMW 手を差し出すと、%CALLNAME:이벤트主%は迷いを振りほどくようにその手を取った。
+		PRINTFORML 당신은 말보다 먼저 행동으로 보여주었다.
+		PRINTFORMW 손을 내밀자, %CALLNAME:이벤트主%는 망설임을 떨쳐내듯 그 손을 잡았다.
 		CALL EVENT_FAVUP(이벤트主,100)
 		依頼_進行보존:302640 = 3
 	ENDIF
-	PRINTFORML 「……ありがとう」
-	PRINTFORMW 「それじゃ、リビングで始めよう。%CALLNAME:MASTER%がいてくれるなら、きっと大丈夫」
+	PRINTFORML 「……고마워」
+	PRINTFORMW 「그럼, 거실에서 시작하자. %CALLNAME:MASTER%가 있어준다면, 분명 괜찮을 거야」
 	依頼_달성상황 ++
 	; 次フェーズの場所（自宅リビングで続行）
 	依頼_場所 = 場所_リビング
 ELSEIF 依頼_달성상황 == 1
 	; デュエル開始と中盤演出
-	PRINTFORML %CALLNAME:이벤트主%はデュエルディスクを起動し、静かに構えを取る。
-	PRINTFORMW 「見ててね。私も、この덱も、もう逃げないから」
-	PRINTFORML 彼女の周囲で、どこか影が揺らめいた気がした。
-	PRINTFORMW あなたは胸のうちで覚悟を固め、対峙する。
+	PRINTFORML %CALLNAME:이벤트主%는 듀얼 디스크를 기동하고, 조용히 자세를 잡는다.
+	PRINTFORMW 「지켜봐 줘. 저도, 이 덱도, 더 이상 도망치지 않을 테니까」
+	PRINTFORML 그녀의 주위에서, 어딘가 그림자가 흔들리는 듯한 기분이 들었다.
+	PRINTFORMW 당신은 마음속으로 각오를 다지고, 마주한다.
 	PRINTFORML
-	PRINTFORMW 「デュエル、開始！」
+	PRINTFORMW 「듀얼, 개시!」
 
 	TARGET = 이벤트主
 	CALL CHOICE_DUEL_TYPE(302640)
 
 	; 勝ち負け不問
 	; デュエル後の展開
-	PRINTFORML %CALLNAME:이벤트主%の【シャドール】が、戦いの最中に真価を垣間見せた。
-	PRINTFORMW 同時に、彼女の身の回りで小さな不具合や不運が連鎖する。
-	PRINTFORML 「やっぱり……私の不運、ただの体質じゃないのかも」
-	PRINTFORMW 「この力の副作用……そんな感じがするの」
-	PRINTFORML あなたは彼女の不安を受け止め、落ち着くように合図する。
-	PRINTFORMW %CALLNAME:이벤트主%は胸に手を当て、そっと目を閉じた。
+	PRINTFORML %CALLNAME:이벤트主%의 【섀도르】가, 싸움 도중에 진가를 살짝 드러냈다.
+	PRINTFORMW 동시에, 그녀의 주변에서 작은 고장이나 불운이 연쇄적으로 일어난다.
+	PRINTFORML 「역시…… 나의 불운은, 단순한 체질이 아닐지도 몰라」
+	PRINTFORMW 「이 힘의 부작용…… 그런 느낌이 들어」
+	PRINTFORML 당신은 그녀의 불안을 받아들이고, 진정하도록 신호한다.
+	PRINTFORMW %CALLNAME:이벤트主%는 가슴에 손을 얹고, 살며시 눈을 감았다.
 
 	IF 依頼_進行보존:302640 == 1
-		PRINTFORML 「あなたの言葉が、背中を押してくれた」
-		PRINTFORMW 「怖いけど……あなたがいるなら進める。ね、もう少し付き合って」
+		PRINTFORML 「너의 말이, 등을 밀어주었어」
+		PRINTFORMW 「무섭지만…… 네가 있다면 나아갈 수 있어. 저기, 조금만 더 함께 해줄래」
 	ELSEIF 依頼_進行보존:302640 == 2
-		PRINTFORML 「焦らないって約束、守れた気がする」
-		PRINTFORMW 「このペースなら、ちゃんと자신と덱に向き合えるよ」
+		PRINTFORML 「서두르지 않겠다는 약속, 지킬 수 있었던 것 같아」
+		PRINTFORMW 「이 페이스라면, 제대로 자신과 덱을 마주할 수 있을 것 같아」
 	ELSE
-		PRINTFORML 「何も言わなくても、伝わってくるんだ」
-		PRINTFORMW 「あなたが隣にいるだけで、怖さが少しずつ薄れていく」
+		PRINTFORML 「아무 말 하지 않아도, 전해져 와」
+		PRINTFORMW 「네가 곁에 있는 것만으로도, 두려움이 조금씩 옅어져 가」
 	ENDIF
 
 	CALL EVENT_FAVUP(이벤트主,100)
-	PRINTFORML 「%CALLNAME:MASTER%……ありがとう」
-	PRINTFORMW 「あなたがいてくれるなら、この力とも向き合える。そう思えた」
-	PRINTFORML そう言って、%CALLNAME:이벤트主%ははにかみながら深く一礼した。
-	PRINTFORMW 二人の間に、確かな信頼の温度が宿る。
+	PRINTFORML 「%CALLNAME:MASTER%…… 고마워」
+	PRINTFORMW 「네가 있어줘서, 이 힘과도 마주할 수 있어. 그렇게 생각해」
+	PRINTFORML 그렇게 말하며, %CALLNAME:이벤트主%는 수줍어하며 깊이 고개 숙여 인사했다.
+	PRINTFORMW 두 사람 사이에, 확실한 신뢰의 온도가 깃든다.
 
 	CALL EVENT_TIMER(30)
 	RETURN 2
@@ -137,8 +137,8 @@ SIF 듀얼리스트 == "상대"
 ; デュエル開始時演出
 @IRAI_DUEL_INTRO_302640
 PRINTFORML
-PRINTFORML ねね「影が囁く……でも、私は私。%CALLNAME:MASTER%が教えてくれたから」
-PRINTFORML ねね「シャドールの真価、ここで見せる！」
+PRINTFORML 네네「그림자가 속삭여…… 하지만, 나는 나야. %CALLNAME:MASTER%가 가르쳐주었으니까」
+PRINTFORML 네네「섀도르의 진가, 여기서 보여주겠어!」
 PRINTFORMW 
 
 @DUELDECK_302640(듀얼리스트)
@@ -202,9 +202,9 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 強欲なサイコロ
+		RESULTS = 탐욕의주사위
 	CASE "略称"
-		RESULTS = 強欲なサイコロ
+		RESULTS = 탐욕의주사위
 	CASE "カテゴリ"
 		RESULTS:0 = ダイス
 ENDSELECT
@@ -226,13 +226,13 @@ RETURN 0
 @CARD_EXPLANATION_172931(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없다。
+PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
 CALL CARD_ABLE(1,마함起動 ,손패起動)
-PRINTL ①：サイコロを１つ振り、その出目によって以下の효과を適用する。
-PRINTL ●１：묘지에서 "強欲なサイコロ」以外の「ダイス」카드 １장을 選んで손패に加える。
-PRINTL ●２，３：덱에서 １枚ドローして、손패を１枚묘지に送る。
-PRINTL ●４，５：덱에서 １장 드로우한다。
-PRINTL ●６：덱에서 ２枚ドローする。
+PRINTL ①: 주사위를 1개 굴려, 그 눈에 따라 이하의 효과를 적용한다.
+PRINTL ●1: 묘지에서 "탐욕의주사위" 이외의 "주사위" 카드 1장을 선택하여 패에 넣는다.
+PRINTL ●2, 3: 덱에서 1장 드로우하고, 패를 1장 묘지에 보낸다.
+PRINTL ●4, 5: 덱에서 1장 드로우한다.
+PRINTL ●6: 덱에서 2장 드로우한다.
 PRINTL 
 
 @CARDCAN_172931(듀얼리스트,종류,ゾーン,場所)
@@ -281,24 +281,24 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL DICE_ROLL_NENE(듀얼리스트,1)
 		サイコロ結果 = RESULT
-		PRINTFORMW 出た目は……{サイコロ結果}だ！
+		PRINTFORMW 나온 눈은……{サイコロ結果}다!
 
 		IF サイコロ結果 == 1
-		PRINTFORMW 回収효과だ！
+		PRINTFORMW 회수 효과다!
 			CALL FULLRESET
 			효과条件カテゴリ = ダイス
-			효과条件固名前 = 強欲なサイコロ
+			효과条件固名前 = 탐욕의주사위
 			CALL CARD_ADD_BASIC(듀얼리스트,"묘지",ゾーン,場所)
 		ELSEIF サイコロ結果 == 3 || サイコロ結果 == 2
-			PRINTFORMW １枚ルーティングだ！
+			PRINTFORMW １장 회수다！
 			CALL CARDDRAW_BASIC(듀얼리스트,1)
 			CALL FULLRESET
 			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
 		ELSEIF サイコロ結果 == 4 || サイコロ結果 == 5
-			PRINTFORMW １枚ドローだ！
+			PRINTFORMW 1장 드로우다!
 			CALL CARDDRAW_BASIC(듀얼리스트,1)
 		ELSEIF サイコロ結果 == 6
-			PRINTFORMW ２枚ドローだ！！！
+			PRINTFORMW ２장 드로우다！！！
 			CALL CARDDRAW_BASIC(듀얼리스트,2)
 		ENDIF 
 	ENDIF
@@ -311,10 +311,10 @@ ENDIF
 #DIM DYNAMIC ダイス合計
 #DIM DYNAMIC ロール数
 
-PRINTFORML ダイスロール
+PRINTFORML 다이스롤
 
 $RE_ROLL
-PRINTL 何かの力を感じる…
+PRINTL 무언가의 힘을 느낀다…
 ダイス結果 = 6
 PRINTL ┌───┐
 PRINTL │●●●│
@@ -322,9 +322,10 @@ PRINTL │＜◎＞│
 PRINTL │●●●│
 PRINTL └───┘
 PRINTL ！？！？！？！？
-PRINTL と、とにかく結果を6で処理しようかな？
+PRINTL 으, 어쨌든 결과를 6으로 처리할까나?
 
 SETVAR @"%듀얼리스트%_ダイス使用_保", 1
+ダイス合計 += ダイス結果
 ダイス合計 += ダイス結果
 ロール数 ++
 CALL CARD_FIN_DICE_SET(듀얼리스트,ダイス結果)

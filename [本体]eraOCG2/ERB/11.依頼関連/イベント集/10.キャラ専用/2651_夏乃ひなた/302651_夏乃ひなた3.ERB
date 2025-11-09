@@ -7,15 +7,15 @@ VARSET RESULTS
 
 SELECTCASE 参照先
     CASE "名前"
-        RESULTS = (CH2651-03)光と闇の協奏曲
+        RESULTS = (CH2651-03)빛과 어둠의 협주곡
     CASE "이벤트種"
         RETURN 이벤트_通常
     CASE "依頼先"
         RETURN 即時開始
     CASE "詳細"
         PRINTL
-        PRINTL 最近、特定の덱타입を使うデュエリストばかりを狙う「덱狩り」が噂になっている。
-        PRINTL ひなたが使う「暗黒界」もターゲットの一つらしい。友人のあげはも心配しているようだ。
+        PRINTL 최근, 특정 덱 타입을 사용하는 듀얼리스트들만을 노리는 「덱 사냥」이 소문이 되고 있다.
+        PRINTL 히나타가 사용하는 「암흑계」도 타겟 중 하나인 듯하다. 친구인 아게하도 걱정하고 있는 모양이다.
         PRINTL
         PRINTL 報酬：5000DP
     CASE "条件"
@@ -24,22 +24,22 @@ SELECTCASE 参照先
         RETURN 1
     CASE "추가条件"
         IF CFLAG:NO_TO_CHARANUM(2651):호감도 < 1000
-            RESULTS = 호감도が不足しています
+            RESULTS = 호감도가 부족합니다
             RETURN 1
         ENDIF
         ;発注人はあげはなので、あげはの속성をチェックする。
         ;仕様です。
         IF CFLAG:NO_TO_CHARANUM(2650):면식 == 0
-            RESULTS = あげはと면식がないため、この依頼は受けられない。
+            RESULTS = 아게하와 면식이 없으므로, 이 의뢰는 받을 수 없다.
             RETURN 1
         ENDIF
         IF MARK:NO_TO_CHARANUM(2650):반발각인 > 0
-            RESULTS = あげはが怒っているため、この依頼は受けられない。
+            RESULTS = 아게하가 화가 났으므로, 이 의뢰는 받을 수 없다.
             RETURN 1
         ENDIF
         ;本人もチェックしておこうか…
         IF MARK:NO_TO_CHARANUM(2651):반발각인 > 0
-            RESULTS = ひなたが怒っているため、この依頼は受けられない。
+            RESULTS = 히나타가 화가 났으므로, 이 의뢰는 받을 수 없다.
             RETURN 1
         ENDIF
         RETURN 0
@@ -60,150 +60,150 @@ RETURN 0
 ゆま = NO_TO_CHARANUM(2653)
 
 IF 依頼_달성상황 == 0
-    ; 自宅での導入
-    PRINTFORML 午後の静かな時間、あなたの自宅に突然の来訪者があった。
-    PRINTFORMW ドアを開けると、そこには青葉あげはが立っていた。
-    PRINTFORML いつもの活発な様子とは違い、どこか焦燥感を漂わせている。
-    PRINTFORMW 「%CALLNAME:MASTER%！大変なの、ひなたが危険かもしれない！」
+    ; 자택에서의 도입
+    PRINTFORML 오후의 조용한 시간, 당신의 자택에 갑작스러운 방문자가 있었다.
+    PRINTFORMW 문을 열자, 그곳에는 아오바 아게하가 서 있었다.
+    PRINTFORML 평소의 활발한 모습과는 달리, 어딘가 초조함을 풍기고 있다.
+    PRINTFORMW 「%CALLNAME:MASTER%！ 큰일 났어, 히나타가 위험할지도 몰라!」
     
     ; あげはとの関係による분기
     IF CFLAG:NO_TO_CHARANUM(2650):호감도 >= 1000 || TALENT:NO_TO_CHARANUM(2650):연모 > 0
-        PRINTFORML 「恋のライバルが増えそうだけど…それ以上に友人との関係が大切なの」
-        PRINTFORMW 「あなたが頼もしいことは、私が一番知ってるから…お願い！」
+        PRINTFORML 「사랑의 라이벌이 늘어날 것 같지만… 그 이상으로 친구와의 관계가 중요해」
+        PRINTFORMW 「당신이 든든하다는 건, 내가 가장 잘 아니까… 부탁해!」
     ELSEIF TALENT:NO_TO_CHARANUM(2650):굴복됨 > 0
-        PRINTFORML 「ご主人様…私の大切な友人が危機なんです」
-        PRINTFORMW 「ご主人様の強さが唯一の頼りです。どうか、ご慈悲を…」
+        PRINTFORML 「주인님… 저의 소중한 친구가 위기에 처했어요」
+        PRINTFORMW 「주인님의 강함이 유일한 의지입니다. 부디, 자비를…」
     ELSE
-        PRINTFORML 「頼れる人がいないの…私、弱いから」
-        PRINTFORML 「ひなたと%CALLNAME:MASTER%の関係がよさそうだから、頼みに来たの」
-        PRINTFORMW 「アンタしか頼れる人がいないの！あの子のこと、守ってあげて！」
+        PRINTFORML 「의지할 사람이 없어… 나, 약하니까」
+        PRINTFORML 「히나타와 %CALLNAME:MASTER%의 관계가 좋아 보여서, 부탁하러 왔어」
+        PRINTFORMW 「당신밖에 의지할 사람이 없어! 그 아이를, 지켜줘!」
     ENDIF
     
-    PRINTFORML あげはは「덱狩り」という噂について説明した。
-    PRINTFORML 特定の덱타입を使うデュエリストを狙い、패배したデュエリストから덱を奪う悪質な行為らしい。
-    PRINTFORMW 「ひなたの『暗黒界』も狙われてるって噂があるの…」
-    PRINTFORML あなたはあげはの必死な表情を見て、事の重大さを理解した。
-    PRINTFORMW すぐにでも%CALLNAME:이벤트主%の元へ向かう必要がある。
+    PRINTFORML 아게하는 「덱 사냥」이라는 소문에 대해 설명했다.
+    PRINTFORML 특정 덱 타입을 사용하는 듀얼리스트를 노려, 패배한 듀얼리스트에게서 덱을 빼앗는 악질적인 행위인 듯하다.
+    PRINTFORMW 「히나타의 『암흑계』도 노려지고 있다는 소문이 있어…」
+    PRINTFORML 당신은 아게하의 필사적인 표정을 보고, 사태의 심각성을 이해했다.
+    PRINTFORMW 당장이라도 %CALLNAME:이벤트主%에게로 향해야 한다.
     
     PRINTL
-    PRINTL [0] - 「分かった、すぐに向かおう」
+    PRINTL [0] - 「알았어, 당장 가자」
     BINPUT
-    PRINTFORML あなたは即座に立ち上がり、外出の準備を始めた。
-    PRINTFORMW 「ありがとう！急いで！」
+    PRINTFORML 당신은 즉시 일어서서, 외출 준비를 시작했다.
+    PRINTFORMW 「고마워! 서둘러!」
     CALL EVENT_FAVUP(あげは, 100)
     依頼_달성상황++
     依頼_場所 = 場所_公園
 ELSEIF 依頼_달성상황 == 1
-    ; 公園での遭遇
-    PRINTFORML 公園に到着すると、既に騒然とした雰囲気が漂っていた。
-    PRINTFORMW 人だかりの中心では、%CALLNAME:이벤트主%が見知らぬデュエリストと対峙している。
-    PRINTFORML その傍らには、宮田ゆまが倒れ込んでいる。どうやら既にデュエルで패배したようだ。
-    PRINTFORMW 謎のデュエリストは不敵に笑いながら言い放った。
-    PRINTFORML 「中途半端な正義を振りかざす中二病偽善者め！」
-    PRINTFORMW 「暗黒界だのヒーローだの、どちらも偽物の力に過ぎん！」
-    PRINTFORML %CALLNAME:이벤트主%は果敢にデュエルを挑むが、상대の狡猾な戦術の前に苦戦を強いられる。
-    PRINTFORMW 「そんな…私の暗黒界が…」
-    PRINTFORML ついに%CALLNAME:이벤트主%のライフが0になった瞬間、상대が덱に手を伸ばそうとする。
-    PRINTFORMW その時、あなたが二人の間に立ちはだかった。
-    PRINTFORML 「邪魔をするな！これは正義の執行だ！」
-    PRINTFORMW 「お前も同じ偽善者の仲間か？ならば、まとめて叩き潰してやる！」
+    ; 공원에서의 조우
+    PRINTFORML 공원에 도착하자, 이미 소란스러운 분위기가 감돌고 있었다.
+    PRINTFORMW 사람들로 북적이는 중심에서는, %CALLNAME:이벤트主%가 낯선 듀얼리스트와 대치하고 있다.
+    PRINTFORML 그 옆에는, 미야타 유마가 쓰러져 있다. 아무래도 이미 듀얼에서 패배한 듯하다.
+    PRINTFORMW 의문의 듀얼리스트는 불쾌하게 웃으며 내뱉었다.
+    PRINTFORML 「어설픈 정의를 휘두르는 중2병 위선자 녀석!」
+    PRINTFORMW 「암흑계니 히어로니, 둘 다 가짜 힘에 불과해!」
+    PRINTFORML %CALLNAME:이벤트主%는 과감하게 듀얼을 신청하지만, 상대의 교활한 전술 앞에 고전을 면치 못한다.
+    PRINTFORMW 「이런… 나의 암흑계가…」
+    PRINTFORML 마침내 %CALLNAME:이벤트主%의 라이프가 0이 된 순간, 상대가 덱에 손을 뻗으려 한다.
+    PRINTFORMW 그때, 당신이 두 사람 사이에 가로막아 섰다.
+    PRINTFORML 「방해하지 마! 이건 정의의 집행이다!」
+    PRINTFORMW 「너도 같은 위선자의 동료인가? 그렇다면, 한꺼번에 박살 내주지!」
     
     TARGET = -1 ; 덱狩りのデュエリスト（モブ）
     CALL CHOICE_DUEL_TYPE(302651)
     
     IF RESULT == 1 ; 승리
-        PRINTFORML 激しいデュエルの末、あなたは見事승리を収めた。
-        PRINTFORMW 「馬鹿な…俺の完璧な戦術が…」
-        PRINTFORML しかし、상대は負け惜しみを続ける。
-        PRINTFORMW 「だが、お前の仲間はもう戦えないはずだ！一度패배した者に二度目はない！」
-        PRINTFORML その時、%CALLNAME:이벤트主%がゆっくりと立ち上がった。
-        PRINTFORML 「もう一度やらせて！」
-        PRINTFORMW 「今度は%CALLNAME:MASTER%の戦い方を見て、私の덱の『答え』が見つかったから！」
-        PRINTFORML %CALLNAME:이벤트主%の瞳に、新たな決意の炎が宿っていた。
-        PRINTFORMW あなたの戦いから何かを学び取ったようだ。
+        PRINTFORML 격렬한 듀얼 끝에, 당신은 멋지게 승리를 거두었다.
+        PRINTFORMW 「바보 같은… 내 완벽한 전술이…」
+        PRINTFORML 하지만, 상대는 패배를 인정하지 않고 계속 말한다.
+        PRINTFORMW 「하지만, 네 동료는 이제 싸울 수 없을 거야! 한 번 패배한 자에게 두 번은 없어!」
+        PRINTFORML 그때, %CALLNAME:이벤트主%가 천천히 일어섰다.
+        PRINTFORML 「한 번 더 하게 해줘!」
+        PRINTFORMW 「이번에는 %CALLNAME:MASTER%의 싸우는 방식을 보고, 내 덱의 '해답'을 찾았으니까!」
+        PRINTFORML %CALLNAME:이벤트主%의 눈동자에, 새로운 결의의 불꽃이 깃들어 있었다.
+        PRINTFORMW 당신의 싸움에서 무언가를 배운 듯하다.
         依頼_달성상황++
         依頼_場所 = 場所_公園
     ELSE ; 패배
-        PRINTFORML デュエルに패배し、あなたは膝をついた。
-        PRINTFORMW 「ハハハ！所詮はその程度か！」
-        PRINTFORML 「これで分かっただろう、偽善者どもに正義を語る資格などない！」
-        PRINTFORMW 덱狩りデュエリストは勝ち誇ったように%CALLNAME:이벤트主%の덱に手を伸ばす。
-        PRINTFORML 「やめて！」%CALLNAME:이벤트主%の悲痛な叫び声が響く。
-        PRINTFORMW しかし、あなたは何もできずにただ見ているしかなかった…
-        PRINTFORML 大切な友人の덱が奪われていく光景に、絶望感が胸を締め付ける。
-        PRINTFORMW 「%CALLNAME:MASTER%…ごめんね…」涙を流す%CALLNAME:이벤트主%の姿が視界に映る。
-        PRINTFORML あなたの意識は徐々に薄れていき…
-        PRINTFORMW 
+        PRINTFORML 듀얼에서 패배하여, 당신은 무릎을 꿇었다.
+        PRINTFORMW 「하하하! 결국 그 정도인가!」
+        PRINTFORML 「이걸로 알았겠지, 위선자들에게 정의를 논할 자격 따위 없어!」
+        PRINTFORMW 덱 사냥 듀얼리스트는 의기양양하게 %CALLNAME:이벤트主%의 덱에 손을 뻗는다.
+        PRINTFORML 「그만해!」 %CALLNAME:이벤트主%의 비통한 외침이 울려 퍼진다.
+        PRINTFORMW 하지만, 당신은 아무것도 할 수 없이 그저 지켜볼 수밖에 없었다…
+        PRINTFORML 소중한 친구의 덱이 빼앗겨 가는 광경에, 절망감이 가슴을 조여온다.
+        PRINTFORMW 「%CALLNAME:MASTER%… 미안해…」 눈물을 흘리는 %CALLNAME:이벤트主%의 모습이 시야에 들어온다.
+        PRINTFORML 당신의 의식은 서서히 희미해져 가고…
+        PRINTFORMW
         CALL FLASH(3)
-        PRINTFORML 
-        PRINTFORML 「…%CALLNAME:MASTER%！%CALLNAME:MASTER%！」
-        PRINTFORMW あなたは%CALLNAME:이벤트主%の声で目を覚ました。
-        PRINTFORML 気がつくと、自宅のソファで横になっていた。
-        PRINTFORMW 「よかった…目を覚ましたのね」安堵の表情を浮かべるあげは。
-        PRINTFORML 「急に倒れちゃうから心配したよ」%CALLNAME:이벤트主%も心配そうにあなたを見つめている。
-        PRINTFORMW どうやら、あげはの話を聞いている最中に居眠りをしてしまったようだ。
-        PRINTFORML 「덱狩りの話、すごく心配になっちゃったから…悪い夢でも見たの？」
-        PRINTFORMW あなたは頭を振り、改めて気を引き締めた。夢で見た光景を現実にしてはいけない。
-        PRINTFORML 「今度こそ、本当に%CALLNAME:이벤트主%を守らなければ」
-        PRINTFORMW そう心に誓い、再び立ち上がるのだった。
+        PRINTFORML
+        PRINTFORML 「…%CALLNAME:MASTER%！ %CALLNAME:MASTER%！」
+        PRINTFORMW 당신은 %CALLNAME:이벤트主%의 목소리에 눈을 떴다.
+        PRINTFORML 정신을 차려보니, 자택 소파에 누워 있었다.
+        PRINTFORMW 「다행이다… 눈을 떴네」 안도하는 표정을 짓는 아게하.
+        PRINTFORML 「갑자기 쓰러져서 걱정했어」 %CALLNAME:이벤트主%도 걱정스러운 듯 당신을 바라보고 있다.
+        PRINTFORMW 아무래도, 아게하의 이야기를 듣던 중에 졸아버린 듯하다.
+        PRINTFORML 「덱 사냥 이야기가, 너무 걱정돼서… 나쁜 꿈이라도 꾼 거야?」
+        PRINTFORMW 당신은 고개를 젓고, 다시 마음을 다잡았다. 꿈에서 본 광경을 현실로 만들어서는 안 된다.
+        PRINTFORML 「이번에야말로, 정말로 %CALLNAME:이벤트主%를 지켜야 해」
+        PRINTFORMW 그렇게 마음속으로 맹세하며, 다시 일어섰다.
         RETURN 3
     ENDIF
 ELSEIF 依頼_달성상황 == 2
-    ; ひなたの再戦
-    PRINTFORML %CALLNAME:이벤트主%と덱狩りデュエリストの再戦が始まった。
-    PRINTFORMW あなたは少し離れた場所から、その戦いを見守る。
-    PRINTFORML 今度の%CALLNAME:이벤트主%は違った。あなたの戦いから学んだ新たな戦術を駆使している。
-    PRINTFORMW 「暗黒界の真の力を見せてあげる！」
-    PRINTFORML 見事な連続展開で상대を圧倒し、ついに승리を収めた。
-    PRINTFORMW 「そんな…俺の完璧な理論が…」
-    PRINTFORML 덱狩りデュエリストは패배を認め、その場から立ち去っていく。
-    PRINTFORMW %CALLNAME:이벤트主%があなたの元に駆け寄ってきた。
-    PRINTFORML 「%CALLNAME:MASTER%！ありがとう！」
-    PRINTFORMW 二人はハイタッチを交わし、승리の喜びを分かち合った。
-    PRINTFORML 遠くからあげはとゆまがその様子を見守っている。
-    PRINTFORMW ゆまは微笑みながら呟いた。「いいパートナーを見つけたみたいだね」
+    ; 히나타의 재대결
+    PRINTFORML %CALLNAME:이벤트主%와 덱 사냥 듀얼리스트의 재대결이 시작되었다.
+    PRINTFORMW 당신은 조금 떨어진 곳에서, 그 싸움을 지켜본다.
+    PRINTFORML 이번의 %CALLNAME:이벤트主%는 달랐다. 당신의 싸움에서 배운 새로운 전술을 구사하고 있다.
+    PRINTFORMW 「암흑계의 진정한 힘을 보여줄게!」
+    PRINTFORML 멋진 연속 전개로 상대를 압도하고, 마침내 승리를 거두었다.
+    PRINTFORMW 「이런… 내 완벽한 이론이…」
+    PRINTFORML 덱 사냥 듀얼리스트는 패배를 인정하고, 그 자리에서 떠나간다.
+    PRINTFORMW %CALLNAME:이벤트主%가 당신에게 달려왔다.
+    PRINTFORML 「%CALLNAME:MASTER%！ 고마워요!」
+    PRINTFORMW 두 사람은 하이파이브를 나누며, 승리의 기쁨을 함께했다.
+    PRINTFORML 멀리서 아게하와 유마가 그 모습을 지켜보고 있다.
+    PRINTFORMW 유마는 미소 지으며 중얼거렸다. 「좋은 파트너를 찾은 것 같네」
     
     ; あげはの反応분기
     IF CFLAG:NO_TO_CHARANUM(2650):호감도 >= 1000 || TALENT:NO_TO_CHARANUM(2650):연모 > 0
-        PRINTFORML あげはは安堵の表情を浮かべながらも、どこか複雑そうな顔をしている。
-        PRINTFORMW 「よかった…でも、なんだか悔しいような…」
+        PRINTFORML 아게하는 안도하는 표정을 지으면서도, 어딘가 복잡한 얼굴을 하고 있다.
+        PRINTFORMW 「다행이다… 하지만, 왠지 분한 것 같기도 하고…」
     ELSEIF TALENT:NO_TO_CHARANUM(2650):굴복됨 > 0
-        PRINTFORML あげはは深々と頭を下げた。
-        PRINTFORMW 「ご主人様、本当にありがとうございました」
-        PRINTFORMW ご主人様？と不思議に首を傾けるひなただが、%CALLNAME:MASTER%はうまく話術でごまかせた。
+        PRINTFORML 아게하는 깊이 고개를 숙였다.
+        PRINTFORMW 「주인님, 정말 감사했습니다」
+        PRINTFORMW 주인님? 이라며 이상한 듯 고개를 갸웃거리는 히나타였지만, %CALLNAME:MASTER%는 능숙하게 말솜씨로 얼버무렸다.
     ELSE
-        PRINTFORML あげはは心からの安堵の表情を浮かべた。
-        PRINTFORMW 「本当にありがとう！%CALLNAME:MASTER%に頼んでよかった！」
+        PRINTFORML 아게하는 진심으로 안도하는 표정을 지었다.
+        PRINTFORMW 「정말 고마워! %CALLNAME:MASTER%에게 부탁하길 잘했어!」
     ENDIF
     
     依頼_달성상황++
     依頼_場所 = 場所_カフェ
 ELSEIF 依頼_달성상황 == 3
-    ; エンディング
-    PRINTFORML 事件解決後、%CALLNAME:이벤트主%に誘われて近くのカフェで一息ついていた。
-    PRINTFORMW 「今日は本当にありがとう、%CALLNAME:MASTER%」
-    PRINTFORML 彼女はいつもの明るい笑顔を浮かべながら、感謝の気持ちを伝えてくれた。
-    PRINTFORMW 「あなたの戦い方を見て、私も新しい可能性に気づけたよ」
-    PRINTFORML 「一人で抱え込まずに、信頼できる人と一緒に戦うことの大切さも」
-    PRINTFORMW あなたは%CALLNAME:이벤트主%の成長を感じ、嬉しく思った。
-    PRINTFORML この경험を通じて、二人の絆はより一層深まったようだ。
-    PRINTFORMW 「また何かあったら、頼らせてもらうかも。その時はよろしく！」
+    ; 엔딩
+    PRINTFORML 사건 해결 후, %CALLNAME:이벤트主%의 권유로 근처 카페에서 한숨 돌리고 있었다.
+    PRINTFORMW 「오늘 정말 고마워, %CALLNAME:MASTER%」
+    PRINTFORML 그녀는 평소의 밝은 미소를 지으며, 감사의 마음을 전해 주었다.
+    PRINTFORMW 「당신의 싸우는 방식을 보고, 나도 새로운 가능성을 깨달았어」
+    PRINTFORML 「혼자서 짊어지지 않고, 신뢰할 수 있는 사람과 함께 싸우는 것의 중요성도」
+    PRINTFORMW 당신은 %CALLNAME:이벤트主%의 성장을 느끼고, 기뻤다.
+    PRINTFORML 이 경험을 통해, 두 사람의 유대는 더욱 깊어진 듯하다.
+    PRINTFORMW 「또 무슨 일 있으면, 부탁할지도 몰라. 그때는 잘 부탁해!」
     
     PRINTL
-    PRINTL [0] - 「いつでも頼ってくれ」
-    PRINTL [1] - 「君なら一人でも大丈夫だよ」
+    PRINTL [0] - 「언제든지 의지해 줘」
+    PRINTL [1] - 「너라면 혼자서도 괜찮을 거야」
     BINPUT
     IF RESULT == 0
-        PRINTFORML あなたは力強く頷いた。
-        PRINTFORMW 「ありがとう！心強いよ」
+        PRINTFORML 당신은 힘차게 고개를 끄덕였다.
+        PRINTFORMW 「고마워! 든든해!」
         CALL EVENT_FAVUP(이벤트主, 200)
     ELSE
-        PRINTFORML あなたは%CALLNAME:이벤트主%の成長を認めた。
-        PRINTFORMW 「そう言ってもらえると嬉しい！でも、困った時は遠慮しないからね」
+        PRINTFORML 당신은 %CALLNAME:이벤트主%의 성장을 인정했다.
+        PRINTFORMW 「그렇게 말해주니 기뻐! 하지만, 곤란할 때는 사양하지 않을게」
         CALL EVENT_FAVUP(이벤트主, 100)
     ENDIF
     
-    PRINTFORML カフェの窓から見える夕日が、二人の新たな友情を温かく照らしていた。
+    PRINTFORML 카페 창문으로 보이는 석양이, 두 사람의 새로운 우정을 따뜻하게 비추고 있었다.
     CALL EVENT_TIMER(120)
     RETURN 2 ; 任務完了
 ENDIF
@@ -220,7 +220,7 @@ SIF 듀얼리스트 == "상대"
 
 @IRAI_DUEL_INTRO_302651
 PRINTFORML
-PRINTFORML 덱狩り「真の正義とは何か、デュエルで教えてやる！」
+PRINTFORML 덱 사냥꾼「진정한 정의란 무엇인가, 듀얼로 가르쳐주마!」
 PRINTFORMW
 
 @DUELDECK_302651(듀얼리스트)
@@ -272,4 +272,3 @@ SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41320
 SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
 SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
 SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52900
-

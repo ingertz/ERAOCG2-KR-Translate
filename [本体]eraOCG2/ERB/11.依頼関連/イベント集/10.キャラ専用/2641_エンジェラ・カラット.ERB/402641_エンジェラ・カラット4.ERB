@@ -7,15 +7,15 @@ VARSET RESULTS
 
 SELECTCASE 参照先
     CASE "名前"
-        RESULTS = (CH2641-04)紫水晶の誓い
+        RESULTS = (CH2641-04)자수정의 맹세
     CASE "이벤트種"
         RETURN 이벤트_通常
     CASE "依頼先"
         ; 即時開始（自宅）
         RETURN 即時開始
     CASE "詳細"
-        PRINTL 紫の小箱に秘められし「紫の試楽（しがく）」。
-        PRINTL 広間での真剣勝負、今広がる——
+        PRINTL 자수정 작은 상자에 숨겨진 「자색의 시락(紫の試楽)」.
+        PRINTL 넓은 방에서의 진검승부, 지금 펼쳐진다——
         PRINTL
         PRINTL 報酬：8000DP、お金20000
     CASE "条件"
@@ -26,11 +26,11 @@ SELECTCASE 参照先
     CASE "추가条件"
         ; 호감도2000以上 または 既に연모
         IF CFLAG:NO_TO_CHARANUM(2641):호감도 < 2000 && TALENT:NO_TO_CHARANUM(2641):연모 == 0
-            RESULTS = 호감도/条件が不足しています。
+            RESULTS = 호감도/조건이 부족합니다.
             RETURN 1
         ENDIF
         IF MARK:NO_TO_CHARANUM(2641):반발각인 > 0
-            RESULTS = ご機嫌麗しからず、招きを見合わせるべきかもしれません。
+            RESULTS = 심기가 불편하신 듯하니, 초대를 보류하는 것이 좋을지도 모릅니다.
             RETURN 1
         ENDIF
         RETURN 0
@@ -59,28 +59,28 @@ RETURN 0
 
 IF 依頼_달성상황 == 0
     ; 自宅（即時開始）
-    PRINTFORML 家の大広間へ向かう静寂の朝。%CALLNAME:이벤트主%は背筋を伸ばし、紫の小箱をそっと抱いている。
-    PRINTFORMW 「——祖母様の御前にて、『紫の試楽（しがく）』を」
-    PRINTFORML あなたは、彼女の視線の先に、凛として座す祖母の姿を見た。
-    PRINTFORMW 「我が心、いと澄みて、いと強し。さればこそ、듀얼にて示しましょう」
+    PRINTFORML 집의 넓은 방으로 향하는 고요한 아침. %CALLNAME:이벤트主%는 등을 꼿꼿이 펴고, 자수정 작은 상자를 소중히 안고 있다.
+    PRINTFORMW 「——할머님 앞에서, 『자색의 시락(紫の試楽)』을」
+    PRINTFORML 당신은, 그녀의 시선 끝에, 늠름하게 앉아 있는 할머니의 모습을 보았다.
+    PRINTFORMW 「소첩의 마음, 실로 맑고, 실로 강하옵니다. 그러하기에, 듀얼로써 보이겠나이다」
     PRINTL
-    PRINTL [0] - 黙って手を添える
-    PRINTL [1] - 「任せて。二人で証明しよう」と目で告げる
-    PRINTL [2] - 「緊張している？」と気遣って肩に触れる
+    PRINTL [0] - 말없이 손을 얹는다
+    PRINTL [1] - 「맡겨줘. 둘이서 증명하자」고 눈으로 말한다
+    PRINTL [2] - 「긴장했어?」라며 걱정하며 어깨에 손을 댄다
     BINPUT
     IF RESULT == 0
-        PRINTFORML 余計な言葉は交わさず、そっと小箱に添えた手が、二人の呼吸を揃える。
-        PRINTFORMW %CALLNAME:이벤트主%「……ありがたく存じます。ともに、まいりませう」
+        PRINTFORML 불필요한 말은 나누지 않고, 살며시 작은 상자에 얹은 손이, 두 사람의 호흡을 맞춘다.
+        PRINTFORMW %CALLNAME:이벤트主%「……감사하옵니다. 함께, 가시지요」
         依頼_進行보존:402641 = 1
         CALL EVENT_FAVUP(이벤트主,100)
     ELSEIF RESULT == 1
-        PRINTFORML あなたの眼差しに、%CALLNAME:이벤트主%は柔らかな笑みを返した。
-        PRINTFORMW 「二人三脚こそ、誓いの証にて。——ええ、いざ」
+        PRINTFORML 당신의 시선에, %CALLNAME:이벤트主%는 부드러운 미소를 돌려주었다.
+        PRINTFORMW 「이인삼각이야말로, 맹세의 증표이옵니다. ——자, 그럼」
         依頼_進行보존:402641 = 2
         CALL EVENT_FAVUP(이벤트主,120)
     ELSE
-        PRINTFORML 肩に触れると、彼女は一瞬だけ頬を染めた。
-        PRINTFORMW 「……こ、心強う存じます。——では、礼を尽くして」
+        PRINTFORML 어깨에 손을 대자, 그녀는 순간 뺨을 붉혔다.
+        PRINTFORMW 「……마, 마음이 든든하옵니다. ——그럼, 예를 다하여」
         依頼_進行보존:402641 = 3
         CALL EVENT_FAVUP(이벤트主,100)
     ENDIF
@@ -93,36 +93,36 @@ IF 依頼_달성상황 == 0
 
 ELSEIF 依頼_달성상황 == 1
     ; 大広間：분기導入
-    PRINTFORML 広間に紫の布が敷かれ、静謐なる空気が張る。祖母の目は厳しくも温かい。
+    PRINTFORML 넓은 방에 자색 천이 깔리고, 고요한 공기가 감돈다. 할머니의 눈은 엄하면서도 따뜻하다.
     IF TALENT:NO_TO_CHARANUM(2641):연모 == 0
-        PRINTFORMW 祖母「まずはお主ら二人、互いを見据えよ。心が真ならば、승리にて示してみせい」
-        PRINTFORML %CALLNAME:이벤트主%はあなたに向き直り、深く礼をした。
-        PRINTFORMW 「互いの理解を確かめるための真剣勝負……いざ、失礼仕る」
+        PRINTFORMW 할머니「우선 너희 두 사람, 서로를 마주 보아라. 마음이 진실하다면, 승리로써 증명해 보이거라」
+        PRINTFORML %CALLNAME:이벤트主%는 당신을 향해 돌아서서, 깊이 예를 올렸다.
+        PRINTFORMW 「서로의 이해를 확인하기 위한 진검승부……자, 실례하겠사옵니다」
         ; Aルート デュエル1：あなた vs カラット（クリフォート）
         依頼_進行보존:402641 = 20
         TARGET = 이벤트主
         CALL CHOICE_DUEL_TYPE(402641)
         IF RESULT == 1
-            PRINTFORML 「ありませんでした」
+            PRINTFORML 「그런 적 없었사옵니다」
             SETCOLOR C_PINK
-            PRINTFORMW %CALLNAME:이벤트主%は心に何か決めた気がする…
+            PRINTFORMW %CALLNAME:이벤트主%는 마음에 무언가 정한 듯하다…
             PRINTFORMW %CALLNAME:이벤트主%は【연모】を得た
             TALENT:NO_TO_CHARANUM(2641):연모 = 1
             RESETCOLOR
-            PRINTFORML %CALLNAME:이벤트主%は静かに息を吐き、膝を折って頭を垂れた。
-            PRINTFORMW 「我が胸の内、もはや隠せませぬ。——あなた様を、いと愛でたく思うております」
+            PRINTFORML %CALLNAME:이벤트主%는 조용히 숨을 내쉬고, 무릎을 꿇고 고개를 숙였다.
+            PRINTFORMW 「소첩의 마음, 이제 더는 숨길 수 없사옵니다. ——당신을, 실로 사랑스럽게 생각하고 있사옵니다」
             PRINTL
-            PRINTL [0] - 交際を始める
-            PRINTL [1] - 返答を保留する
+            PRINTL [0] - 교제를 시작한다
+            PRINTL [1] - 답변을 보류한다
             BINPUT
             IF RESULT == 0
-                PRINTFORML そっと頷くあなたに、彼女の瞳がきらめく。
-                PRINTFORMW 「……この先も、手を取り合いませう」
+                PRINTFORML 살며시 고개를 끄덕이는 당신에게, 그녀의 눈동자가 반짝인다.
+                PRINTFORMW 「……앞으로도, 손을 맞잡고 함께 가시지요」
                 依頼_進行보존:402641 = 10
                 CALL EVENT_FAVUP(이벤트主,200)
             ELSE
-                PRINTFORML あなたは慎重に時を求める。%CALLNAME:이벤트主%は微笑み、頷いた。
-                PRINTFORMW 「拙速は礼を欠きまする。時至れば、また——」
+                PRINTFORML 당신은 신중하게 시간을 요청한다. %CALLNAME:이벤트主%는 미소 지으며, 고개를 끄덕였다.
+                PRINTFORMW 「서두르는 것은 예의에 어긋나옵니다. 때가 되면, 다시——」
                 依頼_進行보존:402641 = 11
             ENDIF
             依頼_달성상황 ++
@@ -130,14 +130,14 @@ ELSEIF 依頼_달성상황 == 1
             CALL EVENT_TIMER(30)
         ELSE
             ; 패배분기：再戦可の励まし
-            PRINTFORML 負けてしまった…
-            PRINTFORML %CALLNAME:이벤트主%はあなたを支え起こし、小声で囁く。
-            PRINTFORMW 「——まだ終わりではありませぬ。心を磨き、また盤上に立ちませう」
+            PRINTFORML 져버렸다…
+            PRINTFORML %CALLNAME:이벤트主%는 당신을 부축해 일으키며, 작은 목소리로 속삭인다.
+            PRINTFORMW 「——아직 끝이 아니옵니다. 마음을 갈고닦아, 다시 반상에 서시지요」
             RETURN 3
         ENDIF
     ELSE
         ; Bルート（연모済）
-        PRINTFORMW 祖母「既に心は結ばれておるか。ならば…」
+        PRINTFORMW 할머니「이미 마음은 맺어졌는가. 그렇다면…」
         依頼_달성상황 = 2
         GOTO BATTLE2
     ENDIF
@@ -145,87 +145,87 @@ ELSEIF 依頼_달성상황 == 1
 ELSEIF 依頼_달성상황 == 2
     $BATTLE2
     ; 承認戦：A/B共通。祖母の指南役ペアとの「二人三脚」の証明。
-    PRINTFORMW 祖母「二人三脚こそ、誓いの証にて。指南役ら、상대をせい」
-    PRINTFORML 執事の鴻巣と、家庭教師の帰燕が進み出る。どちらと当たるか選べるようだ。
-    PRINTFORMW %CALLNAME:이벤트主%「——選り好みは無粋。されど策も礼節のうち」
+    PRINTFORMW 할머니「이인삼각이야말로, 맹세의 증표이니라. 지도역들, 상대를 하거라」
+    PRINTFORML 집사 코노스와, 가정교사 키엔이 나선다. 어느 쪽과 맞붙을지 선택할 수 있는 것 같다.
+    PRINTFORMW %CALLNAME:이벤트主%「——상대를 가리는 것은 멋이 없사옵니다. 허나 책략도 예절의 일부이옵니다」
 
     IF TALENT:NO_TO_CHARANUM(2641):연모 == 0
         IF 依頼_進行보존:402641 == 11
             ; 告白保留した場合の少し厳しめの空気
-            PRINTFORMW 鴻巣「お嬢様を拒んだとは、考えられない！」
-            PRINTFORML 帰燕「誤解を断つには、盤で語るほかあるまい」
-            PRINTFORMW %CALLNAME:이벤트主%「……ご無礼は承知。いずれ正しく伝えますゆえ、今は勝ちにて応えとう存じます」
+            PRINTFORMW 코노스「아가씨를 거절하다니, 생각할 수 없도다!」
+            PRINTFORML 키엔「오해를 풀려면, 반상에서 이야기하는 수밖에 없겠지」
+            PRINTFORMW %CALLNAME:이벤트主%「……무례는 알고 있사옵니다. 언젠가 바르게 전할 것이오니, 지금은 승리로써 답하고 싶사옵니다」
         ELSE
-            PRINTFORMW %CALLNAME:이벤트主%「礼を尽くし、ともに승리を掴みませう」
+            PRINTFORMW %CALLNAME:이벤트主%「예를 다하여, 함께 승리를 거머쥐시지요」
         ENDIF
     ELSE
-        PRINTFORMW %CALLNAME:이벤트主%「背を預け合いましょう。——いと頼もし」
+        PRINTFORMW %CALLNAME:이벤트主%「서로 등을 맡기시지요. ——실로 든든하옵니다」
     ENDIF
 
     PRINTL
-    PRINTL [0] - 執事・鴻巣と戦う
-    PRINTL [1] - 家庭教師・帰燕と戦う
+    PRINTL [0] - 집사 코노스와 싸운다
+    PRINTL [1] - 가정교사 키엔과 싸운다
     BINPUT
     IF RESULT == 0
         依頼_進行보존:402641 = 31
-        PRINTFORML 鴻巣「承った。お상대仕る」
-        PRINTFORMW %CALLNAME:이벤트主%「見事、お見せいたしましょう」
+        PRINTFORML 코노스「알겠사옵니다. 상대를 해드리겠소이다」
+        PRINTFORMW %CALLNAME:이벤트主%「훌륭하게, 보여드리겠사옵니다」
     ELSE
         依頼_進行보존:402641 = 32
-        PRINTFORML 帰燕「では、礼の舞台へ」
-        PRINTFORMW %CALLNAME:이벤트主%「参りませう」
+        PRINTFORML 키엔「그럼, 예의의 무대로」
+        PRINTFORMW %CALLNAME:이벤트主%「가시지요」
     ENDIF
 
     TARGET = -1
     CALL CHOICE_DUEL_TYPE(402641)
     IF RESULT == 1
-        PRINTFORML 指南役は渋い顔で頷いた。「二人の歩調、確かに見届けた」
-        PRINTFORMW %CALLNAME:이벤트主%「祖母様——これにて、『紫の試楽』の答えを」
+        PRINTFORML 지도역은 씁쓸한 얼굴로 고개를 끄덕였다. 「두 사람의 보조, 확실히 지켜보았노라」
+        PRINTFORMW %CALLNAME:이벤트主%「할머님——이것으로, 『자색의 시락』의 답을」
         依頼_달성상황 ++
         依頼_場所:0 = 場所_リビング
         CALL EVENT_TIMER(5)
     ELSE
-        PRINTFORML %CALLNAME:이벤트主%はあなたの手を取り、軽く握る。
-        PRINTFORMW 「痛みは今だけ。勝ち筋は、必ず見える。——もう一度、挑みませう」
+        PRINTFORML %CALLNAME:이벤트主%는 당신의 손을 잡고, 가볍게 쥔다.
+        PRINTFORMW 「아픔은 지금뿐. 승리의 길은, 반드시 보일 것이옵니다. ——다시 한번, 도전하시지요」
         RETURN 3
     ENDIF
 
 ELSEIF 依頼_달성상황 == 3
     ; Bルート限定：エキシビション（任意） あなた vs カラット（これまでの歩みを確かめる）
     IF TALENT:NO_TO_CHARANUM(2641):연모 > 0 && 依頼_進行보존:402641 != 10
-        PRINTFORML %CALLNAME:이벤트主%は一歩進み、扇を閉じる所作であなたを示す。
-        PRINTFORMW 「これまでの歩み、いと尊し——されば友も恋も、盤上で確かめませう」
+        PRINTFORML %CALLNAME:이벤트主%는 한 걸음 나아가, 부채를 닫는 동작으로 당신을 가리킨다.
+        PRINTFORMW 「지금까지의 발자취, 실로 고귀하옵니다——그러니 벗도 사랑도, 반상에서 확인하시지요」
         PRINTL
-        PRINTL [0] - 記念に一戦、受けよう
-        PRINTL [1] - 今は祖母の承認を先に（スキップ）
+        PRINTL [0] - 기념으로 한판, 받아들이겠다
+        PRINTL [1] - 지금은 할머니의 인정을 먼저 (스킵)
         BINPUT
         IF RESULT == 0
             依頼_進行보존:402641 = 41
             TARGET = 이벤트主
             CALL CHOICE_DUEL_TYPE(402641)
             IF RESULT == 1
-                PRINTFORML %CALLNAME:이벤트主%「……やはり、あなた様は眩しい」
-                PRINTFORMW 「けれど、それが嬉しゅうて堪えませぬ」
+                PRINTFORML %CALLNAME:이벤트主%「……역시, 당신은 눈부시옵니다」
+                PRINTFORMW 「허나, 그것이 기뻐서 견딜 수가 없사옵니다」
                 CALL EVENT_FAVUP(이벤트主,500)
             ELSE
-                PRINTFORML %CALLNAME:이벤트主%は微笑んで手を差し伸べた。
-                PRINTFORMW 「勝敗は彩り。——今宵の思い出として胸に飾りませう」
+                PRINTFORML %CALLNAME:이벤트主%는 미소 지으며 손을 내밀었다.
+                PRINTFORMW 「승패는 색채일 뿐. ——오늘 밤의 추억으로 가슴에 장식하시지요」
             ENDIF
         ELSE
-            PRINTFORML %CALLNAME:이벤트主%「承知仕りました。肝要は承認、順を違えてはなりませぬ」
+            PRINTFORML %CALLNAME:이벤트主%「알겠사옵니다. 중요한 것은 인정, 순서를 어겨서는 아니 되옵니다」
             PRINTFORMW 
         ENDIF
     ENDIF
 
     ; 共通結末——祖母の承認、紫水晶の誓い
-    PRINTFORMW 祖母の視線が、静かに告げる。
-    PRINTFORML 「礼と情、両輪そろうてこそ轍（わだち）は真直ぐ」
-    PRINTFORMW 「認めよう。——二人で歩むことを」
-    PRINTFORML %CALLNAME:이벤트主%は紫の小箱を差し出す。蓋の内、淡く光る紫水晶が揺れる。
-    PRINTFORMW あなたは小箱に手を添え、%CALLNAME:이벤트主%と指先を重ねた。
+    PRINTFORMW 할머니의 시선이, 조용히 고한다.
+    PRINTFORML 「예와 정, 두 바퀴가 갖추어져야만 수레바퀴 자국은 곧게 나느니라」
+    PRINTFORMW 「인정하마. ——두 사람이 함께 걷는 것을」
+    PRINTFORML %CALLNAME:이벤트主%는 자수정 작은 상자를 내민다. 뚜껑 안쪽, 희미하게 빛나는 자수정이 흔들린다.
+    PRINTFORMW 당신은 작은 상자에 손을 얹고, %CALLNAME:이벤트主%와 손끝을 겹쳤다.
 
-    PRINTFORML %CALLNAME:이벤트主%「…ありがとう存じます。必ず、幸いを紡ぎます」
-    PRINTFORMW 紫水晶のきらめきは、二人の未来を静かに照らしていた。
+    PRINTFORML %CALLNAME:이벤트主%「…감사하옵니다. 반드시, 행복을 만들어가겠나이다」
+    PRINTFORMW 자수정의 반짝임은, 두 사람의 미래를 조용히 비추고 있었다.
 
     RETURN 2
 ENDIF
@@ -257,16 +257,16 @@ RETURN 0
 @IRAI_DUEL_INTRO_402641
 ; 鴻巣戦
 IF 依頼_進行보존:402641 == 31
-    PRINTFORML 鴻巣「お嬢様の誓い——主を守るは家の矜持」
-    PRINTFORMW %CALLNAME:NO_TO_CHARANUM(2641)%「参りまする。礼をもって、勝ちを戴きます」
+    PRINTFORML 코노스「아가씨의 맹세——주인을 지키는 것은 가문의 긍지」
+    PRINTFORMW %CALLNAME:NO_TO_CHARANUM(2641)%「가겠사옵니다. 예로써, 승리를 받들겠나이다」
 ; 帰燕戦
 ELSEIF 依頼_進行보존:402641 == 32
-    PRINTFORML 帰燕「情は力、礼は形。二つ備えてなお勝て」
-    PRINTFORMW %CALLNAME:NO_TO_CHARANUM(2641)%「——承って」
+    PRINTFORML 키엔「정은 힘, 예는 형태. 두 가지를 갖추고도 이겨라」
+    PRINTFORMW %CALLNAME:NO_TO_CHARANUM(2641)%「——알겠사옵니다」
 ; カラット戦
 ELSE
-    PRINTFORML %CALLNAME:NO_TO_CHARANUM(2641)%「互いの理解、盤上にて確かめませう」
-    PRINTFORMW 「失礼仕る」
+    PRINTFORML %CALLNAME:NO_TO_CHARANUM(2641)%「서로의 이해, 반상에서 확인하시지요」
+    PRINTFORMW 「실례하겠사옵니다」
 ENDIF
 
 @DUELDECK_422641(듀얼리스트)
@@ -408,4 +408,3 @@ SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54002
 SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54003
 SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58081
 SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58081
-
