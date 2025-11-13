@@ -3,19 +3,26 @@
 #DIM DYNAMIC 설정우후후
 ;밀어넘어뜨린다
 
-;공수반전！
+;공수반전！(主導権を渡す)
 IF CFLAG:MASTER:우후후 == 1
 	설정우후후 = 2
 	TFLAG:SELECTCOM분기 = 1
-ELSE
-	IF CFLAG:MASTER:우후후 == 1 && オプション_押し倒され拒否 == 0
-		IF TCVAR:TARGET:절정여운 == 0 && RAND:5 == 0
-			TFLAG:SELECTCOM분기 = -2
-			RETURN 0
-		ENDIF
+;攻守反転！(主導権を奪う)
+ELSEIF CFLAG:MASTER:우후후 == 2
+	CALL HORNY_CHECK(TARGET,1)
+	IF RESULT == 1
+		TFLAG:SELECTCOM분기 = -2
+		RETURN 0
+	ELSE
+		설정우후후 = 1
+		TFLAG:SELECTCOM분기 = 2
 	ENDIF
+;普通の押し倒し
+ELSE
 	설정우후후 = 1
 	TFLAG:SELECTCOM분기 = 0
+	SIF !GETBIT(CFLAG:(TARGET:LOCAL):기정사실 , 0) && TCVAR:TARGET:만취 == 1
+	CFLAG:TARGET:만취강간 = 1
 ENDIF
 
 FOR カウンタ,1,CHARANUM
@@ -24,9 +31,6 @@ FOR カウンタ,1,CHARANUM
 	CFLAG:(TARGET:カウンタ):우후후 = 설정우후후
 NEXT
 CFLAG:MASTER:우후후 = 설정우후후
-
-SIF !GETBIT(CFLAG:(TARGET:LOCAL):기정사실 , 0) && TCVAR:TARGET:만취 == 1
-	CFLAG:TARGET:만취강간 = 1
 
 TIME += 5
 

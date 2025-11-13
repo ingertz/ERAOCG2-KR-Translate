@@ -132,6 +132,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28029,2)
 	IF RESULT == 0
 		CALL SET_FIELD_INFO(듀얼리스트,"필드",2,"一星",3)
+		CALL CARD_LOADUP
 		CALL RESETAREA_MAT
 		CALL FULLRESET
 		효과範囲EX덱 = 1
@@ -163,15 +164,18 @@ ELSEIF 종류 == S素材時효과
 		효과範囲덱 = 1
 		효과条件カテゴリ = 엘펜노츠
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1 && GETVAR(@"%듀얼리스트%_필드:2") != -1
-			PRINTL
-			PRINTL 중앙 몬스터 존의 몬스터 １장을 이동하시겠습니까？
-			PRINTL
-			CALL YN_CHOICE(듀얼리스트,"이동한다","이동하지않는다")
-			IF RESULT == 0
-				カウンタ = 現필드(듀얼리스트)
-				CALL FULLRESET
-				CALL CARD_SET_MOVE(듀얼리스트,2,10)
+		IF RESULT == 1
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:2")}("종류")
+			IF RESULT == 싱크로
+				PRINTL
+				PRINTL 중앙 몬스터 존의 몬스터 １장을 이동하시겠습니까？
+				PRINTL
+				CALL YN_CHOICE(듀얼리스트,"이동한다","이동하지않는다")
+				IF RESULT == 0
+					カウンタ = 現필드(듀얼리스트)
+					CALL FULLRESET
+					CALL CARD_SET_MOVE(듀얼리스트,2,10)
+				ENDIF
 			ENDIF
 		ENDIF
 	ENDIF

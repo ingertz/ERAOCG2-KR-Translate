@@ -33,7 +33,7 @@ RETURN 0
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,마함起動)
 PRINTL ①: 자신의 패 / 묘지에서 "블랙 매지션" 1장을 골라 특수 소환한다.
-PRINTL 그 후, 덱에서 "흑마도" 1장을 패에 넣는다.
+PRINTL 그 후, 같은 이름의 카드가 자신의 묘지에 존재하지 않는 "블랙 매지션" 마법 / 함정 카드 1장을 덱에서 패에 넣을 수 있다.
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ②: 이 카드가 마법＆함정 존에 존재하는 한,
 PRINTL 자신의 몬스터 존의 "블랙 매지션"은 상대의 효과를 받지 않는다.
@@ -54,17 +54,22 @@ SIF RESULT == 1
 IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	SIF 발동済_1(듀얼리스트,92000)
 		RETURN 0
-	CALL CARD_SS_CHECK(듀얼리스트,20000,"묘지")
-	SIF RESULT == 1
-		条件달성 ++
-	CALL CARD_DRAW_CHECK
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 블랙 매지션
+	효과条件종류 = 마함全般
+	CALL SET_EXIST_CARDS(듀얼리스트,묘지지정)
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1 && 마함数(듀얼리스트) >= 5
+		CALL CARD_DRAW_CHECK
+	ENDIF
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲묘지 = 1
 	효과条件名前:0 = 블랙 매지션
 	효과条件名前:1 = 용기사 블랙 매지션
 	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所,30300)
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		条件달성 ++
 	SIF 条件달성 != 0 && 마함数(듀얼리스트) >= 5
@@ -104,13 +109,22 @@ IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함
 		효과条件名前:0 = 블랙 매지션
 		효과条件名前:1 = 용기사 블랙 매지션
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-		
-		CALL FULLRESET
-		효과条件名前 = 흑 마 도
-		효과条件任意 = 1
-		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 블랙 매지션
+			효과条件종류 = 마함全般
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과条件カテゴリ = 블랙 매지션
+				효과条件종류 = 마함全般
+				효과条件任意 = 1
+				CALL SET_EXIST_CARDS(듀얼리스트,묘지지정)
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			ENDIF
+		ENDIF
 	ENDIF
-;ELSEIF 종류 == 마함起動
 ELSEIF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 2
 	;カード발동＆설치まで
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92000)

@@ -78,8 +78,11 @@ IF 종류 == 손패起動
 	CALL CARD_SS_CHECK(듀얼리스트,38100,"손패")
 	SIF RESULT == 1
 		RETURN 0
-	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 
 	CALL FULLRESET
@@ -149,7 +152,11 @@ ELSEIF 종류 == 필드起動
 			발동불가:1 = 1
 		SIF ターンプレイヤー != 듀얼리스트
 			발동불가:1 = 1
-		SIF 손패数(듀얼리스트) < 1
+		CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			발동불가:1 = 1
 		CALL FULLRESET
 		효과条件名前 = 세리온즈 “임프리스” 알라시아
@@ -310,7 +317,11 @@ ELSEIF 종류 == 필드起動
 			条件달성:1 = 0
 		SIF ターンプレイヤー != 듀얼리스트
 			条件달성:1 = 0
-		SIF 손패数(듀얼리스트) < 1
+		CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			条件달성:1 = 0
 		CALL FULLRESET
 		효과条件名前 = 세리온즈 “임프리스” 알라시아
@@ -357,16 +368,16 @@ ELSEIF 종류 == 필드起動
 	ENDIF
 		
 	IF 듀얼리스트 == "자신"
-PRINTL 기동시킬 파츠를 선택해 주십시오.
+		PRINTL 기동시킬 파츠를 선택해 주십시오.
 		PRINTL
 		SIF 条件달성:0 == 1
-PRINTL [0] - 보레아
+			PRINTL [0] - 보레아
 		SIF 条件달성:1 == 1
-PRINTL [1] - 알라시아
+			PRINTL [1] - 알라시아
 		SIF 条件달성:2 == 1
-PRINTL [2] - 아인
+			PRINTL [2] - 아인
 		SIF 条件달성:3 == 1
-PRINTL [3] - 팜
+			PRINTL [3] - 팜
 		BINPUT
 		PRINTL
 	ELSE
@@ -387,7 +398,7 @@ PRINTL [3] - 팜
 
 	IF RESULT == 0
 		SETCOLOR C_YELLOW
-PRINTL 보레아의 파츠가 빛나기 시작했다!
+		PRINTL 보레아의 파츠가 빛나기 시작했다!
 		RESETCOLOR
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38101,2)
 		IF RESULT == 0
@@ -406,7 +417,7 @@ PRINTL 보레아의 파츠가 빛나기 시작했다!
 		ENDIF
 	ELSEIF RESULT == 1
 		SETCOLOR C_YELLOW
-PRINTL 알라시아의 파츠가 빛나기 시작했다!
+		PRINTL 알라시아의 파츠가 빛나기 시작했다!
 		RESETCOLOR
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38102,2)
 		IF RESULT == 0
@@ -423,7 +434,7 @@ PRINTL 알라시아의 파츠가 빛나기 시작했다!
 		ENDIF
 	ELSEIF RESULT == 2
 		SETCOLOR C_YELLOW
-PRINTL 아인의 파츠가 빛나기 시작했다!
+		PRINTL 아인의 파츠가 빛나기 시작했다!
 		RESETCOLOR
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38104,2)
 		IF RESULT == 0
@@ -441,7 +452,7 @@ PRINTL 아인의 파츠가 빛나기 시작했다!
 		ENDIF
 	ELSEIF RESULT == 3
 		SETCOLOR C_YELLOW
-PRINTL 팜의 파츠가 빛나기 시작했다!
+		PRINTL 팜의 파츠가 빛나기 시작했다!
 		RESETCOLOR
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38105,2)
 		IF RESULT == 0

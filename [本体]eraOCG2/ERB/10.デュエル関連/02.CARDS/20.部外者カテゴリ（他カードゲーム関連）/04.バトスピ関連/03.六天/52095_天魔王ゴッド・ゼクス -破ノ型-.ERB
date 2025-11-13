@@ -53,12 +53,12 @@ PRINTL 이 카드의 속성은 불꽃으로도 취급한다.
 PRINTL 이 카드명의 ①②③의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,攻撃時誘発)
 PRINTL 『P침략』
-PRINTL 자신의 초차원이 아닌 「천마왕」 몬스터가 공격할 경우에 발동할 수 있다.
+PRINTL 자신의 초차원이 아닌 "천마왕" 몬스터가 공격할 경우에 발동할 수 있다.
 PRINTL 자신의 EX 덱에 있는 이 카드를 그 위에 겹친다. (공격은 계속된다)
 CALLFORM CARD_ABLE(2,특수소환時)
 PRINTL ②: 이 카드가 특수 소환에 성공했을 경우, 손패를 1장 EX 덱으로 보내는 것으로, 발동할 수 있다.
 PRINTL 상대 필드의 카드 1장을 파괴한다.
-PRINTL (이 효과는 대상 내성・몬스터 내성의 영향을 받지 않는다)
+PRINTL (이 효과는 대상 내성 / 몬스터 내성의 영향을 받지 않는다)
 CALLFORM CARD_ABLE(3,필드起動,フリー誘発)
 PRINTL ③: 상대 필드에 존재하는 몬스터의 속성을 모두 선언한다.
 PRINTL 선언할 때마다, 선언한 속성과 동일한 속성을 가진 상대 필드의 몬스터 1장을 파괴한다.
@@ -111,7 +111,11 @@ IF 종류 == 攻撃時誘発
 ELSEIF 종류 == 특수소환時
 	SIF 발동済_2(듀얼리스트,52095)
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
@@ -187,7 +191,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 			SETCOLOR C_GREEN
 			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
 			PRINTL
-PRINTFORMW 바람!
+			PRINTFORMW 바람!
 			PRINTL
 			CUSTOMDRAWLINE ―	
 			PRINTFORML 
@@ -205,7 +209,7 @@ PRINTFORMW 바람!
 			SETCOLOR C_RED
 			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
 			PRINTL
-PRINTFORMW 불꽃!
+			PRINTFORMW 불꽃!
 			PRINTL
 			CUSTOMDRAWLINE ―	
 			PRINTFORML 
@@ -223,7 +227,7 @@ PRINTFORMW 불꽃!
 			SETCOLOR 0xb8860b
 			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
 			PRINTL
-PRINTFORMW 땅!
+			PRINTFORMW 땅!
 			PRINTL
 			CUSTOMDRAWLINE ―	
 			PRINTFORML 
@@ -241,7 +245,7 @@ PRINTFORMW 땅!
 			SETCOLOR C_BLUE
 			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
 			PRINTL
-PRINTFORMW 물!
+			PRINTFORMW 물!
 			PRINTL
 			CUSTOMDRAWLINE ―	
 			PRINTFORML 
@@ -259,7 +263,7 @@ PRINTFORMW 물!
 			SETCOLOR C_YELLOW
 			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
 			PRINTL
-PRINTFORMW 빛!
+			PRINTFORMW 빛!
 			PRINTL
 			CUSTOMDRAWLINE ―	
 			PRINTFORML 
@@ -277,7 +281,7 @@ PRINTFORMW 빛!
 			SETCOLOR C_PURPLE
 			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
 			PRINTL
-PRINTFORMW 어둠!
+			PRINTFORMW 어둠!
 			PRINTL
 			CUSTOMDRAWLINE ―	
 			PRINTFORML 

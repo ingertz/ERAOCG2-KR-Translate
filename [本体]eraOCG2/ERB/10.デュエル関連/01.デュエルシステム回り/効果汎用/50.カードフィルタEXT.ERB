@@ -1,4 +1,4 @@
-﻿@CARD_FILTER_EXT(듀얼리스트,参照先,종류,場所,めくり数,チェック플래그)
+﻿@CARD_FILTER_EXT(듀얼리스트,参照先,종류,場所,めくり数,チェック플래그,カードID)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者
 #DIMS DYNAMIC 実行者
@@ -24,6 +24,7 @@
 #DIMS DYNAMIC MZ魔판정
 #DIMS DYNAMIC カード追カテ,10
 #DIM DYNAMIC 설정カードID
+#DIM DYNAMIC カードID
 
 
 実行者 = %듀얼리스트%
@@ -384,15 +385,27 @@ FOR カウンタ,0,サーチ範囲
 						CONTINUE
 				ENDIF
 			ENDIF
-			IF 濾過条件条件達生 > 0
-				IF 濾過条件条件達生 == 888
+			IF 濾過条件条件달성 > 0
+				IF 濾過条件条件달성 == 888
 					SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") >= 1
 						CONTINUE
-				ELSEIF 濾過条件条件達生 == 999
+				ELSEIF 濾過条件条件달성 == 999
 					SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") == 0
 						CONTINUE
 				ELSE	
-					SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") < 濾過条件条件達生
+					SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") < 濾過条件条件달성
+						CONTINUE
+				ENDIF
+			ENDIF
+			;Anonym추가
+			IF 濾過条件除去種 != "" && チェック플래그 != 3
+				IF 参照先 == "필드"
+					CALL CARD_REMOVAL_ABLE(実行者,듀얼리스트,"単体",カウンタ,濾過条件除去種,カードID)
+					SIF RESULT != 1
+						CONTINUE
+				ELSEIF 参照先 == "마함"
+					CALL CARD_REMOVAL_ABLE(実行者,듀얼리스트,"単体",カウンタ,濾過条件除去種,カードID,1)
+					SIF RESULT != 1
 						CONTINUE
 				ENDIF
 			ENDIF

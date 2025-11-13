@@ -30,6 +30,8 @@
 #DIM DYNAMIC 現在最大攻撃力
 #DIM DYNAMIC 現在最小攻撃力
 #DIM DYNAMIC ガーキマ플래그
+#DIM DYNAMIC 대상カードID
+
 #DIMS DYNAMIC 소환カードカテゴリ
 
 VARSET 상대選択カード, -1 
@@ -236,9 +238,11 @@ FOR カウンタ,0,サーチ範囲
 	VARSET 選択済カード
 	SIF GETVAR(@"%実行者%_%参照先%:カウンタ") == -1
 		CONTINUE
+	대상カードID = GETVAR(@"%実行者%_%参照先%:カウンタ")
 
-	SIF GETVAR(@"%実行者%_%参照先%:カウンタ") == 使用불가ゾーン
+	SIF 대상カードID == 使用불가ゾーン
 		CONTINUE
+
 	IF 素材条件固定 >= 0
 		SIF 参照先 == "필드" && GETVAR(@"%実行者%_MZ_不材:カウンタ") >= 1
 			CONTINUE
@@ -309,14 +313,14 @@ FOR カウンタ,0,サーチ範囲
 	ENDIF
 
 	IF 소환플래그 == 융합 && 条件合計 >= 1
-		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("융합代用")
+		TRYCALLFORM CARD_{대상カードID}("융합代用")
 		IF RESULT == 10 || RESULT == 소환カード속성
 			GOTO SKIP_RESTRICTION
 		ENDIF
 	ENDIF
 
 	IF 소환플래그 == 의식 || 소환플래그 == 싱크로
-		TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("종류")
+		TRYCALLFORM CARD_{대상カードID}("종류")
 		SIF RESULT == 엑시즈 || RESULT == 링크
 			CONTINUE
 	ENDIF
@@ -347,7 +351,7 @@ FOR カウンタ,0,サーチ範囲
 		ENDIF
 		IF 重ねてＸ == 0 && なんでもＸ == 0
 			IF 소환플래그 == 엑시즈
-				TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("종류")
+				TRYCALLFORM CARD_{대상カードID}("종류")
 				SIF RESULT == 엑시즈 || RESULT == 링크
 					CONTINUE
 			ENDIF
@@ -365,11 +369,11 @@ FOR カウンタ,0,サーチ範囲
 	SIF 条件달성 != 1
 		CONTINUE
 
-	IF 듀얼리스트 == "상대"
-		CALL ENEMY_RUTIN_SOZAI(参照先,カウンタ,소환플래그,소환カード_ID)
-		SIF RESULT == 1
-			CONTINUE
-	ENDIF
+;	IF 듀얼리스트 == "상대"
+;		CALL ENEMY_RUTIN_SOZAI(参照先,カウンタ,소환플래그,소환カード_ID)
+;		SIF RESULT == 1
+;		CONTINUE
+;	ENDIF
 
 	$SKIP_RESTRICTION
 	IF 듀얼리스트 == "자신"
@@ -378,27 +382,14 @@ FOR カウンタ,0,サーチ範囲
 		CALL CARD_SETCOLOR(実行者,参照先,カウンタ)
 		CALLFORM CARD_KANPRINT(元参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"))
 		RESETCOLOR
-
 	ELSEIF 듀얼리스트 == "상대"
-		IF 参照先 == "필드"
-			IF GETVAR(@"%実行者%_MZ_攻:カウンタ") < 現在最小攻撃力
-				現在最小攻撃力 = RESULT
-				상대選択カード = カウンタ + 上級値
-			ELSEIF GETVAR(@"%実行者%_MZ_攻:カウンタ") == 現在最小攻撃力
-				IF カウンタ + 上級値 > 상대選択カード
-					상대選択カード = カウンタ + 上級値
-				ENDIF
-			ENDIF
-		ELSE
-			CALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("攻撃力")
-			IF RESULT < 現在最小攻撃力
-				現在最小攻撃力 = RESULT
-				상대選択カード = カウンタ + 上級値
-			ELSEIF RESULT == 現在最小攻撃力
-				IF カウンタ + 上級値 > 상대選択カード
-					상대選択カード = カウンタ + 上級値
-				ENDIF
-			ENDIF
+;		CALL ENEMY_RUTIN_SOZAI(参照先,カウンタ,소환플래그,소환カード_ID)
+		CALL ENEMY_RUTIN_SOZAI(대상カードID,元参照先,カウンタ,소환カード_ID,소환플래그)
+		IF RESULT >= 100000
+			CONTINUE
+		ELSEIF RESULT < 現在最小攻撃力
+			現在最小攻撃力 = RESULT
+			상대選択カード = カウンタ + 上級値
 		ENDIF
 	ENDIF
 	
@@ -410,17 +401,17 @@ FOR カウンタ,0,サーチ範囲
 			RESULT:1 = カウンタ + 上級値
 			RETURN 1
 		CASE 의식
-			TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("의식代用")
+			TRYCALLFORM CARD_{대상カードID}("의식代用")
 			SIF RESULT == 소환カード속성
 				条件合計 = 9999
-			TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("의식代用カテゴリ")
+			TRYCALLFORM CARD_{대상カードID}("의식代用カテゴリ")
 			SIF RESULTS == 소환カードカテゴリ
 				条件合計 = 9999
 			IF 룡輝巧의식 == 1
 				IF 参照先 == "필드"
 					条件合計 += GETVAR(@"%実行者%_MZ_攻:カウンタ")
 				ELSE
-					TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("攻撃力")
+					TRYCALLFORM CARD_{대상カードID}("攻撃力")
 					条件合計 += RESULT
 				ENDIF
 
@@ -428,7 +419,7 @@ FOR カウンタ,0,サーチ範囲
 				IF 参照先 == "필드"
 					条件合計 += GETVAR(@"%実行者%_MZ_星:カウンタ")
 				ELSE
-					TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("レベル")
+					TRYCALLFORM CARD_{대상カードID}("レベル")
 					条件合計 += RESULT
 				ENDIF
 			ENDIF
@@ -437,7 +428,7 @@ FOR カウンタ,0,サーチ範囲
 			RETURN 1
 		CASE 엑시즈
 			IF 必要素材数 >= 3
-				TRYCALLFORM CARD_{GETVAR(@"%実行者%_%参照先%:カウンタ")}("XYZ代用")
+				TRYCALLFORM CARD_{대상カードID}("XYZ代用")
 				IF RESULT == 1
 					RESULT:1 = カウンタ + 上級値
 					RETURN 2
@@ -1186,6 +1177,13 @@ IF 素材条件スーパー표시 > 0
 ENDIF
 ;PRINTFORML 표시場面추가
 
+IF 素材条件スーパー場所 > 0
+	IF 参照先 == "필드"
+		SIF カウンタ != 素材条件スーパー場所
+			RETURN 0
+	ENDIF
+ENDIF
+
 IF 素材条件スーパー상대モン > 0
 	IF 参照先 == "필드"
 		IF 듀얼리스트 == "자신"
@@ -1219,5 +1217,7 @@ SIF 素材条件スーパー속성 > 0
 SIF 素材条件スーパー표시 > 0
 	RETURN 1
 SIF 素材条件スーパー상대モン > 0
+	RETURN 1
+SIF 素材条件スーパー場所 >= 0
 	RETURN 1
 RETURN 0

@@ -40,7 +40,7 @@ PRINTL ①：패를 1장 버리고 발동할 수 있다。
 PRINTL 자신의 덱에서 레벨 4이하의 "촉수" 몬스터 1장을 특수 소환한다。
 CALL CARD_ABLE(2,묘지起動)
 PRINTL ②：묘지의 이 카드를 제외하고 발동할 수 있다。
-PRINTL 묘지의 「촉수」 카드 3장을 덱으로 되돌리고 셔플한다。
+PRINTL 묘지의 "촉수" 카드 3장을 덱으로 되돌리고 셔플한다。
 PRINTL 그 후, 상대의 여성 몬스터 1장을 "묘상" 카드로 취급하여 자신의 마법 / 함정 존에 둔다。
 CALL TEXT_DECORATION("ROGUE")
 
@@ -72,13 +72,12 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF RESULT == 1
 		RETURN 0
 	;손패1枚では발동할 수 없다
-	IF 종류 == 마함起動
-		SIF 손패数(듀얼리스트) == 0
-			RETURN 0
-	ELSEIF 종류 == 손패起動
-		SIF 손패数(듀얼리스트) <= 1
-			RETURN 0
-	ENDIF
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件カテゴリ = 촉수
@@ -162,7 +161,7 @@ ELSEIF 종류 == 묘지起動
 		효과条件성별 = 牝性 
 		효과추가カテ = 묘상
 		효과条件任意 = 1
-		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",79770)
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",)
 
 		;フレ-バ-
 		조교대상 = RESULT:1

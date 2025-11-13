@@ -35,9 +35,9 @@ PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 �
 CALLFORM CARD_ABLE(1,마함起動)
 PRINTL ①：이하의 효과에서 １개를 선택해서 발동할 수 있다。
 PRINTL ●자신의 패 / 묘지에서 "푸른 눈의 백룡"１장을 특수 소환한다。
-PRINTL ●"푸른 눈의 백룡"의 카드명이 기재된 마법 / 함정 카드 1장을 덱에서 자신 필드에 세트한다.
+PRINTL ●같은 이름의 카드가 자신 묘지에 존재하지 않는 "푸른 눈의 백룡" 마법 / 함정 카드 1장을 덱에서 자신 필드에 세트한다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL ②：자신의 몬스터 존의 "푸른 눈의 백룡"을 상대는 효과의 대상으로 지정할 수 없다
+PRINTL ②：자신의 몬스터 존의 "푸른 눈의 백룡"을 상대는 효과의 대상으로 지정할 수 없다.
 
 
 @CARDCAN_81020(듀얼리스트,종류,ゾーン,場所)
@@ -52,10 +52,28 @@ SIF RESULT == 1
 	RETURN 0
 
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	SIF 발동済_1(듀얼리스트,81020)
 		RETURN 0
-	CALL CARD_DRAW_CHECK(1)
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 푸른 눈의 백룡
+	효과条件종류 = 마함全般
+	CALL SET_EXIST_CARDS(듀얼리스트,묘지지정)
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1 && 마함数(듀얼리스트) >= 5
+		효과制限달성 ++
+	ENDIF
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ:0 = 푸른 눈의 백룡
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		효과制限달성 ++
+	SIF 효과制限달성 == 0
+		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
 	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
@@ -81,7 +99,8 @@ ENDIF
 #DIM DYNAMIC 속성数
 
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	$USE_EFFECT
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81020,1)
 	IF RESULT == 0
 		CALL FULLRESET
@@ -91,8 +110,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		효과条件소환可 = 1
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
-			PRINTL 푸른 눈의 백룡을 특수 소환 하시겠습니까？
-			CALL YN_CHOICE(듀얼리스트)
+			CALL YN_CHOICE(듀얼리스트,"●자신의 패 / 묘지에서 「푸른 눈의 백룡」１장을 특수 소환한다。","●같은 이름의 카드가 자신의 묘지에 존재하지 않는 「푸른 눈의 백룡」마법 / 함정 1장을 덱에서 자신 필드에 세트한다。")
 		ELSE
 			RESULT = いいえ
 		ENDIF
@@ -107,13 +125,23 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 			효과範囲덱 = 1
 			효과条件カテゴリ = 푸른 눈의 백룡
 			효과条件종류 = 마함全般
+			CALL SET_EXIST_CARDS(듀얼리스트,묘지지정)
 			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
 		ENDIF	
 	ENDIF
-ELSEIF 종류 == 마함起動
+ELSEIF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 2
 	;カード발동＆설치まで
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81020)
 	IF RESULT == 0
+		TRYCALLFORM CARDCAN_81020(듀얼리스트,마함起動,"마함",場所)
+		IF RESULT == 1
+			PRINTFORML 
+			PRINTFORML 지금、효과를 사용하시겠습니까？
+			PRINTFORML 
+			CALL YN_CHOICE(듀얼리스트)
+			SIF RESULT == 0
+				GOTO USE_EFFECT
+		ENDIF
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET

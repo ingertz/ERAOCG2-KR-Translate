@@ -41,6 +41,8 @@ SELECTCASE 参照先
 		RETURN 雄性
 	CASE "レア度"
 		RETURN SPR
+	CASE "連動ID"
+		RETURN 1885
 ENDSELECT
 RETURN 0
 
@@ -102,9 +104,11 @@ ELSEIF 종류 == 지속효과
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	SIF 발동済_3(듀얼리스트,11885)
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
-		RETURN 0
-	SIF モンスター数(듀얼리스트) >= 5
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1

@@ -123,13 +123,22 @@ IF 종류 == 攻守変動
 		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:カウンタ")}("名前")
 		SIF STRFIND(RESULTS, "드래곤")  != -1
 			条件달성 = 1
-		SIF GETVAR(@"%対面者%_MZ_種:カウンタ") == 드래곤족
-			条件달성 = 1
-
 		SIF STRFIND(RESULTS, "룡")  != -1
 			条件달성 = 1
 		SIF STRFIND(RESULTS, "용")  != -1
 			条件달성 = 1
+			CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 파계만룡－버스터 드래곤
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			;モンスター耐性持ってない
+			IF GETVAR(@"%対面者%_MZ_モ耐:カウンタ") != 1
+				;無差耐耐性持ってない
+				SIF GETVAR(@"%対面者%_MZ_無差耐:カウンタ") != 1
+					条件달성 = 1
+			ENDIF
+		ENDIF
 		SIF 条件달성 == 1
 			攻撃力修正 ++
 	NEXT
@@ -171,6 +180,12 @@ IF 종류 == 攻守変動
 	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
 
 ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 파계만룡－버스터 드래곤
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		大条件달성 = 1
 	FOR カウンタ,0,5
 		VARSET 条件달성
 		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
@@ -184,13 +199,9 @@ ELSEIF 종류 == 지속효과
 		;無差耐耐性持ってたらおわり
 		SIF GETVAR(@"%対面者%_MZ_無差耐:カウンタ") >= 1
 			CONTINUE
-
-		SIF GETVAR(@"%対面者%_MZ_種:カウンタ") == 드래곤족
-			条件달성 = 1
 		TRYCALLFORM CARD_{GETVAR(@"%対面者%_필드:カウンタ")}("종족")
 		SIF RESULT == 드래곤족
 			条件달성 = 1
-
 		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:カウンタ")}("名前")
 		SIF STRFIND(RESULTS, "드래곤")  != -1
 			条件달성 = 1
@@ -215,22 +226,15 @@ ELSEIF 종류 == 常在無効
 		VARSET 条件달성
 		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
 			CONTINUE
-		;攻撃표시じゃなかったらおわり
-		SIF GETVAR(@"%対面者%_MZ_表:カウンタ") >= 2
-			CONTINUE
 		;モンスター耐性持ってたらおわり
 		SIF GETVAR(@"%対面者%_MZ_モ耐:カウンタ") >= 1
 			CONTINUE
 		;無差耐耐性持ってたらおわり
 		SIF GETVAR(@"%対面者%_MZ_無差耐:カウンタ") >= 1
 			CONTINUE
-
-		SIF GETVAR(@"%対面者%_MZ_種:カウンタ") == 드래곤족
-			条件달성 = 1
 		TRYCALLFORM CARD_{GETVAR(@"%対面者%_필드:カウンタ")}("종족")
 		SIF RESULT == 드래곤족
 			条件달성 = 1
-
 		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_필드:カウンタ")}("名前")
 		SIF STRFIND(RESULTS, "드래곤")  != -1
 			条件달성 = 1
@@ -238,10 +242,9 @@ ELSEIF 종류 == 常在無効
 			条件달성 = 1
 		SIF STRFIND(RESULTS, "용")  != -1
 			条件달성 = 1
-
 		IF 条件달성 == 1 || 大条件달성 == 1
 			CALL FULLRESET
-			CALL SET_FIELD_INFO(対面者,"필드",カウンタ,"発無",3,1)
+			CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",カウンタ,"発無",,51605)
 		ENDIF
 	NEXT
 ENDIF

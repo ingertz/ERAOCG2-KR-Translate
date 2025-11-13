@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 캣클로 걸
+		RESULTS = 캣클로 걸
 	CASE "略称"
-RESULTS = CC 걸
+		RESULTS = CC 걸
 	CASE "カテゴリ"
-RESULTS:0 = 캣
+		RESULTS:0 = 캣
 ENDSELECT
 
 
@@ -71,7 +71,11 @@ IF 종류 == 필드起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 
 	CALL FULLRESET
@@ -100,29 +104,28 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,25206,1)
 	IF RESULT == 0
-		SIF 손패数(듀얼리스트) == 0
-			RETURN 0
 		CALL FULLRESET
 		효과条件行先플래그 = 덱行き
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
-		
-		CALL FULLRESET
-		효과範囲묘지 = 1
-		효과条件カテゴリ = 캣
-        효과条件종류 = モン全般
-		CALL CARD_CHOOSE_BASIC(듀얼리스트, "묘지",ゾーン,場所)
-		選択カード = RESULT
-		IF 選択カード != 9999
-			CALLFORM CARD_{GETVAR(@"%듀얼리스트%_묘지:{選択カード}")}("종류")
-			IF RESULT == 通常モン
-				CALL FULLRESET
-				CALL CARD_SP_SUMMON(듀얼리스트, "묘지", 選択カード)	
-				CALL FULLRESET
-효과条件名前 = 융합
-				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
-			ELSE
-				CALL FULLRESET
-				CALL CARD_SP_SUMMON(듀얼리스트, "묘지", 選択カード)	
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 캣
+			효과条件종류 = モン全般
+			CALL CARD_CHOOSE_BASIC(듀얼리스트, "묘지",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALLFORM CARD_{GETVAR(@"%듀얼리스트%_묘지:{選択カード}")}("종류")
+				IF RESULT == 通常モン
+					CALL FULLRESET
+					CALL CARD_SP_SUMMON(듀얼리스트, "묘지", 選択カード)	
+					CALL FULLRESET
+					효과条件名前 = 융합
+					CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+				ELSE
+					CALL FULLRESET
+					CALL CARD_SP_SUMMON(듀얼리스트, "묘지", 選択カード)	
+				ENDIF
 			ENDIF	
 		ENDIF
 	ENDIF

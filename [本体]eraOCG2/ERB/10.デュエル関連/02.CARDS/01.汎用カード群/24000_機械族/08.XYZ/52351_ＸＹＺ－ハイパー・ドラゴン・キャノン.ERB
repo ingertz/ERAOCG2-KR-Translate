@@ -91,7 +91,7 @@ IF 종류 == EX덱起動
 	효과範囲필드 = 1
 	효과範囲마함 = 1
 	효과範囲묘지 = 1
-효과条件名前 = X─크로스 캐논
+	효과条件名前 = X─크로스 캐논
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -99,7 +99,7 @@ IF 종류 == EX덱起動
 	효과範囲필드 = 1
 	효과範囲마함 = 1
 	효과範囲묘지 = 1
-효과条件名前 = Y─드래곤 이어헤드
+	효과条件名前 = Y─드래곤 이어헤드
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -107,7 +107,7 @@ IF 종류 == EX덱起動
 	효과範囲필드 = 1
 	효과範囲마함 = 1
 	효과範囲묘지 = 1
-효과条件名前 = Z─질리온 캐터필러
+	효과条件名前 = Z─질리온 캐터필러
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -118,9 +118,19 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	SIF モンスター数(対面者) < 1 && 마함数(対面者) < 1
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 제외
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所,4759)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -253,7 +263,7 @@ ENDIF
 
 CALL FULLRESET
 효과範囲EX덱 = 1
-효과条件名前 = 엑스와이제트 - 드래곤 캐논
+효과条件名前 = XYZ─드래곤 캐논
 CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 IF RESULT == 1
 	CALL FULLRESET

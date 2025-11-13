@@ -1,0 +1,139 @@
+﻿@CARDNAME_79637,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 허니 트랩
+	CASE "略称"
+		RESULTS = 허니 트랩
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_79637(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251108
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79637(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없다。
+CALL CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：상대 필드에 원래 주인이 자신인 몬스터가 존재하는 경우에 발동할 수 있다。
+PRINTL 이하의 효과에서 １개를 선택해서 적용한다。
+PRINTL ●자신은 ３장 드로우하고、패를 ２장 버린다。
+PRINTL ●자신의 묘지 / 제외 상태인 몬스터를 원하는 만큼 특수 소환한다。
+PRINTL ●상대는 패를 무작위로 １장 버리고、추가로 １장 더 골라서 버린다。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_79637(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79637)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,79637)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 0
+	효과条件所有 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_79637(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 조교대상
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79637)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF 듀얼리스트 == "자신"
+			PRINTFORML 
+			PRINTFORML 적용할 효과를 선택해 주세요。
+			PRINTFORML 
+			PRINTFORML [0] - ●자신은 ３장 드로우하고、패를 ２장 버린다。
+			PRINTFORML [1] - ●자신의 묘지 / 제외 상태인 몬스터를 원하는 만큼 특수 소환한다。
+			PRINTFORML [2] - ●상대는 패를 무작위로 １장 버리고、추가로 １장 더 골라서 버린다。
+			BINPUT
+		ELSE
+			RESULT = 0
+		ENDIF
+		IF RESULT == 0
+			CALL CARDDRAW_BASIC(듀얼리스트,3)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과条件複数 = 2
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ELSEIF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과範囲제외 = 1
+			효과条件複数 = 任意の数
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ELSEIF RESULT == 2
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"손패破壊",場所,"묘지")
+			CALL FULLRESET
+			효과範囲손패 = 1
+			CALL CARD_ADD_GY_ADV(対面者,ゾーン,場所)
+		ELSE
+			CALL CARDDRAW_BASIC(듀얼리스트,3)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과条件複数 = 2
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

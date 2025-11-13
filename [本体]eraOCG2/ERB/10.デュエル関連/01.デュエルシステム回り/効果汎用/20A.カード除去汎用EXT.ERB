@@ -186,7 +186,7 @@ IF 마법함정플래그 == 0
 		ENDIF
 	CASE "마함"
 		CALL CARD_DISPOSE(대상者,"필드",場所,마함行き)
-	CASE "묘지"
+	CASE "묘지","破壊"
 		대상カードID = GETVAR(@"%대상者%_필드:場所")
 		;공격력 만큼
 		IF 효과추가종류除去보존 == 1 || 효과추가종류除去보존 == 10 || 효과추가종류除去보존 == 40
@@ -435,6 +435,12 @@ IF 마법함정플래그 == 0
 				CALL SET_FIELD_INFO(대상者,"필드",場所,"服状",3,1)
 			ENDIF
 			CALL SET_FIELD_INFO(대상者,"필드",場所,"悪Ｃ",1)
+		ELSEIF 除去種 == "不材"
+			IF 효과추가종류除去보존 == 10
+				CALL SET_FIELD_INFO(대상者,"필드",場所,"不材",2)
+			ELSE
+				CALL SET_FIELD_INFO(대상者,"필드",場所,"不材",1)
+			ENDIF
 		ELSEIF 除去種 == "発情"
 			SETVAR @"%대상者%_MZ_発情:場所", 1
 			SETVAR @"%대상者%_MZ_接可:場所", 1

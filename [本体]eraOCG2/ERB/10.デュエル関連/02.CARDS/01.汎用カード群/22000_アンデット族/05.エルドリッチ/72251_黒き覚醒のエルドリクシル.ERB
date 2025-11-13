@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 검은 각성의 엘드릭시르
+		RESULTS = 검은 각성의 엘드릭시르
 	CASE "略称"
-RESULTS = 검은 각성
+		RESULTS = 검은 각성
 	CASE "カテゴリ"
-RESULTS:0 = 엘드릭시르
+		RESULTS:0 = 엘드릭시르
 ENDSELECT
 
 
@@ -54,17 +54,12 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-			RETURN 0
-	ELSE
-		RETURN 0
-	ENDIF
 	SIF 발동済_1(듀얼리스트,72251)
+		RETURN 0
+
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 
 	CALL FULLRESET
@@ -101,9 +96,15 @@ ELSEIF 종류 == 묘지起動
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
-	SIF 마함数(듀얼리스트) == 5
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 황금향
+	효과条件종류 = 마함全般
+	효과条件セット = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	CALL CARD_DRAW_CHECK(1)
+		
 	RETURN 1
 ENDIF
 

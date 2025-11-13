@@ -441,7 +441,7 @@ IF チェック플래그 == 5
 ELSE
 	戻り値 = 0
 ENDIF
-SIF 듀얼리스트 == "" ;Anonym追加
+SIF 듀얼리스트 == "" ;Anonym추가
 	듀얼리스트 = %実行者%
 ;
 IF チェック플래그 == 6
@@ -619,7 +619,7 @@ IF 효과条件カテゴリ != ""
 	;;PRINTFORML ここ通過２A　：효과条件カテゴリ：%효과条件カテゴリ%
 
 	IF 参照先 == "필드" && 효과条件元々 == 0
-		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
 		IF GETVAR(@"%実行者%_MZ_変化元ID:カウンタ") > -1
 			TRYCALLFORM CARDNAME_{GETVAR(@"%実行者%_MZ_変化元ID:カウンタ")}("カテゴリ")
 			SIF MATCH(효과条件カテゴリ, RESULTS)
@@ -645,7 +645,7 @@ IF 효과条件カテゴリ != ""
 		ENDIF
 
 	ELSEIF 参照先 == "마함"
-		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
 		IF GETVARS(@"%実行者%_魔_改名:カウンタ") != ""
 			VARSET 条件달성
 		ENDIF
@@ -682,7 +682,7 @@ IF 효과条件固カテゴリ != ""
 				条件달성 ++
 		ENDIF
 
-		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
 		IF GETVARS(@"%実行者%_MZ_改名:カウンタ") != ""
 			VARSET 条件달성
 		ENDIF
@@ -700,7 +700,7 @@ IF 효과条件固カテゴリ != ""
 		ENDIF
 
 	ELSEIF 参照先 == "마함"
-		;改名されてるとカテゴリをすべて失い、追加カテゴリのみ
+		;改名されてるとカテゴリをすべて失い、추가カテゴリのみ
 		IF GETVARS(@"%実行者%_魔_改名:カウンタ") != ""
 			VARSET 条件달성
 		ENDIF
@@ -940,15 +940,15 @@ IF 参照先 == "필드" || 参照先 == "마함"
 				RETURN 戻り値
 		ENDIF
 	ENDIF
-	IF 효과条件条件達生 > 0
-		IF 효과条件条件達生 == 888
+	IF 효과条件条件달성 > 0
+		IF 효과条件条件달성 == 888
 			SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") >= 1
 				RETURN 戻り値
-		ELSEIF 효과条件条件達生 == 999
+		ELSEIF 효과条件条件달성 == 999
 			SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") == 0
 				RETURN 戻り値
 		ELSE
-			SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") < 효과条件条件達生
+			SIF GETVAR(@"%実行者%_%MZ魔판정%_条達:カウンタ") < 효과条件条件달성
 				RETURN 戻り値
 		ENDIF
 	ENDIF
@@ -1409,7 +1409,13 @@ ELSE
 	
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
-			TRYCALLFORM CARD_{설정カードID}("종류")
+			VARSET RESULT
+			TRYCALLFORM CARD_{설정カードID}("특수불가")
+					SIF RESULT == 1
+						RETURN 戻り値
+
+
+					TRYCALLFORM CARD_{설정カードID}("종류")
 			IF RESULT < 3 || RESULT == 초차원
 				IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
@@ -1445,7 +1451,7 @@ ELSE
 					TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_EX덱:カウンタ")}(実行者,カウンタ,1)
 					SIF RESULT != 1
 						RETURN 戻り値
-				ELSEIF 参照先 != "EX덱" ;Anonym追加
+				ELSEIF 参照先 != "EX덱" ;Anonym추가
 					IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 						SIF RESULT == 1
@@ -1773,7 +1779,7 @@ ELSEIF 효과条件スーパー튜너 == -1
 		RETURN 0
 ENDIF
 
-;Anonym追加
+;Anonym추가
 IF 参照先 == "필드" || 参照先 == "마함"
 	IF 参照先 == "필드"
 		MZ魔판정 = MZ
@@ -1915,7 +1921,7 @@ IF 参照先 != "필드"
 					SIF RESULT != 1
 						RETURN 0
 				;EX덱以外を参照に確認
-				ELSEIF 参照先 != "EX덱" ;Anonym追加
+				ELSEIF 参照先 != "EX덱" ;Anonym추가
 					IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 						SIF RESULT == 1
@@ -2058,7 +2064,7 @@ ELSE
 ENDIF
 CUSTOMDRAWLINE —
 RESETCOLOR
-
+화상ボタン無効 = 1
 IF GROUPMATCH(설정타입,1,2,3,4,5,6,7,11,12) && 実行者 == "자신"
 	IF 確認ゾーン == "필드"
 		IF GETVAR(@"%確認듀얼리스트%_MZ_表:確認場所") == 3 && 実行者 != 確認듀얼리스트
@@ -2078,6 +2084,7 @@ IF GROUPMATCH(설정타입,1,2,3,4,5,6,7,11,12) && 実行者 == "자신"
 ELSE
 	TRYCALLFORM CARD_UI(選択カード_ID,2)
 ENDIF
+화상ボタン無効 = 0
 SIF 설정타입 == 99
 	RETURN 0
 
@@ -2090,6 +2097,8 @@ IF 実行者 == "자신"
 	BINPUT
 	IF RESULT == 1
 		RETURN 1
+	ELSEIF RESULT == 1000
+	
 	ENDIF
 ENDIF
 RETURN 0

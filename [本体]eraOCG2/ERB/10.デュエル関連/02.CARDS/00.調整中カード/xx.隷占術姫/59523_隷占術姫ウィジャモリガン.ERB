@@ -1,0 +1,212 @@
+﻿@CARDNAME_59523,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 예점술공주 위저모리간
+	CASE "略称"
+		RESULTS = 예 위저모리간
+	CASE "カテゴリ"
+		RESULTS:0 = 점술공주
+		RESULTS:1 = 예점술공주
+		RESULTS:3 = E.R.A
+ENDSELECT
+
+
+@CARD_59523(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 1300
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "의식代用"
+		RETURN 어둠속성
+	CASE "連動ID"
+		;謎のERAパワーでデュエル中のみ空間を超えてミエルと連動
+		;SIF 듀얼モード == 1
+		;	RETURN 2569
+	CASE "추가日"
+		RETURN 251109
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_59523(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL TEXT_DECORATION("P_MAGIC")
+CALL CARD_ABLE(0,손패起動)
+PRINTL 
+PRINTL 이 카드명의 Ｐ효과는 １턴에 １번밖에 사용할 수 없으며、
+PRINTL Ｐ효과를 발동하는 턴、자신은 "점술공주" 몬스터밖에 특수 소환할 수 없다。
+CALL CARD_ABLE(P1,마함起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 이 카드를 파괴하고、자신의 덱 / 묘지에서 "예점술공주" 몬스터 １장을 상대 필드에 뒷면 수비 표시로 특수 소환한다。
+PRINTL 그 후、자신의 덱에서 레벨９인 "점술공주" 몬스터 １장을 패에 넣을 수 있다。
+CALL TEXT_DECORATION("P_MAGIC_2")
+PRINTL 이 카드명의 ②의 몬스터 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ①：어둠속성인 의식 소환 소재로서 릴리스 될 경우、이 카드 １장으로 의식 소환에 필요한 릴리스 소재로서 취급되며、
+PRINTL 자신 필드에 이 카드 이외의 "점술공주" 몬스터 카드가 존재하는 한、몬스터 존의 이 카드의 레벨은 ９가 된다。
+CALL CARD_ABLE(2,소환時,특수소환時,R素材時효과)
+PRINTL ②：이 카드가 소환 / 특수 소환된 경우 또는 의식 소재로서 릴리스 된 경우에 발동할 수 있다。
+PRINTL 덱에서 "예점술공주 위저모리간" 이외의 "점술공주" 몬스터 １장 또는 "점술공주" 의식 마법 카드 １장을 패에 넣을 수 있다。
+CALL TEXT_DECORATION("ROGUE")
+
+;テーマの初動となるモンスター。P효과と、モンスター효과の両方で展開札をサーチすることができる。
+;P효과は「するターン」の점술공주縛りがつくため純構築でないとP효과は使いにくいが、テーマとしてはこのP효과に展開ルートで必ずタッチしたい。
+;상대フィールドに裏側で특수소환する효과が「예점술공주」テーマの核心になる효과であり、この裏側送りつけ→他の효과で表側にする動きがギミックの核。
+;その後のサーチも範囲が優秀で、レベル９の「점술공주」モンスターなので의식モンスターもサーチ可能。これで의식소환に必要な파츠を揃えていく。
+
+
+@CARDSUMMON_AA_59523
+
+
+@CARDCAN_59523(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59523)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_P1(듀얼리스트,59523)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 예점술공주
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF モンスター数(対面者) >= 5
+		RETURN 0
+	
+	;점술공주以外を특수소환していたら효과使用불가能
+	CALL FULLRESET
+	효과条件固カテゴリ = 점술공주
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 점술공주
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時 || 종류 == R素材時효과
+	SIF 발동済_2(듀얼리스트,59523)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 점술공주
+	효과条件종류 = モン全般
+	효과条件固名前 = 예점술공주 위저모리간
+	효과条件スーパーカテゴリ = 점술공주
+	효과条件スーパー종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59523(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59523)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59523,P1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 예점술공주
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"裏側守備표시",,1)
+		IF RESULT != 0
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 점술공주
+			효과条件レベル = 9
+			효과条件종류 = モン全般
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL FULLRESET
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"점술공주")
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"星",9)
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時 || 종류 == R素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59523,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 점술공주
+		효과条件종류 = モン全般
+		효과条件固名前 = 예점술공주 위저모리간
+		효과条件スーパーカテゴリ = 점술공주
+		효과条件スーパー종류 = 마법全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+

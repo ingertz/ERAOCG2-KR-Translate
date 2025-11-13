@@ -53,7 +53,7 @@ RETURN 0
 PRINTL 이 카드명의 ①②③의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,소환時,특수소환時)
 PRINTL ①：이 카드가 소환 / 특수 소환한 경우에 발동할 수 있다。
-PRINTL 덱에서 레벨 ２이하의 악마족 몬스터 １장을 특수 소환한다。
+PRINTL 덱에서 레벨２ 이하의 악마족 몬스터 １장을 특수 소환한다。
 CALLFORM CARD_ABLE(2,필드起動)
 PRINTL ②：자신 메인 페이즈에 패를 １장 버리고 발동할 수 있다。
 PRINTL 이 턴의 엔드 페이즈에 자신 묘지의 지속마법카드 １장을 앞면 표시로 세트한다。
@@ -94,7 +94,11 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 발동誘発

@@ -1,0 +1,159 @@
+﻿@CARDNAME_70333,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 삼전의 재
+	CASE "略称"
+		RESULTS = 삼전의 재
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_70333(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251108
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_70333(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 카드는 １턴에 １장밖에 발동할 수 없다。
+CALLFORM CARD_ABLE(0,마함起動 ,손패起動)
+PRINTL ①：이 턴의 자신 메인 페이즈에 상대가 몬스터의 효과를 발동한 경우、
+PRINTL 이하의 효과에서 １개를 선택해서 발동할 수 있다。
+PRINTL ●자신은 2장 드로우한다。
+PRINTL ●상대 필드의 몬스터 １장의 컨트롤을 엔드 페이즈까지 얻는다。
+PRINTL ●상대의 패를 확인하고、그 안에서 １장을 골라 덱으로 되돌린다。
+
+@CARDCAN_70333(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,10
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,70333)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,70333)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 三戦起動可能 == 0
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:2 = 1
+
+	CALL FULLRESET
+	효과範囲상대손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:3 = 1
+
+	SIF 발동불가:1 == 1 && 발동불가:2 == 1 && 발동불가:3 == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_70333(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,10
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,70333,1)
+	IF RESULT == 0
+		;通常마법汎用処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:2 = 1
+		CALL FULLRESET
+		효과範囲상대손패 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:3 = 1
+		IF 듀얼리스트 == "자신"
+			PRINTL 효과를 선택해주세요
+			PRINTL
+			SIF 발동불가:1 == 0
+				PRINTL [1] - ●덱에서 2장 드로우한다
+			SIF 발동불가:2 == 0
+				PRINTL [2] - ●상대 필드의 몬스터 １장의 컨트롤을 엔드 페이즈까지 얻는다
+			SIF 발동불가:3 == 0
+				PRINTL [3] - ●상대의 패를 확인하고、그 안에서 １장을 골라 덱으로 되돌린다。
+
+			PRINTL
+			PRINTL [10] - 발동하지 않는다.
+			BINPUT
+		ELSE
+			RESULT = 10
+			SIF 발동불가:1 == 0
+				RESULT = 1
+			SIF 발동불가:2 == 0
+				RESULT = 2
+			SIF 발동불가:3 == 0
+				RESULT = 3
+		ENDIF
+		IF RESULT == 10
+			PRINTFORML 효과를 발동하지 않았습니다。
+		ELSEIF RESULT == 1
+			CALL CARDDRAW_BASIC(듀얼리스트,2)
+		ELSEIF RESULT == 2
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과추가종류:0 = 5
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"強奪")
+		ELSEIF RESULT == 3
+			CALL FULLRESET
+			효과範囲상대손패 = 1
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

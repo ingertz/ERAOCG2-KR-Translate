@@ -50,10 +50,10 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(1,소환時,특수소환時)
 PRINTL ①: 이 카드가 일반 일반 소환 / 특수 소환에 성공했을 때 발동할 수 있다.
-PRINTL 덱에서 '함정 속으로' 몬스터를 특수 소환한다.
+PRINTL 덱에서 "함정 속으로" 몬스터를 특수 소환한다.
 CALLFORM CARD_ABLE(2,필드起動)
 PRINTL ②: 자신 메인 페이즈에 패를 1장 버리는 것으로 발동할 수 있다.
-PRINTL 덱에서 「고혹마」 카드를 묘지로 보낸다.
+PRINTL 덱에서 "충혹마" 카드를 묘지로 보낸다.
 CALLFORM CARD_ABLE(0,지속효과,攻守変動)
 PRINTL ③：이 카드는 함정 내성을 가진다. 자신 필드의 “모이스처 홀-카즈라”를 제외한 “충혹마” 몬스터의 공격력을 300 올린다.
 CALL TEXT_DECORATION("ROGUE")
@@ -133,7 +133,11 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1

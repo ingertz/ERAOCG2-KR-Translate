@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 보이드베르그 아포칼립스
 	CASE "略称"
-		RESULTS = 보이드아포칼립스
+		RESULTS = Void Apocalypse
 	CASE "カテゴリ"
 		RESULTS:0 = 보이드베르그
 ENDSELECT
@@ -23,7 +23,7 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "외부자"
-		RETURN 1
+		RETURN 0
 	CASE "종류"
 		RETURN 융합
 	CASE "속성"
@@ -50,7 +50,7 @@ CALL RESETCONDITION_MAT
 必要素材数 = 2
 
 IF EX参照 == 0 || EX参照 == 1
-素材条件名前 = 보이드베르그 페일라이더
+	素材条件名前 = 보이드베르그 페일라이더
 ELSEIF EX参照 >= 10
 	素材条件속성 = 어둠속성
 	素材条件종족 = 미확인족
@@ -106,11 +106,14 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー == 듀얼리스트
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF 발동済_2(듀얼리스트,57816)
 		RETURN 0
-	CALL FULLRESET
 	RETURN 1
 
 ELSEIF 종류 == 필드起動 && ターンプレイヤー != 듀얼리스트
@@ -125,7 +128,7 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー != 듀얼리스트
 	CALL FULLRESET
 
 	효과範囲묘지 = 1
-효과条件名前 = 블랙홀
+	효과条件名前 = 블랙홀
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -153,7 +156,7 @@ IF 종류 == 身代효과
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT != 1
 			RETURN 0
-PRINTL 아포칼립스의 대체 효과를 사용하시겠습니까?
+			PRINTL 아포칼립스의 대체 효과를 사용하시겠습니까?
 		CALL YN_CHOICE(듀얼리스트)
 		IF RESULT == はい
 			CALL FULLRESET
@@ -177,12 +180,12 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー == 듀얼리스트
 		IF RESULT == 1
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",1000)
 			CALL FULLRESET
-PRINTL 자신 묘지에서 "보이드베르그" 카드 또는 "블랙홀"을 패에 추가하시겠습니까?
+			PRINTL 자신 묘지에서 "보이드베르그" 카드 또는 "블랙홀"을 패에 추가하시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 			IF RESULT == はい
 				효과範囲묘지 = 1
 				효과条件スーパー名前 = 블랙홀
-효과条件カテゴリ = 보이드베르그
+				효과条件カテゴリ = 보이드베르그
 				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 			ENDIF
 		ENDIF
@@ -193,7 +196,7 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー != 듀얼리스트
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲손패 = 1
-효과条件名前 = 블랙홀
+		효과条件名前 = 블랙홀
 		효과条件行先플래그 = 제외行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1

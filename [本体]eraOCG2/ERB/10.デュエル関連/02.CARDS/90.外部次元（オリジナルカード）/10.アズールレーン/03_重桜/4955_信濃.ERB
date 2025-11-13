@@ -155,7 +155,7 @@ ENDIF
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
-#DIM DYNAMIC 발동カード_ID
+#DIM DYNAMIC 발동カードID
 #DIMS DYNAMIC 획득耐性
 
 CALL 対面者판정(듀얼리스트)
@@ -165,15 +165,15 @@ IF 종류 == EX소환時 || 종류 == ターン開始時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4955,1)
 	IF RESULT == 0
 		CALL FULLRESET
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"묘지")
 	ENDIF
 
 ELSEIF 종류 == 발동誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4955,2)
 	IF RESULT == 0
-		발동カード_ID = 効後_設場所:(処理中番号 - 1)
+		발동カードID = 効後_효과ID:(効後_カウンタ - 2)
 
-		TRYCALLFORM CARD_{발동カード_ID}("종류")
+		TRYCALLFORM CARD_{발동カードID}("종류")
 		IF RESULT < 10
 			획득耐性 = モ耐
 		ELSEIF INRANGE(RESULT,20,26)

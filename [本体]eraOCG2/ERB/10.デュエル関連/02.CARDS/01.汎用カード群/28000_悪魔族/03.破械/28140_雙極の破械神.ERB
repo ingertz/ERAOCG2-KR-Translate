@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 쌍극의 언체인드소울
+		RESULTS = 쌍극의 언체인드소울
 	CASE "略称"
-RESULTS = 쌍극의 파계신
+		RESULTS = 쌍극의 파계신
 	CASE "カテゴリ"
-RESULTS:0 = 언체인드
+		RESULTS:0 = 언체인드
 ENDSELECT
 
 
@@ -84,16 +84,18 @@ IF 종류 == 효과後誘発
 	RETURN 1
 
 ELSEIF 종류 == 특수소환時
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	IF 듀얼리스트 != "자신"
-		CALL FULLRESET
-		효과範囲상대필드 = 1
-		효과範囲상대마함 = 1
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT != 1
-			RETURN 0
-	ENDIF
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
 	RETURN 1
@@ -137,7 +139,7 @@ ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
 ELSEIF 종류 == ターン終了時予約
 	CALL FULLRESET
 	효과範囲묘지 = 1
-효과条件名前 = 쌍극의 언체인드소울
+	효과条件名前 = 쌍극의 언체인드소울
 	효과추가종류 = 効追除処
 	CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 ENDIF

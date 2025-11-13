@@ -39,6 +39,8 @@ SELECTCASE 参照先
 		RETURN 1700
 	CASE "성별"
 		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1000
 ENDSELECT
 RETURN 0
 
@@ -79,7 +81,11 @@ IF 종류 == 손패起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) <= 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時

@@ -213,20 +213,24 @@ ENDIF
 
 
 $SKIP_TO_POINT
+;PRINTFORML 確認１　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
+
 ;TFLAG:104が설정되어있는 ときその番号のターゲットが存在するならTARGETに代入、いなければTFLAG:104をリセット
 タゲ確認 = 0
 TARGET = TARGET:1
 FOR カウンタ,1,CHARANUM
 	SIF TFLAG:104 < 1
 		BREAK
+
 	IF TARGET:カウンタ == TFLAG:104
 		TARGET = TARGET:カウンタ
 		タゲ確認 ++
 	ENDIF
+
 NEXT
 SIF !タゲ確認
 	TFLAG:104 = 0
-
+;PRINTFORML 確認２　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 IF 朝襲われ == 1
 	朝襲われ = 0
@@ -242,6 +246,7 @@ IF 朝襲われ == 1
 	TFLAG:COMABLE관리 = 3
 ENDIF
 
+;PRINTFORML 確認2a　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 ;MASTERと같은방플래그
 FOR 캐릭터_ID,1,CHARANUM
 	IF CFLAG:캐릭터_ID:현재위치 == CFLAG:MASTER:현재위치
@@ -258,7 +263,7 @@ FOR 캐릭터_ID,1,CHARANUM
 	ENDIF
 NEXT
 
-
+;PRINTFORML 確認2b　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 ;친밀감강도결정
 ;TARGET側
 FOR カウンタ,1,TARGETNUM + 1
@@ -280,6 +285,8 @@ FOR カウンタ,1,TARGETNUM + 1
 			TCVAR:(TARGET:カウンタ):친밀감 = MIN(TCVAR:(TARGET:(カウンタ - 1)):친밀감,馴合강도설정)
 	ENDIF
 NEXT
+
+;PRINTFORML 確認３　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 ;MASTERはTARGET:1～のTCVAR:130の最低値
 TCVAR:MASTER:친밀감 = TCVAR:(IN_ROOM("MIN", CFLAG:MASTER:현재위치, "TCVAR", 130)):친밀감
@@ -363,6 +370,7 @@ NEXT
 ;情報표시（PORTRAIT표시）
 ;-------------------------------------------------
 ;WAIT
+;PRINTFORML 確認４　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 IF TIME > 1440
 	DAY ++
@@ -438,7 +446,6 @@ IF TARGET
 					CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 1)
 				ELSEIF CFLAG:MASTER:현재위치 >= 50 
 					IF TALENT:TARGET:반응 == -1 || TALENT:TARGET:성적흥미 == -1
-
 						PRINTFORMW %CALLNAME:TARGET%는 부끄러운 듯이、조금 남의 눈에 띄지 않는 곳으로 가지 않겠느냐고 권했다。
 						CALL YN_CHOICE_STR()
 						IF RESULT == はい
@@ -476,6 +483,7 @@ IF TARGET
 			CONTINUE
 	NEXT
 ENDIF
+;PRINTFORML 確認５　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 PRINTL
 ;-------------------------------------------------
@@ -517,7 +525,7 @@ IF TARGET:2
 	PRINTBUTTON "(<<)", 2021
 	PRINTFORM —————————————————————————————————————————
 	PRINTBUTTON "(>>)", 2022
-	PRINTFORM ————————————————————————————————————————————————
+	PRINTFORM ————————————————————————————————————————————————―
 	IF PORTRAIT_화상표시 == 1 && PORTRAIT_簡易표시 == 1
 		PRINTFORM ———————————————————————————————
 	ENDIF
@@ -620,6 +628,7 @@ ELSE
 		NEXT
 	ENDIF
 ENDIF
+;PRINTFORML 確認６　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 IF TARGET == 0
 	TFLAG:COMABLE관리 = 0
@@ -654,3 +663,4 @@ IF TARGET
 	RESETCOLOR
 ENDIF
 
+;PRINTFORML 確認７　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}

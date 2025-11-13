@@ -27,7 +27,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 	
 		RETURN 효과モン
 	CASE "속성"
@@ -114,6 +113,8 @@ ENDIF
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -134,14 +135,16 @@ ELSEIF 종류 == 攻守変動
 			CONTINUE
 		SIF GETVAR(@"%듀얼리스트%_MZ_召種:{カウンタ}") == 召種通常
 			CONTINUE
-		CALL STATCHANGE_BASIC(듀얼리스트,"自身",カウンタ,GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ")/2)
+		攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ")/2
+		CALL STATCHANGE_BASIC(듀얼리스트,"自身",カウンタ,-攻撃力修正)
 	NEXT
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%対面者%_필드:{カウンタ}") == -1
 			CONTINUE
 		SIF GETVAR(@"%対面者%_MZ_召種:{カウンタ}") == 召種通常
 			CONTINUE
-		CALL STATCHANGE_BASIC(対面者,"自身",カウンタ,GETVAR(@"%対面者%_MZ_攻:カウンタ")/2)
+		攻撃力修正 = GETVAR(@"%対面者%_MZ_攻:カウンタ")/2
+		CALL STATCHANGE_BASIC(対面者,"自身",カウンタ,-攻撃力修正)
 	NEXT
 ELSEIF 종류 == 지속효과
 	CALL SET_PLAYER_INFO(듀얼리스트,"SS阻害状態",3,2)

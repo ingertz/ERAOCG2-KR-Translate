@@ -18,15 +18,18 @@ IF TARGET > 0 && !CFLAG:수면
 ENDIF
 
 
-IF CFLAG:MASTER:현재위치 != 場所_직장
-;自宅だとあまり仕事ができない。학습경험が一定以上なら自宅の方が効率がよくなる。학습경험400でトントン
-;학습경험100未満だとそもそも仕事にならない。
-;직장で仕事しないと悪辣度が下がらない。
-	TIME += 120
-ELSE
+IF CFLAG:MASTER:현재위치 == 場所_직장
 	TIME += 240
 	仕事_工数 += 4
 	CALL EVILTY_POINT(-5)
+ELSEIF CFLAG:MASTER:현재위치 == 場所_CDSレジ裏 
+	TIME += 120
+	カドショ宣伝 += 5
+	CALL EVILTY_POINT(-5)
+ELSE
+	TIME += 120
+	仕事_工数 += 2
+	CALL EVILTY_POINT(-2)
 ENDIF
 
 仕事_出席 = 2

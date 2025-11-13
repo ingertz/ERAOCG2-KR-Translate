@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 에일 페어리
+		RESULTS = 에일 페어리
 	CASE "略称"
-RESULTS = 응원하는 요정
+		RESULTS = 응원하는 요정
 	CASE "カテゴリ"
-RESULTS:0 = 요정
+		RESULTS:0 = 요정
 ENDSELECT
 
 
@@ -72,7 +72,11 @@ IF 종류 == 필드起動
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,29025)
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -108,7 +112,7 @@ IF 종류 == 필드起動
 			효과条件종족 = 천사족
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1
-PRINTL 엑시즈 소재를 추가하시겠습니까?
+				PRINTL 엑시즈 소재를 추가하시겠습니까?
 				CALL YN_CHOICE(듀얼리스트)
 			ELSE
 				RESULT = いいえ

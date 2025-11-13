@@ -49,22 +49,18 @@ RETURN 0
 @CARD_EXPLANATION_28300(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드는 통상 소환할 수 없다.
 CALLFORM CARD_ABLE(0,손패起動)
-PRINTL ①: 자신 필드의 몬스터 3장을 묘지로 보내고, 발동할 수 있다.
-PRINTL 이 카드를 패에서 특수 소환한다. 이 방법으로의 특수 소환은 효과에 의한 제한을 받지 않는다.
+PRINTL 이 카드는 일반 소환할 수 없으며、 자신 필드의 몬스터 3장을 묘지로 보낸 경우에만 특수 소환할 수 있다.
+PRINTL 이 방법으로의 특수 소환은 효과에 의한 제한을 받지 않는다.
 CALLFORM CARD_ABLE(0,묘지起動,지속효과)
-PRINTL ②: 자신의 필드 / 묘지 / 제외 / 패 / 덱에, 다른 "환마황제 라비엘"이 존재하지 않을 경우,
+PRINTL ①: 자신의 필드 / 묘지 / 제외 / 패 / 덱에, 다른 "환마황제 라비엘"이 존재하지 않을 경우,
 PRINTL 이 카드는 완전 내성을 가지고, 자신 필드의 몬스터 1장을 묘지로 보내는 것으로,
 PRINTL 묘지의 이 카드를 패에 추가할 수 있다.
 CALLFORM CARD_ABLE(0,효과後誘発)
-PRINTL ③: 상대가 카드의 소환 / 특수 소환에 성공했을 때 발동할 수 있다.
+PRINTL ②: 상대가 카드의 소환 / 특수 소환에 성공했을 때 발동할 수 있다.
 PRINTL 자신 필드에 "환마의 시종" 1장을 특수 소환한다.
 CALLFORM CARD_ABLE(10,필드起動)
-PRINTL ④: 1턴에 1번, 자신 메인 페이즈에 이 카드 이외의 자신 필드의 몬스터 1장을 릴리스하고 발동할 수 있다.
-PRINTL 이 카드의 공격력은 턴 종료시까지 배가 된다.
-PRINTL 
-PRINTL 
+PRINTL ③: 이 몬스터는 상대 몬스터가 존재하는 한、계속해서 공격할 수 있다.
 
 @CARDCAN_28300(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -90,6 +86,7 @@ IF 종류 == 손패起動
 	효과範囲필드 = 1
 	효과範囲마함 = 1
 	효과条件종류 = モン全般
+	효과条件표시 = 0
 	효과条件CNT = 1	
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT < 3
@@ -131,20 +128,20 @@ ELSEIF 종류 == 효과後誘発
 
 	RETURN 1
 ;제물효과
-ELSEIF 종류 == 필드起動
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 효과발동済(듀얼리스트,場所,ゾーン)
-		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件CNT = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT <= 1
-		RETURN 0
-	RETURN 1
+; ELSEIF 종류 == 필드起動
+; 	SIF メインフェイズ != 1
+; 		RETURN 0
+; 	SIF ターンプレイヤー != 듀얼리스트
+; 		RETURN 0
+; 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+; 		RETURN 0
+; 	CALL FULLRESET
+; 	효과範囲필드 = 1
+; 	효과条件CNT = 1
+; 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+; 	SIF RESULT <= 1
+; 		RETURN 0
+; 	RETURN 1
 ELSEIF 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
@@ -160,8 +157,10 @@ ENDIF
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 条件달성
+
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
+
 ;특수소환
 IF 종류 == 손패起動 
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28300)
@@ -170,6 +169,7 @@ IF 종류 == 손패起動
 		효과範囲필드 = 1
 		효과範囲마함 = 1
 		효과条件종류 = モン全般
+		효과条件표시 = 0
 		효과条件複数 = 3
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
@@ -198,17 +198,17 @@ ELSEIF 종류 == 효과後誘発
 		CALL CARD_GENERATE(듀얼리스트,128300)
 	ENDIF
 ;제물효과
-ELSEIF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28300,10)
-	IF RESULT == 0
-		CALL FULLRESET
-		효과範囲필드 = 1
-		효과条件他所 = 1
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",GETVAR(@"%듀얼리스트%_MZ_攻:場所"))
-		ENDIF
-	ENDIF
+; ELSEIF 종류 == 필드起動
+; 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28300,10)
+; 	IF RESULT == 0
+; 		CALL FULLRESET
+; 		효과範囲필드 = 1
+; 		효과条件他所 = 1
+; 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+; 		IF RESULT == 1
+; 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",GETVAR(@"%듀얼리스트%_MZ_攻:場所"))
+; 		ENDIF
+; 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -224,6 +224,12 @@ ELSEIF 종류 == 지속효과
 		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
 		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"魔耐")
 		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
+	ENDIF
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1 
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",98)
 	ENDIF
 ENDIF
 
@@ -274,6 +280,16 @@ SELECTCASE 参照先
 ENDSELECT
 
 
+@CARD_EXPLANATION_128300(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,필드起動)
+PRINTL ①：이 카드를 릴리스하고 발동할 수 있다。
+PRINTL 자신 필드의 "환마황제 라비엘" １장의 공격력을 １０００올린다。
+CALLFORM CARD_ABLE(0,묘지起動)
+PRINTL ②：묘지의 이 카드를 소멸시키고 발동할 수 있다。
+PRINTL 자신은 １장 드로우 한다。
+
 @CARDCAN_128300(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
@@ -281,4 +297,55 @@ ENDSELECT
 #DIM DYNAMIC 場所
 #DIMS DYNAMIC 対面者
 
+IF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 환마황제 라비엘
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
 RETURN 0
+
+@CARDEFFECT_128300(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,128300)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 환마황제 라비엘
+		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"一攻",1000)
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,128300)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ENDIF

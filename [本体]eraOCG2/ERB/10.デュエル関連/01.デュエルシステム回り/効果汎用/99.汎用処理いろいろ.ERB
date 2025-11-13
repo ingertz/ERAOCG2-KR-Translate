@@ -48,6 +48,8 @@ VARSET 素材条件スーパーカテゴリ
 VARSET 素材条件スーパー名前
 VARSET 素材条件スーパー표시
 VARSET 素材条件スーパー상대モン
+VARSET 素材条件スーパー場所,-1
+
 
 IF ARG == 0
 	VARSET 重ねてＸ
@@ -146,7 +148,7 @@ VARSET 효과条件魔Ｃ所持
 VARSET 효과条件悪Ｃ所持
 VARSET 효과条件薬Ｃ所持
 
-VARSET 효과条件条件達生
+VARSET 효과条件条件달성
 
 VARSET 효과条件Ｘ素所持
 VARSET 효과条件성별, -1
@@ -294,7 +296,7 @@ VARSET 濾過条件魔Ｃ所持
 VARSET 濾過条件悪Ｃ所持
 VARSET 濾過条件薬Ｃ所持
 
-VARSET 濾過条件条件達生
+VARSET 濾過条件条件달성
 
 VARSET 濾過条件의식無視
 VARSET 濾過条件CNT
@@ -583,6 +585,8 @@ ELSE
 			CALL SET_PLAYER_INFO(듀얼리스트,"마법발동数",1,0,1,1)
 		ELSE
 			CALL SET_PLAYER_INFO(듀얼리스트,"モン발동数",1,0,1,1)
+			SIF ターンプレイヤー != 듀얼리스트
+				三戦起動可能 = 1
 		ENDIF
 	ELSEIF INRANGE(RESULT,20,30)
 		CALL SET_PLAYER_INFO(듀얼리스트,"마법발동数",1,0,1,1)
@@ -3837,17 +3841,7 @@ ENDIF
 
 
 VARSET 상대_손패,-1
-상대_손패:0 = 23170
-;CALL CARD_MAKE_FIELD("상대",)
-CALL CARD_MAKE_FIELD("상대",51531)
-CALL CARD_MAKE_FIELD("상대",23175)
-CALL CARD_MAKE_FIELD("상대",23173)
 
-자신_손패:0 = 23170
-;CALL CARD_MAKE_FIELD("상대",)
-CALL CARD_MAKE_FIELD("자신",51531)
-CALL CARD_MAKE_FIELD("자신",23175)
-CALL CARD_MAKE_FIELD("자신",23173)
 
 
 
@@ -4280,7 +4274,7 @@ ELSE
 			IF 표시Ｔ
 				CALL XON_FONT("튜너")
 			ELSE
-				CALL XON_FONT("カード")
+				CALL XON_FONT("카드")
 			ENDIF
 		ENDIF
 		IF 参照先 == "마함"
@@ -4295,7 +4289,7 @@ ELSE
 			ELSEIF 표시割 == 펜듈럼
 				CALL XON_FONT("펜듈럼",C_MAGIC_G)
 			ELSE
-				CALL XON_FONT("カード")
+				CALL XON_FONT("카드")
 			ENDIF
 		ENDIF
 		IF 参照先 == "손패"
@@ -4610,11 +4604,11 @@ RETURN 0
 IF UI플래그 == 0
 	SIF 설정カラー２ == 0
 		설정カラー２ = 설정カラー
-	CALL XON_CUSTOMDRAWLINE(설정カラー,설정カラー２,"―")
+	CALL XON_CUSTOMDRAWLINE(설정カラー,설정カラー２,"—")
 ELSEIF UI플래그 == 1
 	SIF CFLAG:MASTER:우후후 >= 1
 		SETCOLOR  C_Ne_PINK
-	CUSTOMDRAWLINE ―
+	CUSTOMDRAWLINE —
 	RESETCOLOR
 ENDIF
 

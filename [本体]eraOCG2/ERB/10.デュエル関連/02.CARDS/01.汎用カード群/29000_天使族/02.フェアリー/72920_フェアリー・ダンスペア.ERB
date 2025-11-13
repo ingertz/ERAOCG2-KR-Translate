@@ -7,11 +7,11 @@ VARSET RESULTS
 ;오노마토ペアモチ-フ
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 요정 댄스페어
+		RESULTS = 페어리 댄스페어
 	CASE "略称"
-RESULTS = 요정 연계춤
+		RESULTS = 요정 연계춤
 	CASE "カテゴリ"
-RESULTS:0 = 요정
+		RESULTS:0 = 요정
 ENDSELECT
 
 
@@ -32,8 +32,8 @@ RETURN 0
 #DIM DYNAMIC 종류
 PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
 CALL CARD_ABLE(1,마함起動 ,손패起動)
-PRINTL ①: 손패를 1장 묘지로 보내고 발동할 수 있다.
-PRINTL 덱에서 "페어리" 몬스터를 2장까지 패에 추가한다(같은 이름의 카드는 1장까지).
+PRINTL ①: 패를 1장 묘지로 보내고 발동할 수 있다.
+PRINTL 덱에서 "요정" 몬스터를 2장까지 패에 추가한다(같은 이름의 카드는 1장까지).
 
 
 @CARDCAN_72920(듀얼리스트,종류,ゾーン,場所)
@@ -55,14 +55,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	IF 종류 == 마함起動
-		SIF 손패数(듀얼리스트) == 0
+		CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 			RETURN 0
-	ELSEIF 종류 == 손패起動
-		SIF 손패数(듀얼리스트) == 1
-			RETURN 0
-	ENDIF
-	CALL FULLRESET
+		CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件カテゴリ = 요정
 	효과条件종류 = モン全般

@@ -25,15 +25,16 @@ IF 듀얼モード == 0
 		SIF CFLAG:MASTER:우후후 >= 1
 			SETCOLOR  C_Ne_PINK
 		PRINTBUTTON "▽[＋][EXCOM]", 2002
-		PRINTL ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+		PRINTL ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 		RESETCOLOR
 	ELSEIF EXCOM_표시状態 == 0
 		SIF CFLAG:MASTER:우후후 >= 1
 			SETCOLOR  C_Ne_PINK
 		PRINTBUTTON "▼[－][EX_COM]", 2002
-		PRINTL ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+		PRINTL ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 		RESETCOLOR
 
+		;１個目
 		IF CFLAG:MASTER:현재위치 < 20
 			CALL COM_ABLE400
 			IF RESULT == 1
@@ -62,13 +63,8 @@ IF 듀얼モード == 0
 			PRINTC 바깥세계산책[610]
 			RESETCOLOR
 		ENDIF
-		CALL COM_ABLE402
-		IF RESULT == 1
-			SIF TIME_PROGRESS(CFLAG:MASTER:314) > 720
-				SETCOLOR C_GREEN
-			PRINTC 하루를 마친다[402]
-			RESETCOLOR
-		ENDIF
+		
+		;２個目
 		CALL COM_ABLE460
 		IF RESULT == 1 && CFLAG:TARGET:동행 && TALENT:TARGET:펫 == 1
 			SETCOLOR C_PINK
@@ -91,12 +87,25 @@ IF 듀얼モード == 0
 		ENDIF
 		RESETCOLOR
 		
+
+		;３個目
+		CALL COM_ABLE402
+		IF RESULT == 1
+			SIF TIME_PROGRESS(CFLAG:MASTER:314) > 720
+				SETCOLOR C_GREEN
+			PRINTC 하루를 끝낸다[402]
+			RESETCOLOR
+		ELSE
+			PRINTFORM %"",25%
+		ENDIF
+
+
+		;４個目	
 		PRINTC 덱 편집[490]
 
 
 
-		SIF 依頼플래그:依頼_受領中 == 1
-			PRINTC 의뢰 확인[806]
+		;５個目
 		IF TARGET >= 1
 			IF 追跡설정_ID < 1
 				PRINTC 추적한다[840]
@@ -107,27 +116,50 @@ IF 듀얼モード == 0
 			ENDIF
 		ENDIF
 
+
 		IF CFLAG:우후후
-			SIF EQUIP:MASTER:0
-				PRINTC 옷을 벗다[820]
+			PRINTL
+
 			IF CFLAG:우후후 == 2
 				PRINTC 빠져 나오기[999]
 			ELSE
 				PRINTC 만남 종료[999]
 			ENDIF
-		ENDIF
-		SIF ITEM:천년스마트폰
-			PRINTC 지인 검색[457]
 
-		PRINTL
-		PRINTC 커맨드 필터[805]
-		PRINTC 옵션[810]
-		PRINTC 결투사 사전[456]
-		
+			SIF EQUIP:MASTER:0
+				PRINTC 옷을 벗는다[820]
+		ENDIF
 
 
 	ENDIF
 	PRINTL
+
+	IF OPTION_표시状態 == 1
+		SIF CFLAG:MASTER:우후후 >= 1
+			SETCOLOR  C_Ne_PINK
+		PRINTBUTTON "＞[＋][OPTION]", 2013
+		PRINTL ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+		RESETCOLOR
+
+	ELSE
+		SIF CFLAG:MASTER:우후후 >= 1
+			SETCOLOR  C_Ne_PINK
+		PRINTBUTTON "＞[－][OPTION]", 2013
+		PRINTL ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+		RESETCOLOR
+	;	PRINTFORM %"",25%
+	;	PRINTFORM %"",25%
+		;PRINTC コマンド필터[805]
+		PRINTC 옵션[810]
+		PRINTC 결투사 사전[456]
+		SIF 依頼플래그:依頼_受領中 == 1
+			PRINTC 의뢰 정보 확인[806]
+		SIF ITEM:천년스마트폰
+			PRINTC 지인 검색[457]
+		PRINTL
+
+	ENDIF
+
 ENDIF
 SIF CFLAG:MASTER:우후후 >= 1
 	SETCOLOR  C_Ne_PINK
@@ -138,7 +170,9 @@ IF PREVCOM >= 0
 	VARSET LOCALS
 	LOCALS = %STR:0%
 	PRINTBUTTON "＜이전조교커맨드: "+LOCALS+"＞", PREVCOM
-
+	IF 追跡설정_ID >= 1
+		PRINTFORM ＜[%CALLNAME:追跡설정_ID%] 추적중＞
+	ENDIF
 	IF デバッグシステム >= 1
 		PRINT 디버그 모드 ON
 	ENDIF
@@ -225,12 +259,8 @@ ELSEIF RESULT ==2002
 ELSEIF RESULT ==2003
 	TARGET_표시状態 ^= 1
 	RETURN 1
-ELSEIF RESULT ==2011
-	TARGET_SIDE画面 = 0
-	RETURN 1
-ELSEIF RESULT ==2012
-	TARGET_SIDE画面 = 1
-	RETURN 1
+
+
 
 ELSEIF RESULT == 2004
 	MASTER_표시状態 ^= 1
@@ -245,12 +275,8 @@ ELSEIF RESULT ==2005
 ELSEIF RESULT ==2006
 	PORTRAIT_화상표시 ^= 1
 	RETURN 1
-ELSEIF RESULT ==2015
-	PORTRAIT_簡易표시 ^= 1
-	RETURN 1
-ELSEIF RESULT == 2016
-	CFLAG:TARGET:얼굴화상표시 ^= 1
-	RETURN 1
+
+
 ELSEIF RESULT ==2007
 	IF MAS_PORTRAIT_표시サイズ < 14
 		MAS_PORTRAIT_표시サイズ += 2
@@ -275,7 +301,23 @@ ELSEIF RESULT ==2009
 ELSEIF RESULT ==2010
 	オプション_OP_TIPS = 0
 	RETURN 1
+ELSEIF RESULT ==2011
+	TARGET_SIDE画面 = 0
+	RETURN 1
+ELSEIF RESULT ==2012
+	TARGET_SIDE画面 = 1
+	RETURN 1
 
+ELSEIF RESULT ==2013
+	OPTION_표시状態 ^= 1
+	RETURN 1
+
+ELSEIF RESULT ==2015
+	PORTRAIT_簡易표시 ^= 1
+	RETURN 1
+ELSEIF RESULT == 2016
+	CFLAG:TARGET:顔화상표시 ^= 1
+	RETURN 1
 
 ELSEIF RESULT ==2020
 	PORTRAIT_같은방표시 ^= 1
@@ -435,18 +477,14 @@ WAIT
 
 @SHOW_COMMAND
 #DIM DYNAMIC カウンタ
-#DIMS DYNAMIC 衣装名
-FOR  カウンタ,0,799
-	RESULT = 0
-	SIF カウンタ == 200 && TFLAG:COMABLE관리 == 2
-		PRINTL
-	SIF カウンタ == 350 && TFLAG:COMABLE관리 != 2
-		PRINTL
-	SIF カウンタ == 400 && TFLAG:COMABLE관리 != 2
-		PRINTL	
-	SIF カウンタ == 600 && TFLAG:COMABLE관리 != 2
-		PRINTL
+#DIM DYNAMIC カウンタB
+#DIMS DYNAMIC コマンド名
+#DIM DYNAMIC 開始時LCOUNT
+#DIM DYNAMIC 終了時LCOUNT
 
+開始時LCOUNT = LINECOUNT
+
+FOR カウンタ,0,799
 	;표시しないように
 	SIF GROUPMATCH(カウンタ,200,201,202,203)
 		CONTINUE
@@ -455,9 +493,14 @@ FOR  カウンタ,0,799
 	SIF GROUPMATCH(カウンタ,400,402,456,460,435,490,600,610)
 		CONTINUE
 
+	VARSET RESULT	
 	TRYCALLFORM COM_ABLE{カウンタ}
 	IF RESULT
+		SIF カウンタB != 0 && カウンタB % 6 == 0
+			PRINTFORML 
 
+;		VARSET RESULT
+		;カウンタ :{カウンタ} / カウンタB:{カウンタB}
 		TRYCALLFORM CAN_COM{カウンタ}(1)
 		IF RESULT == 0
 			SETCOLOR C_GRAY
@@ -489,28 +532,28 @@ FOR  カウンタ,0,799
 			PRINTFORMC 알몸도게자[{カウンタ,3}]
 		ELSEIF カウンタ == 200
 			IF EQUIP:외투
-				衣装名 = 외투
+				コマンド名 = 외투
 			ELSEIF EQUIP:이너
-				衣装名 = 이너
+				コマンド名 = 이너
 			ELSEIF EQUIP:바디슈트
-				衣装名 = ボディスーツ
+				コマンド名 = ボディスーツ
 			ELSEIF EQUIP:원피스
-				衣装名 = 衣装
+				コマンド名 = 衣装
 			ELSEIF EQUIP:기모노
-				衣装名 = 기모노
+				コマンド名 = 기모노
 			ELSEIF EQUIP:레오타드
-				衣装名 = 레오타드
+				コマンド名 = 레오타드
 			ENDIF
-			PRINTFORMC %衣装名%를 벗긴다[{カウンタ,3}]
+			PRINTFORMC %コマンド名%를 벗긴다[{カウンタ,3}]
 		ELSEIF カウンタ == 201
 			IF EQUIP:바지
-				衣装名 = 바지
+				コマンド名 = 바지
 			ELSEIF EQUIP:하반신겉옷
-				衣装名 = %CLOTHNAME(8,EQUIP:하반신겉옷)%
+				コマンド名 = %CLOTHNAME(8,EQUIP:하반신겉옷)%
 			ELSEIF EQUIP:치마
-				衣装名 = 치마
+				コマンド名 = 치마
 			ENDIF
-			PRINTFORMC %衣装名%를 벗긴다[{カウンタ,3}]
+			PRINTFORMC %コマンド名%를 벗긴다[{カウンタ,3}]
 		ELSEIF カウンタ == 202
 			IF EQUIP:상반신속옷１ == 2
 				PRINTFORMC 사라시를 벗긴다[{カウンタ,3}]
@@ -518,8 +561,8 @@ FOR  カウンタ,0,799
 				PRINTFORMC 브래지어를 벗긴다[{カウンタ,3}]
 			ENDIF
 		ELSEIF カウンタ == 203
-			衣装名 = パンティ
-			PRINTFORMC %衣装名%를 벗긴다[{カウンタ,3}]
+			コマンド名 = パンティ
+			PRINTFORMC %コマンド名%를 벗긴다[{カウンタ,3}]
 		ELSEIF カウンタ == 315 && !(TALENT:TARGET:2 & 1)
 			PRINTFORMC 장대 애무[{カウンタ,3}]
 		ELSEIF カウンタ == 341 && TCVAR:TARGET:도게자중
@@ -527,19 +570,30 @@ FOR  カウンタ,0,799
 		ELSEIF カウンタ == 371 && CFLAG:MASTER:빙의중 == 1
 			PRINTFORMC 빙의 해제[{カウンタ,3}]
 		ELSEIF カウンタ == 350
+			SETCOLOR C_PINK
 			;침대がない
 			IF BEDROOM(CFLAG:MASTER:현재위치)
-				衣装名 = 밀어 넘어뜨린다
+				コマンド名 = 밀어 넘어뜨린다
 			ELSEIF CFLAG:MASTER:현재위치 == 50
-				衣装名 = 러브호텔로 데리고 간다
+				コマンド名 = 러브호텔로 데리고 간다
 			ELSE
-				衣装名 = 끌어 안는다
+				コマンド名 = 끌어 안는다
 			ENDIF
 			SIF GET_TARGETNUM() > 1
-				衣装名 = まとめて%衣装名%
+				コマンド名 = 한꺼번에 %コマンド名%
 			SIF CFLAG:우후후 == 1
-				衣装名 = 공수반전
-			PRINTFORMC %衣装名%[{カウンタ,3}]
+				コマンド名 = 주도권을 넘긴다
+			SIF CFLAG:우후후 == 2
+				コマンド名 = 주도권을 되찾는다
+
+			PRINTFORMC %コマンド名%[{カウンタ,3}]
+		ELSEIF カウンタ == 356
+			IF 人祓いモード == 1
+				コマンド名 = 그늘에서 나온다
+			ELSE
+				コマンド名 = 그늘로 유혹한다
+			ENDIF	
+			PRINTFORMC %コマンド名%[{カウンタ,3}]
 		ELSEIF カウンタ == 403 && CFLAG:TARGET:수면 == 1
 			PRINTFORMC 함께 잔다[{カウンタ,3}]
 		ELSEIF カウンタ == 411 && CFLAG:MASTER:현재위치 == 場所_公園
@@ -576,6 +630,14 @@ FOR  カウンタ,0,799
 			PRINTFORMC %TRAINNAME:カウンタ%[{カウンタ,3}]
 		ENDIF
 		RESETCOLOR
+		カウンタB ++
+		;PRINTFORM [{カウンタB}:{カウンタ}] 
+
 	ENDIF
 NEXT
-
+終了時LCOUNT = LINECOUNT
+IF 終了時LCOUNT - 開始時LCOUNT < 3
+	REPEAT 3 - (終了時LCOUNT - 開始時LCOUNT)
+		PRINTL
+	REND
+ENDIF

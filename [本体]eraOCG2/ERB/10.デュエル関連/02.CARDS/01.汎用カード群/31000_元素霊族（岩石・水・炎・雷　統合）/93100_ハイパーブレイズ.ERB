@@ -59,7 +59,11 @@ SIF RESULT == 1
 IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
-	SIF 손패数(듀얼리스트) <= 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
@@ -86,12 +90,7 @@ ELSEIF 종류 == 마함起動
 	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件名前 = 신염황제 우리아
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+	CALL CARD_DRAW_CHECK
 	RETURN 1	
 ENDIF
 
@@ -156,6 +155,7 @@ ELSEIF 종류 == 마함起動
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
 		CALL FULLRESET
 		효과条件名前 = 신염황제 우리아
+		효과条件任意 = 1
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 	ENDIF
 ENDIF

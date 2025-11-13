@@ -1,0 +1,196 @@
+﻿@CARDNAME_59526,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 예점술공주 비블리오무사
+	CASE "略称"
+		RESULTS = 예 비블리오무사
+	CASE "カテゴリ"
+		RESULTS:0 = 점술공주
+		RESULTS:1 = 예점술공주
+		RESULTS:3 = E.R.A
+ENDSELECT
+
+
+@CARD_59526(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		;謎のERAパワーでデュエル中のみ空間を超えてミエルと連動
+		SIF 듀얼モード == 1
+			RETURN 2569
+	CASE "추가日"
+		RETURN 251109
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_59526(종류)
+#DIM DYNAMIC 종류
+#DIM DYNAMIC カウンタ
+
+CALL TEXT_DECORATION("ROGUE")
+SETCOLOR C_PINK
+PRINTL 이 카드는 듀얼중에 한해 "호츈 미에루"로도 취급할 수 있다。
+RESETCOLOR
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：패의 이 카드를 상대에게 보여주고 발동할 수 있다。이 카드를 자신의 덱으로 되돌리고、
+PRINTL 자신의 덱에서 "예점술의 의식" １장과 "예점술공주 비블리오무사" 이외의 "점술공주" 몬스터 １장을 패에 넣는다。
+PRINTL 그 후、자신의 패를 １장 골라서 버린다。이 효과의 발동 후、턴 종료시까지 자신은 "점술공주" 몬스터밖에 특수 소환할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：자신 필드에 "예점술공주 비블리오무사" 이외의 "점술공주" 몬스터 카드가 존재하지 않는 경우、
+PRINTL 이 카드는 몬스터를 특수 소환하기 위한 소재로 사용할 수 없다。
+CALLFORM CARD_ABLE(0,常在無効)
+PRINTL ③：상대 필드에 "예점술공주 비블리오무사" 이외의 레벨 또는 랭크가 ９인 "점술공주" 몬스터가 앞면 표시로 존재하는 한、
+PRINTL 자신 필드의 "점술공주" 몬스터 이외의 몬스터는 효과가 무효화 된다。
+;②와 ③의 조건을 모두 만족하여 상대 필드에 존재하는 경우, 리액션 효과로 상대 플레이어의 수치심을 자극하는 플레이를 행한다。
+CALL TEXT_DECORATION("ROGUE")
+
+;「예점술공주」の優秀な初動となる最上級モンスター。①は立派な初動サーチ효과になっているが、②③に書いてある텍스트は「？」となる文言。
+;デメリット효과にしか読めないが、それは正しくて、このカードを상대フィールドに送りつけてロックを行うのが「예점술공주」テーマのメインギミック。
+;OCG本家の「점술공주」でいうところの「機怪神エクスクローラー」のポジションの役割を果たすモンスターで、送りつけることで상대のみスキルドレイン状態になる。
+;レベル９で의식素材にもできるし、デメリット효과はこちらが「점술공주」덱で使うぶんには殆ど反応しないので打点要員にも十分に使える。
+
+;ちなみにこいつがフィールドに存在している条件でデュエル조교の효과が발동するものが多いのは、「예점술공주」テーマの話として、
+;「ミエルちゃん」をERAカードで支配・隷属させてこのカードに変身させる、みたいな構想があったため。カード효과にその雰囲気が残っている。
+;『ボクと契約して「예점술공주」になってほしいんだ』というやつである。まったく邪悪な願いがあったものだ。いつかやりたい枠にメモしておきましょう。
+[SKIPSTART]
+FOR カウンタ,0,101
+	CALL BIBLIOMUSE_TEXT_PRINT(0,カウンタ)
+NEXT
+[SKIPEND]
+
+@CARDCAN_59526(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59526)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,59526)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前 = 예점술의 의식
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 점술공주
+	효과条件종류 = モン全般
+	효과条件固名前 = 예점술공주 비블리오무사
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;발동時点で捨てるための손패は気にしなくてもいいのでコメントアウト
+	;SIF 손패数(듀얼리스트) < 2
+	;	RETURN 0
+	RETURN 1
+ELSEIF 종류 == 常在無効
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件カテゴリ = 점술공주
+	효과条件レベル = 9
+	효과条件종류 = 링크以外
+	효과条件固名前 = 예점술공주 비블리오무사
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	;チェックの판정式は逆に
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 점술공주
+	효과条件종류 = モン全般
+	효과条件固名前 = 예점술공주 비블리오무사
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59526(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 손패枚数＿前
+#DIM DYNAMIC 손패枚数＿後
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59526,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+		
+		손패枚数＿前 = 손패数(듀얼리스트)
+		
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件名前 = 예점술의 의식
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 점술공주
+		효과条件종류 = モン全般
+		효과条件固名前 = 예점술공주 비블리오무사
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		손패枚数＿後 = 손패数(듀얼리스트)
+		
+		IF 손패枚数＿前 != 손패枚数＿後
+			CALL FULLRESET
+			효과範囲손패 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL FULLRESET
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"점술공주")
+	ENDIF
+ELSEIF 종류 == 常在無効
+	CALL FULLRESET
+	효과条件固カテゴリ = 점술공주
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"無効")
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
+ENDIF
+

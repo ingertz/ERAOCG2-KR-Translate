@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 보이드베르그 엘리지움
 	CASE "略称"
-		RESULTS = 보이드 엘리지움
+		RESULTS = Void 엘리지움
 	CASE "カテゴリ"
 		RESULTS:0 = 보이드베르그
 ENDSELECT
@@ -103,16 +103,19 @@ ELSEIF 종류 == 身代효과
 	RETURN 1
 
 ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,32321)
+		RETURN 0
 	SIF ゾーン != "필드"
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
-		RETURN 0
-	SIF 발동済_2(듀얼리스트,32321)
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
-
 	효과範囲상대필드 = 1
 	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -160,7 +163,7 @@ ELSEIF 종류 == 身代효과
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT != 1
 			RETURN 0
-PRINTL 엘리지움의 대체 효과를 사용하시겠습니까?
+			PRINTL 엘리지움의 대체 효과를 사용하시겠습니까?
 		CALL YN_CHOICE(듀얼리스트)
 		IF RESULT == はい
 			CALL FULLRESET

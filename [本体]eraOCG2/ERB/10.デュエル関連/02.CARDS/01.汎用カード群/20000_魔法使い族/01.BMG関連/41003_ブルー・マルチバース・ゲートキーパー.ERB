@@ -49,7 +49,7 @@ RETURN 0
 PRINTL 마법사족을 포함하는 몬스터 ２장 이상 
 PRINTL 이 카드명의 ①②의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,EX덱起動)
-PRINTL ①：이 카드는 레벨６마법사족 몬스터를 포함하는 몬스터 ２장으로도 L소환할 수 있다。
+PRINTL ①：이 카드는 레벨６ 마법사족 몬스터를 포함하는 몬스터 ２장으로도 L소환할 수 있다。
 CALLFORM CARD_ABLE(2,EX소환時)
 PRINTL ②：이 카드가 L소환했을 경우에 발동할 수 있다。
 PRINTL 패를 １장 버리고、패 / 묘지 / EX덱에서 "블랙 매지션 걸" 몬스터를 １장 소환조건을 무시하고 특수 소환한다。
@@ -127,7 +127,11 @@ ELSEIF 종류 == EX덱起動
 ELSEIF 종류 == EX소환時
 	SIF 발동済_2(듀얼리스트,41003)
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲손패 = 1

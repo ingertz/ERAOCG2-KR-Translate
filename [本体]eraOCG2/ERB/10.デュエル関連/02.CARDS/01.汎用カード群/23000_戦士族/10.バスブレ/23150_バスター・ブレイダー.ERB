@@ -45,7 +45,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALLFORM CARD_ABLE(0,攻守変動)
-PRINTL ①: 이 카드의 공격력은, 상대 필드 및 묘지의 드래곤 수×500 상승한다.
+PRINTL ①: 이 카드의 공격력은, 상대 필드 / 묘지의 드래곤 수×500 상승한다.
 PRINTL
 PRINTL
 PRINTL
@@ -96,6 +96,18 @@ IF 종류 == 攻守変動
 			条件달성 = 1
 		SIF STRFIND(RESULTS, "용")  != -1
 			条件달성 = 1
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 파계만룡－버스터 드래곤
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			;モンスター耐性持ってない
+			IF GETVAR(@"%対面者%_MZ_モ耐:カウンタ") != 1
+				;無差耐耐性持ってない
+				SIF GETVAR(@"%対面者%_MZ_無差耐:カウンタ") != 1
+					条件달성 = 1
+			ENDIF
+		ENDIF
 		SIF 条件달성 == 1
 			攻撃力修正 ++
 	NEXT
@@ -109,9 +121,6 @@ IF 종류 == 攻守変動
 		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_묘지:カウンタ")}("名前")
 		SIF STRFIND(RESULTS, "드래곤")  != -1
 			条件달성 = 1
-		SIF GETVAR(@"%対面者%_MZ_種:カウンタ") == 드래곤족
-			条件달성 = 1
-			
 		SIF STRFIND(RESULTS, "룡")  != -1
 			条件달성 = 1
 		SIF STRFIND(RESULTS, "용")  != -1
@@ -122,5 +131,3 @@ IF 종류 == 攻守変動
 	攻撃力修正 = 攻撃力修正 * 500
 	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
 ENDIF
-
-

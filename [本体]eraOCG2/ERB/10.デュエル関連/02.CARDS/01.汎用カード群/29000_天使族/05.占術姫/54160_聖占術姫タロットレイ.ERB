@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 성점술공주 타로레이
+		RESULTS = 성점술공주 타로레이
 	CASE "略称"
-RESULTS = 타로레이
+		RESULTS = 타로레이
 	CASE "カテゴリ"
-RESULTS:0 = 점술공주
+		RESULTS:0 = 점술공주
 ENDSELECT
 
 
@@ -63,7 +63,7 @@ ENDIF
 PRINTL "성점술의 의식"에 의해 강림。
 PRINTL 이 카드 명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
 CALL CARD_ABLE(1,필드起動 ,フリー誘発)
-PRINTL ①：자신 상대 턴에、자신의 손패 묘지에서 "점술공주" 몬스터 1장을 수비 표시로 특수 소환할 수 있다。
+PRINTL ①：자신 / 상대 턴에、자신의 패 / 묘지에서 "점술공주" 몬스터 1장을 수비 표시로 특수 소환할 수 있다。
 PRINTL 그 후、상대 필드의 앞면 표시 몬스터 1장을 뒷면 수비 표시로 할 수 있다。
 
 
@@ -126,9 +126,11 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		효과範囲묘지 = 1
 		효과条件カテゴリ = 점술공주
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
-
-		CALL FULLRESET
-		효과추가종류 = 3
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"표시변경")
+		IF RESULT != 0
+			CALL FULLRESET
+			효과条件표시 = 表側표시
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"표시변경")
+		ENDIF
 	ENDIF
 ENDIF

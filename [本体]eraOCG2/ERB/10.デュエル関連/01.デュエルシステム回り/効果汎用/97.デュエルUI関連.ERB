@@ -3833,7 +3833,7 @@ FOR カウンタ,0,20
 			カード名前 = %RESULTS%
 			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}("略称")
 			カード略称 = %RESULTS%
-			HTML_PRINT @"<button value='{설정_ボタン:実カウンタ}' title='%カード名前%'><font color='#%TOSTR(설정色,"X6")%'> [%カード略称, 16, LEFT%]</font></button>",1
+			HTML_PRINT @"<button value='{설정_ボタン:実カウンタ}' title='%HTML_ESCAPE(カード名前)%'><font color='#%TOSTR(설정色,"X6")%'> [%HTML_ESCAPE(カード略称), 16, LEFT%]</font></button>",1
 			RESETCOLOR
 		ENDIF
 	ENDIF
@@ -3952,10 +3952,14 @@ IF 설정플래그 == 0
 			ENDIF
 		ENDIF
 	ELSEIF ターンプレイヤー == "상대"
-		IF 상대ターン終了 == 1 || ERA起動 >= 2
+		IF ERA起動 >= 2
 			PRINTFORM %"　[1000] - 행동 없음:（턴 엔드）",64,LEFT%
+		ELSEIF 상대ターン終了 == 1 && メインフェイズ２ == 1
+			PRINTFORM %"　[1000] - 행동 없음:（메인２ 종료）",64,LEFT%
+		ELSEIF 상대ターン終了 == 1
+			PRINTFORM %"　[1000] - 행동 없음:（메인 종료）",64,LEFT%
 		ELSEIF メインフェイズ２移行 == 1
-			PRINTFORM %"　[950] - 행동 없음:（메인２개시）",64,LEFT%
+			PRINTFORM %"　[950] - 행동 없음:（메인２ 개시）",64,LEFT%
 		ELSEIF バトルフェイズ移行 == 1
 			PRINTFORM %"　[900] - 행동 없음:（배틀 페이즈 개시）",64,LEFT%
 		ELSE

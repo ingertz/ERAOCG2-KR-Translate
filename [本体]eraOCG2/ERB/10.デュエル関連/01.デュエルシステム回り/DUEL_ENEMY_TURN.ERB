@@ -22,6 +22,8 @@
 
 #DIM DYNAMIC 발동カード_ID
 #DIM DYNAMIC 確認カード_ID
+#DIM DYNAMIC 소환カード_ID
+#DIM DYNAMIC カードレベル
 #DIMS DYNAMIC 参照先
 #DIMS DYNAMIC 설정参照先
 #DIM DYNAMIC 효과종류
@@ -128,87 +130,6 @@ IF 選択カード != -1
 ENDIF
 
 
-[SKIPSTART]
-	;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-;PRINTL フィールドカード確認処理
-VARSET 選択カード, -1
-FOR カウンタ,0,5
-	SIF 상대_필드:カウンタ == -1
-		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_필드:カウンタ}("상대",필드起動,"필드",カウンタ)
-	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
-	ENDIF
-NEXT
-;필드의 카드 발동処理
-IF 選択カード == -1
-	발동カード_ID = 상대_필드:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,2)
-	SETCOLOR C_W_RED
-	CUSTOMDRAWLINE —
-	CALLFORM CARDNAME_{발동カード_ID}("名前")
-	PRINTFORMW 상대는 몬스터 존에서 %RESULTS%의 효과 발동 선언을 했습니다！
-	CUSTOMDRAWLINE —
-	RESETCOLOR
-	CALLFORM CARD_STANBY(발동カード_ID,"상대",필드起動,"필드",選択カード)
-	CALL CARD_FINAL(ターンプレイヤー);상대ターン필드의 起動後のチェック
-	RETURN 0
-ENDIF
-	;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-;PRINTL カード確認処理
-VARSET 選択カード, -1
-FOR カウンタ,0,5
-	SIF 상대_마함:カウンタ == -1
-		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_마함:カウンタ}("상대",마함起動,"마함",カウンタ)
-	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
-	ENDIF
-NEXT
-;필드의 카드 발동処理
-IF 選択カード != -1
-	발동カード_ID = 상대_마함:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,3)
-	SETCOLOR C_W_RED
-	CUSTOMDRAWLINE —
-	CALLFORM CARDNAME_{발동カード_ID}("名前")
-	PRINTFORMW 상대는 마・함존에서 %RESULTS%의 효과 발동 선언을 했습니다！
-	CUSTOMDRAWLINE —
-	RESETCOLOR
-	CALLFORM CARD_STANBY(발동カード_ID,"상대",마함起動,"마함",選択カード)
-	CALL CARD_FINAL(ターンプレイヤー);상대ターン마함の起動後のチェック
-	RETURN 0
-ENDIF
-	;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-;PRINTL 묘지カード確認処理
-VARSET 選択カード, -1
-FOR カウンタ,0,紙束最大値
-	SIF 상대_묘지:カウンタ == -1
-		CONTINUE
-	TRYCALLFORM CARDCAN_{상대_묘지:カウンタ}("상대",묘지起動,"묘지",カウンタ)
-	IF RESULT == 1
-		選択カード = カウンタ
-		BREAK
-	ENDIF
-NEXT
-;필드의 카드 발동処理
-IF 選択カード != -1
-	발동カード_ID = 상대_묘지:選択カード
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,4,발동カード_ID,4)
-	SETCOLOR C_W_RED
-	CUSTOMDRAWLINE —
-	CALLFORM CARDNAME_{발동カード_ID}("名前")
-	PRINTFORMW 상대는 묘지에서 %RESULTS%의 효과 발동 선언을 했습니다！
-	CUSTOMDRAWLINE —
-	RESETCOLOR
-	CALLFORM CARD_STANBY(발동カード_ID,"상대",묘지起動,"묘지",選択カード)
-	CALL CARD_FINAL(ターンプレイヤー);상대ターン묘지의 起動後のチェック
-	RETURN 0
-ENDIF
-
-[SKIPEND]
 
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
@@ -272,31 +193,43 @@ IF メインフェイズ == 1
 		VARSET 現在攻撃力
 		SIF 상대_손패:カウンタ == -1
 			CONTINUE
+		소환カード_ID = 상대_손패:カウンタ
 		;モンスターだけ通す
-		CALLFORM CARD_{상대_손패:カウンタ}("종류")
+		CALLFORM CARD_{소환カード_ID}("종류")
 		SIF !GROUPMATCH(RESULT, 효과モン,通常モン)
 			CONTINUE
 
+
+		VARSET カードレベル
+		TRYCALLFORM CARD_{소환カード_ID}("レベル")
+		カードレベル = RESULT
+		;PRINTFORM RESULT:{RESULT} / 
+		カードレベル -= 상대_手_一星:カウンタ
+
+		SIF カードレベル <= 1
+			カードレベル = 1
+		;PRINTFORML 소환カード_ID:{소환カード_ID} / カードレベル:{カードレベル} / 상대_手_一星:カウンタ: {상대_手_一星:カウンタ}
+
+
 		CALL CARD_NS_CHECK_OK("상대",カウンタ)
 		IF RESULT == 0 ;Anonym修正
-			TRYCALLFORM CARDCAN_{상대_손패:カウンタ}("상대",효과소환,"손패",カウンタ)
+			TRYCALLFORM CARDCAN_{소환カード_ID}("상대",효과소환,"손패",カウンタ)
 			SIF RESULT != 1
 			CONTINUE
 			ENDIF
-		
-		CALLFORM CARD_{상대_손패:カウンタ}("レベル")
-		IF INRANGE(RESULT,0,4) 
+		SELECTCASE カードレベル
+		CASE 0 TO 4
 			SIF モンスター数("상대") >= 5
 				CONTINUE
-		ELSEIF INRANGE(RESULT,5,6) 
+		CASE 5 TO 6
 			VARSET RESULT
-			TRYCALLFORM CARDCAN_{상대_손패:カウンタ}("상대",효과소환,"손패",カウンタ)
+			TRYCALLFORM CARDCAN_{소환カード_ID}("상대",효과소환,"손패",カウンタ)
 			IF RESULT == 1
 				PRINT
 			ELSE
 				CALL FULLRESET_EXT
 				濾過範囲필드 = 1
-				CALLFORM CARD_{상대_손패:カウンタ}("攻撃力")
+				CALLFORM CARD_{소환カード_ID}("攻撃力")
 				濾過条件攻撃力 = RESULT - 1
 				CALL CARD_CHECK_EXT("상대")
 				SIF RESULT >= 1
@@ -305,15 +238,15 @@ IF メインフェイズ == 1
 				SIF リリース可 == 0
 					CONTINUE
 			ENDIF
-		ELSEIF INRANGE(RESULT,7,12)
+		CASE 7 TO 99
 			VARSET RESULT
-			TRYCALLFORM CARDCAN_{상대_손패:カウンタ}("상대",효과소환,"손패",カウンタ)
+			TRYCALLFORM CARDCAN_{소환カード_ID}("상대",효과소환,"손패",カウンタ)
 			IF RESULT == 1
 				PRINT
 			ELSE
 				CALL FULLRESET_EXT
 				濾過範囲필드 = 1
-				CALLFORM CARD_{상대_손패:カウンタ}("攻撃力")
+				CALLFORM CARD_{소환カード_ID}("攻撃力")
 				濾過条件攻撃力 = RESULT - 1
 				濾過条件CNT = 1
 				CALL CARD_CHECK_EXT("상대")
@@ -322,12 +255,12 @@ IF メインフェイズ == 1
 				SIF リリース可 == 0
 					CONTINUE
 			ENDIF
-		ENDIF
+		ENDSELECT
 		
 		VARSET RESULT
-		CALLFORM CARD_{상대_손패:カウンタ}("攻撃力")
+		CALLFORM CARD_{소환カード_ID}("攻撃力")
 		現在攻撃力 = RESULT
-		CALL ENEMY_RUTIN_PRIORITY(상대_손패:カウンタ,カウンタ,1)
+		CALL ENEMY_RUTIN_PRIORITY(소환カード_ID,カウンタ,1)
 		IF 現在攻撃力 + RESULT > 現在最大攻撃力
 			現在最大攻撃力 = RESULT
 			소환カード = カウンタ
@@ -686,7 +619,7 @@ ENDIF
 
 IF ターン数 == 1 || メインフェイズ２ == 1
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,101)
-	PRINTW 상대는 턴을 종료했습니다
+	PRINTW 상대는 엔드 페이즈로 이행하고 싶은 것 같습니다。
 	상대ターン終了 = 1
 ELSEIF バトルフェイズ == 1
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,102)

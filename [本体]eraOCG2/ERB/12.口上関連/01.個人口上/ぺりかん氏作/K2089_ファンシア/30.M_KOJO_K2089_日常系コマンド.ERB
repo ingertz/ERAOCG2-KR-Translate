@@ -39,7 +39,7 @@ IF LOCAL
 	ENDIF
 
 	;호감도修正、通常（연모系陥落なし）で５
-	호감도修正 = 17
+	호감도修正 = 12
 	;TARGETが【애처】だったら호감도修正に＋２
 	SIF TALENT:TARGET:애처
 		호감도修正 += 8
@@ -68,7 +68,6 @@ IF LOCAL
 				ELSE
 					PRINTFORMW 「もう、だしたなら離してよ」
 				ENDIF
-				RETURN 1
 			ELSE
 				IF TALENT:TARGET:연모 >= 1
 					SELECTCASE RAND:3
@@ -85,10 +84,26 @@ IF LOCAL
 				ELSE
 					PRINTFORMW 「ん……、喋ったら、多少は気がまぎれるかな？」
 				ENDIF
-				RETURN 1
 			ENDIF
-		ENDIF
-		
+			;전턴절정
+			ELSEIF TCVAR:TARGET:전턴절정 == 1
+				IF TALENT:TARGET:연모 >= 1
+					SELECTCASE RAND:3
+						CASE 0
+							PRINTFORML 「も、もう……❤　%CSTR:TARGET:MASCALL%にはまいるね……❤」
+							PRINTFORMW 「その手にかかれば僕なんて、イキッぱなしの、イカサレっぱなし……❤　ちょっとは手加減、してよ……❤」
+						CASE 1
+							PRINTFORMW 「そうだよ……❤　僕イッたよ……❤　%CSTR:TARGET:MASCALL%にイカサレちゃったよ……❤」
+						CASE 2
+							PRINTFORML 「あっ❤　こら❤　イジる、なぁ……❤　イッた、ばかりってぇ、言ってるでしょう、がぁ……❤」
+							PRINTFORM 「はぁ～っ、はぁ～っ……❤　う、うん……❤　ちょっとだけ、息が整ってきたかな……❤　……じゃ、続き、する
+							CALL XON_FONT("❤？",C_L_RED)
+							PRINTFORMW 　へへ……❤」
+					ENDSELECT
+				ELSE
+					PRINTFORMW 「はぁ～っ、はぁ～っ……❤　え、う、うん、わかってるのに聞かないでよ……そうだよ、僕イッたよ……」
+			ENDIF
+		ELSE
 		SELECTCASE RAND:3 + 1
 			CASE 1
 				IF TALENT:TARGET:연모 >= 1
@@ -110,6 +125,7 @@ IF LOCAL
 					PRINTFORMW 「……や、やっぱりやめない？　こういうのはもう少し付き合いを重ねてからで……」
 				ENDIF
 		ENDSELECT
+		ENDIF
 
 	;아르바이트中
 	ELSEIF CFLAG:TARGET:아르바이트 == 2 && CFLAG:MASTER:현재위치 == 場所_カフェ && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
@@ -324,7 +340,7 @@ IF LOCAL
 				SELECTCASE RAND:2
 					CASE 0
 						PRINTFORMW 「～～♪　～～～♪　～～♪！」
-						PRINTFORMW %CALLNAME:TARGET%は歌を口ずさみながら歩いている。……素人目にも惚れ惚れする歌声だ
+						PRINTFORMDW %CALLNAME:TARGET%は歌を口ずさみながら歩いている。……素人目にも惚れ惚れする歌声だ
 					CASE 1
 						PRINTFORMW 「こういうところ歩くのいいよね♪　……いまなら邪魔もはいらないだろうし、ね……❤」
 				ENDSELECT
@@ -354,7 +370,7 @@ IF LOCAL
 				IF TALENT:MASTER:연령 >= 0
 				SELECTCASE RAND:3
 					CASE 0
-						PRINTFORMW 「こぉら！？　今日は僕とのデートでしょ！　お仕事なんて絶対ダメッ！？」
+						PRINTFORMW 「こぉら！？　今日は僕との데이트でしょ！　お仕事なんて絶対ダメッ！？」
 						PRINTFORMW 「……いつも大変なんだからさ、今日ぐらいは仕事を忘れて楽しもうよ！」
 					CASE 1
 						PRINTFORMW 「仕事は仕事！　遊びは遊び！　メリハリつけないとほんとにダメになっちゃうよ？」
@@ -522,7 +538,7 @@ IF LOCAL
 				SELECTCASE RAND:3
 					CASE 0
 						PRINTFORMW 「～～♪　～～～♪　～～♪！」
-						PRINTFORMW %CALLNAME:TARGET%は歌を口ずさみながら歩いている。……すれ違う人も、その上手さに振り返るほどだ
+						PRINTFORMDW %CALLNAME:TARGET%は歌を口ずさみながら歩いている。……すれ違う人も、その上手さに振り返るほどだ
 					CASE 1
 						PRINTFORMW 「たまにはのんびり歩くのもいいよね♪　アンダンテ、な～んてね♪」
 						PRINTFORMW 「……どうせなら手、繋いでほしいな❤」
@@ -533,7 +549,7 @@ IF LOCAL
 				SELECTCASE RAND:3
 					CASE 0
 						PRINTFORMW 「～～♪　～～～♪　～～♪！」
-						PRINTFORMW %CALLNAME:TARGET%は歌を口ずさみながら歩いている。……思わず拍手すると、渾身のドヤ顔を見せた
+						PRINTFORMDW %CALLNAME:TARGET%は歌を口ずさみながら歩いている。……思わず拍手すると、渾身のドヤ顔を見せた
 					CASE 1
 						IF GET_MONTH() == "夏の月"
 							PRINTFORMW 「海だ～！　いやっほぉう！　やっぱ夏といえば海だよね！！　僕泳げないけど！」
@@ -552,7 +568,7 @@ IF LOCAL
 				SELECTCASE RAND:7
 					CASE 0
 						PRINTFORMW 「～～♪　～～～♪　～～♪！」
-						PRINTFORMW %CALLNAME:TARGET%はこのテーマパークの歌を口ずさみながら歩いている。……すれ違った女の子に拍手されて照れている
+						PRINTFORMDW %CALLNAME:TARGET%はこのテーマパークの歌を口ずさみながら歩いている。……すれ違った女の子に拍手されて照れている
 					CASE 1
 						PRINTFORMW 「すっご！？　なにこの遊園地！？　これが……海馬コーポの本気……！？」
 						PRINTFORMW 「……ど、どこから回ろうか%CSTR:TARGET:MASCALL%！？　ぼ、僕全部行ってみたい……！」
@@ -701,45 +717,97 @@ IF LOCAL
 				PRINTFORML 「趣味？　音楽！　といってもわかってたでしょ、もぅ～♪」
 				PRINTFORMW 「そうだね、あとは……体を動かすことは好きだよ？　なんだかインスピレーションがわいてくるんだ」
 			CASE 4
+				PRINTFORML 「おっ、ドレミコードのみんなに興味あるの、%CSTR:TARGET:MASCALL%？　いいよ♪　誰の話が聞きたい？」
+				PRINTFORMW 「……っと言っても、全員分を一気に言っても仕方ないしなぁ……んじゃ新米……そっちでいう下級モンスターから一人選んでよ！」
+				PRINTL
+				PRINTFORMDL [0] - キューティア
+				PRINTFORMDL [1] - ドリーミア
+				PRINTFORMDL [2] - エリーティア
+				PRINTFORMDL [3] - ファンシア
+				PRINTFORMDL [4] - プリモア
+				PRINTFORMDL [5] - ソルフェージア
+				BINPUT
+				PRINTL
+				IF RESULT == 0
 				PRINTFORML 「キューティア……キューちゃんはね～……僕達で一番の後輩！　がんばりやさん！　偉い！」
 				PRINTFORMW 「小さな体にでっかい目標、技術がともなわなくてもへこたれない！　あの娘はいずれ、でっかくなるよ～！」
-			CASE 5
+				ELSEIF RESULT == 1
 				PRINTFORML 「おっ、僕のかわいい後輩ちゃんについて聞いちゃう？　じゃじゃ～ん！　ミアちゃんこと、ドリーミアちゃんでーす♪」
 				PRINTFORMW 「僕は彼女のデビューのときから付き添っててね……。今は僕に追いつくことを目標にしてるんだって！　カワイイでしょっ♪」
-			CASE 6
+				ELSEIF RESULT == 2
 				PRINTFORML 「エリーの話？　……あぁ、エリーティアのことね。彼女は僕のはじめての後輩だからさ、色々世話焼いちゃったんだ」
 				PRINTFORMW 「いっつも誰かを気にかけててさ～、優しくて強いよね！　いや～僕が入団したころは자신のことで精一杯だったからさ～、素直に尊敬！」
-			CASE 7
-				PRINTFORML 「あっ、グレーシアさんのカードだ。……グレーシアさんにとって僕ははじめての後輩だったらしくてさ、結構かわいがってもらったんだ♪」
+			ELSEIF RESULT == 3
+				PRINTFORML 「へ、僕の話？　まぁいいよ、僕から見た僕の話、だね♪　僕はどっちかというと新米たちのお姉さん、って感じだね！　……자신で言ってて恥ずかしいね、これ」
+				PRINTFORMW 「ドレミコードのみんなって音楽にばっかり興味向いてる人が多いからさぁ、割と隙多いんだよね……。そういうののストッパーなんかもやらせてもらってるよ！」
+				ELSEIF RESULT == 4
+				PRINTFORML 「あぁ、最近はいってきた見習いちゃんだね！　あの娘素直でカワイイんだよ！　何かわからないことがあったら、すぐ頼りにしてくれて♪」
+				PRINTFORMW 「特にキューちゃんは始めてできた後輩ちゃんだからね！　とっても張り切っちゃってカワイイんだよねぇ～♪　……昔の僕も、ああだったのかな？」
+				ELSEIF RESULT == 5
+				PRINTFORML 「ソルフェージア……ソルフェージュとはよく言ったものだね。……ああ、ソルフェージュってのは音楽の基礎訓練、楽譜から演奏したり、聴いた音を楽譜に書いたりすることだよ」
+				PRINTFORMW 「彼女たちはグランドレミコードと共にある妖精さんたち……僕たちと僕たちの妖精を教え導くために光臨されたえらーい妖精さんなんだ♪　おっと%CSTR:TARGET:MASCALL%頭が高いんじゃない？　なんてね♪」
+				ENDIF
+			CASE 5
+				PRINTFORML 「いやぁ、%CSTR:TARGET:MASCALL%がドレミコードのみんなに興味を持ってくれるなんて嬉しいね～♪　どうせなら덱も組んでみてねっ！」
+				PRINTFORMW 「うん、そうだね……じゃあ先輩、こっちのカードでいう上級モンスターのみんなの紹介いこうかな？　あ、一人ずつで頼むね～♪」
+				PRINTL
+				PRINTFORMDL [0] - グレーシア
+				PRINTFORMDL [1] - エンジェリア
+				PRINTFORMDL [2] - ビューティア
+				PRINTFORMDL [3] - クーリア
+				PRINTFORMDL [4] - ミューゼシア
+				BINPUT
+				PRINTL
+				IF RESULT == 0
+				PRINTFORML 「うん、グレーシアさんの話だね。……グレーシアさんにとって僕ははじめての後輩だったらしくてさ、結構かわいがってもらったんだ♪」
 				PRINTFORMW 「あんまり口数は多くないけど、よく僕の話をウンウン頷きながら聞いてくれて……もしおねぇちゃんいたらこんな感じなのかなー、なんてね！」
-			CASE 8
+				ELSEIF RESULT == 1
 				PRINTFORML 「僕がドレミコードに入ろうと思ったきっかけは、エンジェリア先輩の演奏を聞いたときでさ～……。感動して、いてもたってもいられず入団を決めたんだ」
 				PRINTFORMW 「あの明るい笑顔と演奏を聞くと心がポカポカするんだ♪　……まぁ、誰に対しても距離が近いのだけは、なんとかしてほしいんだけどね」
-			CASE 9
+				ELSEIF RESULT == 2
 				PRINTFORML 「ビューティア先輩、美人だよね～♪　うんうん、わかるよ。いつも僕達や妖精たちにも優しくてねぇ……」
 				PRINTFORMW 「はぁ～……、僕もあんな風になれたらなぁ……。ちょ、笑わないでよ！　たしかに僕、いっつも妖精と喧嘩してるけどさぁ……！」
-			CASE 10
+				ELSEIF RESULT == 3
 				PRINTFORML 「クーリア先輩とはあんまり話す機会がなくてさ……だけどあのオーラ、圧倒されちゃうよね。気負いなく話しかけられるキューちゃんはすごいと思うよ」
 				PRINTFORMW 「でも公演のあと、クーリア先輩はまずみんなのことを褒めてくれるんだ。どんな些細なことでも努力を認め、褒めてくれる。だから先輩はドレミコードみんなから尊敬される偉大な先輩なんだ！」
-			CASE 11
-				PRINTFORML 「う～ん……勉強なんてさぁ、ほんとに必要？　そりゃ%CSTR:TARGET:MASCALL%は要るかもだけど、わたしは音楽だけで生きてくから……」
+				ELSEIF RESULT == 4
+				PRINTFORML 「う～ん……僕も割と下っ端だからさぁ、グランドレミコードの女神様とはお目にかかる機会がないというかさぁ……」
+				PRINTFORMW 「ただ、クーリア先輩によるとすっごくイケメンらしいよ？　あとあんまり距離を置かれたら悲しい……とも言ってたなぁ……。……これ、クーリア先輩のことじゃないのかなぁ？」
+				ENDIF
+			CASE 6
+				PRINTFORML 「う～ん……勉強なんてさぁ、ほんとに必要？　そりゃ%CSTR:TARGET:MASCALL%は要るかもだけど、僕は音楽だけで生きてくから……」
 				PRINTFORMW 「というか机に向かうのが慣れないんだよね、僕。でもグレーシアさんからも本をたくさん読んだほうが表現の幅が広がるっていわれたしな～……うが～！！」
-			CASE 12
+			CASE 7
 				PRINTFORML 「アコーディオンについて知りたいの%CSTR:TARGET:MASCALL%！？　ふっふっふ～いいでしょう！　この僕、%CALLNAME:TARGET%が教えてあげましょう♪」
 				PRINTFORMW 「アコーディオンはざっくり言うと、『息を吹き込まないハーモニカ』なんだ。ほら、この蛇腹になってるところ。ここを動かして空気を送り込むんだ♪」
-			CASE 13
-				PRINTFORML 「へぇ～、地上の楽器って자신の意志でうごくんだ……へ、ちがうの？　だってほら、このカードにはそう描かれてるよ？」
-				PRINTFORMW 「……ふぅ～ん、あくまで楽器をモチーフにしたテーマか。でももしかしたらこの、音響戦士だっけ？　の精霊も異世界にはいるのかな♪」
-			CASE 14
+			CASE 8
+				IF ITEM:39833 > 0
+					IF TALENT:TARGET:연모 >= 1 || TALENT:TARGET:굴복됨 || TALENT:TARGET:음란 || TALENT:TARGET:패배버릇 || EXP:TARGET:듀얼조교경험 >= 50
+						PRINTFORML 「……知ってるよ、『ドレミアイドル・ファンシア』……。キラキラした衣装に身を包んだ僕が、僕たちが騙されて……オマンコ凌辱されちゃうんだ……」
+						PRINTFORMW 「いいよ……僕はもう、%CSTR:TARGET:MASCALL%のモノだから……❤　%CSTR:TARGET:MASCALL%の승리のためならいくらだって歌うし、……いくらだって犯されてあげる……❤」
+						PRINTFORML 「で、でもね……っ！　ど、どんなにヒドい目にあっても、醜いバケモノに犯されても、このカラダとココロは%CSTR:TARGET:MASCALL%のモノだから……っ
+						PRINTFORMW 　後でちゃんと、『ゴホウビ』で上書きして、ほしいな……❤」
+					ELSEIF EXP:TARGET:듀얼조교경험 >= 1
+						PRINTFORML 「……騙された。おかしいと思ってた。僕、あんなキラキラしたアイドルになれるって、そう思ってたのに……！」
+						PRINTFORMW 「か、勝手に僕の大事なトコロを犯されて、なのに悦んで……！　ぼ、僕を何だと思ってるのさ……！」
+					ELSE
+						PRINTFORMW 「……えっ！？　ぼ、僕がキラキラした服を着てる……！？　ど、ドレミアイドル……？　そんな姿もあるんだ……」
+						PRINTFORMW 「……ね、ねぇ、それで呼ばれれば僕もあのキラキラした舞台に立てるのかな……！　わ、わぁ……！　ワクワク、してきた……！」
+					ENDIF
+				ELSE
+					PRINTFORML 「僕だって女の子だしね、興味はあるよ？　アイドル活動とか♪　あれも広義では音楽活動だしねっ」
+					PRINTFORMW 「……ま、まぁ？　僕みたいなガサツな娘に似合うわけないよね！　わ、忘れてね……！」
+				ENDIF
+			CASE 9
 				PRINTFORML 「僕たちドレミ界は地上とは直接つながってないけど、それ以外の世界とは交流があったりするんだ！」
 				PRINTFORMW 「その中でも仲良しさんなのが幻奏♪　同じ音楽を奏でるテーマ同士、たまに合同で音楽祭をやったりもするんだよ！」
-			CASE 15
+			CASE 10
 				PRINTFORML 「ドレミコードはこの世界の上……ドレミ界に住んでいるんだ。だから地上のこともある程度は知ってるよ？」
 				PRINTFORMW 「もちろんカードゲームのことも知ってるよ！　……僕のカードについては、その、ちょっと恥ずかしいね……」
-			CASE 16
+			CASE 11
 				PRINTFORML 「どうしたの、%CSTR:TARGET:MASCALL%。……あぁ！　妖精たちのことが気になってるんだ。たしかにドレミ界にしかいないもんね」
 				PRINTFORMW 「ふっふっふ……僕たちドレミコードがこのタクトを振るえば彼女たちが音を奏で、地上のケガレを浄化できるんだ！　ニシシ、どう？　すごいでしょ！」
-			CASE 17
+			CASE 12
 				PRINTFORML 「%CSTR:TARGET:MASCALL%、僕の妖精知らない！？　あぁもう、どこ行ったんだよ……！　もう練習の時間なのにぃ……！？」
 				PRINTFORMW 「君も見かけたらすぐ教えてね！？　あの娘、目を離すとすぐに好き勝手するんだから……！」
 			;연모
@@ -749,7 +817,7 @@ IF LOCAL
 					PRINTFORMW 「春だね～！　よくサクラ？　って花の歌が流れてくるよね。実物は見たことあんまりないけど」
 					PRINTFORMW 「おもしろいよね、やっと暖かくなってきたのに物悲しい歌が好まれるなんて……。僕としては別れより出会いのイメージを大切にしたいね！」
 				ELSEIF GET_MONTH() == "夏の月"
-				;デートしたい
+				;데이트したい
 					PRINTFORMW 「夏はやっぱり盛り上がる曲が多いね。やっぱり暑さに負けるな！　ってイメージかな？」
 					PRINTFORMW 「この季節はモチーフになりそうなものが多いよね。だからさ、%CSTR:TARGET:MASCALL%も外へ一緒に行こうよ！」
 				ELSEIF GET_MONTH() == "秋の月"
@@ -773,7 +841,7 @@ IF LOCAL
 			CASE 24
 				PRINTFORML 「僕たちがドレミコードにはいったとき、先輩にまず贈られるのがこの衣装とタクトなんだ」
 				PRINTFORMW 「そして正式に女神様に認められると妖精をさずかるんだ。彼女たちは僕らの心を写し取った存在だとかなんとか……いてっ！？　こら、殴るんじゃないよ！」
-				PRINTFORMW %CALLNAME:TARGET%は자신の妖精と喧嘩を始めてしまった……
+				PRINTFORMDW %CALLNAME:TARGET%は자신の妖精と喧嘩を始めてしまった……
 			CASE 25
 				PRINTFORMW 「いろんなところに連れてってよ、%CSTR:TARGET:MASCALL%。別に音楽がどうとか関係なく、一緒に」
 				PRINTFORMW 「%CSTR:TARGET:MASCALL%がどういうのが好きで、どういうのが嫌いかとか、いっぱい教えてほしいな♪」
@@ -881,9 +949,23 @@ LOCAL = 1
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1
-			PRINTFORMW 「あ、おいしい……も、もしかして僕、女子力で%CSTR:TARGET:MASCALL%に負けてる……！？」
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「あ、おいしい……も、もしかして僕、女子力で%CSTR:TARGET:MASCALL%に負けてる……！？」
+				CASE 1
+					PRINTFORMW 「こないだエンジェリア先輩とお茶しにでかけたんだけどさー……これ、そこのと変わらないぐらい美味しいよ」
+				CASE 2
+					PRINTFORMW 「うまっ！　%CSTR:TARGET:MASCALL%って何かやってたの？」
+			ENDSELECT
 		CASE 0
-			PRINTFORMW 「あ、どうも～♪　うれしいねっ」
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「あ、どうも～♪　うれしいねっ」
+				CASE 1
+					PRINTFORMW 「うん、美味しいよっ♪　僕、淹れられないからなぁ～」
+				CASE 2
+					PRINTFORMW 「いやぁ、これぐらいならミアちゃんも飲めそうだなぁ……♪」
+			ENDSELECT
 		CASE -1
 			PRINTFORMW 「うぇっ！？　……う、ウン、オイシイカッタヨー」
 	ENDSELECT
@@ -918,11 +1000,33 @@ IF LOCAL
 				PRINTFORMW 「……あれ、どうしたのさ？　手、つなぎたいの？　ま、いいよ♪」
 			ENDIF
 		CASE 0
-			IF TALENT:TARGET:연모 >= 1
-				PRINTFORMW 「僕の指、割と硬いでしょ？　タコが出来ても、血豆ができてもひたすら練習してたからなぁ……」
-			ELSE
-				PRINTFORMW 「……ばぁ♪　ニヒヒ、鍵盤を弾くからね♪　僕の手、割と大きく広がるんだよ♪」
-			ENDIF
+			SELECTCASE RAND:4
+				CASE 0
+					IF TALENT:TARGET:연모 >= 1
+						PRINTFORMW 「僕の指、割と硬いでしょ？　タコが出来ても、血豆ができてもひたすら練習してたからなぁ……」
+					ELSE
+						PRINTFORMW 「……ばぁ♪　ニヒヒ、鍵盤を弾くからね♪　僕の手、割と大きく広がるんだよ♪」
+					ENDIF
+				CASE 1
+					IF TALENT:TARGET:연모 >= 1
+						PRINTFORMW 「……へへ、このリボンはエンジェリア先輩から贈られたものなんだ♪　どう、イケてるでしょ？」
+					ELSE
+						PRINTFORMW 「……う～ん、あんまりリボンをイジらないでほしいなぁ。いや別にいいんだけどさ」
+					ENDIF
+				CASE 2
+					IF TALENT:TARGET:연모 >= 1
+						PRINTFORMW 「……もう♪　強引なんだから……♪」
+					ELSE
+						PRINTFORMW 「……うひゃあ！？　きゅ、急に肩を触らないでよ……！」
+					ENDIF
+				CASE 3
+					IF TALENT:TARGET:연모 >= 1
+						PRINTFORML 「いやぁ！　どうよ僕のほっぺた、肌にハリがあってスベスベでっしょ～♪」
+						PRINTFORMW 「……いや、その……つ、ツッコミ、いれてよ……いや、いいから！？　同意しなくていいから！　き、気恥ずかしいんだってばぁ……！」
+					ELSE
+						PRINTFORMW 「むぇ……。もう、急にほっぺた触らないでよ」
+					ENDIF
+			ENDSELECT
 		CASE -1
 			PRINTFORMW 「あはは、あんまりグイグイくると嫌われるよ♪」
 	ENDSELECT
@@ -1426,7 +1530,7 @@ IF LOCAL
 				SELECTCASE RAND:3
 					CASE 0
 						PRINTFORML 「……♪」
-						PRINTFORMW %CALLNAME:TARGET%はこちらに微笑みながら、頭のリボンを解いた
+						PRINTFORMDW %CALLNAME:TARGET%はこちらに微笑みながら、頭のリボンを解いた
 					CASE 1
 						PRINTFORMW 「……ここまではドレミコードとしての僕」
 						PRINTFORMW 「そしてここからは……君だけの、僕だよ❤」
@@ -1436,7 +1540,7 @@ IF LOCAL
 				ENDIF
 			ELSE
 				PRINTFORML 「……よ、よぉしこい！　だ、だいじょうぶだよ……！！」
-				PRINTFORMW 大丈夫というには顔が真っ赤で震えてるし、声も上ずっている%CALLNAME:TARGET%であった……
+				PRINTFORMDW 大丈夫というには顔が真っ赤で震えてるし、声も上ずっている%CALLNAME:TARGET%であった……
 			ENDIF
 		;攻守反転（MASTERが受け）
 		ELSEIF CFLAG:MASTER:우후후 == 2
@@ -1545,8 +1649,8 @@ IF LOCAL
 		PRINTFORML 
 		PRINTFORMW 「……どうしたの、%CSTR:TARGET:MASCALL%？　改まって、僕に何か用事？」
 		PRINTFORML 
-		PRINTFORMW いつも通り両手を後ろに組みながら笑顔を浮かべて聞いてくる%CALLNAME:TARGET%
-		PRINTFORMW ……彼女に指輪をさしだした
+		PRINTFORMDW いつも通り両手を後ろに組みながら笑顔を浮かべて聞いてくる%CALLNAME:TARGET%
+		PRINTFORMDW ……彼女に指輪をさしだした
 		PRINTFORML 
 		PRINTFORMW 「……！　……」
 		PRINTFORMW 「…………」
@@ -1569,9 +1673,9 @@ IF LOCAL
 		PRINTFORMW 「うん、えぇ、……はい、喜んでお受けします❤」
 		PRINTFORMW 「もはや『ファドレミコード・ファンシア』ですらないただの僕を、末永くお傍に置いてください……っ❤」
 		PRINTFORMW 
-		PRINTFORMW ……なお、これは余談だが、
-		PRINTFORMW その日のうちにドレミ界に%CALLNAME:TARGET%が報告に向かったところ、全員から『辞めないで！？』の大合唱の上、ニコニコ顔のミューゼシアからお許しを賜ったらしく……
-		PRINTFORMW 結局%CALLNAME:TARGET%は一週間に一回は顔を出すことを条件に、ドレミコードの残留が決定したのだった……
+		PRINTFORMDW ……なお、これは余談だが、
+		PRINTFORMDW その日のうちにドレミ界に%CALLNAME:TARGET%が報告に向かったところ、全員から『辞めないで！？』の大合唱の上、ニコニコ顔のミューゼシアからお許しを賜ったらしく……
+		PRINTFORMDW 結局%CALLNAME:TARGET%は一週間に一回は顔を出すことを条件に、ドレミコードの残留が決定したのだった……
 		PRINTFORML 
 		PRINTFORMW 「いや最後まで格好がつかないなぁ僕！？　いやとっても嬉しいけどね！？」
 	;失敗　
@@ -1933,20 +2037,20 @@ IF LOCAL
 					PRINTFORMW 「～～♪　～～～♪　……うーん？　もうちょっと「こう」かな？」
 				CASE 1
 					PRINTFORMW 「ところでさー、なんで普段は顔出さないの？　もしかして%CSTR:TARGET:MASCALL%が怖いとか……イテッ！？」
-					PRINTFORMW %CALLNAME:TARGET%は自身の妖精と喧嘩を始めた……
+					PRINTFORMDW %CALLNAME:TARGET%は自身の妖精と喧嘩を始めた……
 				CASE 2
 					PRINTFORML 「別に僕に気を使わなくてもいいんだよ？　というかそんな遠慮するタマじゃないじゃん」
 					PRINTFORMW 「……は！？　ぼ、僕がデレデレしてるのが見てて恥ずかしい！？　な、なにをぉ！？」
-					PRINTFORMW %CALLNAME:TARGET%は自身の妖精と喧嘩を始めた……
+					PRINTFORMDW %CALLNAME:TARGET%は自身の妖精と喧嘩を始めた……
 			ENDSELECT
 	ENDSELECT
 ENDIF
 RETURN 1
 
 [SKIPSTART]
-;外出/デートは460へ
+;外出/데이트は460へ
 ;==================================================
-;405,出掛ける(동행時デート
+;405,出掛ける(동행時데이트
 ;条件が厄介なので、COMF405 出掛ける.ERBを参照のこと
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2089_405
@@ -1960,9 +2064,9 @@ RETURN RESULT
 LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
-	;TARGETとデート
+	;TARGETと데이트
 	IF CFLAG:동행
-	;TARGET以外とデート
+	;TARGET以外と데이트
 	ELSEIF CFLAG:MASTER:동행
 	;お出かけお見送り
 	ELSE
@@ -2285,27 +2389,27 @@ IF LOCAL
 			PRINTFORMW 「……僕ともこういうコト、したい？」
 		ELSE
 			PRINTFORMW 「えっ……！？　あ、あう……。ふ、ふ～……ん……」
-			PRINTFORMW 濡れ場に差し掛かり、%CALLNAME:TARGET%は顔を真っ赤にしながらも目を離せずにいる……
+			PRINTFORMDW 濡れ場に差し掛かり、%CALLNAME:TARGET%は顔を真っ赤にしながらも目を離せずにいる……
 		ENDIF
 	ELSEIF TFLAG:SELECTCOM분기 == 1
 		IF TALENT:TARGET:연모 >= 1
 			PRINTFORMW 「よかったねぇ……♪　あ、そうだ！　こういう伴奏はどうかな♪」
-			PRINTFORMW %CALLNAME:TARGET%は急にインスピレーションが湧いたのか、指揮棒片手に鼻歌を唄い始めた……
+			PRINTFORMDW %CALLNAME:TARGET%は急にインスピレーションが湧いたのか、指揮棒片手に鼻歌を唄い始めた……
 		ELSE
 			PRINTFORMW 「面白かった～！　こういうの、グレーシアさんによく観せてもらうんだ～♪」
 		ENDIF
 	ELSEIF TFLAG:SELECTCOM분기 == 2
 		IF TALENT:TARGET:연모 >= 1
 			PRINTFORMW 「……ふむふむ、こういう伴奏だと緊張感がうまれて……」
-			PRINTFORMW 真剣な眼で映画をみる%CALLNAME:TARGET%だが、その手はなにかを弾くように動き続けている……
+			PRINTFORMDW 真剣な眼で映画をみる%CALLNAME:TARGET%だが、その手はなにかを弾くように動き続けている……
 		ELSE
 			PRINTFORMW 「……はは～ん！　わかったぞ！　犯人はアイツだなぁ……！」
-			PRINTFORMW ニヤニヤ顔で推理を披露する%CALLNAME:TARGET%だったが、10分後その犯人候補が殺害され目を丸くした……
+			PRINTFORMDW ニヤニヤ顔で推理を披露する%CALLNAME:TARGET%だったが、10分後その犯人候補が殺害され目を丸くした……
 		ENDIF
 	ELSEIF TFLAG:SELECTCOM분기 == 3
 		IF TALENT:TARGET:연모 >= 1
 			PRINTFORMW 「……きゃ、きゃー、こわいー、%CSTR:TARGET:MASCALL%、てをにぎってー……」
-			PRINTFORMW %CALLNAME:TARGET%は下手くそな棒読みでこちらの手を握ると、顔を赤らめながら「えへへ……」と笑った
+			PRINTFORMDW %CALLNAME:TARGET%は下手くそな棒読みでこちらの手を握ると、顔を赤らめながら「えへへ……」と笑った
 		ELSE
 			PRINTFORMW 「どうせ作り物なんでしょ？　よゆーよゆ～♪」
 			PRINTFORMW 「お、おおおおお！？　な、なに！？　なんなのぉ……？」
@@ -2315,7 +2419,7 @@ IF LOCAL
 			PRINTFORMW 「おもしろかったよ♪　もしかして僕の好みに合わせてくれた？　だったら、嬉しいなっ♪」
 		ELSE
 			PRINTFORMW 「お、おおおおお！？　いいぞ～、いけ、いけ……！」
-			PRINTFORMW %CALLNAME:TARGET%は目を輝かせながら応援している。……映画のあと、隣で声を出していたことを謝罪された
+			PRINTFORMDW %CALLNAME:TARGET%は目を輝かせながら応援している。……映画のあと、隣で声を出していたことを謝罪された
 		ENDIF
 	ENDIF
 ENDIF
@@ -2447,7 +2551,7 @@ RETURN 1
 
 ;==================================================
 ;435,帰宅する
-;이벤트구상のデート終了時とタイミングが被るため、どちらかは書かない方がいい
+;이벤트구상の데이트終了時とタイミングが被るため、どちらかは書かない方がいい
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2089_435
 CALL TRAIN_MESSAGE
@@ -2551,7 +2655,7 @@ IF LOCAL
 	;グラビアモデル
 	ELSEIF CFLAG:아르바이트 == 100
 		PRINTFORMW 「あはは♪　僕が？　モデル？　じょ～だんキツイってぇ～♪　……え、本気！？」
-		PRINTFORMW 그 후、%CALLNAME:TARGET%が音を上げるまで、いかに彼女が매력的な体つきをしているか演説がはじまった……	
+		PRINTFORMDW 그 후、%CALLNAME:TARGET%が音を上げるまで、いかに彼女が매력的な体つきをしているか演説がはじまった……	
 	;搾乳牧場
 	ELSEIF CFLAG:아르바이트 == 304
 		IF TALENT:TARGET:모유체질
@@ -2584,7 +2688,7 @@ IF LOCAL
 ENDIF
 RETURN 1
 ;==================================================
-;460,外出/デート
+;460,外出/데이트
 ;==================================================
 ;流れるタイミングは目的地に到着した後。
 @M_KOJO_MESSAGE_COM_K2089_460
@@ -2602,7 +2706,7 @@ IF LOCAL
 	IF CFLAG:TARGET:수면 == 1
 
 	ELSE
-		;TARGETとデート
+		;TARGETと데이트
 		IF CFLAG:동행
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
 			PRINTFORMW 「よし、%CSTR:TARGET:MASCALL%、いこうか？」
@@ -2610,7 +2714,7 @@ IF LOCAL
 		ELSE
 			PRINTFORMW 「よし！　新たな音楽との出会いへ、レッツご～！」
 		ENDIF 
-		;TARGET以外とデート
+		;TARGET以外と데이트
 		ELSEIF CFLAG:MASTER:동행
 			PRINTFORMW 「いってらっしゃーい……」
 			PRINTFORMW 「……うん、クヨクヨしても仕方ない。練習しよっと」
@@ -2656,8 +2760,8 @@ LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨 || TALENT:TARGET:애처
-			PRINTFORMW 「へへ、お買い物デートってやつ？」
-			PRINTFORMW 「デートと言うには所帯くさい？　い～んだよ♪　僕が楽しいからこれはデートっ❤」
+			PRINTFORMW 「へへ、お買い物데이트ってやつ？」
+			PRINTFORMW 「데이트と言うには所帯くさい？　い～んだよ♪　僕が楽しいからこれは데이트っ❤」
 		ELSE
 			PRINTFORMW 「お会計おわった？　じゃ、いこっか♪」
 		ENDIF 
@@ -2734,7 +2838,7 @@ IF LOCAL
 		PRINTFORMW （いつか、僕のこの気持ちが隣の%CSTR:TARGET:MASCALL%に届きますように……！）
 	ELSE
 		PRINTFORMW 「……僕にほんのちょっとだけでいいんで音楽の才能が芽吹きますように……！」
-		PRINTFORMW ……願いが声にでていると、指摘していいのだろうか
+		PRINTFORMDW ……願いが声にでていると、指摘していいのだろうか
 	ENDIF
 ENDIF
 RETURN 1
@@ -2760,10 +2864,10 @@ RETURN 1
 ;480,デュエル
 ;勝敗はプレイヤーから見てのもの
 ;TFLAG:SELECTCOM분기(1=通常승리 -1=通常패배 -2=引き分け
-;10=通常듀얼前 11=パック賭け듀얼前 12=デート賭け듀얼前 13=パンツ賭け듀얼前 14=お持ち帰り듀얼前 15=お前モンスターじゃないか？ 16=スケベ要求듀얼前 20=闇のゲーム
-;31=パック賭け승리 32=デート賭け승리 33=パンツ賭け승리 34=お持ち帰り成功 35=カード化승리（牝以外） 36=スケベ要求事後 40=罰ゲーム！
+;10=通常듀얼前 11=パック賭け듀얼前 12=데이트賭け듀얼前 13=パンツ賭け듀얼前 14=お持ち帰り듀얼前 15=お前モンスターじゃないか？ 16=スケベ要求듀얼前 20=闇のゲーム
+;31=パック賭け승리 32=데이트賭け승리 33=パンツ賭け승리 34=お持ち帰り成功 35=カード化승리（牝以外） 36=スケベ要求事後 40=罰ゲーム！
 ;135=カード化見逃す 235=穏便カード化 335=凌辱後カード化 435=凌辱後見逃す
-;50=賭け듀얼패배怒られた 51=パック賭け패배 52=デート패배デート 55=カード化패배 56=スケベ要求패배 156=スケベ要求弱味削除 256=スケベ要求패배負け癖付きおねだり)
+;50=賭け듀얼패배怒られた 51=パック賭け패배 52=데이트패배데이트 55=カード化패배 56=スケベ要求패배 156=スケベ要求弱味削除 256=スケベ要求패배패배버릇付きおねだり)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2089_480
 ;デュエルにTRAIN_MESSAGEはない
@@ -2807,12 +2911,12 @@ IF LOCAL
 			;パック賭け
 			CASE 11
 				PRINTFORMW 「へへ♪　勝負なんてちょっとした賭けがあったほうが燃えるよね！　よしのった♪」
-			;デート賭け
+			;데이트賭け
 			CASE 12
 				IF TALENT:TARGET:연모 >= 1
-					PRINTFORMW 「へ？　で、デートを賭けてデュエル？　な、なんで……？」
+					PRINTFORMW 「へ？　で、데이트を賭けてデュエル？　な、なんで……？」
 				ELSE
-					PRINTFORMW 「へ？　で、デート、を賭けてデュエル……？　え？　え？　え、あ、デュエル！　……え、あれぇ？」
+					PRINTFORMW 「へ？　で、데이트、を賭けてデュエル……？　え？　え？　え、あ、デュエル！　……え、あれぇ？」
 				ENDIF 
 			;パンツ賭け
 			CASE 13
@@ -2827,13 +2931,25 @@ IF LOCAL
 				PRINTFORMW 
 			;モンスターか問い詰める（人間は불가）
 			CASE 15
-				PRINTFORMW 
+				PRINTFORML 「……うぇ！？　さ、さーどーだろーなぁ……」
+				PRINTFORMW 「でゅ、デュエルだぁ！？　僕が勝ったら見逃してもらうからね！？」
 			;スケベ強要
 			CASE 16
-				PRINTFORMW 
+			CASE 16
+				IF TALENT:TARGET:패배버릇
+					PRINTFORMW 「う、うん……❤　僕、今度こそ、負けないよ……❤」
+				ELSEIF CFLAG:TARGET:약점장악 == 1
+					IF EXP:TARGET:패배조교경험 >= 1
+						PRINTFORMW 「……くぅ！？　わ、わかったよ！　でもね、僕が勝ったらそれ、絶対消してよね！？　ぜ、絶対にだよ！？」
+					ELSE
+						PRINTFORMW 「……っ！？　ぼ、僕が勝ったら、それ、捨ててよね！　ぜ、絶対だよ！？」
+					ENDIF
+				ELSE
+					PRINTFORMW 「……知らない土地で暮らすには先立つものが必要だからねっ、勝たせてもらうよ！」
+				ENDIF
 			;闇のゲーム
 			CASE 20
-				PRINTFORMW 
+				PRINTFORMW 「……な、なんだこれ……？　僕、知らないよ……？」
 		ENDSELECT
 
 	;デュエル後
@@ -2912,7 +3028,7 @@ IF LOCAL
 							PRINTFORMW 「だーめーでーしーたー！？　……うん、わかってるよ。約束のパックをどうぞ」
 						ENDIF
 					ENDSELECT
-			;デート賭け
+			;데이트賭け
 			CASE 32
 				PRINTFORMW 「……もう、回りくどいなぁ。別に直接言ってくれれば付き合ったのに」
 					SIF TALENT:TARGET:연모 >= 1
@@ -2934,19 +3050,27 @@ IF LOCAL
 				PRINTFORMW 
 			;カード化を見逃す（元気でな！）
 			CASE 135
-				PRINTFORMW 
+				PRINTFORML 「み、見逃してくれるの……！？　あ、ありがと……」
+				PRINTFORMW 「……僕、これでも義理堅いから。いつか必ず、お礼はするからね……」
 			;穏便に話してカード化（怖くないよ～痛くないよ～）
 			CASE 235
-				PRINTFORMW 
+				PRINTFORML 「……いや、うん、わかってはいたんだ……別の世界からきた僕が、大っぴらに世間を騒がせるわけにはいかないって……」
+				PRINTFORMW 「うん、いいよ。サクッとやっちゃって。　……僕のカード、大事にしてね？」
 			;身体を対価に見逃す（見逃すとは言ってない）
 			CASE 335
-				PRINTFORMW 
-			;身体を対価に見逃す（見逃す）（負け癖付いたり弱み握られたりする）
+				PRINTFORMW 「……っ！　く、そんな……っ！？」
+				PRINTFORMW 「……はは、信じた僕が、バカだった、かぁ……」
+			;身体を対価に見逃す（見逃す）（패배버릇付いたり弱み握られたりする）
 			CASE 435
-				PRINTFORMW 
+				PRINTFORMW 「……うぅ……ぐすっ……」
+				PRINTFORMW 「たすけて、よぉ……エンジェリア、せんぱい……クーリア、せんぱい……っ」
 			;身体要求事後
 			CASE 36
-				PRINTFORMW 
+				IF TALENT:TARGET:패배버릇
+					PRINTFORMW 「……う、うん……❤　僕のカラダを賭けて、負けたんだから……しょうが、ないよね……❤」
+				ELSE
+					PRINTFORMW 「……うぅ……やだぁ……だれか、たすけて……」
+				ENDIF
 			;闇のゲーム
 			CASE 40
 				PRINTFORMW 
@@ -2974,7 +3098,7 @@ IF LOCAL
 							PRINTFORMW 「しゃいっ♪　じゃ、パックちょ～だいっ♪　ほらほらっ、早く早くぅ♪」
 						ENDIF
 					ENDSELECT
-			;デート賭け（デートはしてくれる）
+			;데이트賭け（데이트はしてくれる）
 			CASE 52
 				IF TALENT:TARGET:연모 >= 1
 					PRINTFORMW 「……ちょ、何負けてるのさ！？　ぼ、僕のこの期待に満ちた心をどうしろと……！」
@@ -2985,16 +3109,18 @@ IF LOCAL
 				ENDIF 
 			;カード化패배（逃げられた）
 			CASE 55
-				PRINTFORMW 
+				PRINTFORMW 「ち、ちからづくでゴメンね！？　でもこっちだってまだ捕まりたくないからさー！！」
 			;身体要求패배（金払う）
 			CASE 56
-				PRINTFORMW 
+				PRINTFORMW 「ニシシ♪　たぁしかにっ♪　……これでしばらくは、いけるかなぁ♪」
 			;身体要求패배（弱味削除）
 			CASE 156
-				PRINTFORMW 
-			;身体要求패배（負け癖付いてる時限定凌辱おねだり）（ラブホ直行）
+				PRINTFORMW 「……ふぅ～……よし、たしかに。……あんまり調子にのらないでよ？　次はデュエル関係なく、グーでいくから」
+			;身体要求패배（패배버릇付いてる時限定凌辱おねだり）（ラブホ直行）
 			CASE 256
-				PRINTFORMW 
+				PRINTFORMW 「……え、うそ……僕、勝った……？　え、でも……」
+				PRINTFORMW 「……あー！？　ぼ、僕のカードに傷がついてる！　こ、これじゃあイカサマを疑われちゃうよぉ……！」
+				PRINTFORMW 「つ、つまり、ね……？　ぼ、僕、負けちゃってた、みたいなんだ……❤　え、えっと、賭けは僕のカラダ……だったよ、ね……❤」
 		ENDSELECT
 	ENDIF
 ENDIF
@@ -3024,7 +3150,7 @@ IF LOCAL
 			PRINTFORMW 「……きゅ、휴식したいのかな～……！　で、でもこんなにギラギラしてるところじゃあ落ち着かないんじゃないかなぁ～！　あはは……、はぁ」
 		ENDIF 
 	ELSE
-		PRINTFORMW 
+		PRINTFORMW 「へへっ♪　楽しみだなぁ……♪」
 	ENDIF
 ENDIF
 RETURN 1

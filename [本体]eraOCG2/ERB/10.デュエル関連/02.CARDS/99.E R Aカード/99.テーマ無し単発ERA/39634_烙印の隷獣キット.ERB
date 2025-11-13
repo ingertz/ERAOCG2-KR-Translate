@@ -56,7 +56,6 @@ RETURN 0
 
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드의 카드명은 룰 상、"트라이브리게이드 키트"로도 취급한다。
-PRINTL 이 카드는 "데스피아"의 성노예이며、"비스테드의 모체"이기도 하다。
 PRINTL 이 카드명의 ①②③의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,손패起動,필드起動)
 PRINTL ①：패 / 몬스터 존의 이 카드를 릴리스 하고 발동할 수 있다。
@@ -109,6 +108,7 @@ IF 종류 == 손패起動 || 종류 == 필드起動
 	효과範囲묘지 = 1
 	효과条件カテゴリ = 비스테드
 	CALLFORM 효과条件レベル_ADV(3,"以上")
+	효과条件固名前 = 더 비스테드 루벨리온
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -126,6 +126,7 @@ ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
 	효과範囲덱 = 1
 	효과条件カテゴリ = 비스테드
 	CALLFORM 효과条件レベル_ADV(6,"以上")
+	효과条件固名前 = 더 비스테드 루벨리온
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -242,45 +243,51 @@ ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱�
 					CALL SET_FIELD_INFO(듀얼리스트,"마함",설치先,"個Ｃ",1)
 				NEXT
 			ENDIF
-			설치先 = 現마함(듀얼리스트)
 			CALL FULLRESET
+			효과範囲묘지 = 1
 			효과条件名前 = 트라이브리게이드 도화 페리지트
-			CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
-			IF RESULT != 9999
-				選択カード = RESULT
-				選択カード_ID = RESULT:99
-				SETCOLOR C_PINK
-				PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
-				PRINTFORML
-				PRINTFORML 낙인의 권유에 따라、키트는 언니인 페리지트를 자신과 같은 길로 끌어냈다。
-				PRINTFORMW
-				IF 選択カード_ID == 1890
-					CALL CARD_RECONSTRUCT(듀얼리스트,"묘지",選択カード,39633)
-					PRINTFORML
-				ENDIF
-				RESETCOLOR
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1 && 마함数(듀얼리스트) < 5
+				설치先 = 現마함(듀얼리스트)
 				CALL FULLRESET
-				효과추가カテ = 種袋
-				CALL CARD_DISPOSE(듀얼리스트,"묘지",選択カード,마함行き)
-				CALL FULLRESET
-				효과範囲필드 = 1
-				효과範囲상대필드 = 1
-				효과条件성별 = 雄性
-				효과条件CNT = 1
-				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-				カウンタ = RESULT
-				IF カウンタ
+				효과条件名前 = 트라이브리게이드 도화 페리지트
+				CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+				IF RESULT != 9999
+					選択カード = RESULT
+					選択カード_ID = RESULT:99
 					SETCOLOR C_PINK
 					PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
 					PRINTFORML
-					PRINTFORML 낙인의 권유에 따라、페리지트는 필드의 수컷에게서 씨앗을 집어넣는다。
-					PRINTFORML
+					PRINTFORML 낙인의 권유에 따라、키트는 언니인 페리지트를 자신과 같은 길로 끌어냈다。
+					PRINTFORMW
+					IF 選択カード_ID == 1890
+						CALL CARD_RECONSTRUCT(듀얼리스트,"묘지",選択カード,39633)
+						PRINTFORML
+					ENDIF
 					RESETCOLOR
-					FOR 装備先,0,カウンタ
-						CALL EROTIC_MOVE("前穴凌辱",NO_TO_CHARANUM(1890),,100)
-						CALL FULLRESET
-						CALL SET_FIELD_INFO(듀얼리스트,"마함",설치先,"個Ｃ",1)
-					NEXT
+					CALL FULLRESET
+					효과추가カテ = 種袋
+					CALL CARD_DISPOSE(듀얼리스트,"묘지",選択カード,마함行き)
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과範囲상대필드 = 1
+					효과条件성별 = 雄性
+					효과条件CNT = 1
+					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+					カウンタ = RESULT
+					IF カウンタ
+						SETCOLOR C_PINK
+						PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+						PRINTFORML
+						PRINTFORML 낙인의 권유에 따라、페리지트는 필드의 수컷에게서 씨앗을 집어넣는다。
+						PRINTFORML
+						RESETCOLOR
+						FOR 装備先,0,カウンタ
+							CALL EROTIC_MOVE("前穴凌辱",NO_TO_CHARANUM(1890),,100)
+							CALL FULLRESET
+							CALL SET_FIELD_INFO(듀얼리스트,"마함",설치先,"個Ｃ",1)
+						NEXT
+					ENDIF
 				ENDIF
 			ENDIF
 		ENDIF

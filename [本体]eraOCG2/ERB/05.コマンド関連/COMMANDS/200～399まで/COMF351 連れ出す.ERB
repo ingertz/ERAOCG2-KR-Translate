@@ -161,17 +161,19 @@ RETURN 1
 ; 2 個別選択で連れ出せる
 ; 1 連れ出せない（取り込み中メッセージ）
 ; 0 連れ出せない
-@COM_351_CONDITION(CHARA)
+@COM_351_CONDITION(캐릭터_ID)
 #FUNCTION
-#DIM CHARA
-SIF CHARA == MASTER
+#DIM DYNAMIC 캐릭터_ID
+SIF 캐릭터_ID == MASTER
 	RETURNF 0
-SIF CFLAG:CHARA:태도 > 0 && CFLAG:CHARA:수면 == 0
+SIF CFLAG:캐릭터_ID:태도 > 0 && CFLAG:캐릭터_ID:수면 == 0
 	RETURNF 3
 ;現在동행中の캐릭터は許可(동행条件を満たさなくなった경우에 手動で동행解除できるようにする)
-SIF CFLAG:CHARA:동행
+SIF CFLAG:캐릭터_ID:동행
 	RETURNF 2
-SIF CFLAG:CHARA:수면
+SIF TALENT:캐릭터_ID:연모
+	RETURNF 2
+SIF CFLAG:캐릭터_ID:수면
 	RETURNF 0
 
 RETURNF 2
@@ -216,6 +218,8 @@ RETURNF リターン値
 ;-------------------------------------------------
 ;데리고 나간다
 @COM_ABLE351
+#DIM DYNAMIC 条件달성
+
 ;데리고 나간다実行판정
 SIF !TFLAG:100
 	RETURN 0
@@ -239,8 +243,15 @@ FOR LOCAL,0,CHARANUM
 	SIF CFLAG:(TARGET:LOCAL):수면
 		CONTINUE
 	;可能な캐릭터が居れば1を返す
-	SIF CFLAG:(TARGET:LOCAL):태도
-		RETURN 1
+	IF CFLAG:(TARGET:LOCAL):태도
+		条件달성 = 1
+		BREAK
+	ENDIF
 NEXT
-RETURN 0
+SIF TALENT:TARGET:연모 == 1
+	条件달성 = 1
+
+SIF 条件달성 == 0
+	RETURN 0
+RETURN 1
 

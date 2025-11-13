@@ -86,12 +86,14 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX소환時
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
-	IF 듀얼리스트 != ""
-		SIF GETVAR(@"ライフ_%듀얼리스트%") >= (GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") * 2000)
-			RETURN 0
-	ENDIF
+	SIF GETVAR(@"ライフ_%듀얼리스트%") >= (GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") * 2000)
+		RETURN 0
 	RETURN 1
 
 ELSEIF 종류 == 필드起動
@@ -151,7 +153,7 @@ IF 종류 == EX소환時
 		IF RESULT == 1
 			条件달성 ++
 			IF 듀얼리스트 == "자신"
-PRINTL 패를 버리시겠습니까?
+				PRINTL 패를 버리시겠습니까?
 				CALL YN_CHOICE(듀얼리스트)
 			ELSE
 				SIF GETVAR(@"ライフ_%듀얼리스트%") <= (GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") * 2000)

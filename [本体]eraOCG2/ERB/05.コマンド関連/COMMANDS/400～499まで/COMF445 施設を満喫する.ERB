@@ -1,0 +1,184 @@
+﻿;-------------------------------------------------
+;445,施設を満喫する
+;-------------------------------------------------
+@COM445
+SELECTCASE CFLAG:MASTER:현재위치
+CASE 場所_カフェ
+	CALL ENJOY_CAFE
+	RETURN RESULT
+CASE 場所_KL広場, 場所_ジャングル, 場所_スリルゾーン, 場所_お城, 場所_観覧車, 場所_KCスタジアム
+	CALL ENJOY_KAIBALAND
+	RETURN RESULT
+ENDSELECT
+
+RETURN 1
+
+
+
+
+@ENJOY_KAIBALAND
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC 複数人플래그
+IF TIME_ZONE(2) == T_夜時間
+	PRINTFORML 벌써 폐장시간인듯 하다……돌아가자。
+	PRINTFORMW 
+	CALL EVENT_MOVE(MASTER,場所_KL入口)
+	RETURN 0
+ENDIF
+
+
+SELECTCASE CFLAG:MASTER:현재위치
+CASE 場所_KL広場
+	PRINTFORML 캐스트들이 광장에서 손님에게 손을 흔들고있다。
+	PRINTFORMW 마치 다른 세계에 들어온것같은 기분이다。
+	TIME += 20
+CASE 場所_ジャングル
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF CFLAG:캐릭터_ID:동행 != CFLAG:MASTER:현재위치
+			CONTINUE
+		CALL SOURCE_CALC_歓楽(캐릭터_ID, MASTER, 250)
+		CALL SOURCE_CALC_접촉(캐릭터_ID, MASTER, 100)
+		複数人플래그 ++
+	NEXT
+	IF 複数人플래그 >= 1
+		PRINTFORM 다같이 
+	ENDIF
+	PRINTFORML 정글 크루징을 즐겼다。
+	PRINTFORMW 다양한 몬스터의 영상이 날아다니며, 듀얼 몬스터의 자연을 즐겼다.
+	TIME += 20
+CASE 場所_スリルゾーン
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF CFLAG:캐릭터_ID:동행 != CFLAG:MASTER:현재위치
+			CONTINUE
+		CALL SOURCE_CALC_歓楽(캐릭터_ID, MASTER, 150)
+		CALL SOURCE_CALC_접촉(캐릭터_ID, MASTER, (RAND:5 * 100))
+		CALL SOURCE_CALC_노출(캐릭터_ID, MASTER, 100)
+		複数人플래그 ++
+	NEXT
+	IF 複数人플래그 >= 1
+		PRINTFORM 다같이 
+	ENDIF
+	PRINTFORML 스릴 존을 즐겼다。
+	PRINTFORMW 진짜 살인귀한테 쫒기는、죽음의 공포를 맛봤다……。
+	TIME += 20
+CASE 場所_お城
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF CFLAG:캐릭터_ID:동행 != CFLAG:MASTER:현재위치
+			CONTINUE
+		CALL SOURCE_CALC_歓楽(캐릭터_ID, MASTER, 450)
+		CALL SOURCE_CALC_접촉(캐릭터_ID, MASTER, 200)
+		CALL SOURCE_CALC_노출(캐릭터_ID, MASTER, 100)
+		複数人플래그 ++
+	NEXT
+	IF 複数人플래그 >= 1
+		PRINTFORM 다같이 
+	ENDIF
+	PRINTFORML 성의 미궁을 즐겼다。
+	PRINTFORMW 아이도 어른도 즐길 수 있는 난이도의 탈출 어트랙션이고、정상에서 바라보는 풍경도 멋있었다。
+	TIME += 20
+CASE 場所_観覧車
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF CFLAG:캐릭터_ID:동행 != CFLAG:MASTER:현재위치
+			CONTINUE
+		CALL SOURCE_CALC_歓楽(캐릭터_ID, MASTER, 500)
+		複数人플래그 ++
+	NEXT
+	IF TARGET >= 1
+		CALL SOURCE_CALC_歓楽(TARGET, MASTER, 200)
+		CALL SOURCE_CALC_정복(TARGET, MASTER, 200)
+		CALL SOURCE_CALC_情愛(TARGET, MASTER, 200)
+	ENDIF
+
+	IF 複数人플래그 >= 1
+		PRINTFORM 다같이 
+	ENDIF
+	PRINTFORML 관람차를 즐겼다。
+	PRINTFORMW 하늘에서 내려다보는 카이바랜드는 활기넘쳐서、아름다웠다。
+	TIME += 20
+CASE 場所_KCステージ
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF CFLAG:캐릭터_ID:동행 != CFLAG:MASTER:현재위치
+			CONTINUE
+		CALL SOURCE_CALC_歓楽(캐릭터_ID, MASTER, 300)
+		複数人플래그 ++
+	NEXT
+
+	IF 複数人플래그 >= 1
+		PRINTFORM 다같이 
+	ENDIF
+	PRINTFORML 스테이지 쇼를 즐겼다。
+	PRINTFORMW 화려한 이펙트와 세련된 움직임에 매료되었다。
+	TIME += 20
+CASE 場所_KCスタジアム
+	PRINTFORML 종업원 "아ー죄송합니다、여기 아직 안하고있어요"
+	PRINTFORMW 콰ー앙、이군……아직 실장은 먼것같다。
+	RETURN 0
+ENDSELECT
+
+
+IF CFLAG:TARGET:데이트중
+	EXP:MASTER:데이트경험 ++
+	EXP:TARGET:데이트경험 ++
+ENDIF
+
+RETURN 1
+
+
+
+
+@ENJOY_CAFE
+
+#DIM DYNAMIC 캐릭터_ID
+IF TIME_ZONE() == T_夜時間
+	PRINTFORMW 오늘은 이미 안하는것 같다……。
+	RETURN 0
+ENDIF
+
+
+PRINTL 한잔에 3000엔이 들어갑니다 괜찮으시겠습니까？
+PRINTL [1] - 예
+PRINTL [0] - 아니오
+
+BINPUT
+SIF RESULT == 0
+	RETURN 0
+
+PRINTFORML 블루아이즈 마운틴을 천천히 음미했다……。
+CALL MONEY_GET(-3000)
+
+IF TIME_PROGRESS(CFLAG:MASTER:314) <= 960 && !CFLAG:MASTER:수면 && TARGET > 0
+	BASE:MASTER:체력 = MIN(BASE:MASTER:체력 + MAXBASE:MASTER:체력 / 10 , MAXBASE:MASTER:체력)
+	BASE:MASTER:기력 = MIN(BASE:MASTER:기력 + MAXBASE:MASTER:기력 / 3 , MAXBASE:MASTER:기력)
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF CFLAG:캐릭터_ID:현재위치 != CFLAG:MASTER:현재위치
+			CONTINUE
+		BASE:캐릭터_ID:체력 = MIN(BASE:캐릭터_ID:체력 + MAXBASE:캐릭터_ID:체력 / 10 , MAXBASE:캐릭터_ID:체력)
+		BASE:캐릭터_ID:기력 = MIN(BASE:캐릭터_ID:기력 + MAXBASE:캐릭터_ID:기력 / 3 , MAXBASE:캐릭터_ID:기력)
+		CALL SOURCE_CALC_접촉(캐릭터_ID, MASTER, 200)
+		CFLAG:캐릭터_ID:쇠약 -= 60
+	NEXT
+	TIME += 60
+ELSEIF TIME_PROGRESS(CFLAG:MASTER:314) <= 960 && !CFLAG:MASTER:수면
+	BASE:MASTER:체력 = MIN(BASE:MASTER:체력 + MAXBASE:MASTER:체력 / 10 , MAXBASE:MASTER:체력)
+	BASE:MASTER:기력 = MIN(BASE:MASTER:기력 + MAXBASE:MASTER:기력 / 3 , MAXBASE:MASTER:기력)
+	TIME += 60
+ENDIF
+
+PRINTL 커피 서비스로 소량의 카드 팩도 받았습니다.
+CALL CARD_PACK_SHORI(1,0,3)
+RETURN 1
+
+
+;-------------------------------------------------
+;実行판정
+;-------------------------------------------------
+;コーヒーを飲む
+@COM_ABLE445
+;一括관리
+SIF GLOBAL_COMABLE(445)
+	RETURN RESULT
+SIF CFLAG:우후후 == 2
+	RETURN 0
+SIF !PLAYAREA(CFLAG:MASTER:현재위치)
+	RETURN 0
+RETURN 1

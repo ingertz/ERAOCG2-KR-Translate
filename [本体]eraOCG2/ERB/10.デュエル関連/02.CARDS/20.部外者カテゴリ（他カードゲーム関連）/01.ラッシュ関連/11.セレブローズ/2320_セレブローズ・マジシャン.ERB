@@ -38,6 +38,8 @@ SELECTCASE 参照先
 		RETURN 1500
 	CASE "성별"
 		RETURN 牝性
+	CASE "추가日"
+		RETURN 250720
 ENDSELECT
 
 RETURN 0
@@ -45,9 +47,13 @@ RETURN 0
 @CARD_EXPLANATION_2320(종류)
 #DIM DYNAMIC 종류
 
-CALLFORM CARD_ABLE(10,필드起動)
-PRINTL ①: 자신 필드의 앞면 표시 장착 마법 카드 1장을 묘지로 보내고 발동할 수 있다.
-PRINTL 상대 필드의 레벨 8 이하의 앞면 표시 몬스터 1장을 파괴한다.
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動,묘지起動)
+PRINTL ①：패、필드의 장착 마법 카드 １장을 묘지로 보내고 발동할 수 있다。
+PRINTL 이 카드를 패、묘지에서 특수 소환한다。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②: 패를 1장 버리고, 상대 필드의 레벨8 이하의 몬스터 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 그 몬스터를 파괴한다.
 PRINTL 그 후, 자신의 묘지에 마법 카드가 3장 이상 있을 경우, 이 카드의 공격력은 턴 종료시까지 700 상승한다.
 
 
@@ -66,7 +72,24 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2320)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 필드起動
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,2320)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(듀얼리스트) == 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲마함 = 1
+	효과条件종류 = 装備마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
 	SIF メインフェイズ != 1
@@ -74,17 +97,15 @@ IF 종류 == 필드起動
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	CALL FULLRESET
-	효과範囲마함 = 1
-	효과条件종류 = 装備마법
-	효과条件표시 = 表側표시
+	효과範囲손패 = 1
+	효과条件他所 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
-	효과範囲상대필드 = 1
 	CALLFORM 효과条件レベル_ADV(8,"以下")
 	효과条件표시 = 表側표시
-	효과条件除去種 = 묘지
+	효과範囲상대필드 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -105,28 +126,30 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 
-IF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2320,10)
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2320,1)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과条件종류 = 装備마법
-		효과条件표시 = 表側표시
-		CALL CARD_ADD_GY_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		효과範囲손패 = 1
+		효과範囲마함 = 1
+		효과条件종류 = 装備마법 
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2320,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
 			CALLFORM 효과条件レベル_ADV(8,"以下")
 			효과条件표시 = 表側표시
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
-			IF RESULT == 1
-				CALL FULLRESET
-				효과範囲묘지 = 1
-				효과条件종류 = 마법全般
-				효과条件CNT = 1
-				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-				IF RESULT >= 3
-					CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",700)
-				ENDIF
-			ENDIF
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
 		ENDIF
 	ENDIF
 ENDIF

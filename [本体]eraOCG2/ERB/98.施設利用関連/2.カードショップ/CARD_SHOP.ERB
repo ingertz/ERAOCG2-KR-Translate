@@ -75,6 +75,10 @@ GOTO CHOICE_LOOP
 #DIM DYNAMIC 選択パック_ID
 #DIM DYNAMIC パック_ID
 #DIM DYNAMIC 選択モード
+#DIM DYNAMIC 설정BOX数
+
+
+
 $PACK_LOOP
 CUSTOMDRAWLINE ―
 PRINTFORML 　■팩을 골라주세요
@@ -114,13 +118,57 @@ ELSEIF 選択モード == 2
 ELSEIF 選択モード == 3
 	PRINTFORM 「많이 보충」（100 Box）
 ENDIF
+
+
+PRINTFORM 　　[7777] - 모든 팩을 보충한다
 PRINTL
+
+
+
 CUSTOMDRAWLINE ―
 PRINTL [9999] - 돌아간다
 BINPUT
 IF RESULT == 9999
 	RETURN 0
 
+ELSEIF RESULT == 7777
+	CUSTOMDRAWLINE ―
+	PRINTFORML 보충할 수를 선택해주세요（제２/제４ 일요일에 보충） 
+	CUSTOMDRAWLINE ―
+	PRINTFORML 
+	PRINTFORML [1] - 조금 보충　（ 20박스까지 보충）
+	PRINTFORML [2] - 충분히 보충（ 50박스까지 보충）
+	PRINTFORML [3] - 많이 보충（100박스까지 보충）
+	PRINTFORML 
+	PRINTFORML [9999] - 돌아간다
+	BINPUT
+	IF RESULT == 9999
+		GOTO PACK_LOOP
+	ELSEIF RESULT == 1
+		설정BOX数 = 20
+	ELSEIF RESULT == 2
+		설정BOX数 = 50
+	ELSEIF RESULT == 3
+		설정BOX数 = 100
+	ENDIF
+	VARSET カウンタB
+	FOR カウンタ,0,1000
+		VARSET RESULT
+		VARSET RESULTS
+		CALL CARD_PACK_NAME(カウンタ)
+		IF RESULT == 1
+			パックセット:カウンタB = カウンタ
+			カウンタB ++
+		ENDIF
+	NEXT
+	FOR カウンタ,0,カウンタB
+		パック_ID = パックセット:カウンタ
+		VARSET RESULTS
+		CALL CARD_PACK_NAME(パック_ID)
+		補充BOX数:カウンタ = 설정BOX数
+	NEXT
+
+	GOTO PACK_LOOP
 ELSEIF RESULT == 8888
 	選択モード ++
 	SIF 選択モード > 3
@@ -318,6 +366,7 @@ BINPUT
 IF RESULT == 100
 	RETURN 0
 ELSE
+	캐릭터_ID = RESULT
 	CUSTOMDRAWLINE —
 	PRINTFORML　어느 의상을 입히시겠습니까？
 	CUSTOMDRAWLINE —
@@ -348,6 +397,7 @@ ENDIF
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
 #DIM DYNAMIC カウンタC
+#DIM DYNAMIC カウンタD
 #DIM DYNAMIC 既存パック,2000
 #DIM DYNAMIC 所持パック,2000
 #DIM DYNAMIC 購入BOX数
@@ -358,25 +408,12 @@ ENDIF
 #DIM DYNAMIC 実売却数
 #DIM DYNAMIC 売却金額
 #DIM DYNAMIC シングル価格
-IF ショップ運営中 == 1
-	FOR パック_ID,0,1000
-		SIF 残BOX数:パック_ID <= 0
-			CONTINUE
-		売却変動値 = 来客者数
-		IF MATCH(売れ筋パック,パック_ID)
-			売却変動値 = 売却変動値 * 2
-		ENDIF
-		実売却数 = RAND:売却変動値
-		SIF 実売却数 <= 残BOX数:パック_ID
-			実売却数 = 残BOX数:パック_ID
-		残BOX数:パック_ID -= 実売却数
-		売却金額 += 実売却数 * 1500
+#DIM DYNAMIC 설정可能カード,100000
+#DIM DYNAMIC 설정RND
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC カード_ID
 
-		SIF 残BOX数:パック_ID <= 0
-			残BOX数:パック_ID = 0
-	NEXT
-ENDIF
-VARSET 来客者数
+
 
 ;売れ筋パック설정
 IF DAY:3 == 30
@@ -396,7 +433,62 @@ IF DAY:3 == 30
 	NEXT
 ENDIF
 
+IF ショップ運営中 == 1
+	CUSTOMDRAWLINE ―
+	PRINTFORML ■샵 운영
+	CUSTOMDRAWLINE ―
 
+	FOR パック_ID,0,1000
+		SIF 残BOX数:パック_ID <= 0
+			CONTINUE
+		売却変動値 = 来客者数 + RAND:10
+		IF MATCH(売れ筋パック,パック_ID)
+			売却変動値 = 売却変動値 * 2
+		ENDIF
+		SIF 売却変動値 <= 0
+			CONTINUE
+
+		実売却数 = RAND:売却変動値
+		SIF 実売却数 <= 残BOX数:パック_ID
+			実売却数 = 残BOX数:パック_ID
+
+		残BOX数:パック_ID -= 実売却数
+		売却金額 += 実売却数 * 150
+
+		SIF 残BOX数:パック_ID <= 0
+			残BOX数:パック_ID = 0
+
+	NEXT
+	CUSTOMDRAWLINE ―
+	PRINTFORML 구입한 싱글 카드：
+	IF 来客者数 >= 1
+		FOR カード_ID,1000,100000
+			TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
+			SIF MATCH(RESULTS,"듀얼리스트")
+				CONTINUE
+			TRYCALLFORM CARD_{カード_ID}("生産불가")
+			SIF RESULT == 1
+				CONTINUE
+			TRYCALLFORM CARD_{カード_ID}("외부자")
+			SIF RESULT >= 1
+				CONTINUE
+			CALL CARDPRICE(カード_ID,"レア度")
+			SIF !GROUPMATCH(RESULT,3,4)
+				CONTINUE
+			설정可能カード:カウンタD = カード_ID
+			カウンタD ++
+		NEXT
+		FOR カウンタ,0,来客者数
+			IF RAND:3 == 0
+				설정RND = RAND:カウンタD
+				選択カードID = 설정可能カード:설정RND
+				CALL CARD_GET_SINGLE(選択カードID,1)
+			ENDIF
+		NEXT
+	ENDIF
+
+	CUSTOMDRAWLINE ―
+	PRINTFORML 판매한 싱글 카드：
 FOR カウンタ,0,30
 	VARSET シングル価格
 	;PRINTFORML [{カウンタ}]売れたカード:カウンタ:{売れたカード:カウンタ} / 売出カード:カウンタ:{売出カード:カウンタ}
@@ -414,33 +506,39 @@ FOR カウンタ,0,30
 		売却金額 += シングル価格
 	ENDIF
 NEXT
-VARSET 売れたカード
-
-
-
-IF ショップ運営中 == 1
 	IF DAY:3 == 15 || DAY:3 == 29
+		CUSTOMDRAWLINE ―
+		PRINTFORML 팩 입하：
 		FOR パック_ID,0,1000
 			購入BOX数 = 補充BOX数:パック_ID - 残BOX数:パック_ID
 			SIF 購入BOX数 <= 0
 				CONTINUE
 			
-			支払予定金額 += 購入BOX数 * 1000
+			支払予定金額 += 購入BOX数 * 100
 			IF MONEY < 支払予定金額
 				BREAK
 			ENDIF
-			支払金額 += 購入BOX数 * 1000
+			支払金額 += 購入BOX数 * 100
 			残BOX数:パック_ID = 補充BOX数:パック_ID
 		NEXT
-		PRINTFORML 샵 운영비:{支払金額}
 	ENDIF
-ENDIF
-IF ショップ運営中 == 1
-	PRINTFORML 샵 이익:{売却金額}
-	CALL MONEY_GET(売却金額)
+	CUSTOMDRAWLINE ―
+	PRINTFORML 팩 이익：
+	PRINTFORML 팩이、{実売却数}박스정도 팔렸습니다。
 
-	PRINTFORML 샵 운영비:{支払金額}
+	CUSTOMDRAWLINE ―
+	PRINTFORML 샵 이익:
+	CALL MONEY_GET(売却金額)
+	PRINTFORML 샵 운영비:
 	CALL MONEY_GET(-支払金額)
+	CUSTOMDRAWLINE ―
+	PRINTFORML 샵 총이익:{売却金額 - 支払金額}
+	CUSTOMDRAWLINE ―
 ENDIF
+
+VARSET 売れたカード
+VARSET 来客者数
+VARSET カドショ宣伝
+
 
 RETURN 1

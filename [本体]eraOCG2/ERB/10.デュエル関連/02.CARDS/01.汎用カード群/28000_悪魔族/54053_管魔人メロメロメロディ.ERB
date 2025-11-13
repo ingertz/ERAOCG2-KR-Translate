@@ -1,0 +1,145 @@
+﻿@CARDNAME_54053,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 관마인 멜로멜로멜로디
+	CASE "略称"
+		RESULTS = 멜로멜로멜로디
+	CASE "カテゴリ"
+		RESULTS:0 = 마인
+ENDSELECT
+
+
+@CARD_54053(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1400
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251108
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54053(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 3
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,54053) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_54053(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨３ 몬스터×２
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ①：１턴에 １번、이 카드의 Ｘ소재를 １개 제거하고、자신 필드의 "마인" Ｘ몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 이 턴、그 몬스터는 １번의 배틀 페이즈중에 ２번 공격할 수 있다。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ②：배틀 페이즈동안、자신 필드의 "마인" Ｘ몬스터의 공격력은 필드의 Ｘ몬스터의 수×３００오른다。
+
+
+@CARDCAN_54053(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54053)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF ターン数 == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF バトルフェイズ != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_54053(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54053,10,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 마인
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",RESULT,"戦",2,1)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件종류 = 엑시즈
+	효과条件표시 = 表側표시
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 300
+
+	CALL FULLRESET
+	효과条件カテゴリ = 마인
+	효과条件종류 = 엑시즈
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",攻撃力修正)
+ENDIF

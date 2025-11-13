@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 제트 싱크론
+		RESULTS = 제트 싱크론
 	CASE "略称"
-RESULTS = 제트 싱크로
+		RESULTS = 제트 Sync
 	CASE "カテゴリ"
-RESULTS:0 = 싱크론
+		RESULTS:0 = 싱크론
 ENDSELECT
 
 
@@ -87,7 +87,11 @@ ELSEIF 종류 == 묘지起動
 	CALL CARD_SS_CHECK(듀얼리스트,24032,"묘지")
 	SIF RESULT == 1
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF

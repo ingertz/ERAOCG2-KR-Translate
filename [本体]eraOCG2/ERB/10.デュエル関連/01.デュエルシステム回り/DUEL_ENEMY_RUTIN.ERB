@@ -1,22 +1,4 @@
-﻿@ENEMY_RUTIN_EXSUM(소환カード,カードID,소환法) 
-#DIMS DYNAMIC 듀얼리스트
-#DIM DYNAMIC 소환法
-#DIM DYNAMIC 소환カード
-#DIM DYNAMIC カードID
-#DIM DYNAMIC カウンタ
-;EXモンスターをEX소환するかどうか判断する所（싱크로、엑시즈、링크、초차원）
-
-;基本、自身と同名カードが場にあれば同名カードはEX소환しない
-FOR カウンタ,0,5
-	SIF 상대_필드:カウンタ == -1
-		CONTINUE
-	IF カードID == 상대_필드:カウンタ
-		RETURN 1
-	ENDIF
-NEXT
-RETURN 0
-
-;通常소환、EX소환するより先に、손패、フィールド等から효과발동する時の優先度ボーナスはここ
+﻿;通常소환、EX소환するより先に、손패、フィールド等から효과발동する時の優先度ボーナスはここ
 @ENEMY_RUTIN_ACT_EFFECT(종류,ゾーン,場所,カードID)
 #DIM DYNAMIC カードID
 #DIMS DYNAMIC ゾーン
@@ -72,6 +54,7 @@ RETURN 返し値
 #DIM DYNAMIC 後효과種
 #DIMS DYNAMIC 後ゾーン
 #DIM DYNAMIC 後場所
+
 
 IF 効後_カウンタ != 0
 	後カード_ID = 効後_효과ID:(効後_カウンタ - 1)
@@ -184,6 +167,7 @@ SELECTCASE RESULTS
 		IF 종류 == 필드起動
 			CALL FULLRESET_EXT
 			濾過範囲상대필드 = 1
+			濾過条件除去種 = 묘지
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 0
 				RETURN 1
@@ -372,7 +356,7 @@ SELECTCASE RESULTS
 				CALL FULLRESET_EXT	
 				濾過範囲상대필드 = 1
 				濾過範囲상대마함 = 1
-				;濾過条件除去種 = 묘지
+				濾過条件除去種 = 묘지
 				CALL CARD_CHECK_EXT("상대",0,"",場所)
 				SIF RESULT != 1
 					RETURN 1
@@ -434,6 +418,26 @@ SELECTCASE RESULTS
 			SIF 발동済_2("상대",31224) == 0 && 소환権 >= 0
 				RETURN 1
 		ENDIF
+	CASE "잭나이츠 오르페골 엔릴기르수"
+		IF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+			CALL FULLRESET
+			濾過範囲상대필드 = 1
+			濾過範囲상대마함 = 1
+			濾過条件除去種 = リリース
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT != 1
+				RETURN 0
+		ENDIF
+	CASE "오르페골 롱기르수"
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			CALL FULLRESET
+			濾過範囲상대필드 = 1
+			濾過範囲상대마함 = 1
+			濾過条件除去種 = リリース
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT != 1
+				RETURN 0
+		ENDIF
 ENDSELECT
 
 ;カテゴリチェック
@@ -481,46 +485,102 @@ ENDIF
 RETURN 0
 
 ;カードの素材化を守るための설정
-@ENEMY_RUTIN_SOZAI(ゾーン,지정カード,소환法,소환カード_ID)
+@ENEMY_RUTIN_SOZAI(素材カードID,参照先,場所,소환カード_ID,소환法)
 #DIM DYNAMIC 소환法
 #DIM DYNAMIC 지정カード
 #DIM DYNAMIC 소환カード_ID
 #DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 素材カードID
+#DIM DYNAMIC 素材攻撃力
+#DIM DYNAMIC 소환攻撃力
+#DIM DYNAMIC 修正値
+#DIM DYNAMIC 返し値
 
 SIF ALT条件 >= 1
 	RETURN 0
 	
+; IF GROUPMATCH(参照先,"상대필드","상대마함","상대묘지","상대손패","상대덱","상대제외","상대EX덱")
+; 	修正値 -= 99999
+; ELSEIF GROUPMATCH(参照先,"덱")
+; 	修正値 -= 50000
+; ENDIF
+
 ;基本、소환するモンスターと同名のカードは素材にしないように
-IF GETVAR(@"상대_%ゾーン%:지정カード") == 소환カード_ID
-	RETURN 1
+IF 参照先 == "필드"
+	IF 素材カードID == 소환カード_ID
+		修正値 += 100000
+	ENDIF
+	;特定のカードは素材にしないように
+	TRYCALLFORM CARDNAME_{素材カードID}("名前")
+	SELECTCASE RESULTS
+		CASE "세라의 충혹마"
+			修正値 += 100000
+		CASE "사랑에 빠진 소녀"
+			修正値 += 100000
+		CASE "기간틱 스프라이트"
+			SIF 소환法 == 링크
+				修正値 += 100000
+	ENDSELECT
 ENDIF
 
-IF ゾーン == "필드"
-	SELECTCASE 소환法
-		CASE 의식
 
-		CASE 융합
+SELECTCASE 소환法
+	CASE 의식
 
-		CASE 싱크로
+	CASE 융합
+		IF 参照先 == "필드"
+			修正値 -= 15000
+		ELSEIF 参照先 == "상대제외"
+			修正値 -= 12000
+		ELSEIF 参照先 == "상대묘지"
+			修正値 -= 9000
+		ELSEIF 参照先 == "상대덱"
+			修正値 -= 6000
+		ELSEIF 参照先 == "상대손패"
+			修正値 -= 3000
+		ENDIF
+	CASE 싱크로
 		CALLFORM CARD_{소환カード_ID}("レベル")
 		IF RESULT < 8
-			SIF 상대_MZ_攻:지정カード > 1950
-				RETURN 1
+			SIF 상대_MZ_攻:場所 > 1950
+				修正値 += 98000
 		ENDIF
-		CASE 엑시즈
-		
-		CASE 링크
-			SIF 상대_MZ_攻:지정カード > 1950
-				RETURN 1
+	CASE 엑시즈
+		CALLFORM CARD_{소환カード_ID}("レベル")
+		IF RESULT < 5
+			SIF 상대_MZ_攻:場所 > 1950
+				修正値 += 98000
+		ENDIF
+	CASE 링크
+		SIF 상대_MZ_攻:場所 > 1950
+			修正値 += 98000
 	CASEELSE
-		SIF 상대_MZ_攻:지정カード > 1950
-			RETURN 1
-	ENDSELECT
-	;モンスターゾーンのセラは素材化から守られる
-	SIF 상대_필드:지정カード == 1370
-		RETURN 1
+		SIF 상대_MZ_攻:場所 > 1950
+			修正値 += 98000
+ENDSELECT
+
+;修正値 = -修正値
+
+
+IF GROUPMATCH(参照先,"상대필드")
+	返し値 = -상대_MZ_攻:場所 + 修正値
+ELSEIF GROUPMATCH(参照先,"상대마함","상대묘지","상대손패","상대덱","상대제외","상대EX덱")
+	TRYCALLFORM CARD_{素材カードID}("攻撃力")
+	返し値 = -RESULT + 修正値
+ELSEIF 参照先 == "필드"
+	返し値 = 상대_MZ_攻:場所 + 修正値
+ELSE
+	TRYCALLFORM CARD_{素材カードID}("攻撃力")
+	返し値 = RESULT + 修正値
 ENDIF
-RETURN 0
+
+;TRYCALLFORM CARDNAME_{カードID}("名前")
+;PRINTFORML 素材「%RESULTS%」： 返し値:{返し値}
+
+;評価値が100,000以上だと無視される
+RETURN 返し値
 
 
 ;카드를 패에 加える処理で、どの카드가 選ばれるかの설정。
@@ -962,17 +1022,27 @@ ENDIF
 @ENEMY_RUTIN_EXDECK(カードID)
 #DIM DYNAMIC 소환法
 #DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名前
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 条件달성
 
 SIF カードID <= 0
 	RETURN 0
+
+CALL FULLRESET_EXT
+濾過範囲필드 = 1
+濾過条件ID = カードID
+CALL CARD_CHECK_EXT("상대",0,"",0)
+SIF RESULT == 1
+	RETURN 1
+
 CALLFORM CARDNAME_{カードID}("名前")
-SELECTCASE RESULTS
+カード名前 = %RESULTS%
+SELECTCASE カード名前
 	CASE "마기스토스 메이든 아르테미스"
-		IF 발동済_2("상대",2049)
+		IF 발동済_2("상대",カードID)
 			RETURN 1
-		ELSEIF 발동済_1("상대",2049)
+		ELSEIF 발동済_1("상대",カードID)
 			RETURN 1
 		ENDIF
 	CASE "데스카이저 드래곤"
@@ -1113,13 +1183,10 @@ SELECTCASE RESULTS
 		CALL FULLRESET_EXT
 		SIF ターンプレイヤー == "상대"
 			RETURN 1
-	CASEELSE
-		CALL FULLRESET_EXT
-		濾過範囲필드 = 1
-		濾過条件名前 = %RESULTS%
-		CALL CARD_CHECK_EXT("상대",0,"",0)
-		SIF RESULT == 1
+	CASE "데먼스미스 레퀴엠","데먼스미스 세퀜티아"
+		SIF 발동済_1("상대",カードID)
 			RETURN 1
+	CASEELSE
 
 ENDSELECT
 RETURN 0
@@ -1309,6 +1376,34 @@ SELECTCASE RESULTS
 		RETURN 1000
 	CASE "스타 라이제올"
 		RETURN -1800
+	CASE "I:P 마스카레나"
+		CALL FULLRESET_EXT
+		濾過範囲EX덱 = 1
+		濾過条件固名前:0 = I:P 마스카레나
+		濾過条件固名前:1 = S:P 리틀나이트
+		濾過条件종류:0 = 싱크로
+		濾過条件종류:1 = 엑시즈
+		濾過条件종류:2 = 링크
+		濾過条件소환可 = 2
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT == 1
+			RETURN -800
+	CASE "S:P 리틀나이트"
+		CALL FULLRESET_EXT
+		濾過範囲EX덱 = 1
+		濾過条件固名前:0 = I:P 마스카레나
+		濾過条件固名前:1 = S:P 리틀나이트
+		濾過条件종류:0 = 싱크로
+		濾過条件종류:1 = 엑시즈
+		濾過条件종류:2 = 링크
+		濾過条件소환可 = 2
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT == 1
+			RETURN -1600
+	CASE "신염황제 우리아"
+		RETURN 4000
+	CASE "혼돈환마 아미타일"
+		RETURN 15000
 	CASEELSE
 		IF 손패플래그
 			TRYCALLFORM CARDCAN_{カードID}("상대",소환時,"필드")
@@ -1336,6 +1431,8 @@ RETURN 0
 
 IF GROUPMATCH(参照先,"상대필드","상대마함","상대묘지","상대손패","상대덱","상대제외","상대EX덱")
 	修正値 += 99999
+ELSEIF GROUPMATCH(参照先,"덱")
+	修正値 += 50000
 ENDIF
 
 IF 효과条件손패취득 == 1
@@ -1377,25 +1474,26 @@ IF 효과条件손패취득 == 1
 		CASE "스네이크아이즈 포프루스"
 			SIF 발동済_1("상대",カードID) == 0
 				修正値 += 10000
+		CASE "Live☆Twin 키스킬 프로스트","Live☆Twin 리일라 트리트","Live☆Twin 리일라 스위트"
+			修正値 -= 500
 	ENDSELECT
 ENDIF
 
-TRYCALLFORM CARDNAME_{カードID}("名前")
-SIF MATCH(효과条件優先名前, RESULTS)
-	修正値 += 10000
-
-TRYCALLFORM CARDNAME_{カードID}("名前")
-SIF MATCH(효과条件劣後名前, RESULTS)
-	修正値 += -10000
-
-TRYCALLFORM CARD_{カードID}("レベル")
-SIF MATCH(효과条件優先レベル, RESULT)
-	修正値 += 10000
-
-TRYCALLFORM CARD_{カードID}("攻撃力")
-SIF MATCH(효과条件優先攻撃力, RESULT)
-	修正値 += 10000
-
+;同名ターン１효과を使ってる程に優先度下げ
+SIF 발동済_1("상대",カードID)
+	修正値 -= 500
+SIF 발동済_2("상대",カードID)
+	修正値 -= 500
+SIF 발동済_3("상대",カードID)
+	修正値 -= 500
+SIF 발동済_4("상대",カードID)
+	修正値 -= 500
+SIF 발동済_P1("상대",カードID)
+	修正値 -= 500
+SIF 발동済_P2("상대",カードID)
+	修正値 -= 500
+SIF 발동済_P3("상대",カードID)
+	修正値 -= 500
 
 ;カテゴリで一纏め
 TRYCALLFORM CARDNAME_{カードID}("カテゴリ")
@@ -1526,6 +1624,21 @@ SELECTCASE RESULTS
 		修正値 += 300
 ENDSELECT
 
+TRYCALLFORM CARDNAME_{カードID}("名前")
+SIF MATCH(효과条件優先名前, RESULTS)
+	修正値 += 10000
+
+TRYCALLFORM CARDNAME_{カードID}("名前")
+SIF MATCH(효과条件劣後名前, RESULTS)
+	修正値 += -10000
+
+TRYCALLFORM CARD_{カードID}("レベル")
+SIF MATCH(효과条件優先レベル, RESULT)
+	修正値 += 10000
+
+TRYCALLFORM CARD_{カードID}("攻撃力")
+SIF MATCH(효과条件優先攻撃力, RESULT)
+	修正値 += 10000
 
 $SKIP_RUTIN
 IF 参照先 == "필드"
@@ -1613,6 +1726,28 @@ SELECTCASE RESULTS
 	CASE "흑마술의 부적"
 		지정カード = 1
 ENDSELECT
+
+;손패にハモンがあれば마법を優先的にセット
+CALL FULLRESET_EXT
+濾過範囲손패 = 1
+濾過条件名前 = 번개황제 하몬
+CALL CARD_CHECK_EXT("상대",0,"",0)
+IF RESULT == 1
+	CALLFORM CARDNAME_{カードID}("종류")
+	SIF INRANGE(RESULT,通常마법,速攻마법)
+		지정カード = 1
+ENDIF
+
+;손패にウリアがあれば함정を優先的にセット
+CALL FULLRESET_EXT
+濾過範囲손패 = 1
+濾過条件名前 = 신염황제 우리아
+CALL CARD_CHECK_EXT("상대",0,"",0)
+IF RESULT == 1
+	CALLFORM CARDNAME_{カードID}("종류")
+	SIF INRANGE(RESULT,通常함정,지속함정)
+		지정カード = 1
+ENDIF
 
 
 ;１ターン目ではなく、メインフェイズ２でない場合は、RETURN 0する
@@ -1721,7 +1856,7 @@ ENDIF
 #DIM DYNAMIC 攻撃力修正
 
 
-被攻撃カードID = 자신_필드:攻撃先
+被攻撃カードID = GETVAR(@"%듀얼리스트%_필드:攻撃先")
 SIF 被攻撃カードID <= 0
 	RETURN 0
 
@@ -1766,10 +1901,17 @@ RETURN 攻撃力修正
 #DIM DYNAMIC 상대攻撃力
 #DIM DYNAMIC 상대守備力
 #DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名前
 
 
 CALLFORM CARDNAME_{カードID}("名前")
-SELECTCASE RESULTS
+カード名前 = %RESULTS%
+SELECTCASE カード名前
+	CASE "궁극의 푸른 눈의 영룡"
+		표시形式 = 攻撃표시
+	;ダメージ反射を持つカードは攻撃표시
+	CASE "검의 미캉코 하레", "구슬의 미캉코 후우리", "거울의 미캉코 니니","오오히메의 미캉코", "아라히메의 미캉코", "우즈히메의 미캉코", "No.92 위해신룡 Heart－eartH Dragon", "유벨"
+		표시形式 = 攻撃표시
 CASEELSE
 	CALLFORM CARD_{カードID}("攻撃力")
 	상대攻撃力 = RESULT
@@ -1777,6 +1919,15 @@ CASEELSE
 	상대守備力 = RESULT
 	IF 상대守備力 > 상대攻撃力
 		표시形式 = 守備표시
+	ENDIF
+		;１ターン目で攻撃力と守備力が一緒なら守備표시に
+		IF 상대守備力 == 상대攻撃力 && ターン数 == 1
+			표시形式 = 守備표시
+		ENDIF
+		;EXモンスターじゃなく、攻撃力と守備力が０なら守備표시に
+		TRYCALLFORM CARD_{カードID}("종류")
+		IF RESULT <= 通常モン && 상대守備力 == 0 && 상대攻撃力 == 0
+			표시形式 = 守備표시
 	ENDIF
 ENDSELECT
 

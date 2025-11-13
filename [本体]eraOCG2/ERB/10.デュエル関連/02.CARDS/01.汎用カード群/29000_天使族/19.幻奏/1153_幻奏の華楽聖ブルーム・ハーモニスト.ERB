@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 환주의 화악성블룸 하모니스트
+		RESULTS = 환주의 화악성블룸 하모니스트
 	CASE "略称"
-RESULTS = 환주 하모니스트
+		RESULTS = 환주 하모니스트
 	CASE "カテゴリ"
-RESULTS:0 = 환주
+		RESULTS:0 = 환주
 ENDSELECT
 
 
@@ -47,7 +47,7 @@ RETURN 0
 PRINTL 천사족 몬스터 2장
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,EX소환時)
-PRINTL ①: 이 카드가 링크 소환에 성공했을 경우, 손패를 1장 버리고 발동할 수 있다.
+PRINTL ①: 이 카드가 링크 소환에 성공했을 경우, 패를 1장 버리고 발동할 수 있다.
 PRINTL 덱에서 레벨 4 및 레벨 5의 "환주" 몬스터 2장을 수비 표시로 특수 소환한다.
 PRINTL 이 턴, 자신은 "환주" 몬스터밖에 특수 소환할 수 없다.
 
@@ -89,7 +89,11 @@ SIF RESULT == 1
 IF 종류 == EX소환時
 	SIF 발동済_1(듀얼리스트,1153)
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1

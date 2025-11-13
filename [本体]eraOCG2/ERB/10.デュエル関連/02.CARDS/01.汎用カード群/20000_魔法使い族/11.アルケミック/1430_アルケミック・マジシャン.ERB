@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 알케믹 매지션
+		RESULTS = 알케믹 매지션
 	CASE "略称"
-RESULTS = 알케믹
+		RESULTS = 알케믹
 	CASE "カテゴリ"
-RESULTS:0 = 알케믹
+		RESULTS:0 = 알케믹
 ENDSELECT
 
 
@@ -89,14 +89,16 @@ IF 종류 == 필드起動
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
-		RETURN 0
-	SIF 마함数(듀얼리스트) >= 5
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件종류 = 마법全般
-	효과条件うらら解除 = 1
+	효과条件セット = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

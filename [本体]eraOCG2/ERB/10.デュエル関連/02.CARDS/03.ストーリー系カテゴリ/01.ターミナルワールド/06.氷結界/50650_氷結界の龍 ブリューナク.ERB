@@ -46,7 +46,7 @@ RETURN 0
 
 PRINTL 튜너 ＋ 튜너 이외의 몬스터 1체 이상
 CALLFORM CARD_ABLE(0,필드起動)
-PRINTL ①: 손패를 1장 버리고, 상대 필드의 카드 1장을 대상으로 발동할 수 있다.
+PRINTL ①: 패를 1장 버리고, 상대 필드의 카드 1장을 대상으로 발동할 수 있다.
 PRINTL 그 카드를 패로 되돌린다.
 PRINTL 
 
@@ -95,7 +95,11 @@ IF 종류 == 필드起動
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF

@@ -1,0 +1,158 @@
+﻿@CARDNAME_54054,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 건마인 허미허미허밍
+	CASE "略称"
+		RESULTS = 허미허미허밍
+	CASE "カテゴリ"
+		RESULTS:0 = 마인
+ENDSELECT
+
+
+@CARD_54054(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1100
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251108
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54054(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 3
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,54054) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_54054(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨３ 몬스터×２
+CALLFORM CARD_ABLE(0,EX소환時,특수소환時)
+PRINTL ①：이 카드가 특수 소환에 성공했을 때、자신 묘지의 "마인" Ｘ몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 특수 소환한다。
+PRINTL 그 후、패를 １장까지 버리고、특수 소환한 몬스터의 Ｘ소재를 ［버린 장 수］＋１개 늘린다。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：１턴에 １번、이 카드의 Ｘ소재를 １개 제거하고、자신 필드의 "마인" Ｘ몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 이 턴、그 몬스터는 상대에게 직접 공격할 수 있다。
+
+
+@CARDCAN_54054(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54054)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 마인
+	효과条件종류 = 엑시즈
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF ターン数 == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_54054(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 素材추가数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54054)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 마인
+		효과条件종류 = 엑시즈
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード = カード소환先
+			素材추가数 = 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件任意 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			SIF RESULT == 1
+				素材추가数 ++
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"Ｘ",素材추가数)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54054,10,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 마인
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",RESULT,"直攻",1)
+		ENDIF
+	ENDIF
+ENDIF

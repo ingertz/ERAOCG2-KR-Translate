@@ -30,6 +30,18 @@
 #DIM DYNAMIC 지정グラ番号
 #DIM GDI보존
 
+;설정モード
+;0 :その他
+;1 :조교中の캐릭터표시
+;2 :
+;3 :듀얼中
+;4 :구상설정
+
+;5 :モンスター소환
+;6 :듀얼리스트呼び出し
+;10:カスタム캐릭터
+
+
 $INPUT_LOOP
 ;そのままサムネ화상を취득する
 ;CALL FIND_CHARA_GID(캐릭터_ID)
@@ -192,7 +204,7 @@ PRINTL
 
 PRINTFORM ┃%"",20,LEFT%┃
 
-IF !GROUPMATCH(설정モード,0,3) 
+IF !GROUPMATCH(설정モード,0,3,4) 
 	IF 캐릭터_ID != MASTER
 		PRINT ・
 		VARSET RESULTS
@@ -228,7 +240,7 @@ REND
 PRINTL
 
 PRINTFORM ┃%"",20,LEFT%┃
-IF !GROUPMATCH(설정モード,0,3) 
+IF !GROUPMATCH(설정モード,0,3,4) 
 	IF 캐릭터_ID != MASTER
 		PRINT ・
 		CALL ENEMYDECK_CHECK(캐릭터_ID)
@@ -249,7 +261,7 @@ PRINTL
 
 PRINT ┗━━━━━━━━━━┛
 ;ALT그림がある事の確認
-IF !GROUPMATCH(설정モード,0,3) 
+IF !GROUPMATCH(설정モード,0,3,4) 
 		PRINTBUTTON "・[ALT얼굴 그래픽 설정]", 9002
 		PRINTFORM [설정：{CFLAG:캐릭터_ID:ALT그림 + 1}]
 	PRINT 　　
@@ -262,128 +274,47 @@ PRINTL
 CALL PRINT_STATE_TALENT(캐릭터_ID)
 
 ;CALL PRINT_STATE_CLOTH(캐릭터_ID)
-CALL PRINT_STATE_ABL(캐릭터_ID)
-
-SIF 설정モード != 10
-	CALL PRINT_STATE_SKILL(캐릭터_ID)
-PRINTL
-
-IF 캐릭터_ID != MASTER
-	IF デバッグシステム == 2
+IF 설정モード == 4
+	PRINTL ——————————————————————————————————————————————————————————————————————————————————————————————————
+	REPEAT  8
 		PRINTL
-		PRINTL □ 플래그 □——————————————————————————————————————————————————————————————————————————————————————
-		PRINTFORML 플래그 관리
-		PRINTFORM 동행시간 {CFLAG:캐릭터_ID:동행}/
-		PRINTFORM 데이트플래그 {CFLAG:캐릭터_ID:데이트중}/
-		PRINTFORM 목욕플래그 {CFLAG:캐릭터_ID:목욕}/
-		PRINTFORM 쇠약플래그 {CFLAG:캐릭터_ID:쇠약}/
+	REND
+ELSE
+	CALL PRINT_STATE_ABL(캐릭터_ID)
 
-		PRINTFORM 정액량 {TCVAR:캐릭터_ID:질내정액량}/
-		PRINTFORM 아기씨플래그 {CFLAG:캐릭터_ID:HIT아기씨}/
-		PRINTFORM 임신플래그 {CFLAG:캐릭터_ID:ECE임신플래그}/
-		PRINTFORM 임신경과 {CFLAG:캐릭터_ID:임신경과}/
-		PRINTFORM 소유플래그 {CFLAG:캐릭터_ID:소유함}/
-	ENDIF
-ENDIF
+	SIF 설정モード != 10
+		CALL PRINT_STATE_SKILL(캐릭터_ID)
+	PRINTL
 
+	IF 캐릭터_ID != MASTER
+		IF デバッグシステム == 2
+			PRINTL
+			PRINTL □ 플래그 □——————————————————————————————————————————————————————————————————————————————————————
+			PRINTFORML 플래그 관리
+			PRINTFORM 동행시간 {CFLAG:캐릭터_ID:동행}/
+			PRINTFORM 데이트플래그 {CFLAG:캐릭터_ID:데이트중}/
+			PRINTFORM 목욕플래그 {CFLAG:캐릭터_ID:목욕}/
+			PRINTFORM 쇠약플래그 {CFLAG:캐릭터_ID:쇠약}/
 
-CALL PRINT_STATE_EX(캐릭터_ID)
-PRINTL
-
-PRINTL □ 성적정보 □——————————————————————————————————————————————————————————————————————————————————
-IF CFLAG:캐릭터_ID:호감도 >= 1000 || 캐릭터_ID == MASTER || デバッグシステム >= 1
-	IF TALENT:캐릭터_ID:키스미경험 == 0
-		SETCOLOR C_PINK
-		PRINTFORM ・
-		IF CFLAG:캐릭터_ID:키스상실상대 == MASTER
-			IF CFLAG:캐릭터_ID:첫키스시츄 == 1
-			;접촉조교かつ최면　コントロール奪取状態
-				PRINTFORM 듀얼중、
-				SELECTCASE RAND:2
-				CASE 0
-					PRINTFORM 적이었을 터인 %CALLNAME:MASTER%%TEXTR("에게 세뇌되어/의 최면을 받아")%、
-				CASE 1
-					PRINTFORM 대전상대였던 %CALLNAME:MASTER%에게 세뇌되어、
-				ENDSELECT
-				PRINTFORML %TEXTR("섬겨야할 주인/사랑하는 마스터")%라고 착각하게 한 채로、
-				PRINTFORM 　원래 주인%TEXTR("의 눈 앞에서/을 배신하고")% %CALLNAME:MASTER%
-			ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 2
-			;접촉조교
-				PRINTFORM 듀얼 중에 %CALLNAME:MASTER%에게 %TEXTR("밑에 깔려/끌어안겨져")%、 %CALLNAME:MASTER%
-			ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 3
-			;賭け負け 지는 습관 후에 처녀상실도 생각할수 없었던 건 아니지만……귀찮다！！
-				SELECTCASE RAND:2
-				CASE 0
-					PRINTFORM 가볍게 내기를 승낙한 결과、듀얼에서 패배해、
-				CASE 1
-					PRINTFORM 몸을 건 듀얼에서 패배해、
-				ENDSELECT
-				PRINTFORM 무리하게 %CALLNAME:MASTER%
-			ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 4
-			;逆レ ムラつきが限界でとか酒の勢いでとかは취득めんどそうなのでいったんひとまとめ
-				PRINTFORM %CALLNAME:MASTER%를 밀어 넘어뜨려、자신이 직접 %CALLNAME:MASTER%
-			ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 5
-			;정신조작コマンドの影響下
-				PRINTFORM %CALLNAME:MASTER%의 정신조작을 받아、의지와는 상관없이 %CALLNAME:MASTER%
-			ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 6
-			;발정중접촉조교
-				PRINTFORM 듀얼중、발정에 %TEXTR("쑤시는/따끈해진")% 몸을 %CALLNAME:MASTER%에게 안겨져、그대로 %CALLNAME:MASTER%
-			;ELSEIF 強姦系이벤트 イベのERBにいちいち플래그発生を付けなきゃいけなさそう。めんどい
-		
-			ELSE
-			;その他。特筆する事項がない普通の키스。키스時연모は……これ以上CFLAG추가するのもアレだしひとまずいいや。誰か추가したくなったらいじるヨロシ
-				PRINTFORM %CALLNAME:MASTER%
-			ENDIF
-		ELSEIF CFLAG:캐릭터_ID:키스상실상대 != -1
-			PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:키스상실상대)%
-		ELSE
-			IF CFLAG:캐릭터_ID:첫키스시츄 == 7
-				;裏ショップに売られたりした 現場を見ていないので伝聞口調にしてみたが……直接聞きだしたわけでもないか？違和感出たら変えよう
-				PRINTFORM %CALLNAME:MASTER%의 곁을 떨어지자마자、호사가들 
-		ELSE
-			PRINTFORM 누군가
-			ENDIF
+			PRINTFORM 정액량 {TCVAR:캐릭터_ID:질내정액량}/
+			PRINTFORM 아기씨플래그 {CFLAG:캐릭터_ID:HIT아기씨}/
+			PRINTFORM 임신플래그 {CFLAG:캐릭터_ID:ECE임신플래그}/
+			PRINTFORM 임신경과 {CFLAG:캐릭터_ID:임신경과}/
+			PRINTFORM 소유플래그 {CFLAG:캐릭터_ID:소유함}/
 		ENDIF
-
-		IF CFLAG:캐릭터_ID:키스상실장소 == 1 
-			PRINTFORM 의 입술
-		ELSEIF CFLAG:캐릭터_ID:키스상실장소 == 2 
-			PRINTFORM 의 자지
-		ELSEIF CFLAG:캐릭터_ID:키스상실장소 == 3
-			PRINTFORM 의 보지
-		ELSEIF CFLAG:캐릭터_ID:키스상실장소 == 4 
-			PRINTFORM 의 아날
-		ENDIF
-
-		PRINTFORM 에게 퍼스트키스를 
-		SELECTCASE CFLAG:캐릭터_ID:첫키스시츄
-		CASE 1
-			PRINTFORM 바쳐버렸다。
-		CASE 2
-			PRINTFORM 바쳤다。
-		CASE 3
-			PRINTFORM %TEXTR("바쳐져버렸/빼앗겼")%다。
-		CASE 4
-			PRINTFORM 바쳤다。
-		CASE 5
-			PRINTFORM 바쳐버렸다。
-		CASE 6
-			PRINTFORM 바쳤다。
-		CASE 7
-			PRINTFORM %TEXTR("빼앗겼/바치게했")%다는 듯하다……。
-		CASEELSE
-			PRINTFORM 바쳤다。
-		ENDSELECT
-		PRINTL
-	ELSE
-		PRINTL ・미경험❤
 	ENDIF
-	IF TALENT:캐릭터_ID:성별 & 1
-		IF TALENT:캐릭터_ID:처녀 == 0
-			PRINT ・
-			IF CFLAG:캐릭터_ID:처녀버린상대 == MASTER
-				;シチュのCFLAGはTRACHECKのLOST_VIRGIN処理でつける
-				IF CFLAG:캐릭터_ID:처녀버린시츄 == 1
+
+
+	CALL PRINT_STATE_EX(캐릭터_ID)
+	PRINTL
+
+	PRINTL □ 성적정보 □——————————————————————————————————————————————————————————————————————————————————
+	IF CFLAG:캐릭터_ID:호감도 >= 1000 || 캐릭터_ID == MASTER || デバッグシステム >= 1
+		IF TALENT:캐릭터_ID:키스미경험 == 0
+			SETCOLOR C_PINK
+			PRINTFORM ・
+			IF CFLAG:캐릭터_ID:키스상실상대 == MASTER
+				IF CFLAG:캐릭터_ID:첫키스시츄 == 1
 				;접촉조교かつ최면　コントロール奪取状態
 					PRINTFORM 듀얼중、
 					SELECTCASE RAND:2
@@ -392,130 +323,219 @@ IF CFLAG:캐릭터_ID:호감도 >= 1000 || 캐릭터_ID == MASTER || デバッ�
 					CASE 1
 						PRINTFORM 대전상대였던 %CALLNAME:MASTER%에게 세뇌되어、
 					ENDSELECT
-					PRINTFORML %TEXTR("섬겨야할 주인/사랑하는 마스터")%라고 착각당한 채、
-					PRINTFORM 　원래 주인%TEXTR("의 눈앞에서/을 배신하고")% %CALLNAME:MASTER%에게 처녀를 바쳐버렸다。
-				ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 2
+					PRINTFORML %TEXTR("섬겨야할 주인/사랑하는 마스터")%라고 착각하게 한 채로、
+					PRINTFORM 　원래 주인%TEXTR("의 눈 앞에서/을 배신하고")% %CALLNAME:MASTER%
+				ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 2
 				;접촉조교
-						IF CFLAG:캐릭터_ID:처녀버린시연모 >= 2
-							PRINTFORM %CALLNAME:MASTER%에게 듀얼 중에 안겨져、그대로 처녀를 바쳤다。
-						ELSE
-							PRINTFORM 듀얼 중에 %CALLNAME:MASTER%에게 %TEXTR("밑에 깔려/안겨져")%、거역할 수 없다는 점을 틈타 그대로 처녀를 %TEXTR("바쳐/빼앗겨/흩날려")%버렸다。
-						ENDIF
-				ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 3
-				;賭け負け 패배버릇後に처녀상실も考えなくもなかったけど……めんどい！！
+					PRINTFORM 듀얼 중에 %CALLNAME:MASTER%에게 %TEXTR("밑에 깔려/끌어안겨져")%、 %CALLNAME:MASTER%
+				ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 3
+				;賭け負け 지는 습관 후에 처녀상실도 생각할수 없었던 건 아니지만……귀찮다！！
 					SELECTCASE RAND:2
 					CASE 0
 						PRINTFORM 가볍게 내기를 승낙한 결과、듀얼에서 패배해、
 					CASE 1
 						PRINTFORM 몸을 건 듀얼에서 패배해、
 					ENDSELECT
-					PRINTFORM %CALLNAME:MASTER%에게 %TEXTR("무리하게/범해져서")% 처녀를 %TEXTR("바쳐버렸/빼았겼/흩날려버렸")%다。
-				ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 4
+					PRINTFORM 무리하게 %CALLNAME:MASTER%
+				ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 4
 				;逆レ ムラつきが限界でとか酒の勢いでとかは취득めんどそうなのでいったんひとまとめ
-					IF CFLAG:캐릭터_ID:처녀버린시연모 == 3
-						PRINTFORM 사랑하는 %CALLNAME:MASTER%을 넘어뜨려、자신이 직접 처녀를 바쳤다。
-					ELSEIF CFLAG:캐릭터_ID:처녀버린시연모 == 2
-						PRINTFORM 가장좋아하는 %CALLNAME:MASTER%를 넘어뜨려、자신이 직접 처녀를 바쳤다。
-					ELSE
-						PRINTFORM %CALLNAME:MASTER%를 넘어뜨려、자신이 직접 처녀를 바쳤다。
-					ENDIF
-				ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 5
+					PRINTFORM %CALLNAME:MASTER%를 밀어 넘어뜨려、자신이 직접 %CALLNAME:MASTER%
+				ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 5
 				;정신조작コマンドの影響下
-					PRINTFORM %CALLNAME:MASTER%의 정신조작을 받아、의지와 상관없이 %CALLNAME:MASTER%에게 처녀를 %TEXTR("바쳐버렸/빼앗겼/흩날려버렸")%다。
-				ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 6
+					PRINTFORM %CALLNAME:MASTER%의 정신조작을 받아、의지와는 상관없이 %CALLNAME:MASTER%
+				ELSEIF CFLAG:캐릭터_ID:첫키스시츄 == 6
 				;발정중접촉조교
-					PRINTFORM 듀얼중、발정에 %TEXTR("쑤시는/뜨거워진")%몸을 %CALLNAME:MASTER%에게
-					IF  CFLAG:캐릭터_ID:처녀버린시연모 >= 2
-						PRINTFORM 끌어안겨져、그대로 처녀를 바쳤다。
-					ELSE
-						PRINTFORM 밑에 깔려、흘러가는대로 처녀를 %TEXTR("바쳐/빼앗겨/흩날려")%버렸다。
-					ENDIF
-;				ELSEIF エネコン기승위 処理見てみたけどま～たこれだけのために新플래그要求されそうなのでノータッチ
-;				ELSEIF 強姦系이벤트 イベのERBにいちいち플래그発生を付けなきゃいけなさそう。めんどい
+					PRINTFORM 듀얼중、발정에 %TEXTR("쑤시는/따끈해진")% 몸을 %CALLNAME:MASTER%에게 안겨져、그대로 %CALLNAME:MASTER%
+				;ELSEIF 強姦系이벤트 イベのERBにいちいち플래그発生を付けなきゃいけなさそう。めんどい
+			
 				ELSE
-				;その他。特筆する事項がない普通の우후후。処理入れてないからビッグコア의 이벤트での처녀상실もここになる
-					IF CFLAG:캐릭터_ID:처녀버린시연모 == 3
-						PRINTFORM 사랑하는 %CALLNAME:MASTER%에게 처녀를 바쳤다。
-					ELSEIF CFLAG:캐릭터_ID:처녀버린시연모 == 2
-						PRINTFORM 가장 좋아하는 %CALLNAME:MASTER%에게 처녀를 바쳤다。
-					ELSE
-						PRINTFORM 흘러가는대로 %CALLNAME:MASTER%에게 %TEXTR("끌어안겨져/몸을 허락해")%、처녀를 바쳤다。
-					ENDIF
+				;その他。特筆する事項がない普通の키스。키스時연모は……これ以上CFLAG추가するのもアレだしひとまずいいや。誰か추가したくなったらいじるヨロシ
+					PRINTFORM %CALLNAME:MASTER%
 				ENDIF
-			ELSEIF CFLAG:캐릭터_ID:처녀버린상대 == -1
-			;-1は初期値。つまりLOST_VIRGINの처녀버린상대의 処理を通っていない非처녀
-			;最初から非처녀である場合のほか、裏ショップに売られたりサバイバルデュエルでベットされたりして手元を離れたりしたときはLOST_VIRGINを経由せずに처녀を失うので現状ここ
-			;将来的には처녀버린상대에게 好事家とかを入れる場合があるかもしれないので、その場合は都度別に설정してください
-				IF CFLAG:캐릭터_ID:처녀버린시츄 == 7
-				;裏ショップに売られたりした 現場を見ていないので伝聞口調にしてみたが……直接聞きだしたわけでもないか？違和感出たら変えよう
-					PRINTFORM %CALLNAME:MASTER%의 곁을 떠나자마자、호사가들%TEXTR("에게 멋대로 범해져/에게 마구 사용되어/의 장난감이 되어")%、처녀를 빼앗겨버렸다는 것 같다……。
+			ELSEIF CFLAG:캐릭터_ID:키스상실상대 != -1
+				PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:키스상실상대)%
+			ELSE
+				IF CFLAG:캐릭터_ID:첫키스시츄 == 7
+					;裏ショップに売られたりした 現場を見ていないので伝聞口調にしてみたが……直接聞きだしたわけでもないか？違和感出たら変えよう
+					PRINTFORM %CALLNAME:MASTER%의 곁을 떨어지자마자、호사가들 
+			ELSE
+				PRINTFORM 누군가
+				ENDIF
+			ENDIF
+
+			IF CFLAG:캐릭터_ID:키스상실장소 == 1 
+				PRINTFORM 의 입술
+			ELSEIF CFLAG:캐릭터_ID:키스상실장소 == 2 
+				PRINTFORM 의 자지
+			ELSEIF CFLAG:캐릭터_ID:키스상실장소 == 3
+				PRINTFORM 의 보지
+			ELSEIF CFLAG:캐릭터_ID:키스상실장소 == 4 
+				PRINTFORM 의 아날
+			ENDIF
+
+			PRINTFORM 에게 퍼스트키스를 
+			SELECTCASE CFLAG:캐릭터_ID:첫키스시츄
+			CASE 1
+				PRINTFORM 바쳐버렸다。
+			CASE 2
+				PRINTFORM 바쳤다。
+			CASE 3
+				PRINTFORM %TEXTR("바쳐져버렸/빼앗겼")%다。
+			CASE 4
+				PRINTFORM 바쳤다。
+			CASE 5
+				PRINTFORM 바쳐버렸다。
+			CASE 6
+				PRINTFORM 바쳤다。
+			CASE 7
+				PRINTFORM %TEXTR("빼앗겼/바치게했")%다는 듯하다……。
+			CASEELSE
+				PRINTFORM 바쳤다。
+			ENDSELECT
+			PRINTL
+		ELSE
+			PRINTL ・미경험❤
+		ENDIF
+		IF TALENT:캐릭터_ID:성별 & 1
+			IF TALENT:캐릭터_ID:처녀 == 0
+				PRINT ・
+				IF CFLAG:캐릭터_ID:처녀버린상대 == MASTER
+					;シチュのCFLAGはTRACHECKのLOST_VIRGIN処理でつける
+					IF CFLAG:캐릭터_ID:처녀버린시츄 == 1
+					;접촉조교かつ최면　コントロール奪取状態
+						PRINTFORM 듀얼중、
+						SELECTCASE RAND:2
+						CASE 0
+							PRINTFORM 적이었을 터인 %CALLNAME:MASTER%%TEXTR("에게 세뇌되어/의 최면을 받아")%、
+						CASE 1
+							PRINTFORM 대전상대였던 %CALLNAME:MASTER%에게 세뇌되어、
+						ENDSELECT
+						PRINTFORML %TEXTR("섬겨야할 주인/사랑하는 마스터")%라고 착각당한 채、
+						PRINTFORM 　원래 주인%TEXTR("의 눈앞에서/을 배신하고")% %CALLNAME:MASTER%에게 처녀를 바쳐버렸다。
+					ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 2
+					;접촉조교
+							IF CFLAG:캐릭터_ID:처녀버린시연모 >= 2
+								PRINTFORM %CALLNAME:MASTER%에게 듀얼 중에 안겨져、그대로 처녀를 바쳤다。
+							ELSE
+								PRINTFORM 듀얼 중에 %CALLNAME:MASTER%에게 %TEXTR("밑에 깔려/안겨져")%、거역할 수 없다는 점을 틈타 그대로 처녀를 %TEXTR("바쳐/빼앗겨/흩날려")%버렸다。
+							ENDIF
+					ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 3
+					;賭け負け 패배버릇後に처녀상실も考えなくもなかったけど……めんどい！！
+						SELECTCASE RAND:2
+						CASE 0
+							PRINTFORM 가볍게 내기를 승낙한 결과、듀얼에서 패배해、
+						CASE 1
+							PRINTFORM 몸을 건 듀얼에서 패배해、
+						ENDSELECT
+						PRINTFORM %CALLNAME:MASTER%에게 %TEXTR("무리하게/범해져서")% 처녀를 %TEXTR("바쳐버렸/빼았겼/흩날려버렸")%다。
+					ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 4
+					;逆レ ムラつきが限界でとか酒の勢いでとかは취득めんどそうなのでいったんひとまとめ
+						IF CFLAG:캐릭터_ID:처녀버린시연모 == 3
+							PRINTFORM 사랑하는 %CALLNAME:MASTER%을 넘어뜨려、자신이 직접 처녀를 바쳤다。
+						ELSEIF CFLAG:캐릭터_ID:처녀버린시연모 == 2
+							PRINTFORM 가장좋아하는 %CALLNAME:MASTER%를 넘어뜨려、자신이 직접 처녀를 바쳤다。
+						ELSE
+							PRINTFORM %CALLNAME:MASTER%를 넘어뜨려、자신이 직접 처녀를 바쳤다。
+						ENDIF
+					ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 5
+					;정신조작コマンドの影響下
+						PRINTFORM %CALLNAME:MASTER%의 정신조작을 받아、의지와 상관없이 %CALLNAME:MASTER%에게 처녀를 %TEXTR("바쳐버렸/빼앗겼/흩날려버렸")%다。
+					ELSEIF CFLAG:캐릭터_ID:처녀버린시츄 == 6
+					;발정중접촉조교
+						PRINTFORM 듀얼중、발정에 %TEXTR("쑤시는/뜨거워진")%몸을 %CALLNAME:MASTER%에게
+						IF  CFLAG:캐릭터_ID:처녀버린시연모 >= 2
+							PRINTFORM 끌어안겨져、그대로 처녀를 바쳤다。
+						ELSE
+							PRINTFORM 밑에 깔려、흘러가는대로 처녀를 %TEXTR("바쳐/빼앗겨/흩날려")%버렸다。
+						ENDIF
+	;				ELSEIF エネコン기승위 処理見てみたけどま～たこれだけのために新플래그要求されそうなのでノータッチ
+	;				ELSEIF 強姦系이벤트 イベのERBにいちいち플래그発生を付けなきゃいけなさそう。めんどい
+					ELSE
+					;その他。特筆する事項がない普通の우후후。処理入れてないからビッグコア의 이벤트での처녀상실もここになる
+						IF CFLAG:캐릭터_ID:처녀버린시연모 == 3
+							PRINTFORM 사랑하는 %CALLNAME:MASTER%에게 처녀를 바쳤다。
+						ELSEIF CFLAG:캐릭터_ID:처녀버린시연모 == 2
+							PRINTFORM 가장 좋아하는 %CALLNAME:MASTER%에게 처녀를 바쳤다。
+						ELSE
+							PRINTFORM 흘러가는대로 %CALLNAME:MASTER%에게 %TEXTR("끌어안겨져/몸을 허락해")%、처녀를 바쳤다。
+						ENDIF
+					ENDIF
+				ELSEIF CFLAG:캐릭터_ID:처녀버린상대 == -1
+				;-1は初期値。つまりLOST_VIRGINの처녀버린상대의 処理を通っていない非처녀
+				;最初から非처녀である場合のほか、裏ショップに売られたりサバイバルデュエルでベットされたりして手元を離れたりしたときはLOST_VIRGINを経由せずに처녀を失うので現状ここ
+				;将来的には처녀버린상대에게 好事家とかを入れる場合があるかもしれないので、その場合は都度別に설정してください
+					IF CFLAG:캐릭터_ID:처녀버린시츄 == 7
+					;裏ショップに売られたりした 現場を見ていないので伝聞口調にしてみたが……直接聞きだしたわけでもないか？違和感出たら変えよう
+						PRINTFORM %CALLNAME:MASTER%의 곁을 떠나자마자、호사가들%TEXTR("에게 멋대로 범해져/에게 마구 사용되어/의 장난감이 되어")%、처녀를 빼앗겨버렸다는 것 같다……。
+					ELSE
+						PRINTFORM 누군가
+						PRINTFORM 에게 처녀를 바쳤다。
+					ENDIF
+				ELSEIF CFLAG:캐릭터_ID:처녀버린상대 != -1
+				;あなたでも初期値でもない場合。誰かに憑依してたとか？
+					PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:처녀버린상대)%
+					PRINTFORM 에게 처녀를 바쳤다。
 				ELSE
+				;念のため
 					PRINTFORM 누군가
 					PRINTFORM 에게 처녀를 바쳤다。
 				ENDIF
-			ELSEIF CFLAG:캐릭터_ID:처녀버린상대 != -1
-			;あなたでも初期値でもない場合。誰かに憑依してたとか？
-				PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:처녀버린상대)%
-				PRINTFORM 에게 처녀를 바쳤다。
+				PRINTL
 			ELSE
-			;念のため
-				PRINTFORM 누군가
-				PRINTFORM 에게 처녀를 바쳤다。
+				PRINTL ・미개통❤
 			ENDIF
+		ELSEIF TALENT:캐릭터_ID:성별 == 2 && CFLAG:캐릭터_ID:처녀버린상대 == 0
+			PRINT ・
+			PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:처녀버린상대)%
+			PRINTFORM 에게 처녀를 바쳤다。
 			PRINTL
-		ELSE
-			PRINTL ・미개통❤
 		ENDIF
-	ELSEIF TALENT:캐릭터_ID:성별 == 2 && CFLAG:캐릭터_ID:처녀버린상대 == 0
-		PRINT ・
-		PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:처녀버린상대)%
-		PRINTFORM 에게 처녀를 바쳤다。
-		PRINTL
-	ENDIF
-	IF TALENT:캐릭터_ID:동정 != 0 && HAS_PENIS(캐릭터_ID)
-		PRINTFORM ・
-		IF CFLAG:캐릭터_ID:동정버린상대 != -1
-			PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:동정버린상대)%
-		ELSE
-			PRINTFORM 누군가
+		IF TALENT:캐릭터_ID:동정 != 0 && HAS_PENIS(캐릭터_ID)
+			PRINTFORM ・
+			IF CFLAG:캐릭터_ID:동정버린상대 != -1
+				PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:동정버린상대)%
+			ELSE
+				PRINTFORM 누군가
+			ENDIF
+			PRINTFORM 에게 동정을 빼앗겨버렸다。
+			PRINTL
 		ENDIF
-		PRINTFORM 에게 동정을 빼앗겨버렸다。
-		PRINTL
-	ENDIF
-	IF 캐릭터_ID == MASTER && 아이의数 > 0
-		;ふたなりとか性転換とかでありえそうなので
-		IF EXP:캐릭터_ID:출산경험 > 0 && (아이의数 > EXP:캐릭터_ID:출산경험)
-			PRINTFORML ・지금까지 {아이의数 - EXP:캐릭터_ID:출산경험}명의 아이를 낳게 했고、{EXP:캐릭터_ID:출산경험}명의 아이를 낳았다。
+		IF 캐릭터_ID == MASTER && 아이의数 > 0
+			;ふたなりとか性転換とかでありえそうなので
+			IF EXP:캐릭터_ID:출산경험 > 0 && (아이의数 > EXP:캐릭터_ID:출산경험)
+				PRINTFORML ・지금까지 {아이의数 - EXP:캐릭터_ID:출산경험}명의 아이를 낳게 했고、{EXP:캐릭터_ID:출산경험}명의 아이를 낳았다。
+			ELSEIF EXP:캐릭터_ID:출산경험 > 0
+				PRINTFORML ・지금까지 {EXP:캐릭터_ID:출산경험}명의 아이를 낳았다。
+			ELSE
+				PRINTFORML ・지금까지 {아이의数}명의 아이를 낳게 했다。
+			ENDIF
 		ELSEIF EXP:캐릭터_ID:출산경험 > 0
 			PRINTFORML ・지금까지 {EXP:캐릭터_ID:출산경험}명의 아이를 낳았다。
-		ELSE
-			PRINTFORML ・지금까지 {아이의数}명의 아이를 낳게 했다。
 		ENDIF
-	ELSEIF EXP:캐릭터_ID:출산경험 > 0
-		PRINTFORML ・지금까지 {EXP:캐릭터_ID:출산경험}명의 아이를 낳았다。
-	ENDIF
-	IF TALENT:캐릭터_ID:성별 && TALENT:캐릭터_ID:임신
-		PRINTFORM ・
-		IF CFLAG:캐릭터_ID:HIT아기씨 != -1
-			PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:HIT아기씨)%
-		ELSE
-			PRINTFORM 누군가
+		IF TALENT:캐릭터_ID:성별 && TALENT:캐릭터_ID:임신
+			PRINTFORM ・
+			IF CFLAG:캐릭터_ID:HIT아기씨 != -1
+				PRINTFORM %CALLNAME:(CFLAG:캐릭터_ID:HIT아기씨)%
+			ELSE
+				PRINTFORM 누군가
+			ENDIF
+			PRINTFORM 와의 아이를 임신 중。
+			PRINTL
 		ENDIF
-		PRINTFORM 와의 아이를 임신 중。
+		RESETCOLOR
+		CALL PRINT_STATE_EXP(캐릭터_ID)
 		PRINTL
+
+	ELSE
+		PRINTFORML ・호감도：({CFLAG:캐릭터_ID:호감도}/1000)필요。
 	ENDIF
-	RESETCOLOR
-	CALL PRINT_STATE_EXP(캐릭터_ID)
-	PRINTL
 
-ELSE
-	PRINTFORML ・호감도：({CFLAG:캐릭터_ID:호감도}/1000)필요。
-ENDIF
+	IF TALENT:캐릭터_ID:생성자 >= 1
+		PRINTL □ 출신정보 □——————————————————————————————————————————————————————————————————————————————————
+		PRINTFORML 부친：%NAME:(CFLAG:캐릭터_ID:부친종)%
+		PRINTFORML 모친：%NAME:(CFLAG:캐릭터_ID:모친종)%
+	ENDIF
 
-IF TALENT:캐릭터_ID:생성자 >= 1
-	PRINTL □ 출신정보 □——————————————————————————————————————————————————————————————————————————————————
-	PRINTFORML 부친：%NAME:(CFLAG:캐릭터_ID:부친종)%
-	PRINTFORML 모친：%NAME:(CFLAG:캐릭터_ID:모친종)%
 ENDIF
 
 
@@ -554,7 +574,7 @@ IF 설정モード == 1
 		ENDIF
 	ENDIF
 	PRINTBUTTON "[확인 종료]", 0
-ELSEIF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
+ELSEIF GROUPMATCH(설정モード,2,5,6)
 	CUSTOMDRAWLINE —
 	PRINTBUTTON "[이전 캐릭터]", 10
 	PRINTFORM %"",40,RIGHT%
@@ -591,116 +611,6 @@ ELSEIF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
 
 ENDIF
 
-[SKIPSTART]
-IF 캐릭터_ID != MASTER && 설정モード == 1
-	VARSET 現在値
-
-	;PRINTFORML 현재치　TARGET:{現在値}
-	BINPUT
-	$INPUT_SELECT
-	SELECTCASE RESULT
-	CASE 20 TO 30
-		RESULT -= 20
-		IF お気に入り:RESULT != 캐릭터_ID
-			お気に入り:RESULT = 캐릭터_ID
-		ELSEIF お気に入り:RESULT == 캐릭터_ID
-			お気に入り:RESULT = 0
-		ENDIF
-	CASE 10
-
-	CASE 11
-
-	CASE 9000
-		TRYCALLFORM CARD_UI(NO:캐릭터_ID,1);　덱편집画面でのカード情報
-
-	CASE 9001
-		CALL ENEMYDECK_CHECK(캐릭터_ID)
-		SIF RESULT != 0
-			CALL CARD_DECK_CHECK(RESULT,4)
-
-
-	CASE 9002
-		;現在値＋ALT絵がある場合に설정。
-		IF ENUMFILES("RESOURCES/CHARA", @"{NO:캐릭터_ID}_FACE_{(CFLAG:캐릭터_ID:ALT그림 + 2)}*")
-			CFLAG:캐릭터_ID:ALT그림 = 1
-		ELSE
-			CFLAG:캐릭터_ID:ALT그림 = 0
-		ENDIF
-	CASE 9003
-		CALL FIND_CHARA_GID(캐릭터_ID,1)
-		グラ数 = RESULT
-		IF グラ数 <= 0
-			PRINTFORML 설정できる화상がありません。
-			GOTO INPUT_LOOP
-		ENDIF
-		FOR カウンタ,0,20
-			ALT_グラID:カウンタ = RESULT:(カウンタ + 1)
-		NEXT
-		PRINTFORML 설정하고 싶은 화상을 선택해주세요
-		FOR カウンタ,0,グラ数
-			IF GROUPMATCH(カウンタ,7,14,21)
-				FOR カウンタB,0,10 
-					PRINTL
-				NEXT
-			ENDIF
-			CALL PRINT_STATE_DUEL(ALT_グラID:カウンタ,0,2)
-		NEXT
-		FOR カウンタ,0,10 
-			PRINTL
-		NEXT
-		IF ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_2*")
-			PRINTFORML 카드ALT화상：
-			FOR カウンタ,0,10
-				SIF !ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_{(カウンタ + 2)}*")
-					CONTINUE
-				PRINTFORML ここまでOK、{NO:캐릭터_ID}/{(カウンタ + 2)}
-				CALL PRINT_STATE_DUEL(NO:캐릭터_ID,0,2,カウンタ + 2)
-			NEXT
-			FOR カウンタ,0,グラ数
-				SIF !ENUMFILES("RESOURCES/DUEL", @"{NO:캐릭터_ID}_DUEL_{(カウンタ + 2)}*")
-					CONTINUE
-				IF GROUPMATCH(カウンタ,7,14,21)
-					FOR カウンタB,0,10 
-				PRINTL
-			NEXT
-		ENDIF
-		CALL PRINT_STATE_DUEL(ALT_グラID:カウンタ,0,2)
-			NEXT
-		ENDIF
-		FOR カウンタ,0,10 
-			PRINTL
-		NEXT
-		BINPUT
-		IF NO:캐릭터_ID == RESULT
-			CFLAG:캐릭터_ID:그래픽설정 = 0
-		ELSE
-			CFLAG:캐릭터_ID:그래픽설정 = RESULT
-		ENDIF
-
-	CASE 9010
-		CALL SHOW_GRAPHICS(캐릭터_ID,2021,6)
-		WAIT
-	CASE 9011
-		IF CFLAG:캐릭터_ID:그래픽설정 >= 100000
-			CALL PRINT_STATE_DUEL(NO:캐릭터_ID,2,3,지정グラ番号)
-		ELSE
-			IF TALENT:캐릭터_ID:모브 > 0
-				CALL PRINT_STATE_MOBS(캐릭터_ID,2)
-			ELSE
-				CALL PRINT_STATE_DUEL(サムネ_ID,2,3)
-			ENDIF
-		ENDIF
-		WAIT
-
-
-
-	CASE 0
-		RETURN 1
-	ENDSELECT
-
-ENDIF
-[SKIPEND]
-;IF 설정モード == 2 || 설정モード == 5 || 설정モード == 6
 IF 설정モード == 1
 	FOR カウンタ,1,CHARANUM
 		SIF TARGET:カウンタ <= 0
@@ -1185,21 +1095,16 @@ SETCOLOR C_L_GRAY
 PRINT  　각　인 ：
 RESETCOLOR
 PRINT_MARK 캐릭터_ID
-[SKIPSTART]
-CALL PREPARE_DUEL_THUMBNAIL(캐릭터_ID)
-SRC_WIDTH = GWIDTH(22)
-SRC_HEIGHT = GHEIGHT(22)
-LOCALS = <img src='CROP_THUMBNAIL' srcb='' height='{400}'>
-HTML_PRINT LOCALS,30
-SETCOLOR C_L_GRAY
-PRINT 　등장작품：
-RESETCOLOR
-IF GROUPMATCH(CSTR:캐릭터_ID:등장작품,"","/")
-	PRINTFORML 유희왕 시리즈
-ELSE
-	PRINTFORML %CSTR:캐릭터_ID:등장작품%
+
+IF TALENT:캐릭터_ID:구상성격 >= 1
+	SETCOLOR C_L_GRAY
+	PRINT 　등장작품：
+	RESETCOLOR
+	TRYCALLFORM M_HNYO_K{TALENT:캐릭터_ID:구상성격}()
+	RESULTS = [%RESULTS%]
+	PRINTFORM %RESULTS,25,LEFT%
+	PRINTL
 ENDIF
-[SKIPEND]
 
 終了時LCOUNT = LINECOUNT
 IF 終了時LCOUNT - 開始時LCOUNT < 12

@@ -27,7 +27,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 초차원
 	CASE "속성"
 		RETURN 땅속성
@@ -74,7 +73,7 @@ CALLFORM CARD_ABLE(0,攻撃後誘発)
 PRINTL ①: 이 카드가 공격을 실행한 데미지 스텝 종료 시에 손패를 2장 버리고 발동할 수 있다.
 PRINTL 자신의 필드의 몬스터는 모든 공격 가능 횟수를 1회로 한다.
 CALLFORM CARD_ABLE(0,攻撃時強制誘発)
-PRINTL ②: 자신의 '노바 그래플러' 몬스터가 공격 선언할 때마다,
+PRINTL ②: 자신의 "노바 그래플러" 몬스터가 공격 선언할 때마다,
 PRINTL 이 카드의 공격력은 턴 종료 시까지 500 포인트 올린다.
 
 
@@ -105,7 +104,11 @@ ELSEIF 종류 == 攻撃後誘発
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트) != 場所
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 2
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 攻撃時強制誘発

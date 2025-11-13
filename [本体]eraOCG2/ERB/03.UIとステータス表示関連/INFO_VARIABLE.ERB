@@ -9,45 +9,46 @@ BAR 체력値,MAXBASE:0,32
 PRINTFORML ({체력値}/{MAXBASE:0})
 
 @STAIN_INFO
-
+#DIM DYNAMIC カウンタ
 ;主人の汚れ
 PRINTFORML 【 %CALLNAME:MASTER%의 얼룩】
-REPEAT 6
-	SIF COUNT == 2 && HAS_PENIS(MASTER) == 0
+FOR カウンタ,0,6
+	SIF カウンタ == 2 && HAS_PENIS(MASTER) == 0
 		CONTINUE
-	SIF COUNT == 3 && !(TALENT:MASTER:성별 & 1)
+	SIF カウンタ == 3 && !(TALENT:MASTER:성별 & 1)
 		CONTINUE
-	SIF COUNT == 5 && !(TALENT:MASTER:성별 & 1)
+	SIF カウンタ == 5 && !(TALENT:MASTER:성별 & 1)
 		CONTINUE
-	IF COUNT == 0
+	IF カウンタ == 0
 		PRINTFORM 　입：
-	ELSEIF COUNT == 1
+	ELSEIF カウンタ == 1
 		PRINTFORM 　손：
-	ELSEIF COUNT == 2
+	ELSEIF カウンタ == 2
 		PRINTFORM 　Ｐ：
-	ELSEIF COUNT == 3
+	ELSEIF カウンタ == 3
 		PRINTFORM 　Ｖ：
-	ELSEIF COUNT == 4
+	ELSEIF カウンタ == 4
 		PRINTFORM 　Ａ：
-	ELSEIF COUNT == 5
+	ELSEIF カウンタ == 5
 		PRINTFORM 　Ｂ：
 	ENDIF
-	SIF STAIN:MASTER:COUNT & 1
+	SIF STAIN:MASTER:カウンタ & 1
 		PRINTFORM <애액>
-	SIF STAIN:MASTER:COUNT & 2
+	SIF STAIN:MASTER:カウンタ & 2
 		PRINTFORM <페니스>
-	SIF STAIN:MASTER:COUNT & 4
+	SIF STAIN:MASTER:カウンタ & 4
 		PRINTFORM <정액>
-	SIF STAIN:MASTER:COUNT & 8
+	SIF STAIN:MASTER:カウンタ & 8
 		PRINTFORM <애널>
-	SIF STAIN:MASTER:COUNT & 16
+	SIF STAIN:MASTER:カウンタ & 16
 		PRINTFORM <모유>
-	SIF STAIN:MASTER:COUNT & 32
+	SIF STAIN:MASTER:カウンタ & 32
 		PRINTFORM <점액>
-	SIF STAIN:MASTER:COUNT & 64
+	SIF STAIN:MASTER:カウンタ & 64
 		PRINTFORM <파과의 혈>
 	PRINTL 
-REND
+NEXT
+
 	IF TALENT:MASTER:성별 != 2
 		PRINTFORML 질내상황：［{TCVAR:TARGET:질내사정횟수}ml］
 		SELECTCASE TCVAR:MASTER:질내사정횟수
@@ -72,43 +73,43 @@ REND
 IF TARGET > 0
 	;奴隷の汚れ
 	PRINTFORML 【 %CALLNAME:TARGET%의 얼룩】
-	REPEAT 6
-		SIF COUNT == 2 && HAS_PENIS(TARGET) == 0
+	FOR カウンタ,0,6
+		SIF カウンタ == 2 && HAS_PENIS(TARGET) == 0
 			CONTINUE
-		SIF COUNT == 3 && !(TALENT:2 & 1)
+		SIF カウンタ == 3 && !(TALENT:2 & 1)
 			CONTINUE
-		SIF COUNT == 5 && !(TALENT:2 & 1)
+		SIF カウンタ == 5 && !(TALENT:2 & 1)
 			CONTINUE
-		IF COUNT == 0
+		IF カウンタ == 0
 			PRINTFORM 　입：
-		ELSEIF COUNT == 1
+		ELSEIF カウンタ == 1
 			PRINTFORM 　손：
-		ELSEIF COUNT == 2
+		ELSEIF カウンタ == 2
 			PRINTFORM 　Ｐ：
-		ELSEIF COUNT == 3
+		ELSEIF カウンタ == 3
 			PRINTFORM 　Ｖ：
-		ELSEIF COUNT == 4
+		ELSEIF カウンタ == 4
 			PRINTFORM 　Ａ：
-		ELSEIF COUNT == 5
+		ELSEIF カウンタ == 5
 			PRINTFORM 　Ｂ：
 		ENDIF
 
-		SIF STAIN:COUNT & 1
+		SIF STAIN:カウンタ & 1
 			PRINTFORM <애액>
-		SIF STAIN:COUNT & 2
+		SIF STAIN:カウンタ & 2
 			PRINTFORM <페니스>
-		SIF STAIN:COUNT & 4
+		SIF STAIN:カウンタ & 4
 			PRINTFORM <정액>
-		SIF STAIN:COUNT & 8
+		SIF STAIN:カウンタ & 8
 			PRINTFORM <애널>
-		SIF STAIN:COUNT & 16
+		SIF STAIN:カウンタ & 16
 			PRINTFORM <모유>
-		SIF STAIN:COUNT & 32
+		SIF STAIN:カウンタ & 32
 			PRINTFORM <점액>
-		SIF STAIN:COUNT & 64
+		SIF STAIN:カウンタ & 64
 			PRINTFORM <파과의 혈>
 		PRINTL 
-	REND
+	NEXT
 	IF TALENT:TARGET:2 != 2
 		PRINTFORML 부어진 양 ［{TCVAR:TARGET:질내사정횟수}ml］
 		PRINTFORM 질 내 상황：
@@ -412,10 +413,10 @@ IF 情事캐릭터_ID && CFLAG:情事캐릭터_ID:우후후 && 情事캐릭터_I
 	IF 같은방플래그 && (TALENT:入室캐릭터_ID:연모 >= 1 || TALENT:入室캐릭터_ID:포식자 == 1)
 		;この後乱入する場合は弱味関連は発生しない
 	ELSEIF !GETBIT(CFLAG:入室캐릭터_ID:10 , 1) && TALENT:入室캐릭터_ID:무관심 != 1
-		PRINTFORMW %CALLNAME:入室캐릭터_ID%에게 약점을 잡혔지만
+		PRINTFORMW %CALLNAME:入室캐릭터_ID%에게 약점을 잡혔다
 		SETBIT CFLAG:入室캐릭터_ID:약점취득 ,1
 	ELSEIF TALENT:入室캐릭터_ID:무관심 == 1
-		PRINTFORMW …… %CALLNAME:入室캐릭터_ID%는 약점에는 무관심한 것 같다.……。
+		PRINTFORMW 만…… %CALLNAME:入室캐릭터_ID%는 약점에는 무관심한 것 같다.……。
 	ENDIF
 	IF 같은방플래그
 		IF TALENT:入室캐릭터_ID:연모 >= 1 || TALENT:入室캐릭터_ID:포식자 == 1
@@ -607,7 +608,7 @@ IF !TALENT:캐릭터_ID:펫
 ELSE
 	PRINTFORMW 하는 것처럼 보였다。
 ENDIF
-CALL KOJO_MESSAGE_SEND("ENCOUNTER",캐릭터_ID,シチュエーション)
+CALL KOJO_MESSAGE_SEND("ENカウンタER",캐릭터_ID,シチュエーション)
 CFLAG:캐릭터_ID:면식 = 1
 
 
@@ -632,6 +633,7 @@ IF バトル플래그 == 1
 		RETURN 0
 	SIF TCVAR:TARGET:절정여운 != 0
 		RETURN 0
+
 	IF TALENT:캐릭터_ID:즉시타락
 		IF RAND:(5 * TALENT:캐릭터_ID:즉시타락) != 0
 			PRINTFORML 건방지게도 %CALLNAME:캐릭터_ID%는 공수 역전을 노렸지만、실패하고 말았다。
@@ -706,6 +708,7 @@ SELECTCASE TIME
 	;PM20~22　夜
 	CASE 1200 TO 1319
 		時間帯변경 = 9
+	;PM22~24　夜
 	CASE 1320 TO 1439
 		時間帯변경 = 10
 	;PM11~AM4　深夜
@@ -753,7 +756,13 @@ ENDIF
 
 ;営業時間
 IF 時間帯플래그 == 1
+	;営業時間
 	SIF GROUPMATCH(TIME:2, 3,4,5,6,7,8)
+		RETURNF 1
+	RETURNF 0
+ELSEIF 時間帯플래그 == 2
+	;KL営業時間
+	SIF GROUPMATCH(TIME:2, 3,4,5,6,7,8,9,10)
 		RETURNF 1
 	RETURNF 0
 ENDIF
@@ -896,6 +905,8 @@ ENDSELECT
 
 @CHARA_MOVE_OUTSIDE(時間帯변경)
 #DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
 #DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC バイト開始
 #DIM DYNAMIC バイト終了
@@ -905,6 +916,10 @@ ENDSELECT
 #DIM DYNAMIC ショップ満員
 #DIM DYNAMIC ショップ在住
 #DIM DYNAMIC 설정値
+#DIM DYNAMIC 듀얼리스트캐릭터,9999
+#DIM DYNAMIC 入れ替え元
+#DIM DYNAMIC 入れ替え先
+#DIM DYNAMIC カドショ総評価
 
 FOR 캐릭터_ID,1,CHARANUM
 	IF CFLAG:캐릭터_ID:아르바이트 == PT_カドショ
@@ -912,14 +927,13 @@ FOR 캐릭터_ID,1,CHARANUM
 	ENDIF
 	SIF INRANGE(CFLAG:캐릭터_ID:현재위치,場所_CDS入口,場所_CDSレジ裏)
 		ショップ在住 ++
+
 	IF ショップ在住 >= 15
 		ショップ満員 = 1
 	ENDIF
 NEXT
 
-
 カドショ宣伝효과 += カドショ宣伝
-
 FOR カウンタ,場所_CDS入口,場所_CDSレジ裏
 	IF FLAG:(1000 + カウンタ) <= 100
 		カドショ宣伝효과 += 10
@@ -936,11 +950,14 @@ FOR カウンタ,場所_CDS入口,場所_CDSレジ裏
 	ENDIF
 NEXT
 
-
 SIF カドショ宣伝효과 <= 10
 	カドショ宣伝효과 = 10
+SIF カドショ宣伝효과 >= 100
+	カドショ宣伝효과 = 100
 
+カドショ総評価 = カドショ宣伝효과 / 10
 
+;PRINTFORML カドショ総評価:{カドショ総評価} / カドショ宣伝효과{カドショ宣伝효과}
 IF GROUPMATCH(GET_DAY(), "토", "일")
 	개시시간 = 4
 ELSE
@@ -979,6 +996,49 @@ IF RAND:3 == 0
 	ENDIF
 ENDIF
 
+;現在VOIDの듀얼리스트캐릭터
+FOR 캐릭터_ID,1,CHARANUM
+	SIF CFLAG:캐릭터_ID:현재위치 != 場所_VOID
+		CONTINUE
+	SIF TALENT:캐릭터_ID:듀얼리스트 == 0
+		CONTINUE
+		
+	;데이트중の子は動かない
+	SIF CFLAG:캐릭터_ID:데이트중 == 1
+		CONTINUE
+	;알바중の子は動かない
+	IF CFLAG:캐릭터_ID:아르바이트 >= 1
+		CONTINUE
+	ENDIF
+	듀얼리스트캐릭터:カウンタB = 캐릭터_ID
+	カウンタB ++
+NEXT
+
+FOR 入れ替え元, カウンタB, 0, -1
+	入れ替え先 = RAND:入れ替え元
+	SWAP 듀얼리스트캐릭터:(入れ替え元-1), 듀얼리스트캐릭터:入れ替え先
+NEXT
+
+IF ショップ満員 != 1 && INRANGE(TIME,KANTAN_TIME(10,00),KANTAN_TIME(20,00))
+	FOR カウンタ,0,カドショ総評価
+		캐릭터_ID = 듀얼리스트캐릭터:カウンタ	
+		IF RAND:3 == 0
+			IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
+				PRINTFORML %CALLNAME:캐릭터_ID%가 카드샵에 방문했습니다。
+			ENDIF
+			CFLAG:캐릭터_ID:현재위치 = 場所_CDS入口 + RAND:3
+			SIF RAND:10 == 0
+				売れたカード:(RAND:30) = 1
+			来客者数 ++
+			カウンタC ++ 
+			SIF カウンタC >= カドショ総評価 
+				BREAK
+		ENDIF
+	NEXT
+ENDIF
+
+
+
 FOR 캐릭터_ID,1,CHARANUM
 	SIF 캐릭터_ID == MASTER
 		CONTINUE
@@ -988,34 +1048,14 @@ FOR 캐릭터_ID,1,CHARANUM
 	;현재위치が100なら動かない
 	SIF CFLAG:캐릭터_ID:현재위치 == 場所_NULLVOID
 		CONTINUE
-
-		IF CFLAG:캐릭터_ID:현재위치 == 場所_VOID
-		IF TALENT:캐릭터_ID:듀얼리스트 >= 1 && ショップ満員 != 1 && INRANGE(TIME,KANTAN_TIME(10,00),KANTAN_TIME(20,00))
-			설정値 = RAND:250
-			;PRINTFORML 설정値:{설정値} / カドショ宣伝효과:{カドショ宣伝효과}
-			IF 설정値 <= カドショ宣伝효과
-				IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
-					PRINTFORML %CALLNAME:캐릭터_ID%가 카드샵에 방문했다。
-				ENDIF
-				CFLAG:캐릭터_ID:현재위치 = 場所_CDS入口 + RAND:3
-				売れたカード:(RAND:30) = 1
-				来客者数 ++
-			ELSE
-				CONTINUE
-			ENDIF
-		ELSE
-			CONTINUE
-		ENDIF
-	ENDIF
 	;데이트중の子は動かない
 	SIF CFLAG:캐릭터_ID:데이트중 == 1
 		CONTINUE
-
-
-	;알바중の子は動かない
+	;알바중の子は動かない/ついでに綺麗に
 	IF CFLAG:캐릭터_ID:아르바이트 >= 1
 		IF CFLAG:캐릭터_ID:알바중 == 1
 			CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
+			FLAG:(1000 + CFLAG:캐릭터_ID:현재위치) = FLAG:(1000 + CFLAG:캐릭터_ID:현재위치) / (2 + ABL:캐릭터_ID:청소기능)
 			CONTINUE
 		ENDIF
 	ENDIF

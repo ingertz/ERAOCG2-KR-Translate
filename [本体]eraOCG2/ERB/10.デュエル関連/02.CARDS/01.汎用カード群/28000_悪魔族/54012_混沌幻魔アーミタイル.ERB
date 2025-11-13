@@ -1,0 +1,210 @@
+﻿@CARDNAME_54012,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혼돈환마 아미타일
+	CASE "略称"
+		RESULTS = 아미타일
+	CASE "カテゴリ"
+		RESULTS:0 = 환마
+ENDSELECT
+
+
+@CARD_54012(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 0
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54012(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 신염황제 우리아
+ELSEIF EX参照 == 10
+	素材条件名前 = 번개황제 하몬
+ELSEIF EX参照 >= 11
+	素材条件名前 = 환마황제 라비엘
+ENDIF
+
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,54012) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54012(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "신염황제 우리아"＋"번개황제 하몬"＋"환마황제 라비엘"
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL ●１턴에 １번、자신 필드의 상기 카드가 존재하는 경우에 EX덱에서 이 카드를 상대에게 보여주고 발동할 수 있다。
+PRINTL 자신의 덱 / 제외 상태인 "차원 융합살" １장을 패에 넣는다。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：이 카드의 공격력은 자신 턴동안 １００００오른다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드는 전투로는 파괴되지 않는다。
+CALLFORM CARD_ABLE(0,필드起動)
+PRINTL ③：자신 메인 페이즈에 발동할 수 있다. 이 카드의 컨트롤을 상대에게 넘긴다。
+CALLFORM CARD_ABLE(0,ターン終了時強制)
+PRINTL ④：이 카드의 원래 주인이 자신이 아닌 경우、엔드 페이즈에 발동한다。
+PRINTL 자신 필드의 카드를 전부 제외한다。
+PRINTL 그 후、이 카드의 원래 주인은 자신의 제외 상태인 "혼돈환마 아미타일" １장을 소환 조건을 무시하고 특수 소환할 수 있다。
+
+
+@CARDCAN_54012(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 所有者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54012)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,54012)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 신염황제 우리아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 번개황제 하몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 환마황제 라비엘
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲제외 = 1
+	효과条件名前 = 차원 융합살
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(対面者) >= 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	IF 듀얼리스트 == "자신"
+		所有者 = 1
+	ELSEIF 듀얼리스트 == "상대"
+		所有者 = 2
+	ENDIF
+	SIF GETVAR(@"%듀얼리스트%_MZ_所有:場所") == 所有者
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_54012(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 설정禁止
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54012,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲제외 = 1
+		효과条件名前 = 차원 융합살
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,10000)
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54012)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_GET_CONTROL(対面者,場所)
+	ENDIF
+ELSEIF 종류 == ターン終了時強制
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"제외")
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件名前 = 혼돈환마 아미타일
+	효과条件特不無視 = 1
+	CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所)
+ENDIF
+
+

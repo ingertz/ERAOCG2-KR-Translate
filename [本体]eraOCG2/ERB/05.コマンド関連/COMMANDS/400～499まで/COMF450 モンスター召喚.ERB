@@ -33,21 +33,22 @@ IF 소환_最終소환 > 0
 
 ELSE
 	SETCOLOR C_GRAY
-	PRINTL [ 2 ] - 마지막으로 선택한 몬스터를 소환/귀환。
-	RESETCOLOR
-ENDIF
-PRINTL
-IF TARGET >= 1
-	PRINTL [ 1 ] - 눈 앞의 몬스터를 귀환시킨다。
-ELSE
-	SETCOLOR C_GRAY
-	PRINTL [ 1 ] - 눈 앞의 몬스터를 귀환시킨다。
+	PRINTL 「 2 」 - 마지막으로 선택한 몬스터를 소환/귀환。
 	RESETCOLOR
 ENDIF
 PRINTL
 PRINTL [ 5 ] - 듀얼리스트를 호출한다。
 PRINTL
 PRINTL [ 0 ] - 컬렉션에서 몬스터를 소환한다。
+PRINTL
+IF TARGET >= 1
+	PRINTL [ 1 ] - 눈 앞의 몬스터를 귀환시킨다。
+ELSE
+	SETCOLOR C_GRAY
+	PRINTL 「 1 」 - 눈 앞의 몬스터를 귀환시킨다。
+	RESETCOLOR
+ENDIF
+PRINTL
 CUSTOMDRAWLINE —
 PRINTL 
 PRINTL [100] - 돌아간다
@@ -56,6 +57,8 @@ BINPUT
 
 IF RESULT == 0
 	CALL MONSTER_LIST
+	SIF RESULT == -1
+		GOTO INPUT_LOOP
 	RETURN 0
 ELSEIF RESULT == 1
 	CALL SUMMON_SHORI(TARGET)
@@ -68,6 +71,8 @@ ELSEIF RESULT == 3
 	RETURN 0
 ELSEIF RESULT == 5
 	CALL MONSTER_LIST(10)
+	SIF RESULT == -1
+		GOTO INPUT_LOOP
 	RETURN 0
 
 ELSEIF RESULT == 100

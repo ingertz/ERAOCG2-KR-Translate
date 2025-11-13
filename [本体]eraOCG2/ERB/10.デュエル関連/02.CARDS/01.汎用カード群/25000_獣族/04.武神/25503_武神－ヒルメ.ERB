@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 무사신－히루메
+		RESULTS = 무사신－히루메
 	CASE "略称"
-RESULTS = 무사신 히루메
+		RESULTS = 무사신 히루메
 	CASE "カテゴリ"
-RESULTS:0 = 무사신
+		RESULTS:0 = 무사신
 ENDSELECT
 
 
@@ -87,14 +87,18 @@ IF 종류 == 손패起動
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과範囲마함 = 1
-효과条件名前 = 무사신－히루메
+	효과条件名前 = 무사신－히루메
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
 		RETURN 0
 	RETURN 1
 
 ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대손패 = 1
@@ -131,7 +135,7 @@ IF 종류 == 손패起動
 		IF RESULT == 1
 			CALL FULLRESET
 			효과範囲손패 = 1
-효과条件名前 = 무사신－히루메
+			효과条件名前 = 무사신－히루메
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
@@ -150,7 +154,7 @@ ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
 
 		IF 条件달성:0 == 1
 			SIF 듀얼리스트 == "자신"
-PRINTL 패의 몬스터를 상대에게 보여주시겠습니까?
+				PRINTL 패의 몬스터를 상대에게 보여주시겠습니까?
 			CALL YN_CHOICE(듀얼리스트)
 		ELSE
 			RESULT = 1
@@ -181,7 +185,7 @@ PRINTL 패의 몬스터를 상대에게 보여주시겠습니까?
 
 		IF 条件달성:1 == 1
 			SIF 対面者 == "자신"
-PRINTL 패의 몬스터를 상대에게 보여주시겠습니까?
+				PRINTL 패의 몬스터를 상대에게 보여주시겠습니까?
 			CALL YN_CHOICE(対面者)
 		ELSE
 			RESULT = 1

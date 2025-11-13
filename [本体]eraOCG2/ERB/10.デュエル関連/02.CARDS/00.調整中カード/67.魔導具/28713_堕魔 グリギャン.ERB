@@ -26,6 +26,7 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
+
 		RETURN 효과モン
 	CASE "속성"
 		RETURN 어둠속성
@@ -83,7 +84,11 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지
 	SIF 발동済_2(듀얼리스트,28713)
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,28713,"묘지")
 	SIF RESULT == 1

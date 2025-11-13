@@ -71,7 +71,9 @@ ENDSELECT
 
 
 IF 듀얼리스트 == "자신" && 추가場所 == "필드" && 표시形式 == ""
-	TRYCALLFORM CARD_UI(GETVAR(@"%保有者%_%実行出処%:選択カード"),2)
+	화상ボタン無効 = 1
+	TRYCALLFORM CARD_UI(GETVAR(@"%保有者%_%実行出処%:選択カード"))
+	화상ボタン無効 = 0
 	PRINTL 【표시 형식을 선택해 주세요】
 	PRINTL 
 	PRINTL [0] 공격표시
@@ -419,7 +421,9 @@ SIF 듀얼리스트 == "상대"
 
 CALLFORM CARDNAME_{カードID}("名前")
 PRINTFORMW %듀얼리스트%는  %RESULTS%를 필드에 소환했습니다。
+화상ボタン無効 = 1
 CALL PRINT_STATE_DUEL(カードID)
+화상ボタン無効 = 0
 CALL KOJO_MESSAGE_SEND("CARD",カードID,0)
 
 SETVAR @"%듀얼리스트%_손패:選択カード", -1
@@ -478,6 +482,8 @@ ELSE
 	소환者 = %듀얼리스트%
 ENDIF
 
+;PRINTFORML ここ通過１　효과추가종류:{효과추가종류}
+
 
 ;オーナーの결정
 IF 듀얼리스트 == "자신"
@@ -522,6 +528,7 @@ SELECTCASE 出処
 		実行出処 = 제외
 ENDSELECT
 
+;PRINTFORML ここ通過２　효과추가종류:{효과추가종류}
 
 SIF GETVAR(@"%保有者%_%実行出処%:選択カード") == -1
 	RETURN 0
@@ -531,7 +538,9 @@ SIF GETVAR(@"%保有者%_%実行出処%:選択カード") == -1
 SETVAR @"%듀얼리스트%_특수소환횟수", GETVAR(@"%듀얼리스트%_특수소환횟수") + 1
 
 IF 듀얼리스트 == "자신" && 표시形式 == ""
-	TRYCALLFORM CARD_UI(予定カードID,2)
+	화상ボタン無効 = 1
+	TRYCALLFORM CARD_UI(予定カードID)
+	화상ボタン無効 = 0
 	PRINTL 【표시형식을 선택해 주세요】
 	PRINTL 
 	PRINTL [0] 공격표시
@@ -547,6 +556,8 @@ ELSEIF 듀얼리스트 == "상대" && 표시形式 == ""
 	CALL ENEMY_RUTIN_POSE(予定カードID)
 	표시形式 = %RESULTS%
 ENDIF
+
+;PRINTFORML ここ通過３　효과추가종류:{효과추가종류}
 
 カード소환先 = 現필드(소환者)
 소환先 = 現필드(소환者)
@@ -566,10 +577,11 @@ ELSE
 	SETVAR @"%소환者%_MZ_表:소환先", 1
 ENDIF
 
-
+;PRINTFORML ここ通過４　효과추가종류:{효과추가종류}
 IF モンスター数(소환者) >= 5
 	SETVAR @"%保有者%_묘지:現묘지数(소환者)", 予定カードID
 ELSE
+	;PRINTFORML ここ通過５　효과추가종류:{효과추가종류}
 	SETVAR @"%소환者%_필드:소환先", 予定カードID
 	カードID = GETVAR(@"%소환者%_필드:カード소환先")
 	CALL CARD_ADDITIONAL_EFFECT(소환者)
@@ -626,7 +638,9 @@ IF カードID
 		PRINTFORML %듀얼리스트%는 %実行出処%에서 『{選択カード}』%이동カード名%를 되돌렸습니다。
 	ELSE
 		PRINTFORML %듀얼리스트%는 %実行出処%에서 『{選択カード}』%이동カード名%를 특수 소환 했습니다。
+		화상ボタン無効 = 1
 		CALL PRINT_STATE_DUEL(カードID)
+		화상ボタン無効 = 0
 		CALL KOJO_MESSAGE_SEND("CARD",カードID,0)
 	ENDIF
 ELSE
@@ -735,7 +749,9 @@ ENDIF
 SETVAR @"%듀얼리스트%_특수소환횟수", GETVAR(@"%対面者%_특수소환횟수") + 1
 
 IF 듀얼리스트 == "자신" && 표시形式 == ""
-	TRYCALLFORM CARD_UI(予定カードID,2)
+	화상ボタン無効 = 1
+	TRYCALLFORM CARD_UI(予定カードID)
+	화상ボタン無効 = 0
 	PRINTL 【표시형식을 선택해 주세요】
 	PRINTL 
 	PRINTL [0] 공격표시
@@ -837,8 +853,9 @@ ENDIF
 
 
 PRINTFORML %듀얼리스트%는 %出処%에서 %이동カード名%를 특수소환 했습니다。
+화상ボタン無効 = 1
 CALL PRINT_STATE_DUEL(カードID)
-PRINTFORMW
+화상ボタン無効 = 0
 CALL KOJO_MESSAGE_SEND("CARD",カードID,0)
 
 CALL CARD_ADDITIONAL_EFFECT(듀얼리스트)
@@ -918,7 +935,9 @@ SETVAR @"%듀얼리스트%_특수소환횟수", GETVAR(@"%対面者%_특수소�
 SETVAR @"%듀얼리스트%_モン出現数", GETVAR(@"%듀얼리스트%_モン出現数") + 1
 
 IF 듀얼리스트 == "자신" && 표시形式 == ""
-	TRYCALLFORM CARD_UI(カードID,2)
+	화상ボタン無効 = 1
+	TRYCALLFORM CARD_UI(カードID)
+	화상ボタン無効 = 0
 	PRINTL 【표시형식을 선택해 주세요】
 	PRINTL 
 	PRINTL [0] 공격표시
@@ -1465,21 +1484,25 @@ ELSEIF 마함플래그 == 1
 		ENDIF
 
 		IF 효과추가종류:カウンタ == 511
-			SETVAR @"%듀얼리스트%_MZ_終処:カード소환先", 제외行き
+			SETVAR @"%듀얼리스트%_魔_終処:カード소환先", 제외行き
 		ELSEIF 효과추가종류:カウンタ == 512
-			SETVAR @"%듀얼리스트%_MZ_終処:カード소환先", 덱行き
+			SETVAR @"%듀얼리스트%_魔_終処:カード소환先", 덱行き
 		ELSEIF 효과추가종류:カウンタ == 513
-			SETVAR @"%듀얼리스트%_MZ_終処:カード소환先", 손패行き
+			SETVAR @"%듀얼리스트%_魔_終処:カード소환先", 손패行き
 		ELSEIF 효과추가종류:カウンタ == 515
-			SETVAR @"%듀얼리스트%_MZ_終処:カード소환先", 返却行き
+			SETVAR @"%듀얼리스트%_魔_終処:カード소환先", 返却行き
 		ELSEIF 효과추가종류:カウンタ == 520
-			SETVAR @"%듀얼리스트%_MZ_終処:カード소환先", 破壊行き
+			SETVAR @"%듀얼리스트%_魔_終処:カード소환先", 破壊行き
 		ELSEIF 효과추가종류:カウンタ == 516
-			SETVAR @"%듀얼리스트%_MZ_終処:カード소환先", 遅返却行き
+			SETVAR @"%듀얼리스트%_魔_終処:カード소환先", 遅返却行き
 		ELSEIF 효과추가종류:カウンタ == 517
-			SETVAR @"%듀얼리스트%_MZ_終処:カード소환先", 遅손패行き
+			SETVAR @"%듀얼리스트%_魔_終処:カード소환先", 遅손패行き
 		ENDIF
-
+		IF 효과추가종류:カウンタ == 530
+			SETVAR @"%듀얼리스트%_魔_無効:カード추가先", 1
+		ELSEIF 효과추가종류:カウンタ == 531
+			SETVAR @"%듀얼리스트%_魔_無効:カード추가先", 2
+		ENDIF
 	NEXT
 	IF 효과추가カテ != ""
 		SETVAR @"%듀얼리스트%_魔_追カテ:カード설치先", 효과추가カテ
@@ -1782,7 +1805,7 @@ ELSEIF RESULT == 10
 	FOR カウンタ,0,5
 		IF トークン보존:カウンタ >= 1
 			$LOOP_BACK_HERE
-			TRYCALLFORM CARD_UI(トークン보존:カウンタ,2)
+			TRYCALLFORM CARD_UI(トークン보존:カウンタ)
 			PRINTFORM [0] - 다음 카드
 			PRINTL
 			BINPUT

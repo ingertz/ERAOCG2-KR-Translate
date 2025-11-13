@@ -21,6 +21,8 @@ SELECTCASE 参照先
 		SIF 依頼_完了횟수:44 == 0
 			RETURN 0
 		RETURN 1
+	CASE "回想可"
+		RETURN 1
 ENDSELECT
 
 RETURN 0
@@ -38,7 +40,7 @@ IF 依頼_進行보존:依頼_受領中 == 1
 	PRINTFORML [1] - やらない
 	BINPUT
 	IF RESULT == 0
-		PRINTFORMW 「欲望に素直に素晴らしいですね！
+		PRINTFORMW 「욕망に素直に素晴らしいですね！
 		PRINTFORMW 　ではこちらに名前を書いていただいて――こちらは保険でして、こっちは……」
 		PRINTFORMW KCのテナント契約の元に、マンションの下のカードショップの経営権を手に入れた！
 		PRINTFORML
@@ -46,6 +48,8 @@ IF 依頼_進行보존:依頼_受領中 == 1
 		PRINTFORMW 「あっ、契約したデースか？　計画書は読んだけど、KCにしては問題なさそうですし、いいジャネ？」
 		PRINTFORMW 珍しく慎重に決めたことを褒められた。
 		CALL ITEM_GET(511)
+		CALL TUTORIAL_CARDSHOP
+
 		RETURN 2
 	ELSEIF RESULT == 1
 		PRINTFORMW 「もう、残念ですわね……」
@@ -55,12 +59,12 @@ IF 依頼_進行보존:依頼_受領中 == 1
 		PRINTFORML …
 		PRINTFORML
 		PRINTFORMW ……そしてガイドさんにこのことを話したところ。
-		PRINTFORMW 「あっ、契約しなかったデースか？　結構メリット多いのに勿体ないゼー」
+		PRINTFORMW 「あっ、契約しなかったデースか？　まぁ考える時間はあるだけいいデースね」
 		RETURN 3
 	ENDIF
 ELSE
-	PRINTFORMW 「おはようございます！　マスターさん！」
-	PRINTFORMW コンビニから帰って来ていたら怖い人に絡まれてしまった。
+	PRINTFORMW 「おはようございます！　%CALLNAME:MASTER%様！」
+	PRINTFORMW 편의점から帰って来ていたら怖い人に絡まれてしまった。
 	PRINTFORML 
 	PRINTFORMW 「そんな詐欺師を見る顔はやめてください……それより、良いテナントですね」
 	PRINTFORMW と視線を空きテナントに向けた。
@@ -77,7 +81,7 @@ ELSE
 	PRINTFORML [1] - ロクでもないのでやめておこう
 	BINPUT
 	IF RESULT == 0
-		PRINTFORMW 「欲望に素直に素晴らしいですね！
+		PRINTFORMW 「욕망に素直に素晴らしいですね！
 		PRINTFORMW 　ではこちらに名前を書いていただいて――こちらは保険でして、こっちは……」
 		PRINTFORMW KCのテナント契約の元に、マンションの下のカードショップの経営権を手に入れた！
 		PRINTFORML
@@ -87,7 +91,7 @@ ELSE
 		PRINTFORMW 「そうですか……いえ、それでも問題ありません。
 		PRINTFORMW 　ただ、このショップでKCが得た利益はこの世界に迷い込んだ人たちの補助に充てたいと思っていたので
 		PRINTFORMW 　もちろんKC自体、人を派遣して運営しても問題は無いのですが
-		PRINTFORMW 　事情を知るマスターさんならば仕事に困った異世界人を少しでも助けられると思いまして」
+		PRINTFORMW 　事情を知る%CALLNAME:MASTER%様ならば仕事に困った異世界人を少しでも助けられると思いまして」
 		PRINTFORMW 突然手を握られてしまう、不思議なことにいつものうさん臭さはなく、真面目な視線は向けられた……。
 		PRINTFORMW 「協力いただけませんか？」
 		PRINTFORML
@@ -107,9 +111,90 @@ ELSE
 		ENDIF
 	ENDIF
 	CALL ITEM_GET(511)
+	CALL TUTORIAL_CARDSHOP
 	RETURN 2
 ENDIF
+
 
 @IRAI_REWARD_45
 CALL ITEM_GET(511)
 
+
+@TUTORIAL_CARDSHOP
+#DIM DYNAMIC カウンタ
+
+
+PRINTFORMW 「ふぅ、セットアップはこんな感じでよろしいでしょうか？　皆さーん！　お疲れ様でーす」
+CUSTOMDRAWLINE ―
+CALL MAP_PRINT_SHOP
+CUSTOMDRAWLINE ―
+PRINTFORML
+PRINTFORML [0] - 結構、綺麗な店舗だ……
+PRINTFORML [1] - 本当に異世界人にお仕事与えてるんだ……
+BINPUT
+PRINTFORML
+IF RESULT == 0
+	PRINTFORMW 「ふふっ、嘘だと思っていました？　これでも元は巫女ですよ？」
+ENDIF
+PRINTFORML 
+PRINTFORMW 「ではこれで仕事をいつでも始められますね、レジの後ろのパソコンで操作できます、
+PRINTFORML  画面に표시されている、
+PRINTFORML  ＞　カードショップ運営[419]
+PRINTFORML  を押してみてください」
+PRINTFORML 
+$RETURN_CHOICE
+PRINTFORML —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PRINTFORML 「カードショップ」
+PRINTFORML —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PRINTFORML 
+PRINTFORML [ 1] - パックの補充を行う
+PRINTFORML [ 2] - シングルカードを置く
+PRINTFORML [ 3] - バイトオプション
+PRINTFORML 
+PRINTFORML [10] - ショップをお休みにする
+PRINTFORML 
+PRINTFORML —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PRINTFORML 
+PRINTFORML [99] - 十分であればこちらを選んでください
+
+BINPUT
+IF RESULT == 1
+	PRINTFORMW 「『パックの補充』、ここでKCから直接ボックスの発注を설정できます。
+	PRINTFORMW 　すぐには届きませんが第２と第４金曜日に引き落としされますわ、
+	PRINTFORMW 　発注は１つ１００円で行えます。その代わり１つ売り切る利益はいろいろ差し引いて１５０円となりますが……
+	PRINTFORMW 　例えば１００個売り切ると差し引き５０００円の利益となりますね！！
+	SETCOLOR C_D_GRAY
+	PRINTFORMW 　私達は５万ほど回収しますが……」
+	RESETCOLOR
+	GOTO RETURN_CHOICE
+ELSEIF RESULT == 2
+	PRINTFORML 
+	PRINTFORMW 「次は『シングルカード』ですね、こちらは%CALLNAME:MASTER%様のコレクションから直接棚に並べられます
+	PRINTFORMW 　スーパーとウルトラレアなカードしか설정できないことはご了承ください
+	PRINTFORMW 　자신のコレクションが真に評価されるのはなかなかに素敵なものですわ」
+	GOTO RETURN_CHOICE
+ELSEIF RESULT == 3
+	PRINTFORML 
+	PRINTFORMW 「最後に『バイトオプション』ですが、こちらは信頼のある方を従業員としては働かせることができます。
+	PRINTFORMW 　설정した従業員にはお好きな衣装を설정できますわ！！
+	PRINTFORMW 　英雄色を好むと言いますし、素敵な方の紹介を待っていますわ」
+	GOTO RETURN_CHOICE
+ELSEIF RESULT == 10
+	PRINTFORML 
+	PRINTFORMW 「このボタンで、ショップをお休み／再開を行えますわ
+	PRINTFORMW 　少し経営につかれてしまったらこれで停止できますわ」
+	GOTO RETURN_CHOICE
+ENDIF
+
+
+PRINTFORMW 「以上となります、では……私たちはこれで撤収します、
+PRINTFORMW 　今日も海馬コーポレーションへのご協力、ありがとうございました～」
+PRINTFORML 
+PRINTFORMW ……ご祝儀として、いくらかのパックを補充してもらった。
+
+IF 依頼_見返し中 != 1
+	FOR カウンタ,0,5
+		残BOX数:カウンタ = 50
+		補充BOX数:カウンタ = 50
+	NEXT
+ENDIF

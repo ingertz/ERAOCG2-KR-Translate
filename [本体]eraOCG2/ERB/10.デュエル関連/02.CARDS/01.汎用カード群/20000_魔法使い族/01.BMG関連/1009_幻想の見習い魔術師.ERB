@@ -50,7 +50,7 @@ PRINTL ①：다른 패 １장을 버리고 발동할 수 있다。
 PRINTL 이 카드를 패에서 특수 소환한다。
 CALLFORM CARD_ABLE(0,소환時,특수소환時)
 PRINTL ②：이 카드가 일반 소환 / 특수 소환했을 경우에 발동할 수 있다。
-PRINTL 덱에서 "블랙 매지션" 이나 "블랙 매지션 걸" １장을 패에 넣는다。
+PRINTL 덱에서 "블랙 매지션" 또는 "블랙 매지션 걸" １장을 패에 넣는다。
 CALLFORM CARD_ABLE(0,攻撃時誘発)
 PRINTL ③：이 카드 이외의 자신의 마법사족 / 어둠 속성 몬스터가 전투를 행한 경우、
 PRINTL 패 / 필드의 이 카드를 묘지로 보내고 발동할 수 있다。
@@ -76,7 +76,11 @@ IF 종류 == 손패起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時

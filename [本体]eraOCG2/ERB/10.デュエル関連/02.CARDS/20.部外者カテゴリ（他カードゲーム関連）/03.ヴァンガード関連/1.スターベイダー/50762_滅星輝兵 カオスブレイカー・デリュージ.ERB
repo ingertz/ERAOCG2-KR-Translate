@@ -28,7 +28,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 초차원
 	CASE "속성"
 		RETURN 빛속성
@@ -73,7 +72,7 @@ ENDIF
 
 CALL PRINT_STRIDETEXT("카오스브레이커")
 PRINT 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
-CALLFORM CARD_ABLE(11,필드起動)
+CALLFORM CARD_ABLE(1,필드起動)
 PRINTL ①：『G 브레이크』 "3"（이 효과는 3턴째까지는 사용할 수 없다.)
 PRINTL 이 카드가 필드에 앞면 표시로 존재하는 한 1번만, 자신 메인 페이즈에 손패를 1장 묘지로 보내고 발동할 수 있다.
 PRINTL 상대는 몬스터 2장을 패에서 주박 상태로 특수 소환한다.
@@ -141,7 +140,11 @@ ELSEIF 종류 == 필드起動
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	SIF 손패数(듀얼리스트) <= 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -181,7 +184,7 @@ IF 종류 == 지속효과
 ELSEIF 종류 == 攻撃時強制誘発
 	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ半化",3,1)
 ELSEIF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50762,11)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50762,1)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲EX덱 = 1

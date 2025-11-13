@@ -1,0 +1,267 @@
+﻿@CARDNAME_79526,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 예점술의 의식
+	CASE "略称"
+		RESULTS = 예점술의 의식
+	CASE "カテゴリ"
+		RESULTS:0 = 점술공주
+		RESULTS:1 = 예점술공주
+		RESULTS:2 = 의식 마법
+		RESULTS:3 = E.R.A
+ENDSELECT
+
+
+@CARD_79526(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251109
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79526(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(0,마함起動 ,손패起動)
+PRINTL ①：레벨의 합계가 의식 소환하는 몬스터의 레벨 이상이 되도록, 자신의 패 / 필드의 몬스터를 릴리스하고、
+PRINTL 자신의 패 / 묘지에서 어둠 속성의 의식 몬스터 １체 또는 "성점술공주 타로레이" １체를 의식 소환한다。
+PRINTL 자신의 마법＆함정 존에 "예점술공주" Ｐ 몬스터가 존재하는 경우, 자신의 마법＆함정 존의 몬스터 카드도 의식 소재로 할 수 있다。
+CALL CARD_ABLE(2,묘지起動)
+PRINTL ②：자신 필드 / 묘지에 "명점술공주 타로레이스"가 존재하는 경우, 자신의 메인 페이즈에 이하의 효과 중 1개를 선택하여 발동할 수 있다。
+PRINTL （이 효과의 발동 후, 턴 종료 시까지 자신은 "점술공주" 몬스터밖에 특수 소환할 수 없다.）
+PRINTL ●묘지의 이 카드를 덱에 되돌리고, 필드의 뒷면 수비 표시 몬스터 1체를 앞면 수비 표시로 한다。
+PRINTL ●자신 필드의 앞면 표시 몬스터 1체를 뒷면 수비 표시로 하고, 묘지의 이 카드를 패에 더한다。
+CALL TEXT_DECORATION("ROGUE")
+
+;「예점술공주」の의식마법。의식마법としては非常にスタンダードな효과をしており、条件を満たしてもリリース素材の踏み倒しは마함だけと控えめ。
+;텍스트内に「성점술공주 타로레이」と「명점술공주 타로레이스」の両方の記述があり、下準備で自由にサーチ先を選べるのが最大の強み。
+;발동条件のある묘지효과で자신フィールドのモンスター１体を裏側にすることで回収してもう一度使えるのだが、점술공주縛りがつくので展開は伸びない。
+;実際は再利用して２回目の의식소환する事が主眼ではなく、コストとして자신フィールドのモンスターを裏側守備표시に변경できる部分がテーマの中核。
+;もう一つの효과でこのカードを덱に戻すことで裏側→表側の표시변경효과も選べるのが「예점술공주」として小技が効いている部分。
+
+
+@CARDCAN_79526(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79526)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 예점술공주
+	효과条件分割 = 펜듈럼
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件달성 |= 1
+	
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
+	SIF 条件달성 & 1
+		素材範囲마함 = 1
+	素材範囲손패 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종류 = 의식
+	효과条件スーパー名前 = 성점술공주 타로레이
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,79526)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
+	효과条件名前 = 명점술공주 타로레이스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	SIF 듀얼리스트 == "자신"
+		효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 裏側표시
+	효과条件除去種 = 표시변경
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		条件달성 |= 1
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 표시변경
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		条件달성 |= 2
+	SIF 条件달성 & 1 && 条件달성 & 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_79526(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択結果
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79526)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 예점술공주
+		효과条件分割 = 펜듈럼
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 |= 1
+		
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件속성 = 어둠속성
+		효과条件종류 = 의식
+		효과条件スーパー名前 = 성점술공주 타로레이
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL RESETAREA_MAT
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:{選択カード（CS）}")}(듀얼리스트,選択カード（CS）)
+			素材範囲필드 = 1
+			SIF 条件달성 & 1
+				素材範囲마함 = 1
+			素材範囲손패 = 1
+			TRYCALLFORM RITSUMMON(듀얼리스트,選択カード（CS）,参照先（CS）)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79526,2)
+	IF RESULT == 0
+		
+		CALL FULLRESET
+		SIF 듀얼리스트 == "자신"
+			효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件표시 = 裏側표시
+		효과条件除去種 = 표시변경
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 |= 1
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件표시 = 表側표시
+		효과条件除去種 = 표시변경
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 |= 2
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 점술공주
+		효과条件종류 = 의식
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 |= 4
+		
+		IF 条件달성 & 1 && 条件달성 & 2
+			;효과を選ぶ
+			IF 듀얼리스트 == "자신"
+				PRINTL 어느 효과를 사용하시겠습니까？
+				CALL YN_CHOICE(듀얼리스트,"●묘지의 이 카드를 덱으로 되돌리고、필드의 뒷면 수비 표시 몬스터 １장을 앞면 수비 표시로 한다。","●자신 필드의 앞면 표시 몬스터 1장을 뒷면 수비 표시로 하고, 묘지의 이 카드를 패에 넣는다.")
+				選択結果 = RESULT
+			ELSE
+				;CPUは選べる場合は裏守備にする효과を使用する。
+				選択結果 = いいえ
+			ENDIF
+		ELSEIF 条件달성 & 1
+			選択結果 = はい
+		ELSE
+			選択結果 = いいえ
+		ENDIF
+		
+		IF 選択結果 == はい
+			;このカードを덱に戻して、フィールドの裏守備モンスター１体を表側守備표시にする。（CPUは상대필드にのみ使用）
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+			CALL FULLRESET
+			SIF 듀얼리스트 == "자신"
+				효과範囲필드 = 1
+			효과範囲상대필드 = 1
+			효과条件표시 = 裏側표시
+			효과추가종류 = 2
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"표시변경")
+		ELSE
+			;자신フィールドの表側표시モンスター１体を裏守備にして、このカードを손패に加える。
+			;CPUは자신フィールドに表側표시の「점술공주」의식モンスターが存在すれば、それを대상にする。
+			IF 듀얼리스트 == "상대" && 条件달성 & 4
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件カテゴリ = 점술공주
+				효과条件종류 = 의식
+				효과条件표시 = 表側표시
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"표시변경")
+			ELSE
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件표시 = 表側표시
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"표시변경")
+			ENDIF
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+		ENDIF
+		
+		CALL FULLRESET
+		CALL CARD_SS_RESTRICTION(듀얼리스트,"점술공주")
+	ENDIF
+ENDIF

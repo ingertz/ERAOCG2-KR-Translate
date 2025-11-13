@@ -33,7 +33,7 @@ RETURN 0
 
 PRINTL 자신 필드는 "용의 계곡"이 된다.
 CALLFORM CARD_ABLE(10,마함起動)
-PRINTL ①: 1턴에 1번, 손패를 1장 버리고, 다음의 효과에서 1개를 선택하여 발동할 수 있다.
+PRINTL ①: 1턴에 1번, 패를 1장 버리고, 다음의 효과에서 1개를 선택하여 발동할 수 있다.
 PRINTL ● 덱에서 레벨 4 이하의 "드래그니티" 몬스터 1장을 패에 넣는다.
 PRINTL ● 덱에서 드래곤족 몬스터 1장을 묘지로 보낸다.
 
@@ -56,7 +56,11 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF 손패数(듀얼리스트) == 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1

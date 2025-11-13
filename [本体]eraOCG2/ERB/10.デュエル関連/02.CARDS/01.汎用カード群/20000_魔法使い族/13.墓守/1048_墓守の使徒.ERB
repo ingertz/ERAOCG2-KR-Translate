@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 묘지기의 사도
+		RESULTS = 묘지기의 사도
 	CASE "略称"
-RESULTS = 묘지기의 사도
+		RESULTS = 묘지기의 사도
 	CASE "カテゴリ"
-RESULTS:0 = 묘지기
+		RESULTS:0 = 묘지기
 ENDSELECT
 
 
@@ -48,9 +48,9 @@ RETURN 0
 PRINTL 이 카드명의 ①②의 효과는 1턴에 1번, 어느 한쪽밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,손패起動)
 PRINTL ①: 이 카드를 포함한 손패 2장을 묘지로 보내고 발동할 수 있다.
-PRINTL 덱에서 '묘지기의 사도' 이외의 '묘지기' 몬스터 1장을 패에 넣는다. 그 후, 자신은 1장 드로우한다.
+PRINTL 덱에서 "묘지기의 사도" 이외의 "묘지기" 몬스터 1장을 패에 넣는다. 그 후, 자신은 1장 드로우한다.
 CALLFORM CARD_ABLE(2,발동誘発)
-PRINTL ②: '묘지기' 몬스터와 '왕가의 잠자는 골짜기－네크로밸리'가 자신 필드에 존재하고,
+PRINTL ②: "묘지기" 몬스터와 "왕가의 골짜기－네크로밸리"가 자신 필드에 존재하고,
 PRINTL 상대가 몬스터의 효과를 발동했을 때 발동할 수 있다.
 PRINTL 패 / 필드의 이 카드를 묘지로 보내고, 그 발동을 무효로 한다.
 
@@ -77,13 +77,15 @@ IF 종류 == 손패起動
 		RETURN 0
 	SIF 발동済_2(듀얼리스트,1048)
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 2
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	SIF 現山札数(듀얼리스트) < 2
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
@@ -109,7 +111,7 @@ ELSEIF 종류 == 발동誘発
 		RETURN 0
 	CALL FULLRESET
 	효과範囲마함 = 1
-효과条件名前 = 왕가의 골짜기－네크로밸리
+	효과条件名前 = 왕가의 골짜기－네크로밸리
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0

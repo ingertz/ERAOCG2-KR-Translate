@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 자이언트 폭탄 에어레이드
 	CASE "略称"
-		RESULTS = 에어레이드
+		RESULTS = AIRRAID
 	CASE "カテゴリ"
 		RESULTS:0 = 없음
 ENDSELECT
@@ -92,7 +92,11 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
-	SIF 손패数(듀얼리스트) < 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
