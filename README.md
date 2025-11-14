@@ -6,5 +6,5 @@ ERAOCG2 Korean tranlsate
 
 
 [비공식화상팩](https://drive.google.com/file/d/1HP3Eu3nG5f40AcHiJVQZK6DCXv5sgKHe/view?usp=drive_link)
-11월 5일 업데이트
+11월 14일 업데이트
 개인용으로만 써야합니다.
