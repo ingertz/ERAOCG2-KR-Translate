@@ -45,15 +45,16 @@ RETURN 0
 @CARD_EXPLANATION_31051(종류)
 #DIM DYNAMIC 종류
 
+PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,소환時)
 PRINTL ①：이 카드가 소환에 성공했을 때,
-PRINTL 자신 묘지의 「그레이돌」 몬스터 1장을 대상으로 발동할 수 있다。
+PRINTL 자신 묘지의 "그레이돌" 몬스터 1장을 대상으로 발동할 수 있다。
 PRINTL 그 몬스터를 특수 소환하다。
-PRINTL 그 후, 이 효과로 특수 소환한 몬스터와 같은 레벨의 물족 몬스터 1장을 패에서 특수 소환할 수 있다.。
+PRINTL 그 후, 이 효과로 특수 소환한 몬스터와 같은 레벨의 원소정령족 몬스터 1장을 패에서 특수 소환할 수 있다.
 PRINTL 이 효과의 발동 후, 턴 종료시까지 자신은 물 속성 몬스터밖에 특수 소환할 수 없다。
-CALLFORM CARD_ABLE(0,破壊→묘지,戦闘→묘지)
+CALLFORM CARD_ABLE(2,破壊→묘지,戦闘→묘지)
 PRINTL ②：이 카드가 전투로 파괴되어 묘지로 보내졌을 때에 발동할 수 있다。
-PRINTL 덱에서 「그레이돌」 몬스터 1장을 특수 소환한다。
+PRINTL 덱에서 "그레이돌" 몬스터 1장을 특수 소환한다。
 PRINTL 
 
 @CARDCAN_31051(듀얼리스트,종류,ゾーン,場所)
@@ -88,6 +89,8 @@ IF 종류 == 소환時
 ;戦闘破壊時に後続を呼ぶ효과
 ;参考：ワルキュ-レ フィアット
 ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	SIF 발동済_2(決闘者,31051)
+		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件カテゴリ = 그레이돌
@@ -143,7 +146,7 @@ IF 종류 == 소환時
 		CALL CARD_SS_RESTRICTION(듀얼리스트)
 	ENDIF
 ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31051)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31051,2)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲덱 = 1
