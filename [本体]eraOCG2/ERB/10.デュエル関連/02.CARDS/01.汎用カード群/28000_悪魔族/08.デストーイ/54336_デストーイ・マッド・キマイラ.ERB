@@ -1,0 +1,144 @@
+@CARDNAME_54336,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스완구 매드 키메라
+	CASE "略称"
+		RESULTS = DW 매드키메라
+	CASE "カテゴリ"
+		RESULTS:0 = 데스완구
+	CASE "検索カテゴリ"
+		RESULTS:0 = 퍼니멀
+		RESULTS:1 = 에지임프
+ENDSELECT
+
+
+@CARD_54336(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2000
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54336(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件カテゴリ:0 = 퍼니멀
+素材条件カテゴリ:1 = 에지임프
+素材条件カテゴリ:2 = 데스완구
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,54336)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54336(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "데스완구" / "에지임프" / "퍼니멀" 몬스터×３
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드가 전투를 한 경우、
+PRINTL 상대는 데미지 스텝 종료시까지 마법 / 함정 / 몬스터의 효과는 전부 무효화된다。
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ②：필드의 몬스터가 전투 또는 효과로 파괴된 경우에 발동할 수 있다。
+PRINTL 상대의 묘지에서 몬스터 １장을 특수 소환한다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：필드의 이 카드의 공격력은, 이 카드 이외의 몬스터의 수×３００만큼 오른다。
+
+
+@CARDCAN_54336(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54336)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 常在無効
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	;1ターンに1度の制限チェック
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54336(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件他所 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 300
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
+ELSEIF 종류 == 常在無効
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"無効",0,51600)
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54336)
+	IF RESULT == 0
+		;このカード自身を묘지から특수소환
+		CALL FULLRESET
+		효과範囲상대묘지 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

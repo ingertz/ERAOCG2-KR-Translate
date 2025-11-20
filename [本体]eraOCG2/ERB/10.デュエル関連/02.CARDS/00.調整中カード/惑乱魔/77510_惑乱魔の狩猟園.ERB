@@ -1,0 +1,218 @@
+﻿@CARDNAME_77510,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹란마의 사냥동산
+	CASE "略称"
+		RESULTS = 혹란마 사냥동산
+	CASE "カテゴリ"
+		RESULTS:0 = 혹란마
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 꿀구멍
+ENDSELECT
+
+
+@CARD_77510(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "唯一存在"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_77510(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ①③의 효과는 각각 １턴에 １번 사용할 수 있다。
+PRINTL 자신 필드는 "혹란마 사냥동산"이 된다。
+CALL CARD_ABLE(1,손패起動)
+PRINTL ①：이 카드의 발동시의 효과 처리로서。
+PRINTL 덱에서 "혹란마" 몬스터 １장을 패에 넣는다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：자신 필드의 "혹란마" 몬스터는 상대가 발동한 함정 카드의 효과를 받지 않는다。
+CALLFORM CARD_ABLE(2,ターン終了時)
+PRINTL ③：턴 종료시、자신 필드의 "혹란마" 엑시즈 몬스터 １장과 상대 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 대상의 상대 몬스터에게 자신 필드의 모든 "혹란마" 몬스터의 벌레 문양 카운터를 각각 １개씩 놓는다。
+PRINTL 그 후、대상 상대 몬스터에게 놓여진 벌레 문양 카운터가 ４종류 이상인 경우、
+PRINTL 그 몬스터를 자신 엑시즈 몬스터의 "꿀단지"로 할 수 있다。
+CALL TEXT_DECORATION("ROGUE")
+
+;"꿀단지":대상のモンスターを자신モンスターの엑시즈素材とする。ただし、묘지へは送らず“소멸”させる。
+
+
+@CARDCAN_77510(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,77510)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	IF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF 발동済_1(듀얼리스트,77510)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件표시 = 表側표시
+	효과条件名前 = 혹란마 사냥동산
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時
+	SIF 발동済_2(듀얼리스트,77510)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件カテゴリ = 혹란마
+	효과条件종류 = 엑시즈
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_77510(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択カード,2
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 조교대상,2
+#DIM DYNAMIC 蟲紋종류
+#DIM DYNAMIC 추가蟲紋종류
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,77510,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과条件カテゴリ = 혹란마
+		효과条件종류 = モン全般
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,77510,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+		選択カード:0 = RESULT
+		IF 選択カード:0 != 9999
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件표시 = 表側표시
+			효과条件カテゴリ = 혹란마
+			효과条件종류 = 엑시즈
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+			選択カード:1 = RESULT
+			IF 選択カード:1 != 9999
+				추가蟲紋종류 = 0
+				FOR カウンタ,0,5
+					SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+						CONTINUE
+					SIF GETVAR(@"%듀얼리스트%_MZ_リ数:カウンタ") >= 10
+						CONTINUE
+					SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+						CONTINUE
+
+					選択カード_ID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+					;与赋予蟲紋相关的效果
+					CALL TRAPSEX_GIVE_OTHER(듀얼리스트,ゾーン,종류,場所,選択カード:0,選択カード_ID)
+					추가蟲紋종류++
+				NEXT
+
+				조교대상:0 = GETVAR(@"%対面者%_필드:(選択カード:0)")
+				조교대상:1 = GETVAR(@"%듀얼리스트%_필드:(選択カード:1)")
+				CALL SEXTEXT_77510_1_1(듀얼리스트,추가蟲紋종류,조교대상:1,조교대상:0)
+
+				CALL TRAPSEX_CATEGORY_QUANTITY(対面者,選択カード:0)
+				蟲紋종류 = RESULT
+				IF 蟲紋종류 >= 4
+					CALL FULLRESET
+					PRINTL 대상 몬스터를 "꿀단지"로 하시겠습니까？
+					PRINTL [1] - ★YEAH!★
+					PRINTL [2] - NO
+					BINPUT
+					IF RESULT == 1
+						조교대상 = GETVAR(@"%対面者%_필드:(選択カード:0)")
+						CALL SEXTEXT_77510_1_2(듀얼리스트,조교대상:1,조교대상:0)
+
+						CALL CARD_DISPOSE(対面者,"필드",選択カード:0,소멸行き)
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:1,"Ｘ",1)
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "혹란마 사냥동산")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"함정耐")
+ENDIF
+
+
+
+

@@ -1,0 +1,125 @@
+@CARDNAME_72564,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스완구 마치
+	CASE "略称"
+		RESULTS = 데스완구 마치
+	CASE "カテゴリ"
+		RESULTS:0 = 데스완구
+ENDSELECT
+
+
+@CARD_72564(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72564(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：상대 몬스터의 효과 / 마법 / 함정 카드를 상대가 발동했을 때에 발동할 수 있다。
+PRINTL 그 발동을 무효로 하고 파괴한다。
+PRINTL 그 후、이하의 효과를 적용할 수 있다。
+PRINTL ●자신 필드의 "데스완구" 몬스터 １장을 묘지로 보내고、
+PRINTL 레벨８ 이상의 "데스완구" 융합 몬스터 １장을 융합 소환 취급으로 엑스트라 덱에서 특수 소환한다。
+;PRINTL この효과で특수소환したモンスターは、次の자신エンドフェイズに제외される。
+
+@CARDCAN_72564(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72564)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;상대が효과を발동したかチェック
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72564(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72564,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+
+		;추가효과：데스완구を묘지로 보내고 융합소환
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 데스완구
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 1
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 데스완구
+		효과条件종류 = 융합
+		CALL 효과条件レベル_ADV(8, "以上")
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 1
+		PRINTFORMW 데스완구를 묘지로 보내고 융합 소환하시겠습니까？
+		CALL YN_CHOICE(듀얼리스트)
+		IF RESULT == はい
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = 데스완구
+			효과条件종류 = モン全般
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과条件カテゴリ = 데스완구
+				효과条件종류 = 융합
+				CALL 효과条件レベル_ADV(8, "以上")
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

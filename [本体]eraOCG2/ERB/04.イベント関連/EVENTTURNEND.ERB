@@ -28,7 +28,6 @@ FOR 캐릭터_ID,1,CHARANUM
 	IF (CFLAG:캐릭터_ID:호감도 > 10000 && TALENT:캐릭터_ID:연모 >= 2) || TALENT:캐릭터_ID:굴복됨 >= 1
 		完堕ち数 += 1
 	ENDIF
-
 	IF CFLAG:캐릭터_ID:연모제한 >= 1
 		GOTO SKIP_REMBO
 	ENDIF
@@ -310,9 +309,7 @@ FOR 캐릭터_ID,1,CHARANUM
 	CFLAG:캐릭터_ID:알바중 = 0
 	CFLAG:캐릭터_ID:일했음 = 0
 	CFLAG:캐릭터_ID:방문했음 = 0
-	;데이트	
-	CFLAG:캐릭터_ID:데이트중 = 0
-	CFLAG:캐릭터_ID:데이트이벤트함 = 0
+
 	;賭け事
 	CFLAG:캐릭터_ID:내기플래그 = 0
 	;조르기허가
@@ -323,14 +320,16 @@ FOR 캐릭터_ID,1,CHARANUM
 	CFLAG:캐릭터_ID:함몰개방 = 0
 	;お목욕
 	CFLAG:캐릭터_ID:목욕 = 0
-	;挨拶플래그
-	CFLAG:캐릭터_ID:인사했음 = 0
-
 	IF CFLAG:캐릭터_ID:목욕 == 0
 		RESET_STAIN 캐릭터_ID
 		;アヌスを洗う
 		STAIN:캐릭터_ID:4 = 0
 	ENDIF
+	;挨拶플래그
+	CFLAG:캐릭터_ID:인사했음 = 0
+
+
+
 	SIF CFLAG:캐릭터_ID:시작위치 == CFLAG:MASTER:시작위치
 		CFLAG:캐릭터_ID:축적 += 100
 
@@ -355,11 +354,10 @@ FOR 캐릭터_ID,1,CHARANUM
 	ENDIF
 NEXT
 
-VARSET 데이트_ホテル플래그
+
 VARSET パック_合計구입数
 VARSET 人祓いモード
 VARSET 追跡설정_ID
-CFLAG:MASTER:데이트중 = 0
 
 CALL RESET_SEXVARIENT()
 
@@ -472,10 +470,29 @@ FOR 캐릭터_ID,0,CHARANUM
 	BASE:캐릭터_ID:정력 = MIN(MAXBASE:캐릭터_ID:정력,ETE_정력値)
 	;ついでに성욕
 	CFLAG:캐릭터_ID:성욕 += ABL:캐릭터_ID:욕망 + 1
+
+	;デート	
+	CFLAG:캐릭터_ID:데이트중 = 0
+	CFLAG:캐릭터_ID:데이트이벤트함 = 0
+	CFLAG:캐릭터_ID:수영복착용 = 0
+	;旅行の処理（マスター含む）
+	IF CFLAG:캐릭터_ID:여행중 <= 0
+		CFLAG:캐릭터_ID:여행중 = 0
+		CFLAG:캐릭터_ID:시작일시위치 = -1
+		CFLAG:캐릭터_ID:현재위치 = CFLAG:캐릭터_ID:시작위치
+	ENDIF
+	IF CFLAG:캐릭터_ID:여행중 >= 1
+		CFLAG:캐릭터_ID:여행중 --
+	ENDIF
+
+
+
 NEXT
 FLAG:0 = 0
 
 CALL NPC_RANDOM_RATEMATCH_CHECK
+
+CALL CARDSHOP_UNEI_SALES
 
 CALL RANK_POINT
 SIF DAY:3 >= 2
@@ -519,6 +536,7 @@ IF ITEM:카이바코퍼레이션주식 && DAY:3 == 29
 ENDIF
 SIF バイト済み == 1
 	報酬_バイト = 5000
+
 
 ;－호감도だとお金が徴収されていたので
 SIF FLAG:누계호감도상승 < 0

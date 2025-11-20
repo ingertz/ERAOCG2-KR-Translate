@@ -1,0 +1,81 @@
+﻿@LOVE_HOTEL_ENTRY
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC カードコスト,10
+#DIM DYNAMIC 절정BASE計算
+#DIM DYNAMIC 절정BASE基礎
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 캐릭터동행中
+#DIM DYNAMIC 最終캐릭터
+
+
+FOR 캐릭터_ID,1,CHARANUM
+	SIF !INRANGE(CFLAG:캐릭터_ID:현재위치,場所_ラブホ内,場所_ラブホ휴식)
+		CONTINUE
+	条件달성 = 1
+	BREAK
+NEXT
+SIF CFLAG:MASTER:시작일시위치 == 場所_ラブホ内
+	条件달성 = 1
+
+IF 条件달성 == 1
+	CFLAG:MASTER:현재위치 = 場所_ラブホ内
+	PRINTFORML 호텔 방으로 돌아왔다。
+	PRINTFORMW
+	RETURN 1
+ENDIF
+
+FOR 캐릭터_ID,1,CHARANUM
+	SIF CFLAG:캐릭터_ID:동행 == 0
+		CONTINUE
+	캐릭터동행中 = 1
+	BREAK
+NEXT
+
+IF 캐릭터동행中 != 1
+	PRINTFORMW 혼자 이용하기에는 너무 허전하다……。
+	PRINTFORML 
+	RETURN 0
+ENDIF
+IF MONEY < 5800
+	PRINTFORMW 돈이 부족한 것 같다.
+	PRINTFORML 
+	RETURN 0
+ENDIF
+
+PRINTFORML 러브 호텔을 이용하시겠습니까？
+PRINTFORML １일 이용에 5800엔입니다　（소지금:{MONEY}）
+PRINTFORML 
+PRINTFORML [0] - 예
+PRINTFORML [1] - 아니오
+PRINTFORML 
+BINPUT
+SIF RESULT == 1
+	RETURN 0
+CALL MONEY_GET(-5800)
+
+CFLAG:MASTER:현재위치 = 場所_ラブホ内
+CFLAG:MASTER:시작일시위치 = 場所_ラブホ内
+CFLAG:MASTER:여행중 = 1
+캐릭터동행中 = 0
+FOR 캐릭터_ID,1,CHARANUM
+	SIF CFLAG:캐릭터_ID:동행 == 0
+		CONTINUE
+	CFLAG:캐릭터_ID:시작일시위치 = 場所_ラブホ内
+	CFLAG:캐릭터_ID:여행중 = 1
+	最終캐릭터 = 캐릭터_ID
+	캐릭터동행中 ++
+NEXT
+
+IF 캐릭터동행中 >= 2
+	PRINTFORML %CALLNAME:最終캐릭터%들의 허리를 감싸 안고, 호텔 방으로 데려갔다。
+	PRINTFORMW 
+ELSE
+	PRINTFORML %CALLNAME:最終캐릭터%의 허리를 감싸 안고, 호텔 방으로 데려갔다。
+	PRINTFORMW 
+ENDIF
+
+@LOVE_HOTEL_EXIT
+
+CFLAG:MASTER:현재위치 = 場所_ラブホ
+PRINTFORML 호텔 방에서 나왔다。
+PRINTFORMW 

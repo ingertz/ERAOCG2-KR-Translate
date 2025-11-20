@@ -1,0 +1,146 @@
+@CARDNAME_54331,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스완구 하켄 크라켄
+	CASE "略称"
+		RESULTS = DW 하켄크라켄
+	CASE "カテゴリ"
+		RESULTS:0 = 데스완구
+	CASE "検索カテゴリ"
+		RESULTS:0 = 퍼니멀
+		RESULTS:1 = 에지임프
+ENDSELECT
+
+
+@CARD_54331(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2200
+	CASE "守備力"
+		RETURN 3000
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54331(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件종류 = トークン以外
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 에지임프
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = 퍼니멀
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,54331)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54331(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "에지임프" 몬스터＋"퍼니멀" 몬스터
+CALLFORM CARD_ABLE(0,필드起動)
+PRINTL ①：１턴에 １번、상대 필드의 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 묘지로 보낸다。
+PRINTL 이 효과를 발동한 턴、이 카드는 직접 공격할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드는 １번의 배틀 페이즈중에 ２번 공격할 수 있다。
+PRINTL ③：이 카드가 전투를 행한 배틀 페이즈 종료시에 발동할 수 있다。
+PRINTL 이 카드를 수비 표시로 한다。
+
+
+@CARDCAN_54331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54331)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,54331)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	;상대フィールドにモンスターがいるかチェック
+	SIF モンスター数(対面者) <= 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	;２回攻撃（추가で1回）
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",1)
+	;戦闘後守備표시변경（バトルフェイズ終了時処理は別途実装が必要）
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54331,1)
+	IF RESULT == 0
+		;상대モンスター１장을 묘지へ送る
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		IF RESULT == 1
+			;直接攻撃불가
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"直無",1)
+		ENDIF
+	ENDIF
+ENDIF

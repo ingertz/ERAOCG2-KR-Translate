@@ -17,6 +17,7 @@ SIF TFLAG:15
 ;-------------------------------------------
 ;奴隷の절정時の텍스트
 ;-------------------------------------------
+;みざえる추가　구상표시用にNOWEX:캐릭터_ID:Ｍ절정 + NOWEX:캐릭터_ID:Ｅ절정でも절정표시されるように추가
 @PALAM_MESSAGE_B(캐릭터_ID)
 #DIM DYNAMIC 캐릭터_ID
 IF TEQUIP:캐릭터_ID:절정금지 && BASE:캐릭터_ID:절정 >= 10000
@@ -27,8 +28,6 @@ ENDIF
 LOCAL =  NOWEX:캐릭터_ID:Ｃ절정 + NOWEX:캐릭터_ID:Ｖ절정 + NOWEX:캐릭터_ID:Ａ절정 + NOWEX:캐릭터_ID:Ｂ절정 + NOWEX:캐릭터_ID:분유 + NOWEX:캐릭터_ID:사정
 SIF !(LOCAL + NOWEX:캐릭터_ID:방뇨)
 	RETURN 0
-
-
 
 ;절정
 PRINTFORM %CALLNAME:캐릭터_ID%는 
@@ -92,10 +91,13 @@ SIF LOCAL + NOWEX:방뇨 > 0
 ;-------------------------------------------
 ;조교者の사정時の텍스트
 ;-------------------------------------------
+;みざえる추가　구상표시用に파생コマンド時の사정した際の텍스트を추가
 @PALAM_MESSAGE_A
 VARSET LOCAL
 ;TFLAG:1 사정부위 (ビット0=콘돔 1=질내 2=애널 3=수음 4=펠라 5=파이즈리 6=스마타 7=풋잡 8=体表 9=애널봉사
 ;20=수음펠라 21=파이즈리펠라22=식스나인
+;추가分、不足分記述
+;TFLAG:1 사정箇所 (23=イラマチオ24=子宮口責め25=ダブル펠라26=ダブル스마타27=ダブル파이즈리28=交互삽입)
 
 ;콘돔
 IF GETBIT(TFLAG:1,0)
@@ -305,4 +307,78 @@ ELSEIF GETBIT(TFLAG:1,8)
 ;애널봉사
 ELSEIF GETBIT(TFLAG:1,9)
 	PRINTFORMW %CALLNAME:TARGET%의 얼굴은 뱉어낸 다량의 정액으로 뒤덮였다…
+;3P추가
+;ダブル펠라
+ELSEIF GETBIT(TFLAG:1,30)
+	LOCAL = MASTER_POSE(4,1,1)
+	IF EXP_UP(15,TARGET) == NOWEX:MASTER:사정 * 3 && EXP_UP(15,LOCAL) == NOWEX:MASTER:사정 * 3
+		PRINTFORML 사정이 시작되자 %CALLNAME:TARGET%는 입술로 %CALLNAME:MASTER%의 귀두를 감싸
+		PRINTFORM 뿜어져 나오는
+		SIF NOWEX:MASTER:사정 > 1
+			PRINT 대량의
+		PRINTFORMW 정액을 입안에서 받아내 꿀꺽 소리를 내며 삼켜버렸다…
+		PRINTFORML 곧이어 %CALLNAME:TARGET%가 입술을 떼자
+		PRINTFORML %CALLNAME:LOCAL%이 입술로 %CALLNAME:MASTER%의 귀두를 감싸
+		PRINTFORM 뿜어져 나오는
+		SIF NOWEX:MASTER:사정 > 1
+			PRINT 대량의
+		PRINTFORMW 정액을 입안에서 받아내어 목을 울리며 삼켰다…
+	ELSEIF EXP_UP(15,TARGET) == NOWEX:MASTER:사정 * 3 && !EXP_UP(15,LOCAL)
+		PRINTFORML 사정이 시작되자 %CALLNAME:TARGET%는 입술로 %CALLNAME:MASTER%의 귀두를 감싸
+		PRINTFORM 뿜어져 나오는
+		SIF NOWEX:MASTER:사정 > 1
+			PRINT 대량의
+		PRINTFORMW 정액을 입안에서 받아내어 목을 울리며 삼켰다…
+		PRINTFORML 머지않아 %CALLNAME:TARGET%가 입술을 떼자
+		PRINTFORML %CALLNAME:LOCAL%가 입술로 %CALLNAME:MASTER%의 귀두를 감싸려 했지만 늦어서
+		PRINTFORM 뿜어져 나오는
+		SIF NOWEX:MASTER:사정 > 1
+			PRINT 대량의
+		PRINTFORMW 정액으로 얼굴을 더럽히게 되었다…
+	ELSEIF !EXP_UP(15,TARGET) && EXP_UP(15,LOCAL) == NOWEX:MASTER:사정 * 3
+		PRINTFORML 사정이 시작되자 %CALLNAME:TARGET%는 입술로 %CALLNAME:MASTER%의 귀두를 감싸려 했지만 제시간에 맞추지 못하고
+		PRINTFORM 뿜어져 나오는
+		SIF NOWEX:MASTER:사정 > 1
+			PRINT 대량의
+		PRINTFORMW 정액으로 얼굴을 더럽히게 되었다…
+		PRINTFORML 그것을 보다 못한 %CALLNAME:LOCAL%는 입술로 %CALLNAME:MASTER%의 귀두를 감싸고
+		PRINTFORM 뿜어져 나오는
+		SIF NOWEX:MASTER:사정 > 1
+			PRINT 대량의
+		PRINTFORMW 정액을 입안에서 받아내어 목을 울리며 삼켰다…
+	ELSE
+		PRINTFORML %CALLNAME:MASTER%는 %CALLNAME:TARGET%와 %CALLNAME:LOCAL%의 얼굴 사이에 사정했다…
+		PRINTFORM %CALLNAME:TARGET%와 %CALLNAME:LOCAL%는 뿜어져 나오는
+		SIF NOWEX:MASTER:사정 > 1
+			PRINT 대량의
+		PRINTFORMW 정액으로 얼굴을 더럽히게 되었다…
+	ENDIF
+;ダブル스마타
+ELSEIF GETBIT(TFLAG:1,31)
+LOCAL = MASTER_POSE(2,1,1)
+	PRINTFORML %CALLNAME:MASTER%는 %CALLNAME:TARGET%와 %CALLNAME:LOCAL%의 밀착한 성기 사이에서 사정했다…
+	PRINTFORMW %CALLNAME:TARGET%와 %CALLNAME:LOCAL%의 성기에서 하복부에까지 정액이 흩뿌려졌다…
+;ダブル파이즈리
+ELSEIF GETBIT(TFLAG:1,32)
+	LOCAL = MASTER_POSE(5,1,1)
+	PRINTFORM %CALLNAME:MASTER%는 %CALLNAME:TARGET%와 %CALLNAME:LOCAL%의
+	;奴隷と助手が巨乳か爆乳
+	IF BUST_SIZE(TARGET) > 0 && BUST_SIZE(LOCAL) > 0
+		PRINT 풍만한
+	;奴隷と助手が貧乳か絶壁
+	ELSEIF BUST_SIZE(TARGET) < 0 && BUST_SIZE(LOCAL) < 0
+		PRINT 얇은
+	ENDIF
+	PRINTL 가슴 사이에서 정액을 뿜었다…
+	;奴隷と助手が巨乳か爆乳
+	IF BUST_SIZE(TARGET) > 0 && BUST_SIZE(LOCAL) > 0
+		PRINTFORMW %CALLNAME:TARGET%와 %CALLNAME:LOCAL%의 가슴골에 정액이 고여간다…
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%와 %CALLNAME:LOCAL%의 가슴팍에서 얼굴에까지 정액이 흩뿌려졌다…
+	ENDIF
+;交互삽입
+ELSEIF GETBIT(TFLAG:1,33)
+	LOCAL = MASTER_POSE(6,1,1)
+	PRINTFORML %CALLNAME:MASTER%는 %CALLNAME:LOCAL%의 질 내에 정액을 뿜어내자 일단 페니스를 뽑고 나서
+	PRINTFORMW 사정이 멈추지 않는 사이에 %CALLNAME:TARGET%에게 삽입해, 마지막 한 방울까지 쏟아부었다…
 ENDIF

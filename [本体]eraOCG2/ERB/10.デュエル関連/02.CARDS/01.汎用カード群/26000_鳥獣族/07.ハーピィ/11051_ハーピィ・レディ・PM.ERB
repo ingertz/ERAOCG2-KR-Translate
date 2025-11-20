@@ -1,0 +1,152 @@
+﻿@CARDNAME_11051,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 해피 레이디 펫마스터
+	CASE "略称"
+		RESULTS = 해피 ＰＭ
+	CASE "カテゴリ"
+		RESULTS:0 = 해피
+ENDSELECT
+
+
+@CARD_11051(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 비행야수족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1300
+	CASE "守備力"
+		RETURN 1400
+	CASE "성별"
+		RETURN 牝性
+	CASE "別途ID"
+		RETURN 1050
+	CASE "連動ID"
+		RETURN 1050
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_11051(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드의 카드명은 룰 상 "해피 레이디"로 취급한다。
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 덱에서 드래곤족인 "해피" 몬스터 １장을 패에 넣는다。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：１턴에 １번、덱 가장 위의 카드를 묘지로 보내고 발동할 수 있다。
+PRINTL 자신 필드의 다른 "해피" 몬스터의 수 만큼、상대 필드의 몬스터를 고르고 파괴한다。
+
+
+@CARDCAN_11051(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,11051)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,1051)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 드래곤족
+	효과条件カテゴリ = 해피
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 해피
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_11051(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,11051,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종족 = 드래곤족
+		효과条件カテゴリ = 해피
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,11051,10)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",0)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 해피
+		효과条件他所 = 1
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		カウンタ = RESULT
+		IF カウンタ != 0
+			CALL FULLRESET
+			SIF カウンタ == 1
+				효과条件任意 = 1
+			SIF カウンタ != 1
+				효과条件複数 = 100 - カウンタ
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+		ENDIF
+	ENDIF
+ENDIF

@@ -1,0 +1,163 @@
+@CARDNAME_54334,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스완구 사벨 타이거
+	CASE "略称"
+		RESULTS = DW 사벨타이거
+	CASE "カテゴリ"
+		RESULTS:0 = 데스완구
+	CASE "検索カテゴリ"
+		RESULTS:0 = 퍼니멀
+		RESULTS:1 = 에지임프
+ENDSELECT
+
+
+@CARD_54334(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54334(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 99
+素材条件数自由 = 1
+素材条件素材数起動 = 1
+素材条件종류 = トークン以外
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 데스완구
+	素材条件종류 = 융합
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ:0 = 퍼니멀
+	素材条件カテゴリ:1 = 에지임프
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,54334)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54334(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "데스완구" 융합 몬스터＋"퍼니멀" 몬스터 또는 "에지임프" 몬스터 １장 이상
+CALLFORM CARD_ABLE(0,EX소환時)
+PRINTL ①：이 카드가 융합 소환에 성공했을 때、
+PRINTL 자신 묘지의 "데스완구" 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 특수 소환한다。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ②：이 카드가 몬스터 존에 존재하는 한、
+PRINTL 자신 필드의 "데스완구" 몬스터의 공격력은 ４００만큼 오른다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：몬스터 ３장 이상을 소재로 융합 소환한 이 카드는 
+PRINTL 전투 / 효과로는 파괴되지 않는다。
+
+
+@CARDCAN_54334(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54334)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時
+	SIF ゾーン != "필드"
+		RETURN 0
+	;묘지に「데스완구」モンスターがあるかチェック
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ:0 = 데스완구
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54334(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 素材数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 攻守変動
+	;「데스완구」モンスター全体に攻撃力400アップを付与
+	CALL FULLRESET
+	효과条件カテゴリ = 데스완구
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,400)
+
+ELSEIF 종류 == 지속효과
+	;素材数が3体以上なら破壊耐性を付与
+	素材数 = GETVAR(@"%듀얼리스트%_MZ_汎数:場所")
+	IF 素材数 >= 3
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"破壊耐性",1,2)
+	ENDIF
+
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54334,1)
+	IF RESULT == 0
+		;묘지の「데스완구」モンスターを특수소환
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ:0 = 데스완구
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

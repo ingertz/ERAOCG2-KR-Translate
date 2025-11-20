@@ -802,7 +802,7 @@ PRINTL 자신 필드는 "침식의 미궁성"이 된다.
 PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
 PRINTL ①：세트된 "함정 속으로" 일반 함정 카드를 자신이 발동했을 경우,
 PRINTL 그 효과에 이하의 효과를 더할 수 있다.
-PRINTL ●필드의 카드 1장을 고르고 파괴한다.
+PRINTL ●상대 필드의 카드 1장을 고르고 파괴한다.
 PRINTL ②：자신이 "함정 속으로" 카드 이외의 일반 함정 카드를 발동했을 경우에 발동할 수 있다.
 PRINTL 자신의 패 / 묘지에서 식물족 / 곤충족 몬스터 1장을 고르고 특수 소환한다.
 PRINTL 
@@ -836,10 +836,27 @@ ELSEIF 종류 == 효과後誘発
 	IF RESULT == 1
 		SIF 발동済_1(듀얼리스트,262110)
 			RETURN 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件除去種 = 묘지
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
 	ELSE
 		CALL FULLRESET
 		효과条件종류 = 通常함정
+		효과条件固カテゴリ = 함정 속으로
 		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件종족:0 = 식물족
+		효과条件종족:1 = 곤충족
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT != 1
 			RETURN 0
 		SIF 발동済_2(듀얼리스트,262110)

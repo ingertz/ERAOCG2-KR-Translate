@@ -2,6 +2,9 @@
 ;ターン終了の処理
 @EVENTCOMEND0
 #DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC 救助플래그
+
+
 CALL TURN_RESET
 ;팬티没収、수집
 IF TFLAG:COMABLE관리 < 2
@@ -45,37 +48,43 @@ IF BASE:MASTER:체력 <= 300 || BASE:MASTER:술기운 >= 1500
 	;캐릭터クターの체력最大値상승
 	SIF オプション_체력기력상승 == 1
 		CFLAG:MASTER:401 += 10
-
-
 	CFLAG:MASTER:수면 = 1
 	CFLAG:MASTER:취침시간 = DAY * 1440 + TIME
-	SIF INRANGE(CFLAG:MASTER:시작위치,場所_依頼用エリア１,場所_依頼用エリア３)
+	;変なところにいたら自室に戻るように설정
+	SIF INRANGE(CFLAG:MASTER:현재위치,場所_依頼用エリア１,場所_依頼用듀얼エリア)
 		CFLAG:MASTER:현재위치 = CFLAG:MASTER:시작위치
-	IF TARGET > 0 && TALENT:연모 && BASE:체력 >= 500
-		PRINTFORMW %CALLNAME%가 %CALLNAME:MASTER%를 개인실로 옮겨 주었다…
-		CFLAG:MASTER:현재위치 = CFLAG:MASTER:시작위치
-		CFLAG:현재위치 = CFLAG:MASTER:시작위치
-		CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 3, 6)
-	ENDIF
-	FOR 캐릭터_ID,0,CHARANUM
-		CALL RESET_SEXCON(캐릭터_ID)
-	NEXT
 
-	IF CFLAG:MASTER:시작위치 != CFLAG:MASTER:시작위치
-		FOR 캐릭터_ID,0,CHARANUM
-			IF CFLAG:캐릭터_ID:시작위치 == CFLAG:MASTER:시작위치
-				PRINTFORMW 동거인이 쓰러진 %CALLNAME:MASTER%를 발견하고、개인실로 옮겨 주었다…
-				CFLAG:MASTER:현재위치 = CFLAG:MASTER:시작위치				
-				BREAK
-			ENDIF
-		NEXT
-		IF CFLAG:MASTER:시작위치 != CFLAG:MASTER:시작위치
-			IF RAND:5
-				CFLAG:MASTER:감기플래그 = 5
+
+	IF CFLAG:MASTER:시작일시위치 > 0
+		PRINTFORMW %CALLNAME:MASTER%는 호텔 침대로 돌아왔다。
+		CFLAG:MASTER:현재위치 = CFLAG:MASTER:시작일시위치
+	ELSE
+		;시작위치に連れて行ってくれる
+		IF TARGET > 0 && TALENT:연모 && BASE:체력 >= 500
+			PRINTFORMW %CALLNAME:TARGET%가 %CALLNAME:MASTER%를 개인실로 옮겨 주었다…
+			CFLAG:MASTER:현재위치 = CFLAG:MASTER:시작위치
+			CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 3, 6)
+		ENDIF
+		IF CFLAG:MASTER:현재위치 != CFLAG:MASTER:시작위치
+			FOR 캐릭터_ID,0,CHARANUM
+				IF CFLAG:캐릭터_ID:시작위치 == CFLAG:MASTER:시작위치
+					PRINTFORMW 동거인이 쓰러진 %CALLNAME:MASTER%를 발견하고、개인실로 옮겨 주었다…
+					CFLAG:MASTER:현재위치 = CFLAG:MASTER:시작위치	
+					救助플래그 = 1			
+					BREAK
+				ENDIF
+			NEXT
+			IF 救助플래그 == 0
+				IF RAND:3
+					CFLAG:MASTER:감기플래그 = 5
+				ENDIF
 			ENDIF
 		ENDIF
 	ENDIF
 	
+	FOR 캐릭터_ID,0,CHARANUM
+		CALL RESET_SEXCON(캐릭터_ID)
+	NEXT
 	FLAG:1 = 1
 	IF TFLAG:섹스승부
 		CFLAG:MASTER:H패배경험 ++
@@ -84,6 +93,7 @@ IF BASE:MASTER:체력 <= 300 || BASE:MASTER:술기운 >= 1500
 	CALL RESET_SEXVARIENT()
 	RETURN 0
 ENDIF
+
 IF TARGET && TCVAR:기분나쁨
 	PRINTFORMW %CALLNAME:TARGET%을 화나게 하고 말았다…
 	FOR 캐릭터_ID,0,CHARANUM
@@ -328,6 +338,10 @@ NEXT
 FOR 캐릭터_ID, 0, CHARANUM
 	TCVAR:캐릭터_ID:전턴절정 = NOWEX:캐릭터_ID:절정
 	TCVAR:캐릭터_ID:전CT행동 = TCVAR:캐릭터_ID:CT행동
+	;ザポルグ追記
+	;절정してなかったら記録消去
+	SIF !TCVAR:캐릭터_ID:전턴절정
+		TCVAR:캐릭터_ID:연속절정기록  = 0
 NEXT
 
 

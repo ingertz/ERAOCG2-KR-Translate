@@ -1,0 +1,227 @@
+﻿@CARDNAME_40072,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹란마 란카
+	CASE "略称"
+		RESULTS = 란 란카
+	CASE "カテゴリ"
+		RESULTS:0 = 혹란마
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 꿀구멍
+ENDSELECT
+
+
+@CARD_40072(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 750
+	CASE "守備力"
+		RETURN 2050
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1376
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_40072(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느쪽인가 １개밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 덱에서 "혹란마" 몬스터 １장을 패에 넣는다。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：서로의 턴에 이 카드가 공격 표시인 경우、자신 필드의 "혹란마" 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 카드를 패로 되돌리고、이 카드는 수비 표시가 된다。
+PRINTL 그 후、자신은 패에서 "혹란마" 몬스터 １장을 특수 소환할 수 있다。
+CALLFORM CARD_ABLE(3,攻撃時誘発)
+SETCOLOR C_PINK
+PRINTL ③：공격 표시인 이 카드가 공격 대상으로 선택되었을 때에 발동할 수 있다。
+PRINTL 공격 몬스터에게 이 카드의 벌레 문양을 새긴다、이 카드는 수비 표시가 된다。
+RESETCOLOR
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_40072(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,40072)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,40072)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,40072)
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,40072)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,40072)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件カテゴリ = 혹란마
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_40072(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 自己選択カード
+#DIM DYNAMIC 自己守備力修正
+#DIM DYNAMIC 対面選択カード
+#DIM DYNAMIC 対面攻撃力修正
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 성별판정
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40072,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 혹란마
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40072,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件표시 = 表側표시
+		효과条件カテゴリ = 혹란마
+		효과条件行先플래그 = 손패行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"表",2,1)
+
+			CALL FULLRESET
+			PRINTL 패에서 "혹란마" 몬스터 １장을 특수 소환하시겠습니까？
+			PRINTL [1] - ★YEAH!★
+			PRINTL [2] - NO
+			BINPUT
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과条件カテゴリ = 혹란마
+				효과条件종류 = モン全般
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40072)
+	IF RESULT == 0
+		自己選択カード = 戦闘場所(듀얼리스트)
+		自己守備力修正 = GETVAR(@"%듀얼리스트%_MZ_守:自己選択カード")
+		対面選択カード = 戦闘場所(듀얼리스트,1)
+		対面攻撃力修正 = GETVAR(@"%対面者%_MZ_攻:対面選択カード")
+		성별판정 = GETVAR(@"%対面者%_MZ_性:対面選択カード")
+		IF 성별판정 == 牝性
+			조교대상 = GETVAR(@"%対面者%_필드:対面選択カード")
+			CALL SEXTEXT_40072_1_1(듀얼리스트,조교대상,성별판정,対面選択カード,自己守備力修正,対面攻撃力修正)
+		ELSEIF (성별판정 == 雄性 || 성별판정 == ふたなり) && 対面攻撃力修正 - 自己守備力修正 >= 1
+			조교대상 = GETVAR(@"%対面者%_필드:対面選択カード")
+			CALL SEXTEXT_40072_1_1(듀얼리스트,조교대상,성별판정,対面選択カード,自己守備力修正,対面攻撃力修正)
+			CALL CARD_EROTICS(조교대상)
+			IF RESULT != -1
+				SIF 마함数(対面者) < 5
+					CALL CARD_EQUIP_MONSTER(対面者,対面選択カード,"상대필드",自己選択カード,1)
+			ELSE
+				SIF 마함数(対面者) < 5
+					CALL CARD_EQUIP_MONSTER(対面者,対面選択カード,"상대필드",自己選択カード,1)
+			ENDIF
+		ELSEIF 성별판정 == 雄性 || 성별판정 == ふたなり
+			조교대상 = GETVAR(@"%対面者%_필드:対面選択カード")
+			CALL SEXTEXT_40072_1_1(듀얼리스트,조교대상,성별판정,対面選択カード,自己守備力修正,対面攻撃力修正)
+		ENDIF
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"表",2,1)
+		;与赋予蟲紋相关的效果
+		CALL TRAPSEX_GIVE_FIXED(듀얼리스트,ゾーン,종류,場所,対面選択カード,2)
+	ENDIF
+
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL FULLRESET
+	IF RESULT == 0
+		IF 戦闘場所(듀얼리스트,1) != 5
+			CALL CARD_EROTICS(戦闘カードID(듀얼리스트,1))
+			IF RESULT != 0
+				조교대상 = RESULT
+			ENDIF
+		ENDIF
+		IF 조교대상 > 0
+			PRINTFORML
+			SETCOLOR C_PINK 
+			PRINTFORML 최음 가스가 %CALLNAME:조교대상%의 의식을 어지럽히고, 사지는 란카에게 구속되어 있다.
+			RESETCOLOR 
+		ENDIF		
+	ENDIF		
+ENDIF

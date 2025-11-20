@@ -1,0 +1,1145 @@
+@IRAI_EVENT_537(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+#DIM DYNAMIC 条件チェック
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE  "名前"
+		RESULTS = (CP-ZI6)코덱 이노베이션
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL 【「狡智」の頂天】
+		PRINTL 蝿の王に支配された제니스が一人。
+		PRINTL 情報は少なく、存在していることしか判明していない。
+		PRINTL 支配以前は知略に優れていたため、舞台の裏で策謀を巡らせていたと思われる。
+	CASE "条件"
+		;前回クリア
+		SIF 依頼_完了횟수:535 == 0
+			RETURN 0
+		RETURN 1
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+
+@IRAI_ACT_537(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC カノン
+#DIM DYNAMIC ウェディング
+#DIM DYNAMIC ライオネル
+#DIM DYNAMIC サスペンス
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 選択肢
+
+カノン = NO_TO_CHARANUM(2758)
+ウェディング = NO_TO_CHARANUM(4025)
+ライオネル = NO_TO_CHARANUM(4022)
+サスペンス = NO_TO_CHARANUM(4024)
+이벤트主 = NO_TO_CHARANUM(4023)
+
+
+IF 依頼_달성상황 == 0
+	IF 依頼_進行보존:537 == 1
+		PRINTFORML 再び、ローゼスとのライブバトルに挑むことにした。
+		PRINTFORMW 控室にいる%CALLNAME:カノン%は静かに瞑想をしている。
+		PRINTFORMW 何でも、『歌を聞いていると前後不覚になるから集中力を高めている』らしい。
+		PRINTFORMW 騒ぐわけにもいかないので、余り物たちでサイレントインディアンポーカーに勤しんだ……
+		CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"カイバ・メガモール －中央ステージ－")
+		依頼_달성상황 = 2
+	
+	ELSEIF 依頼_進行보존:537 == 2
+		PRINTFORML ローゼスとのライブバトルに勝つ算段は付いた。
+		PRINTFORMW モールへ向かおう。
+		依頼_場所 = 場所_モール
+		依頼_달성상황 = 2
+
+	ELSE
+		PRINTFORMW %CALLNAME:サスペンス%失踪事件からしばらく。
+		PRINTFORML 根こそぎ奪い取った%CALLNAME:サスペンス%のファン。
+		PRINTFORMW その情報発信能力の高さが生み出したブームによって%CALLNAME:カノン%の人気は鰻登りとなった。
+		PRINTFORML そこかしこの店頭に%CALLNAME:カノン%専用ブースが설치され始め、
+		PRINTFORMW 最近では通販サイトで%CALLNAME:カノン%の非公式パチモングッズが出回り始めている。
+		PRINTFORMW %CALLNAME:カノン%のかわいさが世界정복する日も近いな……
+		CALL EVENT_MOVE(MASTER,場所_モール)
+		PRINTFORML
+		PRINTFORML 今日はマスクとサングラスの不審者ルックに身を包んだ%CALLNAME:カノン%と共に、제니스捜索を兼ねて市場調査に乗り出している。
+		PRINTFORMW ニヤリーや%CALLNAME:ウェディング%はちょっと目立ちすぎるのでお留守番だ。
+		PRINTFORML
+		PRINTFORMW 「私、人気者なのだわ……！」
+		PRINTFORML 
+		PRINTFORMW %CALLNAME:カノン%が目を輝かせている。
+		PRINTFORML 今更、と思うが無理もない。
+		PRINTFORML これまでファンらしいファンはライブ会場でしか見られなかったし、
+		PRINTFORMW %CALLNAME:カノン%のグッズを一般通行人が付けるようになったのは最近のことなのだから。
+		PRINTFORML 
+		PRINTFORMW 「あ、ライオネル様たちのグッズもあるのだわ！」
+		PRINTFORML 
+		PRINTFORML %CALLNAME:カノン%が指をさした方を見てみると、クリプロのコーナーがあった。
+		PRINTFORMW 横幅は……１０ｍくらいか？　結構なスペースを占有している。
+		PRINTFORML 長さに比例して数もかなりのものだ。
+		PRINTFORMW 中身も他のアイドルのグッズと大差ないようだし、この機会に存分にパク……参考にさせてもらおう。
+		PRINTFORML
+		PRINTFORMW 「大変よ、%CALLNAME:MASTER%」
+		PRINTFORMW 「ここ、제니스のコーナーが３つもあるのだわ！」
+		PRINTFORML 
+		PRINTFORMW マジ！？
+		PRINTFORML 慌てて左右を確認すると、そこにはなんとクリプロのコーナーが壁のようにこちらを見守っているではないか！
+		PRINTFORMW これ全部確認すんの？
+		PRINTFORML
+		PRINTFORMW 「そうなる……のかしら？」
+		PRINTFORML
+		PRINTFORMW …………。
+		PRINTFORMW ………………。
+		PRINTFORMW ……………………よし。
+		PRINTFORML
+		PRINTFORML こんなのちまちま見てたら日が明ける！
+		PRINTFORMW 手分けしてなんか気に入ったやつを探して集合だ！
+		PRINTFORML 
+		PRINTFORMW 「わかったのだわ！」
+		PRINTFORML 
+		PRINTFORMW かくして、クリプログッズ物色タイムが始まった！
+		CALL EVENT_TIMER(60)
+		依頼_場所 = 場所_モール
+		依頼_달성상황 ++
+	ENDIF
+
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORMW 「ふぅ……いっぱいあったのだわ……」
+	PRINTFORML %CALLNAME:カノン%と一緒になって近くの椅子に身体を沈みこませる。
+	PRINTFORMW 数が多いし、意外と気になる物も多くて気が抜けなかった……
+	PRINTFORML 
+	PRINTFORMW そこそこ회복した所でお互いの戦利品を見せつけ合う。
+	PRINTFORMW 代金は経費で落ちるから安心！
+	PRINTFORML 
+	PRINTFORML ──このぬいぐるみすごいのだわ！ふわふわで、とっても触り心地がいいのよ！
+	PRINTFORML ──この香水もすごいぜ！%CALLNAME:ライオネル%の匂いがちゃんとする！
+	IF TALENT:カノン:연모
+		PRINTFORMW ──……私の方がいい匂いなのだけれど？
+	ELSE
+		PRINTFORMW ──ちょっと気持ち悪いのだわ……
+	ENDIF
+	PRINTFORML 
+	PRINTFORMW 「キミ今暇？　僕らとちょっと遊ばない？」
+	PRINTFORML 
+	PRINTFORMW %CALLNAME:カノン%とワイワイはしゃいでいると、クッソ軽薄そうな軟派台詞が聞こえてきた。
+	PRINTFORMW 声のする方へ視線を向けると、そこでは大の男三人が少女を取り囲んでいる様子が映っていた。
+	PRINTFORML 
+	PRINTFORMW 「オレらこの辺スゲー詳しいからさ、楽しませてあげられると思うけど、どう？」
+	PRINTFORMW 「カラオケとかボーリングとか、金はもちろんコッチが出すからさ！」
+	PRINTFORML
+	PRINTFORMW あの手この手でナンパするイケメ……超お下劣ブサイク共。
+	PRINTFORMW 隠れてよく見えないが、少女は「はあ……」とため息を吐いたようだ。
+	PRINTFORML
+	PRINTFORMW 「退いてくださる？　わたくし、貴方がたのような人に構っていられるほど暇ではありませんの」
+	PRINTFORML 
+	PRINTFORMW 冷たく言い放つ少女。
+	PRINTFORMW しかし、男たちも諦めが悪いようで、ナンパの手を緩める気は無いようだ。
+	PRINTFORML
+	PRINTFORMW …………。
+	PRINTFORML
+	PRINTFORMW 「アクリルスタンドはどうやって……%CALLNAME:MASTER%？　どうかしたのかしら？」
+	PRINTL
+	PRINTL [0] - "ヒーロー"になってくる
+	PRINTL [1] - ムカつくなぁ……ぶっ殺してやりてぇなぁ……
+	BINPUT
+	選択肢 = RESULT
+	PRINTL
+	IF RESULT == 0
+		PRINTFORMW さすがに見逃せない、助けに行こう。
+		PRINTFORMW 疲労で溢れかえる身体に無理やり力を入れ、男たちの下へ向かう。
+		PRINTFORML
+		PRINTFORMW 「あ、そうだ！　それじゃあ僕の友達も──ん？　キミ、何？」
+		PRINTL
+		PRINTL [0] - やめなよ
+		PRINTL [1] - そいつは자신の獲物だ
+		BINPUT
+		PRINTL
+		PRINTFORMW 「は？」
+		PRINTFORML
+		PRINTFORML デュエルだ！
+		PRINTFORMW コッチが勝ったらその子からは手を引いてもらうぞ！
+		PRINTFORML
+		PRINTFORMW 「デュエルか……いいよ。　それじゃあ、キミには僕の引き立て役になってもらおうか！」
+		PRINTFORMW 「いいぞー！」「カッコイイ所見せてくれよなー！」
+		PRINTFORML
+		PRINTFORMW 「……なんなんですの」
+
+	ELSEIF RESULT == 1
+		PRINTFORML こっちは１割くらい仕事で１時間グッズとにらめっこしてたっていうのに、
+		PRINTFORMW そっちは昼間っからナンパ→ベッドインコンボに繋げようってか？
+		PRINTFORMW 「%CALLNAME:MASTER%？」
+		PRINTFORML しかもあの失敗するなんて微塵も考えてない、自信に満ち溢れた態度。
+		PRINTFORMW イケメンは女引っ掛ける技術も배짱もパンピーとは格が違うんだなあ。
+		PRINTFORMW 「顔が怖いのだわ？」
+		PRINTFORML
+		PRINTFORMW ──殺すか。
+		PRINTFORML
+		PRINTFORMW 「あ、そうだ！　それじゃあ僕の友達も──ん？　キミ、何？」
+		PRINTL
+		PRINTL [0] - デュエル
+		PRINTL [1] - 殺す……
+		BINPUT
+		PRINTL
+		IF RESULT == 0
+			PRINTFORMW デュエルだ！　デュエルしろぉー！
+		ELSEIF RESULT == 1
+			PRINTFORML イケメンはぶっ殺していいって条約で決まってんだよ！
+			PRINTFORMW デュエルだ！
+		ENDIF
+		PRINTFORMW 「な、なんなんだ一体！？」
+	ENDIF
+	TARGET = 0
+	CALL CHOICE_DUEL_TYPE(1537)
+	IF RESULT == 1
+		PRINTFORMW 勝った！
+		IF 選択肢 == 1
+			PRINTFORMW 気持ちいいぜ！　イケメンを地べたに這いつくばらせるの超気持ちいい！
+		ENDIF
+		PRINTFORML
+		PRINTFORMW 「くっ……こうなったら、こっちで……！」
+		PRINTFORMW 「お待ちなさい」
+		PRINTFORML
+		PRINTFORMW 腰のマイクに手を伸ばしたイケメンに少女が待ったをかける。
+		PRINTFORMW 少女は相変わらずの冷たい目を向けながら、バッグから水色のマイクを取り出した。
+		PRINTFORML
+		PRINTFORML 「敗者は潔く負けを認め、その場から去るのが最低限の礼儀というもの。
+		PRINTFORMW 　それすら出来ないというのであれば、わたくしが상대になりますわ」
+		PRINTFORMW 「アイドルだったのは想定外だが好都合だ！　僕とライブバ──」
+		PRINTFORMW 「お、おい！マズイって！　コイツ、『レディオ・ローゼス』だ！」
+		PRINTFORML 「レディオ……ローゼスだって……！？」
+		PRINTFORMW 「ローゼス様……！？」
+		PRINTFORML
+		PRINTFORML 側に来ていた%CALLNAME:カノン%とイケメンが驚きの声を上げる。
+		PRINTFORMW 『レディオ・ローゼス』、クリスタルプロダクション소속のインテリアイドルだ。
+		PRINTFORML
+		PRINTFORMW 「それで？　どうなさるおつもりかしら？」
+		PRINTFORMW 「くっ……！　今日のところは引いてやる！　だが、いつかは……！」
+		PRINTFORMW 「"いつか"なんてありませんことよ。少なくとも、貴方がたにはね。　……さて」
+		PRINTFORML
+		PRINTFORML そう吐き捨てて逃げていく負け犬共。
+		PRINTFORMW それをぼけーっと眺めていると、少女がこちらに顔を向けてきた。
+		PRINTFORML
+		PRINTFORMW 「まずはお礼を。　動機はともかく、助けていただいた事には感謝します」
+		PRINTFORMW 「そして、中々の腕前でした。　お名前を伺っても？」
+		CALL SYOTAIMEN(이벤트主)
+		PRINTFORML 
+		PRINTFORMW 「なるほど、貴方が……」
+		PRINTFORML
+		PRINTFORMW ローゼスは数秒考えこむと、口を開いた。
+		PRINTFORML 
+		PRINTFORMW 「貴方、わたくしのボディーガードになる気はありませんこと？」
+		PRINTFORMW えっ
+		PRINTFORMW 「マネージャーでもよろしくてよ」
+		PRINTFORMW 「よくないのだわ！」
+		PRINTFORML 
+		PRINTFORMW 자신とローゼスの間に%CALLNAME:カノン%が割り込んでくる。
+		PRINTFORML 
+		PRINTFORMW 「%CALLNAME:MASTER%は私のマネージャーよ！　勝手な引き抜きは許さないのだわ！」
+		PRINTFORMW 「では、ライブバトルで決めるのはいかがでしょうか、カノンさん？」
+		PRINTFORMW 「私の名前を知ってるのだわ！？」
+		PRINTFORMW 「もちろんですわ。　貴女の最近の活躍は耳に新しいですから」
+		PRINTFORMW 「それで、いかがですか？
+		PRINTFORMW 　そちらの%CALLNAME:MASTER%様を賭けて、わたくしとライブバトルをしてくださいませんこと？」
+		PRINTFORMW 「いや……でも……うーん……」
+		PRINTFORML
+		PRINTFORML %CALLNAME:カノン%はとても悩んでいるようだ。
+		PRINTFORMW 자신に何かできることは無いだろうか……
+		PRINTL
+		PRINTL [0] - 応援する
+		PRINTL [1] - 焚きつける
+		PRINTL [2] - 尻を揉む
+		BINPUT
+	ELSE
+		PRINTFORMW 負けてしまった……
+		PRINTFORML
+		IF 選択肢 == 0
+			PRINTFORMW 「よし、僕の勝ちだね！　これでキミとデートするのは僕らだ！」
+			PRINTFORMW 「致しませんわよ？」
+			PRINTFORMW 「え？」
+			PRINTFORMW 「貴方がたが勝手にデュエルを始めただけであって、わたくしは無関係ですもの」
+			PRINTFORML
+			PRINTFORML ……そういえばそうだった。
+			PRINTFORML こっちが吹っ掛けて、あっちが勝手に思い込んだだけで、別に少女に関係はなかった。
+			PRINTFORMW イケメンたちも、「そういえばそうだった」という顔をしている。
+			PRINTFORMW 少女はため息をつくと、バッグから水色のマイクを取り出した。
+			PRINTFORML
+			PRINTFORMW 「どうしても、と言うのであれば、こちらでお受けしますが……どうなさいますか？」
+			PRINTFORMW 「アイドルだったのか……いいね、それじゃあ僕とライブバ──」
+		ELSEIF 選択肢 == 1
+			PRINTFORMW 「なんだったんだ一体……」
+			PRINTFORMW 「コイツどうする？　サツに持ってく？」
+			PRINTFORMW 「うーん……気削がれちゃったしそうしようかな……」
+			PRINTFORMW 「ちょっと待って欲しいのだわ！」
+			PRINTFORML
+			PRINTFORMW イケメン共にしょっぴかれそうになっていると、%CALLNAME:カノン%が間に入ってきた。
+			PRINTFORML
+			PRINTFORMW 「ん？　キミ、コイツの連れ？」
+			PRINTFORML 「えっと……そうなのだわ！
+			PRINTFORMW 　いきなりデュエルを仕掛けたのは謝るので、ここは許していただけないかしら……」
+			PRINTFORML 「……いや、ダメだね。
+			PRINTFORMW 　これから楽しもうっていう雰囲気をぶち壊されたんだ、その分の仕返しか埋め合わせは必要だね」
+			PRINTFORMW 「そんな……何か、他の方法は無いのかしら？」
+			PRINTFORML 「それならキミが상대してくれない？僕声フェチってやつでさ、キミみたいにいい声聞くとテンション上がるんだよね。
+			INPUTMOUSEKEY 2000
+			PRINTFORML 　なんかボイトレとかやってる？鍛えられた喉から出る声なんだよね。工事現場とか声の大きい人いるんだけどさ、
+			INPUTMOUSEKEY 2000
+			PRINTFORML 　それはそれでまたいいんだけど、なんて言うかな、『美しくない』んだよね。こう、コッチのハートにグッとこな
+			INPUTMOUSEKEY 2000
+			PRINTFORMW 「あわ……あわわ……」
+			PRINTFORMW 「そこまでにしておきなさい」
+			PRINTFORML
+			PRINTFORML いきなり気持ち悪くなったイケメンに狼狽える%CALLNAME:カノン%。
+			PRINTFORMW それを遮ったのは先ほどナンパされていた少女だった。
+			PRINTFORML
+			PRINTFORMW 「どうかした？　もしかして、キミが상대してくれるのかな？」
+			PRINTFORMW 「貴方では分不相応だと言ってるのよ、三流地下アイドルさん」
+			PRINTFORMW 「なんだと……！」
+			PRINTFORML 「腰のマイクでわかりますわ。
+			PRINTFORMW 　貴方はアイドル、それも数年間やってきてセンターを一度も飾ったことのない三流の、ね」
+			PRINTFORML
+			PRINTFORMW 冷たい目でそう言うと、少女は下げていたバッグから水色のマイクを取り出し、その切っ先をイケメンへ向けた。
+			PRINTFORML
+			PRINTFORML 「なるほど、キミもアイドルだったと言うわけか。
+			PRINTFORMW 　だったら話は早い！　僕とライブバ──」
+		ENDIF
+
+		PRINTFORMW 「お、おい！マズイって！　コイツ、『レディオ・ローゼス』だ！」
+		PRINTFORML 「レディオ……ローゼスだって……！？」
+		PRINTFORMW 「ローゼス様……！？」
+		PRINTFORML
+		PRINTFORML %CALLNAME:カノン%とイケメンが驚きの声を上げる。
+		PRINTFORMW 『レディオ・ローゼス』、クリスタルプロダクション소속のインテリアイドルだ。
+		PRINTFORML
+		PRINTFORMW 「それで？　どうなさるおつもりかしら？」
+		PRINTFORMW 「くっ……！　今日のところは引いてやる！　だが、いつかは……！」
+		PRINTFORML
+		PRINTFORML そう吐き捨てて逃げていく負け犬共。
+		PRINTFORMW それを見送りながら、立ち上がって体に付いた埃を落とす。
+		PRINTFORML
+		PRINTFORMW 「"いつか"なんてありませんことよ。　少なくとも、貴方がたにはね」
+		PRINTFORMW 「あ、あの！　お話をさせていただいてもよろしいかしら！ローゼス様！」
+		PRINTFORMW 「ええ、構いませんよ、カノンさん。　貴方にはその権利があります」
+		PRINTFORMW 「ありがとうございます！」
+		PRINTFORML
+		PRINTFORML 例の如く%CALLNAME:カノン%はライブバトルを申し込んだ。
+		PRINTFORMW ローゼスは少し%CALLNAME:カノン%を見つめたかと思うと、こちらに視線を移してきた。
+		PRINTFORML
+		PRINTFORML 「初めまして、%CALLNAME:MASTER%様。
+		PRINTFORMW 　わたくしは『クリスタルプロダクション』소속、『「狡智」の頂天　レディオ・ローゼス』と申します。　以後、お見知りおきを」
+		PRINTFORMW あ、これはご丁寧にどうも……
+		CALL SYOTAIMEN(이벤트主)
+		PRINTL
+		PRINTFORML 「カノンさん、ライブバトルの申し出、お受け致しますわ。
+		PRINTFORMW 　ひとつ、条件を付けさせてもらいますが」
+		PRINTFORMW 「じょ、条件？」
+		PRINTFORMW 「ええ、わたくしが勝ったら、こちらにいる貴方のマネージャーにはわたくしの召使いになっていただきます」
+		PRINTFORMW 「めしつか……ええっ！？」
+		PRINTFORML 「もちろん、呑めないというのであれば、それで結構です。
+		PRINTFORMW 　わたくしは、この条件以外でライブバトルを受ける気はありませんが」
+		PRINTFORMW 「それは……いや、でも……」
+		PRINTFORML
+		PRINTFORML %CALLNAME:カノン%はとても悩んでいるようだ。
+		PRINTFORMW 자신に何かできることは無いだろうか……
+		PRINTL
+		PRINTL [0] - 応援する
+		PRINTL [1] - 焚きつける
+		PRINTL [2] - 尻を揉む
+		BINPUT
+	ENDIF
+	PRINTL
+	IF RESULT == 0
+		PRINTFORMW 結局のところ、勝てばいいのだ。
+		PRINTFORMW 「え？」
+		PRINTFORML どんなにリスクが大きくても勝てばノーリスク！
+		PRINTFORMW やってやろうぜ！　%CALLNAME:カノン%ならできるさ！
+		PRINTFORMW 「うん……うん……！」
+		PRINTFORML
+		PRINTFORMW %CALLNAME:カノン%は力強い目でローゼスを見つめ直す。
+		PRINTFORML
+		PRINTFORMW 「ローゼス様！　そのライブバトルの申し出、お受けするのだわ！」
+	ELSEIF RESULT == 1
+		PRINTFORMW ところでローゼス様、給金は如何ほどで？
+		PRINTFORMW 「そうですわね……低く見積もっても、このくらいになりますわ」
+		PRINTFORMW ローゼスが紙に書いた数字を見せてくる。
+		PRINTFORMW ……いい数字だ！　靴を舐めたくなってくるな……
+		PRINTFORMW 「%CALLNAME:MASTER%！？　何を言っているのだわ！？」
+		PRINTFORMW 「どうやら%CALLNAME:MASTER%様に저항は無いようですね、いかがなさいますか？」
+		PRINTFORMW 「……わかったのだわ！　ローゼス様、そのライブバトルをお受けするのだわ！」
+	ELSEIF RESULT == 2
+		PRINTFORMW ローゼスの尻に手を伸ばす。
+		PRINTFORMW ほう……これは中々……
+		PRINTFORMW 「……！？　%CALLNAME:MASTER%！？　何やってるのだわ！？」
+		PRINTFORMW 雇い主の尻の感触を確かめておこうかと。
+		PRINTFORMW 「それで、いかがでしたか？」
+		PRINTFORML 非常によいお尻にございました。
+		PRINTFORMW これに敷かれるのであれば、どんな苦行にも耐えられることでしょう。
+		PRINTFORMW 「なるほど」
+		IF TALENT:カノン:연모
+			PRINTFORML 「なるほどじゃないのだわ！
+			PRINTFORMW 　%CALLNAME:MASTER%！　お尻なら私がいくらでも触らせてあげるのだわ！」
+		ELSE
+			PRINTFORMW 「二人とも、一体何の話をしているのだわ！？」
+		ENDIF
+		PRINTFORMW 「……そうじゃなくて！」
+		PRINTFORML
+		PRINTFORMW %CALLNAME:カノン%に殴られて床を舐める。
+		PRINTFORMW %CALLNAME:カノン%は咳払いすると、改めてローゼスに向き直った。
+		PRINTFORML
+		PRINTFORMW 「ローゼス様！　そのライブバトルの申し出をお受けするのだわ！」
+	ENDIF
+	PRINTFORML 「了解いたしました。
+	PRINTFORMW 　日時に지정はございますか？　わたくしはこの後すぐでも構いませんよ」
+	PRINTL
+	PRINTL [0] - 今すぐにでもライブバトルする
+	PRINTL [1] - 今日は都合が悪い（依頼を失敗扱いにします）
+	BINPUT
+	PRINTL
+	IF RESULT == 0
+		PRINTFORMW ローゼスに連れられ、モールのステージへ向かった。
+		CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"カイバ・メガモール －中央ステージ－")
+		依頼_달성상황 ++
+	ELSEIF RESULT == 1
+		PRINTFORML 「かしこまりました。
+		PRINTFORMW 　それではここのステージを抑えておくので、ご都合が付きましたらお越しください」
+		PRINTFORML
+		PRINTFORML ローゼスとライブバトルの約束を取り付けた。
+		PRINTFORMW 準備が出来たらまたここに来よう！
+		依頼_進行보존:537 = 2
+		RETURN 3
+	ENDIF
+
+ELSEIF 依頼_달성상황 == 2
+	IF 依頼_進行보존:538 == 1
+		PRINTFORMW ローゼスが登壇し、観客に挨拶をする。
+		PRINTFORMW そして%CALLNAME:カノン%を呼んだ……かと思ったら、こちらを見て固まった。
+		PRINTFORMW しかし、すぐに平静を取り戻したようで、軽く咳払いをしてから続ける。
+		PRINTFORML
+		PRINTFORMW 「ローゼス様、今日はよろしくお願いするのだわ」
+		PRINTFORMW 「……ええ、始めましょうか」
+		PRINTFORML
+		PRINTFORMW こうして二人のライブが始まった。　……のだが。
+		PRINTFORML ローゼスの動きと声にキレが無い。
+		PRINTFORMW これなら市販のＣＤの方がよかったし、生の%CALLNAME:カノン%の歌の方が好きだ。
+		PRINTFORMW ライブに集中できていない……というよりは、他の何かを気にかけている感じだろうか。
+		PRINTFORML 何度かこちらと目が合ったが、後ろにはスーツ姿のホワイト八尺様しかいなかった。
+		PRINTFORMW 자신の服に変な所でもあったか……？
+		PRINTFORML
+		PRINTFORMW その後も妙に音程がずれていたり、歌詞が数節飛んだりと、素人アイドルのような有様が続いた。
+		PRINTFORMW 当然、そんな事でファンの心を掴めるわけも無く、白色の明かりが増えていく。
+		PRINTFORML
+		PRINTFORMW ……………………。
+		PRINTFORML 
+		PRINTFORMW ライブが終わった時、モールの四方八方からは白いライトが顔を覗かせており、%CALLNAME:カノン%へ盛大な拍手が送られた。
+	ELSE
+		IF 依頼_進行보존:537 == 1
+			PRINTFORML ローゼスの前挨拶が終わり、%CALLNAME:カノン%が登壇する。
+			PRINTFORMW 観客の視線が%CALLNAME:カノン%に集まる。
+			PRINTFORML
+			SETCOLOR C_ROYAL_BLUE
+			PRINTFORMW 「よく逃げずに来ましたわね。　実力はともかく、その点は評価してさしあげますわ」
+			PRINTFORMDW 「ええ……絶対に譲れないものがあるのだわ」
+			PRINTFORMW 「そうですか。　それでは始めましょうか」
+
+		ELSE
+			CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"カイバ・メガモール －中央ステージ－")
+			PRINTFORML カイバ・メガモール。
+			PRINTFORMW ネオ童実野シティの中心部に存在するこのモールは、平日休日問わず人でごった返している。
+			PRINTFORML 当然この日も例外でなく、告知を出した瞬間に二人のファンとファン以外の客がステージまで集まってきた。
+			PRINTFORMW 今日は観客席まで行けそうにないな……
+			PRINTFORML
+			PRINTFORMW 「…………」
+			PRINTFORML
+			PRINTFORML %CALLNAME:カノン%はここに来てから静かに瞑想をし続けている。
+			PRINTFORMW 緊張はしているのだろうが……どこか落ち着いているようにも見える。
+			PRINTFORMW さすがに騒ぐわけにもいかないのでコングラチュレーションと茶室を温めていると、%CALLNAME:ウェディング%が話しかけて来た。
+			PRINTFORML
+			PRINTFORMW 「今回のあらましは聞きました、%CALLNAME:MASTER%を巡っての争いのようですね」
+			PRINTFORMW 「……カノンにとって、既に貴方は『大切な人』の枠組みにあります。　私やニヤリーのように」
+			PRINTFORML 「ローゼスが何を考えているのかは分かりません。
+			PRINTFORMW 　ですが、今のカノンのアイドル力は今までに無いほど高まっています。　サイリウムの輝きも、このように」
+			PRINTFORML 
+			PRINTFORMW %CALLNAME:ウェディング%が見せてきたサイリウムはピッカピカだった。
+			PRINTFORML 暗い室内で突然見たら目がやられる光量。
+			PRINTFORMW これほどのアイドル力、そこらの木っ端アイドルであれば、一番だけでアイドル生命を絶つことができるだろう。
+			PRINTFORMW 
+			PRINTFORML
+			PRINTFORML
+			PRINTFORMW 舞台袖からステージを覗き見る。
+			PRINTFORML 観客こそ多いものの、モールということもあってか比較的大人し目だ。
+			PRINTFORMW 何秒持つかな……
+			PRINTFORMW 
+			PRINTFORMW 予定時刻ちょうど、ローゼスがステージに上がってきた。
+			PRINTFORML ……とても静かだ。
+			PRINTFORMW ローゼスのファンと思しき区画からは歓声の類は聞こえず、息を飲む声や湿度高めのため息がモールの雑踏に飲み込まれていった。
+			PRINTFORML 
+			SETCOLOR C_ROYAL_BLUE
+			PRINTFORML 「ご機嫌よう、皆様。　『「狡智」の頂天　レディオ・ローゼス』ですわ。
+			PRINTFORMW 　お忙しい中、わたくしのライブにお越しいただいたことに心よりの感謝を」
+			PRINTFORML
+			PRINTFORMDL 観客からの返事は無い。
+			PRINTFORMDW ローゼスの透き通るような声のみがモールの一角に響き渡る。
+			PRINTFORML 
+			PRINTFORML 「挨拶はこのくらいでいいでしょう。　告知通り、本日は通常のライブではなく、ライブバトルです。
+			PRINTFORMW 　それでは、本日のわたくしのお상대にご登壇いただきましょう──『ピュア・カノン』」
+			PRINTFORML 
+			PRINTFORMDW %CALLNAME:カノン%が壇上に上がる。
+			PRINTFORMDW 普段ならやかましいファンたちも、彼女の真剣な表情と場の雰囲気に呑まれ、沈黙を保っている。
+			PRINTFORML 
+			PRINTFORMDL 「初めましての人は初めまして、私はピュア・カノンなのだわ。
+			PRINTFORMDW 　みんな、今日は私とローゼス様のライブに来てくれてありがとう」
+			PRINTFORMW 「……挨拶は終わりでよろしいですの？」
+			PRINTFORMDW 「ええ、始めましょう」
+		ENDIF
+		PRINTFORML 
+		PRINTFORML 
+		PRINTFORML 
+		PRINTFORMW 「わたくしの生み出す智の迷宮に惑いなさい」 
+		PRINTFORML 
+		PRINTFORMD 「貴女の
+		PRINTFORM 世界
+		PRINTFORMDW を、私がゼロに染める」
+		PRINTFORML
+		PRINTFORML 「『ローゼス・イノベーション』」
+		PRINTFORMDW 「『天頂開戦プログラム』」
+		RESETCOLOR
+		TARGET = 0
+		OPPOSER名 = 『레디오 로제스』
+		CALL CHOICE_DUEL_TYPE(537)
+		PRINTFORML
+		IF RESULT == 1
+			PRINTFORML 『改革は既知より生まれ、既知とは破壊されるもの』
+			PRINTFORMW 「流星が飛来する。저항も感嘆も追い抜いて」
+			PRINTFORML
+			PRINTFORMW ──歌を乗せる。
+			PRINTFORMW ──상대の歌を飲み込むのではなく、少しずつ染み渡らせていく。
+			PRINTFORML
+			PRINTFORML ──塗り潰すのではなく、塗り替える。
+			PRINTFORMW ──歌を、ステージを、ファンを、全て『私』に塗り替える。
+			PRINTFORML 
+			PRINTFORML 『才は記録に残れど、記憶からは消えゆくのだから』
+			PRINTFORMW 「さようなら、名も知らぬあなた。いつかまた、会う日まで──」
+			PRINTFORML
+			PRINTFORMW ………………。
+			PRINTFORMW 歌が、終わった。
+			PRINTFORMW 観客席のみならず、二階、三階、四階……視界に移る人影の手元には白い光が灯っている。
+			PRINTFORMW 勝敗は誰が見ても明らかだった。
+			PRINTFORML
+			PRINTFORMW ──パチパチパチパチ……
+			PRINTFORML
+			PRINTFORML %CALLNAME:カノン%とローゼスがお辞儀をしたのに合わせて拍手が起こる。
+			PRINTFORMW そこにモールやライブステージの騒がしさはなく、劇場のような静粛に満ちていた。
+			PRINTFORML
+			PRINTFORMW こうして、【レディオ・ローゼス　ＶＳ　カノン】のライブバトルは、カノンの승리で幕を閉じた……
+
+		ELSE
+			PRINTFORMW ──わからない。
+			PRINTFORML
+			SETCOLOR C_ROYAL_BLUE
+			PRINTFORMW 『────』
+			RESETCOLOR
+			PRINTFORML
+			PRINTFORML ──자신は今どこにいるのか、何を口にしているのか、何もわからない。
+			PRINTFORMW ──ただ、聞こえてくる声に従うことしかできない。
+			PRINTFORML
+			SETCOLOR C_ROYAL_BLUE
+			PRINTFORMW 『────』
+			PRINTFORML
+			PRINTFORMW ──何故、ここにいるのだろうか。　大切な人の為……誰だったのだろうか。
+			PRINTFORMW ──わからない、わからない、わからない。
+			PRINTFORML
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 『──火事だー！』
+				CASE 1
+					PRINTFORMW 『──テロリストだー！』
+				CASE 2
+					PRINTFORMW 『──強盗だー！』
+			ENDSELECT
+			PRINTFORML
+			PRINTFORMW ──歌が止まった。
+			PRINTFORMW ──周囲がにわかに騒がしくなり、雑音が耳に戻ってくる。
+			PRINTFORMW ──唐突に増加する情報量に脳が耐えられなくなり、意識は闇へと落ちていった。
+			PRINTFORML
+			PRINTFORMW …………。
+			PRINTFORMW モール内で事件が起こった瞬間、%CALLNAME:カノン%が倒れた。
+			PRINTFORMW 異様な状態に気付いて何とか受け止めたものの、完全に意識を失っており、ライブの続行は불가能だった。
+			PRINTFORMW 幸いと言っていいのか、事件の影響はライブバトルは中止、後日に延期となった。
+			PRINTFORML 今までなかった賭けライブバトルによるプレッシャーか、%CALLNAME:カノン%は本調子ではなかったように思える。
+			PRINTFORMW 次回までに克服できるといいのだが……
+			依頼_進行보존:537 = 1
+			CALL EVENT_MOVE(MASTER,場所_寝室)
+			RETURN 3
+		ENDIF
+	ENDIF
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"モール－ファミレス")
+	依頼_달성상황 ++
+
+ELSEIF 依頼_달성상황 == 3
+	PRINTFORMW 「お疲れ様でしたカノンさん、よいライブバトルでしたよ」
+	PRINTFORMW 「あ、ありがとうなのだわ！　ローゼス様！」
+	PRINTFORML 
+	PRINTFORML ライブ後、控室は次の演者が使うので、近くのファミレスでローゼスと話をすることにした。
+	PRINTFORMW 패배したにもかかわらず、ローゼスに動揺の類は見られず、いつも通りの無表情でアイスティーを流し込んでいる。
+	PRINTFORML
+	PRINTFORML 「ライブバトルの条件についてはご安心ください。
+	PRINTFORMW 　%CALLNAME:MASTER%様を召使いにすることはキッパリ諦めますので」
+	PRINTFORMW 「あ、ありがとうございます？　えっと、実は他にもお願いしたいことが……」
+	PRINTFORMW 「『元の世界に戻るために제니스の力を借りたい』、そうでしょう？」
+	PRINTFORMW 「え、あ、はい！　そうなのだわ！」
+	PRINTFORML 「驚くことはありませんよ、貴方がたについては色々調べさせていただきましたから。
+	PRINTFORMW 　そして、申し訳ありませんが現状わたくしに出来ることはございません」
+	PRINTFORMW 「えっと……それは、どういう……？」
+	PRINTL
+	PRINTFORML ……話が長くなる気配を感じた。
+	PRINTFORMW 聞き流すか？
+	PRINTL
+	PRINTL [0] - しっかり聞く
+	PRINTL [1] - 真剣な顔をする
+	BINPUT
+	PRINTL
+	IF RESULT == 0
+		PRINTFORMW 「まず初めに、この世界は複数の世界に分かれています」
+		PRINTFORML 「今わたくし達のいる『人間の世界』、モンスター達のいる『モンスターの世界』、
+		PRINTFORMW 　他にも様々な世界が存在しますが、今は関係無いので割愛させていただきますわ」
+		PRINTFORML 「この『世界』間での이동は基本的に出来ないものです。
+		PRINTFORMW 　ですが、わたくし達のように何らかの技術・能力を用いたり、または偶然出来た『通り道』を通ることで이동することができます」
+		PRINTFORMW 「しかし、カノンさんのケースはこれらとは全く異なります」
+		PRINTFORML 「『デュエルモンスターズ』ではなく、『デュエル・マスターズ』が存在し、発展した世界。
+		PRINTFORMW 　この世界とは別の歴史、構造をしているその『世界』は『並行世界』に酷似しています」
+		PRINTFORML 「現状、わたくし共の技術では『並行世界』への이동はおろか観測すら出来ていません。
+		PRINTFORMW 　『あるだろう』という仮説を立てるが関の山となっていますわ」
+	ELSEIF RESULT == 1
+		PRINTFORMW ……やっぱり面がいいな。
+		PRINTFORMW 何なら私服のセンスもいい、週刊誌にすっぱ抜かれても服の方に話題が逸れていきそうだ。
+		PRINTFORML
+		PRINTFORMW …………。
+		PRINTFORMW ………………終わったようだ。
+	ENDIF
+	PRINTFORML
+	PRINTFORMW 「残念だけど、それなら仕方ないのだわ……」
+	PRINTFORML 「アイドル活動にさほど影響が無いのであれば、わたくしも協力は惜しみませんわ。
+	PRINTFORMW 　ライブバトルで負けた以上、そちらの要求を呑まない訳にもいきませんもの」
+	PRINTFORMW 「ありがとうございます！」
+	CALL CARD_GET_CHARA(이벤트主)
+	PRINTFORML 
+	PRINTFORMW こうして、ローゼスに協力の約束を取り付けることができた。
+	PRINTFORML 残る제니스は『「戦鬼」の頂天　ベートーベン』と『「使命」の頂天　グレイテスト・グレート』の二人だ。
+	PRINTFORMW 今のところ帰還の糸口は全くもって得られていないが、とりあえず次のライブバトルまでに%CALLNAME:カノン%の人気を爆上げさせておこう！
+	IF 依頼_進行보존:538 == 1
+		PRINTFORMW 
+		PRINTFORML
+		PRINTFORMW ローゼスと別れ、%CALLNAME:カノン%たちとも別れて一人になった。
+		PRINTFORML いつの間にかポケットに入っていた手紙。
+		PRINTFORMW それに書いてあった人気の無い裏路地へ向かうと、そこにはローゼスがいた。
+		PRINTFORML ……呼び出しの内容に思い当たる節はある。
+		PRINTFORMW 一応記憶は消しておいたはずだが……
+		PRINTFORML 
+		PRINTFORMW 「突然のお呼び立てに応じていただき、ありがとうございます。　理由については、その……」
+		PRINTFORMW %CALLNAME:TARGET%は少し葛藤する様子を見せたかと思うと、熱の籠った声色で口を開いた。
+		PRINTFORMW 「%CALLNAME:MASTER%様のお姿を見ると、身体が異様に熱くなって、淫らな妄想が止まらなくなってしまうのです」
+		PRINTFORMW 「乳房や陰核を丹念に弄ばれ、限界を迎えて懇願しても許されず、まるで玩具のように扱われる……❤」
+		PRINTFORMW 「そんなアイドルとして、제니스としてあるまじき、浅ましい光景が脳裏に浮かび、染め上げてしまうのです」
+		PRINTFORMW 「他の方ではこのような事は起きず、%CALLNAME:MASTER%様を認識した場合だけこうなってしまいます」
+		PRINTFORMW 「このままでは帰還のための情報を集めるどころか、アイドル活動にすら差し支えることでしょう」
+		PRINTFORML 「……"コレ"をどうにかする手段を教えてください。　
+		PRINTFORMW 　わたくしに出来ることならば、何でもさせていただくつもりです」
+		PRINTFORML
+		PRINTFORML どうやら、『%CALLNAME:MASTER%に조교された』記憶こそ消えているものの、『조교された』という記憶だけが残っているようだ。
+		PRINTFORMW 普段は忘れているが、자신を視界に入れた途端、조교時の記憶がフラッシュバックする……こんなところだろうか。
+		PRINTFORMW 『記憶破壊銃』は完全に記憶を消すことはできない、覚えておこう。
+		PRINTFORML 
+		PRINTFORMW それはそれとして、適当に話を聞くフリをして騙くらかしてもいいかもしれない。
+		PRINTL
+		PRINTL [0] - ホテルで"続き"をする
+		SIF TALENT:MASTER:성별 != 1
+			PRINTL [1] - ホテルでぶち犯す
+		PRINTL [2] - 자위指導をする
+		BINPUT
+		PRINTL
+		IF RESULT == 0
+			PRINTFORMW 『상황を再現して発散させる』という名目でローゼスをホテルに連れ込んだ。
+			PRINTFORMW 浮かんでくる情景を事細かにローゼスに説明させながら、愛撫を行ったり、備え付けの감도５００倍媚薬を投入していく。
+			PRINTFORMW 途中から喘いでばかりで、자신が主導することになったが、そもそも자신が根源なのだから問題は無いだろう。
+			PRINTFORML 限界を超えて高ぶらせ、軽い一押しで절정させる……
+			PRINTFORMW そんなことを繰り返していたら、遂にローゼスはろくな反応を見せなくなってしまった。
+			PRINTFORMW こちらもそろそろ飽きてきたので、性感帯と性感帯でない場所を強く刺激し、〆の절정をさせる。
+			PRINTFORMW ローゼスはビクンと大きく身体を震わせた後、動かなくなった。
+			PRINTFORML
+			PRINTFORMW 一仕事終え、汗を拭う。
+			PRINTFORML 白かったシーツはローゼスの体液によって灰色に変色している。
+			PRINTFORMW 室内に充満している、顔をしかめるほどの雌臭さがこの部屋で行われた情事の激しさを物語っていた。
+			PRINTFORML
+			PRINTFORML このまま最後までしてしまうことも考えたが、ライブバトルもあってかなり疲れた。
+			PRINTFORMW 감기を引かないように身体を拭いてから毛布をかけ、ホテルを後にした。
+			IF 依頼_見返し中 < 1
+				;절정×１０、一度の절정で５回分の절정にできる。조교の終わりに一回절정する、その時の절정は２０倍になる。
+				EXP:이벤트主:절정경험 += 70
+				;めんどくさいから１００でいいや
+				EXP:이벤트主:Ｂ경험 += 100
+				EXP:이벤트主:Ｃ경험 += 100
+				EXP:이벤트主:약물경험 += 6
+				EXP:이벤트主:패배조교경험 += 1
+				EXP:MASTER:승리조교경험 += 1
+				SIF TALENT:이벤트主:연모 == 0
+					TALENT:이벤트主:굴복됨 = 1
+				TALENT:이벤트主:의존체질 = 1
+				TALENT:이벤트主:일선넘지않음 = 0
+				TALENT:이벤트主:성적흥미 = 1
+				TALENT:이벤트主:중독되기쉬움 = 1
+				TALENT:이벤트主:허접클리 = 1
+				TALENT:이벤트主:허접유두 = 1
+				TALENT:이벤트主:마조 = 1
+				TALENT:이벤트主:Ｃ감도 = 1
+				TALENT:이벤트主:Ｂ감도 = 1
+				TALENT:이벤트主:절정익숙함 = 1
+				TALENT:이벤트主:패배버릇 = 1
+			ENDIF
+		ELSEIF RESULT == 1
+			PRINTFORMW 『別の상황で慣れさせる』という名目でローゼスをホテルに連れ込んだ。
+			PRINTFORMW フラッシュバックの影響か、既に삽입可能なほどに濡れているローゼスに삽입する。
+			PRINTFORML 反応は薄いものの、吐き出される息には熱がこもっている。
+			PRINTFORMW 以前の조교のでも始めの内はこのくらいだったので、元々反応は薄い方なのだろう。
+			PRINTFORMW 一応トラウマ克服という体なので감각を聞いてみるが、『ダメそう（意訳）』とのお言葉を賜った。
+			PRINTFORMW という訳で媚薬の投入を提案してみると、肯定も否定もせずに顔を真っ赤にするだけだったので、
+			PRINTFORMW とりあえず備え付けの감도５００倍媚薬を６本ほど飲ませてみた。
+			PRINTFORML 途端に反応が良くなる。
+			PRINTFORMW 以前以上の艶っぽい喘ぎ声を上げ、それに合わせてきゅうきゅうと陰茎が締め付けられる。
+			PRINTFORMW 敏感になった질내を一往復するだけで절정するようになった身体を抱え、何度も子宮を押し潰す。
+			PRINTFORML こちらが限界を陰茎から察したのか、背後に両の足が絡められる。
+			IF FLAG:악랄치 < 65
+				PRINTFORMW ゴムを付けるのを忘れていたので申し訳程度の避妊くらいはしてやろうかと考えていたが、そちらが望むならと子宮内に정액を送り込んだ。
+			ELSE
+				PRINTFORMW そもそも避妊する気などさらさら無かったのだが、嫌がらないなら後が楽だと、腰を押し付けて子宮内に정액を流し込んだ。
+			ENDIF
+			PRINTFORMW 一度では만족してくれないようなので、そのまま二度三度と続けて腰を打ち付けていった……
+			PRINTFORMW
+			PRINTFORMW こちらもキツくなってきた所で、先にローゼスが限界を迎えた。
+			PRINTFORML ライブ中に見せていたクールフェイスは쾌감によってもたらされた喜悦に染められており、
+			PRINTFORMW 先ほどまで男を知らなかった秘裂からは、파과で生じた血液交じりのピンクの液体がどろりと流れ出ている。
+			PRINTFORML 
+			PRINTFORMW 一仕事終え、汗を拭う。
+			PRINTFORML ライブバトルの後だったこともあり、さすがに疲れた。
+			PRINTFORMW 감기を引かないように身体を拭いてから毛布をかけ、ホテルを後にした。
+			IF 依頼_見返し中 < 1
+				;なんとなく４０回
+				EXP:이벤트主:절정경험 += 40
+				;なんとなく６０
+				EXP:이벤트主:Ｖ경험 += 60
+				EXP:이벤트主:Ｖ성교경험 += 60
+				EXP:이벤트主:약물경험 += 6
+				EXP:이벤트主:정액경험 += 4
+				EXP:이벤트主:패배조교경험 += 1
+				EXP:MASTER:사정경험 += 4
+				EXP:MASTER:승리조교경험 += 1
+				SIF TALENT:이벤트主:연모 == 0
+					TALENT:이벤트主:굴복됨 = 1
+				TALENT:이벤트主:의존체질 = 1
+				TALENT:이벤트主:일선넘지않음 = 0
+				TALENT:이벤트主:성적흥미 = 1
+				TALENT:이벤트主:중독되기쉬움 = 1
+				TALENT:이벤트主:음호 = 1
+				TALENT:이벤트主:마조 = 1
+				TALENT:이벤트主:Ｖ감도 = 1
+				TALENT:이벤트主:절정익숙함 = 1
+				TALENT:이벤트主:패배버릇 = 1
+				IF TALENT:이벤트主:처녀
+					TALENT:이벤트主:처녀 = 0
+					CFLAG:이벤트主:처녀버린상대 = MASTER
+					CFLAG:이벤트主:처녀버린시츄 = 6
+					CFLAG:이벤트主:처녀버린시연모 = 1
+				ENDIF
+				IF TALENT:MASTER:동정
+					TALENT:MASTER:동정 = 0
+					CFLAG:MASTER:동정버린상대 = 이벤트主
+				ENDIF
+			ENDIF
+		ELSEIF RESULT == 2
+			PRINTFORMW 『特に思いつかないので発散方法を教える』ということにした。
+			PRINTFORMW 結界やら마법がどうたらで人が来ないらしいので、ここで자위をさせてみた。
+			IF EXP:이벤트主:자위경험 >= 1
+				PRINTFORML 자위の경험こそあるものの、どうにもぎこちない。
+				PRINTFORMW 妄想と現実で齟齬が発生しているのだろうか。
+			ELSE
+				PRINTFORMW 자위の경험は無いようで、その動きは非常にたどたどしい。
+			ENDIF
+			PRINTFORMW 仕方が無いので、こちらが背後から手を回して二人자위をしてやることにした。
+			PRINTFORMW 録画状態にしたローゼスのスマホを目の前の壁に立てかけ、見せつけるように愛撫する。
+			PRINTFORML そのまましばらく続けるが、あまりにもされるがままだったので、자신でするように指示を出す。
+			PRINTFORMW 一応は『教導』という体なのだ。
+			PRINTFORML 物覚えはいいようで、先ほどよりも動きは洗練されている。
+			PRINTFORMW 一人で자위も出来るようになり、절정まで手持ち無沙汰になったので暇つぶしにポルチオを開発することにした。
+			PRINTFORML 暫くそうしていると、不意にローゼスが小さく声を上げ、身体を震わせた。
+			PRINTFORMW 절정したようだ。
+			PRINTFORMW もう大丈夫かと聞くが、『もう少し続けたい』と言われてしまった。
+			PRINTFORMW 夕飯のことを考えつつ、ローゼスの嬌声をＢＧＭにポルチオを刺激した……
+			PRINTFORMW
+			PRINTFORMW 一通り절정して만족したのか、ローゼスは礼を言って去っていった。
+			PRINTFORML その際、時々でいいからまた『教導』して欲しいと言われた。
+			PRINTFORMW 気が向いたら付き合ってやろう。
+			IF 依頼_見返し中 < 1
+				;６回くらい……？
+				EXP:이벤트主:절정경험 += 6
+				;５０でいいや
+				EXP:이벤트主:Ｂ경험 += 50
+				EXP:이벤트主:Ｃ경험 += 50
+				EXP:이벤트主:자위경험 = 50
+				TALENT:이벤트主:성적흥미 = 1
+				TALENT:이벤트主:Ｃ감도 = 1
+				TALENT:이벤트主:Ｂ감도 = 1
+				TALENT:이벤트主:자위하기쉬움 = 1
+			ENDIF
+		ENDIF
+		CALL CARD_EROTICS_END(이벤트主)
+	ENDIF
+	CALL EVENT_MOVE(MASTER,場所_寝室)
+	RETURN 2
+ENDIF
+
+;ロー제니스
+@IRAI_DECK_537(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 20537
+RETURN 0
+
+;AF
+@IRAI_DECK_1537(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 21537
+RETURN 0
+
+
+@IRAI_DUEL_INTRO_537
+
+CALL CARD_RESERV("자신",1024537,永攻紋章予約)
+CALL CARD_RESERV("자신",1024537,時限紋章予約)
+TRYCALLFORM CARD_UI(1024537)
+CALL CARD_RESERV("상대",2024537,永攻紋章予約)
+CALL CARD_RESERV("상대",2024537,永紋章予約)
+CALL CARD_RESERV("상대",2024537,時限紋章予約)
+TRYCALLFORM CARD_UI(2024537)
+
+
+@IRAI_DUEL_VIC_537
+IF 자신_승리数 == 0
+	자신_승리数 = 1
+	PRINTFORMW ローゼスの歌がサビに突入した！
+	PRINTL
+	상대_듀얼패배플래그 = 0
+	ライフ_상대 = 2000
+	CALL FULLRESET
+	PRINTFORMW こちらのモンスターは身動きが取れなくなった……
+	CALL STATCHANGE_EFFECT("자신","필드",0,"戦無",1)
+	CALL STATCHANGE_EFFECT("자신","필드",0,"無効",1)
+	RETURN 1
+ENDIF
+RETURN 0
+
+
+@DUELDECK_20537(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)",  4023
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  4023
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  4023
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  20901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  20901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  20901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  30800
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  30801
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  30801
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  30801
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  30802
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  30802
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  30802
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  71009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  71009
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  71015
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  71015
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73900
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73901
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73902
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73902
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73902
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73904
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73904
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73904
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73905
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73905
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 42262
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42262
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 42262
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51750
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51750
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51750
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54051
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54051
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54052
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54052
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54054
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58020
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58020
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58034
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58047
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@DUELDECK_21537(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)",  29130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29131
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29131
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29131
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29132
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29132
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29132
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29133
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29133
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29133
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29134
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29134
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29134
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29135
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29135
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29136
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29136
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29137
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29137
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29138
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  29139
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72935
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72935
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72935
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72936
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72936
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  92975
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  92975
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 12190
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 12191
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 12193
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 50901
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51770
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 51770
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54515
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54515
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54515
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54517
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54517
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54517
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 58061
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54516
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 54516
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@CARDNAME_1024537,参照先
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 『천정개전 프로그램』
+	CASE "略称"
+		RESULTS = 천개프로그램
+	CASE "カテゴリ"
+		RESULTS:0 = 노래：퓨어 카논
+		RESULTS:1 = 작사：니야리
+		RESULTS:2 = 작곡：거짓된 성야
+ENDSELECT
+
+
+@CARD_1024537(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1024537(종류)
+#DIM DYNAMIC 종류
+
+PRINTL ①：자신 필드의 몬스터의 공격력 . 수비력은 ７００오르고、
+PRINTL 상대 필드의 몬스터의 공격력은 ３００내린다。
+PRINTL ②：서로의 스탠바이 페이즈에, 자신의 LP는 ６００회복한다。
+PRINTL 
+
+@CARDCAN_1024537(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1024537)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 永攻紋章起動 
+	RETURN 1
+
+ELSEIF 종류 == 時限紋章起動
+	SIF スタンバイフェイズ != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1024537(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 永攻紋章起動
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,700,700)
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-300,-300)
+
+ELSEIF 종류 == 時限紋章起動
+	CALL LIFE_CHANGE(듀얼리스트,"増加","효과",600)
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@CARDNAME_2024537,参照先
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 『로제스 이노베이션』
+	CASE "略称"
+		RESULTS = S.Z
+	CASE "カテゴリ"
+		RESULTS:0 = 노래："교지"의 정점　레디오 로제스
+		RESULTS:1 = 작사：밀크
+		RESULTS:2 = 작곡：수정의 왕
+ENDSELECT
+
+
+@CARD_2024537(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_2024537(종류)
+#DIM DYNAMIC 종류
+
+PRINTL ①：자신 필드의 몬스터의 공격력 / 수비력은 ５００오르고、상대 필드의 몬스터의 공격력은 ５００내린다。
+PRINTL ②：자신 스탠바이 페이즈에、자신의 패 / 묘지의 카드를 모두 덱에 되돌릴 수 있다。
+PRINTL 그렇게 한 경우、되돌린 수＋１장、자신은 덱에서 드로우한다（최대７장）。
+PRINTL ③：자신의 패가 ５장 이상 있을 경우、자신의 "제니스"는 마법 내성 / 대상 내성을 얻는다。
+PRINTL 
+
+@CARDCAN_2024537(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2024537)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 永攻紋章起動
+	RETURN 1
+
+ELSEIF 종류 == 永紋章起動
+	SIF 손패数(듀얼리스트) < 5
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 時限紋章起動
+	SIF スタンバイフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2024537(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ドロー数
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 永攻紋章起動
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,500,500)
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-500)
+
+ELSEIF 종류 == 永紋章起動
+	CALL FULLRESET
+	효과条件カテゴリ = 제니스
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"魔耐")
+
+ELSEIF 종류 == 時限紋章起動
+	FOR カウンタ,0,VARSIZE(@"%듀얼리스트%_손패") - 1
+		SIF GETVAR(@"%듀얼리스트%_손패:カウンタ") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(듀얼리스트,"손패",カウンタ,덱行き)
+		ドロー数 ++
+	NEXT
+	FOR カウンタ,0,VARSIZE(@"%듀얼리스트%_묘지") - 1
+		SIF GETVAR(@"%듀얼리스트%_묘지:カウンタ") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(듀얼리스트,"묘지",カウンタ,덱行き)
+		ドロー数 ++
+	NEXT
+	SIF ドロー数 > 7
+		ドロー数 = 7
+	CALL CARDDRAW_BASIC(듀얼리스트,ドロー数,1)
+ENDIF

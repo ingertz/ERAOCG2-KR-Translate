@@ -25,6 +25,9 @@ PRINTL
 PRINTL [2] - 24시간 편의점 가기
 PRINTL [3] - 듀얼리스트의 집을 방문하기
 PRINTL 
+SIF ITEM:샵운영권 >= 1
+	PRINTFORML [4] - 마이샵으로 간다
+PRINTL
 PRINTL [0] - 뒤로
 BINPUT
 IF RESULT == 3
@@ -33,6 +36,18 @@ IF RESULT == 3
 	CALL RECOVER_PERMIL(MASTER,-10,"기력")
 	CALL MONSTER_LIST(12)
 	RETURN 1
+
+ELSEIF RESULT == 3
+	CFLAG:MASTER:현재위치 = 場所_CDSレジ裏
+	FOR 캐릭터_ID,1,CHARANUM
+		SIF !CFLAG:캐릭터_ID:동행
+			CONTINUE
+		CFLAG:캐릭터_ID:현재위치 = 場所_CDSレジ裏
+		CFLAG:캐릭터_ID:데이트중 = 1
+	NEXT
+	TIME += 3
+	RETURN 1
+
 ELSEIF RESULT == 2
 	CFLAG:MASTER:현재위치 = 場所_편의점
 	FOR 캐릭터_ID,1,CHARANUM

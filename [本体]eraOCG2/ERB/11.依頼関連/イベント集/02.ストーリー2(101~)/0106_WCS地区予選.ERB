@@ -24,6 +24,8 @@ SELECTCASE 参照先
 		SIF 依頼_完了횟수:105 == 0
 			RETURN 0
 		RETURN 1
+	CASE "回想可"
+		RETURN 1
 ENDSELECT
 
 RETURN 0
@@ -391,8 +393,11 @@ ELSEIF 依頼_달성상황 == 9 || 依頼_달성상황 == 10
 		PRINTFORMW "당신의 새로운 힘입니다. 분명, 당신의 승리를 약속할 것입니다."
 		PRINTFORMW 
 		;最初の상대가 紬紫だったら、본선トーナメント準決勝の상대も紬紫に분기비밀병기
-		SIF 依頼_달성상황 == 10
+		IF 依頼_달성상황 == 10
 			依頼_進行보존:106 = 1
+		ELSE
+			依頼_進行보존:106 = 0
+		ENDIF
 		CALL EVENT_MOVE(MASTER,場所_玄関)
 		
 		CALL EVENT_TIMER(60)

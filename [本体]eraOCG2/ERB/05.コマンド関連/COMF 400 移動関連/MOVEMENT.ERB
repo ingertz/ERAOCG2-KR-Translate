@@ -350,16 +350,19 @@ SIF TIME + DAY * 1440 < ARG
 	RETURNF 0
 RETURNF TIME + DAY * 1440 - ARG
 
-@CHARA_SLEEP, 캐릭터_ID
+@CHARA_SLEEP(캐릭터_ID)
 #DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択상황
 
 SIF 依頼_受領中 >= 1
 	RETURN 0
-;
+
+;見通せる位置にいるか、プレイヤーがその캐릭터と同じ현재위치の時。かつ、プレイヤー수면状態でない
 IF (CAN_MOVE(CFLAG:MASTER:현재위치, CFLAG:캐릭터_ID:현재위치) == 2 || CFLAG:MASTER:현재위치 == CFLAG:캐릭터_ID:현재위치) && !CFLAG:MASTER:수면
-	IF CFLAG:캐릭터_ID:현재위치 == CFLAG:캐릭터_ID:시작위치
+
+	;캐릭터の현재위치が、その캐릭터の就寝場所と同じである場合。Chara Sleep起動時に、寝ている
+	IF GROUPMATCH(CFLAG:캐릭터_ID:현재위치, CFLAG:캐릭터_ID:시작위치,CFLAG:캐릭터_ID:시작일시위치)
 		PRINTFORMW %CALLNAME:캐릭터_ID%는\@CFLAG:캐릭터_ID:수면 ? 자고있다 # 잠들었다\@
 		IF CFLAG:캐릭터_ID:수면 == 1
 			選択상황 = 3
@@ -367,33 +370,33 @@ IF (CAN_MOVE(CFLAG:MASTER:현재위치, CFLAG:캐릭터_ID:현재위치) == 2 ||
 			選択상황 = 1
 		ENDIF
 	ELSE
-		;캐릭터が쇠약상태로、연모以上であり、현재위치と、寝る場所が同じであるとき。↑の条件で、もうその部屋にいるのに運ぶのはなしとなってる
+
+		;캐릭터の현재위치が、その캐릭터の就寝場所でない場合で、
+		;캐릭터が쇠약状態で、MASTERと현재위치が同じ、就寝場所も同じであるとき。
 		IF CFLAG:캐릭터_ID:쇠약 && CFLAG:MASTER:현재위치 == CFLAG:캐릭터_ID:현재위치 && CFLAG:MASTER:시작위치 == CFLAG:캐릭터_ID:시작위치
 			SIF 追跡설정_ID == 캐릭터_ID
 				VARSET 追跡설정_ID
-			PRINTFORMW %CALLNAME:캐릭터_ID%을 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 %GETPLACENAME(CFLAG:캐릭터_ID:시작위치)%로 옮겼다
-		
+
+			CFLAG:MASTER:현재위치 = CFLAG:MASTER:시작위치
+			PRINTFORMW %CALLNAME:캐릭터_ID%을 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 %GETPLACENAME(CFLAG:캐릭터_ID:시작위치)%로 옮겼습니다
 			IF TALENT:캐릭터_ID:연모 >= 1
 				選択상황 = 1
 			ELSE
 				選択상황 = 2
 			ENDIF
 		ELSE
-			IF CFLAG:캐릭터_ID:현재위치 <= 20
-				;CALL REMOVE_CHARACTER_TO_ROOM(캐릭터_ID)
-
-			ELSE
-				IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
-					IF TALENT:캐릭터_ID:듀얼리스트
-						PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 자신의 집으로 돌아왔다。
-						CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 6)
-					ELSE
-						PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 카드 속으로 돌아왔다。
-						CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 6)
-					ENDIF
+			IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
+				IF TALENT:캐릭터_ID:듀얼리스트
+					PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 자신의 집으로 돌아왔다。
+					CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 6)
 				ELSE
-					PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 %GETPLACENAME(CFLAG:캐릭터_ID:시작위치)%로 돌아왔다。
+					PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 카드 속으로 돌아왔다。
+					CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 6)
 				ENDIF
+			ELSEIF CFLAG:캐릭터_ID:시작일시위치 > 0
+				PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 %GETPLACENAME(CFLAG:캐릭터_ID:시작일시위치)%로 돌아왔습니다。
+			ELSE
+				PRINTFORMW %CALLNAME:캐릭터_ID%는 %GETPLACENAME(CFLAG:캐릭터_ID:현재위치)%에서 %GETPLACENAME(CFLAG:캐릭터_ID:시작위치)%로 돌아왔습니다。
 			ENDIF
 			選択상황 = 7
 		ENDIF
@@ -405,11 +408,12 @@ ENDIF
 
 ;自室でねる
 CFLAG:캐릭터_ID:현재위치 = CFLAG:캐릭터_ID:시작위치
-IF 選択상황 == 3
-	CFLAG:MASTER:현재위치 = CFLAG:캐릭터_ID:시작위치
-ENDIF
-SIF CFLAG:캐릭터_ID:변기화 == 1
+SIF CFLAG:캐릭터_ID:시작일시위치 > 0
+	CFLAG:MASTER:현재위치 = CFLAG:캐릭터_ID:시작일시위치
+
+IF CFLAG:캐릭터_ID:변기화 == 1
 	CFLAG:캐릭터_ID:현재위치 = 場所_トイレ
+ENDIF
 CFLAG:캐릭터_ID:동행 = 0
 CFLAG:캐릭터_ID:데이트중 = 0
 CFLAG:캐릭터_ID:수면 = 1

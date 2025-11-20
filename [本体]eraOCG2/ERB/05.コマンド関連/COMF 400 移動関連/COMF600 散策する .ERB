@@ -19,6 +19,8 @@ ELSEIF INRANGE(CFLAG:MASTER:현재위치,200,250)
 	マップモード = 3
 ELSEIF INRANGE(CFLAG:MASTER:현재위치,910,920)
 	マップモード = 90
+ELSEIF INRANGE(CFLAG:MASTER:현재위치,925,930)
+	マップモード = 91
 ENDIF
 
 $INPUT_LOOP
@@ -54,6 +56,10 @@ ELSEIF マップモード == 3
 
 ELSEIF マップモード == 90
 	CALLFORM MAP_PRINT_SHOP
+
+ELSEIF マップモード == 91
+	CALLFORM MAP_PRINT_LHOTEL
+
 ENDIF
 
 CUSTOMDRAWLINE ―
@@ -189,6 +195,25 @@ ELSEIF マップモード == 90
 		ENDIF
 		PRINTFORM / 
 	NEXT
+ELSEIF マップモード == 91
+	FOR カウンタ,925,930
+		SIF CFLAG:MASTER:현재위치 == カウンタ
+			SETCOLOR C_GREEN
+
+		SIF GETPLACENAME(カウンタ) == ""
+			CONTINUE
+		CALL GETMAP(カウンタ,1)
+		PRINTFORM [{カウンタ,3}] - %GETPLACENAME(カウンタ),20,LEFT%	
+		RESETCOLOR
+		IF 施設アリ:カウンタ == 1
+			SETCOLOR C_ORANGE
+			PRINT (！)
+			RESETCOLOR
+		ELSE
+			PRINTFORM %"",4%
+		ENDIF
+		PRINTFORM / 
+	NEXT
 ENDIF
 
 
@@ -243,44 +268,22 @@ ELSE
 	ELSEIF GROUPMATCH(マップモード,3,4)
 		SIF RESULT <= 200
 			RESULT += 200
-	ELSEIF GROUPMATCH(マップモード,90)
+	ELSEIF GROUPMATCH(マップモード,90,91)
 		SIF RESULT <= 900
 			RESULT += 900
 	ENDIF
 	選択行先 = RESULT
 
-	IF RESULT == 22
-		IF 데이트_ホテル플래그 == 0
-			PRINTFORML 휴게소 이용은8000엔을 지불해야 하는데 괜찮습니까？
-			PRINTL [1] - 예
-			PRINTL [0] - 아니오
-		ELSE
-			PRINTFORML 호텔 방으로 돌아갈까요？
-			PRINTL [1] - 예
-			PRINTL [0] - 아니오
-		ENDIF
-		BINPUT
-		IF RESULT == 1
-			IF 데이트_ホテル플래그 == 0
-				CALL MONEY_GET(-8000)
-				데이트_ホテル플래그 = 1
-			ENDIF
-			CFLAG:MASTER:현재위치 = RESULT
-			FOR 캐릭터_ID,1,CHARANUM
-				SIF !CFLAG:캐릭터_ID:데이트중 == 1
-					CONTINUE
-				CFLAG:캐릭터_ID:현재위치 = RESULT
-			NEXT    
-		ELSE
-			GOTO INPUT_LOOP
-		ENDIF
-	ENDIF
 
 	ABS PLACEPARAMATOR(CFLAG:MASTER:현재위치) - PLACEPARAMATOR(選択行先)
 	SIF RESULT >= 180
 		RESULT = 180
 	TIME += RESULT
 	CFLAG:MASTER:현재위치 = 選択行先
+	IF GROUPMATCH(マップモード,90,91)
+		RETURN 1
+	ENDIF
+	
 	FOR 캐릭터_ID,1,CHARANUM
 		SIF !CFLAG:캐릭터_ID:데이트중 == 1
 			CONTINUE

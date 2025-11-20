@@ -1,124 +1,125 @@
-﻿@CARDNAME_21153,参照先
-;ココで지정카드의 名前、略称を返す予定
-#DIMS DYNAMIC 参照先
+﻿;クビ
+; @CARDNAME_21153,参照先
+; ;ココで지정카드의 名前、略称を返す予定
+; #DIMS DYNAMIC 参照先
 
-VARSET RESULT
-VARSET RESULTS
+; VARSET RESULT
+; VARSET RESULTS
 
-SELECTCASE 参照先
-	CASE "名前"
-		RESULTS = 블루 로즈 드래곤
-	CASE "略称"
-		RESULTS = 블루 로즈
-	CASE "カテゴリ"
-		RESULTS:0 = 로즈
-ENDSELECT
+; SELECTCASE 参照先
+; 	CASE "名前"
+; 		RESULTS = 블루 로즈 드래곤
+; 	CASE "略称"
+; 		RESULTS = 블루 로즈
+; 	CASE "カテゴリ"
+; 		RESULTS:0 = 로즈
+; ENDSELECT
 
 
-@CARD_21153(参照先)
+; @CARD_21153(参照先)
 
-#DIMS DYNAMIC 参照先
-VARSET RESULT
-VARSET RESULTS
+; #DIMS DYNAMIC 参照先
+; VARSET RESULT
+; VARSET RESULTS
 
-SELECTCASE 参照先
-	CASE "종류"
+; SELECTCASE 参照先
+; 	CASE "종류"
 	
-		RETURN 효과モン
-	CASE "속성"
-		RETURN 어둠속성
-	CASE "종족"
-		RETURN 드래곤족
-	CASE "レベル"
-		RETURN 3
-	CASE "攻撃力"
-		RETURN 1000
-	CASE "守備力"
-		RETURN 1800
-	CASE "성별"
-		RETURN 牝性
-ENDSELECT
+; 		RETURN 효과モン
+; 	CASE "속성"
+; 		RETURN 어둠속성
+; 	CASE "종족"
+; 		RETURN 드래곤족
+; 	CASE "レベル"
+; 		RETURN 3
+; 	CASE "攻撃力"
+; 		RETURN 1000
+; 	CASE "守備力"
+; 		RETURN 1800
+; 	CASE "성별"
+; 		RETURN 牝性
+; ENDSELECT
 
-RETURN 0
+; RETURN 0
 
-@CARD_EXPLANATION_21153(종류)
-#DIM DYNAMIC 종류
+; @CARD_EXPLANATION_21153(종류)
+; #DIM DYNAMIC 종류
 
-CALL CARD_ABLE(0,破壊→묘지 ,戦闘→묘지)
-PRINTL ①: 필드의 이 카드가 전투 효과로 파괴되어 묘지로 보내졌을 때,
-PRINTL 자신 묘지의 "블랙 로즈 드래곤" 또는 식물족 몬스터 1장을 대상으로 발동할 수 있다.
-PRINTL 그 몬스터를 특수 소환한다.
+; CALL CARD_ABLE(0,破壊→묘지 ,戦闘→묘지)
+; PRINTL ①: 필드의 이 카드가 전투 효과로 파괴되어 묘지로 보내졌을 때,
+; PRINTL 자신 묘지의 "블랙 로즈 드래곤" 또는 식물족 몬스터 1장을 대상으로 발동할 수 있다.
+; PRINTL 그 몬스터를 특수 소환한다.
 
 
 
-@CARDCAN_21153(듀얼리스트,종류,ゾーン,場所)
-#DIMS DYNAMIC 듀얼리스트
-#DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 종류
-#DIM DYNAMIC 場所
-#DIMS DYNAMIC 対面者
+; @CARDCAN_21153(듀얼리스트,종류,ゾーン,場所)
+; #DIMS DYNAMIC 듀얼리스트
+; #DIMS DYNAMIC ゾーン
+; #DIM DYNAMIC 종류
+; #DIM DYNAMIC 場所
+; #DIMS DYNAMIC 対面者
 
-CALL 対面者판정(듀얼리스트)
-対面者 = %RESULTS%
+; CALL 対面者판정(듀얼리스트)
+; 対面者 = %RESULTS%
 
-CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21153)
-SIF RESULT == 1
-	RETURN 0
+; CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21153)
+; SIF RESULT == 1
+; 	RETURN 0
 
-IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
-	SIF ゾーン != "묘지"
-		RETURN 0
-	CALL FULLRESET
-	효과範囲묘지 = 1
-	효과条件종족 = 식물족
-	효과条件スーパー名前 = 블랙 로즈 드래곤
-	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ENDIF
+; IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+; 	SIF ゾーン != "묘지"
+; 		RETURN 0
+; 	CALL FULLRESET
+; 	효과範囲묘지 = 1
+; 	효과条件종족 = 식물족
+; 	효과条件スーパー名前 = 블랙 로즈 드래곤
+; 	효과条件소환可 = 1
+; 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+; 	SIF RESULT != 1
+; 		RETURN 0
+; 	RETURN 1
+; ENDIF
 
-@CARDEFFECT_21153(듀얼리스트,종류,ゾーン,場所)
-#DIMS DYNAMIC 듀얼리스트
-#DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 종류
-#DIM DYNAMIC 場所
-#DIMS DYNAMIC 対面者
-#DIM DYNAMIC カウンタ
-#DIM DYNAMIC 条件달성
+; @CARDEFFECT_21153(듀얼리스트,종류,ゾーン,場所)
+; #DIMS DYNAMIC 듀얼리스트
+; #DIMS DYNAMIC ゾーン
+; #DIM DYNAMIC 종류
+; #DIM DYNAMIC 場所
+; #DIMS DYNAMIC 対面者
+; #DIM DYNAMIC カウンタ
+; #DIM DYNAMIC 条件달성
 
-CALL 対面者판정(듀얼리스트)
-対面者 = %RESULTS%
+; CALL 対面者판정(듀얼리스트)
+; 対面者 = %RESULTS%
 
-IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21153)
-	IF RESULT == 0
-		CALL FULLRESET
-		효과範囲묘지 = 1
-효과条件名前 = 블랙 로즈 드래곤
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		IF RESULT == 1
-PRINTL 블랙 로즈 드래곤을 특수 소환하시겠습니까?
-			CALL YN_CHOICE(듀얼리스트)
-		ELSE
-			RESULT = いいえ
-		ENDIF
+; IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+; 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21153)
+; 	IF RESULT == 0
+; 		CALL FULLRESET
+; 		효과範囲묘지 = 1
+; 효과条件名前 = 블랙 로즈 드래곤
+; 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+; 		IF RESULT == 1
+; PRINTL 블랙 로즈 드래곤을 특수 소환하시겠습니까?
+; 			CALL YN_CHOICE(듀얼리스트)
+; 		ELSE
+; 			RESULT = いいえ
+; 		ENDIF
 
-		IF RESULT == はい
-			CALL FULLRESET
-			효과範囲묘지 = 1
-효과条件名前 = 블랙 로즈 드래곤
-			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-		ELSEIF RESULT == いいえ
-			CALL FULLRESET
-			효과範囲묘지 = 1
-			효과条件종족 = 식물족
-			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-		ENDIF	
+; 		IF RESULT == はい
+; 			CALL FULLRESET
+; 			효과範囲묘지 = 1
+; 			효과条件名前 = 블랙 로즈 드래곤
+; 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+; 		ELSEIF RESULT == いいえ
+; 			CALL FULLRESET
+; 			효과範囲묘지 = 1
+; 			효과条件종족 = 식물족
+; 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+; 		ENDIF	
 
-	ENDIF
-ENDIF
+; 	ENDIF
+; ENDIF
 
 
 

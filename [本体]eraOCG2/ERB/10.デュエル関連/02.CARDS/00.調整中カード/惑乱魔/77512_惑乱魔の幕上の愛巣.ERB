@@ -1,0 +1,198 @@
+@CARDNAME_77512,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹란마의 막위의 사랑둥지
+	CASE "略称"
+		RESULTS = 막에 사랑의둥지
+	CASE "カテゴリ"
+		RESULTS:0 = 혹란마
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 꿀구멍
+ENDSELECT
+
+
+@CARD_77512(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_77512(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：상대 필드의 앞면 표시 몬스터 １장과 자신 필드의 카드명이 다른 임의의 수의 "혹란마" 몬스터를 대상으로 하고 발동할 수 있다。
+SETCOLOR C_PINK
+PRINTL 그 상대 몬스터에게、대상으로 한 자신 필드의 모든 "혹란마" 몬스터의 벌레 문양을 새긴다。
+PRINTL 그 공격력은 자신 필드의 "혹란마" 몬스터의 수비력의 합계 수치만큼 내린다。
+PRINTL 그 후、대상 자신 필드의 "혹란마" 몬스터의 수비력은 ０이 된다。
+PRINTL （이 효과가 수비 표시인 "혹란마" 몬스터를 대상으로 한 경우、그 몬스터들이 제공하는 수치는 절반이 된다。）
+PRINTL 이 효과로 상대 몬스터의 공격력이 ０이 된 경우、그 몬스터의 효과는 무효화된다。
+RESETCOLOR
+CALL TEXT_DECORATION("ROGUE")
+
+;この효과の대상とした상대モンスターの攻撃力が、대상とした자신 필드의 「혹란마」モンスターの守備力の合計値を上回る場合
+;それらの「혹란마」モンスター全てを、각각 の攻撃力の数値だけ攻撃力をアップする肉铠として상대モンスターに装備する。攻撃力をダウンする효과は適用されない。
+
+@CARDCAN_77512(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,77512)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,77512)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件カテゴリ = 혹란마
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_77512(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択カード,5
+#DIM DYNAMIC 選択カード_ID,5
+#DIMS DYNAMIC 已选择卡片,5
+#DIM DYNAMIC 自己合计守备力 = 0
+#DIM DYNAMIC 选择対面選択カード
+#DIM DYNAMIC 对方攻击力
+#DIM DYNAMIC 성별판정
+#DIM DYNAMIC 已选择次数 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,77512,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+		选择対面選択カード = RESULT
+		IF 选择対面選択カード != 9999
+			$TRAPSEX_77512_1
+			CALL FULLRESET
+			효과条件표시 = 表側표시
+			효과条件カテゴリ = 혹란마
+			효과条件固名前:0 = %(已选择卡片:0)%
+			효과条件固名前:1 = %(已选择卡片:1)%
+			효과条件固名前:2 = %(已选择卡片:2)%
+			효과条件固名前:3 = %(已选择卡片:3)%
+			효과条件固名前:4 = %(已选择卡片:4)%
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+			選択カード:(已选择次数) = RESULT
+			選択カード_ID:(已选择次数) = RESULT:99
+			TRYCALLFORM CARDNAME_{選択カード_ID:(已选择次数)},"名前"
+			已选择卡片:(已选择次数) = %RESULTS%
+
+			;效果第一部分
+				;赋予蟲紋
+				;与赋予蟲紋相关的效果
+				CALL TRAPSEX_GIVE_OTHER(듀얼리스트,ゾーン,종류,場所,选择対面選択カード,選択カード_ID:(已选择次数))
+				;获取守备力
+				IF GETVAR(@"%듀얼리스트%_MZ_表:(選択カード:(已选择次数))") == 1
+					自己合计守备力 += GETVAR(@"%듀얼리스트%_MZ_守:(選択カード:(已选择次数))")
+				ELSEIF GETVAR(@"%듀얼리스트%_MZ_表:(選択カード:(已选择次数))") == 2
+					自己合计守备力 += GETVAR(@"%듀얼리스트%_MZ_守:(選択カード:(已选择次数))") / 2
+				ENDIF
+				;处理自己怪兽降攻
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード:(已选择次数),"永守",-999999,上書きモード)
+
+			已选择次数 += 1
+
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件표시 = 表側표시
+			효과条件カテゴリ = 혹란마
+			효과条件固名前:0 = %(已选择卡片:0)%
+			효과条件固名前:1 = %(已选择卡片:1)%
+			효과条件固名前:2 = %(已选择卡片:2)%
+			효과条件固名前:3 = %(已选择卡片:3)%
+			효과条件固名前:4 = %(已选择卡片:4)%
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1 && 已选择次数 <= 4
+				CALL FULLRESET
+				PRINTL 또 다른 "혹란마" 몬스터를 선택하시겠습니까？
+				PRINTL [1] - ★YEAH!★
+				PRINTL [2] - NO
+				BINPUT
+				SIF RESULT == 1
+					GOTO TRAPSEX_77512_1
+			ENDIF
+
+			对方攻击力 = GETVAR(@"%対面者%_MZ_攻:选择対面選択カード")
+			성별판정 = GETVAR(@"%対面者%_MZ_性:选择対面選択カード")
+			IF 自己合计守备力 < 对方攻击力 && (성별판정 == 雄性 || 성별판정 == ふたなり)
+				IF 마함数(対面者) < 5
+					SIF 選択カード:0 != 9999
+						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:0,1)
+					SIF 選択カード:1 != 9999
+						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:1,1)
+					SIF 選択カード:2 != 9999
+						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:2,1)
+					SIF 選択カード:3 != 9999
+						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:3,1)
+					SIF 選択カード:4 != 9999
+						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:4,1)
+				ENDIF
+			ELSEIF 自己合计守备力 >= 对方攻击力
+				CALL FULLRESET
+				CALL SET_FIELD_INFO(対面者,"필드",选择対面選択カード,"永攻",-自己合计守备力)
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"지속無効")
+			ELSE
+				CALL FULLRESET
+				CALL SET_FIELD_INFO(対面者,"필드",选择対面選択カード,"永攻",-自己合计守备力)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

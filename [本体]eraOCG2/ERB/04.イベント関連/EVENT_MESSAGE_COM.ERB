@@ -3417,7 +3417,13 @@ ENDIF
 ;353,許しを請う
 ;-------------------------------------------------
 @MESSAGE_COM353
-PRINTFORML %CALLNAME:MASTER%는 %CALLNAME:TARGET%에게 용서해 달라고 애원했다.
+
+PRINTFORM %CALLNAME:MASTER%는 
+IF TCVAR:TARGET:전CT행동 == 61
+	PRINTFORM 꾸벅꾸벅 허리를 숙이면서,
+ENDIF
+
+PRINTFORML %CALLNAME:TARGET%에게 용서해 달라고 애원했다.
 IF TFLAG:SELECTCOM분기 == 1
 	PRINTFORML 그러나 %CALLNAME:TARGET%는 아직 만족하지 못한 것 같다.
 ELSEIF TFLAG:SELECTCOM분기 == 2
@@ -3563,9 +3569,12 @@ IF STRLENS(TSTR:2)
 		PRINTFORML %TSTR:2%를 빨래 바구니에 던져 넣었다
 	ENDIF
 ENDIF
-SIF !TFLAG:SELECTCOM분기 && TARGET > 0 && !CFLAG:수면
-	PRINTFORML %CALLNAME:TARGET%는 감탄하면서 %CALLNAME:MASTER%의 작업을 바라보고 있다
 
+
+
+IF !TFLAG:SELECTCOM분기 && TARGET > 0 && !CFLAG:TARGET:수면
+	PRINTFORML %CALLNAME:TARGET%는 감탄하면서 %CALLNAME:MASTER%의 작업을 바라보고 있다
+ENDIF
 ;-------------------------------------------------
 ;411,몸을 단련한다
 ;-------------------------------------------------
@@ -3639,9 +3648,13 @@ ELSEIF CFLAG:MASTER:현재위치 == 場所_学校教室
 		DATAFORM 선생님의 말씀을 진지하게 들었다
 	ENDDATA
 ELSE
-	IF TARGET > 0
+	IF CFLAG:TARGET:수면 == 1
+		PRINTFORM %CALLNAME:TARGET%를 깨우지 않도록 조용히、
+	ELSEIF TARGET > 0
 		PRINTFORM %CALLNAME:TARGET%에게 보여지면서 
 	ENDIF
+
+
 	IF ITEM:기초자격학습서 == 1 && ITEM:응용자격학습서 == 1 && ITEM:고도자격학습서 == 1 && EXP:MASTER:학습경험 >= 300
 		PRINTFORM %CALLNAME:MASTER%는 고대신관문학（히에라틱 텍스트）가 쓰여있는 석판을 해독하며 자주적으로 공부를했다
 	ELSEIF ITEM:기초자격학습서 == 1 && ITEM:응용자격학습서 == 1 && EXP:MASTER:학습경험 >= 100

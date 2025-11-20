@@ -1,0 +1,189 @@
+﻿@CARDNAME_24806,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 로드 브리티쉬
+	CASE "略称"
+		RESULTS = Ｌ브리티쉬
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_24806(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 800
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_24806(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드는 １번의 배틀 페이즈 중에 ２번 공격할 수 있다。
+CALLFORM CARD_ABLE(0,攻撃時誘発)
+PRINTL ②：이 카드가 전투를 한 경우、이하의 효과에서 １개를 선택해서 발동할 수 있다。
+PRINTL ●상대 필드의 카드 １장을 골라 파괴한다。
+PRINTL ●자신 필드에 "멀티플 토큰" １장을 특수 소환한다。
+PRINTL 
+PRINTL "멀티플 토큰"
+PRINTL 기계족 / 빛 / 레벨４ / 공／수１２００
+
+@CARDCAN_24806(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24806)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_戦闘カード") != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_24806(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성,2
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",1)
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24806)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성:0 = 1
+		SIF モンスター数(듀얼리스트) < 5
+			条件달성:1 = 1
+		IF 条件달성:0 == 1 && 条件달성:1 == 1
+			PRINTL 어느 효과를 발동합니까?
+			CALL YN_CHOICE(듀얼리스트,"●상대 필드의 카드 １장을 골라 파괴한다.","●자신 필드에 「멀티플 토큰」 １장을 특수 소환한다.")
+		ELSEIF 条件달성:0 == 1 && 条件달성:1 != 1
+			RESULT = 0
+		ELSEIF 条件달성:0 != 1 && 条件달성:1 == 1
+			RESULT = 1
+		ENDIF
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ELSE
+			CALL FULLRESET
+			CALL CARD_GENERATE(듀얼리스트,124806)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+;―――――――――――――――――――――――――――――――――――
+
+@CARDNAME_124806,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 멀티플 토큰
+	CASE "略称"
+		RESULTS = 멀티플
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_124806(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1200
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+
+
+
+@CARD_EXPLANATION_124806(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우, 이 카드는 소멸한다（게임에서 제거된다）
+
+
+@CARDCAN_124806(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+RETURN 0

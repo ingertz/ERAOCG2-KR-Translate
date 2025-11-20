@@ -1,0 +1,139 @@
+@CARDNAME_28265,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 퍼니멀 돌핀
+	CASE "略称"
+		RESULTS = Fur 돌핀
+	CASE "カテゴリ"
+		RESULTS:0 = 퍼니멀
+ENDSELECT
+
+
+@CARD_28265(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 1000
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28265(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,필드起動)
+PRINTL ①：자신 묘지의 "토이팟" １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 카드를 자신 필드에 세트하고、
+PRINTL 덱에서 "에지임프" 몬스터 １장 또는 "퍼니멀" 몬스터 １장을 묘지로 보낸다。
+CALL CARD_ABLE(2,F素材時효과)
+PRINTL ②：이 카드가 융합 소환의 소재가 되어 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL 자신 묘지의 카드 및 제외 되어있는 자신의 카드 안에서、
+PRINTL "융합" 마법 카드 또는 "퓨전" 마법 카드 １장을 골라 덱으로 되돌린다。
+
+@CARDSUMMON_AA_28265
+
+
+@CARDCAN_28265(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28265)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,28265)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 토이팟
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == F素材時효과
+	SIF 발동済_2(듀얼리스트,28265)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件名前:0 = 융합
+	효과条件名前:1 = 퓨전
+	효과条件종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28265(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28265,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 토이팟
+		CALL CARD_SET_BASIC(듀얼리스트,"묘지",ゾーン,場所,"裏側표시")
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ:0 = 에지임프
+			효과条件カテゴリ:1 = 퍼니멀
+			효과条件종류 = モン全般
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == F素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28265,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件名前:0 = 융합
+		효과条件名前:1 = 퓨전
+		효과条件종류 = 마법全般
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

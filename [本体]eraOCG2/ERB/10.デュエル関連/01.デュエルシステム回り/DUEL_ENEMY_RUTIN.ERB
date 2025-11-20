@@ -29,6 +29,8 @@ CASE "서큐베 바르모니카"
 	返し値 += 3000
 CASE "엑스 라이제올"
 	返し値 += 3000
+CASE "네크로파데스의 의"
+	返し値 += 10000
 ENDSELECT
 
 
@@ -173,7 +175,7 @@ SELECTCASE RESULTS
 				RETURN 1
 		ENDIF
 	CASE "플레시아의 충혹마"
-		;묘지、제외にホールティアの蟲惑魔が無ければ使わせない
+		;묘지、제외にホールティアの충혹마が無ければ使わせない
 		IF 종류 == 필드起動 || 종류 == フリー誘発
 			CALL FULLRESET_EXT
 			濾過範囲묘지 = 1
@@ -293,6 +295,7 @@ SELECTCASE RESULTS
 			CALL FULLRESET_EXT
 			濾過範囲상대필드 = 1
 			濾過範囲상대마함 = 1
+			濾過条件除去種 = 제외
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 0
 				RETURN 1
@@ -436,7 +439,80 @@ SELECTCASE RESULTS
 			濾過条件除去種 = リリース
 			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
 			SIF RESULT != 1
-				RETURN 0
+				RETURN 1
+		ENDIF
+	CASE "브램블 로즈 드래곤"
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			CALL FULLRESET
+			濾過範囲상대필드 = 1
+			濾過範囲상대마함 = 1
+			濾過条件除去種 = 묘지
+			濾過条件CNT = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT < 2
+				RETURN 1
+		ENDIF
+	CASE "블랙 로즈 드래곤"
+		IF 종류 == EX소환時
+			CALL FULLRESET
+			濾過範囲상대필드 = 1
+			濾過範囲상대마함 = 1
+			濾過条件除去種 = 묘지
+			濾過条件CNT = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT < 2
+				RETURN 1
+		ENDIF
+	CASE "블러드 로즈 드래곤"
+		IF 종류 == EX소환時
+			CALL FULLRESET
+			濾過範囲묘지 = 1
+			濾過条件名前 = 블랙 로즈 드래곤
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT != 1
+				RETURN 1
+			CALL FULLRESET
+			濾過範囲상대필드 = 1
+			濾過範囲상대마함 = 1
+			濾過条件除去種 = 묘지
+			濾過条件CNT = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT < 2
+				RETURN 1
+		ENDIF
+	CASE "밤장미 흑기사"
+		IF 종류 == 필드起動
+			RETURN 1
+		ENDIF
+	CASE "베이슬 로즈 슛"
+		IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件カテゴリ = 로즈
+			濾過条件소환可 = 1
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT != 1
+				RETURN 1
+		ENDIF
+	CASE "방랑의 그리폰라이더", "일리걸 나이트", "키노의 충혹마"
+		IF 종류 == フリー誘発
+			SIF 効後_カウンタ != 0
+				RETURN 1
+			SIF 後듀얼리스트 == "상대"
+				RETURN 1
+		ENDIF
+	CASE "란카의 충혹마"
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			RETURN 1
+		ENDIF
+	CASE "플레시아의 충혹마"
+		IF 종류 == 필드起動 || 종류 == フリー誘発
+			CALL FULLRESET
+			濾過範囲상대필드 = 1
+			濾過条件除去種 = 묘지
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT != 1
+				RETURN 1
 		ENDIF
 ENDSELECT
 
@@ -497,6 +573,8 @@ RETURN 0
 #DIM DYNAMIC 소환攻撃力
 #DIM DYNAMIC 修正値
 #DIM DYNAMIC 返し値
+#DIM DYNAMIC 参照値１
+#DIM DYNAMIC 参照値２
 
 SIF ALT条件 >= 1
 	RETURN 0
@@ -522,6 +600,8 @@ IF 参照先 == "필드"
 		CASE "기간틱 스프라이트"
 			SIF 소환法 == 링크
 				修正値 += 100000
+		CASE "밤장미 흑기사"
+			修正値 -= 98000
 	ENDSELECT
 ENDIF
 
@@ -554,8 +634,14 @@ SELECTCASE 소환法
 				修正値 += 98000
 		ENDIF
 	CASE 링크
-		SIF 상대_MZ_攻:場所 > 1950
-			修正値 += 98000
+		TRYCALLFORM CARD_{素材カードID}("レベル")
+		参照値１ = RESULT
+		TRYCALLFORM CARD_{소환カード_ID}("レベル")
+		参照値２ = RESULT
+		CALL ENEMY_RUTIN_PRIORITY(소환カード_ID,場所)
+		参照値２ += RESULT
+		SIF 参照値１ >= 参照値２
+			修正値 += 100000
 	CASEELSE
 		SIF 상대_MZ_攻:場所 > 1950
 			修正値 += 98000
@@ -589,8 +675,10 @@ RETURN 返し値
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カードID
 #DIMS DYNAMIC カード名
+#DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC 条件달성
 
+듀얼리스트 = 상대
 
 SIF カードID <= 0
 	RETURN 0
@@ -747,6 +835,35 @@ IF 효과条件손패취득 == 1
 			효과条件劣後名前 = 가디언 에아토스
 		CASE "섬광의 쌍검－트라이스"
 			효과条件優先名前 = 가디언 에아토스
+		CASE "록스 로즈 드래곤"
+			SIF 발동済_1("상대",21151) == 0
+				효과条件優先名前 = 화이트 로즈 드래곤
+			SIF 발동済_1("상대",32153) == 0
+				효과条件優先名前 = 바이올런스 위치
+		CASE "운명의 여로"
+			CALL FULLRESET_EXT
+			濾過範囲손패 = 1
+			濾過範囲필드 = 1
+			濾過条件名前:0 = 아라메시아의 의
+			濾過条件名前:1 = 아라메시아의 용사
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			IF RESULT != 1
+				효과条件優先名前:0 = 성전의 수견사
+			ELSE
+				효과条件優先名前:0 = 방랑의 그리폰라이더
+				효과条件優先名前:1 = 기룡 드라코백
+				효과条件優先名前:2 = 빛의 성검 단넬
+			ENDIF
+		CASE "란카의 충혹마"
+			SIF 발동済_1("상대",1379) == 0
+				효과条件優先名前 = 지나의 충혹마
+			SIF 발동済_1("상대",1382) == 0
+				효과条件優先名前 = 키노의 충혹마
+		CASE "시트리스의 충혹마"
+			SIF 발동済_1("상대",1379) == 0
+				효과条件優先名前 = 지나의 충혹마
+			SIF 발동済_1("상대",1382) == 0
+				효과条件優先名前 = 키노의 충혹마
 	ENDSELECT
 ELSE ;その他、묘지に送る、제외するなどの処理の분기
 	SELECTCASE カード名
@@ -1014,6 +1131,32 @@ ELSE ;その他、묘지に送る、제외するなどの処理の분기
 				효과条件優先名前:0 = 비전 레조네이터
 			ENDIF
 			효과条件劣後名前:0 = 소울 레조네이터
+		CASE "화이트 로즈 드래곤"
+			IF 参照先 == "덱"
+				SIF 발동済_2("상대",32153) == 0
+					효과条件優先名前 = 바이올런스 위치
+			ENDIF
+		CASE "론 파이어 블로섬"
+			효과条件優先名前 = 론 파이어 블로섬
+		CASE "헤이트 로즈 위치"
+			IF 参照先 == "덱"
+				SIF 발동済_D1("상대",32100) == 0
+					효과条件優先名前 = 그로우업 벌브
+			ELSEIF 参照先 == "EX덱"
+				SIF 발동済_2("상대",42530) == 0
+					효과条件優先名前 = 가든 로즈 메이든
+			ENDIF
+		CASE "흑마녀 디아벨스타"
+			IF 参照先 != "덱"
+				효과条件大小反転 = 1
+			ENDIF
+		CASE "운명의 여로"
+			효과条件大小反転 = 1
+			효과条件劣後名前:0 = 성전의 수견사
+			효과条件劣後名前:1 = 기룡 드라코백
+			효과条件劣後名前:2 = 빛의 성검 단넬
+		CASEELSE ;汎用指名
+			효과条件劣後名前:0 = 네크로파데스의 용사
 ENDSELECT
 ENDIF
 
@@ -1023,8 +1166,13 @@ ENDIF
 #DIM DYNAMIC 소환法
 #DIM DYNAMIC カードID
 #DIMS DYNAMIC カード名前
-#DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 条件달성
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 종류
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 場所
+
+듀얼리스트 = 상대
 
 SIF カードID <= 0
 	RETURN 0
@@ -1185,6 +1333,23 @@ SELECTCASE カード名前
 			RETURN 1
 	CASE "데먼스미스 레퀴엠","데먼스미스 세퀜티아"
 		SIF 발동済_1("상대",カードID)
+			RETURN 1
+	CASE "블러드 로즈 드래곤"
+		SIF 발동済_1("상대",カードID)
+			RETURN 1
+		CALL FULLRESET
+		濾過範囲묘지 = 1
+		濾過条件名前 = 블랙 로즈 드래곤
+		CALL CARD_CHECK_EXT("상대",0,"",0,カードID)
+		SIF RESULT != 1
+			RETURN 1
+		CALL FULLRESET
+		濾過範囲상대필드 = 1
+		濾過範囲상대마함 = 1
+		濾過条件除去種 = 묘지
+		濾過条件CNT = 1
+		CALL CARD_CHECK_EXT("상대",0,"",0,カードID)
+		SIF RESULT < 2
 			RETURN 1
 	CASEELSE
 
@@ -1404,6 +1569,24 @@ SELECTCASE RESULTS
 		RETURN 4000
 	CASE "혼돈환마 아미타일"
 		RETURN 15000
+	CASE "브램블 로즈 드래곤"
+		RETURN 200
+	CASE "헤이트 로즈 위치"
+		RETURN 300
+	CASE "밤장미 흑기사"
+		CALL FULLRESET_EXT
+		濾過範囲손패 = 1
+		濾過範囲묘지 = 1
+		濾過条件종족 = 식물족
+		濾過条件レベル:0 = 2
+		濾過条件レベル:1 = 3
+		濾過条件レベル:2 = 4
+		濾過条件소환可 = 1
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			RETURN -10000
+	CASE "푸티카의 충혹마"
+		RETURN 1000
 	CASEELSE
 		IF 손패플래그
 			TRYCALLFORM CARDCAN_{カードID}("상대",소환時,"필드")
@@ -1622,6 +1805,10 @@ SELECTCASE RESULTS
 		修正値 += 200
 	CASE "스프라이트 블루"
 		修正値 += 300
+	CASE "방랑의 그리폰라이더"
+		修正値 += 1000
+	CASE "저승사자 고즈"
+		修正値 -= 10000
 ENDSELECT
 
 TRYCALLFORM CARDNAME_{カードID}("名前")
@@ -1692,6 +1879,11 @@ SELECTCASE RESULTS
 		CALL CARD_CHECK_EXT("상대",0,"",0)
 		SIF RESULT == 1
 			효과条件優先名前 = 스피릿 오브 유벨
+	CASE "론 파이어 블로섬"
+		SIF 발동済_1("상대",32154) == 0
+			효과条件優先名前 = 밤장미 흑기사
+	CASE "밤장미 흑기사"
+		효과条件劣後名前 = 밤장미 흑기사
 ENDSELECT
 
 

@@ -1,0 +1,151 @@
+﻿@CARDNAME_23083,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 퍼핏 퀸
+	CASE "略称"
+		RESULTS = 퍼핏 Ｑ
+	CASE "カテゴリ"
+		RESULTS:0 = 퍼핏
+ENDSELECT
+
+
+@CARD_23083(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2200
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_23083(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：상대가 드로우 이외의 방법으로 덱에서 카드를 패에 넣은 경우에 발동할 수 있다。
+PRINTL 이 카드를 패에서 특수 소환한다。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：이 카드가 소환 / 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 자신의 패 / 묘지에서 "퍼핏 퀸" 이외의 전사족 / 땅속성 레벨７ 이하의 몬스터 １장을 골라 특수 소환한다。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ③：자신 필드에 "퍼핏 킹"이 존재하는 경우、
+PRINTL 자신 필드의 모든 전사족 / 땅속성 몬스터의 공격력 / 수비력은 １０００포인트 오른다。
+
+
+@CARDCAN_23083(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23083)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 효과後誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_CHECK_FIN_BIT(듀얼리스트,"離이동元",4,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득+D",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,23083,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,23083)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件종족 = 전사족
+	효과条件속성 = 땅속성
+	효과条件固名前 = 퍼핏 퀸
+	CALL 효과条件レベル_ADV(7, "以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 퍼핏 킹
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_23083(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 現在最大攻撃力
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23083,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23083,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件종족 = 전사족
+		효과条件속성 = 땅속성
+		효과条件固名前 = 퍼핏 퀸
+		CALL 효과条件レベル_ADV(7, "以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件종족 = 전사족
+	효과条件속성 = 땅속성
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000,1000)
+
+ENDIF

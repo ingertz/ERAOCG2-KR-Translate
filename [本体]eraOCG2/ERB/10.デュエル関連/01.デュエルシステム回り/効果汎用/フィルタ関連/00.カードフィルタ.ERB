@@ -230,6 +230,7 @@ FOR カウンタ,0,サーチ範囲
 		SIF 효과条件固定 != カウンタ
 			CONTINUE
 	ENDIF
+
 	IF 효과条件複数 > 0
 		SIF MATCH(효과条件選択済, (カウンタ + 上級値))
 			CONTINUE
@@ -240,6 +241,7 @@ FOR カウンタ,0,サーチ範囲
 				CONTINUE
 		ENDIF
 	ENDIF
+
 	IF GROUPMATCH(듀얼리스트,"자신","상대")
 		IF GETVAR(@"%듀얼리스트%_アザミナ呪") >= 1 && ゾーン != "어드밴스"
 			IF 元参照先 == "묘지" || 元参照先 == "제외" || 元参照先 == "필드"
@@ -251,6 +253,7 @@ FOR カウンタ,0,サーチ範囲
 	CALL CARD_S_FILTER_SET(実行者,参照先,カウンタ,듀얼리스트,チェック플래그,カードID)
 	SIF RESULT == 1
 		条件달성 = 1
+
 	CALL CARD_FILTER_SET(実行者,参照先,カウンタ,듀얼리스트,チェック플래그,カードID)
 	SIF RESULT == 1
 		条件달성 = 1
@@ -535,7 +538,6 @@ IF 효과条件固ID > -1
 ENDIF
 
 
-;PRINTFORML ここ通過１
 IF 효과条件名前 != ""
 	VARSET 条件달성
 	TRYCALLFORM CARD_{설정カードID}("別途ID")
@@ -1054,6 +1056,7 @@ IF 参照先 == "필드"
 		SIF 条件달성 == 0	
 			RETURN 戻り値
 	ENDIF
+
 	IF 효과条件종족 > 0
 		VARSET 条件달성
 		SIF MATCH(효과条件종족, GETVAR(@"%実行者%_MZ_種:カウンタ"))
@@ -1273,7 +1276,6 @@ ELSE
 	ENDIF
 
 
-
 	IF 효과条件レベル > 0
 		VARSET 条件달성
 		TRYCALLFORM CARD_{설정カードID}("レベル")
@@ -1410,13 +1412,12 @@ ELSE
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
 			VARSET RESULT
+			TRYCALLFORM CARD_{설정カードID}("종류")
+			IF RESULT < 3 || RESULT == 초차원
+			;특수소환불가はここ以外に置くと융합モンスターなどのSS불가に引っかかるのでやめよう
 			TRYCALLFORM CARD_{설정カードID}("특수불가")
 					SIF RESULT == 1
 						RETURN 戻り値
-
-
-					TRYCALLFORM CARD_{설정カードID}("종류")
-			IF RESULT < 3 || RESULT == 초차원
 				IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 					SIF RESULT == 1

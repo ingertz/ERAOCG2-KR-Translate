@@ -50,7 +50,6 @@ SELECTCASE ARG
 		RETURNF "강가"
 	CASE 場所_銭湯
 		RETURNF "목욕탕"
-
 	CASE 場所_ジム
 		RETURNF "트레이닝룸"
 
@@ -78,6 +77,17 @@ SELECTCASE ARG
 
 	CASE 場所_ラブホ
 		RETURNF "러브호텔"
+
+	CASE 場所_ラブホ内
+		RETURNF "러브호텔 방"
+	CASE 場所_ラブホ浴室
+		RETURNF "러브호텔 욕실"
+	CASE 場所_ラブホトイレ
+		RETURNF "러브호텔 화장실"
+	CASE 場所_ラブホ휴식
+		RETURNF "러브호텔 휴게실"
+
+
 	CASE 場所_편의점
 		RETURNF "편의점"
 	CASE 90
@@ -368,7 +378,7 @@ RETURNF 20
 @BEDROOM(ARG)
 #FUNCTION
 SELECTCASE ARG
-	CASE 場所_リビング,場所_寝室,場所_휴식室,場所_学校内,場所_ラブホ,場所_子供部屋,場所_캐릭터家
+	CASE 場所_リビング,場所_寝室,場所_휴식室,場所_学校内,場所_ラブホ内,場所_子供部屋,場所_캐릭터家
 	RETURNF 1
 	CASE 場所_依頼用寝室エリア
 		RETURNF 1
@@ -381,18 +391,19 @@ RETURNF 0
 
 
 ;휴식エリア
-@RESTAREA(ARG)
+@REST_AREA(ARG)
 #FUNCTION
 SELECTCASE ARG
-	CASE 場所_リビング,場所_寝室,場所_휴식室,場所_学校内,場所_ラブホ,場所_子供部屋,場所_中継地点
+	CASE 場所_リビング,場所_寝室,場所_휴식室,場所_学校内,場所_ラブホ内,場所_子供部屋,場所_中継地点
 		RETURNF 1
 	CASE 場所_캐릭터家
 		RETURNF 1
 	CASE 場所_依頼用寝室エリア
 		RETURNF 1
-	CASE 場所_浴室,場所_依頼用浴室エリア
+	;浴室エリア
+	CASE 場所_浴室,場所_依頼用浴室エリア, 場所_ラブホ浴室
 		RETURNF 1
-	CASE 場所_公園, 場所_カフェ, 場所_モール, 場所_KC売店, 場所_CDSレジ裏
+	CASE 場所_公園, 場所_砂浜, 場所_カフェ, 場所_モール, 場所_KC売店, 場所_CDSレジ裏, 場所_ラブホ휴식
 		RETURNF 1
 ENDSELECT
 RETURNF 0
@@ -411,11 +422,22 @@ RETURNF 0
 @BATHROOM(ARG)
 #FUNCTION
 SELECTCASE ARG
-	CASE 場所_浴室,場所_依頼用浴室エリア
+	CASE 場所_浴室,場所_依頼用浴室エリア, 場所_ラブホ浴室
 		RETURNF 1
 ENDSELECT
 RETURNF 0
 
+
+;物陰がある部屋
+@MONOKAGE(ARG)
+#FUNCTION
+SELECTCASE ARG
+	CASE 0 TO 30
+		RETURNF 0
+	CASE 800 TO 100
+		RETURNF 0
+ENDSELECT
+RETURNF 1
 
 
 ;주방がある部屋
@@ -497,6 +519,8 @@ SELECTCASE ARG
 		RETURNF 1
 	CASE 場所_KC売店
 		RETURNF 1
+	CASE 場所_ラブホ휴식
+		RETURNF 1
 ENDSELECT
 RETURNF 0
 
@@ -533,7 +557,18 @@ SELECTCASE ARG
 ENDSELECT
 RETURNF 0
 
-@WORKAREA(ARG)
+@TSUREDASHI(ARG)
+#FUNCTION
+SELECTCASE ARG
+	CASE 1 TO 20
+		RETURNF 1
+	CASE 場所_ラブホ内 TO 場所_ラブホ휴식
+		RETURNF 1
+ENDSELECT
+RETURNF 0
+
+
+@WORK_AREA(ARG)
 #FUNCTION
 SELECTCASE ARG
 	CASE 場所_寝室
@@ -546,13 +581,11 @@ SELECTCASE ARG
 ENDSELECT
 RETURNF 0
 
-@PLAYAREA(ARG)
+@PLAY_AREA(ARG)
 #FUNCTION
 SELECTCASE ARG
 	CASE 場所_KL広場, 場所_ジャングル, 場所_スリルゾーン, 場所_お城, 場所_観覧車, 場所_KCスタジアム
 		RETURNF 1
-
-
 	CASE 場所_カフェ
 		SIF MONEY < 3000
 			RETURNF 1
@@ -560,13 +593,32 @@ ENDSELECT
 RETURNF 0
 
 
+@PRIVATE_AREA(ARG)
+#FUNCTION
+SELECTCASE ARG
+	CASE 1 TO 30
+		RETURNF 1
+	CASE 920 TO 930
+		RETURNF 1
+ENDSELECT
+RETURNF 0
+
+@MIZUGI_AREA(ARG)
+#FUNCTION
+SELECTCASE ARG
+	CASE 場所_砂浜, 場所_高級ホテル, 場所_釣り堀
+		RETURNF 1
+ENDSELECT
+RETURNF 0
+
 @SANSAKU_AREA(ARG)
 #FUNCTION
-SIF INRANGE(ARG,50,499)
-	RETURNF 1
-SIF INRANGE(ARG,910,920)
-	RETURNF 1
-
+SELECTCASE ARG
+	CASE 50 TO 499
+		RETURNF 1
+	CASE 910 TO 930
+		RETURNF 1
+ENDSELECT
 RETURNF 0
 
 ;아르바이트先

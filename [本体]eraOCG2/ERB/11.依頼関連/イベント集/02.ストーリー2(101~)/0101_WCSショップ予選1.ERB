@@ -23,6 +23,8 @@ SELECTCASE 参照先
 	CASE "条件"
 		;最初からオープン
 		RETURN 1
+	CASE "回想可"
+		RETURN 1
 ENDSELECT
 
 RETURN 0
@@ -58,7 +60,7 @@ IF 依頼_달성상황 == 0
 	CALL EVENT_TIMER(10)
 ELSEIF 依頼_달성상황 == 1
 	PRINT 카드샵에 도착했다
-	IF TIME > KANTAN_TIME(20,00)
+	IF TIME > KANTAN_TIME(20,00) && 依頼_見返し中 == 0
 		PRINTFORMW 하지만, 역시 이 시간에는 가게가 닫혀 있다…… 너무 늦었다…….
 		PRINTFORMW 다시 며칠 뒤, 참가하러 와 보자…….
 		RETURN 3
@@ -111,7 +113,7 @@ ELSEIF 依頼_달성상황 == 1
 				BINPUT
 				IF RESULT == 0
 					PRINTFORMW "뭐가 즐거운 듀얼이야! 진 이쪽은 전혀 즐겁지 않은데!"
-					CFLAG:(이벤트主):호감도 -= 100
+					CALL EVENT_FAVUP(이벤트主,-100)
 				ELSEIF RESULT == 1
 					PRINTFORMW 여기서 무슨 말을 해도 자극만 될 뿐이니, 굳이 아무 말도 하지 않고 무시했다.
 				ENDIF

@@ -37,6 +37,8 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "生産불가"
 		RETURN 1
+	CASE "生成カード"
+		RETURN 140002
 ENDSELECT
 
 RETURN 0
@@ -170,21 +172,24 @@ IF 종류 == 효과소환
 		CALL FULLRESET
 		효과条件複数 = 3
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)
-		攻撃修正 += RESULT:99
-		守備修正 += RESULT:98
-		CALL CARD_SUMMON(듀얼리스트,場所,"攻撃표시")
-		CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"永攻",攻撃修正)
-		CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"永守",守備修正)
+		IF RESULT == 1
+			攻撃修正 += RESULT:99
+			守備修正 += RESULT:98
+			CALL CARD_SUMMON(듀얼리스트,場所,"攻撃표시")
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"永攻",攻撃修正)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"永守",守備修正)
+		ENDIF
 	ELSEIF LRESULT == 1
 		CALL FULLRESET
 		효과条件複数 = 3
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
-		攻撃修正 += RESULT:99
-		守備修正 += RESULT:98
-
-		CALL CARD_SUMMON_RA(듀얼리스트,場所,"攻撃표시")
-		CALL SET_FIELD_INFO(対面者,"필드",カード소환先,"永攻",攻撃修正)
-		CALL SET_FIELD_INFO(対面者,"필드",カード소환先,"永守",守備修正)
+		IF RESULT == 1
+			攻撃修正 += RESULT:99
+			守備修正 += RESULT:98
+			CALL CARD_SUMMON_RA(듀얼리스트,場所,"攻撃표시")
+			CALL SET_FIELD_INFO(対面者,"필드",カード소환先,"永攻",攻撃修正)
+			CALL SET_FIELD_INFO(対面者,"필드",カード소환先,"永守",守備修正)
+		ENDIF
 	ENDIF
 	CALL CARDSUMMON_AA_40002
 	RETURN 0
@@ -250,7 +255,7 @@ ENDIF
 ALIGNMENT CENTER
 	PRINTFORML
 SETCOLOR C_YELLOW_2
-	PRINTFORML 라여, 하늘을 누벼라!
+	PRINTFORML 태양신(라)여, 하늘을 누벼라!
 RESETCOLOR
 	PRINTFORML
 ALIGNMENT LEFT
@@ -306,18 +311,18 @@ RETURN 0
 @CARD_EXPLANATION_140002(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 상대는 이 카드의 효과 발동에 대해 효과를 발동할 수 없다.
-PRINTL ①：이 카드는 자신 필드의 몬스터 3체 또는 상대필드의 몬스터 3장을 릴리스하고 일반소환할 수 있다.
-PRINTL ②：'라의 익신룡'이 필드·패·덱·묘지에 이 카드만 있을 경우 이 카드는 완전 내성을 얻는다.
-PRINTL ③：이 카드의 공격력·수비력은 이 카드의 어드밴스 소환을 위해 릴리스한 몬스터의 원래 공격력·수비력을 합한 수치가 된다.
-PRINTL ④：이 카드가 묘지에서 특수 소환된 경우 발동할 수 있다.
-PRINTL 1이 되도록 LP를 지불하고, 이 카드의 공격력·수비력을 지불한 수치만큼 증가한다.
-PRINTL ⑤： 이 카드의 컨트롤러가 원래 주인인 경우 자신·상대의 턴에 1회 발동할 수 있다.
-PRINTL 1000LP를 지불하고 상대 필드의 몬스터 전부를 묘지로 보내고, 이 턴, 이 카드는 전투·효과에 의해 파괴되지 않는다.
-PRINTL 이 효과는 카드의 효과로 막을 수 없다.
-PRINTL ⑥：이 카드가 특수 소환되어 있을 경우, 엔드 페이즈에 발동한다. 이 카드를 묘지로 보낸다.
-PRINTL ⑦：엔드 페이즈에 발동한다.
-PRINTL 이 카드의 컨트롤은 원래 주인에게 돌아간다.
+PRINTL 이 카드는 자신 필드의 몬스터 3장, 또는 상대 필드의 몬스터 3장을 제물로 바치는것으로 소환할 수 있다.
+PRINTL 상대는 이 카드의 효과의 발동에 대해 효과를 발동할 수 없다.
+PRINTL ①："라의 익신룡"이 필드 / 패 / 덱 / 묘지에 이 카드만인 경우、몬스터 존의 이 카드는 완전 내성을 얻는다.
+PRINTL ②：이 카드의 공격력 / 수비력은、이 카드의 소환을 위해 제물로 한 몬스터의 원래 공격력 / 수비력을 합친 수치가 된다。
+PRINTL ③：이 카드가 묘지에서 특수 소환된 경우에 발동할 수 있다。
+PRINTL １이 되도록 자신의 LP를 지불하고、이 카드의 공격력 / 수비력을 지불한 수치만큼 올린다。
+PRINTL ④：이 카드의 컨트롤러가 원래 주인인 경우、자신 / 상대 턴에 １번、발동할 수 있다。
+PRINTL １０００LP를 지불하고、상대 필드의 몬스터를 전부 묘지로 보낸다。이 턴、이 카드는 전투 / 효과로는 파괴되지 않는다。
+PRINTL 이 효과는 카드의 효과로 막을 수 없다。
+PRINTL ⑤：이 카드가 특수 소환되어있을 경우、엔드 페이즈에 이 카드를 묘지로 보낸다。
+PRINTL 또한、이 카드의 컨트롤러가 원래 주인이 아닌 경우、엔드 페이즈에 이 카드의 컨트롤은 원래 주인에게 이동한다。
+
 
 [SKIPSTART]
 PRINTL 𓇋𓏏𓇋𓎡𓍯𓈖𓍯𓎡𓄿𓂧𓍯𓅱𓄿𓅓𓍯𓈖𓋴𓍢𓏏𓄿𓋴𓄿𓈖𓏏𓄿𓇋𓍯𓇋𓎡𓇌𓈖𓇋𓇌𓈖𓇋𓋴𓄿𓋴𓄿𓎼𓇌𓂋𓍢𓎡𓍯𓏏𓍯𓂧𓇌𓋴𓉔𓍯𓎡𓄿𓈖𓂧𓇌𓎡𓇋𓂋𓍢𓎡𓍯𓈖𓍯𓋴𓉔𓍯𓎡𓄿𓈖𓅱𓄿𓏏𓍢𓆓𓍯𓋴𓉔𓍯𓎡𓄿𓈖𓂧𓇌𓎡𓇋𓂋𓍢𓎡𓄿𓇋𓋴𓍢𓍯𓋴𓉔𓍯𓉔𓇋𓋴𓇋𓈖𓄿𓇋

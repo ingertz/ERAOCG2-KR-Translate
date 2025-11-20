@@ -721,7 +721,7 @@ IF 時間帯변경 != TIME:2
 	CALL CHANGE_WEATHER
 	CALL CHARA_MOVE_OUTSIDE(時間帯변경)
 	;우후후中じゃない＆＆듀얼モードじゃない
-	IF 듀얼モード == 0 && CFLAG:MASTER:우후후 == 0
+	IF 듀얼モード == 0 && CFLAG:MASTER:우후후 == 0 && CFLAG:MASTER:여행중 == 0
 		IF !GROUPMATCH(GET_DAY(), "토", "일") && 時間帯변경 == 3 && オプション_自動通勤 == 1 && 依頼_受領中 == 0 && CFLAG:MASTER:감기플래그 < 3 && 仕事_出席 == 0
 			CALL COM465
 			PRINTW 몸이…… 몸이！　마음대로 움직여버려！！			
@@ -1113,7 +1113,10 @@ FOR 캐릭터_ID,1,CHARANUM
 			ENDIF
 		ENDIF
 	ENDIF
-
+	IF MIZUGI_AREA(CFLAG:캐릭터_ID:현재위치) == 1
+		CALL CLOTHES_SETTING(캐릭터_ID,525)
+		CFLAG:캐릭터_ID:수영복착용 = 1
+	ENDIF
 	;変な場所に行った人はVOID行き
 	SIF GETPLACENAME(CFLAG:캐릭터_ID:현재위치) == ""
 		CFLAG:캐릭터_ID:현재위치 = 場所_VOID

@@ -1,0 +1,550 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;奉仕系コマンド
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;==================================================
+;80,수음
+;==================================================
+@M_KOJO_MESSAGE_COM_K1921_80
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1921_80_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1921_80_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		IF NOWEX:MASTER:사정
+			IF ABL:TARGET:기교 > 2
+				IF ABL:TARGET:정액중독 > 2
+					PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%の手でイかせてあげる…♥ %CSTR:TARGET:MASCALL%の정액は～♥ 味わせてもらうわよ～♥ あ～ん…♥」
+				ELSE
+					PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%の手でイかせてあげる…♥ さ～ん♥ にい～♥ いち…♥ あはっ♥」
+				ENDIF
+			ELSE
+				PRINTFORMW 「%CSTR:TARGET:MASCALL%…？ 気持ちいいかしら～♥ あらっ…♥ もうイきそうなのかしら～？ %CSTR:TARGET:SELFCALL%の手で…♥ 余程気持ち良くなったのね～♥」
+			ENDIF
+		ELSE
+			PRINTFORMW 「%CSTR:TARGET:MASCALL%…？ 気持ちいいかしら～♥ ふふっ…♥ この%CSTR:TARGET:SELFCALL%に手でしこしこしてもらえるなんて…♥ %CSTR:TARGET:MASCALL%は幸せ者ね～♥」
+		ENDIF
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+		CASE 4
+			PRINTFORMW 
+		CASE 5
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;81,펠라치오
+;==================================================
+@M_KOJO_MESSAGE_COM_K1921_81
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1921_81_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1921_81_1
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 사정人物箇所
+IF MASTER_POSE(6, 1, 1) > 0
+	사정人物箇所 = MASTER_POSE(6, 1, 1)
+ELSEIF MASTER_POSE(7, 1, 1) > 0
+	사정人物箇所 = MASTER_POSE(7, 1, 1)
+ENDIF
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;ファースト키스
+		IF EXP:TARGET:Ｍ경험 == 0 && EXP:TARGET:펠라경험 == 1 && CALLNAME:(CFLAG:TARGET:키스상실상대) == CALLNAME:MASTER
+			PRINTFORMW 
+		;それ以外
+		ELSE
+			PRINTFORMW 
+		ENDIF
+		RETURN 1
+	ENDIF
+
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		IF 사정人物箇所 && (TCVAR:사정人物箇所:103 == MASTER || TCVAR:사정人物箇所:105 == MASTER)
+			IF 사정人物箇所 == TARGET || 사정人物箇所 == TARGET
+				IF MASTER_POSE(6, 1, 1) > 0
+					PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ んんっ…♥ %CSTR:TARGET:MASCALL%…♥ おまんこで気持ち良くなって…♥ お掃除して欲しいなんて贅沢すぎじゃないかしら～？」
+					PRINTFORMW 「まあ、しっかり綺麗にしてあげるけど…♥ それだけで済むのかしらね？ んちゅ…♥ んんっ…♥ また出したくなったら…♥ 出してもいいわよ…♥」
+				ELSE
+					PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ んんっ…♥ %CSTR:TARGET:MASCALL%…♥ お尻の穴で気持ち良くなったおちんぽ掃除させるなんて…♥」
+					PRINTFORMW 「んちゅ…♥ んんっ…♥ 本当にいい御身分ね～♥ この%CSTR:TARGET:SELFCALL%にこんなことさせられる喜びを嚙み締めなさい…♥」
+				ENDIF
+			ELSEIF 사정人物箇所 > 0 || 사정人物箇所 > 0
+				IF MASTER_POSE(6, 1, 1) > 0
+					IF NAME:사정人物箇所 == "黒魔女ディアベルスター"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ ディアベルスター…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのおまんこの味がするわよ～♥」
+						PRINTFORMW 「あなたの愛液…♥ んちゅ…♥ おいしい…♥ %CSTR:TARGET:MASCALL%の정액と混ざって…♥ んちゅ…♥ んんっ…♥ おちんぽ…♥ おいしすぎ…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のアステーリャ"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ アステーリャ…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのおまんこの味がするわよ～♥」
+						PRINTFORMW 「あなたの愛液…♥ んちゅ…♥ おいしい…♥ %CSTR:TARGET:MASCALL%の정액と混ざって…♥ んちゅ…♥ んんっ…♥ おちんぽ…♥ おいしぎ…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のリゼット"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ リゼット…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのおまんこの味が…♥」
+						PRINTFORMW 「んちゅ…♥ 子供の%CSTR:TARGET:SELFCALL%が汚しちゃったのだから…♥ 大人の%CSTR:TARGET:SELFCALL%が綺麗にするのは当然よね…♥ んちゅ…♥ んんっ…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のルシア"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ ルシア…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのおまんこの味がするわよ～♥」
+						PRINTFORMW 「んちゅ…♥ 優等生ぶってる癖に…♥ 随分と愛液垂らしてたのね～♥ んちゅ…♥ んんっ…♥ 妹分に処理させるなんて…♥ 姉としてどうなのかしらね～♥ あはっ…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のシルヴィ"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ シルヴィ…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのおまんこの味が…♥」
+						PRINTFORMW 「んちゅ…♥ 心配しなくても…♥ %CSTR:TARGET:SELFCALL%に任せておきなさい…♥ あなたに受けた借りの分…♥ %CSTR:TARGET:MASCALL%のおちんぽはしっかり綺麗にするから～…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森の妖魔ディアベル"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ 先生…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ 先生のおまんこの味が…♥ しますよ…？」
+						PRINTFORMW 「んちゅ…♥ な、なんだか少し恥ずかしいです…♥ まさか先生の愛液をお掃除することになるなんて…♥ 別に嫌ではありませんけど…♥」
+					ELSE
+						PRINTFORMW 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ %CSTR:TARGET:MASCALL%のおちんぽ…♥ 정액と愛液ですごい味だわ…♥」
+					ENDIF
+				ELSE
+					IF NAME:사정人物箇所 == "黒魔女ディアベルスター"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ ディアベルスター…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのお尻の穴の味が…♥」
+						PRINTFORMW 「んんっ…♥ 照れなくてもいいのよ～？ %CSTR:TARGET:SELFCALL%とあなたの仲じゃない…♥ 애널くらいどうってことないわ…♥ んちゅ…♥ んんっ…♥ おちんぽ…♥ おいし…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のアステーリャ"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ アステーリャ…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのお尻の穴の味が…♥」
+						PRINTFORMW 「んんっ…♥ 照れなくてもいいのよ～？ %CSTR:TARGET:SELFCALL%とあなたの仲じゃない…♥ 애널くらいどうってことないわ…♥ んちゅ…♥ んんっ…♥ おちんぽ…♥ おいし…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のリゼット"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ リゼット…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのお尻の穴の味が…♥」
+						PRINTFORMW 「んちゅ…♥ 子供の%CSTR:TARGET:SELFCALL%が汚しちゃったのだから…♥ 大人の%CSTR:TARGET:SELFCALL%が綺麗にするのは当然よね…♥ んちゅ…♥ んんっ…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のルシア"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ ルシア…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのお尻の味がするわよ～♥」
+						PRINTFORMW 「んちゅ…♥ 照れちゃって可愛いわね～♥ んんっ？ 大丈夫よ…♥ あなたのお尻の穴に入っていたおちんぽが汚い訳ないじゃない…♥ んちゅ…♥ んんっ…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森のシルヴィ"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ シルヴィ…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ あなたのお尻の穴の味が…♥」
+						PRINTFORMW 「んちゅ…♥ あら？ 恥ずかしがっているのかしら…？ んんっ？ 大丈夫よ…♥ あなたのお尻の穴に入っていたおちんぽが汚い訳ないじゃない…♥ んちゅ…♥ んんっ…♥」
+					ELSEIF NAME:사정人物箇所 == "白き森の妖魔ディアベル"
+						PRINTFORML 「んちゅ…♥ れろっ…♥ じゅるる…♥ 先生…♥ %CSTR:TARGET:MASCALL%のおちんぽから…♥ 先生のお尻の穴の味が…♥ しますよ…？」
+						PRINTFORMW 「んちゅ…♥ な、なんだか少し恥ずかしいです…♥ 嫌ではありません…♥ 先生のお尻の穴に入っていたおちんぽは汚くありませんから…♥ んちゅ…♥ んんっ…♥」
+					ELSE
+						PRINTFORMW 「んちゅ…♥ れろっ…♥ じゅるる…♥ あはっ…♥ %CSTR:TARGET:MASCALL%のおちんぽ…♥ すごい味…♥」
+					ENDIF
+				ENDIF
+			ENDIF
+		ELSEIF NOWEX:MASTER:사정
+			IF 사정人物箇所 == TARGET || 사정人物箇所 == TARGET
+				IF MASTER_POSE(6, 1, 1) > 0
+					PRINTFORMW 「あら…♥ 口に出したいの…？ わかったわ…♥ んんっ…♥ れろっ♥ れろっ♥ んちゅ…♥」
+				ELSE
+					PRINTFORMW 「あら…♥ 口に出したいの…？ わかったわ…♥ んんっ…♥ れろっ♥ れろっ♥ んちゅ…♥」
+				ENDIF
+			ELSEIF 사정人物箇所 > 0 || 사정人物箇所 > 0
+				IF MASTER_POSE(6, 1, 1) > 0
+					PRINTFORMW 「あら…♥ %CSTR:TARGET:SELFCALL%の口に出したいの…？ わかったわ…♥ んんっ…♥ れろっ♥ れろっ♥ んちゅ…♥」
+				ELSE
+					PRINTFORMW 「あら…♥ %CSTR:TARGET:SELFCALL%の口に出したいの…？ わかったわ…♥ んんっ…♥ れろっ♥ れろっ♥ んちゅ…♥」
+				ENDIF
+			ELSE
+				IF ABL:TARGET:기교 > 2
+					IF ABL:TARGET:정액중독 > 2
+						PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ お口でイきたいの～？ 仕方ないわね…♥ あむっ♥ れろっ♥ れろっ♥ んん～♥ ん～♥ んんっ～♥ んんっ…んぐっ♥」
+					ELSE
+						PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ お口でイきたいの～？ 仕方ないわね…♥ れろっ♥ れろっ♥ ほ～ら♥ ここがいいのでしょう？ れろっ♥ れろっ♥ んふっ～…♥」
+					ENDIF
+				ELSE
+					PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ お口でイきたいのかしら～？ 仕方ないわね…♥ れろっ♥ れろっ♥ ん～♥ あはっ…♥ 気持ち良さそう～♥ れろっ♥ れろっ♥ んふっ～…♥」
+				ENDIF
+			ENDIF
+		ELSE
+			PRINTFORMW 「れろっ…♥ れろっ…♥ ふふっ…♥ この%CSTR:TARGET:SELFCALL%にお口で奉仕してもらえるなんて…♥ %CSTR:TARGET:MASCALL%は幸せ者ね～♥ れろっ♥ れろっ♥ んちゅ…♥」
+		ENDIF
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+		
+	;お掃除펠라
+	IF STAIN:MASTER:2 & 4 && ABL:TARGET:기교 >= 3
+		PRINTFORMW 
+
+	;通常
+	ELSE
+		SELECTCASE RAND:호감도修正 + 1
+			CASE 1
+				PRINTFORMW 
+			CASE 2
+				PRINTFORMW 
+			CASE 3
+				PRINTFORMW 
+			CASE 4
+				PRINTFORMW 
+			CASE 5
+				PRINTFORMW 
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;82,파이즈리
+;==================================================
+@M_KOJO_MESSAGE_COM_K1921_82
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1921_82_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1921_82_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		IF NOWEX:MASTER:사정
+			IF ABL:TARGET:기교 > 2
+				PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:SELFCALL%のおっぱいの中はどう%CSTR:TARGET:MASCALL%…♥ あはっ…♥ もうイきそうね～♥ ほらほ～ら…♥ 사정しちゃいなさ～い♥」
+			ELSE
+				PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:SELFCALL%のおっぱいの中はどう%CSTR:TARGET:MASCALL%…♥ あはっ…♥ もうイきそうなのかしら～♥ んんっ…♥ 我慢しなくてもいいのよ～♥」
+			ENDIF
+		ELSE
+			PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:SELFCALL%のおっぱいの中はどう%CSTR:TARGET:MASCALL%…♥ あはっ…♥ おちんぽびくびくさせちゃって…♥ 相当気持ちいいのね～♥」
+		ENDIF
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+		CASE 4
+			PRINTFORMW 
+		CASE 5
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;83,스마타
+;==================================================
+@M_KOJO_MESSAGE_COM_K1921_83
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1921_83_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1921_83_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		IF NOWEX:MASTER:사정
+			IF ABL:TARGET:기교 > 2
+				PRINTFORM 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ おまんこにおちんぽ挟まれた気分はどう～？ 
+				IF TALENT:TARGET:처녀
+					PRINTFORMW あら…♥ もうイきそうね…♥ 처녀のまんこでイかされちゃうなんて～♥ 恥ずかしいとは思わないのかしら～♥」
+				ELSE
+					PRINTFORMW あら…♥ もうイきそうね…♥…♥ 中を味わうことなく果てちゃうの～？ あはっ…♥ でも만족そうじゃない♥」
+				ENDIF
+			ELSE
+				PRINTFORM 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ おまんこにおちんぽ挟まれた気分はどう～？ 
+				IF TALENT:TARGET:처녀
+					PRINTFORMW あら？ もうイきそうなの～？ 처녀のまんこでイかされちゃうなんて～♥ 恥ずかしいとは思わないのかしら～♥」
+				ELSE
+					PRINTFORMW あら？ もうイきそうなの～？ ふふっ…♥ 中を味わうことなく果てちゃうのね～♥ あはっ…♥ でも만족そうじゃない♥」
+				ENDIF
+			ENDIF
+		ELSE
+			PRINTFORM 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ おまんこにおちんぽ挟まれた気分はどう～？ 
+			IF TALENT:TARGET:처녀
+				PRINTFORMW 처녀のまんこをこんな風に楽しむなんて…♥ %CSTR:TARGET:MASCALL%もひどいわよね～♥」
+			ELSE
+				PRINTFORMW おまんこをこんな風に使わせるなんて…♥ %CSTR:TARGET:MASCALL%も酔狂よね～♥」
+			ENDIF
+		ENDIF
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;84,泡踊り
+;==================================================
+@M_KOJO_MESSAGE_COM_K1921_84
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1921_84_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1921_84_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 「この%CSTR:TARGET:SELFCALL%をスポンジ代わりにするなんて…♥ %CSTR:TARGET:MASCALL%は贅沢ね～♥」
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 「この%CSTR:TARGET:SELFCALL%をスポンジ代わりにするなんて…%CSTR:TARGET:MASCALL%は贅沢ね～？」
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;85,足扱き
+;==================================================
+@M_KOJO_MESSAGE_COM_K1921_85
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1921_85_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1921_85_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		IF NOWEX:MASTER:사정
+			IF ABL:TARGET:기교 > 2
+				PRINTFORMW 「んん～…♥ もうイきそうね～♥ ふふっ…♥ 足でなでなでされて…♥ イっちゃうんだぁ…♥ あ～あ♥ 踏みつけられて사정するなんて…♥ あはっ…♥ 可愛い%CSTR:TARGET:MASCALL%ね…♥」
+			ELSE
+				PRINTFORMW 「んん～…♥ もうイきそうなのかしら～？ ふふっ…♥ 足で気持ち良くなったのね…♥ 踏みつけられて사정するなんて…♥  あはっ…♥ 可愛い%CSTR:TARGET:MASCALL%ね…♥」
+			ENDIF
+		ELSE
+			PRINTFORMW 「あはっ…♥ 踏みつけれれるのがいいなんて…♥  %CSTR:TARGET:MASCALL%は酔狂ね～♥ でも気分がいいわ～♥ ふふっ…♥ あはははっ♥」
+		ENDIF
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;86,スクワット
+;TEQUIP:TARGET:Ｖ섹스 == MASTER (男性器を軸にする
+;TEQUIP:딜도（딜도を軸にする
+;==================================================
+@M_KOJO_MESSAGE_COM_K1921_86
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1921_86_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1921_86_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;파생
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	;기승위スクワット
+	IF LOCAL:1 && TEQUIP:TARGET:Ｖ섹스 == MASTER
+		PRINTFORMW 
+		RETURN 1
+	;딜도軸スクワット
+	ELSEIF LOCAL:1 && TEQUIP:딜도
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1

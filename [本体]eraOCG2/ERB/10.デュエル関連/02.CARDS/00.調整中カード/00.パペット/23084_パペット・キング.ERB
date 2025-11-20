@@ -1,0 +1,152 @@
+﻿@CARDNAME_23084,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 퍼핏 킹
+	CASE "略称"
+		RESULTS = 퍼핏 킹
+	CASE "カテゴリ"
+		RESULTS:0 = 퍼핏
+ENDSELECT
+
+
+@CARD_23084(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2600
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_23084(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：상대가 드로우 이외의 방법으로 덱에서 카드를 패에 넣은 경우에 발동할 수 있다。
+PRINTL 이 카드를 패에서 특수 소환한다。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：이 카드가 소환 / 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 덱에서 전사족 / 땅속성 / 레벨６ 이하의 몬스터 １장을 패에 넣는다。
+PRINTL 이 효과를 발동한 턴、자신은 전사족 몬스터밖에 ＥＸ덱에서 특수 소환할 수 없다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：자신 필드에 "퍼핏 킹"이외의 "퍼핏"몬스터가 존재하는 한、
+PRINTL 이 카드는 상대의 효과의 대상이 되지 않으며、상대는 묘지의 몬스터의 효과를 발동할 수 없다。
+
+
+@CARDCAN_23084(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23084)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 효과後誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_CHECK_FIN_BIT(듀얼리스트,"離이동元",4,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득+D",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,23084,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,23084)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종류 = モン全般
+	효과条件종족 = 전사족
+	효과条件속성 = 땅속성
+	CALL 효과条件レベル_ADV(6, "以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 퍼핏
+	효과条件固名前 = 퍼핏 킹
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+
+@CARDEFFECT_23084(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23084,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23084,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = モン全般
+		효과条件종족 = 전사족
+		효과条件속성 = 땅속성
+		CALL 효과条件レベル_ADV(6, "以下")
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		EX소환可能종족 = 전사족
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+	CALL SET_PLAYER_INFO(듀얼리스트,"묘지_無効",3,1)
+ENDIF

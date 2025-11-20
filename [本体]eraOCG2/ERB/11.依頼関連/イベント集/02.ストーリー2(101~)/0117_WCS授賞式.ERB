@@ -1,0 +1,187 @@
+﻿@IRAI_EVENT_117(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE  "名前"
+		RESULTS = (WCS4-2)월드 챔피언십、시상식
+	CASE "이벤트種"
+		RETURN 이벤트_物語
+	CASE "依頼先"
+		RETURN 場所_スタジアム
+	CASE "詳細"
+		PRINTL 월드 챔피언십に優勝した！
+		PRINTL 시상식は南駅のスタジアムで行われるようだ。
+		PRINTL 準備が出来たら向かおう。
+		PRINTL
+		PRINTL 
+	CASE "条件"
+		SIF 依頼_完了횟수:116 == 0
+			RETURN 0
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_117(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主,30
+#DIM DYNAMIC 対戦상대
+#DIMS DYNAMIC 표시名前
+#DIM DYNAMIC 승리횟수
+#DIM DYNAMIC 패배횟수
+
+
+IF 依頼_달성상황 == 0
+	PRINTFORMW 「デュエルモンスターズ、월드 챔피언십！XXXX年の優勝者は……%NAME:MASTER%さんです！」
+	PRINTFORMW 「おめでとうございます！」
+	CALL FLASH(2)
+	PRINTFORMW 시상식にて、優勝した자신を祝うように拍手とフラッシュが鳴り響く。
+	PRINTFORMW 「それでは、%NAME:MASTER%さんにトロフィーと優勝記念のレアカードを授与します！」
+	PRINTFORMW そのまま壇上に上がり、トロフィーを受け取ろうとした時。
+	FOR LOCAL, 0, 70
+		PRINTL
+	NEXT
+	PRINTFORMW ！？
+	PRINTFORMW 突然、世界から色が失われ、자신を除く全員が倒れた。
+	PRINTFORMW 何事かと周りを見回すと……
+	PRINTFORMW 「おや、やはり効きませんでしたか。まあいいでしょう」
+	PRINTFORMW その言葉と共に、ある人物が歩いて来た。
+	PRINTFORMW 「一度だけ言います。あなたの持つ神のカードと、トロフィーを渡しなさい。そうすれば何もせずに去りましょう」
+	PRINTFORMW さっきの現象は、目の前の人物の仕業だろうか。
+	PRINTFORMW 「私の仕業ですか？そうとも言えますし、そうでないとも言えますね。これは彼ら自身の自業自得なんですよ」
+	PRINTFORMW 自業自得？
+	PRINTFORMW 「彼らは자신の持つERAカードに기력を吸い取られて倒れただけ。そもそもERAカードを持ってなければ倒れる事も無かった。……もっとも、あなたはどちらにしろ神のカードに守られたみたいですが」
+	PRINTFORMW ここにいる全員がERAカードを！？
+	PRINTFORMW 「そう！もはや誰もが知ってか知らずかERAカードを１枚は持つまでに至りました！そして世界大会がまともに行われなかったとなれば、誰もがデュエルモンスターズへの信頼を失う！」
+	PRINTFORMW 「信頼出来ない公式に、蔓延る違法カード！そのまま進めばデュエルモンスターズは衰退する！」
+	PRINTFORMW 「元々は私たちERAグールズが洗脳した刺客の誰かに優勝させるつもりでしたが……ここで優勝トロフィーを奪ってしまえば同じ事」
+	PRINTFORMW 「疑問は解けましたか？さて、では神のカードとトロフィーを渡して貰いましょうか」
+	PRINTFORMW 目の前の人物とERAグールズがどんな計画を立てていたのかは分かった。
+	PRINTFORMW しかし、そんな計画を見過ごす訳にはいかない！
+	PRINTFORMW 「やはり저항しますか。いいでしょう、ならばデュエルで決めましょうか!」
+	PRINTFORML 
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(117)
+	TARGET = LOCAL
+	IF RESULT == 1
+	ELSE
+		PRINTFORMW 負けてしまった……
+		PRINTFORMW 「沈め！目覚める事無き、永遠の闇の中に！」
+		PRINTFORMW %NAME:MASTER%は目の前が真っ暗になった！
+		PRINTFORMW …………
+		PRINTFORMW ………
+		PRINTFORMW …
+		RETURN 6
+	ENDIF
+	PRINTFORML 
+	PRINTFORMW 「ま、まさか、あり得ない……、私が負けるなど……」
+	PRINTFORMW 상대は負けを認められないままふらつく。
+	PRINTFORMW その時、またしても상대の덱에서闇が膨れ上がって상대を飲み込んだ！
+	PRINTFORMW 「や、やめろ！やめろーーー！！！」
+	PRINTFORMW 상대は悲鳴を残し、そのまま闇と共に消えて行った……
+	PRINTFORMW …………
+	PRINTFORMW ………
+	PRINTFORMW …
+	PRINTFORMW 会場の人たちが意識を取り戻した後。
+	PRINTFORMW 시상식が再開され、優勝トロフィーと記念のカードを受け取った。
+	CALL CARD_GET_SINGLE(60001)
+	CALL CARD_GET_SINGLE(60002)
+	CALL CARD_GET_SINGLE(60003)
+	CALL CARD_GET_SINGLE(80001)
+	PRINTFORMW さらに、１枚までなら禁止・制限を無視してカードを덱に入れられるようになった。
+	制限突破횟수 += 1
+	PRINTFORMW これで월드 챔피언십は終了した。
+	PRINTFORMW しかし、まだERAグールズが壊滅した訳ではない。
+	PRINTFORMW デュエルモンスターズを守るため、ERAグールズとの闘いはこれからも続く……
+	PRINTFORML 
+	CALL EVENT_TIMER(60)
+	RETURN 2
+ENDIF
+
+
+@IRAI_DUEL_INTRO_117
+
+SETCOLOR C_RED
+CUSTOMDRAWLINE —
+PRINTL 
+PRINTFORML 　＊덱内のE.R.Aカードの効力により、あなた以外デュエル中の違和感に鈍感になった。
+PRINTL 
+CUSTOMDRAWLINE —
+PRINTW
+RESETCOLOR
+
+PRINTFORMW 상대の덱에서闇が膨らむ……
+PRINTFORMW そのまま상대のライフが80000になった！？
+PRINTFORMW 「あなたの腕前はよく知っています。私が普通にデュエルするとでも？」
+PRINTFORMW 流石にあのライフを全部削り切るのは苦労しそうだ。
+ライフ_상대 = 80000
+IF 依頼_進行보존:116
+	PRINTFORMW その時、カバンのカードが光る……
+	PRINTFORMW これは、世界大会直前にお守りとして貰ったカード？
+	PRINTFORMW そのまま{依頼_進行보존:116}枚のカードが光り、상대の闇を抑え込む！
+	PRINTFORMW 상대のライフは{80000 - 8000 * 依頼_進行보존:116}まで引き下がった！
+	PRINTFORMW 「何ぃ！？まさかこんな事が！？」
+	PRINTFORMW 「まあいいでしょう、まだライフはこちらが上だ！」
+	ライフ_상대 = 80000 - 8000 * 依頼_進行보존:116
+ENDIF
+
+@IRAI_DECK_117(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+IF 듀얼리스트 == "상대"
+	RETURN 21117
+ENDIF
+RETURN 0
+
+
+@DUELDECK_21117(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+;ERAラビエル
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)",  1445
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  1445
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  1446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  1446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  1446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  28300
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  28301
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  28301
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  28301
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  28302
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  28302
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  61446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  61446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  61446
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72830
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72830
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73130
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73131
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  79618
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  79618
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  93100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  93100
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  99604
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  99604
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  99604
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 11446
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 11446
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 11446
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41445
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41445
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41445
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41447
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41448
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 41449
+

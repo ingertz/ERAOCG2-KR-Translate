@@ -1,0 +1,104 @@
+@CARDNAME_28261,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 퍼니멀 도그
+	CASE "略称"
+		RESULTS = Fur 도그
+	CASE "カテゴリ"
+		RESULTS:0 = 퍼니멀
+ENDSELECT
+
+
+@CARD_28261(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1700
+	CASE "守備力"
+		RETURN 1000
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28261(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "퍼니멀 도그"의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,소환時 ,특수소환時)
+PRINTL ①：이 카드가 패에서 소환 / 특수 소환에 성공했을 때에 발동할 수 있다。
+PRINTL 덱에서 "에지임프" 몬스터 １장 또는
+PRINTL "퍼니멀 도그" 이외의 "퍼니멀" 몬스터 １장을 패에 넣는다。
+
+@CARDSUMMON_AA_28261
+
+
+@CARDCAN_28261(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28261)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,28261)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ:0 = 에지임프
+	효과条件カテゴリ:1 = 퍼니멀
+	효과条件종류 = モン全般
+	효과条件固名前 = 퍼니멀 도그
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28261(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28261,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ:0 = 에지임프
+		효과条件カテゴリ:1 = 퍼니멀
+		효과条件종류 = モン全般
+		효과条件固名前 = 퍼니멀 도그
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ENDIF
+

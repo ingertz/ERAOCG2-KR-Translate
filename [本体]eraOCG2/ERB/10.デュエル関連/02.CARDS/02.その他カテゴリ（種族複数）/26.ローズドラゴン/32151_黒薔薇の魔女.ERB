@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-	
 		RETURN 효과モン
 	CASE "속성"
 		RETURN 어둠속성
@@ -37,7 +36,6 @@ SELECTCASE 参照先
 		RETURN 1200
 	CASE "튜너"
 		RETURN 1
-
 	CASE "성별"
 		RETURN 牝性
 ENDSELECT
@@ -47,9 +45,11 @@ RETURN 0
 @CARD_EXPLANATION_32151(종류)
 #DIM DYNAMIC 종류
 
-CALL CARD_ABLE(0,소환時)
-PRINTL ①: 이 카드가 소환에 성공했을 때 발동할 수 있다.
-PRINTL 자신은 덱에서 한 장 드로우한다.
+PRINTL 이 카드명의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALL CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①: 이 카드가 소환 / 특수 소환됐을 때 발동할 수 있다.
+PRINTL 자신은 덱에서 1장 드로우하고,
+PRINTL 패에서 레벨 4 이하의 식물족 몬스터 1장을 특수 소환한다.
 
 
 @CARDCAN_32151(듀얼리스트,종류,ゾーン,場所)
@@ -66,7 +66,9 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,32151)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 소환時
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,32151)
+		RETURN 0	
 	CALL CARD_DRAW_CHECK
 	RETURN 1
 ENDIF
@@ -84,9 +86,15 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 소환時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,32151)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,32151,1)
 	IF RESULT == 0
 		CALL CARDDRAW_BASIC(듀얼리스트,1)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件종족 = 식물족
+		CALLFORM 효과条件レベル_ADV(4,"以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ENDIF
 

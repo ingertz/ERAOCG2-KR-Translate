@@ -31,9 +31,9 @@ SELECTCASE 参照先
 	CASE "レベル"
 		RETURN 7
 	CASE "攻撃力"
-		RETURN 900
+		RETURN 400
 	CASE "守備力"
-		RETURN 2300
+		RETURN 1800
 	CASE "특수불가"
 		RETURN 1
 	CASE "추가日"
@@ -46,15 +46,14 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL 튜너＋튜너 이외의 몬스터 １장 이상
-CALLFORM CARD_ABLE(0,특수소환時,ターン開始時)
-PRINTL ①：이 카드를 S소환에 성공했을 경우에 발동한다。
+CALLFORM CARD_ABLE(0,특수소환時,EX소환時)
+PRINTL ①：이 카드를 특수 소환에 성공했을 경우에 발동한다。
 PRINTL 이 카드에 마력카운터를 ２개 놓는다。
 CALLFORM CARD_ABLE(0,攻守変動)
 PRINTL ②：이 카드의 공격력은、이 카드에 놓여있는 마력카운터의 수×１０００ 포인트 오른다。
 CALLFORM CARD_ABLE(0,필드起動)
 PRINTL ③：자신 필드의 마력카운터를 １개 제거하는것으로 발동할 수 있다。
 PRINTL 상대 필드의 카드 １장을 파괴한다。
-PRINT 
 
 
 @CARDSUMMON_50240(듀얼리스트,소환カード,EX参照)
@@ -95,20 +94,7 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50240)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 특수소환時
-	CALL FULLRESET
-	효과範囲묘지 = 1
-	효과範囲상대묘지 = 1
-	효과条件종류 = モン全般
-	효과条件종족 = 언데드족
-	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == ターン開始時
-	SIF ゾーン != "필드"
-		RETURN 0
+IF 종류 == 특수소환時 || 종류 == EX소환時
 	RETURN 1
 ELSEIF 종류 == 필드起動
 	SIF メインフェイズ != 1
@@ -143,7 +129,7 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 특수소환時 || 종류 == ターン開始時
+IF 종류 == 특수소환時 || 종류 == EX소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50240)
 	IF RESULT == 0
 		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"魔Ｃ",2)

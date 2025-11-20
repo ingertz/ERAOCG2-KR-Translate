@@ -1,0 +1,182 @@
+@CARDNAME_99074,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미정의 꿀구멍
+	CASE "略称"
+		RESULTS = 미정 꿀구멍
+	CASE "カテゴリ"
+		RESULTS:0 = 꿀구멍
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 혹란마
+ENDSELECT
+
+
+@CARD_99074(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_99074(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：자신 / 상대 필드의 카드명이 다른 몬스터 ２장까지를 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터들의 공격력과 수비력은 턴 종료시 까지 바뀌며、공격 표시가 된다。
+CALLFORM CARD_ABLE(2,攻撃時誘発)
+PRINTL ②：자신 필드의 "혹란마" 몬스터가 공격 대상이 되었을 때、묘지의 이 카드를 제외하고 발동할 수 있다。
+PRINTL 그 공격을 자신 필드의 "혹란마" 몬스터 １장으로 옮기고、옮긴 대상 몬스터는 수비 표시가 된다。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_99074(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,99074)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,99074)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+
+	CALL FULLRESET
+	SIF 듀얼리스트 == "자신"
+		효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+
+    CALL FULLRESET
+    효과範囲필드 = 1
+    효과条件カテゴリ = 혹란마
+    효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_99074(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 自己選択カード,2
+#DIM DYNAMIC 対面選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 选择卡名称
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 守備力修正,2
+#DIM DYNAMIC 조교대상,3
+#DIM DYNAMIC 성별판정
+#DIM DYNAMIC 选择完成
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99074,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+    	选择完成 = 0
+        $TRAPSEX_99074_1
+    	CALL FULLRESET
+       	SIF 듀얼리스트 == "자신"
+			효과範囲필드 = 1
+		효과範囲상대필드 = 1
+        효과条件固名前 = %选择卡名称%
+        CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+        IF RESULT != 9999
+        	選択カード_ID = RESULT:99
+            CALL CARD_SELECT(듀얼리스트,RESULT)
+            選択カード = RESULT
+
+            攻撃力修正 = GETVAR(@"%대상者（CS）%_MZ_攻:選択カード（CS）")
+            守備力修正 = GETVAR(@"%대상者（CS）%_MZ_守:選択カード（CS）")
+
+            CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード（CS）,"一攻",守備力修正-攻撃力修正)
+            CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード（CS）,"一守",攻撃力修正-守備力修正)
+            CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード（CS）,"表",1,1)
+
+            TRYCALLFORM CARDNAME_{選択カード_ID}, "名前"
+            选择卡名称 = %RESULTS%
+            选择完成++
+        ENDIF
+
+    	CALL FULLRESET
+       	SIF 듀얼리스트 == "자신"
+			효과範囲필드 = 1
+		효과範囲상대필드 = 1
+        효과条件固名前 = %选择卡名称%
+        CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+        IF 选择完成 < 2 && RESULT == 1
+            CALL FULLRESET
+            PRINTL 다른 카드를 선택하시겠습니까?
+            PRINTL [1] - ★YEAH!★
+            PRINTL [2] - NO
+            BINPUT
+            SIF RESULT == 1
+                GOTO TRAPSEX_99074_1
+        ENDIF
+    ENDIF
+
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99074,2)
+	IF RESULT == 0
+        CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+        自己選択カード:0 = 戦闘場所(듀얼리스트)
+        対面選択カード = 戦闘場所(듀얼리스트,1)
+
+        CALL FULLRESET
+        효과範囲필드 = 1
+        효과条件カテゴリ = 혹란마
+        효과条件표시 = 表側표시
+        CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+        IF RESULT != 9999
+        	自己選択カード:1 = RESULT
+
+            CALL SET_FIELD_INFO(듀얼리스트,"필드",自己選択カード:1,"表",2,1)
+            CALL COVER_ATTACK(듀얼리스트,自己選択カード:1)
+        ENDIF
+    ENDIF
+ENDIF

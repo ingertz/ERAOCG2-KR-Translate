@@ -204,19 +204,24 @@ NEXT
 ;-------------------------------------------------
 ;조교者の사정時の구상
 ;-------------------------------------------------
+;みざえる추가　질내사정時、交互삽입질내사정時に질내が頭につくように추가
 IF NOWEX:MASTER:사정
-	SIF TCVAR:MASTER:12 == 1
+	PRINTFORML
+	SIF TCVAR:MASTER:사정부위플래그 == 1 || TCVAR:MASTER:사정부위플래그 == 24
 		PRINT 질내
 	SIF NOWEX:MASTER:사정 > 1
 		PRINT 대량
 	PRINTFORML 사정
+	PRINTFORML
 ENDIF
 IF NOWEX:TARGET:사정
-	SIF TCVAR:TARGET:12 == 1
+	PRINTFORML
+	SIF TCVAR:TARGET:사정부위플래그 == 1 || TCVAR:TARGET:사정부위플래그 == 24
 		PRINT 질내
 	SIF NOWEX:TARGET:사정 > 1
 		PRINT 대량
-	PRINTFORML 사정( %CALLNAME:TARGET%)
+	PRINTFORML 사정(%CALLNAME:TARGET%)
+	PRINTFORML
 ENDIF
 CALL KOJO_MESSAGE_PALAMCNG_A	
 ;-------------------------------------------------

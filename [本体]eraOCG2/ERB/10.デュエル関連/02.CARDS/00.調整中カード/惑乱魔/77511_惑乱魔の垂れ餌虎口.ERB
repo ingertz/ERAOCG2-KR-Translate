@@ -1,0 +1,160 @@
+﻿@CARDNAME_77511,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹란마의 늘어진미끼 호구
+	CASE "略称"
+		RESULTS = 늘어진미끼 호구
+	CASE "カテゴリ"
+		RESULTS:0 = 혹란마
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 꿀구멍
+ENDSELECT
+
+
+@CARD_77511(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_77511(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：이 카드는、패에서 "혹란마" 몬스터 １장을 묘지로 보내고 발동할 수 있다。
+PRINTL 상대는 덱에서 몬스터 １장을 특수 소환한다。
+PRINTL 그 후、자신은 덱에서 "함정 속으로" 일반 함정 카드 또는 "꿀구멍" 일반 함정 카드 １장을 패에 넣을 수 있다。
+PRINTL "혹란마" 몬스터를 버리고 이 카드를 발동한 경우、
+PRINTL 상대가 이 효과로 특수 소환한 몬스터의 효과는 턴 종료시까지 무효화된다。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_77511(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,77511)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,77511)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_77511(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,77511,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ = 혹란마
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT != 0 ;检测到손패中有符合条件的卡，如果有则触发选项。
+			CALL FULLRESET
+			PRINTL 패에서 "혹란마" 몬스터 １장을 버리고、 이 카드를 발동하시겠습니까？
+			PRINTL [1] - ★YEAH!★
+			PRINTL [2] - NO
+			BINPUT
+			IF RESULT == 1 ;选择是的场合，从손패中将符合条件的卡丢弃。
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과条件カテゴリ = 혹란마
+				효과条件종류 = モン全般
+				CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+				IF RESULT == 1 ;成功将符合条件的卡从손패丢弃的场合。
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과条件성별 = 성별在
+					효과추가종류 = 22
+					CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所)
+					IF RESULT == 1 ;对方成功把符合条件的卡특수召唤的场合（추가无效）。
+						CALL FULLRESET
+						효과条件종류 = 通常함정
+						효과条件カテゴリ:0 = 함정 속으로
+						효과条件カテゴリ:1 = 꿀구멍
+						CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+					ENDIF
+				ELSE ;选择是却没能成功将符合条件的卡从손패丢弃的场合，对方直接把怪兽특수召唤。
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과条件성별 = 성별在
+					효과条件종류 = モン全般
+					CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所)
+					IF RESULT == 1 ;对方成功把符合条件的卡특수召唤的场合。
+						CALL FULLRESET
+						효과条件종류 = 通常함정
+						효과条件カテゴリ:0 = 함정 속으로
+						효과条件カテゴリ:1 = 꿀구멍
+						CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+					ENDIF
+				ENDIF
+			ELSE ;选择拒绝的场合，对方直接把怪兽특수召唤。
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件성별 = 성별在
+				효과条件종류 = モン全般
+				CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所)
+				IF RESULT == 1 ;对方成功把符合条件的卡특수召唤的场合。
+					CALL FULLRESET
+					효과条件종류 = 通常함정
+					효과条件カテゴリ:0 = 함정 속으로
+					효과条件カテゴリ:1 = 꿀구멍
+					CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+				ENDIF
+			ENDIF
+		ELSE ;손패中没有符合条件的卡的场合，对方直接从卡组将卡특수召唤。
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件성별 = 성별在
+			효과条件종류 = モン全般
+			CALL CARD_SP_SUMMON_ADV(対面者,ゾーン,場所)
+			IF RESULT == 1 ;对方成功把符合条件的卡특수召唤的场合。
+				CALL FULLRESET
+				효과条件종류 = 通常함정
+				효과条件カテゴリ:0 = 함정 속으로
+				효과条件カテゴリ:1 = 꿀구멍
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

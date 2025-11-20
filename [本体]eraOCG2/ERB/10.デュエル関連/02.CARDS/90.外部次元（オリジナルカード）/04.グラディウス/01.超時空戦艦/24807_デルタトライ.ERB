@@ -1,0 +1,139 @@
+﻿@CARDNAME_24807,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 델타트라이
+	CASE "略称"
+		RESULTS = 델타트라이
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_24807(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1000
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_24807(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。
+PRINTL 패 / 덱에서 "시공 전투기" 카드 １장을 묘지로 보낸다。패에서 보낸 경우、１장 드로우한다。
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ②：이 카드가 전투를 한 경우、이하의 효과를 전부 적용할 수 있다。
+PRINTL ●자신 묘지의 유니온 몬스터 １장을 이 카드에 장착한다。
+PRINTL ●자신 필드 / 묘지의 "시공 전투기" 카드 １장을 덱으로 되돌리고、１장 드로우한다。
+
+@CARDCAN_24807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24807)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,24807)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件カテゴリ = 시공 전투기
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_戦闘カード") != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_24807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 손패枚数_前
+#DIM DYNAMIC 손패枚数_後
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24807,1)
+	손패枚数_前 = 손패数(듀얼리스트)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件カテゴリ = 시공 전투기
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			SIF RESULT:81 == 1
+				CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24807)
+	IF RESULT == 0
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件分割 = 유니온
+		효과条件任意 = 1
+		CALL CARD_EQUIP_MONSTER_ADV(듀얼리스트,ゾーン,場所,,24807)
+
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 시공 전투기
+		효과条件行先플래그 = 덱行き
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ENDIF

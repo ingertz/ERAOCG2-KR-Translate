@@ -1,0 +1,183 @@
+﻿@CARDNAME_24805,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 팔시온β
+	CASE "略称"
+		RESULTS = 팔시온β
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_24805(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 800
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_24805(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。덱에서 "시공 전투기" 카드 １장 또는 
+PRINTL 기계족 / 빛속성 / 공격력 １２００ 이하의 몬스터 １장을 묘지로 보낸다。
+CALLFORM CARD_ABLE(2,攻撃後誘発)
+PRINTL ②：이 카드가 전투로 상대 몬스터를 파괴한 경우、자신 묘지의 "시공 전투기" 카드 １장 또는
+PRINTL 기계족 / 빛속성 / 공격력 １２００ 이하의 몬스터 １장을 대상으로 하고、이하의 효과에서 １개를 선택해서 발동할 수 있다。
+PRINTL ●그 카드를 패에 넣는다。　　●그 몬스터를 특수 소환한다。
+PRINTL ●그 카드를 덱으로 되돌리고、상대 필드의 몬스터를 전부 파괴한다。
+
+@CARDCAN_24805(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24805)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,24805)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件スーパーカテゴリ = 시공 전투기
+	효과条件종족 = 기계족
+	효과条件속성 = 빛속성
+	효과条件攻撃力 = 1200
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF 발동済_2(듀얼리스트,24805)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_戦闘カード") != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件スーパーカテゴリ = 시공 전투기
+	효과条件종족 = 기계족
+	효과条件속성 = 빛속성
+	효과条件攻撃力 = 1200
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_24805(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성,2
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24805,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件スーパーカテゴリ = 시공 전투기
+		효과条件종족 = 기계족
+		효과条件속성 = 빛속성
+		효과条件攻撃力 = 1200
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24805,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件スーパーカテゴリ = 시공 전투기
+		효과条件종족 = 기계족
+		효과条件속성 = 빛속성
+		효과条件攻撃力 = 1200
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			選択カード_ID = RESULT:99
+			TRYCALLFORM CARD_{選択カード_ID}("종류")
+			SIF RESULT <= 10
+				条件달성:0 = 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				条件달성:1 = 1
+		ENDIF
+		IF 듀얼리스트 == "자신"
+			PRINTL
+			PRINTL 어느 효과를 발동합니까?
+			PRINTL
+			PRINTL [ 1] - ●대상 카드를 패에 넣는다。
+			IF 条件달성:0 == 1 && モンスター数(듀얼리스트) < 5
+				PRINTL [ 2] - ●대상 몬스터를 특수 소환한다。
+			ELSE
+				IF 条件달성:0 == 0
+					PRINTL  --  - 대상 카드는 몬스터가 아닙니다。
+				ELSE
+					PRINTL  --  - 몬스터 존이 비어있지 않습니다。
+				ENDIF
+			ENDIF
+			IF 条件달성:1 == 1
+				PRINTL [ 3] - ●그 카드를 덱으로 되돌리고、상대 필드의 몬스터를 전부 파괴한다。
+			ELSE
+				PRINTL  --  - 상대 필드에 몬스터가 존재하지 않습니다。
+			ENDIF
+			BINPUT
+		ELSEIF 듀얼리스트 == "상대"
+			RESULT = 1
+		ENDIF
+		IF RESULT == 1
+			CALL CARD_DISPOSE(듀얼리스트,"묘지",選択カード,손패行き)
+		ELSEIF RESULT == 2
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트, "묘지",選択カード)
+		ELSEIF RESULT == 3
+			CALL CARD_DISPOSE(듀얼리스트,"묘지",選択カード,덱行き)
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+		ENDIF
+	ENDIF
+ENDIF
+
+

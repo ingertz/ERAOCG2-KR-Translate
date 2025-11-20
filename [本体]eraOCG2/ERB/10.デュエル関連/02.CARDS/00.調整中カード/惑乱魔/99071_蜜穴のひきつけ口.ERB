@@ -1,0 +1,188 @@
+﻿@CARDNAME_99071,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 꿀구멍의 끌어들이는 입
+	CASE "略称"
+		RESULTS = 꿀구멍 끌어들입
+	CASE "カテゴリ"
+		RESULTS:0 = 꿀구멍
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 혹란마
+ENDSELECT
+
+
+@CARD_99071(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_99071(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALLFORM CARD_ABLE(0,마함起動,フリー誘発)
+PRINTL ①：자신 필드의 "혹란마" 몬스터 １장과 상대 필드의 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 대상 상대 몬스터의 공격력은 대상 자신 몬스터의 수비력 만큼 내리고、
+PRINTL 상대 몬스터에게 자신 몬스터의 벌레 문양을 새긴다。
+CALLFORM CARD_ABLE(1,묘지起動,フリー誘発)
+PRINTL ②：묘지의 이 카드를 제외하고、상대 필드의 몬스터 １장과 자신 필드의 "혹란마" 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 대상 상대 몬스터에게 벌레 문양이 새겨져 있는 경우、이 턴、대상 자신 몬스터는 전투로는 파괴되지 않는다。
+CALL TEXT_DECORATION("ROGUE")
+
+
+
+@CARDCAN_99071(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 效果限制达成
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件达成
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,99071)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 혹란마
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1     
+    
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+		
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+    SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 혹란마
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+    SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+ENDIF
+
+@CARDEFFECT_99071(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード,2
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 조교대상,2
+#DIM DYNAMIC 攻撃力修正,2
+#DIM DYNAMIC 성별판정
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99071)
+	IF RESULT == 0
+        CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+        CALL FULLRESET
+        효과範囲필드 = 1
+        효과条件カテゴリ = 혹란마
+        CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+        選択カード:0 = RESULT
+		選択カード_ID = RESULT:99
+        IF 選択カード:0 != 9999
+        	攻撃力修正:0 = GETVAR(@"%듀얼리스트%_MZ_守:(選択カード:0)")
+        	CALL FULLRESET
+            효과範囲상대필드 = 1
+			효과条件표시 = 表側표시
+            CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+            選択カード:1 = RESULT
+            IF 選択カード:1 != 9999
+            	CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード:1,"永攻DOWN",攻撃力修正:0)
+				;与赋予蟲紋相关的效果
+				CALL TRAPSEX_GIVE_OTHER(듀얼리스트,ゾーン,종류,場所,選択カード:1,選択カード_ID)
+				CALL CARD_LOADUP
+				攻撃力修正:1 = GETVAR(@"%対面者%_MZ_攻:(選択カード:1)")
+				성별판정 = GETVAR(@"%対面者%_MZ_性:(選択カード:1)")
+
+				조교대상:0 = GETVAR(@"%듀얼리스트%_필드:(選択カード:0)")
+                조교대상:1 = GETVAR(@"%対面者%_필드:(選択カード:1)")
+
+				CALL SEXTEXT_99071_1_1(듀얼리스트,성별판정,조교대상:0,조교대상:1)
+            ENDIF
+        ENDIF
+    ENDIF
+
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99071)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+		選択カード:1 = RESULT
+		IF 選択カード:1 != 9999
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = 혹란마
+			효과条件표시 = 表側표시
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+			選択カード:0 = RESULT
+			IF 選択カード:0 != 9999
+				CALL TRAPSEX_CATEGORY_QUANTITY(対面者,選択カード:1)
+				IF RESULT >= 1
+					조교대상:0 = GETVAR(@"%듀얼리스트%_필드:(選択カード:0)")
+					조교대상:1 = GETVAR(@"%対面者%_필드:(選択カード:1)")
+					성별판정 = GETVAR(@"%対面者%_MZ_性:(選択カード:1)")
+
+					CALL SEXTEXT_99071_2_1(듀얼리스트,성별판정,조교대상:0,조교대상:1)
+					
+					CALL STATCHANGE_EFFECT(듀얼리스트,"自身",(選択カード:0),"戦耐",1)
+				ENDIF
+			ENDIF
+		ENDIF
+    ENDIF
+ENDIF

@@ -101,8 +101,14 @@ PRINTL 그 후, 패에서 레벨1 몬스터 1장을 소환할 수 있다.
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,44402)
 SIF RESULT == 1
 	RETURN 0
-
-IF 종류 == 필드起動
+IF 종류 == 효과後強制誘発
+	CALL FULLRESET
+	효과条件レベル = 1
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
 	SIF 발동済_2(듀얼리스트,44402)
 		RETURN 0
 	SIF メインフェイズ != 1
@@ -122,14 +128,6 @@ IF 종류 == 필드起動
 	효과条件종류 = 마함全般
 	효과条件カテゴリ = 요정
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-
-	RETURN 1
-ELSEIF 종류 == 효과後強制誘発
-	CALL FULLRESET
-	효과条件レベル = 1
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般",2)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -158,10 +156,11 @@ ENDIF
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 효과先
 
-IF 종류 == 필드起動
+IF 종류 == 효과後強制誘発
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",400,1)
+ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44402,2)
 	IF RESULT == 0
-		
 		CALL FULLRESET
 		효과範囲손패 = 1
 		효과範囲필드 = 1
@@ -175,8 +174,6 @@ IF 종류 == 필드起動
 			CALL CARD_GENERATE_HAND(듀얼리스트,144402)
 		ENDIF
 	ENDIF
-ELSEIF 종류 == 효과後強制誘発
-	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",400,1)
 ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44402)
 	IF RESULT == 0

@@ -8,7 +8,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 오시리스의 천공룡
 	CASE "略称"
-		RESULTS = 오시리스
+		RESULTS = 오시리스의천공룡
 	CASE "カテゴリ"
 		RESULTS:0 = 삼환신
 ENDSELECT
@@ -37,6 +37,8 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "生産불가"
 		RETURN 1
+	CASE "生成カード"
+		RETURN 140000
 ENDSELECT
 
 RETURN 0
@@ -76,7 +78,7 @@ IF 종류 == 효과소환
 	SIF RESULT < 3
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == 소환誘発
+ELSEIF 종류 == 소환強制誘発
 	SIF ゾーン != "필드"
 		RETURN 0
 	SIF 最終소환決者 == 듀얼리스트
@@ -87,7 +89,7 @@ ELSEIF 종류 == 소환誘発
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 필드起動
-	SIF 발동済_1(듀얼리스트,40000)
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
@@ -95,6 +97,7 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	CALL FULLRESET
 	효과範囲상대필드 = 1
+	효과条件除去種 = 묘지
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -134,21 +137,18 @@ IF 종류 == 효과소환
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 소환誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40000)
-	IF RESULT == 0
-		;召雷弾！
-		SETCOLOR C_RED
-			PRINTFORML 
-			PRINTFORML 오시리스의 제2의 입에서 소뢰탄이 터졌다!
-			PRINTFORMW 
-		RESETCOLOR
-		효과先 = 最終소환場所
-			CALL FULLRESET
-			효과추가종류 = 11
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",最終소환場所,"永攻DOWN",2000)
-	ENDIF
+	;召雷弾！
+	SETCOLOR C_RED
+		PRINTFORML 
+		PRINTFORML 오시리스의 제2의 입에서 소뢰탄이 터졌다!
+		PRINTFORMW 
+	RESETCOLOR
+	효과先 = 最終소환場所
+		CALL FULLRESET
+		효과추가종류 = 11
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",最終소환場所,"永攻DOWN",2000)
 ELSEIF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40000,1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40000,10)
 	IF RESULT == 0
 		SETCOLOR C_RED
 			PRINTFORML 
@@ -252,14 +252,14 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL ①: 이 카드를 통상 소환할 경우, 3장을 릴리스하고 일반 소환해야 한다.
-PRINTL ②: '오시리스의 천공룡'이 필드·패·덱·묘지에 이 카드만 있을 경우 이 카드는 완전 내성을 얻는다.
+PRINTL ②: "오시리스의 천공룡"이 필드 / 패 / 덱 / 묘지에 이 카드만 있을 경우, 몬스터 존의 이 카드는 완전 내성을 얻는다.
 PRINTL ③: 이 카드의 공격력 / 수비력은, 자신 패의 수× 1000 올린다.
 PRINTL ④: 상대 필드에 몬스터가 공격 표시로 일반 일반 소환 / 특수 소환될 때마다 발동한다.
 PRINTL 그 몬스터의 공격력 / 수비력을 2000 내린다. 
 PRINTL 그 후, 그 몬스터의 공격력 또는 수비력이 0이라면, 그 몬스터를 파괴한다.
-PRINTL ⑤：자신 메인 페이즈에 발동할 수 있다.
-PRINTL 상대 필드의 몬스터 수만큼 드로우 하고, 그후 상대 필드의 몬스터를 전부 파괴한다.
-PRINTL ⑥：이 카드가 특수 소환되어 있을 경우, 엔드 페이즈에 발동한다. 이 카드를 묘지로 보낸다.
+PRINTL ⑤：1턴에 1번, 자신 메인 페이즈에 발동할 수 있다.
+PRINTL 상대 필드의 몬스터를 전부 파괴하고, 자신은 파괴한 수 만큼 드로우한다.
+PRINTL ⑥：이 카드가 특수 소환되어 있을 경우, 엔드 페이즈 이 카드를 묘지로 보낸다.
 
 [SKIPSTART]
 PRINTL 𓇋𓏏𓇋𓎡𓍯𓈖𓍯𓎡𓄿𓂧𓍯𓅱𓄿𓅓𓍯𓈖𓋴𓍢𓏏𓄿𓋴𓄿𓈖𓏏𓄿𓇋𓍯𓇋𓎡𓇌𓈖𓇋𓇌𓈖𓇋𓋴𓄿𓋴𓄿𓎼𓇌𓂋𓍢𓎡𓍯𓏏𓍯𓂧𓇌𓋴𓉔𓍯𓎡𓄿𓈖𓂧𓇌𓎡𓇋𓂋𓍢𓎡𓍯𓈖𓍯𓋴𓉔𓍯𓎡𓄿𓈖𓅱𓄿𓏏𓍢𓆓𓍯𓋴𓉔𓍯𓎡𓄿𓈖𓂧𓇌𓎡𓇋𓂋𓍢𓎡𓄿𓇋𓋴𓍢𓍯𓋴𓉔𓍯𓉔𓇋𓋴𓇋𓈖𓄿𓇋

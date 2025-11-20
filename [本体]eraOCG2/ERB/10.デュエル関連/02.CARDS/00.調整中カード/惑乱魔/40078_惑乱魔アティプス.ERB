@@ -1,0 +1,301 @@
+﻿@CARDNAME_40078,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹란마 아티푸스
+	CASE "略称"
+		RESULTS = 란 아티푸스
+	CASE "カテゴリ"
+		RESULTS:0 = 혹란마
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 꿀구멍
+ENDSELECT
+
+
+@CARD_40078(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 900
+	CASE "守備力"
+		RETURN 1900
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1384
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_40078(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+	必要링크数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ:0 = 충혹마
+	素材条件カテゴリ:1 = 혹란마
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,40078) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_40078(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL "충혹마" 또는 "혹란마" 몬스터를 포함한 몬스터 ２장 이상
+PRINTL 이 카드명의 ①②④의 효과는 각각 １턴에 １번 사용할 수 있다。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：상대 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터에게 이 카드의 벌레 문양을 새긴다。그 후、대상 몬스터가 ４종류 이상의 벌레 문양을 갖고있는 경우、
+PRINTL 그 몬스터를、그 카드의 공격력 만큼 올리는 장착 카드로서 필드의 이 카드에 장착할 수 있다、
+PRINTL 그 몬스터가 가진 모든 벌레 문양을 상대 듀얼리스트에게 옮긴다。
+CALLFORM CARD_ABLE(2,バトル開始時)
+PRINTL ②：자신의 배틀 페이즈 시작시에 발동할 수 있다。
+PRINTL 이 턴、상대 필드에 벌레 문양이 새겨져 있는 몬스터는 공격 회피를 얻는다。
+CALL CARD_ABLE(3,ライフ変強制誘発)
+PRINTL ③：자신의 "혹란마" 몬스터가 상대	몬스터가 상대에게 전투 피해를 주었을 때 발동할 수 있다。
+PRINTL 상대 듀얼리스트에게 자신이 전투를 한 몬스터의 벌레 문양을 새긴다。
+CALLFORM CARD_ABLE(4,ターン終了時)
+PRINTL ④：자신의 턴 종료시、상대의 기본 라이프가 그 소유자가 가진 벌레 문양 종류×２００ 이하인 경우、또는 １５종류 이상의 벌레 문양을 가진 경우。
+PRINTL 상대는 게임에 패배한다。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_40078(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 상대_蟲紋
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,40078)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,40078)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+ 	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+
+	CALL FULLRESET
+    효과範囲상대필드 = 1
+    효과条件표시 = 表側표시
+    CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == バトル開始時
+	SIF 발동済_2(듀얼리스트,40078)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+ 	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時強制誘発 || 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF RESULTS != "혹란마"
+		RETURN 0
+	RETURN 1
+	
+ELSEIF 종류 == ライフ変強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ダメージ受者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ダメージ종류,"直接戦闘","戦闘")
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF RESULTS != "혹란마"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時
+	SIF 발동済_4(듀얼리스트,40078)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL TRAPSEX_CATEGORY_QUANTITY(듀얼리스트,,2)
+	상대_蟲紋  = RESULT
+	SIF GETVAR(@"ライフ_%対面者%") <= (상대_蟲紋 * 200)
+		条件달성 ++
+	SIF 상대_蟲紋 >= 15
+		条件달성 ++
+	SIF 条件달성 <= 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 短紋章起動
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_40078(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 自己選択カード
+#DIM DYNAMIC 対面選択カード
+#DIM DYNAMIC 选择カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 조교대상,2
+#DIM DYNAMIC 성별판정
+#DIM DYNAMIC 蟲紋持有数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40078,1)
+    IF RESULT == 0
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+		选择カード = RESULT
+		성별판정 = GETVAR(@"%対面者%_MZ_性:选择カード")
+		조교대상 = GETVAR(@"%対面者%_필드:选择カード")
+		IF 选择カード != 9999
+			CALL FULLRESET
+			;与赋予蟲紋相关的效果
+			CALL TRAPSEX_GIVE_FIXED(듀얼리스트,ゾーン,종류,場所,选择カード,12)
+			CALL SEXTEXT_40078_1_1(듀얼리스트,조교대상,성별판정)
+			CALL TRAPSEX_CATEGORY_QUANTITY(対面者,选择カード)
+			IF RESULT >= 4
+				CALL FULLRESET
+				PRINTL 대상이 된 몬스터를 이 카드에 장착하겠습니까？
+				PRINTL [1] - ★YEAH!★
+				PRINTL [2] - NO
+				BINPUT
+				IF RESULT == 1
+					CALL CARD_EQUIP_MONSTER(듀얼리스트,場所,"상대필드",选择カード,1)
+					CALL TRAPSEX_FACETIRON7(듀얼리스트,选择カード)
+					CALL SEXTEXT_40078_1_2(듀얼리스트,조교대상,성별판정)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == バトル開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40078,2)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,40078,短紋章予約)
+		CALL SEXTEXT_40078_2_1
+	ENDIF
+
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL FULLRESET
+	IF RESULT == 0
+		自己選択カード = 戦闘場所(듀얼리스트)
+		조교대상:0 = GETVAR(@"%듀얼리스트%_필드:自己選択カード")
+		対面選択カード = 戦闘場所(듀얼리스트,1)
+		조교대상:1 = GETVAR(@"%対面者%_필드:対面選択カード")
+		성별판정 = GETVAR(@"%対面者%_MZ_性:対面選択カード")
+
+		CALL SEXTEXT_40078_2_2(듀얼리스트,조교대상:0,조교대상:1,성별판정)
+	ENDIF
+
+ELSEIF 종류 == ライフ変強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40078,3)
+    IF RESULT == 0
+		自己選択カード = 戦闘場所(듀얼리스트)
+		対面選択カード = 戦闘場所(듀얼리스트,1)
+		選択カード_ID = GETVAR(@"%듀얼리스트%_필드:自己選択カード")
+
+		;与赋予蟲紋相关的效果
+		CALL TRAPSEX_GIVE_OTHER(듀얼리스트,ゾーン,종류,場所,対面選択カード,選択カード_ID,1)
+		CALL SEXTEXT_40078_3_1(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40078,4)
+    IF RESULT == 0
+		IF 듀얼리스트 == "자신"
+			CALL TRAPSEX_CATEGORY_QUANTITY(듀얼리스트,,2)
+			蟲紋持有数 = RESULT
+		ELSEIF 듀얼리스트 == "상대"
+			CALL TRAPSEX_CATEGORY_QUANTITY(듀얼리스트,,1)
+			蟲紋持有数 = RESULT
+		ENDIF
+
+		CALL SEXTEXT_40078_4_1(듀얼리스트,蟲紋持有数)
+		CALL SET_PLAYER_INFO(듀얼리스트,"듀얼패배플래그",4,1)
+	ENDIF
+
+ELSEIF 종류 == リアクション효과
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_魔_装:カウンタ") != 場所
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_魔_リ数:カウンタ") >= 10
+			CONTINUE
+			
+		조교대상 = GETVAR(@"%듀얼리스트%_마함:カウンタ")
+		CALL SEXTEXT_40078_5_1(듀얼리스트,조교대상)
+	NEXT
+
+ELSEIF 종류 == 短紋章起動
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_リ数:カウンタ") >= 10
+			CONTINUE
+
+		CALL TRAPSEX_CATEGORY_QUANTITY(対面者,カウンタ)
+		SIF RESULT >= 1
+			CALL STATCHANGE_EFFECT(対面者,"自身",カウンタ,"攻避")
+	NEXT
+ENDIF

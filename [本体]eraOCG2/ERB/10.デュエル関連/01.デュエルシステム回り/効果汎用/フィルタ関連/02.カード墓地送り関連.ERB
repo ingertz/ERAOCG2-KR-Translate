@@ -295,6 +295,7 @@ RETURN 1
 #DIM DYNAMIC 一時보존,99
 #DIM DYNAMIC 덱サーチ플래그
 #DIM DYNAMIC 묘지回収플래그
+#DIM DYNAMIC 손패仕様플래그
 #DIM DYNAMIC 選択数
 #DIM DYNAMIC 추가플래그
 #DIM DYNAMIC 攻撃力合計
@@ -432,6 +433,8 @@ ELSEIF 選択カード:複数カウンタ != 9999
 	ENDIF
 	IF 参照先（CS） == "덱"
 		덱サーチ플래그 = 1
+	ELSEIF 参照先（CS） == "손패"
+		손패仕様플래그 = 1
 	ELSEIF 参照先（CS） == "묘지"
 		묘지回収플래그 = 1
 	ENDIF
@@ -512,9 +515,24 @@ SIF 덱サーチ플래그
 ;PRINTFORML リピート数A:{複数カウンタ}
 VARSET RESULT
 
+SIF 덱サーチ플래그
+	RESULT:80 = 1
+SIF 손패仕様플래그
+	RESULT:81 = 1
+SIF 묘지回収플래그
+	RESULT:82 = 1
+
 RESULT:1 = 選択カード_ID
 RESULT:2 = 選択数
 RESULT:10 = 対面カード使用
+
+
+SIF 덱サーチ플래그
+	RESULT:80 = 1
+SIF 손패仕様플래그
+	RESULT:81 = 1
+SIF 묘지回収플래그
+	RESULT:82 = 1
 
 RESULT:98 = 守備力合計
 RESULT:99 = 攻撃力合計

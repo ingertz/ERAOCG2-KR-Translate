@@ -114,25 +114,25 @@ FOR 캐릭터_ID,1,CHARANUM
 
 			ENDIF
 		ELSE
-			CALL PTJ_SETTINGS(캐릭터_ID,"勤務日")
-			IF CFLAG:캐릭터_ID:아르바이트 >= 1 && RESULT == 1
-				;PRINTFORML 캐릭터_ID：{CFLAG:캐릭터_ID:아르바이트} / RESULT:{RESULT}
-				CALL PTJ_SETTINGS(캐릭터_ID,"行先")
-				IF CFLAG:캐릭터_ID:아르바이트 >= 1 && RESULT >= 自宅部屋最大値
-					CALL PTJ_SETTINGS(캐릭터_ID, "開始")
-					IF RESULT != -1 && CFLAG:캐릭터_ID:일했음 == 0 && CFLAG:캐릭터_ID:알바중 != 1 && TIME >= RESULT
-						CFLAG:캐릭터_ID:알바중 = 1
-						;현재위치があなたの家であり、あなたが家にいる場合、外に出るアナウンスが入る
-						SIF CFLAG:캐릭터_ID:현재위치 <= 自宅部屋最大値
-							CALL CHAR_GOINGOUT(캐릭터_ID)
-						CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
-						CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
-						IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
-							PRINTFORML %CALLNAME:캐릭터_ID%가 출근했다。
+			IF CFLAG:캐릭터_ID:아르바이트 >= 1 && CFLAG:캐릭터_ID:시작일시위치 <= 0
+				CALL PTJ_SETTINGS(캐릭터_ID,"勤務日")
+				IF RESULT == 1
+					CALL PTJ_SETTINGS(캐릭터_ID,"行先")
+					IF CFLAG:캐릭터_ID:아르바이트 >= 1 && RESULT >= 自宅部屋最大値
+						CALL PTJ_SETTINGS(캐릭터_ID, "開始")
+						IF RESULT != -1 && CFLAG:캐릭터_ID:일했음 == 0 && CFLAG:캐릭터_ID:알바중 != 1 && TIME >= RESULT
+							CFLAG:캐릭터_ID:알바중 = 1
+							;현재위치があなたの家であり、あなたが家にいる場合、外に出るアナウンスが入る
+							SIF CFLAG:캐릭터_ID:현재위치 <= 自宅部屋最大値
+								CALL CHAR_GOINGOUT(캐릭터_ID)
+							CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
+							CALL PTJ_SETTINGS(캐릭터_ID,"行先",1)
+							IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
+								PRINTFORML %CALLNAME:캐릭터_ID%가 출근했다。
+							ENDIF
 						ENDIF
 					ENDIF
 				ENDIF
-
 			ENDIF
 		ENDIF
 	ENDIF
@@ -151,9 +151,10 @@ FOR 캐릭터_ID,1,CHARANUM
 	;憑依몬스터는 NG
 	SIF 캐릭터_ID == MASTER
 		CONTINUE
+	SIF CFLAG:캐릭터_ID:시작위치 >= 20
+		CONTINUE
 	SIF CFLAG:캐릭터_ID:데이트중 == 1
 		CONTINUE
-
 	IF CFLAG:캐릭터_ID:현재위치 >= 50
 		IF CFLAG:캐릭터_ID:아르바이트 >= 1
 			CALL PTJ_SETTINGS(캐릭터_ID,"終了")
@@ -170,7 +171,7 @@ FOR 캐릭터_ID,1,CHARANUM
 					CFLAG:캐릭터_ID:일했음 = 1
 				ENDIF
 			ENDIF
-		ELSEIF TIME >= KANTAN_TIME(17,00) && CFLAG:캐릭터_ID:시작위치 <= 自宅部屋最大値
+		ELSEIF TIME >= KANTAN_TIME(17,00) && CFLAG:캐릭터_ID:시작위치 <= 自宅部屋最大値 && CFLAG:캐릭터_ID:시작일시위치 <= 0
 			PRINTFORMW %CALLNAME:캐릭터_ID%는 외출에서 돌아온 것 같다。
 			CFLAG:캐릭터_ID:현재위치 = 1
 			CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 11, 3)
@@ -213,24 +214,20 @@ ENDIF
 
 
 $SKIP_TO_POINT
-;PRINTFORML 確認１　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
-
 ;TFLAG:104が설정되어있는 ときその番号のターゲットが存在するならTARGETに代入、いなければTFLAG:104をリセット
 タゲ確認 = 0
 TARGET = TARGET:1
 FOR カウンタ,1,CHARANUM
 	SIF TFLAG:104 < 1
 		BREAK
-
 	IF TARGET:カウンタ == TFLAG:104
 		TARGET = TARGET:カウンタ
 		タゲ確認 ++
 	ENDIF
-
 NEXT
 SIF !タゲ確認
 	TFLAG:104 = 0
-;PRINTFORML 確認２　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
+
 
 IF 朝襲われ == 1
 	朝襲われ = 0
@@ -246,7 +243,6 @@ IF 朝襲われ == 1
 	TFLAG:COMABLE관리 = 3
 ENDIF
 
-;PRINTFORML 確認2a　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 ;MASTERと같은방플래그
 FOR 캐릭터_ID,1,CHARANUM
 	IF CFLAG:캐릭터_ID:현재위치 == CFLAG:MASTER:현재위치
@@ -263,7 +259,7 @@ FOR 캐릭터_ID,1,CHARANUM
 	ENDIF
 NEXT
 
-;PRINTFORML 確認2b　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
+
 ;친밀감강도결정
 ;TARGET側
 FOR カウンタ,1,TARGETNUM + 1
@@ -286,8 +282,6 @@ FOR カウンタ,1,TARGETNUM + 1
 	ENDIF
 NEXT
 
-;PRINTFORML 確認３　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
-
 ;MASTERはTARGET:1～のTCVAR:130の最低値
 TCVAR:MASTER:친밀감 = TCVAR:(IN_ROOM("MIN", CFLAG:MASTER:현재위치, "TCVAR", 130)):친밀감
 
@@ -298,6 +292,15 @@ ENDIF
 FOR 캐릭터_ID,0,CHARANUM
 	IF !CFLAG:캐릭터_ID:우후후 || CFLAG:캐릭터_ID:현재위치 != CFLAG:캐릭터_ID:전턴위치
 		CFLAG:캐릭터_ID:최면상태 = 0
+		IF CFLAG:캐릭터_ID:수영복착용 == 1 && !MIZUGI_AREA(CFLAG:캐릭터_ID:현재위치)
+			CALL CLOTHES_SETTING(캐릭터_ID)
+			CFLAG:캐릭터_ID:수영복착용 = 0
+			IF 캐릭터_ID != MASTER
+				CALL FASHION_MODERN(캐릭터_ID)
+				SIF RESULT == 0
+					CALL CLOTHES_SETTING(캐릭터_ID,RAND:7 + 400)
+			ENDIF
+		ENDIF
 		CALL CLOTHES_RESET(캐릭터_ID)
 		CALL CLOTHES_SETTING_TRAIN(캐릭터_ID)
 		FOR 装備品,10,45
@@ -370,7 +373,6 @@ NEXT
 ;情報표시（PORTRAIT표시）
 ;-------------------------------------------------
 ;WAIT
-;PRINTFORML 確認４　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 IF TIME > 1440
 	DAY ++
@@ -415,7 +417,7 @@ IF TARGET
 			SETCOLOR C_Ne_PINK
 			IF TFLAG:COMABLE관리 != 3
 				PRINTL
-				IF CFLAG:MASTER:현재위치 <= 30
+				IF PRIVATE_AREA(CFLAG:MASTER:현재위치)
 					;お酒パワーがあると容赦なくやって来る
 					IF (TALENT:TARGET:반응 == -1 || TALENT:TARGET:성적흥미 == -1 || TALENT:TARGET:패배버릇 >= 1) && TCVAR:TARGET:만취 != 1
 						CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 4)
@@ -444,7 +446,7 @@ IF TARGET
 					ENDIF
 					RESETCOLOR
 					CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 1)
-				ELSEIF CFLAG:MASTER:현재위치 >= 50 
+				ELSE 
 					IF TALENT:TARGET:반응 == -1 || TALENT:TARGET:성적흥미 == -1
 						PRINTFORMW %CALLNAME:TARGET%는 부끄러운 듯이、조금 남의 눈에 띄지 않는 곳으로 가지 않겠느냐고 권했다。
 						CALL YN_CHOICE_STR()
@@ -483,7 +485,6 @@ IF TARGET
 			CONTINUE
 	NEXT
 ENDIF
-;PRINTFORML 確認５　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 PRINTL
 ;-------------------------------------------------
@@ -628,7 +629,6 @@ ELSE
 		NEXT
 	ENDIF
 ENDIF
-;PRINTFORML 確認６　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}
 
 IF TARGET == 0
 	TFLAG:COMABLE관리 = 0
@@ -648,10 +648,15 @@ SIF MAXBASE:사정 == 0
 
 IF TARGET
 	CALL COLOR_LINE(0,0,1);우후후UI線
-	IF TFLAG:COMABLE관리 == 1
-		SIF TCVAR:TARGET:전CT행동 == 0
-			TRYCALL KOJO_MESSAGE_COUNTER_LIFE(TARGET)
-	ENDIF
+		;みざえる추가　部屋での行動時に표시される캐릭터を増やした
+	FOR カウンタ,1,3
+		SIF TARGET:カウンタ <= 0
+			CONTINUE
+		IF TFLAG:COMABLE관리 == 1
+			SIF TCVAR:(TARGET:カウンタ):전CT행동 == 0
+				TRYCALL KOJO_MESSAGE_COUNTER_LIFE(TARGET:カウンタ)
+		ENDIF
+	NEXT
 	FOR カウンタ,1,3
 		SIF TARGET:カウンタ <= 0
 			CONTINUE
@@ -663,4 +668,3 @@ IF TARGET
 	RESETCOLOR
 ENDIF
 
-;PRINTFORML 確認７　ターゲット설정：（TFLAG:104 = {TFLAG:104}） TARGET:{TARGET}

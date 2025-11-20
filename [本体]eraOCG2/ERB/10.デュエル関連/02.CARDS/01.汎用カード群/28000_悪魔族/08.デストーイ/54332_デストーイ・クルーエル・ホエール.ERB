@@ -1,0 +1,175 @@
+@CARDNAME_54302,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스완구 크루엘 웨일
+	CASE "略称"
+		RESULTS = DW 크루엘웨일
+	CASE "カテゴリ"
+		RESULTS:0 = 데스완구
+	CASE "検索カテゴリ"
+		RESULTS:0 = 퍼니멀
+		RESULTS:1 = 에지임프
+ENDSELECT
+
+
+@CARD_54302(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2600
+	CASE "守備力"
+		RETURN 2400
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54302(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件종류 = トークン以外
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 에지임프
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = 퍼니멀
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,54302)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54302(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "에지임프" 몬스터＋"퍼니멀" 몬스터
+CALLFORM CARD_ABLE(0,특수소환時,EX소환時)
+PRINTL ①：이 카드가 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 자신 및 상대 필드의 카드를 １장씩 골라 파괴한다。
+CALLFORM CARD_ABLE(0,필드起動)
+PRINTL ②：１턴에 １번、자신 필드의 융합 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 덱 / ＥＸ덱에서 "데스완구 크루엘 웨일" 이외의 "데스완구" 카드 １장을 묘지로 보내고、
+PRINTL 대상 몬스터의 공격력은 턴 종료시까지、자신의 원래 공격력의 절반만큼 오른다。
+
+
+@CARDCAN_54302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54302)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 특수소환時 || 종류 == EX소환時
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,54302)
+		RETURN 0
+	;자신フィールドに융합モンスターがいるかチェック
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;덱に「데스완구」カードがあるかチェック
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 데스완구
+	효과条件固名前 = 데스완구 크루엘 웨일
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 대상カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 元攻撃力
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 특수소환時 || 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54302,1)
+	IF RESULT == 0
+		;자신 필드의 カード1枚を破壊
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+
+		;상대フィールドのカード1枚を破壊
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54302,1)
+	IF RESULT == 0
+		;자신 필드의 융합モンスター1体を대상
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = 융합
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			대상カード = RESULT:1
+			;덱에서「데스완구」カードを묘지へ送る
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 데스완구
+			효과条件固名前 = 데스완구 크루엘 웨일
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			IF RESULT == 1
+				;元々の攻撃力を취득
+				元攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:대상カード")
+				;攻撃力を元攻撃力の半分だけアップ（ターン終了時まで）
+				CALL STATCHANGE_EFFECT(듀얼리스트,"필드",대상カード,"一攻",元攻撃力 / 2)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

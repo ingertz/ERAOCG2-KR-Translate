@@ -1,0 +1,237 @@
+﻿@CARDNAME_56712,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스파이어 스워드맨
+	CASE "略称"
+		RESULTS = 사화염의 검사
+	CASE "カテゴリ"
+		RESULTS:0 = 화염의 검사
+		RESULTS:1 = 게임 오리지널
+ENDSELECT
+
+@CARD_56712(参照先)
+;名前専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_56712(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "화염의 검사" 몬스터＋어둠 / 화염속성 몬스터
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없으며、③의 효과는 듀얼중에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 상대에게 １０００ 데미지를 준다。
+CALLFORM CARD_ABLE(2,필드起動 ,フリー誘発)
+PRINTL ②：이 카드가 몬스터 카드를 장착하고 있는 경우에 발동할 수 있다
+PRINTL （융합 몬스터 카드를 장착하고 있는 경우、이 효과는 상대 턴에도 발동할 수 있다）。
+PRINTL 자신의 마법＆함정 존의 몬스터 카드의 수 만큼、상대 필드의 카드를 골라 파괴한다。
+CALLFORM CARD_ABLE(20,필드→묘지,손패→묘지,덱→묘지,破壊→묘지,戦闘→묘지)
+PRINTL ③：이 카드가 묘지로 보내진 경우、상대 필드의 공격 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 자신은 그 몬스터의 공격력 만큼 데미지를 받는다。
+PRINTL 그 후、받은 데미지의 수치 이하의 공격력을 가진 화염속성 몬스터 １장을 자신의 패 / 덱 / 묘지 / 제외 상태에서 특수 소환할 수 있다。
+
+@CARDSUMMON_56712(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 화염의 검사
+ELSEIF EX参照 >= 10
+	素材条件속성:0 = 어둠속성
+	素材条件속성:1 = 화염속성
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,56712) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_56712(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,56712)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	IF 발동済_2(듀얼리스트,56712) == 0
+		CALL CARDCAN_56712(듀얼리스트,フリー誘発,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	SIF 발동済_1(듀얼리스트,56712)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,56712)
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_EQUIP_CHECK(듀얼리스트,場所,ゾーン)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = 융합
+	CALL CARD_EQUIP_CHECK(듀얼리스트,場所,ゾーン)
+	IF RESULT != 1
+		SIF 종류 == フリー誘発
+			RETURN 0
+		SIF メインフェイズ != 1
+			RETURN 0
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	SIF 발동済_D1(듀얼리스트,56712)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_56712(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC ダメージ量
+#DIM DYNAMIC LP差額,2
+#DIM DYNAMIC 攻撃力基準値 
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;同領域の複数選択――――――――――――――――――――――――――――――――――――――――――
+;손패で起動できる효과が2つあり、それが묘지효과でもある場合など
+IF 종류 == 필드起動
+
+	SIF 발동済_1(듀얼리스트,56712)
+		발동불가:0 = 1
+
+	CALL CARDCAN_56712(듀얼리스트,フリー誘発,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	IF 발동불가:0 == 0 && 발동불가:1 == 0
+		CALL CARD_EXPLANATION_56712(종류)
+		CALL YN_CHOICE(듀얼리스트,"①の효과","②の효과")
+	ELSEIF 발동불가:1 == 1
+		RESULT = 0
+	ELSEIF 발동불가:0 == 1
+		RESULT = 1
+	ENDIF
+
+	IF RESULT == 0
+		종류 = 필드起動
+	ELSEIF RESULT == 1
+		종류 = フリー誘発
+	ENDIF
+ENDIF
+;同領域の複数選択――――――――――――――――――――――――――――――――――――――――――
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56712,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",1000,1)
+	ENDIF
+ELSEIF 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56712,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件종류 = モン全般
+		효과条件CNT = 1
+		효과条件限界値 = 10
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		カウンタ = RESULT
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件複数 = 100 - カウンタ
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56712,20)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件표시 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+		IF RESULT != 9999
+			ダメージ量 = GETVAR(@"%対面者%_MZ_攻:RESULT")
+			LP差額:0 = GETVAR(@"ライフ_%듀얼리스트%")
+			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量)
+			LP差額:1 = GETVAR(@"ライフ_%듀얼리스트%")
+			攻撃力基準値 = LP差額:0 - LP差額:1
+			IF 攻撃力基準値 > 0
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲덱 = 1
+				효과範囲묘지 = 1
+				효과範囲제외 = 1
+				효과条件속성 = 화염속성
+				효과条件攻撃力 = 攻撃力基準値
+				효과条件任意 = 1
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

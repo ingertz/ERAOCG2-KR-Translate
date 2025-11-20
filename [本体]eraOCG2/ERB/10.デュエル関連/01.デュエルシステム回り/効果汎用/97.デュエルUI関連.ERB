@@ -263,7 +263,7 @@ ELSEIF RESULT == 초차원
 
 ELSEIF RESULT > 20 && RESULT <= 30
 	IF RESULT == 通常마법
-		PRINTFORM 통상마법
+		PRINTFORM 일반마법
 	ELSEIF RESULT == 지속마법
 		PRINTFORM 지속마법
 	ELSEIF RESULT == 装備마법
@@ -275,7 +275,7 @@ ELSEIF RESULT > 20 && RESULT <= 30
 	ENDIF
 ELSEIF RESULT > 30
 	IF RESULT == 通常함정
-		PRINTFORM 통상함정
+		PRINTFORM 일반함정
 	ELSEIF RESULT == 지속함정
 		PRINTFORM 지속함정
 	ELSE
@@ -1202,7 +1202,7 @@ FOR カウンタB,0,5
 				CALL CARD_SETCOLOR(듀얼리스트,"마함",カウンタ)
 				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("종류")	
 				IF RESULT == 通常마법
-					PRINTFORM %"통상마법",15,LEFT%
+					PRINTFORM %"일반마법",15,LEFT%
 				ELSEIF RESULT == 速攻마법
 					CALL XON_FONT("速攻")
 					PRINTFORM %"속공마법",13,LEFT%
@@ -1216,7 +1216,7 @@ FOR カウンタB,0,5
 					CALL XON_FONT("フィールド")
 					PRINTFORM %"필드",13,LEFT%
 				ELSEIF RESULT == 通常함정
-					PRINTFORM %"통상함정",15,LEFT%
+					PRINTFORM %"일반함정",15,LEFT%
 				ELSEIF RESULT == 지속함정
 					CALL XON_FONT("지속")
 					PRINTFORM %"지속함정",13,LEFT%
@@ -1875,7 +1875,7 @@ ELSEIF RESULT == 초차원
 
 ELSEIF RESULT > 20 && RESULT <= 30
 	IF RESULT == 通常마법
-		PRINTFORM 통상마법
+		PRINTFORM 일반마법
 	ELSEIF RESULT == 지속마법
 		PRINTFORM 지속마법
 	ELSEIF RESULT == 装備마법
@@ -1887,7 +1887,7 @@ ELSEIF RESULT > 20 && RESULT <= 30
 	ENDIF
 ELSEIF RESULT > 30
 	IF RESULT == 通常함정
-		PRINTFORM 통상함정
+		PRINTFORM 일반함정
 	ELSEIF RESULT == 지속함정
 		PRINTFORM 지속함정
 	ELSE
@@ -2079,6 +2079,14 @@ IF GETVAR(@"%듀얼리스트%_MZ_悪Ｃ:選択カード") > 0
 	RESETCOLOR
 ENDIF
 
+;혹란마追記20251024
+CALL TRAPSEX_CATEGORY_QUANTITY(듀얼리스트,選択カード)
+IF RESULT > 0
+	SETCOLOR C_FUSE_PUR
+	RESULTS = 【곤충 문양】:{RESULT}
+	PRINTBUTTON @"%RESULTS,12,LEFT%", 9038
+	RESETCOLOR
+ENDIF
 
 PRINTL
 PRINT 약화효과:
@@ -2421,6 +2429,11 @@ IF RESULT >= 9000
 		PRINTL 【개별 카운터】
 		PRINTL 주로 그 몬스터의 효과 내에서 자체적으로 사용하는 카운터.
 		PRINTL 
+
+	;혹란마追記20251024
+	ELSEIF RESULT == 9038
+		CALL TRAPSEX_TEXT_MONSTER(듀얼리스트,選択カード)
+
 	ELSEIF RESULT == 9032
 		PRINTL 【악성 카운터】
 		PRINTL 나쁜 상태 이상에 연결되는 카운터.
@@ -2745,7 +2758,7 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 
 	ELSEIF RESULT > 20 && RESULT <= 30
 		IF RESULT == 通常마법
-			PRINTFORM 통상마법
+			PRINTFORM 일반마법
 		ELSEIF RESULT == 지속마법
 			PRINTFORM 지속마법
 		ELSEIF RESULT == 装備마법
@@ -2757,7 +2770,7 @@ IF 듀얼리스트 == "자신" || (듀얼리스트 == "상대" && 상대_魔_表
 		ENDIF
 	ELSEIF RESULT > 30
 		IF RESULT == 通常함정
-			PRINTFORM 통상함정
+			PRINTFORM 일반함정
 		ELSEIF RESULT == 지속함정
 			PRINTFORM 지속함정
 		ELSE
@@ -3952,12 +3965,13 @@ IF 설정플래그 == 0
 			ENDIF
 		ENDIF
 	ELSEIF ターンプレイヤー == "상대"
-		IF ERA起動 >= 2
+		IF 상대ターン終了 == 1 || ERA起動 >= 2
 			PRINTFORM %"　[1000] - 행동 없음:（턴 엔드）",64,LEFT%
 		ELSEIF 상대ターン終了 == 1 && メインフェイズ２ == 1
 			PRINTFORM %"　[1000] - 행동 없음:（메인２ 종료）",64,LEFT%
 		ELSEIF 상대ターン終了 == 1
 			PRINTFORM %"　[1000] - 행동 없음:（메인 종료）",64,LEFT%
+
 		ELSEIF メインフェイズ２移行 == 1
 			PRINTFORM %"　[950] - 행동 없음:（메인２ 개시）",64,LEFT%
 		ELSEIF バトルフェイズ移行 == 1
@@ -5120,8 +5134,8 @@ ELSE
 				PRINTL 아직 공격하지 않은 몬스터가 존재합니다만 턴을 종료하시겠습니까？
 				PRINTL
 				CUSTOMDRAWLINE —
-				PRINTL [0] - 예
-				PRINTL [1] - 아니오
+				PRINTL 　[0] - 예
+				PRINTL 　[1] - 아니오
 				BINPUT
 				SIF RESULT == 1
 					RETURN 0
@@ -5150,6 +5164,15 @@ ELSE
 			PRINTBUTTON @"%RESULTS,12,LEFT%", 9071
 			RESETCOLOR
 		ENDIF
+		;혹란마追記20251024
+		CALL TRAPSEX_UI_USE1
+		IF RESULT > 0
+			SETCOLOR C_FUSE_PUR
+			RESULTS = 【곤충 문양】:{RESULT}
+			PRINTBUTTON @"%RESULTS,12,LEFT%", 9038
+			RESETCOLOR
+		ENDIF
+
 		PRINTL
 		PRINTL 　[100] - 돌아간다
 		BINPUT
@@ -5164,6 +5187,12 @@ ELSE
 			PRINTL 
 			PRINTW
 			GOTO INPUT_LOOP_OPCHECK
+		;혹란마追記20251024
+		ELSEIF RESULT == 9038
+			CALL TRAPSEX_TEXT_DUELER
+			PRINTW
+			GOTO INPUT_LOOP_OPCHECK
+
 		ELSE
 			GOTO INPUT_LOOP_OPCHECK
 		ENDIF
@@ -5178,6 +5207,15 @@ ELSE
 			PRINTBUTTON @"%RESULTS,12,LEFT%", 9071
 			RESETCOLOR
 		ENDIF
+		;혹란마追記20251024
+		CALL TRAPSEX_UI_USE2
+		IF RESULT > 0
+			SETCOLOR C_FUSE_PUR
+			RESULTS = 【곤충 문양】:{RESULT}
+			PRINTBUTTON @"%RESULTS,12,LEFT%", 9038
+			RESETCOLOR
+		ENDIF
+
 		PRINTL
 		PRINTL 　[100] - 돌아간다
 		BINPUT
@@ -5192,6 +5230,12 @@ ELSE
 			PRINTL 
 			PRINTW
 			GOTO INPUT_LOOP_MASCHECK
+		;혹란마追記20251024
+		ELSEIF RESULT == 9038
+			CALL TRAPSEX_TEXT_DUELER(1)
+			PRINTW
+			GOTO INPUT_LOOP_OPCHECK
+
 		ELSE
 			GOTO INPUT_LOOP_OPCHECK
 		ENDIF

@@ -7,12 +7,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 스피릿 셀러
+		RESULTS = 스피릿 셀러
 	CASE "略称"
-RESULTS = 정령의 상인
+		RESULTS = 정령의 상인
 	CASE "カテゴリ"
-RESULTS:0 = 없음
-RESULTS:1 = E.R.A
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
 ENDSELECT
 
 
@@ -70,13 +70,13 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	CALL FULLRESET
-	효과範囲상대손패 = 1
-	효과範囲상대마함 = 1
-	효과範囲상대묘지 = 1
+	효과範囲손패 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
 	효과条件성별 = 牝性
 	효과条件종류 = モン全般
 	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(対面者,종류,ゾーン,場所)
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -94,7 +94,7 @@ ELSEIF 종류 == 묘지起動
 	CALL FULLRESET
 	효과範囲덱 = 1
 	효과範囲묘지 = 1
-효과条件名前 = 스피릿 헌터
+	효과条件名前 = 스피릿 헌터
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -145,14 +145,14 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			IF MARK:選択캐릭터:반발각인 < 3
 				MARK:選択캐릭터:반발각인 += 1
 				IF MARK:選択캐릭터:반발각인 == 1
-					PRINTFORML %NAME:選択캐릭터%는반발각인LV1を得た
+					PRINTFORML %NAME:選択캐릭터%는 반발각인LV1을 얻었다
 				ELSEIF  MARK:選択캐릭터:반발각인 == 2
-					PRINTFORML %NAME:選択캐릭터%는반발각인LV2を得た
+					PRINTFORML %NAME:選択캐릭터%는 반발각인LV2을 얻었다
 				ELSEIF  MARK:選択캐릭터:반발각인 == 3
-					PRINTFORML %NAME:選択캐릭터%는반발각인LV3を得た
+					PRINTFORML %NAME:選択캐릭터%는 반발각인LV3을 얻었다
 				ENDIF
 			ELSEIF MARK:選択캐릭터:반발각인 == 3
-				PRINTFORML %NAME:選択캐릭터%の반발각인は既にLV3だ
+				PRINTFORML %NAME:選択캐릭터%의 반발각인은 이미 LV3이다
 			ENDIF
 			CALL EVENT_FAVUP(選択캐릭터,-100)
 			PRINTFORML
@@ -166,7 +166,7 @@ ELSEIF 종류 == 묘지起動
 		CALL FULLRESET
 		효과範囲덱 = 1
 		효과範囲묘지 = 1
-효과条件名前 = 스피릿 헌터
+		효과条件名前 = 스피릿 헌터
 		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
 		SIF RESULT == 1
 			CALL CARD_EFFECT_D1USE(듀얼리스트,79667)

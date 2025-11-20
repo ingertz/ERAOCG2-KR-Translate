@@ -1,0 +1,148 @@
+@CARDNAME_72563,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스완구 리페어
+	CASE "略称"
+		RESULTS = 데스완구 리페어
+	CASE "カテゴリ"
+		RESULTS:0 = 데스완구
+	CASE "検索カテゴリ"
+		RESULTS:0 = 퍼니멀
+		RESULTS:1 = 에지임프
+ENDSELECT
+
+
+@CARD_72563(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72563(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느쪽인가 １개밖에 사용할 수 없다。
+CALL CARD_ABLE(1,손패起動,마함起動)
+PRINTL ①：자신 묘지의 "데스완구" 융합 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 엑스트라 덱으로 되돌린다。
+PRINTL 그 후、자신의 묘지에서 "퍼니멀" 몬스터 또는 "에지임프" 몬스터１장을 골라 특수 소환할 수 있다。
+CALL CARD_ABLE(2,묘지起動)
+PRINTL ②：묘지의 이 카드를 제외하고 발동할 수 있다。
+PRINTL 패에서 "퍼니멀" 몬스터 또는 "에지임프" 몬스터 １장을 특수 소환한다。
+
+@CARDCAN_72563(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72563)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,72563) || 발동済_2(듀얼리스트,72563)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 데스완구
+	효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,72563) || 발동済_2(듀얼리스트,72563)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ:0 = 퍼니멀
+	효과条件カテゴリ:1 = 에지임프
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72563(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72563,1)
+	IF RESULT == 0
+		;通常마법汎用処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 데스완구
+		효과条件종류 = 융합
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			;묘지から특수소환できるか確認
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ:0 = 퍼니멀
+			효과条件カテゴリ:1 = 에지임프
+			효과条件종류 = モン全般
+			효과条件소환可 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				SIF 듀얼리스트 == "자신"
+					PRINTL 묘지からモンスターを특수소환しますか？
+				CALL YN_CHOICE(듀얼리스트)
+				IF RESULT == はい && 듀얼리스트 == "자신"
+					CALL FULLRESET
+					효과範囲묘지 = 1
+					효과条件カテゴリ:0 = 퍼니멀
+					효과条件カテゴリ:1 = 에지임프
+					효과条件종류 = モン全般
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72563,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ:0 = 퍼니멀
+		효과条件カテゴリ:1 = 에지임프
+		효과条件종류 = モン全般
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

@@ -8,6 +8,8 @@
 #DIM DYNAMIC 連れ出し캐릭터数
 #DIM DYNAMIC 現在동행数
 
+
+
 IF 依頼_受領中 >= 1
 	SETCOLOR C_YELLOW
 	PRINTFORMW 의뢰 수령 중에는 데리고 나가거나、동행을 해제할 수 없습니다。
@@ -19,11 +21,14 @@ NUM_TARGET = GET_TARGETNUM()
 ;데리고 나간다
 SIF !NUM_TARGET
 	RETURN -1
+
+
 FOR カウンタ, 1, NUM_TARGET + 1
 	IF COM_351_CONDITION(TARGET:カウンタ) >= 2
 		現在동행数 += 1
 	ENDIF
 NEXT
+
 IF NUM_TARGET == 1 || 現在동행数 == 1
 	IF COM_351_CONDITION(TARGET) < 1
 		RETURN -1
@@ -227,10 +232,8 @@ SIF !TFLAG:100
 SIF GLOBAL_COMABLE(351)
 	RETURN RESULT
 ;기력0
-;SIF BASE:MASTER:기력 <= 0
-;	RETURN 0
-;【↑いつでも連れ出せるべきという考えで廃止】
-SIF CFLAG:MASTER:현재위치 >= 12
+
+SIF !TSUREDASHI(CFLAG:MASTER:현재위치)
 	RETURN 0
 SIF CFLAG:우후후 == 2
 	RETURN 0

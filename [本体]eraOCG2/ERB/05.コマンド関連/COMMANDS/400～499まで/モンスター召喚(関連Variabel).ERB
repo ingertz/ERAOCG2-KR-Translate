@@ -24,6 +24,7 @@ VARSET 필터_素質_ACT
 VARSET 필터_화상
 VARSET 필터_仲良し
 VARSET 필터_依頼
+VARSET 필터_子供
 
 
 
@@ -48,6 +49,7 @@ VARSET 필터_特価品
 VARSET 소환_リスト
 VARSET リスト最大値
 
+
 FOR カウンタ,0,10
 	IF お気に入り:カウンタ > 0
 		CALL MONSTERLIST_FILTER(お気に入り:カウンタ)
@@ -59,6 +61,7 @@ FOR カウンタ,0,10
 		ENDIF
 	ENDIF
 NEXT
+
 
 FOR カウンタ,0,10
 	IF 소환이력:カウンタ > 0
@@ -196,6 +199,10 @@ IF 필터_依頼 > 0
     RETURN 0
 ENDIF
 
+IF 필터_子供
+	SIF TALENT:캐릭터_ID:친자 <= 0
+		RETURN 0
+ENDIF
 
 
 VARSET 条件달성
@@ -1007,8 +1014,85 @@ SELECTCASE 使用場所
 				PRINTW 돌아갑니다。
 			ENDIF
 		ENDIF
-	CASE 21
+	CASE 23
+		$CHILD_LOOP 
+		SETCOLOR C_PINK
+		PRINTL ―■　아이 메뉴　■―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+		PRINTFORML ＞%NAME:캐릭터_ID%
+		CUSTOMDRAWLINE ―
+		PRINTL
+		RESETCOLOR
+		PRINTFORM [1] - %"침실을 바꾼다",30,LEFT%
+		IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
+			PRINTFORM [%"부모의 친가",16,left%]
+		ELSEIF CFLAG:캐릭터_ID:시작위치 != 100
+			PRINTFORM [%GETPLACENAME(CFLAG:캐릭터_ID:시작위치),16,left%]
+		ENDIF
+		PRINTL
+		PRINTFORML [2] - %"호칭을 바꾼다",30,LEFT%[%CALLNAME:캐릭터_ID%]
+		PRINTFORML 
+		PRINTFORML [3] - %"아이와 이별한다",30,LEFT%
+		
+		CUSTOMDRAWLINE ―
+		PRINTFORML [100] - 戻る
+		BINPUT
+		IF RESULT == 1
+			IF CFLAG:캐릭터_ID:시작위치 == 場所_VOID
+				PRINTFORML %NAME:캐릭터_ID%를
+				CFLAG:캐릭터_ID:시작위치 = 場所_子供部屋
+				CFLAG:캐릭터_ID:현재위치 = 場所_子供部屋
+			ELSEIF CFLAG:캐릭터_ID:시작위치 != 100
+				PRINTFORML %NAME:캐릭터_ID%에 일단 친가로 돌아가게 했습니다
+				CFLAG:캐릭터_ID:시작위치 = 100
+				CFLAG:캐릭터_ID:현재위치 = 100
+			ENDIF
+			PRINTFORMW 변경은 즉시 반영됩니다!!
 
+		ELSEIF RESULT == 2
+			PRINT 호칭을 입력해주세요(최대10자):
+			PRINTBUTTON @"【돌아간다】", ""
+			SIF !EXISTCSV(NO:캐릭터_ID)
+				PRINTBUTTON @"【기본】", "DEFAULT"
+			INPUTS
+
+			IF RESULTS == "DEFAULT"
+				CALLNAME:캐릭터_ID = %CSVCALLNAME(NO:캐릭터_ID)%
+			ELSEIF RESULTS != ""
+				SUBSTRING RESULTS, 0, 20
+				CALLNAME:캐릭터_ID = %RESULTS%
+			ENDIF
+		ELSEIF RESULT == 3
+			CALL PRINT_STATE(캐릭터_ID)
+			PRINTFORML %NAME:캐릭터_ID%에게 어떻게 자립하게 할까요?
+			PRINTFORML （일부 선택지는 아이들이 성장하고 자립한 전제로 집을 나갑니다）
+			PRINTL [0] - 딱히 정하지 않는다
+			PRINTL [1] - 친가
+			PRINTL [2] - 먼곳의 KC
+			SIF TALENT:캐릭터_ID:음교의신도 == 1
+				PRINTL [433] - 음교의 신도
+			PRINTL 
+			PRINTL [100] - 역시 그만둔다
+			BINPUT
+			IF RESULT == 100
+				PRINTFORML 아직 자립은 빨랐던것 같습니다
+			ELSE
+				IF RESULT == 0
+					PRINTFORML 당신의 품에서 훌륭히 자라난 %NAME:캐릭터_ID%는、집에서 여행을 떠났다。
+				ELSEIF RESULT == 1
+					PRINTFORML 당신의 품에서 훌륭히 자라난 %NAME:캐릭터_ID%는、친가의 가업을 돕기로 했다。
+				ELSEIF RESULT == 2
+					PRINTFORML 당신의 품에서 훌륭히 자라난 %NAME:캐릭터_ID%는。카이바 코퍼레이션에서 일하게 되었다。
+				ELSEIF RESULT == 433
+					PRINTFORML 당신의 품에서 훌륭히 자라난 %NAME:캐릭터_ID%는、음교의 신도로서 가르침을 널리 퍼뜨리는 활동을 하게되었다。
+				ENDIF
+				PRINTFORML 건강해라、%NAME:캐릭터_ID%！！
+				CALL DELETE_CHARA(캐릭터_ID)
+			ENDIF
+		ELSEIF RESULT == 100
+			PRINTW 돌아갑니다。
+			RETURN 0
+		ENDIF
+		GOTO CHILD_LOOP
 
 	CASE 30
 		CALL HAN_KOJO_OPTION(캐릭터_ID)

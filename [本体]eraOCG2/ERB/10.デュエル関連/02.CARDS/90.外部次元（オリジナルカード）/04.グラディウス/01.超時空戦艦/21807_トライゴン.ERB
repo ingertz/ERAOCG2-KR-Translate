@@ -1,0 +1,314 @@
+﻿@CARDNAME_21807,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트라이곤
+	CASE "略称"
+		RESULTS = 트라이곤
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_21807(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "生成カード"
+		RETURN 221807
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 500
+	CASE "守備力"
+		RETURN 1700
+	CASE "分割"
+		RETURN 유니온
+	CASE "추가日"
+		RETURN 251114
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_21807(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動)
+CALLFORM CARD_ABLE(0,마함起動)
+PRINTL ①：자신 메인 페이즈에、이하의 효과에서 １개를 선택해서 발동할 수 있다。
+PRINTL ●자신 필드의 기계족 몬스터 １장을 대상으로 하고、이 카드를 장착 카드 취급으로 그 몬스터에게 장착한다。
+PRINTL 장착 몬스터가 전투 / 효과로 파괴될 경우、대신에 이 카드를 파괴한다。
+PRINTL ●장착되어 있는 이 카드를 특수 소환한다。
+CALLFORM CARD_ABLE(2,손패起動)
+PRINTL ②：패의 이 카드를 묘지로 보내고 발동할 수 있다。
+PRINTL 덱에서、"델타트라이"１장을 패에 넣는다。
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ③：장착 몬스터가 전투로 상대 몬스터를 파괴한 경우、이하의 효과에서 １개를 선택해서 발동할 수 있다。
+PRINTL ●자신의 묘지에서 기계족 / 빛속성 / 레벨４ 이하의 몬스터 １장을 특수 소환한다。
+PRINTL ●덱 밖에서 "드래곤 레이저" １장을 생성해서 패에 넣는다。
+
+@CARDCAN_21807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21807)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,21807)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 기계족
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 
+	SIF 발동済_1(듀얼리스트,21807)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,24150,"마함")
+	SIF RESULT == 1
+		RETURN 0
+	SIF 装備先 == 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패起動 
+	SIF 발동済_2(듀얼리스트,21807)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前 = 델타트라이
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 装備先
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_21807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21807,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종족 = 기계족
+		효과条件他所 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_EQUIP_MONSTER(듀얼리스트,選択カード,ゾーン,場所,(4))
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21807,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21807,2)
+	IF RESULT == 0
+		;通常마법汎用処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件名前 = 델타트라이
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21807)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 기계족
+		효과条件속성 = 빛속성
+		CALL 효과条件レベル_ADV(4, "以下")
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1 && モンスター数(듀얼리스트) < 5
+			PRINTL 어느 효과를 발동하시겠습니까？
+			CALL YN_CHOICE(듀얼리스트,"●자신 묘지에서 기계족 / 빛속성 / 레벨４이하의 몬스터 １장을 특수 소환한다。","●덱 밖에서 「드래곤 레이저」１장을 생성해서 패에 넣는다。")
+		ELSE
+			RESULT = 1
+		ENDIF
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종족 = 기계족
+			효과条件속성 = 빛속성
+			CALL 효과条件レベル_ADV(4, "以下")
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ELSE
+			CALL CARD_GENERATE_HAND(듀얼리스트,221807)
+		ENDIF
+	ENDIF
+ENDIF
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+@CARDNAME_221807,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 드래곤 레이저
+	CASE "略称"
+		RESULTS = 드래곤 레이저
+	CASE "カテゴリ"
+		RESULTS:0 = 시공 전투기
+ENDSELECT
+
+
+@CARD_221807(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_221807(종류)
+#DIM DYNAMIC 종류
+CALL CARD_ABLE(0,마함起動,フリー誘発)
+PRINTL ①：자신의 몬스터 존에 "델타트라이"가 존재하는 경우、
+PRINTL 자신의 마법＆함정 존의 "트라이곤" １장을 묘지로 보내고 발동할 수 있다。
+PRINTL 상대 필드의 카드를 전부 파괴한다。
+PRINTL 이 카드는 발동 후、소멸한다（게임에서 제거된다）
+
+@CARDCAN_221807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,221807)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 || 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 델타트라이
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 트라이곤
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_221807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+#DIM DYNAMIC ドロー枚数
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 손패起動 || 종류 == 마함起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,221807)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 트라이곤
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場全体",場所,"묘지")
+		ENDIF
+	ENDIF
+ENDIF

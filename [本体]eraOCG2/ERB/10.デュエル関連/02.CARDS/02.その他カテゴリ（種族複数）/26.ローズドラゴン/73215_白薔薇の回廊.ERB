@@ -34,11 +34,12 @@ RETURN 0
 PRINTL 자신 필드는 "화이트로즈 클로이스터"이 된다.
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(1,마함起動)
-PRINTL ①: 자신 필드에 몬스터가 존재하지 않는 경우에 발동할 수 있다.
-PRINTL 패에서 "로즈" 몬스터 1장을 특수 소환한다.
+PRINTL ①: 메인 페이즈에 발동할 수 있다.
+PRINTL 패 / 묘지에서 "로즈" 몬스터 1장을 특수 소환한다.
 CALL CARD_ABLE(0,攻守変動)
-PRINTL ②: 자신 필드의 레벨 7 이상의 S 몬스터의 공격력은 1000 올린다.
-PRINTL 
+PRINTL ②: 자신 필드의 레벨 6 이상의 S 몬스터의 공격력은 1000 올린다.
+CALL CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드는 카드의 효과로 파괴되지 않는다。
 
 @CARDCAN_73215(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -46,13 +47,17 @@ PRINTL
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
+
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73215)
 SIF RESULT == 1
 	RETURN 0
 
-
 IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	SIF 발동済_1(듀얼리스트,73215)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	CALL FULLRESET
 	효과範囲손패 = 1
@@ -61,15 +66,6 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
-		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	RETURN 1
 
@@ -113,10 +109,11 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "화이트로즈 클로이스터")
-
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
 ELSEIF 종류 == 攻守変動
 	CALL FULLRESET
 	효과条件종류 = 싱크로
-	CALL 효과条件レベル_ADV(7, "以上")
+	CALL 효과条件レベル_ADV(6, "以上")
 	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000)
 ENDIF

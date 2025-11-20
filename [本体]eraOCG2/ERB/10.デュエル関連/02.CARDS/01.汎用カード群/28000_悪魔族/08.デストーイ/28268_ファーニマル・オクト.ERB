@@ -1,0 +1,125 @@
+@CARDNAME_28268,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 퍼니멀 옥토
+	CASE "略称"
+		RESULTS = Fur 옥토
+	CASE "カテゴリ"
+		RESULTS:0 = 퍼니멀
+ENDSELECT
+
+
+@CARD_28268(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 800
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28268(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "퍼니멀 옥토"의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,소환時 ,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환에 성공했을 때、
+PRINTL 자신 묘지의、"퍼니멀" 몬스터 또는 "에지임프" 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 패에 넣는다。
+
+CALL CARD_ABLE(2,F素材時효과)
+PRINTL ②：이 카드가 "데스완구" 융합 몬스터의 융합 소환의 소재가 되어 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL 제외되어있는 자신의 몬스터를 ２장까지 대상으로 하고 발동할 수 있다。
+PRINTL 그 몬스터를 묘지로 되돌린다。
+
+@CARDSUMMON_AA_28268
+
+
+@CARDCAN_28268(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28268)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,28268)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ:0 = 퍼니멀
+	효과条件カテゴリ:1 = 에지임프
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == F素材時효과
+	SIF 발동済_2(듀얼리스트,28268)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28268(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28268,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ:0 = 퍼니멀
+		효과条件カテゴリ:1 = 에지임프
+		효과条件종류 = モン全般
+		CALL CARD_ADD_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == F素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28268,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件종류 = モン全般
+		효과条件任意 = 1
+		효과条件複数 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

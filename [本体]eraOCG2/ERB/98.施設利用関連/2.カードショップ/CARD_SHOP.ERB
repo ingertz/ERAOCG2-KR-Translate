@@ -163,8 +163,6 @@ ELSEIF RESULT == 7777
 	NEXT
 	FOR カウンタ,0,カウンタB
 		パック_ID = パックセット:カウンタ
-		VARSET RESULTS
-		CALL CARD_PACK_NAME(パック_ID)
 		補充BOX数:カウンタ = 설정BOX数
 	NEXT
 
@@ -306,7 +304,7 @@ ELSEIF RESULT == 8888
 	GOTO DECK_LOOP
 ELSE
 	選択位置 = RESULT
-	;選択位置にカードが存在していたら、そのカードを置く。
+	;選択位置にカードが存在していたら、그 카드를 置く。
 	IF 売出カード:選択位置 >= 1
 		選択カードID = 売出カード:選択位置
 		売出カード:選択位置 = -1
@@ -318,7 +316,7 @@ ELSE
 	PRINTFORML
 	CALL EDIT_DECK_COLLECTION(1)
 	IF RESULT > 0
-		;選択位置にカードが存在していたら、そのカードを置く。
+		;選択位置にカードが存在していたら、그 카드를 置く。
 		選択カードID = RESULT
 		売出カード:選択位置 = 選択カードID
 		;PRINTFORML 選択カードID:{選択カードID}
@@ -367,6 +365,7 @@ IF RESULT == 100
 	RETURN 0
 ELSE
 	캐릭터_ID = RESULT
+	CALL PRINT_STATE(캐릭터_ID)
 	CUSTOMDRAWLINE —
 	PRINTFORML　어느 의상을 입히시겠습니까？
 	CUSTOMDRAWLINE —
@@ -379,11 +378,14 @@ ELSE
 	CUSTOMDRAWLINE —
 	PRINTL
 	PRINTL [100] - 돌아간다
+	BINPUT
 	SIF RESULT == 100
 		GOTO CHOICE_LOOP
-	SIF CFLAG:캐릭터_ID:알바의상 == 0
-		CFLAG:캐릭터_ID:알바의상 = RESULT
+	CFLAG:캐릭터_ID:알바의상 = RESULT
+
+	;PRINTFORML CFLAG:캐릭터_ID:バイト衣装:{CFLAG:캐릭터_ID:バイト衣装}
 	CALL CLOTHES_SETTING(캐릭터_ID,CFLAG:캐릭터_ID:알바의상)
+	GOTO CHOICE_LOOP
 ENDIF
 
 

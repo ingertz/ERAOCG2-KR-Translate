@@ -1,0 +1,1002 @@
+@IRAI_EVENT_538(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+#DIM DYNAMIC 条件チェック
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE  "名前"
+		RESULTS = (CP-ZI6R)섹센티아 시크아웃
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL 【「智」の頂】
+		PRINTL 鎧を纏った龍のような姿をしたゼニス。
+		PRINTL 表立って動くことこそ多くは無かったものの、《修羅丸》》を支配して《「戦慄」の頂　ベートーベン》を生み出す、
+		PRINTL 光のデーモンコマンドと闇のエンジェルコマンドを生み出す提案など、陰から大きく戦況を動かしていた。
+		PRINTL しかし、ドラゴンを封じる「智」を持っていながらも、鬼丸兄弟の「情」を理解出来なかったことが、最終的なゼニスの敗因へと繋がった。
+	CASE "条件"
+		;前提クリアで불가
+		SIF 依頼_完了횟수:537 != 0
+			RETURN 0
+		;関連이벤트플래그
+		SIF 依頼_進行보존:537 == 0
+			RETURN 0
+		;善人だったらダメー
+		SIF FLAG:악랄치 < 35
+			RETURN 0
+		RETURN 1
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+
+@IRAI_ACT_538(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC カノン
+#DIM DYNAMIC ウェディング
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 절정ポイント
+#DIM DYNAMIC 限界ポイント
+#DIM DYNAMIC 굴복ポイント
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 前回選択コマンド
+#DIM DYNAMIC 절정횟수
+#DIM DYNAMIC 키스플래그
+#DIM DYNAMIC 腹パン플래그
+
+カノン = NO_TO_CHARANUM(2758)
+ウェディング = NO_TO_CHARANUM(4025)
+이벤트主 = NO_TO_CHARANUM(4023)
+
+IF 依頼_달성상황 == 0
+	PRINTFORML 「…………」
+	PRINTFORMW 「…………」
+	PRINTFORML
+	PRINTFORML ローゼスとのライブバトルに向け、レンタル%CALLNAME:カノン%は精神修行をしている。
+	PRINTFORMW %CALLNAME:ウェディング%曰く、人を言葉で操るのが得意とのことなので、平静を保つ事が重要だそうだ。
+	PRINTFORMW …………。
+	PRINTFORML 
+	PRINTFORMW 「暇ニャリねー」
+	PRINTFORML 
+	PRINTFORML %CALLNAME:カノン%関連の作業のほぼ全てが終わっており、やることがない。
+	PRINTFORMW ニヤリーは%CALLNAME:カノン%のスマホで漫画を読み漁っているし、%CALLNAME:ウェディング%はいつも通り静かに%CALLNAME:カノン%を見守っている。
+	PRINTFORML
+	PRINTFORML しかし、空いた時間を有効に使うのが出来る듀얼리스트というもの。
+	PRINTFORMW 今日は丁度いい感じの依頼が来ているのだ。
+	PRINTFORML
+	PRINTL
+	CUSTOMDRAWLINE ―
+	PRINTL 依頼：특수な薬品の治験の案内
+	CUSTOMDRAWLINE ―
+	PRINTL 現在わが社で開発中の薬品のテスターを募集しています。
+	PRINTL 治験体の用意はこちらで行うので、そちらは治験体へのアクションとリアクションの記録をお願いしたいと思っています。
+	PRINTL お受けくださるのであれば、この依頼を受領後、以下の場所までお越しください。
+	PRINTL
+	PRINTL 報酬：５０万円
+	PRINTL
+	PRINTL ……………………
+	CUSTOMDRAWLINE ―
+	PRINTL
+	WAIT
+	PRINTFORML 怪しい内容が多いことで有名な治験のバイトだ！
+	PRINTFORMW 例によって、ぱっと見の仕事内容に対して報酬も異様に高く、間違いなくまともな組織じゃないぞ！
+	PRINTFORML この話をニヤリーにしたら、「ボクも行ってみたいニャリ！」と帰ってきた。
+	PRINTFORMW 약물を投入するわけでもないし、歌詞のインスピレーションになる可能性があるならむしろいい事だろう。
+	PRINTFORML 
+	PRINTFORML 撮影所はここからは結構遠い場所にある。
+	PRINTFORMW 東駅から電車に乗って行こう。
+	依頼_場所 = 場所_東駅
+	依頼_달성상황 ++
+
+ELSEIF 依頼_달성상황 == 1
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"治験室")
+	PRINTFORML 依頼先の住所はとある路地裏のビルの地下だった。
+	PRINTFORMW 明らかにアングラな気配が漂っており、アルコール混じりの生臭い臭いが鼻にじんわりと突き刺さる。
+	PRINTFORMW 受付なんてものはなく、階段を下りた先にいた白衣とガスマスクの怪しい男が出迎えてくれた。
+	PRINTFORML 
+	PRINTFORML 「クククク……依頼を受けていただき感謝します、%CALLNAME:PLAYER%さん。
+	PRINTFORMW 　……いえ、%CALLNAME:MASTER%さんとお呼びした方がよろしいかな？」
+	PRINTFORML どっちだっていい。
+	PRINTFORMW しかしまあ胡散臭い男だ。　本当に５０万の用意はしているのだろうか？
+	PRINTFORMW 「ククク……ええ、もちろんですとも」
+	PRINTFORMW そう言うと、男は分厚い封筒をこちらに手渡してきた。
+	PRINTFORML ……万札５０枚分の厚み。
+	PRINTFORMW しっかり用意はされているようだ、封筒を返す。
+	PRINTFORML 「ククク……ありがとうございます。
+	PRINTFORMW 　ご安心を、途中で逃げたりはしませんよ。　私共も商品のデータは欲しいのでね……」
+	PRINTFORML 
+	PRINTFORML 既に被験体の用意は出来ているようで、部屋へ案内される。
+	PRINTFORMW さて、哀れにも怪しい약물の実験台にされたのはどんな奴だろうか……
+	PRINTFORML 
+	PRINTFORMW 「…………」
+	PRINTFORML 
+	PRINTFORMW ……ローゼスじゃないか。
+	PRINTFORML 貫頭衣を着せられ、台の上に手足を拘束されている。
+	PRINTFORMW 安らかに寝息を立てており、男が言うには薬で眠らせているようだ。
+	PRINTFORML 
+	PRINTFORML 今回の主目的は약물による反応を見ることのため、ローゼスが起きないことには治験を始められない。
+	PRINTFORMW その間に男から治験……実験の内容と약물の情報を教えてもらうことになった……
+	依頼_달성상황 ++
+
+ELSEIF 依頼_달성상황 == 2
+	PRINTFORMW 「ぅ……ん……ここは……？」
+	PRINTFORMW 「あ、起きたニャリ」
+	PRINTFORML 
+	PRINTFORMW 男から借りたオセロでニヤリーと遊んでいると、ローゼスが目を覚ました。
+	PRINTFORMW ローゼスは상황を認識すると、こちらに話しかけてきた。
+	PRINTFORML 
+	PRINTFORML 「あら、%CALLNAME:MASTER%様ではありませんか、ご機嫌よう。
+	PRINTFORMW 　折角なので談笑といきたい所ですが、まずはこちらを外していただけないかしら？」
+	PRINTFORMW %CALLNAME:MASTER%はローゼスに挨拶した。
+	PRINTFORMW 生憎だがその提案を飲むことはできない。　仕事なのよね。
+	PRINTFORML 
+	PRINTFORMW 「はあ……ふんっ」
+	PRINTFORML ガチャリと手枷が鳴る。
+	PRINTFORMW 力には自信があったのか、ローゼスは驚いた顔をしている。
+	PRINTFORMW ガチャガチャと金属音が響く中、これから薬の実験を行うことを告げる。
+	PRINTFORML
+	PRINTFORML 「残念ながら逃れられないようですわね……
+	PRINTFORMW 　一体、どのような薬品をわたくしに投与するおつもりなのかしら？」
+	PRINTFORML
+	PRINTFORML 今回使う薬の名前は、『本能の叫び　Ｔｙｐｅ－３０００』！
+	PRINTFORMW あの『本能の叫び』シリーズの最新作だ！
+	PRINTFORML
+	PRINTFORML 「……聞いたことがあります。　裏の世界で用いられている違法약물。
+	PRINTFORMW 　投与されたが最後、老若男女問わず性に狂わせる媚薬だと」
+	PRINTFORML
+	PRINTFORML よく分かってんじゃん……
+	PRINTFORMW 予想される効能としては従来の性欲増進효과に加えて、감도３０００倍らしい。
+	PRINTFORML というわけで、まずは素の状態の反応を記録しよう。
+	PRINTFORMW 貫頭衣を脱がし、ローゼスの貧そ……慎ましい身体を노출させる。
+	PRINTFORML
+	PRINTFORML 「はあ……相変わらず、人間はくだらない物を生み出す能力にかけては他の追随を許しませんわね。
+	PRINTFORMW 　無駄ですわよ、我々ゼニスは貴方がたよりも高位の存在。　そのような低品質の약물など通用しませんわ」
+	PRINTFORML 
+	PRINTFORML うーむ、全然反応が無い。
+	PRINTFORMW 乳首もクリトリスも結構強めに摘まんでいるつもりだが、全く堪えていないようだ。
+	PRINTFORMW 「とりあえずこんな感じでいいニャリ？」
+	PRINTFORMW ニヤリーがメモ用紙に書いたものを見せてくる。
+	PRINTL
+	CUSTOMDRAWLINE ―
+	PRINTL
+	PRINTL ［薬品投与前］
+	PRINTL ・乳首、クリトリスを強く摘まんでも声音に変化はない
+	PRINTL ・反応は皆無、全く面白くない
+	PRINTL
+	CUSTOMDRAWLINE ―
+	PRINTL
+	WAIT
+	PRINTFORML うーん……まあいいだろう。
+	PRINTFORMW 考えとかを書くのはいいけど、出来るだけ感情は挟まないようにね。
+	PRINTFORMW 「わかったニャリ！」
+	PRINTFORMW さて、それではお楽しみのドキドキ・ドラッグタイムだ。
+	PRINTFORML この媚薬は従来通り内服薬なので、ローゼスに飲んでもらわないといけない。
+	PRINTFORMW 無理やり飲ませることも出来るが……できれば、자신から飲んでもらうと手間が省けて楽だ。
+	PRINTFORMW 「……仕方ありませんわね、早急に終わらせてしまいましょう」
+	PRINTFORML 協力的で助かるぜ！
+	PRINTFORMW 寝たままだと喉に詰まらせる可能性があるので、台を起こしてからストローを口元に持っていく。
+	PRINTFORMW コップ一杯の水に１滴で十分だと説明されたが、不感症なんてレベルじゃないローゼスには大サービスで１０滴ぐらい投薬しよう！
+	PRINTFORML
+	PRINTFORMW …………よし、全部飲んだな。
+	PRINTFORMW 「これってどのくらいで효과が出るニャリ？」
+	PRINTFORML 性欲に支配された人間はとてもせっかちだからな……
+	PRINTFORMW ５分か６分……１０はかからないだろう。
+	PRINTFORML 
+	PRINTFORMW 「ところで、薬効が確認できない場合はどうするおつもりで？」
+	PRINTFORML
+	PRINTFORML さすがに３０分待っても효과なさそうならお開きかな……
+	PRINTFORMW 検体が悪いってあの白衣に文句を言ってやろう。
+	PRINTFORML 
+	PRINTFORMW オセロの続きをしつつ、ローゼスに変化が出るのを待つことにした……
+	依頼_달성상황 ++
+
+ELSEIF 依頼_달성상황 == 3
+	CALL EVENT_TIMER(40)
+	PRINTFORMW 「よし、ボクの勝ちニャリ！」
+	PRINTFORML 強い……強くない？
+	PRINTFORMW 角取って負けたんだけど。
+	PRINTFORML
+	PRINTFORMW 「……ふぅ……❤」
+	PRINTFORML
+	PRINTFORML 「"取らせた"ニャリねー、思考が透けて見えたニャリ」
+	PRINTFORMW つまり、ずっと手のひらの上だったってわけか……
+	PRINTFORML 
+	PRINTFORMW 「はぁ……んん……❤」
+	PRINTFORML 
+	PRINTFORML やっぱ"本気"でやるなら本とか読み込んだ方がいいのかなあ。
+	PRINTFORML 「上級者と殴り合うのがいいニャリ！」
+	PRINTFORMW デュエルと同じだな！
+	PRINTFORML 
+	PRINTFORMW 「ふぅー……ふぅー……❤」
+	PRINTFORML 
+	PRINTFORML そういえば、薬を投与してからそこそこ経っている。
+	PRINTFORMW ローゼスの様子を見てみるか。
+	PRINTFORMW 「ちょっと忘れてたニャリ！」
+	PRINTFORML
+	PRINTFORMW 「はぁ……❤　……何ですか？❤」
+	PRINTFORML
+	PRINTFORML 数分ぶりに見たローゼスの顔は赤くなっていた。
+	PRINTFORMW 体温が上がっているのか、吐息には熱が籠っており、シミひとつない身体には汗が滲んでいる。
+	PRINTFORMW 薬が効いてきたみたいだ。　身体の調子を聞いてみよう。
+	PRINTFORML 
+	PRINTFORMW 「体調……ですか？　ええ、異常はありません。　精々体温が上昇している……くらいです」
+	PRINTFORML 
+	PRINTFORMW なるほど。　감도とかはどう？
+	PRINTFORML
+	PRINTFORMW 「감도も……ええ、特に変わりはありません……」
+	PRINTFORML
+	PRINTFORML なるほど。
+	PRINTFORMW ピンと突っ張っているピンク色の乳首を弾いてみる。
+	PRINTFORML
+	PRINTFORMW 「ふぁ──！？❤」
+	PRINTFORML 
+	PRINTFORML ローゼスは先ほどまでの凛とした声とは真逆の、かわいらしい嬌声を上げて身を震わせた。
+	PRINTFORMW 감도良好、薬의 효과는 しっかり出ているようだ。
+	PRINTFORMW 「な、なぜ……こんな……❤」
+	PRINTFORML ローゼスは平常よりも敏感になった身体に戸惑っているようだ。
+	PRINTFORMW とりあえず、色々やってみて、どのくらい変わったのか確かめてみよう。
+	PRINTFORMW 「記録は任せろニャリー！」
+	;ここからＡループ開始
+	$LOOP_A
+	CALL REPEAT_PRINTL(5)
+	PRINTL 【行動を選択してください】
+	PRINTL
+	PRINTL [0] - 頬を摘まむ
+	PRINTL [1] - 耳に息を吹きかける
+	PRINTL [2] - 胸を揉む
+	PRINTL [3] - 乳首を摘まむ
+	PRINTL [4] - クリトリスを摘まむ
+	PRINTL [5] - 질내をかき回す
+	PRINTL [6] - 足の裏をくすぐる
+	BINPUT
+	PRINTL
+	IF RESULT == 0 || RESULT == 1 || RESULT == 6
+		PRINTFORML 「ふー……ふー……❤」
+		PRINTFORMW ローゼスは息を荒くしながら%CALLNAME:MASTER%を見つめている。
+		条件달성 = 1
+		SIF 절정ポイント < 9
+			절정ポイント += 1
+	ELSEIF RESULT == 2
+		PRINTFORML 「んんっ……❤　んぁぁ……❤」
+		PRINTFORMW ローゼスは静かに嬌声を漏らしている。
+		절정ポイント += 2
+		EXP:이벤트主:Ｂ경험 += 1
+	ELSEIF RESULT == 3
+		PRINTFORML 「んああっ❤　はぁ……はぁ……❤」
+		PRINTFORMW ローゼスはビクンと身体を震わせた。
+		절정ポイント += 3
+		EXP:이벤트主:Ｂ경험 += 1
+	ELSEIF RESULT == 4
+		PRINTFORML 「んんんんっ❤あっ❤　はあっ……❤はあっ……❤」
+		PRINTFORMW ローゼスの腰はぶるぶると震えている。
+		절정ポイント += 3
+		EXP:이벤트主:Ｃ경험 += 1
+	ELSEIF RESULT == 5
+		PRINTFORML 「あっ……はぁ……んんっ……❤」
+		PRINTFORMW ローゼスの膣奥からは愛液が止めどなく流れ出ている。
+		절정ポイント += 2
+		EXP:이벤트主:Ｖ경험 += 1
+	ENDIF
+	;절정ポイント１０以下ならループ
+	IF 절정ポイント < 10
+		GOTO LOOP_A
+	ENDIF
+	CALL REPEAT_PRINTL(2)
+	PRINTFORML 「あっ❤　だ、だめっ❤　ああっ❤　んううっ❤　あっ──❤」
+	PRINTFORMW ローゼスは全身を震わせながら、절정に達した。
+	CALL REPEAT_PRINTL(5)
+	PRINTFORML
+	PRINTFORMW ……はっや。
+	PRINTFORML ちょっと軽く감도を確かめるだけだったのだが、それだけで達してしまったようだ。
+	PRINTFORMW これが『本能の叫び　Ｔｙｐｅ－３０００』の力か……！
+	PRINTFORMW 「すごい反応だったニャリね！　さっきまでとは大違いニャリ！」
+	IF 条件달성 == 1
+		PRINTFORML 短い時間だったが、新しく分かったこともあった。
+		PRINTFORMW この薬は乳首やクリトリスなどの性感帯の감도を３０００倍にするが、それ以外の部位の감각は変わらないのだ。
+	ELSE
+		PRINTFORML あんまりに早すぎて試す暇は無かったが、おそらく감도が上がるのは性感帯だけだ。
+		PRINTFORMW 途中なんどか他の部位に触ったが、特に反応は見られなかった。
+	ENDIF
+	PRINTFORML 安全上の理由か、メリハリを付けて쾌감を際立たせるためか……
+	PRINTFORMW とにかく、不慮の事故でショック死なんてことが起きにくいのは消費者としては安心する。
+	PRINTFORML
+	PRINTFORMW 「はぁ……はぁ…………ふぅ……」
+	PRINTFORMW 「実験は、これで終わりでよろしいかしら？」
+	PRINTFORML
+	PRINTFORML 少し赤みがかった顔のローゼスが話しかけてくる。
+	PRINTFORMW その表情に先ほどまでの情欲に苦しむ様は見られず、いつも通りのクールフェイスが宿っている。
+	PRINTFORML
+	PRINTFORMW 「身体の方はもう大丈夫ニャリ？」
+	PRINTFORMW 「ええ、先ほどは醜態を晒しましたが、既に薬の効力は消失していますわ」
+	PRINTFORML
+	PRINTFORMW ……ふむ。
+	PRINTFORML 色々まとめることは多いが、とりあえずは휴식にしよう。
+	PRINTFORMW 水分補給のためにローゼスの口元にストローを差し出す。
+	PRINTFORML
+	PRINTFORMW 「先に拘束を解いてくださる？　……まあ、いただきますけども」
+	PRINTFORML
+	PRINTFORML ストローに口を付けるローゼスを尻目にニヤリーと会話する。
+	PRINTFORMW 何か気になる事とかあった？
+	PRINTFORMW 「汗がすごかったニャリね！　台の上がびちゃびちゃニャリ！」
+	PRINTFORMW 他には？
+	PRINTFORMW 「反応が全然違ったニャリ！　まるで全くの別人みたいだったニャリ！」
+	PRINTFORMW そうだね、他には何かある？
+	PRINTFORMW 「そうニャリねー……１０分もしなかったから少し物足りないニャリ！」
+	PRINTFORMW それだ。
+	PRINTFORMW 「ニャリ？」
+	PRINTFORML いくら何でも효과時間が短すぎる。
+	PRINTFORMW １０分なんてちょっとチンチン突っ込んだら一瞬で終わっちまうぜ！
+	PRINTFORMW 「そうニャリ？」
+	PRINTFORMW そうニャリ。
+	PRINTFORML ローゼスの体質によるものなのか、효과時間が元々その程度なのか……
+	PRINTFORMW ハッキリさせる必要があるとは思わないか？
+	PRINTFORMW 「たしかにそうニャリ！　気になるニャリ！」
+	PRINTFORMW というわけで、用意したのがこちらになります。
+	PRINTFORML
+	PRINTFORMW 「くっ……❤　まだ、続けるつもりですか……！」
+	PRINTFORML
+	PRINTFORMW ストローから口を離したローゼスは、先ほどと同じように頬を紅潮させ、息を荒くしている。
+	PRINTFORMW 「水に薬を混ぜたニャリね！」
+	PRINTFORML イエス！
+	PRINTFORMW それじゃあ二回目の実験、行ってみようか！
+
+	;変数リセット
+	VARSET 절정ポイント
+	
+	;ここからＢループ開始
+	CALL REPEAT_PRINTL(5)
+	$LOOP_B
+	PRINTL 【行動を選択してください】
+	PRINTL
+	PRINTL [0] - 耳に息を吹きかける
+	PRINTL [1] - 耳を舐める
+	PRINTL [2] - 胸を揉む
+	PRINTL [3] - 乳首を弄る
+	PRINTL [4] - クリトリスをくすぐる
+	PRINTL [5] - 질내をかき回す
+	PRINTL [6] - 下腹部を叩く
+	PRINTL
+	SIF 절정ポイント >= 10
+		PRINTL [10] - 절정させる
+	BINPUT
+	SIF RESULT != 10
+		前回選択コマンド = RESULT
+	PRINTL
+	;耳息
+	IF RESULT == 0
+		IF 절정ポイント >= 10 || 굴복ポイント >= 10
+			PRINTFORML 「は──あぁぁぁ……❤」
+			PRINTFORMW ローゼスは蕩けた顔をしている。
+			限界ポイント += 1
+			절정ポイント += 2
+		ELSE
+			PRINTFORML 「ん…………ふぅ……❤」
+			PRINTFORMW ローゼスは%CALLNAME:MASTER%を睨みつけている。
+			절정ポイント += 1
+		ENDIF
+	;耳舐
+	ELSEIF RESULT == 1
+		IF 굴복ポイント >= 10
+			PRINTFORML 「は──ぅぁ──❤」
+			PRINTFORMW ローゼスはビクビクと身体を震わせている。
+			限界ポイント += 1
+			절정ポイント += 2
+		ELSEIF 절정ポイント >= 10
+			PRINTFORML 「くぁ……はぁ……❤」
+			PRINTFORMW ローゼスは蕩けた顔をしている。
+			限界ポイント += 1
+			절정ポイント += 2
+		ELSE
+			PRINTFORML 「くっ……ふっ……❤」
+			PRINTFORMW ローゼスは歯を食いしばっている。
+			절정ポイント += 1
+		ENDIF
+	;胸揉
+	ELSEIF RESULT == 2
+		IF 굴복ポイント >= 10
+			PRINTFORML 「あ……ふ……はぁん……❤」
+			PRINTFORMW ローゼスは%CALLNAME:MASTER%の手に身をゆだねている。
+			限界ポイント += 1
+			절정ポイント += 4
+		ELSEIF 절정ポイント >= 10
+			PRINTFORML 「ふぅ……ふぅ……❤　あっ❤んんっ……❤」
+			PRINTFORMW ローゼスは쾌감から逃れるように身をよじっている。
+			限界ポイント += 1
+			절정ポイント += 4
+		ELSE
+			PRINTFORML 「あっ……ふんっ……❤」
+			PRINTFORMW ローゼスは唇を硬く結んでいる。
+			절정ポイント += 2
+		ENDIF
+		EXP:이벤트主:Ｂ경험 += 1
+	;ちくび
+	ELSEIF RESULT == 3
+		IF 굴복ポイント >= 10
+			PRINTFORML 「あっ❤　はぁっ❤あっ❤　ふぁぁ──❤」
+			PRINTFORMW ローゼスは与えられる쾌락に喜悦を浮かべている。
+			限界ポイント += 1
+			절정ポイント += 4
+		ELSEIF 절정ポイント >= 10
+			PRINTFORML 「ふっ……ふぁ……❤　んんん……❤」
+			PRINTFORMW ローゼスはもどかしそうに身を捩っている。
+			限界ポイント += 1
+			절정ポイント += 4
+		ELSE
+			PRINTFORML 「んああっ❤　はぁ……はぁ……❤」
+			PRINTFORMW ローゼスは顔を真っ赤にして息を切らしている。
+			절정ポイント += 2
+		ENDIF
+		EXP:이벤트主:Ｂ경험 += 1
+	;クリトリス
+	ELSEIF RESULT == 4
+		IF 굴복ポイント >= 10
+			PRINTFORML 「はぁっ❤　あっ❤　も、もっとぉ──❤❤❤」
+			PRINTFORMW ローゼスは%CALLNAME:MASTER%の手にクリトリスを擦り付けている。
+			限界ポイント += 1
+			절정ポイント += 5
+		ELSEIF 절정ポイント >= 10
+			PRINTFORML 「あああっ❤　やっ❤　やめっ──❤」
+			PRINTFORMW ローゼスはもどかしそうに身を捩っている。
+			限界ポイント += 1
+			절정ポイント += 4
+		ELSE
+			PRINTFORML 「んんんんっ❤　あっ❤　はあっ……❤はあっ……❤」
+			PRINTFORMW ローゼスの腰はぶるぶると震えている。
+			절정ポイント += 3
+		ENDIF
+		EXP:이벤트主:Ｃ경험 += 1
+	;膣
+	ELSEIF RESULT == 5
+		IF 굴복ポイント >= 10
+			PRINTFORML 「あっ❤　はっ❤　ははっ……❤」
+			PRINTFORMW ローゼスは指の動き合わせて腰を揺らしている。
+			限界ポイント += 1
+			절정ポイント += 5
+		ELSEIF 절정ポイント >= 10
+			PRINTFORML 「んっ❤　くっ……❤　ぅ──ぁ──❤」
+			PRINTFORMW ローゼスの질내は쾌락をねだるかのように、指に吸い付いている。
+			限界ポイント += 1
+			절정ポイント += 4
+		ELSE
+			PRINTFORML 「あっ……はぁ……んんっ……❤」
+			PRINTFORMW ローゼスの膣奥からは愛液が止めどなく流れ出ている。
+			절정ポイント += 2
+		ENDIF
+		EXP:이벤트主:Ｖ경험 += 1
+	;子宮
+	ELSEIF RESULT == 6
+		IF 굴복ポイント >= 10
+			PRINTFORML 「ふぅっ❤　ふぅっ❤　んんっ……❤❤❤」
+			PRINTFORMW ローゼスは息を荒げながらもじもじとしている。
+			限界ポイント += 1
+			절정ポイント += 4
+		ELSEIF 절정ポイント >= 10
+			PRINTFORML 「ふっ……❤　ふっ……❤」
+			PRINTFORMW ローゼスは呼吸を整えようとしている。
+			限界ポイント += 1
+			절정ポイント += 2
+		ELSE
+			PRINTFORML 「……一体、何なんですの……❤」
+			PRINTFORMW ローゼスは訝しげな顔をしている。
+			절정ポイント += 1
+		ENDIF
+		EXP:이벤트主:포르치오경험 += 1
+	ELSEIF RESULT == 10
+		절정횟수 ++
+		CALL IRAI_538_EXTASY(절정횟수,前回選択コマンド,限界ポイント,굴복ポイント,키스플래그,腹パン플래그)
+		IF RESULT == 1
+			키스플래그 ++
+		ELSEIF RESULT == 2
+			腹パン플래그 ++
+		ENDIF
+		절정ポイント = 0
+		SIF 限界ポイント >= 10
+			절정ポイント = 3
+		限界ポイント = 0
+	ENDIF
+
+	SIF 限界ポイント >= 10
+		굴복ポイント += 限界ポイント / 10
+
+	;절정횟수が３未満ならループ
+	IF 절정횟수 < 3
+		CALL REPEAT_PRINTL(3)
+		GOTO LOOP_B
+	ENDIF
+
+	PRINTFORML
+	PRINTFORMW 「……はぁ……はぁ……❤　熱……はぁぁぁ……❤」
+	PRINTFORML
+	PRINTFORML 薬を投与してすぐに、ローゼスに薬効が表れ始めた。
+	PRINTFORMW さすがに早すぎるので、これも報告しておこう。
+	PRINTFORMW さて、そろそろ調べることも無いだろうし、さっさと절정させて終わらせるか……
+	PRINTFORML
+	PRINTFORMW 仕上がったローゼスの身体に手を伸ばしたその時、扉を開いて依頼主が入ってきた。
+	PRINTFORMW 「ククク……進捗の方がいかがですかな？」
+	PRINTFORMW 「こんな感じニャリ！」
+	PRINTFORML ニヤリーが結果をまとめた紙を男に渡す。
+	PRINTFORMW 男はそれにさっと目を通すと、すぐに顔を上げた。
+	PRINTFORML 「なるほど、凡そは想定した通りですね。　ありがとうございます。
+	PRINTFORMW 　こちらは報酬となります。　どうぞお受け取りください」
+	CALL MONEY_GET(500000)
+	PRINTFORMW ……よし、一万円札５０枚分の重みだ。
+	PRINTFORML
+	PRINTFORMW 「引き続きお楽しみいただいても構いませんが……私、実はこういうものでして、一所に長居はしたくないのです」
+	PRINTFORML そう言って男はマスクをずらし、黄色いマーカーを見せてくる。
+	PRINTFORMW たしかに、そろそろセキュリティが飛んできてもおかしくない時間だ。
+	PRINTFORMW 「私は出口の方にいますので、出来るだけお早めにお戻りください」
+	PRINTFORML
+	PRINTFORMW 男はそう言って部屋を出ていった。
+	PRINTFORML こちらとしては大して悪事を働いているつもりは無いのだが、この場面を見られると誤解されそうだ。
+	PRINTFORMW そろそろ帰るか……
+	PRINTFORML
+	PRINTFORMW 「お、お待ちになってくださいませんこと！？」
+	PRINTFORML
+	PRINTFORML 帰り支度を始めようとすると、ローゼスが大声で止めてきた。
+	PRINTFORMW 何か引っかかることでもあったのだろうか？
+	PRINTFORMW 「あ……いえ、その……❤」
+	PRINTFORML 歯切れが悪い、言いづらいことだろうか。
+	PRINTFORMW 待っている時間がもったいないので荷物をまとめていると、絞り出すようにローゼスは再度口を開いた。
+	PRINTFORML
+	PRINTFORMW 「……절정、させてくださいまし……❤」
+	PRINTFORMW 「身体が、ずっと熱くて……疼いて……頭がおかしくなってしまいそうなんですの❤」
+	PRINTFORMW 「……お願い、します……❤」
+	PRINTFORMW 「%CALLNAME:MASTER%様の手で、わたくしを절정に導いてください……❤」
+	PRINTFORMW 「わたくしの疼きが治まるまで、%CALLNAME:MASTER%様が만족なさるまで、何度でも……❤」
+	PRINTFORML
+	PRINTFORMW ローゼスは縋るように、そう懇願してきた。
+	PRINTFORML さすがにここで見捨てるのも夢見が悪い。
+	PRINTFORMW 時間も無いし、さっさと終わらせよう。
+	PRINTFORML
+	PRINTFORMW まずは乳首を軽くくすぐる。　　　　　　　　　　　　　　　「ひゃうっ！？❤」
+	PRINTFORMW すごい감도だ。ぎゅっと捏ね潰す。　　　　　　　　　　　　「ふ゛っ❤ ん゛ん゛っ❤」
+	PRINTFORMW ＊伸ばして、押し込む。　　　　　　　　　　　　　　　　　「い゛っ❤　あ゛あ゛あっ❤」
+	PRINTFORMW ＊　繰り返し×５　　　　　　　　　　　　　　　　　　　　「ほっ❤　う゛っ❤　んあ゛あ゛あ゛っ❤」
+	PRINTFORMW このくらいでいいか、片手を하반신へ伸ばす。　　　　　　　「はっ……ひゅ……ぁ……❤」
+	PRINTFORMW クリトリスを指の腹で潰し、ねじ回す。　　　　　　　　　　「ふぁ あ゛っ！？❤」
+	PRINTFORMW 先端を軸に、根本まで震わせるように捏ねくり回していく。　「ほ゛ぉ゛っ❤　あっ❤ あ゛あ゛あ゛あ゛あ゛あ゛❤❤❤」
+	PRINTFORMW 少し疲れてきた。陰核を刺激しつつ질내に指を삽입する。　　「あっ❤　はっ❤　んああっ❤❤❤」
+	PRINTFORMW Ｇスポットを探り当て、陰核と共に指で激しく擦り上げる。　「────っ❤❤❤　────っっっ❤❤❤❤❤」
+	EXP:이벤트主:절정경험 += 20
+	PRINTFORMW
+	PRINTFORMW 一頻りイかせたところで指を引き抜く。　　　　　　　　　　「ふあ……っ❤❤❤」
+	EXP:이벤트主:절정경험 += 1
+	PRINTFORML 指が愛液でどろどろだ。　　　　　　　　　　　　　　　　　「はぁ……はぁ……❤」
+	EXP:이벤트主:절정경험 += 1
+	PRINTFORMW 床に落ちている貫頭衣で拭い去る。
+	EXP:이벤트主:절정경험 += 1
+	PRINTFORMW 「終わったニャリー？」
+	EXP:이벤트主:절정경험 += 1
+	PRINTFORML メモにローゼスのイキ様をスケッチしていたニヤリーに話しかけられる。
+	PRINTFORMW 実はまだまだ仕上げがあるんだな、これが。
+	EXP:이벤트主:절정경험 += 1
+
+	SETCOLOR C_YELLOW
+	PRINTFORML
+	PRINTFORML 　　＼　　　　　｜　　　　　／
+	PRINTFORML 　　　＼　　　　｜　　　　／
+	PRINTFORML 　　　　＼　　　｜　　　／
+	PRINTFORML 　　ーーー《記憶破壊銃》ーーー
+	PRINTFORML 　　　　／　　　｜　　　＼
+	PRINTFORML 　　　／　　　　｜　　　　＼
+	PRINTFORMW 　　／　　　　　｜　　　　　＼
+	RESETCOLOR
+	PRINTFORML
+	PRINTFORML こいつを使って数時間分の記憶を消しておくのさ！
+	PRINTFORMW これをネタに脅迫でもされたらどうしようも無いからね！
+	PRINTFORMW 「なるほどニャリ！」
+	PRINTFORMW というわけで発射！
+	PRINTL
+	CALL FLASH(3)
+	PRINTL
+	PRINTFORMW 「…………❤」
+	PRINTFORMW 「これでいいニャリ？」
+	PRINTFORML 寝てるしたぶん大丈夫っしょ！
+	PRINTFORMW 起きる前に帰ってオセロやろうぜ！
+	PRINTFORMW 「わかったニャリ！」
+	PRINTFORML 
+	PRINTFORMW 그 후、出口にいた男に別れを告げてそそくさと帰宅した。
+	PRINTFORML ローゼスに関してはあちらがもといた場所に返してくれるとのこと。
+	PRINTFORMW アフターサービスも充実したいいバイト先だったなあ……
+	
+	IF 依頼_見返し中 < 1
+		EXP:이벤트主:절정경험 += 4
+		EXP:이벤트主:약물경험 += 5
+		CALL CARD_EROTICS_END(이벤트主)
+	ENDIF
+
+	IF 依頼_見返し中 < 1
+		ABL:이벤트主:Ｖ감각 += 3
+		ABL:이벤트主:Ｃ감각 += 3
+		ABL:이벤트主:Ｂ감각 += 3
+		ABL:이벤트主:마조끼 += 5
+		TALENT:이벤트主:젖기쉬움정도 = 1
+		依頼_進行보존:538 = 1
+		;いつの日か、구상とかで使われる日が来ると信じて……
+		CFLAG:이벤트主:500 = 1
+	ENDIF
+	CALL EVENT_MOVE(MASTER,場所_寝室)
+	RETURN 2
+ENDIF
+
+
+@IRAI_538_EXTASY(절정횟수,前回選択コマンド,限界ポイント,굴복ポイント,키스플래그,腹パン플래그)
+#DIM DYNAMIC 이벤트主
+#DIM DYNAMIC 절정ポイント
+#DIM DYNAMIC 限界ポイント
+#DIM DYNAMIC 굴복ポイント
+#DIM DYNAMIC 前回選択コマンド
+#DIM DYNAMIC 절정횟수
+#DIM DYNAMIC 키스플래그
+#DIM DYNAMIC 腹パン플래그
+
+이벤트主 = NO_TO_CHARANUM(4023)
+
+PRINTFORMW ローゼスも限界のようだし、そろそろ절정させることにした。
+SELECTCASE 前回選択コマンド
+	;耳息
+	CASE 0
+		PRINTFORMW ふーっと、耳の中に息を吹き込む。
+		PRINTFORMW 「はあっ❤！？　えっ、あっ❤　あっ──❤」
+		PRINTFORMW ローゼスは驚いた顔を浮かべながら、高らかに嬌声を上げて절정した。
+		IF 依頼_見返し中 < 1
+			EXP:이벤트主:Ｅ경험 ++
+			EXP:이벤트主:Ｅ절정경험 ++
+		ENDIF
+	;耳舐
+	CASE 1
+		PRINTFORMW 耳に혀を這わせ、音を立てながら舐め回す。
+		PRINTFORMW 「あっ❤　ひぁっ❤　あああっ──❤」
+		PRINTFORMW ローゼスは耳の中を脳内ごと犯されるような감각に襲われながら절정した。
+		IF 依頼_見返し中 < 1
+			EXP:이벤트主:Ｅ경험 ++
+			EXP:이벤트主:Ｅ절정경험 ++
+		ENDIF
+	;胸揉
+	CASE 2
+		PRINTFORMW 少ない柔肉を掬い集め、押しつぶしながら伸ばすように引っ張る。
+		PRINTFORMW 「あっ❤　いっ❤　あああっ──❤」
+		PRINTFORMW ローゼスは身体を持ち上げられ、上体を逸らしながら절정した。
+		IF 依頼_見返し中 < 1
+			EXP:이벤트主:Ｂ경험 ++
+			EXP:이벤트主:Ｂ절정경험 ++
+		ENDIF
+	;ちくび
+	CASE 3
+		PRINTFORMW 硬く尖った乳頭を押し潰すくらいの力で摘まみあげ、そのまま軽く捻る。
+		PRINTFORMW 「い゛っ❤　はっ──❤　あっ……あっ❤あっ❤あっ──❤❤❤」
+		PRINTFORMW ローゼスは上体をガクガクと震わせながら절정した。
+		IF 依頼_見返し中 < 1
+			EXP:이벤트主:Ｂ경험 ++
+			EXP:이벤트主:Ｂ절정경험 ++
+		ENDIF
+	;クリトリス
+	CASE 4
+		PRINTFORMW 발기しているクリトリスに指を当て、ゴシゴシと擦り上げる。
+		PRINTFORMW 「あ゛っ❤　や゛っ──❤　あ゛あ゛あ゛あ゛あ゛あ゛っ❤❤❤」
+		PRINTFORMW ローゼスは腰を突き上げ、潮を吹きながら절정した。
+		IF 依頼_見返し中 < 1
+			EXP:이벤트主:Ｃ경험 ++
+			EXP:이벤트主:Ｃ절정경험 ++
+		ENDIF
+	;질내
+	CASE 5
+		PRINTFORMW 질내の指を激しく蠢かせ、Ｇスポットを指の腹で擦り上げた。
+		PRINTFORMW 「あっ❤　そこっ❤　ああああ──っ❤❤❤」
+		PRINTFORMW ローゼスは腰をガクガクと痙攣させながら、潮を吹いて절정した。
+		IF 依頼_見返し中 < 1
+			EXP:이벤트主:Ｖ경험 ++
+			EXP:이벤트主:Ｖ절정경험 ++
+		ENDIF
+	;子宮
+	CASE 6
+		PRINTFORMW 下腹部に手を当て、子宮口付近をぎゅうっと押し込む。
+		PRINTFORMW 「あっ……うあっ❤　なっ❤はっ❤　イ──っ❤」
+		PRINTFORMW ローゼスは未知の쾌감に戸惑いつつ절정した。
+		IF 依頼_見返し中 < 1
+			EXP:이벤트主:Ｖ경험 ++
+			EXP:이벤트主:Ｖ절정경험 ++
+		ENDIF
+ENDSELECT
+굴복ポイント ++
+PRINTL
+IF 限界ポイント >= 10
+	IF 굴복ポイント >= 10
+		PRINTFORML 「は……あは……えへっ……❤」
+		PRINTFORMW ローゼスは散々焦らされた解放感からか、だらしのない笑みを浮かべている。
+	ELSE
+		PRINTFORML 「はぁ……はぁ……❤　うっ…………はぁ……❤」
+		PRINTFORMW ローゼスは齎された쾌락の余韻に身体をビクつかせている。
+	ENDIF
+	PRINTL
+ENDIF
+IF 절정횟수 == 1
+	PRINTFORML 結構どばどば入れていたからか、薬の量が残り少ない。
+	PRINTFORMW 一回か二回か、それくらいで使い切ることだろう。
+	PRINTFORMW とりあえずコップに盛り付けたので投与したいが……
+	IF 限界ポイント >= 10
+		PRINTFORMW 「う……く……❤」
+		PRINTFORML どうやら、未だ절정の余韻から抜け出せていないようだ。
+		PRINTFORMW さて、どうしようか……
+		PRINTL
+		PRINTL [0] - 口移しで飲ませる
+		PRINTL [1] - 殴る
+		BINPUT
+		PRINTL
+		IF RESULT == 0
+			PRINTFORMW 「はぁ……んむっ！？　んんっ……ん……」
+			PRINTFORMW 媚薬入り天然水を口に含み、ローゼスに口移しで飲ませる。
+			PRINTFORMW ローゼスは突然唇を奪われたことに驚き、口を閉じようとするが、息をつく間を与えずに口内に液体を流し込む。
+			PRINTFORMW そのままでは吐き出してしまうかもしれないので、顎を持ち上げ、口内を혀で嘗め回す。
+			PRINTFORMW 初めはガチャガチャと저항していたものの、前の媚薬が残っていたのか、新しい媚薬が効き始めたのか、静かになっていった。
+			PRINTFORML
+			PRINTFORMW 少しして、ローゼスの顔がうっとりとし始めたのを確認して顔を離す。
+			PRINTFORML 「あっ……❤」と物欲しそうな声が漏れるが、続きをするつもりは無い。
+			PRINTFORMW すぐに実験を再開しよう。
+			IF 依頼_見返し中 < 1
+				EXP:이벤트主:키스경험 += 5
+				EXP:MASTER:키스경험 += 5
+				IF TALENT:이벤트主:키스미경험
+					TALENT:이벤트主:키스미경험 = 0
+					CFLAG:이벤트主:키스상실상대 = MASTER
+					CFLAG:이벤트主:첫키스시츄 = 6
+					CFLAG:이벤트主:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+				IF TALENT:MASTER:키스미경험
+					TALENT:MASTER:키스미경험 = 0
+					CFLAG:MASTER:키스상실상대 = 이벤트主
+					CFLAG:MASTER:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+			ENDIF
+			굴복ポイント ++
+			RETURN 1
+		ELSEIF RESULT == 1
+			PRINTFORMW 「はぁ……かはっ！？　むぐ──」
+			PRINTFORMW ローゼスの腹を殴りつけ、口を開いた所で顎を持ち上げて水を流し込む。
+			PRINTFORML 咳き込み、水を吐き出そうとするローゼスに飲み干すことを強要させる。
+			PRINTFORMW ローゼスは苦しそうに咽せていたが、このままでは溺死するとでも思ったのか、細い喉を鳴らしながら飲み干していく。
+			PRINTFORML
+			PRINTFORML 少しすると、再びローゼスの吐息に熱が混じり始める。
+			PRINTFORMW ローゼスは睨みつけてくるが、実験を再開しよう。
+			RETURN 2
+		ENDIF
+	ELSE
+		PRINTFORMW 「ここまで辱められて、大人しく言う事を聞くと思いますか？」
+		PRINTFORML どうやら、飲んではくれないようだ。
+		PRINTFORMW さて、どうしようか……
+		PRINTL
+		PRINTL [0] - 口移しで飲ませる
+		PRINTL [1] - 殴る
+		BINPUT
+		PRINTL
+		IF RESULT == 0
+			PRINTFORMW 「何を……んむっ！？」
+			PRINTFORMW 媚薬入り天然水を口に含み、ローゼスに口移しで飲ませる。
+			PRINTFORMW ローゼスは突然唇を奪われたことに驚き、口を閉じようとするが、息をつく間を与えずに口内に液体を流し込む。
+			PRINTFORMW そのままでは吐き出してしまうかもしれないので、顎を持ち上げ、口内を혀で嘗め回す。
+			PRINTFORMW 初めはガチャガチャと저항していたものの、前の媚薬が残っていたのか、新しい媚薬が効き始めたのか、静かになっていった。
+			PRINTFORML
+			PRINTFORMW 少しして、ローゼスの顔がうっとりとし始めたのを確認して顔を離す。
+			PRINTFORML 「あっ……❤」と物欲しそうな声が漏れるが、続きをするつもりは無い。
+			PRINTFORMW すぐに実験を再開しよう。
+			IF 依頼_見返し中 < 1
+				EXP:이벤트主:키스경험 += 5
+				EXP:MASTER:키스경험 += 5
+				IF TALENT:이벤트主:키스미경험
+					TALENT:이벤트主:키스미경험 = 0
+					CFLAG:이벤트主:키스상실상대 = MASTER
+					CFLAG:이벤트主:첫키스시츄 = 6
+					CFLAG:이벤트主:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+				IF TALENT:MASTER:키스미경험
+					TALENT:MASTER:키스미경험 = 0
+					CFLAG:MASTER:키스상실상대 = 이벤트主
+					CFLAG:MASTER:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+			ENDIF
+			굴복ポイント ++
+			RETURN 1
+		ELSEIF RESULT == 1
+			PRINTFORMW 「かはっ！？　むぐ──」
+			PRINTFORMW ローゼスの腹を殴りつけ、口を開いた所で顎を持ち上げて水を流し込む。
+			PRINTFORML 咳き込み、水を吐き出そうとするローゼスに飲み干すことを強要させる。
+			PRINTFORMW ローゼスは苦しそうに咽ていたが、このままでは溺死するとでも思ったのか、細い喉を鳴らしながら飲み干していく。
+			PRINTFORML
+			PRINTFORML 少しすると、再びローゼスの吐息に熱が混じり始める。
+			PRINTFORMW ローゼスは睨みつけてくるが、実験を再開しよう。
+			RETURN 2
+		ENDIF
+	ENDIF
+ELSEIF 절정횟수 == 2
+	PRINTFORML 薬の量的にはこれが最後か……
+	PRINTFORMW 悔いの残らないよう、全力で実験しよう！
+	PRINTFORMW とりあえずコップに盛り付けたので投与したいが……
+	IF 限界ポイント >= 10
+		IF 굴복ポイント >= 10
+			PRINTFORMW 「は……へ……❤」
+		ELSE
+			PRINTFORMW 「う……く……❤」
+		ENDIF
+		PRINTFORML どうやら、未だ절정の余韻から抜け出せていないようだ。
+		PRINTFORMW さて、どうしようか……
+		PRINTL
+		PRINTL [0] - 口移しで飲ませる
+		PRINTL [1] - 殴る
+		BINPUT
+		PRINTL
+		IF RESULT == 0
+			IF 키스플래그 == 1 || 굴복ポイント >= 10
+				PRINTFORMW 「はぁ……んむっ❤　んっ……ん……❤」
+			ELSE
+				PRINTFORMW 「はぁ……んむっ！？　んんっ……ん……」
+			ENDIF
+			PRINTFORMW 媚薬入り天然水を口に含み、ローゼスに口移しで飲ませる。
+			IF 키스플래그 == 1 || 굴복ポイント >= 10
+				PRINTFORMW ローゼスは少し驚く素振りを見せたものの、すぐに接吻を受け入れ、喉を鳴らし始めた。
+				PRINTFORMW 저항する様子はまるで無く、こちらの唇にちゅうちゅうと吸い付いてくる。
+			ELSE
+				PRINTFORMW ローゼスは突然唇を奪われたことに驚き、口を閉じようとするが、息をつく間を与えずに口内に液体を流し込む。
+				PRINTFORMW そのままでは吐き出してしまうかもしれないので、顎を持ち上げ、口内を혀で嘗め回す。
+				PRINTFORMW 初めはガチャガチャと저항していたものの、前の媚薬が残っていたのか、新しい媚薬が効き始めたのか、静かになっていった。
+			ENDIF
+			PRINTFORML
+			PRINTFORMW 少しして、ローゼスの顔がうっとりとし始めたのを確認して顔を離す。
+			PRINTFORML 「あっ……❤」と物欲しそうな声が漏れるが、続きをするつもりは無い。
+			PRINTFORMW すぐに実験を再開しよう。
+			IF 依頼_見返し中 < 1
+				EXP:이벤트主:키스경험 += 5
+				EXP:MASTER:키스경험 += 5
+				IF TALENT:이벤트主:키스미경험
+					TALENT:이벤트主:키스미경험 = 0
+					CFLAG:이벤트主:키스상실상대 = MASTER
+					CFLAG:이벤트主:첫키스시츄 = 6
+					CFLAG:이벤트主:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+				IF TALENT:MASTER:키스미경험
+					TALENT:MASTER:키스미경험 = 0
+					CFLAG:MASTER:키스상실상대 = 이벤트主
+					CFLAG:MASTER:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+			ENDIF
+			RETURN 1
+		ELSEIF RESULT == 1
+			IF 腹パン플래그 == 1 || 굴복ポイント >= 10
+				PRINTFORMW 「ぁ……❤　かはっ！　むぐ──❤」
+				PRINTFORMW 握られた拳に声を漏らしたローゼスの腹を殴りつけ、開いた口に水を流し込む。
+				PRINTFORML 軽く咽つつも、ローゼスはごくごくと水を飲み込み、ふぅと息を吐いた。
+				PRINTFORML
+				PRINTFORMW 少しすると、再びローゼスの吐息に熱が混じり始める。
+				PRINTFORML ローゼスは期待するような目でこちらを見ている。
+				PRINTFORMW 実験を再開しよう。
+			ELSE
+				PRINTFORMW 「はぁ……かはっ！？　むぐ──」
+				PRINTFORMW ローゼスの腹を殴りつけ、口を開いた所で顎を持ち上げて水を流し込む。
+				PRINTFORML 咳き込み、水を吐き出そうとするローゼスに飲み干すことを強要させる。
+				PRINTFORMW ローゼスは苦しそうに咽ていたが、このままでは溺死するとでも思ったのか、細い喉を鳴らしながら飲み干していく。
+				PRINTFORML
+				PRINTFORML 少しすると、再びローゼスの吐息に熱が混じり始める。
+				PRINTFORMW ローゼスは睨みつけてくるが、実験を再開しよう。
+			ENDIF
+			RETURN 2
+		ENDIF
+		굴복ポイント ++
+	ELSE
+		PRINTFORMW 「ここまで辱められて、大人しく言う事を聞くと思いますか？」
+		PRINTFORML どうやら、飲んではくれないようだ。
+		PRINTFORMW さて、どうしようか……
+		PRINTL
+		PRINTL [0] - 口移しで飲ませる
+		PRINTL [1] - 殴る
+		BINPUT
+		PRINTL
+		IF RESULT == 0
+			PRINTFORMW 「何を……んむっ！？」
+			PRINTFORMW 媚薬入り天然水を口に含み、ローゼスに口移しで飲ませる。
+			PRINTFORMW ローゼスは突然唇を奪われたことに驚き、口を閉じようとするが、息をつく間を与えずに口内に液体を流し込む。
+			PRINTFORMW そのままでは吐き出してしまうかもしれないので、顎を持ち上げ、口内を혀で嘗め回す。
+			PRINTFORMW 初めはガチャガチャと저항していたものの、前の媚薬が残っていたのか、新しい媚薬が効き始めたのか、静かになっていった。
+			PRINTFORML
+			PRINTFORMW 少しして、ローゼスの顔がうっとりとし始めたのを確認して顔を離す。
+			PRINTFORML 「あっ……❤」と物欲しそうな声が漏れるが、続きをするつもりは無い。
+			PRINTFORMW すぐに実験を再開しよう。
+			IF 依頼_見返し中 < 1
+				EXP:이벤트主:키스경험 += 5
+				EXP:MASTER:키스경험 += 5
+				IF TALENT:이벤트主:키스미경험
+					TALENT:이벤트主:키스미경험 = 0
+					CFLAG:이벤트主:키스상실상대 = MASTER
+					CFLAG:이벤트主:첫키스시츄 = 6
+					CFLAG:이벤트主:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+				IF TALENT:MASTER:키스미경험
+					TALENT:MASTER:키스미경험 = 0
+					CFLAG:MASTER:키스상실상대 = 이벤트主
+					CFLAG:MASTER:키스상실장소 = 1	;唇、後で調べる
+				ENDIF
+			ENDIF
+			굴복ポイント ++
+			RETURN 1
+		ELSEIF RESULT == 1
+			PRINTFORMW 「かはっ！？　むぐ──」
+			PRINTFORMW ローゼスの腹を殴りつけ、口を開いた所で顎を持ち上げて水を流し込む。
+			PRINTFORML 咳き込み、水を吐き出そうとするローゼスに飲み干すことを強要させる。
+			PRINTFORMW ローゼスは苦しそうに咽せていたが、このままでは溺死するとでも思ったのか、細い喉を鳴らしながら飲み干していく。
+			PRINTFORML
+			PRINTFORML 少しすると、再びローゼスの吐息に熱が混じり始める。
+			PRINTFORMW ローゼスは睨みつけてくるが、実験を再開しよう。
+			RETURN 2
+		ENDIF
+	ENDIF
+ELSEIF 절정횟수 == 3
+	PRINTFORML ポタポタと数滴の薬がコップに落ちていく。
+	PRINTFORMW 薬も無くなったことだし、そろそろお開きにするか。
+	PRINTFORML
+	IF 굴복ポイント >= 10
+		PRINTFORMW 「はぁ……はぁ……❤　そん……はぁ……❤」
+		PRINTFORML
+		PRINTFORMW なんだかんだローゼスも楽しんでいたのか、名残惜しそうな雰囲気を出している。
+	ELSE
+		PRINTFORMW 「はぁ……はぁ……❤　ようやく……ですか……❤」
+		PRINTFORML
+		PRINTFORMW ようやく実験が終わると分かってか、ローゼスは安堵の表情を浮かべている。
+	ENDIF
+	PRINTFORMW …………ん？
+	PRINTFORMW 「どうかしたニャリ？」
+	PRINTFORML 薬の成分と思わしき物が容器の底に沈殿してる。
+	PRINTFORMW 勿体ないし、全部使い切るか。
+	PRINTFORM 「えっ……
+	SIF 굴복ポイント >= 10
+		PRINTFORM ❤
+	PRINTFORMW 」
+	PRINTFORMW ニヤリーに容器の底に沈殿することがあることを書かせつつ、水を入れた容器をシャカシャカと振る。
+	PRINTFORML ……よし、いい感じに溶けてきた。
+	PRINTFORMW 薬の溶けた液体をコップに移し替える。
+	PRINTFORMW 「う……❤」
+	PRINTFORML うわ、すっげえ色。
+	PRINTFORMW さっきより明らかに濃いし、人間に飲ませたら死ぬんじゃないだろうか？
+	PRINTFORML ウェディングと同じゼニスなら大丈夫だろうし、そのままでもいいか。
+	PRINTFORMW とりあえず用意は出来たので投与したいが……
+	PRINTFORML
+	IF 굴복ポイント >= 10
+		PRINTFORMW 「……❤」
+		PRINTFORML
+		PRINTFORML ローゼスはごくりと喉を鳴らしてコップを見ている。
+		PRINTFORMW どうやら手荒な真似をせずに済みそうだ。
+		PRINTFORML
+		PRINTFORML 口元にコップを持っていき、ゆっくりと傾けていく。
+		PRINTFORMW ローゼスは静かに喉を動かし、内容物を飲み干した。
+	ELSE
+		PRINTFORMW 「い、いや……！」
+		PRINTFORML
+		PRINTFORML どうやら乗り気ではないらしい。
+		PRINTFORMW さて、どうしようか……
+		PRINTL
+		PRINTL [0] - 口移しで飲ませる
+		PRINTL [1] - 殴る
+		BINPUT
+		PRINTL
+		IF RESULT == 0
+			IF 키스플래그 >= 1
+				PRINTFORMW 「あっ……❤　んむっ❤」
+			ELSE
+				PRINTFORMW 「何を……んむっ！？」
+			ENDIF
+			PRINTFORMW 媚薬入り天然水を口に含み、ローゼスに口移しで飲ませる。
+			PRINTFORMW 初めは弱々しくも저항していたローゼスだったが、媚薬が혀に触れるとうっとりとした顔つきになっていった。
+		ELSEIF RESULT == 1
+			IF 腹パン플래그 >= 1
+				PRINTFORMW 「ぁ……❤　かはっ！　むぐ──❤」
+			ELSE
+				PRINTFORMW 「かはっ！？　むぐ──」
+			ENDIF
+			PRINTFORMW ローゼスの腹を殴りつけ、開いた口に薬を流し込む。
+			PRINTFORMW 零れないように顎を持ち上げてあげると、苦しそうに咽ながら飲み干していった。
+		ENDIF
+	ENDIF
+ENDIF

@@ -1,0 +1,183 @@
+﻿@CARDNAME_99070,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 당황하게하는 꿀구멍
+	CASE "略称"
+		RESULTS = 당황 꿀구멍
+	CASE "カテゴリ"
+		RESULTS:0 = 꿀구멍
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 혹란마
+ENDSELECT
+
+
+@CARD_99070(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_99070(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느쪽인가 １개밖에 사용할 수 없다。
+PRINTL 자신 필드에 몬스터가 존재하지 않거나、"혹란마" 몬스터만 존재하는 경우、이 카드의 발동은 패에서도 할 수 있다。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：덱에서 "혹란마" 몬스터 １장을 특수 소환한다。이 효과로 특수 소환한 몬스터의 공격력 / 수비력은 ０이 된다。
+CALLFORM CARD_ABLE(2,묘지起動,フリー誘発)
+PRINTL ②：묘지의 이 카드를 제외하고 발동할 수 있다。
+PRINTL 자신 필드의 "혹란마" 몬스터 １장을 골라 패로 되돌리고、묘지의 "혹란마" 몬스터 １장을 골라 특수 소환한다。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_99070(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 效果限制达成
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件达成
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,99070)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	IF 종류 == 손패起動
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 혹란마
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			条件达成 ++
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			条件达成 ++
+		SIF 条件达成 == 0
+			RETURN 0
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件固カテゴリ = 혹란마
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			RETURN 0
+
+	ELSEIF 종류 == 마함起動
+		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			RETURN 0
+	ENDIF
+
+	SIF 발동済_1(듀얼리스트,99070)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,99070)
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1		
+
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF 발동済_1(듀얼리스트,99070)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,99070)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件カテゴリ = 혹란마
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件达成++
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 혹란마
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		条件达成++
+
+	SIF 条件达成 < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_99070(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 设定レベル
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99070,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 혹란마
+		효과条件종류 = モン全般
+		효과추가종류 = 190
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99070,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件표시 = 表側표시
+		효과条件カテゴリ = 혹란마
+		효과条件行先플래그 = 손패行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 혹란마
+			효과条件종류 = モン全般
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+
+
+
+
+

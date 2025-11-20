@@ -36,35 +36,43 @@ RETURN 0
 #DIM DYNAMIC 종류
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
-CALL CARD_ABLE(1,마함起動,손패起動)
-PRINTL ①：자신의 ＥＸ덱에서 Ｌ몬스터 １장을 묘지로 보낸다。
-PRINTL （이 효과로 묘지로 보내진 카드의 효과는 유발하지 않는다。）
-PRINTL 그 후、자신의 ＥＸ덱의 "E.R.A" 몬스터 １장을 복제하고、상대의 ＥＸ덱에 잠복 시킬 수 있다。
-
-CALL CARD_ABLE(2,묘지起動)
-PRINTL ②：자신 메인 페이즈에 묘지의 이 카드를 제외하고 발동할 수 있다。
 SETCOLOR C_D_GRAY
 PRINTL （이 효과의 발동과 효과처리는、상대 플레이어가 조교 가능한 캐릭터인 경우에만 실행된다。）
 RESETCOLOR
-
-
-PRINTL 상대 플레이어의 ＥＸ덱을 확인한다。
+CALL CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：산대 플레이어의 ＥＸ덱을 확인한다。
 PRINTL 상대 ＥＸ덱에 "E.R.A" 몬스터가 존재하는 경우、상대의 ＥＸ덱 몬스터 １장을 묘지로 보낸다。
 PRINTL 그 후、상대 플레이어의 덱을 확인한다。
+
 PRINTL 상대 덱에 "E.R.A" 카드가 존재하는 경우、상대 덱의 카드 １장을 묘지로 보낸다。
+
 PRINTL 그 후、상대 플레이어의 패를 확인한다。
 PRINTL 상대의 패에 "E.R.A" 카드가 존재하는 경우、이하의 효과에서 １개를 고라서 적용할 수 있다。
 PRINTL 　●상대의 패를 １장 고르고 묘지로 보낸다。
-PRINTL 　●상대 플레이어는 대전상대에게 성봉사를 한다。그 후、상대 플레이어는 ５장 드로우한다。
+PRINTL 　●상대 플레이어는 상대에게 성봉사를 한다。그 후、상대 플레이어는 ５장 드로우한다。
+
+CALL CARD_ABLE(2,묘지起動)
+PRINTL ②：자신 메인 페이즈에 묘지의 이 카드를 제외하고 발동할 수 있다。
+PRINTL 자신의 ＥＸ덱에서 L몬스터 １장을 묘지로 보낸다。
+PRINTL （이 효과로 묘지로 보내진 카드의 효과는 유발하지 않는다.）
+PRINTL 그 후、자신의 ＥＸ덱의 "E.R.A" 몬스터 １장을 복제하여、상대의 ＥＸ덱에 잠복시킬 수 있다。
+
+SETCOLOR C_YELLOW
+PRINTL 이 효과로 상대의 ＥＸ덱에 몬스터를 잠복시킨 경우、이 듀얼 중、자신 필드의 L몬스터는 효과 무효가 된다。
+RESETCOLOR
+
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDCAN_79520(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79520)
 SIF RESULT == 1
@@ -77,11 +85,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	CALL FULLRESET
-	효과範囲EX덱 = 1
-	효과条件종류 = 링크
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트,1)
+	SIF RESULT == -1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 묘지起動
@@ -96,20 +101,27 @@ ELSEIF 종류 == 묘지起動
 	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트,1)
 	SIF RESULT == -1
 		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 링크
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
 	RETURN 1
-	
+ELSEIF 종류 == 永紋章起動
+	RETURN 1
 ENDIF
 
 
 
 @CARDEFFECT_79520(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 参照カードID
-#DIMS DYNAMIC 対面者
 #DIM DYNAMIC 조교대상 = -1
 #DIMS DYNAMIC 조교대상名
 
@@ -117,46 +129,8 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79520,1)
-	IF RESULT == 0
-		;通常마법汎用処理
-		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		
-		CALL FULLRESET
-		효과範囲EX덱 = 1
-		효과条件종류 = 링크
-		효과条件行先플래그 = 完全묘지行き
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			;EX덱への潜伏処理
-			SETCOLOR C_YELLOW
-			PRINTL 상대의 EX덱에 잠복시킬 "E.R.A" 몬스터를 선택해주십시오。
-			RESETCOLOR
-			CALL FULLRESET
-			효과範囲EX덱 = 1
-			효과条件カテゴリ = E.R.A
-			효과条件任意 = 1
-			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-			参照カードID = RESULT:99
-			IF RESULT != 9999
-				;選択した場合
-				CALL CARD_GENERATE_DECK_EX(対面者,参照カードID)
-				
-				CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
-				IF RESULT > -1
-					조교대상 = RESULT
-					TRYCALLFORM CARDNAME_{NO:조교대상}("名前")
-					조교대상名 = %RESULTS%
-					SIF 조교대상名 == ""
-						RETURN 0
-					PRINTFORMW %CALLNAME:조교대상%는、E.R.A 몬스터가 EX 덱에 잠복한것을 눈치 못한듯 하다・・・
-				ENDIF
-			ENDIF
-		ENDIF
-	ENDIF
-ELSEIF 종류 == 묘지起動
 	;カード발동確認
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79520,2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79520,1)
 	IF RESULT == 0
 		;通常마법汎用処理
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
@@ -182,7 +156,7 @@ ELSEIF 종류 == 묘지起動
 			PRINTFORML 비합법적인 "E.R.A" 카드가 들어있지 않은지 듀얼 디스크의 체크 기능을 작동시키자
 			PRINTFORML 듀얼 디스크는 붉은 점멸과 함께 진정한 듀얼리스트라면 사용해서는 안 되는 카드의 존재를 알렸다!
 			PRINTFORML 기억에 없는지、%CALLNAME:조교대상%은 깜짝 놀라 눈을 크게 뜨고 자신의 EX덱 리스트를 열었다。
-			PRINTFORMW 그 카드 목록에는 분명 '존재하는' 것이겠지…도움을 청하듯 핏기가 가신 표정으로 %CALLNAME:조교대상%는 이쪽을 보았다。
+			PRINTFORMW 그 카드 목록에는 『분명 존재하는』 것이겠지…도움을 청하듯 핏기가 가신 표정으로 %CALLNAME:조교대상%는 이쪽을 보았다。
 			PRINTFORML ・・・안타깝지만, 카드의 효과대로 처리를 진행하도록 하지。
 			PRINTFORMW %CALLNAME:조교대상%의 EX덱을 잡고, 간단하게 듀얼 디스크에서 꺼냈다。
 			
@@ -196,7 +170,7 @@ ELSEIF 종류 == 묘지起動
 				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 				IF RESULT
 					PRINTFORML %CALLNAME:조교대상%가 EX덱을 다시 디스크에 장착하던 도중, 불현듯 그녀의 덱도 눈에 들어왔다。
-					PRINTFORMW ・・・설마 여기에도 불법 'E.R.A' 카드가 들어있지는 않을까？
+					PRINTFORMW ・・・설마 여기에도 불법 "E.R.A" 카드가 들어있지는 않을까？
 					PRINTFORML 삐익！　삐익！　방금 전보다 더 붉게 램프가 깜빡임과 동시에 디스크에서 경고음이 울렸다！
 					PRINTFORMW 고개를 떨구고 있던 %CALLNAME:조교대상%는, 그 자극적인 소리에 움찔! 하고 몸을 떨며 경악스런 표정과 함께 고개를 들었다.
 					PRINTFORML 그럴... 그럴 리가 없다. 그렇게 스스로에게 되뇌이면서,
@@ -282,6 +256,69 @@ ELSEIF 종류 == 묘지起動
 						ENDIF
 					ENDIF
 				ENDIF
+			ENDIF
+		ELSE
+			PRINTFORMW ・
+			PRINTFORMW ・・
+			PRINTFORMW ・・・？
+			PRINTFORMW %CALLNAME:조교대상%은, 의아한 표정으로 이쪽의 모습을 살피고 있다.
+			PRINTFORMW 경보가 울리지 않는다는 것은, 상대의 EX 덱에는 비합법적인 "E.R.A" 카드가 들어있지 않았던 모양이다.
+			PRINTFORMW (예상이 빗나가 버렸나…… 뭐, 됐어.)
+			PRINTFORMW %CALLNAME:MASTER%는 의아해하는 %CALLNAME:조교대상%에게, 의미 없는 카드를 써버렸다고 적당히 얼버무리고는 듀얼을 계속했다.
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 永紋章起動
+	CALL FULLRESET
+	효과条件종류 = 링크
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"無効")
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79520,2)
+	IF RESULT == 0
+		;通常마법汎用処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		
+		CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
+		IF RESULT > -1
+			조교대상 = RESULT
+			TRYCALLFORM CARDNAME_{NO:조교대상}("名前")
+			조교대상名 = %RESULTS%
+			SIF 조교대상名 == ""
+				RETURN 0
+		ELSE
+			RETURN 0
+		ENDIF
+		
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종류 = 링크
+		효과条件行先플래그 = 完全묘지行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			;EX덱への潜伏処理
+			SETCOLOR C_YELLOW
+			PRINTL 상대의 EX 덱에 잠복시킬 "E.R.A" 몬스터를 선택해 주십시오.
+			PRINTL （잠복시킬 필요가 없는 경우는 [9999] - 돌아가기 를 선택해 주십시오.）
+			RESETCOLOR
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件カテゴリ = E.R.A
+			효과条件任意 = 1
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			参照カードID = RESULT:99
+			IF RESULT != 9999
+				;選択した場合
+				CALL CARD_GENERATE_DECK_EX(対面者,参照カードID)
+				
+				CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
+				IF RESULT > -1
+					조교대상 = RESULT
+					TRYCALLFORM CARDNAME_{NO:조교대상}("名前")
+					조교대상名 = %RESULTS%
+					SIF 조교대상名 == ""
+						RETURN 0
+					PRINTFORMW %CALLNAME:조교대상%은, E.R.A 몬스터가 EX 덱에 잠복한 것을 눈치채지 못한 모양이다・・・
+				ENDIF
+				CALL CARD_RESERV(듀얼리스트,79520,永紋章予約)
 			ENDIF
 		ENDIF
 	ENDIF
