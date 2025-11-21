@@ -1,0 +1,122 @@
+﻿@CARDNAME_22016,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 고블린 좀비
+	CASE "略称"
+		RESULTS = 고블린 좀비
+	CASE "カテゴリ"
+		RESULTS:0 = 고블린
+ENDSELECT
+
+
+@CARD_22016(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1100
+	CASE "守備力"
+		RETURN 1050
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251118
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_22016(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(1,ライフ変強制誘発)
+PRINTL ①：이 카드가 상대에게 전투 데미지를 준 경우에 발동한다。
+PRINTL 서로의 덱 가장 위의 카드를 묘지로 보낸다。
+CALLFORM CARD_ABLE(2,戦破壊→묘지)
+PRINTL ②：이 카드가 필드에서 묘지로 보내진 경우에 발동할 수 있다。
+PRINTL 덱에서 수비력 1200 이하의 언데드족 몬스터 1장을 패에 넣는다。
+
+@CARDCAN_22016(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,22016)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == ライフ変強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ダメージ受者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ダメージ종류,"戦闘", "直接戦闘")
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_戦闘カード") != 場所
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류,"リリース","破壊","戦闘破壊")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 언데드족
+	효과条件守備力 = 1200
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_22016(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 戦闘カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == ライフ変強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22016)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",1)
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",1,0,1)
+	ENDIF
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22016)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종족 = 언데드족
+		효과条件守備力 = 1200
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

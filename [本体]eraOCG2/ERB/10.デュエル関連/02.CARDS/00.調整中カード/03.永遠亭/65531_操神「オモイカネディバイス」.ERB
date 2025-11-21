@@ -1,0 +1,137 @@
+﻿@CARDNAME_65531,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 오모이카네 디바이스
+	CASE "略称"
+		RESULTS = 오모이카네
+	CASE "カテゴリ"
+		RESULTS:0 = 영원정
+	CASE "出典作品"
+		RESULTS:0 = 동방 Project
+ENDSELECT
+
+
+@CARD_65531(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 지속마법
+	CASE "추가日"
+		RETURN 251120
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_65531(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①：필드의 이 카드 이외의 "영원정"인 카드가 존재하는 경우에 발동할 수 있다。
+PRINTL 필드에 존재하는 다른 지속인 "영원정" 카드를 １장 골라、
+PRINTL 그 카드와 이 카드를 레벨８ / 빛속성 / 미확인족 / 공수０인 몬스터로서 특수 소환한다。
+PRINTL （지속인 카드는 지속 마법 / 지속 함정 / P몬스터를 가리킨다）
+
+@CARDCAN_65531(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,65531)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,65531)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 영원정
+	효과条件종류:0 = 지속마법
+	효과条件종류:1 = 지속함정
+	효과条件표시 = 10
+	효과条件他所 = 1
+	효과条件소환可 = 3
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_65531(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 속성数
+#DIMS DYNAMIC 설정カテゴリ
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65531,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과추가종류:0 = 効追永星 + 8
+		효과추가종류:1 = 効追永種 + 미확인족
+		효과추가종류:2 = 効追永属 + 빛속성
+		CALL CARD_SP_SUMMON(듀얼리스트,"마함",場所)
+
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 영원정
+		효과条件종류 = 지속全般
+		효과条件표시 = 10
+		효과条件他所 = 1
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_SELECT(듀얼리스트,RESULT)
+			選択カード = RESULT
+			CALL FULLRESET
+			효과추가종류:0 = 効追永星 + 8
+			효과추가종류:1 = 効追永種 + 미확인족
+			효과추가종류:2 = 効追永属 + 빛속성
+			CALL CARD_SP_SUMMON(듀얼리스트,"마함",選択カード)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65531)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ENDIF
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+
+
+

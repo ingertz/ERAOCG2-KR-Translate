@@ -434,7 +434,7 @@ ENDIF
 ;4： CARD_START_2用確認
 ;5： ERO효과用
 ;6： CARD_START用確認
-
+;7： 상대특수소환可否の確認
 
 SIF 参照先 == ""
 	RETURN 0
@@ -795,6 +795,12 @@ IF 효과条件종류  > 0
 	ELSEIF 효과条件종류  == 마함全般
 		SIF INRANGE(RESULT, 20, 39) 
 			条件달성 ++	
+	ELSEIF 효과条件종류 == 지속全般
+		SIF GROUPMATCH(RESULT, 지속마법, 지속함정) 
+			条件달성 ++	
+		TRYCALLFORM CARD_{설정カードID}("分割")
+		SIF RESULT == 펜듈럼
+			条件달성 ++
 	ELSEIF 효과条件종류 == 表置全般
 		SIF !GROUPMATCH(RESULT, 通常마법, 装備마법, 速攻마법, 通常함정) 
 			条件달성 ++	
@@ -810,11 +816,12 @@ ENDIF
 ;PRINTFORML ここ通過６
 IF GROUPMATCH(チェック플래그,2,7)
 	TRYCALLFORM CARD_{설정カードID}("종류")
-	SIF RESULT > 10
+	SIF RESULT > モン全般
 		RETURN 戻り値
 	IF 효과条件特不無視 == 0
-		SIF RESULT == 3
+		SIF RESULT == 의식
 			RETURN 戻り値
+
 		TRYCALLFORM CARD_{설정カードID}("특수불가")
 		SIF RESULT == 1
 			RETURN 戻り値
@@ -822,16 +829,21 @@ IF GROUPMATCH(チェック플래그,2,7)
 			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 			SIF RESULT == 1
 				RETURN 戻り値
-		ELSE
+		ELSEIF チェック플래그 == 7
 			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
 			SIF RESULT == 1
 				RETURN 戻り値
 		ENDIF
 	ELSE
-		SIF モンスター数(듀얼리스트) >= 5
+		IF チェック플래그 == 2
+			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
+			SIF RESULT == 1
 			RETURN 戻り値
-		SIF GETVAR(@"%듀얼리스트%_SS阻害状態") >= 1
-			RETURN 戻り値
+		ELSEIF チェック플래그 == 7
+			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
+			SIF RESULT == 1
+				RETURN 戻り値
+		ENDIF
 	ENDIF
 ENDIF
 
@@ -858,7 +870,7 @@ IF 参照先 == "필드" || 参照先 == "마함"
 			ENDIF
 		ENDIF
 	ENDIF
-
+;	PRINTFORML 通過１　カード필터：カウンタ = {カウンタ} 
 	IF 효과条件표시 >= 0
 		;효과불가裏側표시
 		SIF 효과条件표시 == 30 && GETVAR(@"%実行者%_%MZ魔판정%_表:カウンタ") != 3
@@ -896,6 +908,7 @@ IF 参照先 == "필드" || 参照先 == "마함"
 	ENDIF
 
 
+;	PRINTFORML 通過２　カード필터：カウンタ = {カウンタ} 
 
 	IF 효과条件個Ｃ所持 > 0
 		IF 효과条件個Ｃ所持 == 888
@@ -956,7 +969,6 @@ IF 参照先 == "필드" || 参照先 == "마함"
 	ENDIF
 
 	IF 효과条件装備先 >= 0 && 参照先 == "마함"
-;		PRINTFORMW　カウンタ:{カウンタ}/ 효과条件装備先:{효과条件装備先} / 
 		SIF GETVAR(@"%実行者%_魔_装:カウンタ") != 효과条件装備先
 			RETURN 戻り値
 	ENDIF
@@ -1408,13 +1420,15 @@ ELSE
 			ENDIF
 		ENDIF
 	ENDIF
-	
+	;효과条件소환可
+	;1 = 通常のSS
+	;2 = 場を開けた上でのSS
+	;3 = 마법함정のSS
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
 			VARSET RESULT
 			TRYCALLFORM CARD_{설정カードID}("종류")
-			IF RESULT < 3 || RESULT == 초차원
-			;특수소환불가はここ以外に置くと융합モンスターなどのSS불가に引っかかるのでやめよう
+			IF GROUPMATCH(RESULT,通常モン,효과モン,초차원)
 			TRYCALLFORM CARD_{설정カードID}("특수불가")
 					SIF RESULT == 1
 						RETURN 戻り値
@@ -1427,8 +1441,7 @@ ELSE
 					SIF RESULT == 1
 						RETURN 戻り値
 				ENDIF
-			ELSEIF INRANGE(RESULT,3,10)
-
+			ELSEIF INRANGE(RESULT,의식,モン全般)
 				IF RESULT == 의식
 					IF 参照先 == "손패"
 						TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_손패:カウンタ")}(実行者,カウンタ + 100,1)
@@ -1442,18 +1455,26 @@ ELSE
 						TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_덱:カウンタ")}(実行者,カウンタ + 300,1)
 						SIF RESULT != 1
 							RETURN 戻り値
+					ELSEIF 参照先 == "EX덱"
+						TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_EX덱:カウンタ")}(実行者,カウンタ + 400,1)
+						SIF RESULT != 1
+							RETURN 戻り値
 					ELSEIF 参照先 == "제외"
 						TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_제외:カウンタ")}(実行者,カウンタ + 500,1)
 						SIF RESULT != 1
 							RETURN 戻り値
 					ENDIF
+
 				ELSEIF 参照先 == "EX덱"
 					VARSET RESULT
 					TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_EX덱:カウンタ")}(実行者,カウンタ,1)
 					SIF RESULT != 1
 						RETURN 戻り値
 				ELSEIF 参照先 != "EX덱" ;Anonym추가
-					IF 효과条件소환可 == 1 || 효과条件소환可 == 3
+						TRYCALLFORM CARD_{설정カードID}("특수불가")
+						SIF RESULT == 1
+							RETURN 戻り値
+						IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 						SIF RESULT == 1
 							RETURN 戻り値
@@ -1471,6 +1492,16 @@ ELSE
 				ELSE
 					RETURN 戻り値
 				ENDIF
+			ENDIF
+		ELSE
+			IF 효과条件소환可 == 1 || 효과条件소환可 == 3
+				CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
+				SIF RESULT == 1
+					RETURN 戻り値
+			ELSEIF 효과条件소환可 == 2
+				CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
+				SIF RESULT == 1
+					RETURN 戻り値
 			ENDIF
 		ENDIF
 	ENDIF
@@ -1854,29 +1885,38 @@ IF 효과条件スーパー攻撃力 > 0
 ENDIF
 
 
-IF チェック플래그 == 2
-	VARSET RESULT
-	IF 효과条件特不無視 != 2
-		TRYCALLFORM CARD_{설정カードID}("종류")
-		SIF RESULT > 10
+IF GROUPMATCH(チェック플래그,2,7)
+	TRYCALLFORM CARD_{설정カードID}("종류")
+	SIF RESULT > モン全般
+		RETURN 0
+	IF 효과条件特不無視 == 0
+		SIF RESULT == 의식
 			RETURN 0
-		IF 효과条件特不無視 == 0
-			SIF RESULT == 3
-				RETURN 0
-			TRYCALLFORM CARD_{설정カードID}("특수불가")
-			SIF RESULT == 1
-				RETURN 0
+		TRYCALLFORM CARD_{설정カードID}("특수불가")
+		SIF RESULT == 1
+			RETURN 0
+		IF チェック플래그 == 2
 			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 			SIF RESULT == 1
 				RETURN 0
-		ELSE
-			SIF モンスター数(듀얼리스트) >= 5
+		ELSEIF チェック플래그 == 7
+			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
+			SIF RESULT == 1
 				RETURN 0
-			SIF GETVAR(@"%듀얼리스트%_SS阻害状態") >= 1
+		ENDIF
+	ELSE
+		IF チェック플래그 == 2
+			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
+			SIF RESULT == 1
+				RETURN 0
+		ELSEIF チェック플래그 == 7
+			CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
+			SIF RESULT == 1
 				RETURN 0
 		ENDIF
 	ENDIF
 ENDIF
+
 
 CALL S_FILTER_EXIST
 SIF RESULT == 0
@@ -1886,7 +1926,7 @@ IF 参照先 != "필드"
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
 			TRYCALLFORM CARD_{설정カードID}("종류")
-			IF RESULT < 3 || RESULT == 초차원
+			IF GROUPMATCH(RESULT,通常モン,효과モン,초차원)
 				IF 효과条件소환可 == 1 || 효과条件소환可 == 3
 					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先)
 					SIF RESULT == 1
@@ -1908,6 +1948,10 @@ IF 参照先 != "필드"
 							RETURN 0
 					ELSEIF 参照先 == "덱"
 						TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_덱:カウンタ")}(実行者,カウンタ + 300,1)
+						SIF RESULT != 1
+							RETURN 0
+					ELSEIF 参照先 == "EX덱"
+						TRYCALLFORM CARDSUMMON_{GETVAR(@"%実行者%_EX덱:カウンタ")}(実行者,カウンタ + 400,1)
 						SIF RESULT != 1
 							RETURN 0
 					ELSEIF 参照先 == "제외"

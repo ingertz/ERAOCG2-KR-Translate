@@ -1,0 +1,119 @@
+﻿@CARDNAME_22015,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 시노비네크로
+	CASE "略称"
+		RESULTS = 시노비네크로
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_22015(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 0
+	CASE "튜너"
+		RETURN 1
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251118
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_22015(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：이 카드가 몬스터 존에 존재하는 상태로、
+PRINTL 이 카드 이외의 언데드족 몬스터가 특수 소환된 경우에 발동할 수 있다。
+PRINTL 자신은 덱에서 １장 드로우한다。그 후、패를 １장 골라 버린다。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：이 카드가 제외된 경우에 발동할 수 있다。
+PRINTL 제외된 이 카드를 특수 소환한다。
+PRINTL 이 효과로 특수 소환한 이 카드는、필드에서 벗어날 경우에 제외된다。
+
+@CARDCAN_22015(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,22015)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	IF ゾーン == "필드"
+		SIF 발동済_1(듀얼리스트,22015)
+			RETURN 0
+		SIF GETVAR(@"%듀얼리스트%_最召場所") == 場所
+			RETURN 0
+		CALL FULLRESET
+		효과条件종족 = 언데드족
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "제외"
+		SIF 발동済_2(듀얼리스트,22015)
+			RETURN 0
+		CALL FULLRESET
+		효과条件名前 = 시노비네크로
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과除送")
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_22015(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+IF 종류 == 효과後誘発
+	IF ゾーン == "필드"
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22015,1)
+		IF RESULT == 0
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+			CALL FULLRESET
+			효과範囲손패 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ELSEIF ゾーン == "제외"	
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22015,2)
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲제외 = 1
+			효과条件名前 = 시노비네크로
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

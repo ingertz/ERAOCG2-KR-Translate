@@ -1656,6 +1656,15 @@ IF 필터条件ワード != ""
 		SIF STRFIND(RESULTS:カウンタ, 필터条件ワード)  != -1
 			条件달성 ++
 	NEXT
+
+
+	VARSET RESULTS
+	TRYCALLFORM CARDNAME_{カードID}("出典作品")
+	FOR カウンタ,0,10
+		SIF STRFIND(RESULTS:カウンタ, 필터条件ワード)  != -1
+			条件달성 ++
+	NEXT
+
 	SIF 条件달성 != 0
 		GOTO SKIP_WORD
 
@@ -1688,6 +1697,12 @@ IF 필터条件カテゴリ != ""
 	NEXT
 	VARSET RESULTS
 	TRYCALLFORM CARDNAME_{カードID}("検索カテゴリ")
+	FOR カウンタ,0,10
+		SIF STRFIND(RESULTS:カウンタ,필터条件カテゴリ)  != -1
+			条件달성 ++
+	NEXT
+	VARSET RESULTS
+	TRYCALLFORM CARDNAME_{カードID}("出典作品")
 	FOR カウンタ,0,10
 		SIF STRFIND(RESULTS:カウンタ,필터条件カテゴリ)  != -1
 			条件달성 ++

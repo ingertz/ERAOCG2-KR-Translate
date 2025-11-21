@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 갓 슬라임
+		RESULTS = 갓 슬라임
 	CASE "略称"
-RESULTS = 신 슬라임
+		RESULTS = 신 슬라임
 	CASE "カテゴリ"
-RESULTS:0 = 슬라임
+		RESULTS:0 = 슬라임
 ENDSELECT
 
 
@@ -40,12 +40,13 @@ RETURN 0
 @CARD_EXPLANATION_55502(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 원소정령족 몬스터 + 물속성 레벨 10 몬스터
+PRINTL 원소정령족 몬스터 + 물속성 / 레벨 10 몬스터
 PRINTL 이 카드는 융합 소환 및 이하의 방법으로만 EX덱에서 특수 소환할 수 있다.
-PRINTL ● 자신 필드의 공격력 0의 원소정령족 레벨 10 몬스터 1장을 릴리스했을 경우에 EX덱에서 특수 소환할 수 있다.
+PRINTL ● 자신 필드의 공격력 0의 원소정령족 / 레벨 10 몬스터 1장을 릴리스했을 경우에 EX덱에서 특수 소환할 수 있다.
 CALLFORM CARD_ABLE(0,필드起動)
 PRINTL ①: 이 카드를 릴리스하고 발동할 수 있다.
-PRINTL 패에서 환신야수족 몬스터 1장을 릴리스 없이 소환한다.
+PRINTL 릴리스 없이 패에서 환신야수족 몬스터 1장을 소환한다.
+PRINTL ("라의 익신룡")을 소환한 경우, 그 공격력 / 수비력은 3000이 된다.
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ②: 이 카드는 전투 내성, 공격 유도, 대상 내성을 가진다.
 
@@ -110,6 +111,8 @@ IF 종류 == EX덱起動
 	
 	RETURN 1
 ELSEIF 종류 == 필드起動
+	SIF 소환権 == 0
+		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
@@ -172,9 +175,15 @@ ELSEIF 종류 == 필드起動
 			RETURN 0
 		CALL CARD_SUMMON(듀얼리스트,選択カード)
 		IF 選択カード_ID == 40002
+			TRYCALLFORM CARDSUMMON_AA_40002
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"永攻",3000)
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"永守",3000)
+		ELSEIF 選択カード_ID == 40001
+			TRYCALLFORM CARDSUMMON_AA_40001
+		ELSEIF 選択カード_ID == 40000
+			TRYCALLFORM CARDSUMMON_AA_40000
 		ENDIF
+		소환権 -= 1
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET

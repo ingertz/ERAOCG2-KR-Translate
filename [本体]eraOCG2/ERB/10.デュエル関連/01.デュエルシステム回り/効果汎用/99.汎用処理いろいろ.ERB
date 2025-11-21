@@ -960,10 +960,9 @@ IF ゾーン == "마함"
 		RETURN 1
 	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:場所")}("종류")
 	IF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2 && (RESULT == 지속마법 || RESULT == 지속함정 || RESULT == 装備마법 || RESULT == フィールド)
-		SIF 종류 != 마함起動
+		SIF !GROUPMATCH(종류,마함起動,フリー誘発)
 			RETURN 1
 	ENDIF
-
 	IF !GROUPMATCH(종류, 攻守変動,지속효과,常在無効)
 		SIF GETVAR(@"%듀얼리스트%_魔_発無:場所") >= 1
 			RETURN 1
@@ -1577,23 +1576,25 @@ ENDIF
 ;EX소환可否判断
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ;특수소환されるカードのチェック、通す場合はRETURN 0,불가能である場合はRETURN 1
-@CARD_EX_CHECK(듀얼리스트,カードID)
+@CARD_EX_CHECK(듀얼리스트,カードID,ループ防止)
 #DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC カードID
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
 #DIM DYNAMIC 条件달성
+#DIM DYNAMIC ループ防止
+VARSET RESULT
 
-
-CALL CARD_SS_CHECK(듀얼리스트,カードID,"EX덱",1)
-;PRINTFORML SS카드 체크:{RESULT}
-SIF RESULT == 1
-	RETURN 1
-
-IF 듀얼리스트 == "상대"
-	CALL ENEMY_RUTIN_EXDECK(カードID)
+IF ループ防止 == 0
+	CALL CARD_SS_CHECK(듀얼리스트,カードID,"EX덱",1)
+	;PRINTFORML SS카드 체크:{RESULT}
 	SIF RESULT == 1
 		RETURN 1
+	IF 듀얼리스트 == "상대"
+		CALL ENEMY_RUTIN_EXDECK(カードID)
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
 ENDIF
 
 SIF GETVAR(@"%듀얼리스트%_EX制限") >= 2 || GETVAR(@"%듀얼리스트%_一時EX制限") >= 1 || GETVAR(@"%듀얼리스트%_SS소환禁止EX덱") >= 1
@@ -1872,6 +1873,9 @@ IF ゾーン == "덱"
 ENDIF
 IF ゾーン == "EX덱"
 	SIF GETVAR(@"%듀얼리스트%_SS소환禁止EX덱") >= 1
+		RETURN 1
+	CALL CARD_EX_CHECK(듀얼리스트,カードID,1)
+	SIF RESULT == 1
 		RETURN 1
 ENDIF
 

@@ -1,0 +1,266 @@
+@CARDNAME_99721,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 칙령의 “StaⱤ-vadeꓤ”
+	CASE "略称"
+		RESULTS = 칙령의StaⱤ-vadeꓤ
+	CASE "カテゴリ"
+		RESULTS:0 = Ɽꓤ
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+@CARD_99721(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_99721(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_99721(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신의 마법＆함정 존의 "함락주박" 카드 １장을 뒷면 표시로 하는것으로、이 카드는 패에서도 발동할 수 있다。
+PRINTL ①：자신 필드의 "GⱤꓤendios" 몬스터 １장과 "GⱤꓤendios" 카드 이외의 "Ɽꓤ" 초차원 몬스터 １장을 대상으로 하고、
+PRINTL 이하의 효과에서 １개를 선택해서 발동할 수 있다。
+PRINTL （이 카드명의 이하의 효과는 각각 １턴에 １번밖에 선택할 수 없다）
+CALL CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ●대상 "GⱤꓤendios" 몬스터는、
+PRINTL 엔드 페이즈까지 공격력이 대상 "Ɽꓤ" 초차원 몬스터의 공격력의 절반만큼 오르고、파괴 내성을 얻는다。
+CALL CARD_ABLE(2,마함起動,손패起動,フリー誘発)
+PRINTL ●대상 "Ɽꓤ" 초차원 몬스터는、
+PRINTL 엔드 페이즈까지 공격력이 대상 "GⱤꓤendios" 몬스터의 공격력의 절반만큼 오르고、몬스터 내성을 얻는다。
+CALL CARD_ABLE(3,마함起動,손패起動,フリー誘発)
+PRINTL ●대상 "Ɽꓤ" 초차원 몬스터의 공격력 이하의 상대 몬스터 １장을 골라 뒷면 수비 표시로 한다。
+
+@CARDCAN_99721(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 最低攻撃力
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,99721)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	IF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "손패"
+		SIF GETVAR(@"%듀얼리스트%_手_発可:場所") == 0
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = GⱤꓤendios
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件固カテゴリ = GⱤꓤendios
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF !발동済_1(듀얼리스트,99721) || !발동済_2(듀얼리스트,99721)
+		条件달성 = 1
+	IF !발동済_3(듀얼리스트,99721) && 条件달성 != 1
+		最低攻撃力 = -1
+		FOR カウンタ, 0, 5
+			SIF GETVAR(@"%対面者%_필드:カウンタ") < 1
+				CONTINUE
+			SIF 最低攻撃力 > GETVAR(@"%対面者%_MZ_攻:カウンタ") || 最低攻撃力 == -1
+				最低攻撃力 = GETVAR(@"%対面者%_MZ_攻:カウンタ")
+		NEXT
+		IF 最低攻撃力 != -1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = Ɽꓤ
+			효과条件종류 = 초차원
+			효과条件以攻撃力 = 最低攻撃力
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				条件달성 = 1
+		ENDIF
+	ENDIF
+	SIF 条件달성 != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 함락주박
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+ENDIF
+
+@CARDEFFECT_99721(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードA
+#DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 修正値
+
+#DIM DYNAMIC 最低攻撃力
+#DIM DYNAMIC 条件달성,3
+#DIM DYNAMIC 選択효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99721)
+	IF RESULT == 0
+		IF ゾーン == "손패"
+			CALL FULLRESET
+			효과条件カテゴリ = 함락주박
+			효과条件표시 = 表側표시
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+			IF RESULT != 9999
+				選択カードID = RESULT:99
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",RESULT,"表",3,上書きモード)
+				CALL KOJO_FARRGRENDIOS_BASE("함락주박",듀얼리스트,選択カードID)
+			ELSE
+				RETURN 0
+			ENDIF
+		ENDIF
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		SIF !발동済_1(듀얼리스트,99721)
+			条件달성:0 = 1
+		SIF !발동済_2(듀얼리스트,99721)
+			条件달성:1 = 1
+		IF !발동済_3(듀얼리스트,99721)
+			最低攻撃力 = -1
+			FOR カウンタ, 0, 5
+				SIF GETVAR(@"%対面者%_필드:カウンタ") < 1
+					CONTINUE
+				SIF 最低攻撃力 > GETVAR(@"%対面者%_MZ_攻:カウンタ") || 最低攻撃力 == -1
+					最低攻撃力 = GETVAR(@"%対面者%_MZ_攻:カウンタ")
+			NEXT
+			IF 最低攻撃力 != -1
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件カテゴリ = Ɽꓤ
+				효과条件종류 = 초차원
+				효과条件以攻撃力 = 最低攻撃力
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+					条件달성:2 = 1
+			ENDIF
+		ENDIF
+		CALL FULLRESET
+		효과条件カテゴリ = GⱤꓤendios
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			選択カードA = RESULT
+			CALL FULLRESET
+			효과条件固カテゴリ = GⱤꓤendios
+			효과条件カテゴリ = Ɽꓤ
+			효과条件종류 = 초차원
+			SIF 条件달성:0 == 0 && 条件달성:1 == 0 && 条件달성:2 == 1
+				효과条件以攻撃力 = 最低攻撃力
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+			IF RESULT != 9999
+				選択カードB = RESULT
+				選択カードID = GETVAR(@"%듀얼리스트%_MZ_変化元ID:選択カードB")
+				SIF GETVAR(@"%듀얼리스트%_MZ_攻:{選択カードB}") < 最低攻撃力
+					条件달성:2 = 0
+				IF MATCH(条件달성,1) >= 2 && 듀얼리스트 == "자신"
+					FOR カウンタ, 0, 3
+						IF 条件달성:カウンタ == 0
+							SETCOLOR C_GRAY
+							PRINTFORML ({カウンタ}) - 이 효과는 선택할 수 없습니다
+							RESETCOLOR
+						ELSE
+							PRINTFORM [{カウンタ}] - 
+							SELECTCASE カウンタ
+								CASE 0
+									PRINTFORM 대상 "GⱤꓤendios" 몬스터는 엔드 페이즈까지 공격력이 대상 "Ɽꓤ" 초차원 몬스터의 공격력의 절반만큼 오르고、대상 내성을 얻는다。
+								CASE 1
+									PRINTFORM 대상 "Ɽꓤ" 초차원 몬스터는 엔드 페이즈까지 공격력이 대상 "GⱤꓤendios" 몬스터의 공격력의 절반만큼 오르고、몬스터 내성을 얻는다。
+								CASE 2
+									PRINTFORM 대상 "Ɽꓤ" 초차원 몬스터의 공격력 이하의 상대 몬스터 １장을 골라 뒷면 수비 표시로 한다。
+							ENDSELECT
+						ENDIF
+						PRINTL
+					NEXT
+					BINPUT
+					選択효과 = RESULT
+				ELSE
+					選択효과 = FINDELEMENT(条件달성,1)
+					SIF 選択효과 == -1
+						RETURN 0
+				ENDIF
+				CALL CARD_EFFECT_USE(듀얼리스트,99721,選択효과)
+				SELECTCASE 選択효과
+					CASE 0
+						CALL KOJO_FARRGRENDIOS_BASE("勅令奉仕",듀얼리스트,選択カードID,,選択カードA)
+						修正値 = GETVAR(@"%듀얼리스트%_MZ_攻:{選択カードB}") / 2
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カードA,"一攻",修正値)
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カードA,"破耐",1,上書きモード)
+					CASE 1
+						CALL KOJO_FARRGRENDIOS_BASE("勅令조교",듀얼리스트,選択カードID,,選択カードB)
+						修正値 = GETVAR(@"%듀얼리스트%_MZ_攻:{選択カードA}") / 2
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カードB,"一攻",修正値)
+						CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カードB,"モ耐",1,上書きモード)
+					CASE 2
+						CALL FULLRESET
+						효과条件표시 = 表側표시
+						효과条件攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:{選択カードA}")
+						CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+						IF RESULT != 9999
+							CALL SET_FIELD_INFO(対面者,"필드",RESULT,"表",3,上書きモード)
+						ENDIF
+				ENDSELECT
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_HAND(듀얼리스트,"지정",場所,"発可")
+ENDIF

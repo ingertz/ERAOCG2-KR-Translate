@@ -1,4 +1,4 @@
-﻿@CARDNAME_2413,参照先
+﻿@CARDNAME_2345,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
@@ -7,15 +7,15 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 베리프레쉬 체스티
+		RESULTS = 베리프레쉬 아트레스
 	CASE "略称"
-		RESULTS = Berry 체스티
+		RESULTS = Berry 아트레스
 	CASE "カテゴリ"
 		RESULTS:0 = 베리프레쉬
 ENDSELECT
 
 
-@CARD_2413(参照先)
+@CARD_2345(参照先)
 
 #DIMS DYNAMIC 参照先
 VARSET RESULT
@@ -42,30 +42,33 @@ SELECTCASE 参照先
 ENDSELECT
 RETURN 0
 
-@CARD_EXPLANATION_2413(종류)
+@CARD_EXPLANATION_2345(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
-CALLFORM CARD_ABLE(1,필드起動)
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
 PRINTL ①：이 카드 이외의 패 / 필드의 카드를 １장 묘지로 보내고 발동할 수 있다。
-PRINTL 덱에서 "베리프레쉬" 마법 / 함정 카드 １장을 자신 필드에 세트한다。
+PRINTL 이 카드를 패에서 특수 소환한다。그 후、묘지에서 "베리프레쉬" 몬스터 １장을 패에 넣을 수 있다。
 CALLFORM CARD_ABLE(2,필드→묘지,손패→묘지,破壊→묘지,X素材時효과)
 PRINTL ②：이 카드가 효과에 의해 패 / 필드에서 묘지로 보내진 경우、또는 Ｘ소환의 소재가 된 경우에 발동할 수 있다。
-PRINTL 자신 필드의 "베리프레쉬" 몬스터 １장은 자신의 턴 종료시까지 공격력이 １５００오른다。
+PRINTL 자신 필드의 "베리프레쉬" 몬스터 １장은 자신의 턴 종료시 까지 공격력이 １５００ 오른다。
 
 
-@CARDCAN_2413(듀얼리스트,종류,ゾーン,場所)
+@CARDCAN_2345(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 
-CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2413)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2345)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 필드起動
-	SIF 발동済_1(듀얼리스트,2413)
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,2345)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,2345,"손패")
+	SIF RESULT == 1
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
@@ -74,22 +77,14 @@ IF 종류 == 필드起動
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과範囲필드 = 1
-	효과条件他所 = 1
 	효과範囲마함 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件종류 = 마함全般
-	효과条件カテゴリ = 베리프레쉬
-	효과条件セット = 1
+	효과条件他所 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 破壊→묘지 || 종류 == X素材時효과 
-	SIF 발동済_2(듀얼리스트,2413)
+	SIF 발동済_2(듀얼리스트,2345)
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -101,7 +96,7 @@ ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 破�
 ENDIF
 
 
-@CARDEFFECT_2413(듀얼리스트,종류,ゾーン,場所)
+@CARDEFFECT_2345(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者 
 #DIMS DYNAMIC ゾーン
@@ -114,27 +109,31 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2413,1)
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2345,1)
 	IF RESULT == 0
 		CALL FULLRESET
-		;フィールドのモンスターが5なら몬스터밖에 コストにできない
+		;フィールドのモンスターが5ならモンスターしかコストにできない
 		IF モンスター数(듀얼리스트) < 5
 			효과範囲손패 = 1
 			효과範囲마함 = 1
-		ENDIF		
+		ENDIF
 		효과条件他所 = 1
 		효과範囲필드 = 1
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			CALL FULLRESET
-			효과条件カテゴリ = 베리프레쉬
-			효과条件종류 = 마함全般
-			CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"裏側표시")
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
 		ENDIF
+		CALL FULLRESET
+		
+		효과条件カテゴリ = 베리프레쉬
+		효과条件종류 = モン全般
+		효과条件任意 = 1
+		CALL CARD_ADD_BASIC(듀얼리스트,"묘지",ゾーン,場所)
 	ENDIF
 ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 破壊→묘지 || 종류 == X素材時효과 
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2413,2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2345,2)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과条件カテゴリ = 베리프레쉬

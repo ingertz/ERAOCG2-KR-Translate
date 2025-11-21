@@ -99,7 +99,7 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー == 듀얼리스트
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == 필드起動 && ターンプレイヤー != 듀얼리스트 || 종류 == フリー誘発
+ELSEIF (종류 == 필드起動 || 종류 == フリー誘発) && ターンプレイヤー != 듀얼리스트
 	SIF 발동済_3(듀얼리스트,1965)
 		RETURN 0
 	SIF ゾーン != "필드"
@@ -119,6 +119,10 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 戦闘カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
 
 IF 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1965,1)
@@ -139,12 +143,12 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー != 듀얼리스트 || 
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1965,3)
 	IF RESULT == 0
 		CALL FULLRESET
-		CALL CARD_SET_MOVE(듀얼리스트,場所,2)
-		IF RESULT == 1
+		CALL CARD_SET_MOVE_NEW(ゾーン,듀얼리스트,場所,듀얼리스트,2)
+		IF RESULT == 1 && 손패数(対面者) != 0
 			CALL FULLRESET
 			효과範囲상대손패 = 1
 			효과条件行先플래그 = 제외行き
-			효과条件추가플래그 = 3
+			효과条件추가플래그 = 2
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF

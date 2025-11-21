@@ -95,13 +95,13 @@ ENDIF
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-#DIM DYNAMIC カウンタ
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC 選択カード,5
 #DIM DYNAMIC 選択カード_ID,5
 #DIMS DYNAMIC 已选择卡片,5
 #DIM DYNAMIC 自己合计守备力 = 0
-#DIM DYNAMIC 选择対面選択カード
+#DIM DYNAMIC 対面選択カード
+#DIM DYNAMIC 対面選択カード_ID
 #DIM DYNAMIC 对方攻击力
 #DIM DYNAMIC 성별판정
 #DIM DYNAMIC 已选择次数 = 0
@@ -117,8 +117,9 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		CALL FULLRESET
 		효과条件표시 = 表側표시
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
-		选择対面選択カード = RESULT
-		IF 选择対面選択カード != 9999
+		対面選択カード = RESULT
+		対面選択カード_ID = RESULT:99
+		IF 対面選択カード != 9999
 			$TRAPSEX_77512_1
 			CALL FULLRESET
 			효과条件표시 = 表側표시
@@ -137,7 +138,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			;效果第一部分
 				;赋予蟲紋
 				;与赋予蟲紋相关的效果
-				CALL TRAPSEX_GIVE_OTHER(듀얼리스트,ゾーン,종류,場所,选择対面選択カード,選択カード_ID:(已选择次数))
+				CALL TRAPSEX_GIVE_OTHER(듀얼리스트,ゾーン,종류,場所,対面選択カード,選択カード_ID:(已选择次数))
 				;获取守备力
 				IF GETVAR(@"%듀얼리스트%_MZ_表:(選択カード:(已选择次数))") == 1
 					自己合计守备力 += GETVAR(@"%듀얼리스트%_MZ_守:(選択カード:(已选择次数))")
@@ -169,29 +170,30 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 					GOTO TRAPSEX_77512_1
 			ENDIF
 
-			对方攻击力 = GETVAR(@"%対面者%_MZ_攻:选择対面選択カード")
-			성별판정 = GETVAR(@"%対面者%_MZ_性:选择対面選択カード")
+			;效果第二部分
+			对方攻击力 = GETVAR(@"%対面者%_MZ_攻:対面選択カード")
+			성별판정 = GETVAR(@"%対面者%_MZ_性:対面選択カード")
 			IF 自己合计守备力 < 对方攻击力 && (성별판정 == 雄性 || 성별판정 == ふたなり)
 				IF 마함数(対面者) < 5
 					SIF 選択カード:0 != 9999
-						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:0,1)
+						CALL CARD_EQUIP_MONSTER(対面者,対面選択カード,"상대필드",選択カード:0,1)
 					SIF 選択カード:1 != 9999
-						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:1,1)
+						CALL CARD_EQUIP_MONSTER(対面者,対面選択カード,"상대필드",選択カード:1,1)
 					SIF 選択カード:2 != 9999
-						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:2,1)
+						CALL CARD_EQUIP_MONSTER(対面者,対面選択カード,"상대필드",選択カード:2,1)
 					SIF 選択カード:3 != 9999
-						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:3,1)
+						CALL CARD_EQUIP_MONSTER(対面者,対面選択カード,"상대필드",選択カード:3,1)
 					SIF 選択カード:4 != 9999
-						CALL CARD_EQUIP_MONSTER(対面者,选择対面選択カード,"상대필드",選択カード:4,1)
+						CALL CARD_EQUIP_MONSTER(対面者,対面選択カード,"상대필드",選択カード:4,1)
 				ENDIF
 			ELSEIF 自己合计守备力 >= 对方攻击力
 				CALL FULLRESET
-				CALL SET_FIELD_INFO(対面者,"필드",选择対面選択カード,"永攻",-自己合计守备力)
+				CALL SET_FIELD_INFO(対面者,"필드",対面選択カード,"永攻",-自己合计守备力)
 				CALL FULLRESET
-				CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"지속無効")
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",対面選択カード,"지속無効")
 			ELSE
 				CALL FULLRESET
-				CALL SET_FIELD_INFO(対面者,"필드",选择対面選択カード,"永攻",-自己合计守备力)
+				CALL SET_FIELD_INFO(対面者,"필드",対面選択カード,"永攻",-自己合计守备力)
 			ENDIF
 		ENDIF
 	ENDIF

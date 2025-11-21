@@ -1,0 +1,137 @@
+﻿@CARDNAME_5532,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 행운의 흰토끼 테위
+	CASE "略称"
+		RESULTS = 이나바 테위
+	CASE "カテゴリ"
+		RESULTS:0 = 영원정
+		RESULTS:1 = 환상소녀
+		RESULTS:2 = 토끼
+	CASE "出典作品"
+		RESULTS:0 = 동방 Project
+ENDSELECT
+
+
+@CARD_5532(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1100
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251119
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5532(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。
+PRINTL 자신 필드에 "영원정-The House of Etrernity-"를 세트한다。
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ②：필드의 이 카드명 이외의 카드의 효과를 발동했을 때에 발동할 수 있다。
+PRINTL 덱에서 이 카드명 이외의 "토끼" 몬스터 １장을 패에 넣는다。
+PRINTL 그 후、이 카드를 제외한다。
+
+@CARDCAN_5532(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5532)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,5532)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前 = 영원정-The House of Etrernity-
+	효과条件セット = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_2(듀얼리스트,52562)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件固名前 = 행운의 흰토끼 테위
+	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
+	SIF RESULT != 1
+		RETURN 0
+
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件固名前 = 행운의 흰토끼 테위
+	효과条件カテゴリ = 토끼
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5532(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5532,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 영원정-The House of Etrernity-
+		CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"裏側표시")
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5532,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件固名前 = 행운의 흰토끼 테위
+		효과条件カテゴリ = 토끼
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 제외行き)
+	ENDIF
+ENDIF
+

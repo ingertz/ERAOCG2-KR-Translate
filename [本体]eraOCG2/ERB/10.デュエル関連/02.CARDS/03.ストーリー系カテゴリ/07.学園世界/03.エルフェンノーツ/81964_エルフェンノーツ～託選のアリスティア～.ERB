@@ -35,12 +35,10 @@ RETURN 0
 
 PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(10,마함起動)
-PRINTL ①：１턴에 １번、자신 필드의 앞면 표시 몬스터 １장을 골라、이하의 효과를 적용한다。
-PRINTL ●중앙 몬스터 존：그 몬스터를 중앙 이외의 몬스터 존으로 이동한다。
-PRINTL ●중앙 이외의 몬스터 존：자신의 중앙 몬스터 존에 몬스터가 존재하지 않는 경우、
-PRINTL 그 몬스터를 중앙 몬스터 존으로 이동한다。
+PRINTL ①：１턴에 １번、발동할 수 있다。
+PRINTL 자신의 중앙 몬스터 존에 몬스터가 존재하는 경우、 그 몬스터를 중앙 이외의 몬스터 존으로 이동시킨다。
+PRINTL 존재하지 않는 경우、중앙 이외의 몬스터 존의 몬스터 1장을 골라 중앙 몬스터 존으로 이동시킨다。
 PRINTL （이동에는、지정한 몬스터를 제외하고 이루어진다）
-
 CALLFORM CARD_ABLE(2,발동誘発)
 PRINTL ②：자신 필드에 "엘펜노츠" 몬스터가 ３장 이상 존재하고、상대가 마법 / 함정 카드를 발동했을 때에 발동할 수 있다。
 PRINTL 그 발동을 무효로 한다。
@@ -67,7 +65,8 @@ IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 마함起動
 	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
@@ -113,20 +112,24 @@ IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81964,10)
 	IF RESULT == 0
 		$USE_EFFECT
-		CALL FULLRESET
-		효과範囲필드 = 1
+		IF GETVAR(@"%듀얼리스트%_필드:2") != -1
+			選択カード = 2
+		ELSE
+			CALL FULLRESET
+			효과範囲필드 = 1
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
-		IF RESULT != 9999
 			選択カード = RESULT
+		ENDIF
+		IF RESULT != 9999
 			;中央の場合
 			IF 選択カード == 2
 				カウンタ = 現필드(듀얼리스트)
 				CALL FULLRESET
-				CALL CARD_SET_MOVE(듀얼리스트,2,10)
+				CALL CARD_SET_MOVE_NEW("필드",듀얼리스트,選択カード,듀얼리스트,10)
 			;それ以外の場合
 			ELSEIF GETVAR(@"%듀얼리스트%_필드:2") == -1
 				CALL FULLRESET
-				CALL CARD_SET_MOVE(듀얼리스트,選択カード,2)
+				CALL CARD_SET_MOVE_NEW("필드",듀얼리스트,選択カード,듀얼리스트,2)
 			ENDIF
 		ENDIF
 	ENDIF

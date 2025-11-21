@@ -254,6 +254,7 @@ RETURN 1
 #DIM DYNAMIC 消去カード
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
 #DIM DYNAMIC 一時보존,99
 #DIM DYNAMIC 덱サーチ플래그
 #DIM DYNAMIC 묘지回収플래그
@@ -419,7 +420,9 @@ IF 효과条件複数 != 0
 			CONTINUE
 		CALL CARD_SELECT(듀얼리스트,(選択カード:カウンタ))
 		選択カード:カウンタ = RESULT
-		選択カード_ID = GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")
+		選択カード_ID:カウンタC = GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")
+		
+		カウンタC ++
 		CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）,손패行き)
 	NEXT
 ELSE
@@ -434,6 +437,9 @@ IF 덱サーチ플래그 == 1 && 山切り無し != 1
 ENDIF
 
 VARSET RESULT
+FOR カウンタ,0,カウンタC
+	RESULT:(300 + カウンタ) = 選択カード_ID:カウンタ
+NEXT
 RESULT:1 = 選択カード_ID	
 RETURN 1
 

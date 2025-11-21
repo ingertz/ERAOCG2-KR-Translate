@@ -99,7 +99,7 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー == 듀얼리스트
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == 필드起動 && ターンプレイヤー != 듀얼리스트 || 종류 == フリー誘発
+ELSEIF (종류 == 필드起動 || 종류 == フリー誘発) && ターンプレイヤー != 듀얼리스트
 	SIF 발동済_3(듀얼리스트,1966)
 		RETURN 0
 	SIF ゾーン != "필드"
@@ -140,14 +140,22 @@ ELSEIF 종류 == 필드起動 && ターンプレイヤー != 듀얼리스트 || 
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1966,3)
 	IF RESULT == 0
 		CALL FULLRESET
-		CALL CARD_SET_MOVE(듀얼리스트,場所,2)
+		CALL CARD_SET_MOVE_NEW(ゾーン,듀얼리스트,場所,듀얼리스트,2)
 		IF RESULT == 1
 			CALL FULLRESET
 			효과範囲마함 = 1
 			효과範囲상대마함 = 1
 			효과条件표시 = 10
-			효과条件任意 = 1
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"손패")
+			효과条件除去種 = 손패
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲마함 = 1
+				효과範囲상대마함 = 1
+				효과条件표시 = 10
+				효과条件任意 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+			ENDIF
 		ENDIF
 	ENDIF
 ENDIF

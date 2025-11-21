@@ -120,6 +120,7 @@ SELECTCASE 효과範囲
 				CALL CARD_REMOVAL_ABLE(対面者,듀얼리스트,"全体",カウンタ,除去種,カードID,1)
 				SIF RESULT != 1
 					CONTINUE
+
 				対魔選択カード:カウンタ = カウンタ
 			NEXT
 		ENDIF
@@ -188,7 +189,7 @@ SELECTCASE 효과範囲
 					CALL CARD_SETCOLOR("자신","마함",カウンタ)
 					CALLFORM CARD_KANPRINT("마함",カウンタ + 10,대상カードID)
 				ELSEIF 듀얼리스트 == "상대"
-					選択カード = カウンタ + 10
+					選択カード:複数カウンタ = カウンタ + 10
 				ENDIF
 			NEXT
 		ENDIF
@@ -228,7 +229,7 @@ SELECTCASE 효과範囲
 					RESETCOLOR
 				ELSEIF 듀얼리스트 == "상대"
 					TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_마함:カウンタ")}("名前")
-					選択カード = カウンタ + 2010
+					選択カード:複数カウンタ = カウンタ + 2010
 				ENDIF
 			NEXT
 		ENDIF
@@ -246,8 +247,8 @@ SELECTCASE 효과範囲
 					CALL CARD_SETCOLOR("자신","묘지",カウンタ)
 					CALLFORM CARD_KANPRINT("묘지",カウンタ + 200,대상カードID)
 				ELSEIF 듀얼리스트 == "상대"
-					IF 選択カード == 9999
-						選択カード = カウンタ + 200
+					IF 選択カード:複数カウンタ == 9999
+						選択カード:複数カウンタ = カウンタ + 200
 					ENDIF
 				ENDIF
 			NEXT
@@ -266,8 +267,8 @@ SELECTCASE 효과範囲
 					CALL CARD_SETCOLOR("상대","묘지",カウンタ)
 					CALLFORM CARD_KANPRINT("상대묘지",カウンタ + 2200,대상カードID)
 				ELSEIF 듀얼리스트 == "상대"
-					IF 選択カード == 9999
-						選択カード = カウンタ + 2200
+					IF 選択カード:複数カウンタ == 9999
+						選択カード:複数カウンタ = カウンタ + 2200
 					ENDIF
 				ENDIF
 			NEXT
@@ -302,7 +303,7 @@ SELECTCASE 효과範囲
 				ELSEIF 듀얼리스트 == "상대"
 					IF  GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ") > 現在最大攻撃力
 						現在最大攻撃力 =  GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ")
-						選択カード = カウンタ			
+						選択カード:複数カウンタ = カウンタ			
 					ENDIF
 				ENDIF
 			NEXT
@@ -351,7 +352,7 @@ SELECTCASE 효과範囲
 				ELSEIF 듀얼리스트 == "상대"
 					IF  GETVAR(@"%対面者%_MZ_攻:カウンタ") + 9999 > 現在最大攻撃力
 						現在最大攻撃力 =  GETVAR(@"%対面者%_MZ_攻:カウンタ") + 9999
-						選択カード = カウンタ  + 2000
+						選択カード:複数カウンタ = カウンタ  + 2000
 					ENDIF
 				ENDIF
 			NEXT

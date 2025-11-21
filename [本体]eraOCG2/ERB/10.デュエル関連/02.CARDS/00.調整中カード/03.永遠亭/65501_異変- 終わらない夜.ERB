@@ -1,0 +1,126 @@
+﻿@CARDNAME_65501,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = -이변- 끝나지않는 밤
+	CASE "略称"
+		RESULTS = 끝나지않는 밤
+	CASE "カテゴリ"
+		RESULTS:0 = 하쿠레이 신사
+		RESULTS:1 = 이변
+	CASE "検索カテゴリ"
+		RESULTS:0 = 영원정
+	CASE "出典作品"
+		RESULTS:0 = 동방 Project
+ENDSELECT
+
+
+@CARD_65501(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 지속마법
+
+	CASE "추가日"
+		RETURN 251120
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_65501(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 카드는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動,마함起動)
+PRINTL ①：이 카드의 발동 처리 시의 효과로서、
+PRINTL 패 / 덱에서 "낙원의 무녀 레이무" "평범한 마법사 마리사" 중 어느것인가 １장을 상대 필드에 특수 소환한다。
+PRINTL 그 후、덱에서 "스펠 카드 배틀 개막"을 패에 넣는다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：이 카드가 존재하는 한、이 카드명 이외의 "이변" 카드는 파괴 내성을 얻는다。
+
+
+
+
+@CARDCAN_65501(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,65501)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,65501)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_65501(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 속성数
+#DIMS DYNAMIC 설정カテゴリ
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65501,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件名前:0 = 낙원의 무녀 레이무
+		효과条件名前:1 = 평범한 마법사 마리사
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"",,1)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件名前 = 스펠 카드 배틀 개막
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 이변
+	효과条件他所 = 1
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐")
+ENDIF
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+
+
+

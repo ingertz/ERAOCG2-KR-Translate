@@ -40,7 +40,7 @@ PRINTL 그 카드를 파괴한다.
 CALLFORM CARD_ABLE(2,제외時)
 PRINTL ②: 이 카드가 제외되었을 경우에 발동할 수 있다.
 PRINTL 자신 필드에 "상검의 환영" 1장을 특수 소환한다.
-PRINTL 이 턴 자신은 S 몬스터밖에 EX덱에서 특수 소환할 수 없다.
+PRINTL 이 턴 자신은 S몬스터밖에 EX덱에서 특수 소환할 수 없다.
 PRINTL 
 
 @CARDCAN_92130(듀얼리스트,종류,ゾーン,場所)
@@ -70,6 +70,7 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 	CALL FULLRESET
 	효과範囲상대필드 = 1
 	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT < 2
@@ -105,14 +106,15 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 
 		CALL FULLRESET
+		효과範囲필드 = 1
 		효과条件종족 = 드래곤족
-		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)	
-		選択カード = RESULT
-		IF 選択カード != 9999
-			CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード,10)
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
 			CALL FULLRESET
 			효과範囲상대필드 = 1
 			효과範囲상대마함 = 1
+			효과条件行先플래그 = 破壊行き
 			효과条件複数 = 2
 			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 		ENDIF

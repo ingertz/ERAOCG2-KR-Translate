@@ -1,0 +1,209 @@
+﻿@CARDNAME_5535,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 봉래의 인형 모코우
+	CASE "略称"
+		RESULTS = 후지와라노 모코우
+	CASE "カテゴリ"
+		RESULTS:0 = 환상소녀
+	CASE "検索カテゴリ"
+		RESULTS:0 = 영원정
+	CASE "出典作品"
+		RESULTS:0 = 동방 Project
+ENDSELECT
+
+
+@CARD_5535(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"	
+		RETURN 싱크로
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251119
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5535(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL 이 카드명의 P효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(P1,ターン終了時)
+PRINTL ①：이 턴、필드의 "환상소녀" 몬스터가 파괴되었을 경우、엔드 페이즈에 발동할 수 있다。
+PRINTL 이 카드를 마법＆함정 존에서 특수 소환한다。
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL "환상소녀" 튜너＋튜너 이외의 몬스터 １장 이상
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,EX소환時)
+PRINTL ①：이 카드가 Ｓ소환에 성공한 경우에 발동할 수 있다。
+PRINTL 필드의 몬스터를 전부 파괴한다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：서로의 턴에 필드의 이 카드를 포함한 자신 필드의 카드 ２장과、
+PRINTL 상대 필드의 카드 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 그 카드를 파괴한다。
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ③：필드의 이 카드가 파괴된 경우에 발동한다。
+PRINTL EX덱에서 이 카드명의 카드를 자신의 마법＆함정 존에 세트한다。
+
+
+@CARDSUMMON_5535(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 8
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 환상소녀
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,5535) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_5535(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5535)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == ターン終了時
+	SIF 발동済_P1(듀얼리스트,5535)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"마함")
+		RETURN 0
+	CALL FULLRESET
+	효과条件固カテゴリ = 환상소녀
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊이력")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,5535)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(ゾーン,"마함","필드")
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊")
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5535(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5535,P1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 봉래의 인형 모코우
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5535,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場全体",場所,"묘지")
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5535,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件他所 = 1
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 破壊行き)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+	
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5535)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,5535)
+	ENDIF
+ENDIF
+
+
+

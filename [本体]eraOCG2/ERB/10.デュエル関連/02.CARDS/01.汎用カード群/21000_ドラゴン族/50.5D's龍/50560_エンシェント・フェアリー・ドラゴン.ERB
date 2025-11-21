@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 고대 요정 드래곤
+		RESULTS = 고대 요정 드래곤
 	CASE "略称"
-RESULTS = A 페어리
+		RESULTS = A 페어리
 	CASE "カテゴリ"
-RESULTS:0 = 요정
+		RESULTS:0 = 요정
 ENDSELECT
 
 
@@ -63,7 +63,7 @@ ENDIF
 @CARD_EXPLANATION_50560(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 튜너 ＋ 튜너 이외의 몬스터 1체 이상
+PRINTL 튜너 ＋ 튜너 이외의 몬스터 1장 이상
 PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,EX소환時)
 PRINTL ①: 이 카드가 S소환에 성공했을 때에 발동할 수 있다.
@@ -108,7 +108,8 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-
+	SIF メインフェイズ２ == 1
+		RETURN 0
 	CALL FULLRESET
 	효과範囲손패 = 1
 	CALL 효과条件レベル_ADV(4, "以下")

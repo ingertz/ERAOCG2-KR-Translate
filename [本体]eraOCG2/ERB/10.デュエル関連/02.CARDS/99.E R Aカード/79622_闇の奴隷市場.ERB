@@ -1,0 +1,108 @@
+﻿@CARDNAME_79622,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 어둠의 노예시장
+	CASE "略称"
+		RESULTS = 어둠의 노예시장
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_79622(参照先)
+;名前専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251118
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79622(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：자신 / 상대의 묘지에서 암컷 몬스터 ２장을 대상으로 하고 발동할 수 있다。（같은 이름의 카드는 １장까지）
+PRINTL 그 몬스터를 패에 넣는다。
+PRINTL 그 후、패에 넣은 몬스터의 레벨의 합계×３００의 라이프를 잃는다。
+PRINTL 
+PRINTL 
+
+@CARDCAN_79622(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79622)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,79622)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과条件종류 = モン全般
+	효과条件성별 = 牝性
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_79622(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID,10
+#DIM DYNAMIC 설정レベル
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79622,1)
+	IF RESULT == 0
+		;通常마법汎用処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲상대묘지 = 1
+		효과条件종류 = モン全般
+		효과条件성별 = 牝性
+		효과条件複数 = 98
+		효과条件固名前選択 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID:0 = RESULT:300
+			選択カード_ID:1 = RESULT:301
+			TRYCALLFORM CARD_{選択カード_ID:0}("レベル")
+			설정レベル += RESULT
+			VARSET RESULT
+			TRYCALLFORM CARD_{選択カード_ID:1}("レベル")
+			설정レベル += RESULT
+			CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",설정レベル * 300)		
+		ENDIF
+	ENDIF
+ENDIF

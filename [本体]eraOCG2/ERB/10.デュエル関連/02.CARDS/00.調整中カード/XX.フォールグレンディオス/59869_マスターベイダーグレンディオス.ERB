@@ -1,0 +1,253 @@
+@CARDNAME_59869,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 마스터베이더 “E.Ɽꓤ.A” 그렌디오스
+	CASE "略称"
+		RESULTS = 주GⱤꓤendios
+	CASE "カテゴリ"
+		RESULTS:0 = GⱤꓤendios
+		RESULTS:1 = Ɽꓤ
+		RESULTS:2 = E.R.A
+ENDSELECT
+
+@CARD_59869(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 3000
+	CASE "성별"
+		RETURN 無性
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_59869(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_59869(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 폴 스트라이드
+PRINTL  『총열』    "GⱤꓤendios" 몬스터
+CALL CARD_ABLE(1,EX덱起動)
+SETCOLOR C_L_GRAY
+PRINTL （자신 메인 페이즈에 발동할 수 있다。
+PRINTL 　자신의 마법＆함정 존의 "Ɽꓤ" 이외의 "함락주박" 카드 ４장을 뒷면 표시로 하고、
+PRINTL 　ＥＸ덱의 이 카드를、자신 필드의 지정 몬스터 １장 위에 겹쳐서 『총열』한다。
+PRINTL 　『총열』은 １턴에 １번밖에 사용할 수 없으며、선공 / 후공 １턴째에는 사용할 수 없다。
+PRINTL 　『총열』몬스터는 이 방법으로만 특수 소환할 수 있다。）
+RESETCOLOR
+PRINTL 필드 위의 이 카드는 당신으로서도 취급한다。
+PRINTL 이 카드명의 ③의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(0,지속효과,攻守変動)
+PRINTL ①：자신 필드의 이 카드 이외의 "Ɽꓤ" 초차원 몬스터 전부는 완전 내성을 얻고、공격력이 １０００ 올라간다。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ②：자신 필드에 이 카드 이외의 "Ɽꓤ" 초차원 몬스터가 존재하는 경우、이 카드는 대상 내성을 얻는다。
+CALL CARD_ABLE(2,필드起動)
+PRINTL ③：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 자신의 덱 / 패 / 묘지 또는 상대의 묘지에서 "Ɽꓤ" 카드 이외의 암컷 몬스터 １장을 "함락주박" 카드로서 자신의 마법＆함정 존에 앞면 표시로 놓고、
+PRINTL 자신의 ＥＸ덱 / 묘지의 "Ɽꓤ" 초차원 몬스터 １장을 특수 소환한다。
+PRINTL 이 효과로 이 효과로 특수 소환된 몬스터는 이 효과로 마법＆함정 존에 놓인 카드와 같은 카드명으로도 취급한다。
+
+@CARDCAN_59869(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59869)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,59869)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,59869)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件固カテゴリ = Ɽꓤ
+	효과条件カテゴリ = 함락주박
+	효과条件표시 = 表側표시
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 4
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = GⱤꓤendios
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,59869)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과条件固カテゴリ = Ɽꓤ
+	효과条件성별 = 牝性
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 손패数(듀얼리스트) < 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과範囲묘지 = 1
+	효과条件소환可 = 1
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59869(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カードゾーン
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 소환先
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59869,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 함락주박
+		효과範囲마함 = 1
+		효과条件표시 = 表側표시
+		효과条件複数 = 4
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		IF RESULT != 9999
+			FOR カウンタ, 0, 4
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",RESULT:カウンタ,"表",3,上書きモード)
+			NEXT
+			CALL FULLRESET
+			효과条件カテゴリ = GⱤꓤendios
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+			IF RESULT != 9999
+				選択カード = RESULT
+				CALL KOJO_FARRGRENDIOS_BASE("총열",듀얼리스트,0)
+				CALL CARD_BANISH(듀얼리스트,"필드",選択カード)
+				CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59869,2)
+	IF RESULT == 0
+		選択カード = 現마함(듀얼리스트)
+		CALL FULLRESET
+		효과条件固カテゴリ = Ɽꓤ
+		효과範囲덱 = 1
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과範囲상대묘지 = 1
+		효과条件성별 = 牝性
+		효과条件行先플래그 = 마함行き
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			選択カードID = RESULT:99
+			CALL CARD_SELECT(듀얼리스트,RESULT)
+			CALL CARD_ADD(듀얼리스트,本参照先（CS）,"마함",選択カード（CS）)
+			CALL CARD_SET_CATEGORY(듀얼리스트,"마함",選択カード,"함락주박")
+			;필드番号は+1で記録しないといけない(필드汎数の初期値は0のため)
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"汎数",現필드(듀얼리스트) + 1,上書きモード)
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = Ɽꓤ
+			효과条件종류 = 초차원
+			효과추가종류 = 1000000 + 選択カードID
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"変化元ID",9990)
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = Ɽꓤ
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐",3)
+	ENDIF
+	CALL FULLRESET
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 초차원
+	효과条件他所 = 1
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"モ耐",3)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"魔耐",3)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"함정耐",3)
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 초차원
+	효과条件他所 = 1
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000)
+ENDIF

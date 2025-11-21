@@ -1,0 +1,319 @@
+@CARDNAME_59865,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 폴스타베이더 “MasteⱤꓤ” 그렌디오스
+	CASE "略称"
+		RESULTS = GⱤꓤendios
+	CASE "カテゴリ"
+		RESULTS:0 = GⱤꓤendios
+		RESULTS:1 = Ɽꓤ
+		RESULTS:2 = E.R.A
+ENDSELECT
+
+@CARD_59865(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 3000
+	CASE "성별"
+		RETURN 無性
+	CASE "특수불가"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_59865(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_59865(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION_FARRGRENDIOS
+CALL CARD_ABLE(1,EX덱起動)
+PRINTL 이 카드명의 카드는 １턴에 １번、자신 필드에 "GⱤꓤendios" 몬스터가 존재하지 않는 경우에、
+PRINTL "Ɽꓤ" 몬스터 １장 위에 겹쳐서만 Ｘ소환 할 수 있으며、이 방법 이외로는 특수 소환할 수 없다。
+PRINTL 이 방법으로 Ｘ소환한 경우、자신 필드 위에 "E.R.A" 이외의 모든 카드를 제외한다。
+PRINTL 필드 위의 이 카드는 당신으로서도 취급한다。
+PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ①：자신 필드에 이 카드 이외의 "Ɽꓤ" 몬스터가 존재하는 경우、이 카드는 대상 내성을 얻는다。
+CALL CARD_ABLE(2,필드起動)
+PRINTL ②：자신 메인 페이즈에、패를 １장 버리고 발동할 수 있다。
+PRINTL 덱 / 패 / 묘지에서 "Ɽꓤ" 카드 이외의 암컷 몬스터 １장을 "함락주박" 카드로서 자신의 마법＆함정 존에 앞면 표시로 놓고、
+PRINTL 자신의 ＥＸ덱 / 묘지의 "Ɽꓤ" 초차원 몬스터 １장을 특수 소환한다。
+PRINTL 이 효과로 특수 소환된 몬스터는、이 효과로 마법＆함정 존에 놓은 카드와 같은 카드명으로도 취급한다。
+CALL CARD_ABLE(20,ターン開始時強制)
+PRINTL ③：게임 개시시에 ＥＸ덱의 이 카드를 상대에게 보여주고 발동한다。
+PRINTL 이 듀얼 중、자신은 이하의 효과를 전부 적용한다。
+CALL CARD_ABLE(0,永紋章起動)
+PRINTL ●자신의 마법＆함정 존의 "함락주박" 카드는 효과 무효 / 파괴 내성 / 대상 내성을 얻는다。
+CALL CARD_ABLE(0,時限紋章起動)
+PRINTL ●자신 / 상대 턴 종료 시에、자신의 마법＆함정 존의 뒷면 표시인 "함락주박" 카드는 앞면 표시가 된다。
+; CALL CARD_ABLE(0,効後紋章起動)
+PRINTL ●"Ɽꓤ" 초차원 몬스터를 특수 소환하는 효과로 마법＆함정 존에 놓인 "함락주박" 카드는、
+PRINTL 그 효과로 특수 소환된 몬스터가 필드에서 벗어날 경우에 묘지로 보내진다。
+CALL TEXT_DECORATION_FARRGRENDIOS
+
+@CARDCAN_59865(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59865)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,59865)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,59865)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = GⱤꓤendios
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = Ɽꓤ
+	효과条件重ねてＸ = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時強制
+	SIF ゾーン != "EX덱"
+		RETURN 0
+	SIF ターン数 > 1
+		RETURN 0
+	SIF 발동済_D1(듀얼리스트,59865)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,59865)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件固カテゴリ = Ɽꓤ
+	효과条件성별 = 牝性
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 손패数(듀얼리스트) < 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과範囲묘지 = 1
+	효과条件소환可 = 1
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 永紋章起動
+	RETURN 1
+ELSEIF 종류 == 時限紋章起動
+	SIF スタンバイフェイズ != 1 && エンドフェイズ != 1
+		RETURN 0
+	; SIF エンドフェイズ == 1 && ターンプレイヤー != 듀얼리스트
+	; 	RETURN 0
+	RETURN 1
+ELSEIF 종류 == 効後紋章起動
+	FOR カウンタ, 0, 5
+		SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+			CONTINUE
+		SIF GETVARS(@"%듀얼리스트%_魔_追カテ:カウンタ") != "함락주박" && GETVARS(@"%듀얼리스트%_魔_追カテ2:カウンタ") != "함락주박"
+			CONTINUE
+		IF INRANGE(GETVAR(@"%듀얼리스트%_魔_汎数:カウンタ"),1,5) && GETVAR(@"%듀얼리스트%_필드:{GETVAR(@"%듀얼리스트%_魔_汎数:カウンタ") - 1}") == -1
+			条件달성 = 1
+			BREAK
+		ENDIF
+	NEXT
+	SIF 条件달성 != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59865(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カードゾーン
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 소환先
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 僕存在
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59865,1)
+	IF RESULT == 0
+		CALL RESETCONDITION_MAT
+		必要素材数 = 1
+		素材条件カテゴリ = Ɽꓤ
+		重ねてＸ = 1
+		TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件固カテゴリ = E.R.A
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場全体",場所,"제외",,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59865,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲묘지 = 1
+		효과条件固カテゴリ = GⱤꓤendios
+		효과条件カテゴリ = Ɽꓤ
+		효과条件종류 = 초차원
+		CALL CARD_CHECK_ADV(듀얼리스트)
+		SIF RESULT == 1
+			僕存在 = 1
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			選択カード = 現마함(듀얼리스트)
+			CALL FULLRESET
+			효과条件固カテゴリ = Ɽꓤ
+			효과範囲덱 = 1
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件성별 = 牝性
+			효과条件行先플래그 = 마함行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				選択カードID = RESULT:1
+				CALL CARD_SET_CATEGORY(듀얼리스트,"마함",選択カード,"함락주박")
+				;필드番号は+1で記録しないといけない(필드汎数の初期値は0のため)
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"汎数",現필드(듀얼리스트) + 1,上書きモード)
+				CALL KOJO_FARRGRENDIOS_BASE("陥落超越_前",듀얼리스트,選択カードID)
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과範囲묘지 = 1
+				효과条件カテゴリ = Ɽꓤ
+				효과条件종류 = 초차원
+				효과추가종류 = 1000000 + 選択カードID
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+				SIF 僕存在 != 1
+					CALL KOJO_FARRGRENDIOS_BASE("陥落超越_後",듀얼리스트,選択カードID)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = Ɽꓤ
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐",3)
+	ENDIF
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"変化元ID",9990)
+ELSEIF 종류 == ターン開始時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59865,20)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,59865,永紋章予約)
+		CALL CARD_RESERV(듀얼리스트,59865,時限紋章予約)
+	ENDIF
+ELSEIF 종류 == 永紋章起動
+	CALL FULLRESET
+	효과条件カテゴリ = 함락주박
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"無効",3)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐",3)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"対耐",3)
+ELSEIF 종류 == 時限紋章起動
+	IF スタンバイフェイズ == 1
+		SETVAR @"%듀얼리스트%_効後紋章:%듀얼리스트%_効後紋章カウンタ", 59865
+		SETVAR @"%듀얼리스트%_効後紋章カウンタ", GETVAR(@"%듀얼리스트%_効後紋章カウンタ") + 1
+	ELSEIF エンドフェイズ == 1
+		FOR カウンタ, 0, 5
+			SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+				CONTINUE
+			SIF GETVARS(@"%듀얼리스트%_魔_追カテ:カウンタ") != "함락주박" && GETVARS(@"%듀얼리스트%_魔_追カテ2:カウンタ") != "함락주박"
+				CONTINUE
+			IF INRANGE(GETVAR(@"%듀얼리스트%_魔_汎数:カウンタ"),1,5) && GETVAR(@"%듀얼리스트%_필드:{GETVAR(@"%듀얼리스트%_魔_汎数:カウンタ") - 1}") == -1
+				CALL CARD_DISPOSE(듀얼리스트,"마함",カウンタ)
+			ENDIF
+			IF GETVAR(@"%듀얼리스트%_魔_表:カウンタ") > 2 
+				PRINTL
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",カウンタ,"表",1,上書きモード)
+				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("名前")
+				PRINTFORM 마법＆함정 존『{カウンタ}』의 뒷면 표시인 %RESULTS%가 앞면 표시로 돌아왔습니다。
+			ENDIF
+		NEXT
+		PRINTW
+	ENDIF
+ELSEIF 종류 == 効後紋章起動
+	FOR カウンタ, 0, 5
+		SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+			CONTINUE
+		SIF GETVARS(@"%듀얼리스트%_魔_追カテ:カウンタ") != "함락주박" && GETVARS(@"%듀얼리스트%_魔_追カテ2:カウンタ") != "함락주박"
+			CONTINUE
+		IF INRANGE(GETVAR(@"%듀얼리스트%_魔_汎数:カウンタ"),1,5) && GETVAR(@"%듀얼리스트%_필드:{GETVAR(@"%듀얼리스트%_魔_汎数:カウンタ") - 1}") == -1
+			CALL CARD_DISPOSE(듀얼리스트,"마함",カウンタ)
+		ENDIF
+	NEXT
+ENDIF

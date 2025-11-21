@@ -2,13 +2,15 @@
 #DIM DYNAMIC カスタムカード
 #DIM DYNAMIC 캐릭터番号
 #DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
 #DIM DYNAMIC カスタムポテンシャル
 #DIM DYNAMIC RESULT보존
-#DIM CONST 最大ポテンシャル = 15
+#DIM CONST 最大ポテンシャル = 17
 
 
-PRINTFORMW 카드 커스터마이즈를 시작합니다。
-PRINTFORMW 포텐셜 포인트의 상한은 %TOFULL(TOSTR(最大ポテンシャル))%입니다。상한 이내에서 카드를 커스터마이즈 할 수 있습니다。
+PRINTFORML 카드 커스터마이즈를 시작합니다。
+PRINTFORML 포텐셜 포인트의 상한은 %TOFULL(TOSTR(最大ポテンシャル))%입니다。상한 이내에서 카드를 커스터마이즈 할 수 있습니다。
+PRINTFORML （상한을 넘은 경우、넘은 포텐셜 포인트가 5이내라면 준제한、10 이내라면 제한 카드로서 제작할 수 있습니다）
 PRINTFORML 
 
 $CARD_INPUTLOOP
@@ -58,8 +60,10 @@ CALL MONSTER_LIST(9)
 IF RESULT > 0
 	캐릭터番号 = RESULT
 	カスタムID:カスタムカード = NO:캐릭터番号
+ELSEIF RESULT == 1000
+	RETURN
 ELSE
-	PRINTFORMW 이 캐릭터를 고를 수 없습니다
+	PRINTFORMW 이 캐릭터는 고를 수 없습니다
 	GOTO NO_INPUTLOOP
 ENDIF
 
@@ -82,26 +86,64 @@ ELSEIF RESULT == 2
 ENDIF
 
 $KATE_INPUTLOOP
-PRINTFORML 추가 카테고리명을 １개 입력해주세요。
-PRINTFORML 
-INPUTS
-
-カスタムカテゴリ:カスタムカード = %RESULTS%
-IF RESULTS == ""
-	PRINTFORMW 추가 카테고리는 없는 걸로 괜찮으시겠습니까？
-ELSE
-	PRINTFORMW 추가 카테고리는 「%カスタムカテゴリ:カスタムカード%」으로 괜찮으시겠습니까？
-ENDIF
+PRINTFORML 카테고리를 추가하시겠습니까？（포텐셜 포인트２소비）
 PRINTFORML [1] - 예
 PRINTFORML [2] - 아니오
 BINPUT
-IF RESULT == 1
+	IF RESULT == 1
+	PRINTFORML 추가 카테고리명을 １개 입력해주세요。
+	PRINTFORML 
+	INPUTS
+	カスタムカテゴリ:カスタムカード = %RESULTS%
+	IF RESULTS == ""
+		PRINTFORML 추가 카테고리는 없는 걸로 괜찮으시겠습니까？
+		PRINTFORML [1] - 예
+		PRINTFORML [2] - 아니오
+		BINPUT
+		IF RESULT == 1
+		ELSEIF RESULT == 2
+			GOTO KATE_INPUTLOOP
+		ENDIF
+	ELSE
+		PRINTFORML 
+		PRINTFORML 추가 카테고리는 「%カスタムカテゴリ:カスタムカード%」으로 괜찮으시겠습니까？
+		PRINTFORML [1] - 예
+		PRINTFORML [2] - 아니오
+		BINPUT
+		IF RESULT == 1
+			カスタムポテンシャル += 2
+			PRINTFORML 
+			PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+			PRINTFORML
+			PRINTFORML 카테고리를 더 추가하시겠습니까？
+			PRINTFORML [1] - 예
+			PRINTFORML [2] - 아니오
+			BINPUT
+			IF RESULT == 1
+				CALL KATE_INPUTLOOP2(カスタムカード,カスタムポテンシャル)
+				IF RESULT > 0
+					カスタムポテンシャル = RESULT
+				ENDIF
+			ELSEIF RESULT == 2
+			ENDIF
+		ELSEIF RESULT == 2
+			GOTO KATE_INPUTLOOP
+		ENDIF
+ENDIF
 ELSEIF RESULT == 2
-	GOTO KATE_INPUTLOOP
+	PRINTFORML 추가 카테고리는 없는걸로 괜찮으시겠습니까？
+	PRINTFORML [1] - 예
+	PRINTFORML [2] - 아니오
+	BINPUT
+	IF RESULT == 1
+	ELSEIF RESULT == 2
+		GOTO KATE_INPUTLOOP
+	ENDIF
 ENDIF
 
 PRINTFORML 
 PRINTFORML 카드의 속성을 골라주세요。
+PRINTFORML
 PRINTFORML [1] - 빛 속성
 PRINTFORML [2] - 어둠 속성
 PRINTFORML [3] - 땅 속성
@@ -112,7 +154,9 @@ PRINTFORML [7] - 신 속성
 BINPUT
 カスタム속성:カスタムカード = RESULT
 
+PRINTFORML
 PRINTFORML 카드 종족을 골라주세요。
+PRINTFORML
 PRINTFORML [1] - 마법사족
 PRINTFORML [2] - 드래곤족
 PRINTFORML [3] - 언데드족
@@ -221,8 +265,11 @@ PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{�
 PRINTFORML 
 
 PRINTFORML 카드의 효과를 짜보시겠습니까？
-PRINTFORML [0] - 예
-PRINTFORML [1] - 아니오
+PRINTFORML [1] - 예
+PRINTFORML [2] - 아니오
+TRYCALLFORM CARD_{カスタムID:カスタムカード}("종류")
+SIF RESULT != 2
+	PRINTFORML [3] - 원래 카드의 종류＆효과를 적용한다（포텐셜 포인트１５소비）
 BINPUT
 IF RESULT == 1
 	カスタム종류:カスタムカード = 효과モン
@@ -505,6 +552,9 @@ IF RESULT == 1
 		ENDIF
 	ENDIF
 
+ELSEIF RESULT == 3
+	カスタム효과引継ぎ:カスタムカード = 1
+	カスタムポテンシャル += 15
 ELSE
 	カスタム종류:カスタムカード = 通常モン
 ENDIF
@@ -515,9 +565,18 @@ PRINTFORMW 카드의 포텐셜 포인트를 판정합니다……
 PRINTFORMW 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル} 
 IF カスタムポテンシャル > 最大ポテンシャル
 	PRINTFORMW 포텐셜 포인트가 상한에 달했습니다。
+	IF INRANGE(カスタムポテンシャル,最大ポテンシャル+1,最大ポテンシャル+5)
+		PRINTFORML 이 카드는 준제한 카드가 됩니다。
+		カスタム制限:カスタムカード = 準制限
+	ELSEIF INRANGE(カスタムポテンシャル,最大ポテンシャル+6,最大ポテンシャル+10)
+		PRINTFORML 이 카드는 제한 카드가 됩니다。
+		カスタム制限:カスタムカード = 制限
+	ENDIF
 	PRINTFORML 커스터마이즈를 다시 하시겠습니까？
 	PRINTFORML [1] - 다시한다
 	PRINTFORML [2] - 초기화하고 종료한다
+	SIF カスタムポテンシャル <= 最大ポテンシャル + 10
+		PRINTFORML [3] - 이대로 제작한다。
 	BINPUT
 	IF RESULT == 1
 		PRINTFORMW 카테고리 입력부터 커스터마이즈를 다시 해주세요。
@@ -532,10 +591,10 @@ IF カスタムポテンシャル > 最大ポテンシャル
 	ENDIF
 
 ELSE
-	PRINTFORMW 포텐셜 포인트가 상한 이내에 들어왔습니다。
+	PRINTFORML 포텐셜 포인트가 상한 이내에 들어왔습니다。
 ENDIF
 
-PRINTFORMW 카드의 커스터마이즈를 종료했습니다。
+PRINTFORML 카드의 커스터마이즈를 종료했습니다。
 PRINTFORMW 카드의 정보를 출력합니다
 TRYCALLFORM CARD_UI(カスタムカード);　カスタムカード情報출력
 WAIT
@@ -543,17 +602,78 @@ WAIT
 カスタムポテンシャル = 0
 RETURN 1
 
-@CARDCUSTOM_RESET(カスタムカード,やり直し플래그)
-;#DIM DYNAMIC 参照
+@KATE_INPUTLOOP2(カスタムカード,カスタムポテンシャル)
 #DIM DYNAMIC カスタムカード
 ;#DIM DYNAMIC 캐릭터番号
-;#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
+#DIM DYNAMIC カウンタD
+#DIM DYNAMIC カスタムポテンシャル
+#DIM CONST 最大ポテンシャル = 20
+
+VARSET カウンタ
+
+$KATE_INPUTLOOP
+PRINTFORML 추가 카테고리명을 입력해주세요。
+PRINTFORML 
+INPUTS
+カスタムカテゴリ２:カウンタ:カスタムカード = %RESULTS%
+IF RESULTS == ""
+	PRINTFORML 추가 카테고리는 없는걸로 괜찮으시겠습니까？
+	PRINTFORML [1] - 예
+	PRINTFORML [2] - 아니오
+	IF RESULT == 1
+		WAIT
+		RETURN カスタムポテンシャル
+	ELSEIF RESULT == 2
+		GOTO KATE_INPUTLOOP
+	ENDIF
+ELSE
+	PRINTFORML 
+	PRINTFORML 추가 카테고리는「%カスタムカテゴリ２:カウンタ:カスタムカード%」로 괜찮으시겠습니까？
+	PRINTFORML [1] - 예
+	PRINTFORML [2] - 아니오
+	BINPUT
+	IF RESULT == 1
+		カスタムポテンシャル += 2
+		PRINTFORML 
+		PRINTFORML 현재 소비 포텐셜 포인트:{カスタムポテンシャル}/{最大ポテンシャル}
+		PRINTFORML 
+		IF カウンタ < 2
+			PRINTFORML 카테고리를 더 추가하시겠습니까？
+			PRINTFORML [1] - 예
+			PRINTFORML [2] - 아니오
+			BINPUT
+			IF RESULT == 1
+				カウンタ ++
+				GOTO KATE_INPUTLOOP
+			ELSEIF RESULT == 2
+				RETURN カスタムポテンシャル
+			ENDIF
+		ENDIF
+	ELSEIF RESULT == 2
+		GOTO KATE_INPUTLOOP
+	ENDIF
+ENDIF
+
+WAIT
+RETURN カスタムポテンシャル
+
+
+@CARDCUSTOM_RESET(カスタムカード,やり直し플래그)
+#DIM DYNAMIC カスタムカード
+;#DIM DYNAMIC 캐릭터番号
+#DIM DYNAMIC カウンタ
 #DIM DYNAMIC やり直し플래그
 
 SIF やり直し플래그 != 1
 	カスタムID:カスタムカード = -1
 
-カスタムカテゴリ:カスタムカード = ""
+VARSET カスタムカテゴリ:カスタムカード,"" , カスタムカード, カスタムカード+1
+FOR カウンタ,0,5
+	カスタムカテゴリ２:カウンタ:カスタムカード =  
+NEXT
 
 カスタム종류:カスタムカード = 通常モン
 カスタム속성:カスタムカード = 빛속성
@@ -578,4 +698,6 @@ SIF やり直し플래그 != 1
 カスタム효과①종류:カスタムカード = 0
 カスタム효과①複数選択:カスタムカード = 0
 
+カスタム효과引継ぎ:カスタムカード = 0
+カスタム制限:カスタムカード = 0
 

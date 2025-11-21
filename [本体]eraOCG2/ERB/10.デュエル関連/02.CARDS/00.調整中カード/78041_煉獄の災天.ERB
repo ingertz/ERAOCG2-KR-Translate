@@ -1,0 +1,232 @@
+﻿@CARDNAME_78041,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 연옥의 재천
+	CASE "略称"
+		RESULTS = 연옥의 재천
+	CASE "カテゴリ"
+		RESULTS:0 = 연옥
+ENDSELECT
+
+
+@CARD_78041(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "レア度"
+		RETURN SPR
+	CASE "추가日"
+		RETURN 251123
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_78041(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느쪽인가 １개밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①：패를 １장 버리고 발동할 수 있다。덱에서 악마족 몬스터 １장을 묘지로 보낸다。
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ②：마법＆함정 존의 앞면 표시인 이 카드를 묘지로 보내고 발동할 수 있다。상대 필드의 융합 / Ｓ / Ｘ / Ｌ몬스터의 수 만큼、
+PRINTL 패 / 덱에서 "인페르노이드" 몬스터를 묘지로 보낸다（같은 이름의 카드는 １장까지）。
+
+@CARDCAN_78041(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성플래그 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,78041)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,78041)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	;-----------------------------
+	;①효과のチェック　①が발동できない場合は「条件달성플래그 |= 1」を설정
+	SIF 손패数(듀얼리스트) == 0
+		条件달성플래그 |= 1
+	
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 악마족
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		条件달성플래그 |= 1
+	
+	;-----------------------------
+	;②효과のチェック　②が발동できない場合は「条件달성플래그 |= 2」を설정
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 = EXモン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		条件달성플래그 |= 2
+	
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件カテゴリ = 인페르노이드
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		条件달성플래그 |= 2
+	
+	SIF 条件달성플래그 & 1 && 条件달성플래그 & 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_78041(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성플래그 = 0
+#DIM DYNAMIC 選択結果
+#DIM DYNAMIC EXモンスター数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78041,1)
+	IF RESULT == 0
+		;両方の효과が利用可能か確認する。条件달성플래그が0なら両方の효과が발동可能。
+		;両方발동可能なら、使う효과を選択する。
+		
+		;-----------------------------
+		;①효과のチェック　①が발동できない場合は「条件달성플래그 |= 1」を설정
+		SIF 손패数(듀얼리스트) == 0
+			条件달성플래그 |= 1
+		
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종족 = 악마족
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			条件달성플래그 |= 1
+		
+		;-----------------------------
+		;②효과のチェック　②が발동できない場合は「条件달성플래그 |= 2」を설정
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件종류 = EXモン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			条件달성플래그 |= 2
+		
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件カテゴリ = 인페르노이드
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			条件달성플래그 |= 2
+		
+		IF 条件달성플래그 == 0
+			IF 듀얼리스트 == "상대"
+				;CPUは、両方を발동できる場合は②の효과を優先する。（基本的に入れるなら「인페르노이드」덱想定のため）
+				;【レッド・デーモン】でも使えるカードだが、CPUがその目的で使う場合は②は발동できない想定なのでOK。
+				選択結果 = いいえ
+			ELSE
+				CUSTOMDRAWLINE —
+				PRINTFORML 
+				PRINTFORML 어느 효과를 사용하시겠습니까?
+				PRINTFORML 
+				PRINTL ①：패를 １장 버리고 발동할 수 있다。덱에서 악마족 몬스터 １장을 묘지로 보낸다。
+				PRINTFORML 
+				PRINTL ②：마법＆함정 존의 앞면 표시인 이 카드를 묘지로 보내고 발동할 수 있다。상대 필드의 융합 / Ｓ / Ｘ / Ｌ몬스터의 수 만큼、
+				PRINTL 패 / 덱에서 "인페르노이드" 몬스터를 묘지로 보낸다（같은 이름의 카드는 １장까지）。
+				PRINTFORML 
+				CALL YN_CHOICE(듀얼리스트,"①의 효과","②의 효과")
+				選択結果 = RESULT
+			ENDIF
+		ELSEIF 条件달성플래그 & 1
+			選択結果 = いいえ
+		ELSE
+			選択結果 = はい
+		ENDIF
+		
+		;-----------------------------
+		;実際の①②の효과処理の部分
+		IF 選択結果 == はい
+			;손패を１枚捨てる。
+			CALL FULLRESET
+			효과範囲손패 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 0
+				;덱から악마족モンスター１体を묘지へ送る。
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件종족 = 악마족
+				효과条件종류 = モン全般
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ELSE
+			;このカードを묘지へ送る。
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,묘지行き)
+			
+			;상대フィールドのEXモンスターの数をカウントする。
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件종류 = EXモン全般
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT != 0
+				EXモンスター数 = RESULT
+				;상대フィールドのEXモンスターの数まで손패・덱から「인페르노이드」モンスターを묘지へ送る。
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과範囲덱 = 1
+				효과条件カテゴリ = 인페르노이드
+				효과条件종류 = モン全般
+				효과条件複数 = 100 - EXモンスター数
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78041)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ENDIF
+

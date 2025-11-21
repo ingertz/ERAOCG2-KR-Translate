@@ -7,18 +7,19 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 사역마와의 계약
+		RESULTS = 사역마와의 계약
 	CASE "略称"
-RESULTS = 사역마와의 계약
+		RESULTS = 사역마와의 계약
 	CASE "カテゴリ"
-RESULTS:0 = 령사
-RESULTS:1 = 게임 오리지널
+		RESULTS:0 = 령사
+		RESULTS:1 = 사역마
+		RESULTS:2 = 게임 오리지널
 ENDSELECT
 
 
 @CARD_61252(参照先)
-
 #DIMS DYNAMIC 参照先
+
 VARSET RESULT
 VARSET RESULTS
 
@@ -26,8 +27,8 @@ SELECTCASE 参照先
 	CASE "종류"
 		RETURN 通常마법
 ENDSELECT
-
 RETURN 0
+
 
 @CARD_EXPLANATION_61252(종류)
 #DIM DYNAMIC 종류
@@ -35,17 +36,24 @@ RETURN 0
 PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없다.
 CALLFORM CARD_ABLE(1,손패起動,마함起動)
 PRINTL ①: 덱에서 공격력 1500, 수비력 200의 몬스터 1장을 패에 넣는다.
-PRINTL 
-PRINTL 
-PRINTL 
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신 필드에 마법사족 몬스터와、그 몬스터와 같은 속성인
+PRINTL 마법사족 이외의 몬스터가 존재하는 경우에 발동할 수 있다。
+PRINTL 묘지의 이 카드를 제외하고、자신의 덱 / 묘지의 "령사" 함정 1장을 자신 필드에 세트한다。
+PRINTL 이 효과로 세트한 카드는 세트한 턴에도 발동할 수 있다。
+
 
 @CARDCAN_61252(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
+
 #DIM DYNAMIC カウンタ
-#DIM 選択カード
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 検出속성, 8
+#DIM DYNAMIC 検出종족, 21
+#DIM DYNAMIC 条達속성, 8
 
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,61252)
@@ -67,14 +75,56 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,61252)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 령사
+	효과条件종류 = 함정全般
+	효과条件セット = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	FOR カウンタ, 0, 5
+		CALL 複数속성検出(듀얼리스트,"필드",カウンタ,検出속성)
+		CALL 複数종족検出(듀얼리스트,"필드",カウンタ,検出종족)
+
+		;持っている속성각각 に対して条件달성ビットを立てる
+		IF 検出종족:마법사족 == 1
+			;마법사족が含まれるならば령사側(bit0 == 1)
+			FOR カウンタB, 0, 8
+				SIF 検出속성:カウンタB == 1
+					SETBIT 条達속성:カウンタB, 0
+			NEXT
+		ELSE
+			;마법사족が含まれないなら使い魔側(bit1 == 2)
+			FOR カウンタB, 0, 8
+				SIF 検出속성:カウンタB == 1
+					SETBIT 条達속성:カウンタB, 1
+			NEXT
+		ENDIF
+	NEXT
+	;両方のビット(1 | 2 == 3)が立った속성がある→使い魔と령사の組み合わせがいる
+	SIF !MATCH(条達속성, 3)
+		RETURN 0
+	RETURN 1
 ENDIF
+
 
 @CARDEFFECT_61252(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-#DIM DYNAMIC カウンタ
 
 IF 종류 == 마함起動 || 종류 == 손패起動
 	;カード발동確認
@@ -82,9 +132,20 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	IF RESULT == 0
 		;通常마법汎用処理
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		CALL RESETCONDITION
+		CALL FULLRESET
 		효과条件固攻撃力 = 1500
 		효과条件固守備力 = 200
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61252,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 령사
+		효과条件종류 = 함정全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"使化裏側표시")
 	ENDIF
 ENDIF

@@ -12,6 +12,8 @@ SELECTCASE 参照先
 		RESULTS = AP 에스토릴
 	CASE "カテゴリ"
 		RESULTS:0 = 신희
+	CASE "出典作品"
+		RESULTS:0 = 무장신희
 ENDSELECT
 
 
@@ -25,7 +27,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 초차원
 	CASE "속성"
 		RETURN 바람속성
@@ -39,6 +40,8 @@ SELECTCASE 参照先
 		RETURN 1000
 	CASE "성별"
 		RETURN 牝性
+	CASE "連動ID"
+		RETURN 4703
 ENDSELECT
 
 RETURN 0
@@ -95,7 +98,7 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
-효과条件名前 = 신희 에스토릴
+	효과条件名前 = 신희 에스토릴
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -113,7 +116,7 @@ ELSEIF 종류 == 攻撃時誘発
 	SIF RESULT == 초차원
 		RETURN 0
 	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:戦闘場所(듀얼리스트)")}("名前")
-	SIF RESULTS != "신희エストリル"
+	SIF RESULTS != "신희 에스토릴"
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 특수소환時強制
@@ -157,7 +160,7 @@ IF 종류 == 필드起動 || 종류 == フリー誘発
 		カード추가先 = 現EX山札数("자신")
 		CALL CARD_RECONSTRUCT(듀얼리스트,"EX덱",カード추가先,44703)
 
-		PRINTFORMW エストリルは武装をパ-ジした！
+		PRINTFORMW 에스토릴은 무장을 퍼지했다！
 
 		CALL CARD_RECONSTRUCT(듀얼리스트,"필드",場所,選択カードID)
 

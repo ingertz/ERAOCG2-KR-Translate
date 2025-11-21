@@ -9,11 +9,14 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 광기의 붉은 눈 레이센
 	CASE "略称"
-		RESULTS = 우동게
+		RESULTS = 레이센 우동게인
 	CASE "カテゴリ"
 		RESULTS:0 = 영원정
 		RESULTS:1 = 환상소녀
-		RESULTS:4 = 동방 Project
+		RESULTS:2 = 월인
+		RESULTS:3 = 토끼
+	CASE "出典作品"
+		RESULTS:0 = 동방 Project
 ENDSELECT
 
 
@@ -24,7 +27,7 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "외부자"
+	CASE "外部者"
 		RETURN 1
 	CASE "종류"
 		RETURN 효과モン
@@ -43,7 +46,7 @@ SELECTCASE 参照先
 	CASE "生成カード"
 		RETURN 205531
 	CASE "추가日"
-		RETURN 250829
+		RETURN 251119
 ENDSELECT
 
 RETURN 0
@@ -53,13 +56,13 @@ RETURN 0
 
 PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,손패起動)
-PRINTL ①：이 카드가 패에 존재하고、필드에 몬스터가 ２장 이상 존재하는 경우에 발동할 수 있다。
+PRINTL ①：이 카드가 패에 존재하고、필드에 앞면 표시 카드가 ２장 이상 존재하는 경우에 발동할 수 있다。
 PRINTL 이 카드를 패에서 특수 소환한다。
-PRINTL 그 후、자신 필드에 이 카드명과 같은 "영원정" 몬스터가 존재하는 경우、
-PRINTL 덱에서 "영원정" 마법 카드 １장을 필드에 세팅한다。
-CALLFORM CARD_ABLE(2,효과後誘発)
-PRINTL ②：상대가 카드의 효과를 발동한 경우에 발동한다。
-PRINTL 덱 외에서 "파부 적안최면" １장을 패에 넣는다。
+PRINTL 그 후、자신 필드에 이 카드명 이외의 "영원정" 카드가 존재하는 경우、
+PRINTL 덱에서 "영원정" 마법 카드 １장을 필드에 세트한다。
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ②：필드의 이 카드명 이외의 카드의 효과를 발동했을 때에 발동할 수 있다。
+PRINTL 덱 밖에서 "파부 적안최면" １장을 패에 넣는다。
 
 @CARDCAN_5531(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -84,18 +87,26 @@ IF 종류 == 손패起動
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과範囲상대필드 = 1
+	효과範囲마함 = 1
+	효과範囲상대마함 = 1
+	효과条件표시 = 表側표시
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT < 2
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 발동誘発
-	SIF 발동済_2(듀얼리스트,52562)
+	SIF 발동済_2(듀얼리스트,5531)
 		RETURN 0
 	SIF ゾーン != "필드"
 		RETURN 0
 	CALL FULLRESET
-	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件固名前 = 광기의 붉은 눈 레이센
+	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -118,6 +129,7 @@ IF 종류 == 손패起動
 
 		CALL FULLRESET
 		효과範囲필드 = 1
+		효과範囲마함 = 1
 		효과条件カテゴリ = 영원정
 		효과条件固名前 = 광기의 붉은 눈 레이센
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -163,7 +175,7 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "외부자"
+	CASE "外部者"
 		RETURN 1
 	CASE "종류"
 		RETURN 速攻마법
@@ -176,13 +188,12 @@ RETURN 0
 @CARD_EXPLANATION_205531(종류)
 #DIM DYNAMIC 종류
 PRINTL 이 카드명의 효과는 １턴에 １번밖에 사용할 수 없다。
-
-CALLFORM CARD_ABLE(10,마함起動 ,손패起動)
-PRINTL ①：상대 필드의 몬스터 １장의 효과를 무효로 한다。
-PRINTL 자신 필드의 "광기의 붉은 눈 레이센"이 파괴되었을 경우,
-PRINTL 자신 묘지에서 "광기의 붉은 눈 레이센"을 특수 소환하고, 이 카드는 "라스트워드"가 된다。
+CALLFORM CARD_ABLE(10,마함起動 ,손패起動,フリー誘発)
+PRINTL ①：자신 필드의 카드 １장은 턴 종료시까지 대상 내성을 얻는다。
+PRINTL 자신 필드의 "광기의 붉은 눈 레이센"이 파괴어있는 경우、
+PRINTL 자신 묘지에서 "광기의 붉은 눈 레이센"을 특수 소환하고, 이 카드는 "라스트 워드"가 된다。
 CALL TEXT_DECORATION("LASTWORD")
-PRINTL ●상대의 필드의 모든 몬스터는 공격할 수 없으며, 턴 종료 시 파괴된다。
+PRINTL ●상대 필드의 모든 몬스터는 공격할 수 없으며, 턴 종료 시 파괴된다。
 
 
 @CARDCAN_205531(듀얼리스트,종류,ゾーン,場所)
@@ -200,16 +211,9 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,205531)
 		RETURN 0
-	IF ゾーン == "손패"
-		SIF ターンプレイヤー != 듀얼리스트
-			RETURN 0
-	ELSEIF ゾーン == "마함"
-		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
-			RETURN 0
-	ELSE
 		RETURN 0
-	ENDIF
 	RETURN 1
 ENDIF
 
@@ -228,7 +232,7 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 
-IF 종류 == 마함起動 || 종류 == 손패起動
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	;カード발동確認
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,205531,1)
 	IF RESULT == 0
@@ -243,16 +247,18 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 			효과条件名前 = 광기의 붉은 눈 레이센
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 
-			CALLFORM CHARA_CUTIN("Last Word","환　룡　월　예","Luntic Red Eyes",,,,1)
+			CALLFORM CHARA_CUTIN("Last Word","환　롱　월　예","Luntic Red Eyes",,,,1)
 
 			CALL FULLRESET
 			효과範囲상대필드 = 1
-			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"無効")
+			효과추가종류 = 97
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"戦無")
 		ELSE			
 			CALLFORM CHARA_CUTIN("Spell Card","「파부」적안최면（마인드 셰이커）",,,,,1)
-
-			CALL FULLRESET
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"無効")
 		ENDIF
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"対耐",1)
 	ENDIF
 ENDIF

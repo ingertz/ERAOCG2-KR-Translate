@@ -17,7 +17,26 @@ SELECTCASE 参照先
 			RESULTS = 空白のカード
 	CASE "カテゴリ"
 		TRYCALLFORM CARDNAME_{カスタムID:カスタムカード}("カテゴリ")
+		IF カスタムカテゴリ:カスタムカード == ""
+			RESULTS:3 = %RESULTS:3%
+		ELSE
 		RESULTS:3 = %カスタムカテゴリ:カスタムカード%
+		ENDIF
+		IF カスタムカテゴリ２:0:カスタムカード == ""
+			RESULTS:2 = %RESULTS:2%
+		ELSE
+			RESULTS:2 = %カスタムカテゴリ２:0:カスタムカード%
+		ENDIF
+		IF カスタムカテゴリ２:1:カスタムカード == ""
+			RESULTS:1 = %RESULTS:1%
+		ELSE
+			RESULTS:1 = %カスタムカテゴリ２:1:カスタムカード%
+		ENDIF
+		IF カスタムカテゴリ２:2:カスタムカード == ""
+			RESULTS:0 = %RESULTS:0%
+		ELSE
+			RESULTS:0 = %カスタムカテゴリ２:2:カスタムカード%
+		ENDIF
 ENDSELECT
 
 
@@ -29,7 +48,12 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-		RETURN カスタム종류:カスタムカード
+		IF カスタム효과引継ぎ:カスタムカード != 0
+			TRYCALLFORM CARD_{カスタムID:カスタムカード}("종류")
+			RETURN RESULT
+		ELSE
+			RETURN カスタム종류:カスタムカード
+		ENDIF
 	CASE "속성"
 		RETURN カスタム속성:カスタムカード
 	CASE "종족"
@@ -49,8 +73,16 @@ SELECTCASE 参照先
 		RETURN カスタムID:カスタムカード
 	CASE "生産불가"
 		RETURN 1
+	CASE "制限"
+		IF カスタム효과引継ぎ:カスタムカード == 0
+			TRYCALLFORM CARD_{カスタムID:カスタムカード}("制限")
+			RETURN RESULT
+		ELSE
+			RETURN カスタム制限:カスタムカード
+		ENDIF
 ENDSELECT
 RETURN 0
+
 
 
 @CARD_EXPLANATION_CUSTOM(カスタムカード,종류)
@@ -188,9 +220,9 @@ PRINTFORM ①：
 				PRINTFORML 덱으로 되돌린다。
 		ENDSELECT
 	ENDIF
-		
+ELSEIF カスタム효과引継ぎ:カスタムカード != 0
+	TRYCALLFORM CARD_EXPLANATION_{カスタムID:カスタムカード},종류		
 ENDIF
-PRINTFORML 
 
 
 @CARDCAN_CUSTOM(カスタムカード,듀얼리스트,종류,ゾーン,場所)
@@ -341,10 +373,13 @@ IF 종류 == カスタム효과①条件01:カスタムカード || 종류 == �
 		ENDSELECT
 
 	ENDIF
+ELSEIF カスタム효과引継ぎ:カスタムカード != 0
+	TRYCALL CARDEFFECT_{カスタムID:カスタムカード}(듀얼리스트,종류,ゾーン,場所)
 ENDIF
 
 
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_201,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -358,26 +393,50 @@ JUMP CARD_CUSTOM,201,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,201,종류
 
+
+@CARDSUMMON_201(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:201 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:201}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_201(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,201,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:201 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:201}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,201,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_201(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,201,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:201 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:201}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,201,듀얼리스트,종류,ゾーン,場所
+ENDIF
+
+;ーーーーーーーーーーーーーーー
 
 @CARDNAME_202,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 JUMP CARDNAME_CUSTOM,202,参照先
-
 
 @CARD_202(参照先)
 #DIMS DYNAMIC 参照先
@@ -387,21 +446,45 @@ JUMP CARD_CUSTOM,202,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,202,종류
 
+
+@CARDSUMMON_202(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:202 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:202}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_202(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,202,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:202 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:202}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,202,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_202(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,202,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:202 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:202}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,202,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_203,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -415,21 +498,45 @@ JUMP CARD_CUSTOM,203,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,203,종류
 
+
+@CARDSUMMON_203(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:203 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:203}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_203(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,203,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:203 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:203}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,203,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_203(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,203,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:203 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:203}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,203,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_204,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -443,21 +550,45 @@ JUMP CARD_CUSTOM,204,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,204,종류
 
+
+@CARDSUMMON_204(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:204 != 0
+	CALLFORM CARDSUMMON_{カスタムID:204}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_204(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,204,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:204 != 0
+	CALLFORM CARDCAN_{カスタムID:204}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,204,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_204(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,204,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:204 != 0
+	CALLFORM CARDEFFECT_{カスタムID:204}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,204,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_205,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -471,21 +602,45 @@ JUMP CARD_CUSTOM,205,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,205,종류
 
+
+@CARDSUMMON_205(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:205 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:205}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_205(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,205,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:205 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:205}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,205,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_205(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,205,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:205 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:205}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,205,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_206,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -499,21 +654,45 @@ JUMP CARD_CUSTOM,206,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,206,종류
 
+
+@CARDSUMMON_206(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:206 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:206}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_206(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,206,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:206 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:206}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,206,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_206(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,206,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:206 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:206}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,206,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_207,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -527,21 +706,45 @@ JUMP CARD_CUSTOM,207,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,207,종류
 
+
+@CARDSUMMON_207(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:207 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:207}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_207(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,207,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:207 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:207}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,207,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_207(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,207,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:207 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:207}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,207,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_208,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -555,21 +758,45 @@ JUMP CARD_CUSTOM,208,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,208,종류
 
+
+@CARDSUMMON_208(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:208 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:208}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_208(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,208,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:208 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:208}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,208,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_208(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,208,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:208 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:208}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,208,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_209,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -583,21 +810,45 @@ JUMP CARD_CUSTOM,209,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,209,종류
 
+
+@CARDSUMMON_209(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:209 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:209}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_209(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,209,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:209 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:209}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,209,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_209(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,209,듀얼리스트,종류,ゾーン,場所
 
+IF カスタム효과引継ぎ:209 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:209}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,209,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
+;ーーーーーーーーーーーーーーー
 @CARDNAME_210,参照先
 ;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
@@ -611,16 +862,42 @@ JUMP CARD_CUSTOM,210,参照先
 #DIM DYNAMIC 종류
 JUMP CARD_EXPLANATION_CUSTOM,210,종류
 
+
+@CARDSUMMON_210(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+IF カスタム효과引継ぎ:210 != 0
+	TRYCALLFORM CARDSUMMON_{カスタムID:210}(듀얼리스트,소환カード,EX参照)
+	RETURN RESULT
+ENDIF
+
+
 @CARDCAN_210(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDCAN_CUSTOM,210,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:210 != 0
+	TRYCALLFORM CARDCAN_{カスタムID:210}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDCAN_CUSTOM,210,듀얼리스트,종류,ゾーン,場所
+ENDIF
 
 @CARDEFFECT_210(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-JUMP CARDEFFECT_CUSTOM,210,듀얼리스트,종류,ゾーン,場所
+
+IF カスタム효과引継ぎ:210 != 0
+	TRYCALLFORM CARDEFFECT_{カスタムID:210}(듀얼리스트,종류,ゾーン,場所)
+	RETURN RESULT
+ELSE
+	JUMP CARDEFFECT_CUSTOM,210,듀얼리스트,종류,ゾーン,場所
+ENDIF
+
+;ーーーーーーーーーーーーーーー

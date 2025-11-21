@@ -1,0 +1,180 @@
+@CARDNAME_59866,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = “Ɽꓤ”유닛 “VindicatoⱤꓤ”
+	CASE "略称"
+		RESULTS = ControlleⱤꓤ
+	CASE "カテゴリ"
+		RESULTS:0 = Ɽꓤ
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+@CARD_59866(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 無性
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_59866(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_59866(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,필드起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 자신의 마법＆함정 존의 "함락주박" 카드 １장을 뒷면 표시로 하고、덱 / 묘지에서 "Ɽꓤ" 마법 / 함정 카드 １장을 패에 넣는다。
+PRINTL （주박된 "함락주박" 카드는 뒷면 표시가 되며、턴 종료시에 앞면 표시로 돌아온다）
+CALL CARD_ABLE(2,효과後誘発)
+PRINTL ②：필드에 몬스터가 특수 소환된 경우에、상대 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 자신의 마법＆함정 존의 "함락주박" 카드 １장을 뒷면 표시로 하고、대상의 몬스터를 뒷면 수비 표시로 한다。
+
+@CARDCAN_59866(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59866)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,59866)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 함락주박
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",2)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 함락주박
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 選択
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59866(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カードゾーン
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 소환先
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59866,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 함락주박
+		효과範囲마함 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		IF RESULT != 9999
+			選択カードID = RESULT:99
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",RESULT,"表",3,上書きモード)
+			CALL KOJO_FARRGRENDIOS_BASE("함락주박",듀얼리스트,選択カードID)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = Ɽꓤ
+			효과条件종류 = 마함全般
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59866,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 함락주박
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		IF RESULT != 9999
+			選択カードID = RESULT:99
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",RESULT,"表",3,上書きモード)
+			CALL KOJO_FARRGRENDIOS_BASE("함락주박",듀얼리스트,選択カードID)
+			CALL FULLRESET
+			효과条件표시 = 表側표시
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"표시변경")
+		ENDIF
+	ENDIF
+ENDIF

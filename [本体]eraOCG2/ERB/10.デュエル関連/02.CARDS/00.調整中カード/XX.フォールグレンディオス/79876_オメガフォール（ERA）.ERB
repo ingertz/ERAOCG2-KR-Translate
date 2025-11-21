@@ -1,0 +1,174 @@
+@CARDNAME_79876,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = “OMEGA FaⱤꓤ”
+	CASE "略称"
+		RESULTS = OMEGA FaⱤꓤ
+	CASE "カテゴリ"
+		RESULTS:0 = Ɽꓤ
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+@CARD_79876(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_79876(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_79876(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：덱 / ＥＸ덱에서 암컷 몬스터 １장을 묘지로 보내고、덱에서 "Ɽꓤ" 카드 １장을 패에 넣는다。
+PRINTL 이 효과로 묘지로 보낸 몬스터의 효과는 발동하지 않는다。
+PRINTL 그 후、상대 필드의 몬스터 １장을 대상으로 하고 그 몬스터를 뒷면 수비 표시로 할 수 있다。
+PRINTL 이 효과를 발동한 턴、자신은 "Ɽꓤ" 몬스터 이외의 몬스터를 특수 소환할 수 없다。
+CALL CARD_ABLE(1,묘지起動,フリー誘発)
+PRINTL ②：자신 / 상대 메인 페이즈에 발동할 수 있다。
+PRINTL 묘지의 이 카드를 제외하고、자신의 마법＆함정 존의 뒷면 표시인 "함락주박" 카드 １장을 앞면 표시로 한다。
+
+@CARDCAN_79876(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ数
+
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79876)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == 묘지起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,79876)
+		RETURN 0
+	IF GROUPMATCH(ゾーン,"묘지","손패")
+		CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲EX덱 = 1
+		효과条件성별 = 牝性
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = Ɽꓤ
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "묘지"
+		SIF メインフェイズ != 1
+			RETURN 0
+		SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件固カテゴリ = 함락주박
+		효과条件표시 = 裏側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0	
+	ENDIF
+	IF GROUPMATCH(ゾーン,"손패","마함")
+		CALL FULLRESET
+		효과条件固カテゴリ = Ɽꓤ
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+		SIF RESULT != 0
+			RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79876(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名
+#DIM DYNAMIC 条件Ａ
+#DIM DYNAMIC 条件Ｂ
+#DIM DYNAMIC 選択효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == 묘지起動 || 종류 == フリー誘発
+	IF GROUPMATCH(ゾーン,"묘지","손패")
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79876,1)
+		IF RESULT == 0
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲EX덱 = 1
+			효과条件성별 = 牝性
+			효과条件行先플래그 = 完全묘지行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1	
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = Ɽꓤ
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과条件표시 = 表側표시
+					효과条件除去種 = 選択
+					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+					IF RESULT == 1
+						CALL FULLRESET
+						CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"표시변경")
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ELSEIF ゾーン == "묘지"
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79876,1)
+		IF RESULT == 0
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과条件カテゴリ = 함락주박
+			효과範囲마함 = 1
+			효과条件표시 = 裏側표시
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+			IF RESULT != 9999
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",RESULT,"表",1,上書きモード)
+			ENDIF
+		ENDIF
+	ELSE
+		RETURN 0	
+	ENDIF
+ENDIF

@@ -24,7 +24,6 @@
 SIF 依頼_見返し中 == 1
 	RETURN 0
 	
-
 IF 倍率설정 == 0
 	UR倍率 = 20
 	SR倍率 = 120
@@ -114,7 +113,7 @@ NEXT
 
 PRINTL
 PRINTFORMW CARD GET !
-IF 청소플래그
+IF 청소플래그 == 1
 	TRYCALLFORM CARDNAME_{GETカードリスト:0}("略称")
 	IF GETカードレア度:カウンタB == 3
 		SETCOLOR C_ROYAL_BLUE
@@ -142,7 +141,7 @@ $INPUTLOOP
 
 CALL CARD_PACK_NAME(パック_종류)
 CUSTOMDRAWLINE —
-PRINTL 획득 카드리스트
+PRINTFORML 획득 카드리스트　≪%RESULTS%≫
 CUSTOMDRAWLINE —
 VARSET カウンタB
 FOR カウンタ,0,パック_구입数
@@ -626,6 +625,7 @@ IF パック条件カテゴリ != ""
 				条件달성 ++
 			ENDIF
 		ENDIF
+	NEXT
 	TRYCALLFORM CARDNAME_{カードID}("検索カテゴリ")
 	FOR カウンタB,0,5
 		IF RESULTS:カウンタB != ""
@@ -637,6 +637,16 @@ IF パック条件カテゴリ != ""
 			ENDIF
 		ENDIF
 	NEXT
+	TRYCALLFORM CARDNAME_{カードID}("出典作品")
+	FOR カウンタB,0,5
+		IF RESULTS:カウンタB != ""
+			IF MATCH(RESULTS:カウンタB, パック条件カテゴリ)
+				条件달성 ++
+			ENDIF
+			IF MATCH(パック条件カテゴリ, RESULTS:カウンタB)
+				条件달성 ++
+			ENDIF
+		ENDIF
 	NEXT
 ENDIF
 

@@ -1,0 +1,273 @@
+@CARDNAME_79875,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = “FAⱤꓤ ⱤꓤELICS”
+	CASE "略称"
+		RESULTS = FAⱤꓤ ⱤꓤELICS
+	CASE "カテゴリ"
+		RESULTS:0 = Ɽꓤ
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+@CARD_79875(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN フィールド
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_79875(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_79875(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신 필드는 "메스타베이더의 함옥"이 된다。
+; CALL CARD_ABLE(0,손패起動,마함起動)
+PRINTL ①：이 카드의 발동시의 효과 처리로서、이 카드에 개별 카운터를 ２개 놓는다。
+CALL CARD_ABLE(0,ターン終了時強制)
+PRINTL ②：자신 엔드 페이즈에 발동한다。
+PRINTL 자신 필드의 "GⱤꓤendios" 카드 이외의 "Ɽꓤ" 초차원 몬스터의 수 만큼 이 카드에 개별 카운터를 놓는다。
+PRINTL ③：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 이 카드에 놓인 개별 카운터를 ２개 제거하고、다음 효과 중 １개를 선택하여 적용한다。
+PRINTL （이 카드명의 이하의 효과는 각각 １턴에 １번밖에 선택할 수 없다）
+CALL CARD_ABLE(1,마함起動)
+PRINTL ●덱에서 이 카드명 이외의 "Ɽꓤ" 카드 １장을 패에 넣는다。
+CALL CARD_ABLE(2,마함起動)
+PRINTL ●자신 필드에 "GⱤꓤendios" 몬스터 이외의 "Ɽꓤ" 초차원 몬스터가 존재하는 경우에 선택할 수 있다。
+PRINTL 덱 / 패 / 묘지에서 "Ɽꓤ" 카드 이외의 암컷 몬스터 １장을 "함락주박" 카드로서 자신의 마법＆함정 존에 앞면 표시로 놓고、
+PRINTL 자신의 ＥＸ덱 / 묘지의 "Ɽꓤ" 초차원 몬스터 １장을 특수 소환한다。
+PRINTL 이 효과로 특수 소환된 몬스터는 이 효과로 마법＆함정 존에 놓인 카드와 같은 카드명으로도 취급한다。
+
+@CARDCAN_79875(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ数
+
+#DIM DYNAMIC 条件A
+#DIM DYNAMIC 条件B
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79875)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") < 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = Ɽꓤ
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1 && !발동済_1(듀얼리스트,79875)
+		条件A = 1
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件固カテゴリ = GⱤꓤendios
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT == 1 && 마함数(듀얼리스트) < 5 && !발동済_2(듀얼리스트,79875)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件固カテゴリ = Ɽꓤ
+		효과条件성별 = 牝性
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과範囲묘지 = 1
+			효과条件소환可 = 1
+			효과条件カテゴリ = Ɽꓤ
+			효과条件종류 = 초차원
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				条件B = 1
+		ENDIF
+	ENDIF
+	SIF !条件A && !条件B 
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件固カテゴリ = GⱤꓤendios
+	효과条件カテゴリ = Ɽꓤ
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79875(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+#DIM DYNAMIC 条件A
+#DIM DYNAMIC 条件B
+#DIM DYNAMIC 選択효과
+#DIM DYNAMIC 修正値
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79875)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = Ɽꓤ
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1 && !발동済_1(듀얼리스트,79875)
+			条件A = 1
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件固カテゴリ = GⱤꓤendios
+		효과条件カテゴリ = Ɽꓤ
+		효과条件종류 = 초차원
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1 && 마함数(듀얼리스트) < 5 && !발동済_2(듀얼리스트,79875)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件固カテゴリ = Ɽꓤ
+			효과条件성별 = 牝性
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과範囲묘지 = 1
+				효과条件소환可 = 1
+				효과条件カテゴリ = Ɽꓤ
+				효과条件종류 = 초차원
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+					条件B = 1
+			ENDIF
+		ENDIF
+		IF 条件A && 条件B 
+			CALL YN_CHOICE(듀얼리스트,"●덱 / 패 / 묘지에서「Ɽꓤ」카드 이외의 암컷１장「함락주박」카드로서 마함설치、ＥＸ덱 / 묘지의「Ɽꓤ」초차원１장 특수 소환","●덱에서 이 카드명 이외의「Ɽꓤ」카드 １장을 패에 넣는다")
+			選択효과 = RESULT
+		ELSEIF 条件A
+			選択효과 = いいえ
+		ELSEIF 条件B
+			選択효과 = はい
+		ENDIF
+		IF 選択효과 == はい
+			CALL CARD_EFFECT_USE(듀얼리스트,79875,2)
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",-2)
+			PRINTFORMW “FAⱤꓤ ⱤꓤELICS”『{場所}』에서 개별 카운터가 ２개 제거되었습니다。
+			選択カード = 現마함(듀얼리스트)
+			CALL FULLRESET
+			효과条件固カテゴリ = Ɽꓤ
+			효과範囲덱 = 1
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件성별 = 牝性
+			효과条件行先플래그 = 마함行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				選択カードID = RESULT:1
+				CALL CARD_SET_CATEGORY(듀얼리스트,"마함",選択カード,"함락주박")
+				;필드番号は+1で記録しないといけない(필드汎数の初期値は0のため)
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"汎数",現필드(듀얼리스트) + 1,上書きモード)
+				CALL KOJO_FARRGRENDIOS_BASE("陥落連鎖",듀얼리스트,選択カードID)
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과範囲묘지 = 1
+				효과条件カテゴリ = Ɽꓤ
+				효과条件종류 = 초차원
+				효과추가종류 = 1000000 + 選択カードID
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ELSEIF 選択효과 == いいえ
+			CALL CARD_EFFECT_USE(듀얼리스트,79875,1)
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",-2)
+			PRINTFORMW “FAⱤꓤ ⱤꓤELICS”『{場所}』에서 개별 카운터가 ２개 제거되었습니다。
+			CALL FULLRESET
+			효과条件カテゴリ = Ɽꓤ
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79875)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		IF RESULT == 1
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",カード설치先,"個Ｃ",2)
+			PRINTFORMW “FAⱤꓤ ⱤꓤELICS”『{場所}』에 개별 카운터가 ２개 놓였습니다。
+		ENDIF
+	ENDIF
+ELSEIF 종류 == ターン終了時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79875)
+	IF RESULT == 0
+		CALL KOJO_FARRGRENDIOS_BASE("陥獄",듀얼리스트,0)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件固カテゴリ = GⱤꓤendios
+		효과条件カテゴリ = Ɽꓤ
+		효과条件종류 = 초차원
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		修正値 = RESULT
+		IF RESULT > 0
+			CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",修正値)
+			PRINTFORMW “FAⱤꓤ ⱤꓤELICS”『{場所}』에 개별 카운터가{修正値}개 놓였습니다。
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"메스타베이더의 함옥")
+ENDIF

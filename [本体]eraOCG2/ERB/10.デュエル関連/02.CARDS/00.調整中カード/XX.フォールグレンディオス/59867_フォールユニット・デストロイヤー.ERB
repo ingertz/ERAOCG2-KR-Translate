@@ -1,0 +1,173 @@
+@CARDNAME_59867,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = “Ɽꓤ”유닛 “DestroyeⱤꓤ”
+	CASE "略称"
+		RESULTS = DestroyeⱤꓤ
+	CASE "カテゴリ"
+		RESULTS:0 = Ɽꓤ
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+@CARD_59867(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 無性
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_59867(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_59867(종류)
+#DIM DYNAMIC 종류
+
+CALL CARD_ABLE(1,필드起動)
+PRINTL ①：１턴에 １번、자신 메인 페이즈에、상대 필드의 몬스터를 임의의 수만큼 대상으로 하고 발동할 수 있다。
+PRINTL 자신의 마법＆함정 존의 "함락주박" 카드를 대상 카드의 수 만큼 뒷면 표시로 하고、대상 몬스터를 제외한다。
+CALL CARD_ABLE(0,지속효과,攻守変動)
+PRINTL ②：자신의 마법＆함정 존에 주박 상태인 "함락주박" 카드가 １장 이상 존재하는 경우、이 카드는 파괴 내성을 얻고、
+PRINTL 이 카드의 공격력은 자신의 마법＆함정 존의 주박 상태인 "함락주박" 카드 １장마다 ５００ 오른다。
+
+@CARDCAN_59867(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59867)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 함락주박
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 제외
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	CALL FULLRESET
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 함락주박
+	효과条件표시 = 裏側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59867(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カードゾーン
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 修正値
+#DIM DYNAMIC 소환先
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59867,1)
+	IF RESULT == 0
+		REPEAT 5
+			CALL FULLRESET
+			효과範囲마함 = 1
+			효과条件カテゴリ = 함락주박
+			효과条件표시 = 表側표시
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				BREAK
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件除去種 = 제외
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				BREAK
+			CALL FULLRESET
+			효과条件カテゴリ = 함락주박
+			효과条件표시 = 表側표시
+			효과条件任意 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+			IF RESULT != 9999
+				選択カードID = RESULT:99
+				CALL SET_FIELD_INFO(듀얼리스트,"마함",RESULT,"表",3,上書きモード)
+				CALL KOJO_FARRGRENDIOS_BASE("함락주박",듀얼리스트,選択カードID)
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"제외")
+			ENDIF
+		REND
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐",3)
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 함락주박
+	효과条件표시 = 裏側표시
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	修正値 = RESULT * 500
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,修正値)
+ENDIF

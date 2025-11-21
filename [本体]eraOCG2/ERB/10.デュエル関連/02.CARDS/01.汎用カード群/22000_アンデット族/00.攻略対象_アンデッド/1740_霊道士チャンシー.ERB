@@ -1,0 +1,137 @@
+﻿@CARDNAME_1740,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 영도사 창시
+	CASE "略称"
+		RESULTS = 창시
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_1740(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251118
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_1740(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動,묘지起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다。
+PRINTL 패 / 덱에서 언데드족 몬스터 １장을 묘지로 보낸다。
+CALLFORM CARD_ABLE(0,제외時)
+PRINTL ②：이 카드가 제외되었을 경우、자신의 묘지에서 언데드족 몬스터 １장을 제외하고 발동할 수 있다。
+PRINTL 이 카드를 특수 소환한다。
+
+@CARDSUMMON_AA_1740
+
+
+@CARDCAN_1740(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1740)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,1740)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件종족 = 언데드족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 제외時
+	SIF 발동済_2(듀얼리스트,1740)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1740,"제외")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 언데드족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1740(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1740,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과条件종족 = 언데드족
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 제외時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1740,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 언데드족
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲제외 = 1
+			효과条件名前 = 영도사 창시
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

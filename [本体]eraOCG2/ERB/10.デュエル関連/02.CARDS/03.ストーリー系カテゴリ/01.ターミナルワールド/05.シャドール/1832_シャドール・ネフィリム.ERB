@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 섀도르 네피림
 	CASE "略称"
-		RESULTS = L네피림
+		RESULTS = 네피림
 	CASE "カテゴリ"
 		RESULTS:0 = 섀도르
 ENDSELECT
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-	
 		RETURN 링크
 	CASE "속성"
 		RETURN 빛속성
@@ -64,13 +63,13 @@ ENDIF
 PRINTL "섀도르" 몬스터 2장
 ;PRINTL 리버스 몬스터 ２장
 PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다。
-CALL CARD_ABLE(1, 필드起動)
-PRINTL ①：자신 메인 페이즈에 발동할 수 있다. 자신의 패/필드의 몬스터를 융합 소재로서,
-PRINTL "섀도르"융합 몬스터 1장을 융합 소환한다。
-CALL CARD_ABLE(2, 묘지起動)
+CALL CARD_ABLE(1,필드起動)
+PRINTL ①：자신 메인 페이즈에 발동할 수 있다. 자신의 패/필드의 몬스터를 융합 소재로서、
+PRINTL "섀도르" 융합 몬스터 1장을 융합 소환한다。
+CALL CARD_ABLE(2,묘지起動)
 PRINTL ②：이 카드가 묘지에 존재할 경우에 발동할 수 있다。
-PRINTL 자신의 패 / 필드(앞면 표시)에서,
-PRINTL "섀도르"드 1장을 묘지로 보내고, 이 카드를 특수 소환한다。
+PRINTL 자신의 패 / 필드(앞면 표시)에서, "섀도르" 카드 1장을 묘지로 보내고、
+PRINTL 이 카드를 특수 소환한다。
 
 
 @CARDCAN_1832(듀얼리스트, 종류, ゾーン, 場所)
@@ -86,12 +85,12 @@ PRINTL "섀도르"드 1장을 묘지로 보내고, 이 카드를 특수 소환�
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 1832)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1832)
 SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 필드起動
-	SIF 발동済_1(듀얼리스트, 1832)
+	SIF 발동済_1(듀얼리스트,1832)
 		RETURN 0
 	SIF ゾーン != "필드"
 		RETURN 0
@@ -99,7 +98,7 @@ IF 종류 == 필드起動
 			RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 				RETURN 0
-	CALL CARD_SS_CHECK(듀얼리스트, 0, "EX덱", 1)
+	CALL CARD_SS_CHECK(듀얼리스트,0,"EX덱",1)
 	SIF RESULT == 1
 		RETURN 0
 	CALL RESETAREA_MAT
@@ -110,7 +109,7 @@ IF 종류 == 필드起動
 	효과条件종류 = 융합
 	효과条件カテゴリ = 섀도르
 	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -123,7 +122,7 @@ ELSEIF 종류 == 묘지起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	CALL CARD_SS_CHECK(듀얼리스트, 1832, "묘지", 1)
+	CALL CARD_SS_CHECK(듀얼리스트,1832,"묘지",1)
 	SIF RESULT == 1
 		RETURN 0
 	CALL FULLRESET
@@ -134,13 +133,13 @@ ELSEIF 종류 == 묘지起動
 	ENDIF
 	효과条件カテゴリ = 섀도르
 	효과条件他所 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 ENDIF
 
-@CARDEFFECT_1832(듀얼리스트, 종류, ゾーン, 場所)
+@CARDEFFECT_1832(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIMS DYNAMIC 対面者
@@ -154,7 +153,7 @@ CALL 対面者판정(듀얼리스트)
 
 IF 종류 == 필드起動
 	;カード발동確認
-	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 1832, 1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1832,1)
 	IF RESULT == 0
 		;EX덱確認
 		CALL RESETAREA_MAT
@@ -163,8 +162,8 @@ IF 종류 == 필드起動
 		CALL FULLRESET
 		효과条件종류 = 융합
 		효과条件カテゴリ = 섀도르
-		효과条件소환可 = 1	
-		CALL CARD_CHOOSE_BASIC(듀얼리스트, "EX덱", ゾーン, 場所)
+		효과条件소환可 = 2	
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
 		選択カード = RESULT
 		;돌아간다
 		IF 選択カード != 9999
@@ -175,7 +174,7 @@ IF 종류 == 필드起動
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 묘지起動
-	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 1832, 2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1832,2)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲필드 = 1
@@ -186,9 +185,9 @@ ELSEIF 종류 == 묘지起動
 		효과条件カテゴリ = 섀도르
 		효과条件他所 = 1
 		효과条件표시 = 表側표시
-		CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			CALL CARD_SP_SUMMON(듀얼리스트, ゾーン, 場所)
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
 			RETURN 1
 		ENDIF
 	ENDIF

@@ -12,6 +12,8 @@ SELECTCASE 参照先
 		RESULTS = 거점붕락전
 	CASE "カテゴリ"
 		RESULTS:0 = 봄버 걸
+	CASE "出典作品"
+		RESULTS:0 = 봄버 걸
 ENDSELECT
 
 
@@ -39,8 +41,8 @@ CALLFORM CARD_ABLE(1,손패起動,마함起動,フリー誘発)
 PRINTL ①: 자신 필드에 "봄버 걸" 몬스터가 존재할 경우에 발동할 수 있다.
 PRINTL 패에서 "어태커" 또는 "보머" 몬스터 1장을 특수 소환한다.
 CALLFORM CARD_ABLE(2,효과後誘発)
-PRINTL ②: 이 카드가 묘지에 존재하고, 자신의 "붐" 카드가 제외되었을 경우에 발동할 수 있다.
-PRINTL 제외되어 있는 "노멀 붐"을 최대 3개까지 패로 되돌린다.
+PRINTL ②: 이 카드가 묘지에 존재하고, 자신의 "밤" 카드가 제외되었을 경우에 발동할 수 있다.
+PRINTL 제외되어 있는 "노멀 밤"을 최대 3개까지 패로 되돌린다.
 
 @CARDCAN_64751(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -71,7 +73,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과条件カテゴリ:0 = 어태커
-	효과条件カテゴリ:1 = 밤
+	효과条件カテゴリ:1 = 보머
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -83,7 +85,7 @@ ELSEIF 종류 == 효과後誘発
 	SIF ゾーン != "묘지"
 		RETURN 0
 	CALL FULLRESET
-	효과条件カテゴリ = 보머
+	효과条件カテゴリ = 밤
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과除送")
 	SIF RESULT != 1
 		RETURN 0
@@ -108,7 +110,7 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		CALL FULLRESET
 		효과範囲손패 = 1
 		효과条件カテゴリ:0 = 어태커
-		효과条件カテゴリ:1 = 밤
+		효과条件カテゴリ:1 = 보머
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ELSEIF 종류 == 효과後誘発

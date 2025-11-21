@@ -1099,10 +1099,16 @@ SELECTCASE 使用場所
 
 	CASE 22
 		IF CFLAG:캐릭터_ID:아르바이트 == PT_カドショ
-			CFLAG:캐릭터_ID:아르바이트 = 0
-			PRINTFORML %CALLNAME:캐릭터_ID%에게 아르바이트를 그만두게 했다.
+			CALL PRINT_STATE(캐릭터_ID)
+			PRINTFORML %NAME:캐릭터_ID%는 이미 아르바이트로 고용하고 있습니다。
+			PRINTFORML 
+			PRINTL [0] - 아르바이트를 그만두게 한다
+			PRINTL [1] - 아무것도 하지 않는다
+			IF RESULT == 0
+				CFLAG:캐릭터_ID:아르바이트 = 0
+				PRINTFORML %CALLNAME:캐릭터_ID%에게 아르바이트를 그만두게 했다.
+			ENDIF
 		ELSE
-
 			FOR カウンタ,0,CHARANUM
 				SIF CFLAG:カウンタ:아르바이트 != PT_カドショ
 					CONTINUE
@@ -1113,17 +1119,22 @@ SELECTCASE 使用場所
 				ENDIF
 			NEXT
 
-			CFLAG:캐릭터_ID:아르바이트 = PT_カドショ
-			CALL PTJ_SETTINGS(캐릭터_ID,"名前")
-			PRINTFORML %CALLNAME:캐릭터_ID%는 간결하게 승낙하고、오늘부터 %RESULTS%로서 일하게 되었다。
-			CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
-			CALL PTJ_SETTINGS(캐릭터_ID,"行先")
-			CFLAG:캐릭터_ID:현재위치 = RESULT
+			CALL PRINT_STATE(캐릭터_ID)
+			PRINTFORML %NAME:캐릭터_ID%를 아르바이트로 고용하시겠습니까？
+			PRINTFORML 
+			PRINTL [0] - 고용한다
+			PRINTL [1] - 고용하지 않는다
+			IF RESULT == 0
+				CFLAG:캐릭터_ID:아르바이트 = PT_カドショ
+				CALL PTJ_SETTINGS(캐릭터_ID,"名前")
+				PRINTFORML %CALLNAME:캐릭터_ID%는 간결하게 승낙하고、오늘부터 %RESULTS%로서 일하게 되었다。
+				CALL PTJ_SETTINGS(캐릭터_ID,"衣装")
+				CALL PTJ_SETTINGS(캐릭터_ID,"行先")
+				CFLAG:캐릭터_ID:현재위치 = RESULT
+			ENDIF
 		ENDIF
+
 		RETURN 1
-
-
-		
 	CASE 3
 		IF TALENT:캐릭터_ID:듀얼리스트 == 0 && CFLAG:캐릭터_ID:소유함 == 0
 			PRINTFORML 이 캐릭터는 소유하고 있지 않습니다。			

@@ -189,19 +189,51 @@ SELECTCASE 参照先
 ENDSELECT
 RETURN 0
 
-@CARDCAN_179776(듀얼리스트,종류,ゾーン,場所)
-#DIMS DYNAMIC 듀얼리스트
-#DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 종류
-#DIM DYNAMIC 場所
-
-RETURN 0
-
 @CARD_EXPLANATION_179776(종류)
 #DIM DYNAMIC 종류
 
 PRINTL 음교의 제물로 선택된 소녀.
 PRINTL 신을 섬기는 데 자신의 모든 미래를 바쳤다.
-PRINTL 
+PRINTL （이 토큰은 몬스터 존을 벗어날 경우에 제외된다）
 PRINTL 
 
+
+@CARDCAN_179776(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,179776)
+SIF RESULT == 1
+RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_179776(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"除処")
+ENDIF
