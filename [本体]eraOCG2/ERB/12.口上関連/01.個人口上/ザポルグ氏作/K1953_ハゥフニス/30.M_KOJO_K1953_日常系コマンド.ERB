@@ -55,7 +55,7 @@ IF LOCAL
 		ENDIF
 
 	ELSEIF CFLAG:TARGET:우후후
-		SELECTCASE RAND:6
+		SELECTCASE RAND:7
 			CASE 0
 				IF TALENT:TARGET:처녀
 					PRINTFORM 「그, 아직...
@@ -117,6 +117,31 @@ IF LOCAL
 					CASEELSE
 						PRINTFORMW 「슬슬... 재워 줘...❤」
 				ENDSELECT
+			CASE 6
+				CALL FASHION_TYPE(TARGET)
+				IF RESULT == 1
+					SELECTCASE RESULTS
+						CASE "바니"
+							PRINTFORMW "정말, 잘도 이런 옷을 생각해 내네・・・위도 아래도 다 드러나잖아"
+						CASE "메이드"
+							PRINTFORMW "주인님, 오늘은 제가 봉사해 드리겠습니다"
+							PRINTFORMW "・・・이런 느낌으로 괜찮았으려나?"
+						CASE "교복"
+							PRINTFORMW "저기・・・고무는, 껴야지?❤"
+						CASE "슈트"
+							PRINTFORMW "이 옷은 땀이 잘 차네・・・다리 쪽이라든가 엄청나다고?"
+						CASE "아메스쿠"
+							PRINTFORMW "미국? 학생은 대단하네・・・이런 옷, 좋아하는 사람 앞에서밖에 못 입어"
+						CASE "마법소녀"
+							PRINTFORMW "저기・・・마, 마법만 쓸 수 있다면 너 같은 녀석한테는 지지 않으니까ー・・・？"
+						CASE "수영복","소수영복","금수영복"
+							IF CFLAG:MASTER:현재위치 == 場所_砂浜
+								PRINTFORMW "・・・이 수영복은, 밖에서 이런 짓을 하기 위한 모양인 걸까・・・❤"
+							ELSE
+								PRINTFORMW "거의 알몸이랑 다를 바 없으니까, 이거 이제 벗어도 괜찮지 않아?"
+							ENDIF
+					ENDSELECT
+				ENDIF
 		ENDSELECT
 
 	ELSEIF CFLAG:TARGET:데이트중
@@ -228,7 +253,31 @@ IF LOCAL
 				ENDIF
 		ENDSELECT
 
-	ELSEIF CFLAG:TARGET:아르바이트 == 2 && CFLAG:MASTER:현재위치 == 場所_カフェ && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
+	ELSEIF CFLAG:TARGET:아르바이트 && CFLAG:TARGET:아르바이트 != PT_使用人
+		SELECTCASE CFLAG:TARGET:아르바이트
+			CASE PT_바니
+				IF TALENT:MASTER:연령 < 0
+					SELECTCASE RAND:3
+						CASE 0
+							PRINTFORMW "우유 정도라면 내어줄 테니, 얼른 그거 마시고 돌아가."
+						CASE 1
+							PRINTFORMW "미성년자가 있으면 곤란하거든・・・ 가끔 보안요원도 오고・・・"
+						CASE 2
+							PRINTFORMW "・・・어이, 어차피 볼 거라면 날 보라고. 눈앞에 있잖아."
+					ENDSELECT
+				ELSE
+					SELECTCASE RAND:4
+						CASE 0
+							PRINTFORMW "뭐로 할래? 간단한 거라면 만들 수 있어."
+						CASE 1
+							PRINTFORMW "적당히 해 둬. 취해서 쓰러진 사람 돌보는 건 나니까."
+						CASE 2
+							PRINTFORMW "・・・어이, 어딜 보는 거야."
+						CASE 3
+							PRINTFORMW "캐스트에게 도를 넘는 스킨십은 출입 금지가 되니까, 하려면 나한테만 해."
+					ENDSELECT
+				ENDIF
+			CASE PT_메이드
 		SELECTCASE RAND:6
 			CASE 0
 				PRINTFORMW 「...지금은 일하는 중이니까 나중에 해」
@@ -244,7 +293,7 @@ IF LOCAL
 			CASE 5
 				PRINTFORMW 「팬티...라니, 보, 보여줄 리 없잖아! 이런 곳에서!」
 		ENDSELECT
-	ELSEIF CFLAG:TARGET:아르바이트 == 3 && CFLAG:MASTER:현재위치 == 場所_神社 && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
+	CASE PT_巫女
 		SELECTCASE RAND:6
 			CASE 0
 				PRINTFORMW 「...지금은 일하는 중이니까 나중에 해」
@@ -259,7 +308,7 @@ IF LOCAL
 			CASE 5
 				PRINTFORMW 「수행 체험 같은 거 해 보는 게 어때? 번뇌로 가득한 %CALLNAME:MASTER%에게는 필요하다고 생각해」
 		ENDSELECT
-	ELSEIF CFLAG:TARGET:아르바이트 == 6 && CFLAG:MASTER:현재위치 == 場所_ジム && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
+	CASE PT_ジム
 		SELECTCASE RAND:6
 			CASE 0
 				PRINTFORMW 「뭐、단련하러 왔어？　취향 특이하네・・・」
@@ -274,7 +323,7 @@ IF LOCAL
 			CASE 5
 				PRINTFORMW 「그 덤벨 들 수 있냐고？　너무 얕보지 마、무리」
 		ENDSELECT
-	ELSEIF CFLAG:TARGET:아르바이트 == 8 && CFLAG:MASTER:현재위치 == 場所_教会 && INRANGE(TIME,KANTAN_TIME(08,00),KANTAN_TIME(17,00))
+	CASE PT_教会
 		SELECTCASE RAND:6
 			CASE 0
 				PRINTFORMW 「무슨 목적으로 왔는지는 모르겠지만、시끄럽게 굴면 수녀님 수장에게 쫓겨날 거야」
@@ -290,7 +339,7 @@ IF LOCAL
 			CASE 5
 				PRINTFORMW 「여기 수녀님들 가슴이 유난히 크더라・・・조금쯤 나눠줬으면 좋겠어・・・」
 		ENDSELECT
-	ELSEIF CFLAG:TARGET:아르바이트 == 100 && CFLAG:MASTER:현재위치 == 場所_裏通り && INRANGE(TIME,KANTAN_TIME(15,00),KANTAN_TIME(20,00))
+	CASE PT_グラビア
 		SELECTCASE RAND:6
 			CASE 0
 				PRINTFORMW 「앗、네ー！　그럼、다음에 갈게요・・・」
@@ -306,7 +355,7 @@ IF LOCAL
 			CASE 5
 				PRINTFORMW 「외출할 때 가볍게 변장을 안 하면、뒤에서 손가락질 당하는 게 귀찮거든・・・」
 		ENDSELECT
-	ELSEIF CFLAG:TARGET:아르바이트 == 304 && CFLAG:MASTER:현재위치 == 場所_森 && INRANGE(TIME,KANTAN_TIME(17,00),KANTAN_TIME(23,30))
+	CASE PT_착유
 		SELECTCASE RAND:6
 			CASE 0
 				PRINTFORML 「구속당해서、가슴도 짜이고・・・완전히 가축 취급이네。
@@ -377,7 +426,7 @@ IF LOCAL
 			CASE 5
 				PRINTFORMW 「제복의 노출은 많지만, 전라보다는 나아」
 		ENDSELECT
-	ELSEIF CFLAG:TARGET:아르바이트 == 451 && CFLAG:MASTER:현재위치 == 場所_寝室 && INRANGE(TIME,KANTAN_TIME(23,00),KANTAN_TIME(24,00))
+	CASE PT_エロ配信者
 		SELECTCASE RAND:3
 			CASE 0
 				PRINTFORMW %CALLNAME:TARGET%는『말 걸지 마』라고 종이에 써서 보여줬다...
@@ -385,6 +434,7 @@ IF LOCAL
 				PRINTFORMW 「아하하... 아니, 아무것도 아니야...」
 			CASE 2
 				PRINTFORMW 「엇? 남자 목소리? 옆집인가?」
+			ENDSELECT
 		ENDSELECT
 
 	ELSEIF CFLAG:MASTER:현재위치 == 場所_浴室
@@ -1200,13 +1250,27 @@ IF LOCAL
 				PRINTFORML 「.........❤」
 				PRINTFORMW %CALLNAME:TARGET%는 몸에서 힘을 빼고, 촉촉한 눈빛으로 이쪽을 바라보고 있다...
 			ELSE
-				IF CFLAG:TARGET:아르바이트 == 2 && CFLAG:MASTER:현재위치 == 場所_カフェ
-					PRINTFORMW 「이제...❤ 소리가 안 나도록 조심해야겠어...❤」
-				ELSEIF CFLAG:TARGET:아르바이트 == 3 && CFLAG:MASTER:현재위치 == 場所_神社
-					PRINTFORML 「사람이 전혀 안 오는 건 아니야? 다른 무녀도 있고...」
-					PRINTFORMW 「하아... 누가 오기 전에 빨리 끝내버리자❤」
-				ELSEIF CFLAG:TARGET:아르바이트 == 107 && CFLAG:MASTER:현재위치 == 場所_ラブホ
-					PRINTFORMW 「엣... 도와준다고?... 잠, 잠깐!」
+				IF CFLAG:TARGET:알바중
+					SELECTCASE  CFLAG:TARGET:아르바이트
+						CASE PT_바니
+							PRINTFORMW "...누군가 오기 전에 끝내버릴 거야❤"
+						CASE PT_메이드
+							PRINTFORMW "정말...❤ 소리가 나지 않게 조심해야지...❤"
+						CASE PT_巫女
+							PRINTFORMW "사람이 전혀 안 오는 건 아니야? 다른 무녀 씨도 있고..."
+							PRINTFORMW "하아... 누군가 오기 전에 빨리 끝내버리자❤"
+						CASE PT_ジム
+							PRINTFORMW "잠깐...! 적어도 샤워하고 나서...❤"
+						CASE PT_使用人
+							PRINTFORMW "알고 있어, 이것도 일에 포함되는 거잖아? 『주인님』?❤"
+						CASE PT_グラビア
+							PRINTFORMW "...기미 생기면 곤란하니까, 아주 잠깐만이야"
+						CASE PT_착유
+							PRINTFORMW "엣... 도와주겠다니... 자, 잠깐만!"
+						CASE PT_エロ配信者
+							PRINTFORMW "앗...❤ 미, 미안~! 잠깐 방송 한 번 끊을게~!"
+							PRINTFORMW "...얼른 끝내고, 방송으로 돌아가자❤"
+					ENDSELECT
 				ELSE
 					SELECTCASE TFLAG:194
 						CASE 0
@@ -1615,6 +1679,9 @@ RETURN 1
 
 ;==================================================
 ;381,에너콘 발동
+;TFLAG:SELECTCOM分岐(0=手淫 1=フェラ 2=パイズリ 3=足コキ 4=オナニー 5=騎乗位 6=スクワット 7=パンツ奉納 8=搾乳機装着 9=体脂肪測定（あなた）
+;80=ローション 99=休憩 100=終了 200=体力切れ)
+;TFLAG:194(1=騎乗位中)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1953_381
 CALL M_KOJO_MESSAGE_COM_K1953_381_1
@@ -1624,10 +1691,219 @@ RETURN RESULT
 @M_KOJO_MESSAGE_COM_K1953_381_1
 ;-------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
-LOCAL = 1
+LOCAL = 0
 ;-------------------------------------------------
 IF LOCAL
-	PRINTFORMW 「모, 몸이 멋대로...!?」
+	[SKIPSTART]
+	IF GETBIT(CFLAG:TARGET:既成事実,0)
+		SELECTCASE TFLAG:SELECTCOM分岐
+			CASE 0
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「このくらい、頼まれればやるわよ・・・」
+					CASE 1
+						PRINTFORMW 「はぁ・・・どう？　気持ちいい？」
+					CASE 2
+						PRINTFORMW 「・・・手が勝手に動くのって変な感じね」
+				ENDSELECT
+			CASE 1
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「んぷ・・・んぶ・・・んぅ・・・❤」
+					CASE 1
+						PRINTFORMW 「んぶ・・・れろ・・・じゅるる・・・❤」
+					CASE 2
+						PRINTFORMW 「んー・・・ふー・・・んっ・・・❤」
+				ENDSELECT
+			CASE 2
+				IF TALENT:TARGET:バストサイズ >= 1
+					PRINTFORMW 「ホント、男ってこれが好きよね・・・❤」
+				ELSE
+					PRINTFORMW 「・・・そんな残念そうな顔するんじゃないわよ、こっちが申し訳なくなってくるじゃない」
+				ENDIF
+			CASE 3
+				PRINTFORMW 「わざわざ身体の自由を奪ってさせるのがコレって・・・ホント、変態なんだから・・・❤」
+			CASE 4
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「はっ❤　はっ❤　あっ❤　イッ、イク──っ❤」
+					CASE 1
+						PRINTFORMW 「ホントっ❤　いい趣味してるわねっ❤」
+					CASE 2
+						PRINTFORMW 「ほらっ❤　ちゃんと目に焼き付けなさいよっ❤　アンタがやれって言ったんだからっ❤」
+				ENDSELECT
+			CASE 5
+				IF TCVAR:破瓜
+					PRINTFORMW 「いっ！？　づっ・・・うぅ・・・」
+					PRINTFORMW 「・・・こんな形で、散らしたくはなかったわね・・・」
+					PRINTFORMW %CALLNAME:TARGET%は嬉しいような悲しいような、複雑な表情を浮かべている・・・
+				ELSE
+					IF TFLAG:194 == 1
+						SELECTCASE RAND:3
+							CASE 0
+								PRINTFORMW 「あっ❤　んっ❤　んんんっ❤❤❤」
+							CASE 1
+								PRINTFORMW 「はあっ❤　はあっ❤　あっ──❤」
+							CASE 2
+								PRINTFORMW 「腰がっ❤　ふっ❤　勝手にっ、動いてっ❤」
+						ENDSELECT
+					ELSE
+						PRINTFORMW 「んっ・・・ふぅ・・・❤」
+						PRINTFORM 「・・・それで？　
+						CALL XON_FONTL("次は何をさせるわけ,？❤")
+						PRINTFORMW 」
+					ENDIF
+				ENDIF
+			CASE 6
+				IF TFLAG:194 == 1
+					SELECTCASE RAND:3
+						CASE 0
+							PRINTFORM 「ふっ❤　う゛っ❤　
+							CALL XON_FONTL("ふ゛あっ,❤？")
+							PRINTFORMW 」
+						CASE 1
+							PRINTFORMW 「ぐっ❤　キッ・・・ツぅ・・・❤」
+						CASE 2
+							PRINTFORMW 「も・・・むり・・・休ませて・・・❤」
+					ENDSELECT
+				ELSE
+					SELECTCASE RAND:3
+						CASE 0
+							PRINTFORMW 「なんでっ・・・好き勝手できるのにっ・・・これなのよっ・・・！」
+						CASE 1
+							PRINTFORMW 「ぐっ・・・くっ・・・いぃぃっ・・・！」
+						CASE 2
+							PRINTFORMW 「はーっ、はーっ・・・あし、こわれるっ・・・」
+					ENDSELECT
+				ENDIF
+			CASE 7
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「・・・ほら、さっさと受け取りなさいよ」
+					CASE 1
+						PRINTFORMW 「ちょっ・・・！　目の前で臭い嗅ぐとか、何考えてるのよ！？」
+				ENDSELECT
+			CASE 8
+				;思いつかねー！保留！
+			CASE 9
+				IF INRANGE(CFLAG:MASTER:脂質, 0, 99)
+					PRINTFORMW 「・・・よかったわね」
+				ELSE
+					PRINTFORMW 「その・・・ちょっと痩せた方がいいんじゃない？　付き合うわよ」
+				ENDIF
+			CASE 80
+				PRINTFORMW 「・・・ちょっと多くない？　全身べちゃべちゃなんだけど」
+			CASE 99
+				PRINTFORMW 「ふー・・・後で覚えときなさいよ」
+			CASE 100
+				PRINTFORMW 「・・・次からは、普通に誘ってちょうだい」
+			CASE 200
+				PRINTFORMW 「もう、むりぃ・・・！」
+		ENDSELECT
+	ELSE
+		SELECTCASE TFLAG:SELECTCOM分岐
+			CASE 0
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「あっつ・・・❤」
+					CASE 1
+						PRINTFORMW 「うわ・・・ビクビクしてる・・・」
+					CASE 2
+						PRINTFORML 「・・・・・・」
+						PRINTFORMW %CALLNAME:TARGET%は悪臭に顔をしかめている・・・
+				ENDSELECT
+			CASE 1
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「んぷ・・・んぶ・・・」
+					CASE 1
+						PRINTFORMW 「ぅ・・・ぉぇっ・・・」
+				ENDSELECT
+			CASE 2
+				IF TALENT:TARGET:バストサイズ >= 1
+					PRINTFORMW 「ホント、男ってこれが好きよね・・・」
+				ELSE
+					PRINTFORMW 「・・・そんな残念そうな顔するんじゃないわよ、こっちが申し訳なくなってくるじゃない」
+				ENDIF
+			CASE 3
+				PRINTFORMW 「わざわざ身体の自由を奪ってさせるのがコレ？　・・・変態」
+			CASE 4
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「ふっ❤　んんっ❤　イッ、イ──っ❤」
+					CASE 1
+						PRINTFORMW 「ホントっ❤　いい趣味してるわねっ❤」
+					CASE 2
+						PRINTFORMW 「はぁっ❤　はぁっ❤　くっ❤　んんっ❤」
+				ENDSELECT
+			CASE 5
+				IF TCVAR:破瓜
+					PRINTFORMW 「いっ！？　づぅっ・・・！」
+					PRINTFORMW 「う・・・ぅぅぅ・・・」
+					PRINTFORMW %CALLNAME:TARGET%はぽろぽろと涙をこぼしている・・・
+				ELSE
+					IF TFLAG:194 == 1
+						SELECTCASE RAND:3
+							CASE 0
+								PRINTFORMW 「あっ❤　んっ❤　んんんっ❤❤❤」
+							CASE 1
+								PRINTFORMW 「はあっ❤　はあっ❤　あっ──❤」
+							CASE 2
+								PRINTFORMW 「腰がっ❤　ふっ❤　勝手にっ、動いてっ❤」
+						ENDSELECT
+					ELSE
+						PRINTFORMW 「んっ・・・ふぅ・・・❤」
+						PRINTFORMW 「・・・それで？　次は何をさせるわけ？」
+					ENDIF
+				ENDIF
+			CASE 6
+				IF TFLAG:194 == 1
+					SELECTCASE RAND:3
+						CASE 0
+							PRINTFORM 「ふっ❤　う゛っ❤　
+							CALL XON_FONT("ふ゛あっ,❤？",,2)
+							PRINTFORMW 」
+						CASE 1
+							PRINTFORMW 「ぐっ❤　キッ・・・ツぅ・・・❤」
+						CASE 2
+							PRINTFORMW 「も・・・むり・・・休ませて・・・❤」
+					ENDSELECT
+				ELSE
+					SELECTCASE RAND:3
+						CASE 0
+							PRINTFORMW 「なんでっ・・・好き勝手できるのにっ・・・これなのよっ・・・！」
+						CASE 1
+							PRINTFORMW 「ぐっ・・・くっ・・・いぃぃっ・・・！」
+						CASE 2
+							PRINTFORMW 「はーっ、はーっ・・・あし、こわれるっ・・・」
+					ENDSELECT
+				ENDIF
+			CASE 7
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「・・・ほら、さっさと受け取りなさいよ」
+					CASE 1
+						PRINTFORMW 「ちょっ・・・！　目の前で臭い嗅ぐとか、何考えてるのよ！？」
+				ENDSELECT
+			CASE 8
+				;思いつかねー！保留！
+			CASE 9
+				IF INRANGE(CFLAG:MASTER:脂質, 0, 99)
+					PRINTFORMW 「・・・よかったわね」
+				ELSE
+					PRINTFORMW 「その・・・ちょっと痩せた方がいいんじゃない？　付き合うわよ」
+				ENDIF
+			CASE 80
+				PRINTFORMW 「・・・ちょっと多くない？　全身べちゃべちゃなんだけど」
+			CASE 99
+				PRINTFORMW 「ふー・・・後で覚えときなさいよ」
+			CASE 100
+				PRINTFORMW 「・・・次やったら承知しないから」
+			CASE 200
+				PRINTFORMW 「もう、むりぃ・・・！」
+		ENDSELECT
+	ENDIF
+	[SKIPEND]
 ENDIF
 RETURN 1
 ;==================================================
