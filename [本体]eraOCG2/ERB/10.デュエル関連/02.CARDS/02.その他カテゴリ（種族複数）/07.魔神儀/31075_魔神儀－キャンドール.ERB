@@ -63,6 +63,10 @@ SIF RESULT == 1
 IF 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,31075)
 		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
 	SIF モンスター数(듀얼리스트) >= 4
 		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,31075,"손패")
@@ -70,7 +74,7 @@ IF 종류 == 손패起動
 		RETURN 0
 	CALL FULLRESET
 	효과範囲손패 = 1
-효과条件カテゴリ = 의식 마법
+	효과条件カテゴリ = 의식 마법
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -81,7 +85,7 @@ ELSEIF 종류 == 특수소환時
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
-효과条件カテゴリ = 의식 마법
+	효과条件カテゴリ = 의식 마법
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -105,7 +109,7 @@ IF 종류 == 손패起動
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲손패 = 1
-효과条件カテゴリ = 의식 마법
+		효과条件カテゴリ = 의식 마법
 		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT != 9999
 			CALL FULLRESET
@@ -113,8 +117,8 @@ IF 종류 == 손패起動
 
 			CALL FULLRESET
 			효과範囲덱 = 1
-효과条件カテゴリ = 데블리철
-효과条件固名前 = 데블리철－캔돌
+			효과条件カテゴリ = 데블리철
+			효과条件固名前 = 데블리철－캔돌
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
@@ -124,11 +128,11 @@ ELSEIF 종류 == 특수소환時
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲덱 = 1
-효과条件カテゴリ = 의식 마법
+		효과条件カテゴリ = 의식 마법
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 
 ELSEIF 종류 == 지속효과
-	CALL SET_PLAYER_INFO(듀얼리스트,"EX制限",3)
+	CALL SET_TMP_EX_RST(듀얼리스트,"全般")
 ENDIF
 
