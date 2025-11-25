@@ -36,7 +36,7 @@ RETURN 0
 
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드의 발동시의 효과 처리로서, 이 카드에 카운터를 1개 놓는다.
-CALLFORM CARD_ABLE(0,지속효과)
+CALLFORM CARD_ABLE(0,攻撃時強制誘発)
 PRINTL ①：발정한 몬스터의 공격 선언시, 이 카드의 카운터의 수에 따라 이하의 효과를 적용한다.
 PRINTL ●1의 경우：발정에 의해 공격을 중단한다.
 PRINTL ●2의 경우：발정에 의해 공격을 중단하지 않는다.
@@ -63,9 +63,9 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == 攻撃時強制誘発
 	SIF ゾーン != "마함"
 		RETURN 0
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+	; CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	; SIF RESULT != 1
+	; 	RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	;攻撃몬스터가 発情してれば処理
@@ -87,7 +87,7 @@ IF 종류 == 攻撃時強制誘発
 		;必ず失敗
 		CALL SET_FIELD_INFO(듀얼리스트,"필드",戦闘場所(듀얼리스트),"発情",200,上書きモード)
 		CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",2,上書きモード)
-	
+		
 		SETCOLOR C_PINK
 		CUSTOMDRAWLINE —
 		PRINTFORML 
@@ -108,5 +108,4 @@ IF 종류 == 攻撃時強制誘発
 		PRINTFORML 
 		CUSTOMDRAWLINE —
 	ENDIF
-	RESETCOLOR
 ENDIF
