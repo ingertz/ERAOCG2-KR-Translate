@@ -1,0 +1,125 @@
+﻿@CARDNAME_2453,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィ・チェーロ
+	CASE "略称"
+		RESULTS = Hp・チェーロ
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_2453(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 300
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_2453(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(10,戦場起動)
+PRINTL ①：１ターンに１度、自分フィールドの他の「ハーピィ」モンスター１体を持ち主の手札に戻して発動できる。
+PRINTL デッキの上からカードを３枚墓地へ送る。その中に「ハーピィ」モンスターがいた場合、
+PRINTL さらに自分の墓地の「ハーピィ」魔法・罠カード１枚を選んで手札に加える事ができる。
+
+@CARDCAN_2453(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2453)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 戦場起動
+	SIF 効果発動済(決闘者,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = ハーピィ
+	効果条件他所 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_2453(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC サルベージ判定
+
+
+IF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2453,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = ハーピィ
+		効果条件他所 = 1
+		効果条件行先フラグ = 手札行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			FOR カウンタ,0,3
+				TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_デッキ:カウンタ")}("カテゴリ")
+				SIF !MATCH(RESULTS,"ハーピィ")
+					CONTINUE
+				TRYCALLFORM CARD_{GETVAR(@"%決闘者%_除外:カウンタ")}("種類")
+				SIF RESULT > 10
+					CONTINUE
+				サルベージ判定 = 1
+			NEXT
+			CALL CARD_DECK_DISPOSE(決闘者,"デッキ",3)
+			IF サルベージ判定 == 1
+				効果条件カテゴリ = ハーピィ
+				効果条件種類 = 魔罠全般
+				CALL CARD_ADD_BASIC(決闘者,"墓地",ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

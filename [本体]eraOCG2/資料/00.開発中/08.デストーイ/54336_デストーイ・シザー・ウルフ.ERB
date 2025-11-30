@@ -1,0 +1,120 @@
+@CARDNAME_54336,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = デストーイ・シザー・ウルフ
+	CASE "略称"
+		RESULTS = DT・鋏狼
+	CASE "カテゴリ"
+		RESULTS:0 = デストーイ
+	CASE "検索カテゴリ"
+		RESULTS:0 = ファーニマル
+		RESULTS:1 = エッジインプ
+ENDSELECT
+
+
+@CARD_54336(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 悪魔族
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1500
+	CASE "特殊不可"
+		RETURN 1
+	CASE "性別"
+		RETURN 雄性
+	CASE "追加日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_54336(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 99
+素材条件数自由 = 1
+素材条件素材数起動 = 1
+素材条件種類 = トークン以外
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = エッジインプ・シザー
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = ファーニマル
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(決闘者,召喚カード,54336)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_54336(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「エッジインプ・シザー」＋「ファーニマル」モンスター１体以上
+PRINTL このカードは上記のカードを融合素材にした融合召喚でのみ特殊召喚できる。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ①：このカードは、このカードの融合素材としたモンスターの数まで
+PRINTL １度のバトルフェイズ中に攻撃できる。
+
+
+@CARDCAN_54336(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,54336)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_54336(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 素材数
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 永続効果
+	;融合素材の数を取得
+	素材数 = GETVAR(@"%決闘者%_MZ_汎数:場所")
+	;素材数に応じた追加攻撃回数を設定
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"追戦",(素材数)-1)
+ENDIF

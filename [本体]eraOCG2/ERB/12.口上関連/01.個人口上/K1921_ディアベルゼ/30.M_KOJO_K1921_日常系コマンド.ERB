@@ -64,9 +64,14 @@ IF LOCAL
 				CASE 2
 					PRINTFORMW 「アステーリャ、懐かしい名前だわ～ もうあの子をそう呼ぶこともないのかしらね～？」
 				CASE 3
-					PRINTFORMW 「リゼット…昔の%CSTR:TARGET:SELFCALL%ね 今考えると、유치だったものだわ…」
+					PRINTFORMW 「リゼット…昔の%CSTR:TARGET:SELFCALL%ね 今考えると、幼稚だったものだわ…」
 				CASE 4
-					PRINTFORMW 「ディアベルスターとの関係は、あまり聞かないで頂戴 複雑なものなのよ」
+					IF CFLAG:TARGET:현재위치 == CFLAG:(CFLAG:TARGET:1000):현재위치 && CFLAG:TARGET:1010
+						PRINTFORMW 「ディアベルスターと%CSTR:TARGET:SELFCALL%は…♥ 運命の赤い糸で結ばれているのよ～♥ あはっ♥ こっちの世界でも一緒なのだからそうよね～♥」
+						PRINTFORMW 「ふふっ～♥ 本人は不服そうにしているけれど～あれは、素直じゃないからよ～？ もう、あの子は本当に子供よね～♥ あはっ♥ あははっ♥」
+					ELSE
+						PRINTFORMW 「ディアベルスターとの関係は、あまり聞かないで頂戴 複雑なものなのよ」
+					ENDIF
 				CASE 5
 					PRINTFORMW 「シルヴィはいつも狼たちを連れていたわね～ ふふっ…本人も少し狼ぽかったかしら？」
 				CASE 6
@@ -200,7 +205,7 @@ RETURN 1
 ;304,仕事を手伝う
 ;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
 ;CFLAG:350(仕事内容(JOB_仕事内容.ERB参照のこと
-;TCVAR:手伝えない(=2 手伝っても早くは終わらない、時間停止中불가 에이린の診察等)
+;TCVAR:手伝えない(=2 手伝っても早くは終わらない、時間停止中불가 永琳の診察等)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K1921_304
 ;成否판정
@@ -424,7 +429,7 @@ RETURN 1
 ;332,お酒をふるまう
 ;TFLAG:SELECTCOM분기(12=下戸飲み成功 0=通常成功 -1=失敗 -5=下戸飲みあきらめ)
 ;TFLAG:194(420=ビール 421=チューハイ 422=ワイン 423=ほろよい 424=鬼殺し)
-;TALENT:술내성(-2=下戸)
+;TALENT:酒耐性(-2=下戸)
 ;CFLAG:만취강간(1=できる)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K1921_332
@@ -502,7 +507,7 @@ RETURN 1
 ;334,杯を交わす
 ;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)
 ;CFLAG:임신自覚状態(1=식사)
-;TALENT:술내성(-2=식사)
+;TALENT:酒耐性(-2=식사)
 ;==================================================
 @M_KOJO_SUCCESS_COM_K1921_334
 ;成否판정
@@ -749,7 +754,7 @@ RETURN 1
 [SKIPEND]
 ;==================================================
 ;356,物陰に誘う
-;ABL:노출증 + TALENT:수치심で판정
+;ABL:노출증 + TALENT:羞恥心で판정
 ;==================================================
 @M_KOJO_SUCCESS_COM_K1921_356
 ;成否판정
@@ -772,7 +777,7 @@ ENDIF
 RETURN 1
 ;==================================================
 ;360,なすがまま
-;TCVAR:TARGET:CT행동(27=谷間を見せる 30=키스 31=後ろから抱きつく 32=前から抱きつく 33=가슴を揉ませる 34=股間をまさぐる 35=スカートの中を見せる 36=後ろから가슴揉まれる
+;TCVAR:TARGET:CT행동(27=谷間を見せる 30=키스 31=後ろから抱きつく 32=前から抱きつく 33=胸を揉ませる 34=股間をまさぐる 35=スカートの中を見せる 36=後ろから胸揉まれる
 ;50=수음 51=펠라 52=스마타 53=파이즈리 54=풋잡 59=乳首吸われる 60=딥키스 61=逆レイプ 62=耳舐め 70=クンニ強制 72=애널奉仕 73=ぱふぱふ 
 
 ;77以降はeraOCG2_V0.55_BT_240825現在では存在しない
@@ -832,7 +837,7 @@ IF LOCAL
 			PRINTFORMW 「ふふっ…♥ あはっ…♥ スカートの下…♥ 興味深々ね～♥ 今見せてあげるから…♥ 待っていなさ～い…♥ 」
 		CASE 36
 			IF TALENT:MASTER:성별 == 2
-				PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ 背中が無防備よ～♥ あはっ♥ %CSTR:TARGET:MASCALL%の가슴で少し遊んじゃおうかしら～♥」
+				PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ 背中が無防備よ～♥ あはっ♥ %CSTR:TARGET:MASCALL%の胸で少し遊んじゃおうかしら～♥」
 			ELSE
 				PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%…♥ 背中が無防備よ～♥ あはっ♥ %CSTR:TARGET:MASCALL%のおっぱいで少し遊んじゃおうかしら～♥」
 			ENDIF
@@ -961,7 +966,7 @@ ENDIF
 RETURN 1
 
 ;==================================================
-;363,読み聞かせ（[유치]持ち専用）
+;363,読み聞かせ（[幼稚]持ち専用）
 ;TFLAG:SELECTCOM분기(1=大成功 0=成功 -1=失敗)(地の文분기無し
 ;CFLAG:添い寝中(1=布団orベッドの中で本を読む
 ;MASTERがTARGETより大柄の場合、膝の上にTARGETを乗せる
@@ -1059,7 +1064,7 @@ IF LOCAL
 		 
 	;それ以外
 	ELSE
-		IF CFLAG:TARGET:시작위치 == CFLAG:MASTER:시작위치
+		IF CFLAG:TARGET:시작위치 == CFLAG:MASTER:시작위치		
 			PRINTFORM 「ふふっ…♥ こっちよ%CSTR:TARGET:MASCALL%…♥ 
 			IF TALENT:TARGET:체형 > TALENT:MASTER:체형
 				IF TALENT:MASTER:연령 <= -2
@@ -1067,22 +1072,31 @@ IF LOCAL
 				ELSE
 					PRINTFORMW 今なら%CSTR:TARGET:SELFCALL%のおっぱいに顔を埋めて眠ることを許してあげるわよ…♥」
 				ENDIF
+				IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+					PRINTFORMW 「ディアベルスター、あなたもおっぱいを寄せなさい♥ %CSTR:TARGET:MASCALL%をおっぱいでサンドするのよ～♥」
+				ENDIF
 			ELSE
 				IF TALENT:MASTER:연령 <= -2
 					PRINTFORMW %CSTR:TARGET:SELFCALL%を抱き枕にして安心して眠りなさい♥」
 				ELSE
 					PRINTFORMW 今なら%CSTR:TARGET:SELFCALL%を抱き枕にして眠ることを許してあげるわよ…♥」
 				ENDIF
+				IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+					PRINTFORMW 「ディアベルスター、あなたは後ろから%CSTR:TARGET:MASCALL%を包みなさい♥ 皆で温め合うのよ～♥」
+				ENDIF
 			ENDIF
 		ENDIF
 		PRINTFORMW 「ふふっ…♥ おやすみなさい%CSTR:TARGET:MASCALL%…♥」
+		IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+			PRINTFORMW 「ディアベルスターもおやすみなさい、また明日ね…」
+		ENDIF
 	ENDIF
 ENDIF
 RETURN 1
 
 ;==================================================
-;403,휴식
-;CFLAG:TARGET:수면(1=TARGETが寝てる隣で휴식
+;403,休憩
+;CFLAG:TARGET:수면(1=TARGETが寝てる隣で休憩
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1921_403
 CALL TRAIN_MESSAGE
@@ -1096,7 +1110,7 @@ LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	IF CFLAG:MASTER:감기플래그 >= 1
-		;MASTERが감기の場合に휴식すると、이벤트の看病구상が流れます
+		;MASTERが감기の場合に休憩すると、이벤트の看病구상が流れます
 		;文章を繋げられる自信の無い方はここに書かないようにしてください
 	ELSE
 		IF BATHROOM(CFLAG:MASTER:현재위치)
@@ -1118,7 +1132,7 @@ IF LOCAL
 				CASE 1
 					PRINTFORMW 「んん～…まったりするのも悪くないわね～」
 				CASE 2
-					PRINTFORMW 「ふふっ…휴식は大事よね～」
+					PRINTFORMW 「ふふっ…休憩は大事よね～」
 			ENDSELECT
 		ENDIF
 	ENDIF
@@ -1292,10 +1306,10 @@ IF LOCAL
 ENDIF
 RETURN 1
 ;==================================================
-;413,요리
+;413,料理
 ;TFLAG:SELECTCOM분기(1=成功 -1=失敗)
 ;==================================================
-;一緒に요리をした後に流れる。タイミングは식사後。
+;一緒に料理をした後に流れる。タイミングは식사後。
 @M_KOJO_MESSAGE_COM_K1921_413
 ;TFLAG:194が100以上の場合のみ
 CALL TRAIN_MESSAGE
@@ -1554,7 +1568,7 @@ RETURN 1
 [SKIPEND]
 
 ;==================================================
-;467,仕事휴식から戻る
+;467,仕事休憩から戻る
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1921_467
 CALL TRAIN_MESSAGE
@@ -1630,7 +1644,7 @@ RETURN 1
 ;455,バイトをしてもらう
 ;CFLAG:아르바이트(0=無職 1=バニーバー 2=デュエルメイド 3=巫女 4=편의점バイト 5=スーパー
 ;6=ジムインストラクター 7=ファミレス 8=神父/シスター 9=自宅執事/メイド
-;100=グラビアモデル 304=搾乳牧場 433=淫教の信徒 451=エロ配信)
+;100=グラビアモデル 304=搾乳牧場 433=음교의신도 451=エロ配信)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1921_455
 CALL TRAIN_MESSAGE

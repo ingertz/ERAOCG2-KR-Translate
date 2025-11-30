@@ -1,0 +1,126 @@
+﻿@CARDNAME_91312,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 티스티나의 태동
+	CASE "略称"
+		RESULTS = 티스티나 태동
+	CASE "カテゴリ"
+		RESULTS:0 = 티스티나
+ENDSELECT
+
+
+@CARD_91312(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "分割"
+		RETURN 효과モン
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_91312(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,마함起動)
+PRINTL ①：このカードはフィールドに表側표시モンスターが存在する場合に발동できる。
+PRINTL 발동後、以下の효과を持つ효과モンスター（원소정령족・光・星１０・攻／守０）となり、
+PRINTL モンスターゾーンに특수소환する（함정カードとしても扱う）。
+CALLFORM CARD_ABLE(0,상황確認)
+PRINTL ②：상대ターンの間、フィールドに他の表側표시モンスターが存在しない場合、このカードは破壊される。
+CALLFORM CARD_ABLE(0,戦破壊→묘지,필드→戦離,제외時)
+PRINTL ③：このカードが상대ターンにフィールドから離れた場合に발동する。フィールドの表側표시モンスター１体を破壊する。
+
+
+@CARDCAN_91312(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91312)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,91312,"마함")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 상황確認
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_破耐:場所") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지 || 종류 == 필드→戦離 || 종류 == 제외時
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_91312(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91312)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"마함",場所)
+	ENDIF
+ELSEIF 종류 == 상황確認
+	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+ELSEIF 종류 == 戦破壊→묘지 || 종류 == 필드→戦離 || 종류 == 제외時
+	CALL FULLRESET
+	효과条件표시 = 表側표시
+	CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드単体",場所,"묘지")
+ENDIF
+

@@ -1,0 +1,99 @@
+﻿@CARDNAME_21005,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데코이 드래곤
+	CASE "略称"
+		RESULTS = 데코이 드래곤
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_21005(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 300
+	CASE "守備力"
+		RETURN 200
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_21005(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,攻撃時強制誘発)
+PRINTL ①：このカードが攻撃대상に選択された場合、
+PRINTL 자신の묘지のレベル７以上の드래곤족モンスター１体を대상として발동する。
+PRINTL そのモンスターを특수소환し、攻撃대상をそのモンスターに移し替えてダメージ計算を行う。
+
+@CARDCAN_21005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21005)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件종족 = 드래곤족
+	CALL 효과条件レベル_ADV(7, "以上")
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_21005(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 攻撃時強制誘発
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 드래곤족
+	CALL 효과条件レベル_ADV(7, "以上")
+	CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	SIF GETVAR(@"%듀얼리스트%_필드:カード소환先") > 0
+		CALL COVER_ATTACK(듀얼리스트,カード소환先)
+ENDIF
+

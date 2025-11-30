@@ -1,0 +1,188 @@
+﻿@CARDNAME_55042,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엑스크롤러 시냅시스
+	CASE "略称"
+		RESULTS = 시냅시스
+	CASE "カテゴリ"
+		RESULTS:0 = 크롤러
+ENDSELECT
+
+
+@CARD_55042(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 2000
+	CASE "추가日"
+		RETURN 251123
+ENDSELECT
+
+RETURN 0
+@CARDSUMMON_55042(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+素材条件속성 = 땅속성
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,55042) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_55042(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 땅속성モンスター２体
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과,攻守変動)
+PRINTL ①：자신フィールドの「크롤러」モンスターは戦闘耐性を得、攻撃力・守備力が３００アップし、
+PRINTL １度のバトルフェイズ中に２回までモンスターに攻撃できる。
+CALLFORM CARD_ABLE(1,破壊→묘지,필드→戦離,필드→묘지,戦闘→묘지)
+PRINTL ②：このカードが상대の효과でフィールドから離れた場合、または戦闘で破壊された場合、
+PRINTL 자신の묘지のＬ以外の「크롤러」モンスターを２体まで대상として발동できる（同名カードは１枚まで）。
+PRINTL そのモンスターを裏側守備표시で특수소환する。
+CALLFORM CARD_ABLE(2,リバース誘発)
+PRINTL ③：このカードがリバースした場合に발동できる。
+PRINTL 덱から「크롤러」モンスター１体を손패に加え、
+PRINTL 자신の손패・묘지から「엑스크롤러 시냅시스」以外の「크롤러」モンスター１体を選んで
+PRINTL 表側攻撃표시または裏側守備표시で특수소환する。
+
+@CARDCAN_55042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55042)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 破壊→묘지 || 종류 == 필드→戦離 || 종류 == 필드→묘지 || 종류 == 戦闘→묘지
+	SIF 발동済_1(듀얼리스트,55042)
+		RETURN 0
+	IF 종류 != 戦闘→묘지
+		SIF 処理中_듀얼리스트 == 듀얼리스트
+			RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = レベル持ち
+	효과条件カテゴリ = 크롤러
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == リバース誘発
+	SIF 발동済_2(듀얼리스트,55042)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 크롤러
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_55042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+IF 종류 == 破壊→묘지 || 종류 == 필드→戦離 || 종류 == 필드→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55042,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 크롤러
+		효과条件종류 = レベル持ち
+		효과条件固名前選択 = 1
+		효과条件任意 = 1
+		효과条件複数 = 98
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"裏側守備표시")
+	ENDIF
+ELSEIF 종류 == リバース誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55042,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 크롤러
+		효과条件종류 = モン全般
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+		SIF 듀얼리스트 == "자신"
+			PRINTL 표시形式を選んでください
+		CALL YN_CHOICE(듀얼리스트,"●表側攻撃표시","●裏側守備표시")
+
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 크롤러
+			효과条件固名前 = 엑스크롤러 시냅시스
+			효과条件종류 = モン全般
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"攻撃표시")
+
+		ELSEIF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 크롤러
+			효과条件固名前 = 엑스크롤러 시냅시스
+			효과条件종류 = モン全般
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"裏側守備표시")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 크롤러
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦耐")
+
+	CALL FULLRESET
+	효과条件カテゴリ = 크롤러
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"追戦",1)
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件カテゴリ = 크롤러
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300,300)	
+ENDIF

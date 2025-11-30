@@ -1,0 +1,158 @@
+﻿@CARDNAME_4552,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 「快楽」のアルターエゴ メルトリリス
+	CASE "略称"
+		RESULTS = メルトリリス
+	CASE "カテゴリ"
+		RESULTS:0 = サクラファイブ
+ENDSELECT
+
+
+@CARD_4552(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN サイバース族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 300
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4552(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。
+PRINTL 同名カードが自分の墓地に存在しない「M∀LICE」罠カード１枚をデッキから自分フィールドにセットする。
+CALLFORM CARD_ABLE(2,攻撃時強制誘発)
+PRINTL ②：自分フィールドに存在する「M∀LICE」Ｌモンスターの戦闘で発生する自分への戦闘ダメージは０になる。
+CALLFORM CARD_ABLE(3,除外時)
+PRINTL ③：このカードが除外された場合、３００ＬＰを払って発動できる。
+PRINTL このカードを特殊召喚する。
+PRINTL このターン、自分はＬモンスターしかEXデッキから特殊召喚できない。
+
+
+
+@CARDSUMMON_AA_4552
+
+
+@CARDCAN_4552(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 存在判定MTP07
+#DIM DYNAMIC 存在判定GWC06
+#DIM DYNAMIC 存在判定TB11
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,4552)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,4552)
+		RETURN 0
+	SIF 魔罠数(決闘者) >= 5
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = マリス
+	効果条件種類 = 罠全般
+	CALL SET_EXIST_CARDS(決闘者,墓地指定)
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ELSEIF 種類 == 攻撃時強制誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 戦闘場所(決闘者) == 5
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(決闘者)}("カテゴリ")
+	SIF RESULTS != "マリス"
+		RETURN 0
+	TRYCALLFORM CARD_{戦闘カードID(決闘者)}("種類")
+	SIF RESULT != リンク
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 除外時
+	SIF 発動済_3(決闘者,4552)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%決闘者%") <= 300
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,4552,"除外")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4552(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 存在判定MTP07
+#DIM DYNAMIC 存在判定GWC06
+#DIM DYNAMIC 存在判定TB11
+#DIMS DYNAMIC 存在カード名,100
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,4552,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = マリス
+		効果条件種類 = 罠全般
+		CALL SET_EXIST_CARDS(決闘者,墓地指定)
+		CALL CARD_SET_ADV(決闘者,ゾーン,場所,"裏側表示")
+	ENDIF
+ELSEIF 種類 == 攻撃時強制誘発
+	CALL SET_PLAYER_INFO(決闘者,"ダメージ無効",3)
+ELSEIF 種類 == 除外時
+	CALL CARD_CHOICE(決闘者,種類,"除外",場所,4552,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",300)
+		CALL FULLRESET
+		効果範囲除外 = 1
+		効果条件名前 = M∀LICE＜P＞White Rabbit
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		
+		EX召喚可能種類 = リンク
+		CALL CARD_EX_RESTRICTION(決闘者)
+	ENDIF
+ENDIF

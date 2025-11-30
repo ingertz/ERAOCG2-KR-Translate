@@ -38,6 +38,8 @@ SELECTCASE 参照先
 		RETURN 雄性
 	CASE "특수불가"
 		RETURN 1
+	CASE "連動ID"
+		RETURN 1955
 ENDSELECT
 
 RETURN 0
@@ -69,9 +71,9 @@ PRINTL ①: L 몬스터 이외의 필드의 앞면 표시 몬스터는 수비 �
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ②: 필드의 이 카드는 상대의 몬스터 효과를 받지 않는다.
 CALLFORM CARD_ABLE(10,필드起動)
-PRINTL ③: 1턴에 1번, 자신 묘지의 레벨 3의 '스케어클로' 몬스터 1장을 대상으로 하고 발동할 수 있다.
-PRINTL 그 몬스터를 특수 소환하고, 덱에서 '스케어클로' 몬스터 1장을 패에 넣는다.
-PRINTL 이 효과를 발동한 턴에는, 자신은 '스케어클로' 몬스터밖에 특수 소환할 수 없다.
+PRINTL ③: 1턴에 1번, 자신 묘지의 레벨 3의 "스케어클로" 몬스터 1장을 대상으로 하고 발동할 수 있다.
+PRINTL 그 몬스터를 특수 소환하고, 덱에서 "스케어클로" 몬스터 1장을 패에 넣는다.
+PRINTL 이 효과를 발동한 턴에는, 자신은 "스케어클로" 몬스터밖에 특수 소환할 수 없다.
 
 
 @CARDCAN_41955(듀얼리스트,종류,ゾーン,場所)
@@ -111,8 +113,7 @@ IF 종류 == 필드起動
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-
-ELSEIF 종류 == 지속효과
+ELSEIF 종류 == 지속효과 || 종류 == 常在無効
 	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
@@ -147,10 +148,30 @@ IF 종류 == 필드起動
 
 ELSEIF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
-
+	
 	CALL FULLRESET
 	효과条件종류 = 링크以外
 	효과条件표시 = 攻撃표시
 	효과추가종류 = 3
 	CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"표시변경")
+ELSEIF 종류 == 常在無効
+	CALL FULLRESET
+	효과条件종류 = 링크以外
+	효과条件표시 = 攻撃표시
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"表",2)
+	CALL FULLRESET
+	효과条件종류 = 링크以外
+	효과条件표시 = 攻撃표시
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"表",2)
+
+	CALL FULLRESET
+	효과条件종류 = 링크以外
+	효과条件표시 = 守備표시
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"表固",3)
+
+	CALL FULLRESET
+	효과条件종류 = 링크以外
+	효과条件표시 = 守備표시
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"表固",3)
+
 ENDIF

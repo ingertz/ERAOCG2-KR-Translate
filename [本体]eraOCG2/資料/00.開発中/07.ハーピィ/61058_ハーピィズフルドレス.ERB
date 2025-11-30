@@ -1,0 +1,114 @@
+﻿@CARDNAME_61058,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィズフルドレス
+	CASE "略称"
+		RESULTS = ハーピィ正装
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_61058(参照先)
+;名前専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 装備魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61058(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 牝性の「ハーピィ」モンスターにのみ装備可能。
+CALLFORM CARD_ABLE(0,攻守変動,永続効果)
+PRINTL ①：装備モンスターの攻撃力を８００、守備力を４００アップし、貫通効果を与える。
+PRINTL 
+
+
+@CARDCAN_61058(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+
+CALL 装備判定(決闘者,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,61058)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 魔罠数(決闘者) >= 5
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = ハーピィ
+	効果条件性別 = 牝性
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 攻守変動 || 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_61058(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 装備者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+
+CALL 装備判定(決闘者,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,61058)
+	IF RESULT == 0
+		;手札から発動後、魔法トラップゾーンにカード移動
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = ハーピィ
+		効果条件性別 = 牝性
+		効果条件表示 = 表側表示
+		CALLFORM CARD_EQUIP_ADV(決闘者,場所,ゾーン)
+	ENDIF
+ELSEIF 種類 == 攻守変動
+	CALL STATCHANGE_BASIC(決闘者,"装備",場所,800,400)
+ELSEIF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"装備",場所,"貫通")
+ENDIF
+

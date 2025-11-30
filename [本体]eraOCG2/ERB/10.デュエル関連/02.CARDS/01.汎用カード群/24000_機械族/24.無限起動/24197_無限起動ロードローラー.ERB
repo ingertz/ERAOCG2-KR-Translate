@@ -1,0 +1,141 @@
+﻿@CARDNAME_24197,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 무한기동 로드롤러
+	CASE "略称"
+		RESULTS = 무한 롤러
+	CASE "カテゴリ"
+		RESULTS:0 = 무한기동
+ENDSELECT
+
+
+@CARD_24197(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 2100
+	CASE "추가日"
+		RETURN 251120
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_24197(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：このカードが손패・묘지に存在し、기계족・땅속성モンスターが、
+PRINTL フィールドから묘지へ送られた場合または제외された場合に발동できる。
+PRINTL このカードを특수소환する。
+PRINTL この효과で특수소환したこのカードは、フィールドから離れた場合に제외される。
+CALLFORM CARD_ABLE(2,X素材時효과)
+PRINTL ②：このカードが기계족モンスターのＸ素材になった場合に발동できる。
+PRINTL 상대フィールドの全てのモンスターは守備표시になり、守備力は１０００ダウンする。
+
+@CARDCAN_24197(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24197)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,24197)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"손패","묘지")
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,24197,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件속성 = 땅속성
+	효과条件종족 = 기계족
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース",2)
+	SIF RESULT == 1
+		RETURN 1
+	CALL FULLRESET
+	효과条件속성 = 땅속성
+	효과条件종족 = 기계족
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과除送",2)
+	SIF RESULT == 1
+		RETURN 1
+	RETURN 0
+
+ELSEIF 종류 == X素材時효과
+	CALL FULLRESET
+	효과条件종족 = 기계족
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"EX특수소환")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_24197(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24197,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과추가종류 = 効追除処
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == X素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24197)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"永守DOWN",1000)
+		효과추가종류 = 2
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"표시변경")
+	ENDIF
+ENDIF
+
+
+

@@ -18,7 +18,8 @@ SELECTCASE 参照先
 		RESULTS:0 = 創界神
         RESULTS:1 = CoZ12
 		RESULTS:2 = 光導
-		RESULTS:4 = バトルスピリッツ
+	CASE "出典作品"
+		RESULTS:0 = バトルスピリッツ
 ENDSELECT
 
 
@@ -64,12 +65,12 @@ CALLFORM CARD_ABLE(1,EXデッキ起動)
 PRINTL ①：自分のEXデッキに「創界神」が１種類のみで、
 PRINTL 自分フィールドに「創界神」が存在しない場合に発動できる。
 PRINTL 手札１枚をデッキに加え、EXデッキのこのカードを自分の魔法＆罠ゾーンに表側表示でセットする。
-PRINTL 그 후、自分のデッキの上からカードを３枚墓地へ送る。
+PRINTL その後、自分のデッキの上からカードを３枚墓地へ送る。
 PRINTL その中に「光導」カードがあった場合、その数だけこのカードにコアカウンターを置く。
 
 CALLFORM CARD_ABLE(2,魔罠起動)
 PRINTL ②：このカードが魔法・罠ゾーンに存在する限り、
-PRINTL 自分의 메인 페이즈に、墓地の「光導」カード２枚をデッキに戻して発動できる。
+PRINTL 自分のメインフェイズに、墓地の「光導」カード２枚をデッキに戻して発動できる。
 PRINTL このカードにコアカウンターを４つ置く。
 
 CALLFORM CARD_ABLE(0,身代効果)
@@ -105,7 +106,11 @@ IF 種類 == EXデッキ起動
 		RETURN 0
 	SIF ターンプレイヤー != 決闘者
 		RETURN 0
-	SIF 手札数(決闘者) == 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果条件他所 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	効果範囲EXデッキ = 1

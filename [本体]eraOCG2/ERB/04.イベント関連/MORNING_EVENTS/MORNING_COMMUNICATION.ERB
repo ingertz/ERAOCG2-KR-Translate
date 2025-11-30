@@ -164,6 +164,9 @@ FOR カウンタ,0,放浪カウンタ
 	캐릭터_ID = 放浪캐릭터:カウンタ 
 	SIF CFLAG:캐릭터_ID:면식 == 0
 		CONTINUE
+
+	SIF RAND:3 == 0
+		CFLAG:캐릭터_ID:듀얼환영 = 1
 	IF INRANGE (カウンタ, 0, 3)
 		CFLAG:캐릭터_ID:현재위치 = 場所_繁華街
 	ELSEIF INRANGE (カウンタ, 4, 7)
@@ -228,9 +231,8 @@ NEXT
 ;カード側にいる캐릭터の설정
 FOR カウンタ,0,カードカウンタ
 	캐릭터_ID = カード캐릭터:カウンタ
-	IF カウンタ == 0
-		CFLAG:캐릭터_ID:현재위치 = RAND:12 + 50
-	ELSEIF INRANGE (カウンタ, 1, 4)
+
+	IF INRANGE (カウンタ, 1, 4)
 		CFLAG:캐릭터_ID:현재위치 = 場所_中継地点
 	ELSEIF INRANGE (カウンタ, 5, 8)
  		CFLAG:캐릭터_ID:현재위치 = 場所_마법都市
@@ -244,15 +246,19 @@ FOR カウンタ,0,カードカウンタ
  		CFLAG:캐릭터_ID:현재위치 = 場所_천공의성역
 	ELSEIF INRANGE (カウンタ, 24, 26)
  		CFLAG:캐릭터_ID:현재위치 = 場所_近未来都市
+
+	ELSEIF カウンタ == 0
+		CFLAG:캐릭터_ID:현재위치 = RAND:12 + 50
 	ELSEIF カウンタ == 30
 		CFLAG:캐릭터_ID:현재위치 = RAND:10 + 110
 	ELSEIF カウンタ == 40
 		CFLAG:캐릭터_ID:현재위치 = RAND:10 + 150
 	ELSEIF カウンタ == 50
 		CFLAG:캐릭터_ID:현재위치 = RAND:17 + 210
+
+	ELSEIF INRANGE (カウンタ, 70, 90)
+		CFLAG:캐릭터_ID:현재위치 = RAND:21 + 260
 	ENDIF
-
-
 NEXT
 IF FLAG:신사방문캐릭터 > 0
 	캐릭터_ID = FLAG:신사방문캐릭터

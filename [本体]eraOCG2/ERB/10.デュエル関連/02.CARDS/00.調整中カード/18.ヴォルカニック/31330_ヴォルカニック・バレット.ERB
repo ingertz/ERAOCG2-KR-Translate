@@ -1,0 +1,150 @@
+﻿@CARDNAME_31330,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 볼캐닉 불릿
+	CASE "略称"
+		RESULTS = V 불릿
+	CASE "カテゴリ"
+		RESULTS:0 = 볼캐닉
+ENDSELECT
+
+
+@CARD_31330(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 100
+	CASE "守備力"
+		RETURN 0
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31330(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+;同名サーチ
+CALLFORM CARD_ABLE(1,묘지起動)
+PRINTL ①：このカードが묘지に存在する場合、５００ＬＰを払って발동できる。
+PRINTL 덱から「볼캐닉 불릿」１体を손패に加える。
+CALLFORM CARD_ABLE(2,손패起動)
+PRINTL ②：このカードを含む손패を２枚묘지へ送って발동できる。
+PRINTL 덱から「ファイヤー」마법カード１枚を손패に加える。
+
+
+
+
+@CARDCAN_31330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31330)
+SIF RESULT == 1
+	RETURN 0
+;同名サーチ
+IF 종류 == 묘지起動
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,31330)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 500
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前 = 볼캐닉 불릿
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패起動
+	SIF 발동済_2(듀얼리스트,31330)
+		RETURN 0
+	SIF 손패数(듀얼리스트) < 2
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前:0 = ファイヤー・バック
+	효과条件名前:1 = ファイヤー・エジェクション
+	효과条件名前:2 = ファイヤー・ソウル
+	효과条件名前:3 = クレイジー・ファイヤー
+	효과条件名前:4 = ファイヤー・ボール
+	;！？
+	효과条件名前:5 = アンプリファイヤー
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;同名サーチ
+IF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31330,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",500)
+		CALL FULLRESET
+		효과条件名前 = 볼캐닉 불릿
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+	ENDIF
+;ファイヤーサーチ
+ELSEIF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31330,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件名前:0 = ファイヤー・バック
+			효과条件名前:1 = ファイヤー・エジェクション
+			효과条件名前:2 = ファイヤー・ソウル
+			효과条件名前:3 = クレイジー・ファイヤー
+			효과条件名前:4 = ファイヤー・ボール
+			효과条件名前:5 = アンプリファイヤー
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+

@@ -17,6 +17,10 @@ ELSEIF INRANGE(CFLAG:MASTER:현재위치,150,200)
 	マップモード = 2
 ELSEIF INRANGE(CFLAG:MASTER:현재위치,200,250)
 	マップモード = 3
+
+ELSEIF INRANGE(CFLAG:MASTER:현재위치,251,280)
+	マップモード = 20
+
 ELSEIF INRANGE(CFLAG:MASTER:현재위치,910,920)
 	マップモード = 90
 ELSEIF INRANGE(CFLAG:MASTER:현재위치,925,930)
@@ -53,6 +57,8 @@ ELSEIF マップモード == 2
 	CALLFORM MAP_PRINT_OUTSKIRTS
 ELSEIF マップモード == 3
 	CALLFORM MAP_PRINT_KAIBALAND
+ELSEIF マップモード == 20
+	CALLFORM MAP_PRINT_RESORT
 
 ELSEIF マップモード == 90
 	CALLFORM MAP_PRINT_SHOP
@@ -109,7 +115,7 @@ IF マップモード == 0
 
 	NEXT
 ELSEIF マップモード == 1
-	FOR カウンタ,101,150
+	FOR カウンタ,110,150
 		SIF CFLAG:MASTER:현재위치 == カウンタ
 			SETCOLOR C_GREEN
 		SIF GETPLACENAME(カウンタ) == ""
@@ -158,6 +164,26 @@ ELSEIF マップモード == 2
 	NEXT
 ELSEIF マップモード == 3
 	FOR カウンタ,201,250
+		SIF CFLAG:MASTER:현재위치 == カウンタ
+		SETCOLOR C_GREEN
+
+		SIF GETPLACENAME(カウンタ) == ""
+			CONTINUE
+		CALL GETMAP(カウンタ,1)
+		PRINTFORM [{カウンタ,3}] - %GETPLACENAME(カウンタ),20,LEFT%	
+		RESETCOLOR
+		IF 施設アリ:カウンタ == 1
+			SETCOLOR C_ORANGE
+			PRINT (！)
+			RESETCOLOR
+		ELSE
+			PRINTFORM %"",4%
+		ENDIF
+		PRINTFORM / 
+
+	NEXT
+ELSEIF マップモード == 20
+	FOR カウンタ,251,280
 		SIF CFLAG:MASTER:현재위치 == カウンタ
 		SETCOLOR C_GREEN
 
@@ -240,9 +266,32 @@ IF RESULT == 99
 	NEXTCOM = 435
 	RETURN 0
 ELSEIF RESULT == 9999
+	IF INRANGE(CFLAG:MASTER:현재위치,925,930) && マップモード == 91
+		SELECTCASE CFLAG:MASTER:숙박처
+		CASE 場所_ラブホ
+			マップモード = 0
+		CASE 場所_高級ホテル
+			マップモード = 3
+		CASE 場所_Reホテル,  場所_Reラブホ
+			マップモード = 20
+		ENDSELECT
+
+		GOTO INPUT_LOOP
+	ENDIF
 	マップモード += 1
-	SIF マップモード >= 4
-		マップモード = 0
+	IF マップモード >= 4
+		IF INRANGE(CFLAG:MASTER:현재위치,910,920)
+			マップモード = 90
+		ELSEIF INRANGE(CFLAG:MASTER:현재위치,925,930)
+			マップモード = 91
+		ELSEIF INRANGE(CFLAG:MASTER:현재위치,251,280)
+			マップモード = 20
+		ELSE
+			マップモード = 0
+		ENDIF
+	ENDIF
+
+
 	GOTO INPUT_LOOP
 ELSEIF RESULT == 8888
 	SETCOLOR C_ROYAL_BLUE
@@ -265,7 +314,7 @@ ELSE
 	IF GROUPMATCH(マップモード,1,2)
 		SIF RESULT <= 100
 		RESULT += 100
-	ELSEIF GROUPMATCH(マップモード,3,4)
+	ELSEIF GROUPMATCH(マップモード,3,20)
 		SIF RESULT <= 200
 			RESULT += 200
 	ELSEIF GROUPMATCH(マップモード,90,91)
@@ -292,6 +341,23 @@ ELSE
 		CALL SOURCE_CALC_환락(캐릭터_ID, MASTER, 20)
 		CALL SOURCE_CALC_수동(캐릭터_ID, MASTER, 20)
 	NEXT
+	
+	IF オプション_듀얼환영 == 1 && 依頼_受領中 != 1 && BASE:MASTER:기력 > 0
+		FOR 캐릭터_ID,1,CHARANUM
+			SIF CFLAG:캐릭터_ID:현재위치 != CFLAG:MASTER:현재위치
+				CONTINUE
+			SIF CFLAG:캐릭터_ID:데이트중 == 1
+				CONTINUE
+			SIF CFLAG:캐릭터_ID:듀얼환영 != 1
+				CONTINUE
+			SETCOLOR C_RED
+			PRINTFORMW 산책하던 중에、%CALLNAME:캐릭터_ID%에게 듀얼을 도전받았다！
+			RESETCOLOR
+			TARGET = 캐릭터_ID
+			NEXTCOM = 480
+			BREAK
+		NEXT
+	ENDIF
 ENDIF
 
 

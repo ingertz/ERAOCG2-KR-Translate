@@ -1,0 +1,183 @@
+﻿@CARDNAME_78042,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 연옥의 괴방
+	CASE "略称"
+		RESULTS = 연옥의 괴방
+	CASE "カテゴリ"
+		RESULTS:0 = 연옥
+	CASE "検索カテゴリ"
+		RESULTS:0 = 섀도르
+ENDSELECT
+
+
+@CARD_78042(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 251122
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_78042(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：손패の「섀도르」カード１枚を상대に見せる。
+PRINTL 見せたカードとは종류（モンスター・마법・함정）が異なる
+PRINTL 「섀도르」カード２枚を덱から손패に加える（同じ종류は１枚まで）。
+PRINTL その後、자신の손패を１枚選んで捨てる。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：묘지のこのカードを제외して발동できる。
+PRINTL 자신の덱・묘지から「インフェルノイド」モンスター１体を손패に加える。
+
+
+@CARDCAN_78042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC EX条件달성
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,78042)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,78042)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 섀도르
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 섀도르
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,78042)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = インフェルノイド
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_78042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC 묘지送カード,10
+#DIM DYNAMIC 손패묘지送カード,10
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択済カード
+#DIM DYNAMIC EX条件달성
+;융합소환
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78042,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = 섀도르
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		選択カード_ID = RESULT:99
+		TRYCALLFORM CARD_{選択カード_ID},"종류"
+		カウンタ = RESULT
+		IF INRANGE(カウンタ,1,19)
+			CALL FULLRESET
+			효과条件カテゴリ = 섀도르
+			효과条件종류 = 마법全般
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과条件カテゴリ = 섀도르
+				효과条件종류 = 함정全般
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			ENDIF
+		ELSEIF INRANGE(カウンタ,20,29)
+			CALL FULLRESET
+			효과条件カテゴリ = 섀도르
+			효과条件종류 = モン全般
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과条件カテゴリ = 섀도르
+				효과条件종류 = 함정全般
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			ENDIF
+		ELSEIF INRANGE(カウンタ,30,39)
+			CALL FULLRESET
+			효과条件カテゴリ = 섀도르
+			효과条件종류 = モン全般
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과条件カテゴリ = 섀도르
+				효과条件종류 = 마법全般
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			ENDIF
+		ENDIF
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,78042,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = インフェルノイド
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

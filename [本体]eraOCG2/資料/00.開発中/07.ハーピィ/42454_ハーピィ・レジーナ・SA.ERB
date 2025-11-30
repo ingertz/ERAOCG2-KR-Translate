@@ -1,0 +1,173 @@
+@CARDNAME_42454,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィ・レジーナ・スプレンディッド・アーマー
+	CASE "略称"
+		RESULTS = レジーナ・ＳＡ
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_42454(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 1400
+	CASE "性別"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 2454
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_42454(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「ハーピィ・レジーナ」＋レベル４以下の鳥獣族モンスター
+PRINTL このカードは自分フィールドの上記モンスターを素材としてコンタクト融合できる。
+CALLFORM CARD_ABLE(0,EX召喚時,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。相手フィールドのモンスター１体の表示形式を変更する。
+PRINTL 自分の墓地に「ハーピィ」罠カードがある場合、さらに相手フィールドの守備表示モンスター１体を選んで破壊できる
+PRINTL （自分の墓地に「スプレンディッド・スラッシュ」がある場合、破壊する代わりに除外する）。
+
+
+@CARDSUMMON_42454(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = ハーピィ・レジーナ
+ELSEIF EX参照 >= 10
+	CALLFORM 素材条件レベル_ADV(4, "以下")
+	素材条件種類 = レベル持ち
+	素材条件種族 = 鳥獣族
+ENDIF
+IF EX参照 == 1
+	CALL FUSCAN(決闘者,召喚カード,42454) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_42454(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,42454)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_EX_CHECK(決闘者,42454)
+	SIF RESULT == 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲戦場 = 1
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件固定 = 場所
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 特殊召喚時
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件除去種 = 表示変更
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_42454(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 除外判定
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42454)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲戦場 = 1
+		CALL FULLRESET
+		TRYCALLFORM CARDSUMMON_42454(決闘者,場所)
+		CALL FUSSUMMON(決闘者,場所,デッキ行き)
+	ENDIF
+ELSEIF 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42454)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(決闘者,"戦場単体",場所,"表示変更")
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲墓地 = 1
+			効果条件カテゴリ = ハーピィ
+			効果条件種類 = 罠全般
+			CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				効果範囲墓地 = 1
+				効果条件名前 = スプレンディッド・スラッシュ
+				SIF RESULT  == 1
+					除外判定 = 1
+				CALL FULLRESET
+				効果条件表示 = 守備全般
+				効果条件任意 = 1
+				IF 除外判定 != 1
+					CALL CARD_REMOVAL_BASIC(決闘者,"戦場単体",場所,"墓地")
+				ELSE
+					CALL CARD_REMOVAL_BASIC(決闘者,"戦場単体",場所,"除外")
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

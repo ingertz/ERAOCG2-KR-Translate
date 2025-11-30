@@ -63,52 +63,33 @@ IF LOCAL
 		PRINTFORMW 
 		RETURN 1
 	ENDIF
-	
-	;-------------------------------------------------
-	;小분기
-	;-------------------------------------------------
-	;ここを記入した場合、これより下は流れない
-	;記入チェック（=0, 非표시、1, 표시）
-	LOCAL:1 = 1
-	;-------------------------------------------------
-	IF LOCAL:1
-		IF NOWEX:TARGET:Ｃ절정 || NOWEX:TARGET:Ｖ절정 || NOWEX:TARGET:Ａ절정 || NOWEX:TARGET:Ｂ절정 || NOWEX:TARGET:Ｍ절정
-			PRINTFORMW 「ひゃうっ…♥ %CSTR:TARGET:MASCALL%…♥ 待って…♥ 待ちなしゃい…♥ ああ…♥ 今イってるのに…♥ そんなことされたらもっとビクってなる…♥ やんっ…♥ ああっ…♥ ああんっ…♥」
-		ELSE 
-			PRINTFORMW 「んんっ…♥ あんっ…♥ ん～♥ 可愛がってもらえるのは嬉しいわ～♥ ふふっ♥」
-		ENDIF
-		RETURN 1
-	ENDIF
 
 	;基本セット
 	호감도修正 = 3
 	SIF TALENT:TARGET:애처
-		호감도修正 += 1
+		호감도修正 += 0
 	SIF TALENT:TARGET:연모 == 2
-		호감도修正 += 2
+		호감도修正 += 1
 	SIF TALENT:TARGET:연모 >= 1
-		호감도修正 += 2
-	SELECTCASE RAND:호감도修正 + 1
+		호감도修正 += 1
+	IF NOWEX:TARGET:Ｃ절정 || NOWEX:TARGET:Ｖ절정 || NOWEX:TARGET:Ａ절정 || NOWEX:TARGET:Ｂ절정 || NOWEX:TARGET:Ｍ절정
+		PRINTFORMW 「ひゃうっ…♥ %CSTR:TARGET:MASCALL%…♥ 待って…♥ 待ちなしゃい…♥ ああ…♥ 今イってるのに…♥ そんなことされたらもっとビクってなる…♥ やんっ…♥ ああっ…♥ ああんっ…♥」
+	ELSE
+		SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-			PRINTFORMW 
+			PRINTFORMW 「んんっ…♥ あんっ…♥ ん～♥ 可愛がってもらえるのは嬉しいわ～♥ ふふっ♥」
 		CASE 2
-			PRINTFORMW 
+			PRINTFORMW 「んっ…♥ んふっ…♥ あはっ♥ %CSTR:TARGET:MASCALL%は…%CSTR:TARGET:SELFCALL%を可愛がるのが好きなのかしら～♥」
 		CASE 3
-			PRINTFORMW 
+			PRINTFORMW 「あんっ…♥ んもうっ…♥ 触り方がいやらしいのだから…♥ レディの体は…♥ 丁寧に扱うものよ～♥」
 		;연모
 		CASE 4
-			PRINTFORMW 
-		CASE 5
-			PRINTFORMW 
+			PRINTFORMW 「んっ…♥ ふふっ…♥ %CSTR:TARGET:MASCALL%は愛情の伝え方が上手いのだから…♥」
 		;親愛
-		CASE 6
-			PRINTFORMW 
-		CASE 7
-			PRINTFORMW 
-		;애처
-		CASE 8
-			PRINTFORMW 
-	ENDSELECT
+		CASE 5
+			PRINTFORMW 「んんっ…♥ あはっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%のこと好きしゅぎっ♥ あははっ♥」
+		ENDSELECT
+	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
@@ -144,7 +125,8 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
 		IF TCVAR:질내사정플래그 
-			PRINTFORMW 「%CALLNAME:MASTER%…♥ ふふっ…♥ あなたの愛情がすごく感じられるわ～♥ もう…♥ こんなことされたらぁ♥ %CSTR:TARGET:SELFCALL%も色々としてあげたくなっちゃうわね～♥」
+			PRINTFORML 「%CSTR:TARGET:MASCALL%…♥ ふふっ…♥ あなたの愛情がすごく感じられるわ～♥」
+			PRINTFORMW 「こんなことされたらぁ♥ %CSTR:TARGET:SELFCALL%も色々としてあげたくなっちゃうわね～♥」
 			RETURN 1
 		ENDIF
 	ENDIF
@@ -158,44 +140,40 @@ IF LOCAL
 		RETURN 1
 	ENDIF
 	
-	;-------------------------------------------------
-	;小분기
-	;-------------------------------------------------
-	;ここを記入した場合、これより下は流れない
-	;記入チェック（=0, 非표시、1, 표시）
-	LOCAL:1 = 1
-	;-------------------------------------------------
-	IF LOCAL:1
-		IF PALAM:TARGET:욕정 >= PALAMLV:3
-			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%のおまんこはおいし…ひゃんっ♥ ちょっと待って…♥ 待ちなしゃい…♥ クリ…♥ 吸わないで…ああんっ…♥」
-		ELSE 
-			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%のおまんこはおいしいでしょう～？ ふふっ…♥ 好きなだけ舐めていいわよ～♥」
-		ENDIF
-		RETURN 1
-	ENDIF
-
 	;基本セット
-	호감도修正 = 3
+	호감도修正 = 5
 	SIF TALENT:TARGET:애처
 		호감도修正 += 0
 	SIF TALENT:TARGET:연모 == 2
-		호감도修正 += 1
+		호감도修正 += 3
 	SIF TALENT:TARGET:연모 >= 1
-		호감도修正 += 1
+		호감도修正 += 2
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-			PRINTFORMW 
+			PRINTFORML 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%のおまんこはおいしいでしょう～？」
 		CASE 2
-			PRINTFORMW 
+			PRINTFORML 「あんっ…♥ %CSTR:TARGET:MASCALL%…♥ おまんこぺろぺろ上手よ～♥ 혀使いがぁ♥ いやらしい気もするけど…♥」
 		CASE 3
-			PRINTFORMW 
-		;연모
+			PRINTFORMW 「ふふっ…♥ おまんこ…♥ 好きなだけ舐めていいわよ～♥ 特別にサービスしてあげるわ～っ♥」
 		CASE 4
-			PRINTFORMW 
-		;親愛
+			PRINTFORMW 「あはっ♥ %CSTR:TARGET:MASCALL%♥ 丁寧におまんこを舐めるのよ…♥ %CSTR:TARGET:MASCALL%の혀で奉仕しなさ～い♥」
 		CASE 5
-			PRINTFORMW 
+			PRINTFORMW 「んふっ♥ %CSTR:TARGET:MASCALL%…♥ おまんこ舐めるの積極的すぎ…♥ %CSTR:TARGET:MASCALL%も好きモノよね～♥」
+		;연모
+		CASE 6
+			PRINTFORMW 「あんっ♥ んんっ♥ %CSTR:TARGET:MASCALL%…♥ 愛情込めて…♥ おまんこ舐めてね%CSTR:TARGET:MASCALL%～♥ あはっ♥」
+		CASE 7
+			PRINTFORMW 「んんっ…♥ あはっ…♥ %CSTR:TARGET:MASCALL%…♥ おまんこに키스してもいいのよ？ ちゅって♥ ひゃんっ♥ 本当にするのね…♥」
+		;親愛
+		CASE 8
+			PRINTFORMW 「んんっ～♥ んっ♥ あはっ…♥ おまんこぺろぺろ…♥ 愛情感じてきゅんとしちゃうわ～♥ ふふっ…♥」
+		CASE 9
+			PRINTFORMW 「んもうっ♥ そんなに舐めなくてもいいのに…♥ %CSTR:TARGET:MASCALL%は%CSTR:TARGET:SELFCALL%のおまんこ好きすぎだわ～♥」
+		CASE 10
+			PRINTFORMW 「んんっ♥ こんなにおまんこ舐めてもらったら…♥ %CSTR:TARGET:SELFCALL%もちゃんと…♥ お返ししないとよね～…♥ ふふっ…♥」
 	ENDSELECT
+	SIF PALAM:TARGET:욕정 >= PALAMLV:3
+		PRINTFORMW 「あ、ひゃんっ♥ ちょっと待って…♥ 待ちなしゃい…♥ クリ…♥ 吸わないで…ああんっ…♥」
 ENDIF
 RETURN 1
 
@@ -366,42 +344,40 @@ IF LOCAL
 		ENDIF
 	ENDIF
 	
-	;-------------------------------------------------
-	;小분기
-	;-------------------------------------------------
-	;ここを記入した場合、これより下は流れない
-	;記入チェック（=0, 非표시、1, 표시）
-	LOCAL:1 = 1
-	;-------------------------------------------------
-	IF LOCAL:1
-		IF EXP:TARGET:Ａ경험 >= 100 && PALAM:TARGET:욕정 >= PALAMLV:3
-			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%の애널はおいし…ひゃんっ♥ ちょっと待って…♥ 待ちなしゃい…♥ 혀…♥ 中に入れないで…ああんっ…♥」
-		ELSE 
-			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%の애널はおいしいかしら～？ ふふっ…♥ 好きなだけ舐めていいわよ～♥」
-		ENDIF
-		RETURN 1
-	ENDIF
-
 	;基本セット
-	호감도修正 = 3
+	호감도修正 = 5
 	SIF TALENT:TARGET:애처
 		호감도修正 += 0
 	SIF TALENT:TARGET:연모 == 2
-		호감도修正 += 1
+		호감도修正 += 3
 	SIF TALENT:TARGET:연모 >= 1
-		호감도修正 += 1
+		호감도修正 += 2
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-			PRINTFORMW 
+			PRINTFORML 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%の애널はおいしいでしょう～？」
 		CASE 2
-			PRINTFORMW 
+			PRINTFORML 「あんっ…♥ %CSTR:TARGET:MASCALL%…♥ 애널ぺろぺろ上手よ～♥ 혀使いがぁ♥ いやらしい気もするけど…♥」
 		CASE 3
-			PRINTFORMW 
+			PRINTFORMW 「ふふっ…♥ 애널…♥ 好きなだけ舐めていいわよ～♥ 特別にサービスしてあげるわ～っ♥」
 		CASE 4
-			PRINTFORMW 
+			PRINTFORMW 「あはっ♥ %CSTR:TARGET:MASCALL%♥ 丁寧に애널を舐めるのよ…♥ %CSTR:TARGET:MASCALL%の혀で奉仕しなさ～い♥」
 		CASE 5
-			PRINTFORMW 
+			PRINTFORMW 「んふっ♥ %CSTR:TARGET:MASCALL%…♥ 애널舐めるの積極的すぎ…♥ %CSTR:TARGET:MASCALL%も好きモノよね～♥」
+		;연모
+		CASE 6
+			PRINTFORMW 「あんっ♥ んんっ♥ %CSTR:TARGET:MASCALL%…♥ 愛情込めて…♥ 애널舐めてね%CSTR:TARGET:MASCALL%～♥ あはっ♥」
+		CASE 7
+			PRINTFORMW 「んんっ…♥ あはっ…♥ %CSTR:TARGET:MASCALL%…♥ 애널に키스してもいいのよ？ ちゅって♥ ひゃんっ♥ 本当にするのね…♥」
+		;親愛
+		CASE 8
+			PRINTFORMW 「んんっ～♥ んっ♥ あはっ…♥ 애널ぺろぺろ…♥ 愛情感じてきゅんとしちゃうわ～♥ ふふっ…♥」
+		CASE 9
+			PRINTFORMW 「んもうっ♥ そんなに舐めなくてもいいのに…♥ %CSTR:TARGET:MASCALL%は%CSTR:TARGET:SELFCALL%の애널好きすぎだわ～♥」
+		CASE 10
+			PRINTFORMW 「んんっ♥ こんなに애널舐めてもらったら…♥ %CSTR:TARGET:SELFCALL%もちゃんと…♥ お返ししないとよね～…♥ ふふっ…♥」
 	ENDSELECT
+	SIF EXP:TARGET:Ａ경험 >= 100 && PALAM:TARGET:욕정 >= PALAMLV:3
+		PRINTFORMW 「んんっ…♥ ひゃんっ♥ ちょっと待って…♥ 待ちなしゃい…♥ 혀…♥ 中に入れないで…ああんっ…♥」
 ENDIF
 RETURN 1
 
@@ -488,7 +464,7 @@ ENDIF
 RETURN 1
 
 ;==================================================
-;6,가슴愛撫
+;6,胸愛撫
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1921_6
 CALL TRAIN_MESSAGE
@@ -514,24 +490,8 @@ IF LOCAL
 		RETURN 1
 	ENDIF
 	
-	;-------------------------------------------------
-	;小분기
-	;-------------------------------------------------
-	;ここを記入した場合、これより下は流れない
-	;記入チェック（=0, 非표시、1, 표시）
-	LOCAL:1 = 1
-	;-------------------------------------------------
-	IF LOCAL:1
-		IF PALAM:TARGET:욕정 >= PALAMLV:3 && !TEQUIP:TARGET:니플캡 && TEQUIP:TARGET:착유기
-			PRINTFORMW 「ひゃんっ…♥ %CSTR:TARGET:MASCALL%…♥ 乳首は…♥ 敏感だから…♥ んんっ…♥ あはっ…♥ %CSTR:TARGET:SELFCALL%のおっぱい…♥ 好きにしすぎよ～♥ ふふっ…♥」
-		ELSE 
-			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%のおっぱいはどうかしら～？ 揉み応えがあるでしょう～♥ まあ、当然よね～♥」
-		ENDIF
-		RETURN 1
-	ENDIF
-
 	;基本セット
-	호감도修正 = 3
+	호감도修正 = 5
 	SIF TALENT:TARGET:애처
 		호감도修正 += 0
 	SIF TALENT:TARGET:연모 == 2
@@ -540,20 +500,26 @@ IF LOCAL
 		호감도修正 += 2
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-			PRINTFORMW 
+			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%のおっぱいはどうかしら～？ 揉み応えがあるでしょう～♥ まあ、当然よね～♥」
 		CASE 2
-			PRINTFORMW 
+			PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%は…♥ おっぱいが好きなのかしら～？ んんっ…♥ もうっ…♥ 揉んで反応しないのっ♥」
 		CASE 3
-			PRINTFORMW 
-		;연모
+			PRINTFORMW 「んふっ♥ 感謝しない%CSTR:TARGET:MASCALL%…♥ この%CSTR:TARGET:SELFCALL%のおっぱいを揉んでいるのだから…♥」
 		CASE 4
-			PRINTFORMW 
+			PRINTFORMW 「あはっ♥ %CSTR:TARGET:MASCALL%がっつぎすぎ～♥ そんなに強引にならなくてもおっぱいは逃げないわよ～♥」
 		CASE 5
-			PRINTFORMW 
-		;親愛
+			PRINTFORMW 「んんっ♥ んっ～♥ もう少し強く揉んでもいいわよ～♥　極上のおっぱいを…♥ もっと味わいなさ～い♥ あはっ♥」
+		;연모
 		CASE 6
-			PRINTFORMW 
+			PRINTFORMW 「んんっ…♥ ふふっ…♥ 重たいでしょう？ 今は%CSTR:TARGET:MASCALL%が支えてくれるから…♥ 少し楽かも～♥」
+		CASE 7
+			PRINTFORMW 「ふふっ…♥ 揉むだけでいいのかしら～？ 吸ってもいいわよ～♥ あはっ♥ %CSTR:TARGET:MASCALL%がして欲しいなら挟んでもあげる…♥」
+		;親愛
+		CASE 8
+			PRINTFORMW 「あはっ♥ %CSTR:TARGET:MASCALL%…♥ 鼓動がわかる？ ふふっ…♥ おっぱい揉まれて…♥ %CSTR:TARGET:SELFCALL%も緊張してるのよ…♥
 	ENDSELECT
+	SIF PALAM:TARGET:욕정 >= PALAMLV:3 && !TEQUIP:TARGET:니플캡 && TEQUIP:TARGET:착유기
+		PRINTFORMW 「ひゃんっ…♥ %CSTR:TARGET:MASCALL%…♥ 乳首は…♥ 敏感だから…♥ んんっ…♥ あはっ…♥ %CSTR:TARGET:SELFCALL%のおっぱい…♥ 好きにしすぎよ～♥ ふふっ…♥」
 ENDIF
 RETURN 1
 
@@ -584,49 +550,43 @@ IF LOCAL
 		RETURN 1
 	ENDIF
 	
-	;-------------------------------------------------
-	;小분기
-	;-------------------------------------------------
-	;ここを記入した場合、これより下は流れない
-	;記入チェック（=0, 非표시、1, 표시）
-	LOCAL:1 = 1
-	;-------------------------------------------------
-	IF LOCAL:1
-		IF PALAM:욕정 >= PALAMLV:3
-			PRINTFORMW 「ひゃんっ…♥ %CSTR:TARGET:MASCALL%…♥ 乳首は…♥ 今敏感で…♥ んんっ…♥ ああんっ…♥ コリコリだめぇ…♥」
-		ELSE 
-			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%の乳首で遊ぶなんて～♥ 仕方ないわね～♥ 特別に許してあげるわよ～♥ あんっ…♥」
-		ENDIF
-		RETURN 1
-	ENDIF
-
 	;基本セット
-	호감도修正 = 2
+	호감도修正 = 5
 	SIF TALENT:TARGET:애처
 		호감도修正 += 0
 	SIF TALENT:TARGET:연모 == 2
 		호감도修正 += 1
 	SIF TALENT:TARGET:연모 >= 1
-		호감도修正 += 1
+		호감도修正 += 2
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-			PRINTFORMW 
+			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ %CSTR:TARGET:SELFCALL%の乳首で遊ぶなんて～♥ 仕方ないわね～♥」
 		CASE 2
-			PRINTFORMW 
-		;연모
+			PRINTFORMW 「んふっ♥ 乳首は敏感な所なのだから…♥ 特別に触らせてあげてるのよ？ んんっ♥ わかっているのかしら%CSTR:TARGET:MASCALL%…♥」
 		CASE 3
-			PRINTFORMW 
-		;親愛
+			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…♥ 触り方がいやらしいわよ？ あんっ♥ 指で弾かないの…♥ んんっ♥」
 		CASE 4
-			PRINTFORMW 
+			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:SELFCALL%の乳首の触り心地はどうかしら～♥ 良いわよね？ あはっ♥ 聞くまでもなかったかしら～♥」
+		CASE 5
+			PRINTFORMW 「あんっ…♥ あはっ…♥ 乳首…♥ ふふっ♥ 反応しちゃうわ～♥ もうっ…♥ 摘まむなんて%CSTR:TARGET:MASCALL%はスケベさんね～♥」
+		;연모
+		CASE 6
+			PRINTFORMW 「んんっ♥ 乳首…♥ もう少し強くしてもいいわよ～？ あはっ♥ 特別に許してあげる…♥」
+		CASE 7
+			PRINTFORMW 「あんっ♥ %CSTR:TARGET:MASCALL%は乳首が好きなの～？ ふふっ♥ 赤ちゃんみたいに…♥ 吸ってもいいのよ～♥」
+		;親愛
+		CASE 8
+			PRINTFORMW 「んんっ♥ あはっ♥ 乳首…♥ にゃぁっ♥ あはっ…♥ コリコリ…♥ いいの…♥ あんっ♥ あはっ♥ あははっ♥」
 	ENDSELECT
+	SIF PALAM:욕정 >= PALAMLV:3
+		PRINTFORMW 「ひゃんっ…♥ %CSTR:TARGET:MASCALL%…♥ 乳首…♥ 今敏感、かも…♥ んんっ…♥ ああんっ…♥ コリコリだめぇ…♥」
 ENDIF
 RETURN 1
 
 ;==================================================
 ;8,秘貝開帳
 ;ABL:노출증(0=涙を浮かべてこちらを睨む 1=顔真っ赤 2=人差し指と中指でサインを作る 3=嬉々とした表情で陰核弄る 4=陰唇だけでなく膣口も 5=ガン開いて誘ってる
-;TALENT:PLYAER:수치심 > 0 && EXP:MASTER:조교경험 < 200　(あなたが顔を背ける
+;TALENT:PLYAER:羞恥心 > 0 && EXP:MASTER:조교경험 < 200　(あなたが顔を背ける
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1921_8
 CALL TRAIN_MESSAGE
@@ -681,49 +641,49 @@ IF LOCAL
 					PRINTFORMW こんな風におまんこの中を覗いて…楽しいものなのかしら？」
 				ENDIF
 			CASE 1
-				PRINTFORMW 「ふう…♥ はあ…♥ おまんこの中を見るのは楽しいかしら%CSTR:TARGET:MASCALL%…♥
+				PRINTFORMW 「ふう…♥ はあ…♥ おまんこの中を見るのは楽しいかしら%CSTR:TARGET:MASCALL%…♥」
 				IF TCVAR:TARGET:질내사정플래그
-					PRINTFORMW %CSTR:TARGET:MASCALL%がたっぷり出した정액…♥ ああもう…♥ 零れちゃったじゃない…♥」 
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%がたっぷり出した정액…♥ ああもう…♥ 零れちゃったじゃない…♥」 
 				ELSEIF TALENT:TARGET:처녀
-					PRINTFORMW %CSTR:TARGET:SELFCALL%の처녀膜を熱心に見て…♥ どうしたいのかしら～？」
+					PRINTFORMW 「%CSTR:TARGET:SELFCALL%の처녀膜を熱心に見て…♥ どうしたいのかしら～？」
 				ELSE
-					PRINTFORMW もう…♥ そんなに熱心に覗かないの…♥ それよりももっと…♥ したいことがあるのではないかしら～？」
+					PRINTFORMW 「もう…♥ そんなに熱心に覗かないの…♥ それよりももっと…♥ したいことがあるのではないかしら～？」
 				ENDIF 
 			CASE 2
-				PRINTFORM 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ 見えるかしら～？ 
+				PRINTFORMW 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ 見えるかしら～？」
 				IF TCVAR:TARGET:질내사정플래그
-					PRINTFORMW %CSTR:TARGET:MASCALL%がたっぷり出した정액…♥ 零れてるわよ…♥ あはっ…♥ いっぱい出したものね～♥」 
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%がたっぷり出した정액…♥ 零れてるわよ…♥ あはっ…♥ いっぱい出したものね～♥」 
 				ELSEIF TALENT:TARGET:처녀
-					PRINTFORMW これが%CSTR:TARGET:SELFCALL%の처녀膜よ？ あはっ…♥ 破りたいかしら～？」
+					PRINTFORMW 「これが%CSTR:TARGET:SELFCALL%の처녀膜よ？ あはっ…♥ 破りたいかしら～？」
 				ELSE
-					PRINTFORMW %CSTR:TARGET:MASCALL%のおちんぽ…♥ 待っているわよ～♥ あはっ…♥ あははっ…♥」
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%のおちんぽ…♥ 待っているわよ～♥ あはっ…♥ あははっ…♥」
 				ENDIF
 			CASE 3
-				PRINTFORM 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ しっかりと見なさ～い…♥ 
+				PRINTFORMW 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ しっかりと見なさ～い…♥」
 				IF TCVAR:TARGET:질내사정플래그
-					PRINTFORMW %CSTR:TARGET:MASCALL%がたっぷり出した정액よ～♥ ああ…♥ 手で受け止めきれないくらいだわ…♥ すごい量ね～？」 
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%がたっぷり出した정액よ～♥ ああ…♥ 手で受け止めきれないくらいだわ…♥ すごい量ね～？」 
 				ELSEIF TALENT:TARGET:처녀
-					PRINTFORMW これが%CSTR:TARGET:SELFCALL%の처녀膜よ？ あはっ…♥ 破りたいでしょう～？ ふふっ…♥ 準備はできているわよ～？」
+					PRINTFORMW 「これが%CSTR:TARGET:SELFCALL%の처녀膜よ？ あはっ…♥ 破りたいでしょう～？ ふふっ…♥ 準備はできているわよ～？」
 				ELSE
-					PRINTFORMW %CSTR:TARGET:MASCALL%のおちんぽ欲しくて…♥ 手が止まらないの～♥ んふっ…♥ おちんぽ入れて…♥ 楽にしてもらえないかしら～…♥」
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%のおちんぽ欲しくて…♥ 手が止まらないの～♥ んふっ…♥ おちんぽ入れて…♥ 楽にしてもらえないかしら～…♥」
 				ENDIF
 			CASE 4
-				PRINTFORM 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ 질내までしっかりと見なさ～い…♥ 
+				PRINTFORMW 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ 질내までしっかりと見なさ～い…♥」
 				IF TCVAR:TARGET:질내사정플래그
-					PRINTFORMW %CSTR:TARGET:MASCALL%がたっぷり出した정액が…♥ 出ちゃってるわね～♥ %CSTR:TARGET:SELFCALL%の질내には…♥ いつもこんなに溜まっているのよ～？ ふふっ…♥」 
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%がたっぷり出した정액が…♥ 出ちゃってるわね～♥ %CSTR:TARGET:SELFCALL%の질내には…♥ いつもこんなに溜まっているのよ～？ ふふっ…♥」 
 				ELSEIF TALENT:TARGET:처녀
-					PRINTFORMW %CSTR:TARGET:SELFCALL%の처녀膜…♥ %CSTR:TARGET:MASCALL%に破ってもらいたいわね～♥ ふふっ…♥ あはっ…♥ 一つになりましょう？ %CSTR:TARGET:MASCALL%…♥」
+					PRINTFORMW 「%CSTR:TARGET:SELFCALL%の처녀膜…♥ %CSTR:TARGET:MASCALL%に破ってもらいたいわね～♥ ふふっ…♥ あはっ…♥ 一つになりましょう？ %CSTR:TARGET:MASCALL%…♥」
 				ELSE
-					PRINTFORMW んあっ…♥ %CSTR:TARGET:MASCALL%に질내見られると…♥ きゅんきゅんしちゃうわ～♥ あはっ…♥ もっと近くで見て…♥ 질내まで好きにしていいから…♥」
+					PRINTFORMW 「んあっ…♥ %CSTR:TARGET:MASCALL%に질내見られると…♥ きゅんきゅんしちゃうわ～♥ あはっ…♥ もっと近くで見て…♥ 질내まで好きにしていいから…♥」
 				ENDIF
 			CASEELSE
-				PRINTFORM 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ 질내までしっかりと見なさ～い…♥ 
+				PRINTFORMW 「あはっ…♥ %CSTR:TARGET:MASCALL%…♥ 질내までしっかりと見なさ～い…♥」 
 				IF TCVAR:TARGET:질내사정플래그
-					PRINTFORMW %CSTR:TARGET:MASCALL%がたっぷり出した정액が…♥ 出ちゃってるわね～♥ でもまだ足りないわ～♥ %CSTR:TARGET:MASCALL%…♥ もう一回질내に出してもらえるかしら～？ あはっ…♥」 
+					PRINTFORMW 「%CSTR:TARGET:MASCALL%がたっぷり出した정액が…♥ 出ちゃってるわね～♥ でもまだ足りないわ～♥ %CSTR:TARGET:MASCALL%…♥ もう一回질내に出してもらえるかしら～？ あはっ…♥」 
 				ELSEIF TALENT:TARGET:처녀
-					PRINTFORMW %CSTR:TARGET:SELFCALL%の처녀膜…♥ 目に焼き付けて…♥ 破ってもいいけど…♥ 覚えておいて欲しいの…♥」
+					PRINTFORMW 「%CSTR:TARGET:SELFCALL%の처녀膜…♥ 目に焼き付けて…♥ 破ってもいいけど…♥ 覚えておいて欲しいの…♥」
 				ELSE
-					PRINTFORMW んあっ…♥ %CSTR:TARGET:MASCALL%に질내見られて…♥ きゅんきゅんする～♥ あはっ…♥ おちんぽでも指でも혀でも…♥ %CSTR:TARGET:SELFCALL%のおまんこ好きにして…♥ あはっ…♥」
+					PRINTFORMW 「んあっ…♥ %CSTR:TARGET:MASCALL%に질내見られて…♥ きゅんきゅんする～♥ あはっ…♥ おちんぽでも指でも혀でも…♥ %CSTR:TARGET:SELFCALL%のおまんこ好きにして…♥ あはっ…♥」
 				ENDIF
 		ENDSELECT
 		RETURN 1
@@ -851,7 +811,7 @@ RETURN 1
 
 ;==================================================
 ;11,乳首吸い
-;친밀10以上の時、ABL:Ｂ감각(1以下=苦笑しながら頭を撫でる　2-5=쾌감を堪える　6-9=嬌声をあげる　10以上=全身をよがらせて喘ぐ
+;친밀10以上の時、ABL:Ｂ감각(1以下=苦笑しながら頭を撫でる　2-5=快感を堪える　6-9=嬌声をあげる　10以上=全身をよがらせて喘ぐ
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1921_11
 CALL TRAIN_MESSAGE
@@ -876,79 +836,65 @@ IF LOCAL
 		PRINTFORMW 
 		RETURN 1
 	ENDIF
-	
-	;-------------------------------------------------
-	;小분기
-	;-------------------------------------------------
-	;ここを記入した場合、これより下は流れない
-	;記入チェック（=0, 非표시、1, 표시）
-	LOCAL:1 = 1
-	;-------------------------------------------------
-	IF LOCAL:1
-		SELECTCASE ABL:TARGET:Ｂ감각 
-		CASE 0,1
-			IF TALENT:MASTER:연령 <= -2
-				PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%はまだまだ子供だものね～♥ いい子いい子～♥ あはっ…♥ なんだか少し落ち着くわ…♥」
-			ELSE
-				PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%は仕方ないのだから…♥ %CSTR:TARGET:SELFCALL%のおっぱいが好きすぎるのよね～♥ はい、いい子いい子～♥」
-			ENDIF
-		CASE 2 TO 5
-			IF TALENT:MASTER:연령 <= -2
-				PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…？ 吸い方がいやら…んんっ♥ 子供だからといって…♥ 侮るべきではなかったわね%CSTR:TARGET:MASCALL%は…♥」
-			ELSE
-				PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…？ 吸い方がいやらしいわよ…♥ ふうー♥ はあ～♥ んもう…♥ 仕方ない子ね%CSTR:TARGET:MASCALL%は～♥」
-			ENDIF
-		CASE 6 TO 9
-			PRINTFORMW 「あんっ…♥ んんっ♥ %CSTR:TARGET:MASCALL%…♥ そんなにいやらしい吸い方してぇ…♥ あんっ♥ ひゃんっ♥」
-		CASEELSE
-			PRINTFORMW 「ひゃうんっ…♥ ああんっ♥ %CSTR:TARGET:MASCALL%…♥ だめぇ…♥ そんなに吸っちゃだめえ…♥ ああっ…♥ んんっ…♥」
-		ENDSELECT
-		RETURN 1
-	ENDIF
 
 	;基本セット
-	호감도修正 = 2
+	호감도修正 = 5
 	SIF TALENT:TARGET:애처
 		호감도修正 += 0
 	SIF TALENT:TARGET:연모 == 2
 		호감도修正 += 1
 	SIF TALENT:TARGET:연모 >= 1
-		호감도修正 += 1
+		호감도修正 += 2
 	
-	;-------------------------------------------------
-	;小분기
-	;-------------------------------------------------
-	;母乳体質
-	;記入チェック
-	LOCAL:2 = 0
-	;-------------------------------------------------
-	IF LOCAL:2 && MILK_CAN(TARGET) == 1
-		SELECTCASE RAND:호감도修正 + 1
-			CASE 1
-				PRINTFORMW 
-			CASE 2
-				PRINTFORMW 
-			;연모
-			CASE 3
-				PRINTFORMW 
-			;親愛
-			CASE 4
-				PRINTFORMW 
-		ENDSELECT
-		RETURN 1
-	ENDIF
-
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-			PRINTFORMW 
+			PRINTFORMW 「あら～？ おっぱい吸いたいの～♥ あはっ♥ 仕方ないわね～♥ んんっ…♥」
 		CASE 2
-			PRINTFORMW 
-		;연모
+			PRINTFORM 「ふふっ♥ おっぱいちゅぱちゅぱするのね～♥ 
+			SIF TALENT:MASTER:연령 > -2
+				PRINTFORM　いい大人なのに～♥ まあ
+			PRINTFORMW いいわよ～♥ ふふっ♥ はい、どう～ぞっ♥ んんっ…♥」
 		CASE 3
-			PRINTFORMW 
-		;親愛
+			PRINTFORMW 「んもうっ♥ そんなにがっつかないの…♥ おっぱい逃げないから…♥ 落ち着いて吸いなさ～い♥」
 		CASE 4
-			PRINTFORMW 
+			PRINTFORMW 「あはっ♥ %CSTR:TARGET:MASCALL%はおっぱい好きなのね～♥ 仕方ないから吸わせてあげるっ♥ んんっ…♥」
+		CASE 5
+			PRINTFORMW 「んんっ♥ おっぱい食べられちゃうの～♥ あはっ♥ 吸いついちゃった…♥ んっ…♥ おいしそうに吸うわね…♥」
+		;연모
+		CASE 6
+			PRINTFORM 「おっぱい？ いいわよ～♥ ふふっ…♥ おいしい
+			IF MILK_CAN(TARGET) == 1
+				PRINTFORM おっぱい…あはっ♥ ミルクを～♥
+			ELSE
+				PRINTFORM おっぱいを～♥
+			ENDIF
+			PRINTFORMW  ご馳走してあげるわ～♥」
+		CASE 7
+			PRINTFORMW 「んんっ～♥ は～い♥ おっぱいどう～ぞっ♥ あはっ♥ すぐに吸いついちゃって…♥ んんっ…♥ %CSTR:TARGET:MASCALL%は可愛いのだから…♥」
+		;親愛
+		CASE 8
+			PRINTFORM 「あはっ♥ あははっ♥ おっぱい欲しいんだ～？ 
+			SIF EXP:TARGET:출산경험
+				PRINTFORM 目でわかっちゃう～♥ そっくり～♥ 
+			PRINTFORMW 存分に吸っていいわよ～♥ %CSTR:TARGET:MASCALL%だもの～♥ もちろん構わないわよ～♥」
+	ENDSELECT
+	SELECTCASE ABL:TARGET:Ｂ감각 
+	CASE 0,1
+		IF TALENT:MASTER:연령 <= -2
+			PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%はまだまだ子供だものね～♥ いい子いい子～♥ あはっ…♥ なんだか少し落ち着くわ…♥」
+		ELSE
+			PRINTFORMW 「ふふっ…♥ %CSTR:TARGET:MASCALL%は仕方ないのだから…♥ %CSTR:TARGET:SELFCALL%のおっぱいが好きすぎるのよね～♥ はい、いい子いい子～♥」
+		ENDIF
+	CASE 2 TO 5
+		IF TALENT:MASTER:연령 <= -2
+			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…？ 吸い方がいやら…んんっ♥ 子供だからといって…♥ 侮るべきではなかったわね%CSTR:TARGET:MASCALL%は…♥」
+		ELSE
+			PRINTFORMW 「んんっ…♥ %CSTR:TARGET:MASCALL%…？ 吸い方がいやらしいわよ…♥ ふうー♥ はあ～♥ んもう…♥ 仕方ない子ね%CSTR:TARGET:MASCALL%は～♥」
+		ENDIF
+	CASE 6 TO 9
+		PRINTFORMW 「あんっ…♥ んんっ♥ %CSTR:TARGET:MASCALL%…♥ そんなにいやらしい吸い方してぇ…♥ あんっ♥ ひゃんっ♥」
+	CASEELSE
+		PRINTFORMW 「ひゃうんっ…♥ ああんっ♥ %CSTR:TARGET:MASCALL%…♥ だめぇ…♥ そんなに吸っちゃだめえ…♥ ああっ…♥ んんっ…♥」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -1055,7 +1001,7 @@ IF LOCAL
 		욕망修正 += 1
 	SELECTCASE 욕망修正 + 1
 		CASE 1
-			PRINTFORMW 「少し휴식かしら？ 別にいいけれど～」
+			PRINTFORMW 「少し休憩かしら？ 別にいいけれど～」
 		;욕망３以上
 		CASE 2
 			PRINTFORMW 「%CSTR:TARGET:MASCALL%？ 構ってくれないのかしら～？」

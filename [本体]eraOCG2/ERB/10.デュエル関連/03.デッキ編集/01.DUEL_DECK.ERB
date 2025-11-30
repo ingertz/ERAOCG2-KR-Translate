@@ -146,7 +146,7 @@ IF 필터お気に入り == 1
 ELSE
 	SETCOLOR C_GRAY
 ENDIF
-PRINTBUTTON "[ FAVORITE ]",91162
+PRINTBUTTON "[★FAVORITE]",91162
 RESETCOLOR
 
 
@@ -541,19 +541,22 @@ FOR カウンタ,0,30
 
 	ELSEIF カウンタ == 18
 		PRINTBUTTON @"%"【 일괄분해 】"%", 92600
-		PRINTFORM %"",4,LEFT%
+		PRINTFORM %"",5,LEFT%
 		PRINTBUTTON @"%"【 일괄생성 】"%", 92601
-		PRINTFORM %"",8,LEFT%
+		PRINTFORM %"",7,LEFT%
 
 
 	ELSEIF カウンタ == 20
 		IF 選択カード_ID > 1
 			IF お気に入りカード설정:選択カード_ID >= 1
 				SETCOLOR C_GOLD
+				PRINTBUTTON @"%"【 ★즐겨찾기설정 】"%", 92700
+			ELSE
+				PRINTBUTTON @"%"【 ★즐겨찾기설정 】"%", 92700
 			ENDIF
-			PRINTBUTTON @"%"【 ★즐겨찾기설정 】"%", 92700
 			RESETCOLOR
-			PRINTFORM %"",20,LEFT%
+			
+			PRINTBUTTON @"%"【  자동 덱 생성  】"%", 92710
 		ELSE
 			PRINTFORM %"",40,LEFT%
 		ENDIF
@@ -600,7 +603,7 @@ FOR カウンタ,0,30
 			PRINTFORM %"",36,LEFT%
 		ENDIF
 		PRINT 】
-	ELSEIF GROUPMATCH(カウンタ,5,12,15,21)
+	ELSEIF GROUPMATCH(カウンタ,5,12,15,22)
 		PRINT ――――――――――――――――――――
 
 	ELSE 
@@ -1656,6 +1659,9 @@ ELSEIF RESULT == 92200
 			IF RESULT == 0
 				PRINTFORMW 이 카드로는 덱을 생성할 수 없었습니다。
 				GOTO DECK_LOOP
+			ELSEIF RESULT == -1
+				PRINTFORMW 돌아갑니다。
+				GOTO DECK_LOOP
 			ENDIF
 		ELSE
 			PRINTFORMW 돌아갑니다。
@@ -1708,10 +1714,12 @@ ELSEIF RESULT == 92601
 	FOR カウンタ,0,60
 		SIF 編集_덱:カウンタ <= 0
 			CONTINUE
-
 		SIF カウンタ == 0
 			現在カードID = 編集_덱:カウンタ
-		VARSET 同名カード枚数
+		
+		TRYCALLFORM CARD_{編集_덱:カウンタ}("生産불가")
+		SIF RESULT == 1
+			CONTINUE
 		IF 現在カードID != 編集_덱:カウンタ
 			現在カードID = 編集_덱:カウンタ
 			同名カード枚数 = 1
@@ -1726,7 +1734,7 @@ ELSEIF RESULT == 92601
 			구입ポイント += RESULT
 		ENDIF
 	NEXT
-
+	VARSET 同名カード枚数
 	FOR カウンタ,0,60
 		SIF 編集_EX덱:カウンタ <= 0
 			CONTINUE
@@ -1831,6 +1839,15 @@ ELSEIF RESULT == 92400
 
 ELSEIF RESULT == 92700
 	お気に入りカード설정:選択カード_ID ^= 1
+
+ELSEIF RESULT == 92710
+	CALL ENEMY_DECK_AUTO_MAKE(選択カード_ID,1)
+	IF RESULT == 0
+		PRINTFORMW 이 카드로는 덱을 생성할수 없었습니다。
+	ELSEIF RESULT == -1
+		PRINTFORMW 돌아갑니다。
+	ENDIF
+
 ;덱출력――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 92500
 	CALL DECK_LIST_GENERATE
@@ -1925,6 +1942,11 @@ ELSEIF RESULT == 93404
 	필터条件カテゴリ = %RESULTS:4%
 	リストスタート = 0
 	GOTO FILTER_LOOP
+ELSEIF RESULT == 93405
+	TRYCALLFORM CARDNAME_{選択カード_ID}("出典作品")
+	필터条件カテゴリ = %RESULTS%
+	リストスタート = 0
+	GOTO FILTER_LOOP
 ;カテゴリ필터설정――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 94000
 	TRYCALLFORM CARD_{選択カード_ID}("속성")
@@ -1951,6 +1973,8 @@ ELSEIF RESULT == 99600
 ELSEIF RESULT == 97000
 	TRYCALLFORM CARD_{選択カード_ID}("レベル")
 	VARSET 필터条件レベル
+	SIF RESULT >= 12
+		RESULT = 12
 	필터条件レベル:RESULT = RESULT
 	필터条件レベル:0 = 999
 	リストスタート = 0

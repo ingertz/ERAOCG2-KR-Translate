@@ -1,0 +1,124 @@
+﻿@CARDNAME_73390,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 성유물에 비치는 그림자
+	CASE "略称"
+		RESULTS = 성유물비친그림자
+	CASE "カテゴリ"
+		RESULTS:0 = 성유물
+ENDSELECT
+
+
+@CARD_73390(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 251123
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_73390(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドは「성유물에 비치는 그림자」となる。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：フィールドの「크롤러」モンスターの攻撃力・守備力は３００アップする。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：자신は通常소환に加えて１度だけ、자신メインフェイズにレベル２以下の곤충족モンスター１体を소환できる。
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ③：자신の「크롤러」モンスターが상대モンスターと戦闘を行ったダメージステップ終了時に발동できる。
+PRINTL その상대モンスターを破壊する。
+
+@CARDCAN_73390(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73390)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) != 0
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF !MATCH(RESULTS,"크롤러")
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_73390(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択肢
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73390)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73390)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘場所(듀얼리스트,1),"묘지")
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件カテゴリ = 크롤러
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300,300)
+
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "성유물에 비치는 그림자")
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종족 = 곤충족
+	CALLFORM 효과条件レベル_ADV(2, "以下")
+	CALL STATCHANGE_HAND(듀얼리스트,"全体",場所,"召可")
+ENDIF

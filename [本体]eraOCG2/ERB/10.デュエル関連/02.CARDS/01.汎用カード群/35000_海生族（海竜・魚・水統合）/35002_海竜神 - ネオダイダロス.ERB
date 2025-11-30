@@ -1,0 +1,160 @@
+﻿@CARDNAME_35002,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 해룡신－네오다이달로스
+	CASE "略称"
+		RESULTS = 네오다이달로스
+	CASE "カテゴリ"
+		RESULTS:0 = 다이달로스
+		RESULTS:1 = 바다
+ENDSELECT
+
+@CARD_35002(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2900
+	CASE "守備力"
+		RETURN 1600
+	CASE "소환불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35002(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは通常소환できない。
+CALLFORM CARD_ABLE(0,손패起動)
+PRINTL ①：자신フィールドの「해룡－다이달로스」１体をリリースした場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(0,필드起動)
+PRINTL ②：자신フィールドが「海」の場合、자신フィールドのフィールド마법１枚を묘지へ送って발동できる。
+PRINTL このカード以外の손패・フィールドのカードを全て破壊する。
+
+
+@CARDCAN_35002(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35002)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 해룡－다이달로스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVARS(@"%듀얼리스트%_フィールド名") != "海"
+		RETURN 0
+	IF 듀얼리스트 != "자신"
+		SIF 손패数(듀얼리스트) > 손패数(対面者)
+			RETURN 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件종류 = フィールド
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35002(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35002)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 해룡－다이달로스
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動 
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35002)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件종류 = フィールド
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件他所 = 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場全体",場所,"묘지")
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%듀얼리스트%_손패:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(듀얼리스트,"손패",カウンタ,破壊行き)
+			NEXT
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%対面者%_손패:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(対面者,"손패",カウンタ,破壊行き)
+			NEXT
+		ENDIF
+	ENDIF
+ENDIF
+

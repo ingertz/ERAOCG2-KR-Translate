@@ -1,0 +1,189 @@
+﻿@CARDNAME_5530,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 영원과 수유의 죄인 카구야
+	CASE "略称"
+		RESULTS = 호라이산 카구야
+	CASE "カテゴリ"
+		RESULTS:0 = 영원정
+		RESULTS:1 = 환상소녀
+		RESULTS:2 = 월인
+	CASE "出典作品"
+		RESULTS:0 = 동방 Project
+ENDSELECT
+
+
+@CARD_5530(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251119
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_5530(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件レベル = 8
+素材条件カテゴリ = 영원정
+;추가효과用
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,5530) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_5530(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 레벨８ "영원정" 몬스터×３
+CALL TEXT_DECORATION("P_MAGIC")
+PRINTL ①：지속인 카드는 파괴 내성을 갖는다。
+PRINTL （지속인 카드는 지속 마법/ 지속 함정 / P몬스터를 가리킨다）
+CALL TEXT_DECORATION("P_MAGIC_2")
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드는 철벽 내성（전투 / 대상 / 파괴 내성）을 갖는다。
+CALLFORM CARD_ABLE(0,常在無効)
+PRINTL ②：이 카드가 몬스터 존에 존재하는 한、
+PRINTL 이 카드 이외의 필드의 EX덱에서 나온 앞면 표시 몬스터는 수비 표시가 되며、
+PRINTL 특수 소환한 턴에는 효과를 발동할 수 없다。
+CALLFORM CARD_ABLE(0,ターン開始時強制)
+PRINTL ③：자신 스탠바이 페이즈마다 이 카드의 X소재를 １개 제거한다。
+PRINTL 이렇게 마지막 X소재가 제거되었을 경우、또는 X소재가 존재하지 않는 경우、
+PRINTL 이 카드는 EX덱으로 돌아간다。
+
+@CARDCAN_5530(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5530)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF !GROUPMATCH(ゾーン,"필드","마함")
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 常在無効
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時強制
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5530(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+
+IF 종류 == ターン開始時強制
+	SETVAR @"%듀얼리스트%_MZ_Ｘ:場所", GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") - 1
+	IF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	IF ゾーン == "필드"
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+	ELSEIF ゾーン == "마함"
+		CALL FULLRESET
+		효과条件종류 = 지속全般
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+
+		CALL FULLRESET
+		효과条件종류 = 지속全般
+		CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐")
+	ENDIF
+ELSEIF 종류 == 常在無効
+	CALL FULLRESET
+	효과条件他所 = 1
+	효과条件표시 = 1
+	효과条件T1召種 = 召種EX덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"表",2)
+
+	CALL FULLRESET
+	효과条件표시 = 1
+	효과条件T1召種 = 召種EX덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"表",2)
+
+
+	CALL FULLRESET
+	효과条件他所 = 1
+	효과条件T1召種 = 召種EX덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発無")
+
+	CALL FULLRESET
+	효과条件T1召種 = 召種EX덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無")
+ENDIF

@@ -1,5 +1,6 @@
 ﻿;-------------------------------------------------
 ;차원여행
+;外世界散策
 ;-------------------------------------------------
 @COM610
 #DIM DYNAMIC カウンタ
@@ -21,7 +22,8 @@ IF バイク使用
 	PRINTL 네비에 아리안나가 나타나、시설의 설명을 시작했다。
 	PRINTL 「차원 여행의 예정이신가요？
 	PRINTL 　귀환 이외로의 보물고의 통과에는 1200엔을 받고있습니다。
-	PRINTL 　어디로 날아갈까요？」
+	PRINTL 　아직도 돈을 받느냐고요？　당연하잖아요、주머니 사정이 어려우니。
+	PRINTL 　그럼、어디로 날아갈까요？」
 	PRINTL 
 ELSE
 	PRINTL 안내역 아리안나가 나타나、시설 설명을 시작했다。
@@ -38,7 +40,7 @@ CUSTOMDRAWLINE —
 FOR カウンタ,0,10
 	IF 依頼_場所:カウンタ > 0
 		SETCOLOR C_AQUA
-		PRINTFORML 청색：의뢰처「{依頼_場所:カウンタ}」
+		PRINTFORML 파란색：의뢰처「{依頼_場所:カウンタ}」
 		BREAK
 	ENDIF
 NEXT
@@ -54,6 +56,8 @@ FOR カウンタ,500,600
 	PRINTFORM [{カウンタ,2}] - %GETPLACENAME(カウンタ),20,LEFT%	
 	RESETCOLOR
 NEXT
+
+PRINTFORM [{場所_Reホテル,2}] - %GETPLACENAME(場所_Reホテル),20,LEFT%	
 PRINTL
 PRINTL 
 CUSTOMDRAWLINE —
@@ -63,13 +67,17 @@ IF RESULT == 100
 	RETURN 0
 ELSE
 	旅行行先 = RESULT
-	IF MONEY < 1200
-		PRINTL 「돈이 부족하네요……
-		PRINTW 　저희도 주머니 사정이 어려우니 협조 부탁드립니다」
-		GOTO INPUT_LOOP
+	IF 旅行行先 == 場所_Reホテル
+		PRINTL 「리조트를 희망하시는군요？　알겠습니다、그럼 이쪽의 전용 홀로 안내하겠습니다……」
+	ELSE
+		IF MONEY < 1200
+			PRINTL 「돈이 부족하네요……
+			PRINTW 　저희도 주머니 사정이 어려우니 협조 부탁드립니다」
+			GOTO INPUT_LOOP
+		ENDIF
+		CALL MONEY_GET(-1200)
+		PRINTW 「그럼、좋은 여행 되세요」
 	ENDIF
-	CALL MONEY_GET(-1200)
-	PRINTW 「그럼、좋은 여행 되세요」
 	IF バイク使用
 		PRINTL
 		PRINTFORML 　　　　부우우우웅

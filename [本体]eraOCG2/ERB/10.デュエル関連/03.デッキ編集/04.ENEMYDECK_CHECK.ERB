@@ -350,6 +350,7 @@ NEXT
 #DIM DYNAMIC 설정カード종류
 #DIM DYNAMIC 설정플래그
 #DIM DYNAMIC ERA플래그
+#DIM DYNAMIC 外部플래그
 VARSET カード_ID
 
 
@@ -371,14 +372,24 @@ ELSE
 	지정カテゴリ = %RESULTS:0%
 	SIF MATCH(RESULTS,"E.R.A")
 		ERA플래그 = 1
-	SIF GROUPMATCH(지정カテゴリ,"없음","듀얼리스트")
+	TRYCALLFORM CARD_{캐릭터ID}("외부자")
+	SIF RESULT == 1
+		外部플래그 = 1
+	IF GROUPMATCH(지정カテゴリ,"없음","듀얼리스트")
+
+		TRYCALLFORM CARDNAME_{캐릭터ID}("検索カテゴリ")
+		지정カテゴリ = %RESULTS:0%
+		SIF 지정カテゴリ == ""
 		RETURN 0
+	ENDIF
 ENDIF
 
 ;カウンタDeck = 700
 ;대상캐릭터のカテゴリをチェック。なし、ERA、듀얼리스트はNG
 
 
+SIF ERA플래그 == 1 && ITEM:천년마커 == 0
+	RETURN 0
 ;덱の空きをちゃんと-1につぶす
 VARSET 仮組_덱,-1
 VARSET 仮組_EX덱,-1
@@ -404,6 +415,13 @@ FOR カード_ID,1000,100000
 		SIF MATCH(RESULTS,"E.R.A")
 			CONTINUE
 	ENDIF
+	IF 外部플래그 == 0
+		;外部カードはスキップ
+		TRYCALLFORM CARD_{カード_ID}("외부자")
+		SIF RESULT == 1
+			CONTINUE
+	ENDIF
+
 	;同じカテゴリを持たないカードはスキップ
 	TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
 	IF !MATCH(RESULTS,지정カテゴリ)
@@ -446,9 +464,6 @@ FOR カード_ID,1000,100000
 	ELSEIF RESULT == 5
 		CONTINUE
 	ENDIF
-	;덱관리用CFLAGに入れる＆;덱枠を＋＆덱に入れたカード数を＋판정、を３回
-
-
 
 	FOR カウンタB,0,リピート횟수
 		SIF カード枚数チェック:カード_ID >= 3
@@ -570,6 +585,12 @@ FOR カード_ID,1000,100000
 	TRYCALLFORM CARD_{カード_ID}("トークン")
 	SIF RESULT == 1
 		CONTINUE
+	IF 外部플래그 == 0
+		;外部カードはスキップ
+		TRYCALLFORM CARD_{カード_ID}("외부자")
+		SIF RESULT == 1
+			CONTINUE
+	ENDIF
 	IF ERA플래그 == 0
 		;ERAカードはスキップ
 		TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
@@ -657,7 +678,7 @@ IF 설정플래그 == 0
 ELSE
 	CALL CARD_DECK_CHECK(0,2,1)
 	SIF RESULT == 1
-		RETURN 0
+		RETURN -1
 
 	FOR カウンタ,0,50
 		編集_덱:カウンタ = 仮組_덱:カウンタ

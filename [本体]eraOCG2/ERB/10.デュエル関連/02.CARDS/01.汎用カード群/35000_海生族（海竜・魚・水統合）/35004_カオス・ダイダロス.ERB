@@ -1,0 +1,168 @@
+﻿@CARDNAME_35004,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 카오스 다이달로스
+	CASE "略称"
+		RESULTS = 카오스 다이달로스
+	CASE "カテゴリ"
+		RESULTS:0 = 다이달로스
+		RESULTS:1 = 카오스 
+ENDSELECT
+
+@CARD_35004(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2600
+	CASE "守備力"
+		RETURN 1500
+	CASE "소환불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35004(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは通常소환できない。
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,손패起動)
+PRINTL ①：자신の묘지から빛속성と어둠속성のモンスターを１体ずつ제외した場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：フィールド마법カードが存在する限り、자신フィールドの光・어둠속성モンスターは대상耐性を得る。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ③：フィールド마법カードが存在する場合、
+PRINTL その数までフィールドのカードを대상として발동できる。そのカードを제외する。
+
+
+@CARDCAN_35004(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35004)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,35004,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 빛속성
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲상대마함 = 1
+	효과条件종류 = フィールド
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,35004)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲상대마함 = 1
+	효과条件종류 = フィールド
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35004(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 場魔数
+
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35004)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件속성 = 빛속성
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件속성 = 어둠속성
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件속성:0 = 어둠속성
+	효과条件속성:1 = 빛속성
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35004,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과範囲상대마함 = 1
+		효과条件종류 = フィールド
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		場魔数 = RESULT
+		CALL FULLRESET
+		효과条件複数 = 100 - 場魔数
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드単体",場所,"제외")
+	ENDIF
+ENDIF
+

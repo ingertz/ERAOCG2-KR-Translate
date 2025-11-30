@@ -10,10 +10,12 @@
 #DIM DYNAMIC めくり数
 #DIM DYNAMIC 選択カード,99
 #DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 返選択カード_ID,99
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC 複数カウンタ
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
 #DIM DYNAMIC 最大値
 #DIM DYNAMIC 消去カード
 #DIM DYNAMIC 一時보존,99
@@ -194,25 +196,31 @@ IF 효과条件複数 != 0
 	ENDIF
 ENDIF
 
-IF 参照先 == "덱"
-	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
-ENDIF
-
+;IF 参照先 == "덱"
+;	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
+;ENDIF
 
 IF 효과条件複数 != 0
 	IF 효과条件RND == 1
 		ランダム値 = RAND:(複数カウンタ + 1)
 		選択カード_ID = GETVAR(@"%대상者%_%参照先%:(選択カード:ランダム値)")
-		CALL CARD_FIN_ID_SET(대상者,選択カード_ID,"효과취득")
 		CALL CARD_DISPOSE(대상者,参照先,(選択カード:ランダム値),손패行き)
+		
+		CALL CARD_FIN_ID_SET(대상者,選択カード_ID,"효과취득")
+		SIF 参照先 == "덱"
+			CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
 	ELSE
 		FOR カウンタ,0,(複数カウンタ + 1)
 			SIF 選択カード:カウンタ == -1
 				CONTINUE
-			選択カード_ID:カウンタ = GETVAR(@"%대상者%_%参照先%:(選択カード:カウンタ)")
-			CALL CARD_FIN_ID_SET(대상者,選択カード_ID,"효과취득")
+			選択カード_ID = GETVAR(@"%대상者%_%参照先%:(選択カード:カウンタ)")
+			CALL CARD_DISPOSE(대상者,参照先,(選択カード:カウンタ),손패行き)	
 
-			CALL CARD_DISPOSE(대상者,参照先,(選択カード:カウンタ),손패行き)
+			返選択カード_ID:カウンタC = 選択カード_ID
+			CALL CARD_FIN_ID_SET(대상者,選択カード_ID,"효과취득")
+			SIF 参照先 == "덱"
+				CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
+			カウンタC ++
 		NEXT
 	ENDIF
 ELSE
@@ -224,13 +232,14 @@ ENDIF
 
 IF 参照先 == "덱" && 山切り無し != 1
 	CALL SHUFFLE(대상者)
-	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
 ENDIF
 VARSET RESULT
 
-FOR カウンタ,0,(複数カウンタ + 1)
-	RESULT:(カウンタ + 1) = 選択カード_ID:カウンタ
+
+FOR カウンタ,0,カウンタC
+	RESULT:(300 + カウンタ) = 返選択カード_ID:カウンタ
 NEXT
+RESULT = 選択カード_ID
 RETURN 1
 
 
@@ -249,6 +258,7 @@ RETURN 1
 #DIM DYNAMIC 上級値
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 返選択カード_ID,99
 #DIM DYNAMIC 複数カウンタ
 #DIM DYNAMIC 最大値
 #DIM DYNAMIC 消去カード
@@ -260,6 +270,7 @@ RETURN 1
 #DIM DYNAMIC 묘지回収플래그
 #DIM DYNAMIC 選択数
 #DIM DYNAMIC 山切り無し
+#DIM DYNAMIC ランダム値
 
 SIF 효과条件山切り無し == 1
 	山切り無し = 1
@@ -409,22 +420,35 @@ IF 효과条件複数 != 0
 	ENDIF
 ENDIF
 
-IF 효과範囲덱 == 1 || 효과範囲상대덱 == 1
-	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
-ENDIF
+;IF 효과範囲덱 == 1 || 효과範囲상대덱 == 1
+;	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
+;ENDIF
 
 IF 효과条件複数 != 0
-	FOR カウンタ,0,(複数カウンタ + 1)
-		;묘지送り処理
-		SIF 選択カード:カウンタ == -1
-			CONTINUE
-		CALL CARD_SELECT(듀얼리스트,(選択カード:カウンタ))
-		選択カード:カウンタ = RESULT
-		選択カード_ID:カウンタC = GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")
-		
+	IF 효과条件RND == 1
+		ランダム値 = RAND:(複数カウンタ + 1)
+		選択カード_ID = GETVAR(@"%듀얼리스트%_%参照先%:(選択カード:ランダム値)")
+		CALL CARD_DISPOSE(듀얼리스트,参照先,(選択カード:ランダム値),손패行き)	
+
+		CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과취득")
+		SIF 효과範囲덱 == 1 || 효과範囲상대덱 == 1
+			CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
+	ELSE
+		FOR カウンタ,0,(複数カウンタ + 1)
+			;묘지送り処理
+			SIF 選択カード:カウンタ == -1
+				CONTINUE
+			CALL CARD_SELECT(듀얼리스트,(選択カード:カウンタ))
+			選択カード_ID = GETVAR(@"%대상者（CS）%_%参照先（CS）%:選択カード（CS）")
+			CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）,손패行き)
+
+			返選択カード_ID:カウンタC = 選択カード_ID
+			CALL CARD_FIN_ID_SET(대상者（CS）,選択カード_ID,"효과취득")
+			SIF 효과範囲덱 == 1 || 효과範囲상대덱 == 1
+				CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"덱취득")
 		カウンタC ++
-		CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）,손패行き)
-	NEXT
+		NEXT
+	ENDIF
 ELSE
 	CALL CARD_SELECT(듀얼리스트,選択カード)
 	選択カード = RESULT
@@ -438,7 +462,7 @@ ENDIF
 
 VARSET RESULT
 FOR カウンタ,0,カウンタC
-	RESULT:(300 + カウンタ) = 選択カード_ID:カウンタ
+	RESULT:(300 + カウンタ) = 返選択カード_ID:カウンタ
 NEXT
 RESULT:1 = 選択カード_ID	
 RETURN 1
@@ -485,7 +509,7 @@ ELSEIF 발동종류 == "묘지"
 		SETVAR @"%듀얼리스트%_うらら효과",0
 		RETURN 1
 	ENDIF
-
+;Anonym추가
 ELSEIF 발동종류 == "덱"
 	IF GETVAR(@"%듀얼리스트%_うらら효과") >= 1
 		CALL FLASH(2)

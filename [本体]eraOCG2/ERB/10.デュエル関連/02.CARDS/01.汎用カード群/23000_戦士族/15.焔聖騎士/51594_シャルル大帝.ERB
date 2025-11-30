@@ -72,7 +72,7 @@ PRINTL 자신의 마법 & 함정 존에 장비 마법 카드가 존재하지 않
 CALLFORM CARD_ABLE(0,EX소환時)
 PRINTL ①: 이 카드가 L 소환했을 경우, 자신 묘지의 "불꽃성기사제－샤를" 1장을 대상으로 하여 발동할 수 있다.
 PRINTL 이 카드는 그 카드와 동명 카드로 취급하고, 같은 효과를 얻는다.
-PRINTL 그 후, 대상의 몬스터를 장비 마법 카드 취급으로 이 카드에 장비한다.
+PRINTL 그 후, 대상의 몬스터를 장비 마법 카드 취급으로 이 카드에 장착한다.
 PRINTL 장비했을 경우, 이 카드의 공격력을 500 올린다.
 CALLFORM CARD_ABLE(10,발동誘発)
 PRINTL ②: 1턴에 1번, 마법 / 함정 카드의 효과가 발동했을 때,
@@ -101,7 +101,7 @@ IF 종류 == EX소환時
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
-효과条件名前 = 불꽃성기사제－샤를
+	효과条件名前 = 불꽃성기사제－샤를
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -237,14 +237,14 @@ ELSEIF 종류 == ターン終了時
 			효과条件固定 = 場所
 			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード（CS）,参照先（CS）)
 			IF RESULT == 1 && 마함数(듀얼리스트) < 5
-PRINTL 덱의 몬스터를 장비하시겠습니까?
+				PRINTL 덱의 몬스터를 장착하시겠습니까?
 				CALL YN_CHOICE(듀얼리스트)
 				IF RESULT == はい
 					CALL FULLRESET
 					효과範囲덱 = 1
 					효과条件종족 = 전사족
 					효과条件속성 = 화염속성
-					CALL CARD_EQUIP_MONSTER_ADV(듀얼리스트,ゾーン,場所,,51594)
+					CALL CARD_EQUIP_MONSTER_ADV(듀얼리스트,ゾーン,場所)
 					IF RESULT == 1
 						CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",500)
 					ENDIF

@@ -1,0 +1,126 @@
+﻿@CARDNAME_62070,参照先
+;ココで指定卡片の名称、简称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ウィッチクラフトの広告
+	CASE "略称"
+		RESULTS = WC-AD
+	CASE "カテゴリ"
+		RESULTS:0 = ウィッチクラフト
+		RESULTS:1 = ウィッチコスプレイヤー
+		RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_62070(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62070(種類)
+#DIM DYNAMIC 種類
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 3つの性玩具を購入した後、1枚のカードを引きなさい
+PRINTL 
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_62070(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,62070)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_62070(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 調教対象
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	;卡片发动確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,62070)
+	IF RESULT == 0
+
+		CALL 対面者判定(決闘者)
+		対面者 = %RESULTS%
+		CALL CARD_EROTICS(相手プレイヤー,対面者)
+
+		SETCOLOR C_PINK 
+		PRINTFORMW ………………
+        PRINTFORMW %CALLNAME:調教対象%はチラシを手に、こっそりと店内に入っていった
+        SELECTCASE RAND:3
+            CASE 0
+                PRINTFORMW 「いらっしゃいませ！ご注文は何になさいますか？」
+                PRINTFORMW 「そのお手元にあるのは……ふふ、なるほど」
+                PRINTFORMW 「では、こちらにお立ちください。アルルお嬢様に身体をスキャンしてもらいましょう」
+            CASE 1
+                PRINTFORMW 「い、いらっしゃいませ！」
+                PRINTFORMW ……というか、大胆に逆バニースーツを着ているのに、体を隠しているなんて、どんな羞恥プレイなんですか
+                PRINTFORMW 「こちらに……お立ちください」
+            CASE 2
+                PRINTFORMW 「ふあぁ〜」
+                PRINTFORMW 「いらっしゃいませ〜。そちらのスタンドに立っていただければ、後ほどブラインドボックスをお届けしますので」
+                PRINTFORMW 「もう、ご主人様はまたどこかで浮気でもしているんでしょうね」
+    	ENDSELECT
+        CALL OOO_SELL
+			REPEAT 3
+					SELECTCASE RAND:5
+						CASE 0
+							CALL CARD_GENERATE_DECK(決闘者,62060)
+						CASE 1
+							CALL CARD_GENERATE_DECK(決闘者,62061)
+						CASE 2
+							CALL CARD_GENERATE_DECK(決闘者,62062)
+						CASE 3
+							CALL CARD_GENERATE_DECK(決闘者,62063)
+						CASE 4
+							CALL CARD_GENERATE_DECK(決闘者,99607)
+					ENDSELECT
+			REND
+
+		PRINTFORMW 「発送完了しました。またのご利用をお待ちしております」
+		RESETCOLOR
+
+		CALL SHUFFLE(対面者)
+
+		CALL CARDDRAW_BASIC(対面者,1)
+
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+	ENDIF
+ENDIF

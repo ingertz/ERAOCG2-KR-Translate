@@ -210,7 +210,7 @@ IF ITEM:천년도어 >= 1
 	PRINTFORM %"",20%
 ENDIF
 SIF ITEM:샵운영권 >= 1
-	PRINTBUTTON @"[510] - 마이샵으로 간다",913
+	PRINTBUTTON @"[510] - 마이샵으로 간다",910
 PRINTFORM 
 PRINTFORML 
 CUSTOMDRAWLINE ―
@@ -270,7 +270,7 @@ ELSE
 	;현재위치を更新し、次も이동の扱いにする
 	CFLAG:MASTER:현재위치 = RESULT
 	TIME += 1
-	RESTART
+	GOTO RESTART_NEW
 ENDIF
 TIME += 1
 PREVCOM = 400
@@ -285,12 +285,14 @@ RETURN 0
 #DIM DYNAMIC 色취득플래그
 #DIM DYNAMIC 보정
 
+IF 色취득플래그 == 0
 IF INRANGE(マップモード,1,2)
-	보정 = 100
-ELSEIF INRANGE(マップモード,3,4)
-	보정 = 200
-ELSEIF GROUPMATCH(マップモード,90,91)
-	보정 = 900
+		보정 = 100
+	ELSEIF INRANGE(マップモード,3,20)
+		보정 = 200
+	ELSEIF GROUPMATCH(マップモード,90,91)
+		보정 = 900
+	ENDIF
 ENDIF
 
 ;천년スマホを所持していたら、外にいる캐릭터も見れる
@@ -378,9 +380,6 @@ IF 이동_현재위치 == 場所_CDS入口
 	RETURN 場所_玄関
 ENDIF
 
-IF 이동_현재위치 == 場所_CDSレジ裏
-	RETURN 場所_玄関
-ENDIF
 
 ;直接이동できない경우、1つ近い위치を暫定目的地に설정し直してループ
 SELECTCASE 이동_暫定目的地
@@ -441,8 +440,6 @@ SELECTCASE 이동_暫定目的地
 	CASE 場所_中継地点
 		이동_暫定目的地 = 場所_収納
 
-		CASE 場所_CDSレジ裏
-		이동_暫定目的地 = 場所_玄関
 	CASE 場所_CDS入口
 		이동_暫定目的地 = 場所_玄関
 		

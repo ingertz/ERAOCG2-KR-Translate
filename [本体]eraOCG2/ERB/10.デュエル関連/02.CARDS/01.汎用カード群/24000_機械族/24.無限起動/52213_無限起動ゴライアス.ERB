@@ -1,0 +1,120 @@
+﻿@CARDNAME_52213,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 무한기동 골라이아스
+	CASE "略称"
+		RESULTS = 무한 골라이아스
+	CASE "カテゴリ"
+		RESULTS:0 = 무한기동
+ENDSELECT
+
+
+@CARD_52213(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 500
+	CASE "추가日"
+		RETURN 251120
+ENDSELECT
+RETURN 0
+
+
+@CARDSUMMON_52213(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要링크数 = 1
+素材条件カテゴリ = 무한기동
+素材条件종류 = 링크以外
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,52213) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_52213(종류)
+#DIM DYNAMIC 종류
+
+PRINTL Ｌモンスター以外の「무한기동」モンスター１体
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,戦破壊→묘지)
+PRINTL ①：このカードがフィールドから묘지へ送られた場合、자신フィールドのＸモンスター１体を대상として발동できる。
+PRINTL そのモンスターのＸ素材を１つ増やし、破壊耐性を与える。
+
+
+@CARDCAN_52213(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,52213)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 戦破壊→묘지
+    SIF 발동済_1(듀얼리스트,52213)
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊","リリース")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+    효과条件종류 = 엑시즈
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_52213(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 戦破壊→묘지
+    CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52213,1)
+	IF RESULT == 0
+	    CALL FULLRESET
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"Ｘ",1)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"破耐",2)
+		ENDIF
+	ENDIF
+ENDIF

@@ -1,0 +1,688 @@
+﻿@CARDNAME_61057,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ヒステリック・フォース
+	CASE "略称"
+		RESULTS = ヒステリック・F
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+		RESULTS:1 = ゲームオリジナル
+ENDSELECT
+
+
+@CARD_61057(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 通常魔法
+	CASE "生成カード"
+		RETURN 161057
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61057(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名のカードは１ターンに１枚しか発動できない。
+CALLFORM CARD_ABLE(1,魔罠起動,手札起動)
+PRINTL ①：以下の効果から１つを選択して発動できる。
+PRINTL ●自分のモンスターゾーンからEXモンスター以外の「ハーピィ・レディ三姉妹」１体を消滅させて発動できる。
+PRINTL 手札に「ハーピィ三姉妹」を生成する。その後、自分フィールドのモンスターを全て持ち主の手札に戻す事ができる。
+PRINTL 自分のEXモンスターを戻した場合、その数まで自分の墓地から「ハーピィ」モンスターを手札に加える事ができる。
+PRINTL ●自分フィールドのレベル６以上の「ハーピィ」モンスター１体を対象として発動できる。
+PRINTL そのモンスターは、攻撃力が自身のレベル×１００アップし、貫通能力を得る。
+
+
+@CARDCAN_61057(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件達成,2
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,61057)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = EX以外全般
+	効果条件名前 = ハーピィ・レディ三姉妹
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		条件達成:0 = 1
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = ハーピィ
+	効果条件種類 = レベル持ち
+	CALL 効果条件レベル_ADV(6, "以上")
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		条件達成:1 = 1
+	SIF 条件達成:0 != 1 && 条件達成:1 != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_61057(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件達成,2
+#DIM DYNAMIC EX判定用,2
+#DIM DYNAMIC サルベージ枚数
+#DIM DYNAMIC 選択レベル
+
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	;カード発動確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,61057)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件種類 = EX以外全般
+		効果条件名前 = ハーピィ・レディ三姉妹
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1
+			条件達成:0 = 1
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = ハーピィ
+		効果条件種類 = レベル持ち
+		CALL 効果条件レベル_ADV(6, "以上")
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1
+			条件達成:1 = 1
+		IF 条件達成:0 == 1 && 条件達成:1 == 1
+			PRINTL どちらの効果を発動しますか？
+			CALL YN_CHOICE(決闘者,"●手札に「ハーピィ三姉妹」を生成する","●レベル６以上の「ハーピィ」１体を強化する")
+		ELSEIF 条件達成:0 == 1 && 条件達成:1 != 1
+			RESULT = 0
+		ELSEIF 条件達成:0 != 1 && 条件達成:1 == 1
+			RESULT = 1
+		ENDIF
+		IF RESULT == 0
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件種類 = EX以外全般
+			効果条件名前 = ハーピィ・レディ三姉妹
+			効果条件行先フラグ = 消滅行き
+			CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+			IF RESULT == 1
+				CALL CARD_GENERATE_HAND(決闘者,161057)
+				PRINTL 自分フィールドのモンスターを手札に戻しますか？
+				CALL YN_CHOICE(決闘者)
+				IF RESULT == 0
+					EX判定用:0 = 現EX山札数(決闘者)
+					CALL FULLRESET
+					効果範囲戦場 = 1
+					CALL CARD_REMOVAL_ADV(決闘者,"全体除去",場所,"手札")
+					EX判定用:1 = 現EX山札数(決闘者)
+					サルベージ枚数 = EX判定用:1 - EX判定用:0
+					IF サルベージ枚数 != 0
+						CALL FULLRESET
+						効果条件カテゴリ = ハーピィ
+						効果条件種類 = モン全般
+						SIF サルベージ枚数 == 1
+							効果条件任意 = 1
+						SIF サルベージ枚数 != 1
+							効果条件複数 = 100 - サルベージ枚数
+						CALL CARD_ADD_BASIC(決闘者,"墓地",ゾーン,場所)
+					ENDIF
+				ENDIF
+			ENDIF
+		ELSE
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件カテゴリ = ハーピィ
+			効果条件種類 = レベル持ち
+			CALL 効果条件レベル_ADV(6, "以上")
+			CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+			IF 選択カード != 9999
+				選択レベル = GETVAR(@"%決闘者%_MZ_星:RESULT")
+				CALL SET_FIELD_INFO(決闘者,"戦場",場所,"永攻",選択レベル*100)
+				CALL SET_FIELD_INFO(決闘者,"戦場",場所,"貫通",2)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_161057,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィレディース
+	CASE "略称"
+		RESULTS = 三姉妹 [RUSH]
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_161057(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 効果モン
+	CASE "トークン"
+		RETURN 1
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 0
+	CASE "マキシマム"
+		RETURN 261057
+	CASE "性別"
+		RETURN 牝性
+	CASE "生成カード"
+		RESULT:2 = 261059
+		RESULT:1 = 261058
+		RETURN 261057
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_161057(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 【MAXIMUM！！】「ハーピィ」モンスター×２
+PRINTL 手札に存在するこのカードと他の「ハーピィ」モンスター２体をマキシマムモンスターに書き換え、マキシマム召喚を行う事ができる。
+PRINTL マキシマム召喚は無効化されない。
+CALL CARD_ABLE(0,永続効果)
+PRINTL ①：このカードのカード名は、モンスターゾーンに存在する限り「ハーピィ・レディ三姉妹」として扱う。
+CALLFORM CARD_ABLE(10,戦場起動)
+PRINTL ②：１ターンに１度、自分の墓地の「ハーピィ」モンスター２体をデッキに戻して発動できる。
+PRINTL 自分フィールドの表側表示モンスター１体を選び、その攻撃力をターン終了時まで５００アップする。
+
+@CARDSUMMON_161057(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件カテゴリ = ハーピィ
+
+IF EX参照 == 1
+	CALL MAXCAN(決闘者,召喚カード,161057) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_161057(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,161057)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 効果発動済(決闘者,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = ハーピィ
+	効果条件CNT = 1
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_161057(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 永続効果
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"変化元ID",161051)
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,161057,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果条件種類 = モン全般
+		効果条件カテゴリ = ハーピィ
+		効果条件複数 = 2
+		効果条件行先フラグ = デッキ行き
+		CALL CARD_ADD_GY_BASIC(決闘者,"墓地",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件表示 = 10
+			CALL CARD_GRANT_ADV(決闘者,ゾーン,場所,"一攻",500)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_261057,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィレディース[MAXIMUM]
+	CASE "略称"
+		RESULTS = 三姉妹 [MAX]
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+	CASE "マキシマム"
+		RESULTS = 三姉妹・コア
+ENDSELECT
+
+
+@CARD_261057(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 0
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_261057(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("MAXIMUM")
+CALL CARD_ABLE(0,永続効果)
+PRINTL ①：このカードのカード名は、モンスターゾーンに存在する限り「ハーピィ・レディ三姉妹」として扱う。
+CALLFORM CARD_ABLE(10,戦場起動)
+PRINTL ②：１ターンに１度、自分の墓地の「ハーピィ」モンスター２体をデッキに戻して発動できる。
+PRINTL 自分フィールドの表側表示モンスター１体を選び、その攻撃力をターン終了時まで５００アップする。
+PRINTL このカードがマキシマム状態なら、さらに相手に５００ダメージを与える。
+
+@CARDCAN_261057(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,261057)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 効果発動済(決闘者,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = ハーピィ
+	効果条件CNT = 1
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	CALL CARD_CHECK_MAXX(決闘者,ゾーン,場所,"三姉妹・パーツ")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_261057(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 永続効果
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"変化元ID",161051)
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,261057,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果条件種類 = モン全般
+		効果条件カテゴリ = ハーピィ
+		効果条件複数 = 2
+		効果条件行先フラグ = デッキ行き
+		CALL CARD_ADD_GY_BASIC(決闘者,"墓地",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件表示 = 10
+			CALL CARD_GRANT_ADV(決闘者,ゾーン,場所,"一攻",500)
+			CALL CARDCAN_261057(決闘者,マキシマム条件,ゾーン,場所)
+			SIF RESULT != 0
+				CALL LIFE_CHANGE(決闘者,"減少","効果",500,1)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_261058,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィレディース[Ｌ]
+	CASE "略称"
+		RESULTS = 三姉妹 [L]
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+	CASE "マキシマム"
+		RESULTS = 三姉妹・パーツ
+ENDSELECT
+
+
+@CARD_261058(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 700
+	CASE "守備力"
+		RETURN 1000
+	CASE "性別"
+		RETURN 牝性
+	CASE "パーツ"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_261058(種類)
+#DIM DYNAMIC 種類
+
+PRINTL （マキシマムモードのこのカードは攻撃できない）
+CALL CARD_ABLE(0,永続効果)
+PRINTL ①：このカードのカード名は、モンスターゾーンに存在する限り「ハーピィ・レディ三姉妹」として扱い、
+CALL CARD_ABLE(0,攻守変動)
+PRINTL このカードがマキシマムモードではないなら、その攻撃力・守備力はコアと同じになる。
+CALL CARD_ABLE(0,永続効果)
+PRINTL ②：自分のモンスターゾーンの「ハーピィ・レディ三姉妹」は罠耐性を持ち、
+PRINTL このカードがマキシマムモードなら、攻撃表示のそのカードは３回までモンスターに攻撃できる。
+
+
+@CARDCAN_261058(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,261058)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 攻守変動
+	CALL CARD_CHECK_MAXX(決闘者,ゾーン,場所,"三姉妹・コア")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	CALL CARD_CHECK_MAXX(決闘者,ゾーン,場所,"三姉妹・コア")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_261058(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 永続効果
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"変化元ID",161051)
+	CALL FULLRESET
+	効果条件名前 = ハーピィ・レディ三姉妹
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"罠耐")
+ELSEIF 種類 == 攻守変動
+	CALL STATCHANGE_BASIC(決闘者,"装備",場所,1400,-1000)
+ELSEIF 種類 == マキシマム条件
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"戦無")
+	CALL FULLRESET
+	効果条件表示 = 攻撃表示
+	効果条件名前 = ハーピィ・レディ三姉妹
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"追戦",2)
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@CARDNAME_261059,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィレディース[Ｒ]
+	CASE "略称"
+		RESULTS = 三姉妹 [R]
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+	CASE "マキシマム"
+		RESULTS = 三姉妹・パーツ
+ENDSELECT
+
+
+@CARD_261059(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 600
+	CASE "守備力"
+		RETURN 1100
+	CASE "性別"
+		RETURN 牝性
+	CASE "パーツ"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_261059(種類)
+#DIM DYNAMIC 種類
+
+PRINTL （マキシマムモードのこのカードは攻撃できない）
+CALL CARD_ABLE(0,永続効果)
+PRINTL ①：このカードのカード名は、モンスターゾーンに存在する限り「ハーピィ・レディ三姉妹」として扱い、
+CALL CARD_ABLE(0,攻守変動)
+PRINTL このカードがマキシマムモードではないなら、その攻撃力・守備力はコアと同じになる。
+CALL CARD_ABLE(0,永続効果)
+PRINTL ②：自分のモンスターゾーンの「ハーピィ・レディ三姉妹」はモンスター耐性を持ち、
+PRINTL このカードがマキシマムモードなら、守備表示のそのカードは攻撃回避と対象耐性を得る。
+
+@CARDCAN_261059(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,261059)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 攻守変動
+	CALL CARD_CHECK_MAXX(決闘者,ゾーン,場所,"三姉妹・コア")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == マキシマム条件
+	CALL CARD_CHECK_MAXX(決闘者,ゾーン,場所,"三姉妹・コア")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_261059(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 永続効果
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"変化元ID",161051)
+	CALL FULLRESET
+	効果条件名前 = ハーピィ・レディ三姉妹
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"モ耐")
+ELSEIF 種類 == 攻守変動
+	CALL STATCHANGE_BASIC(決闘者,"装備",場所,1500,-1100)
+ELSEIF 種類 == マキシマム条件
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"戦無")
+	CALL FULLRESET
+	効果条件表示 = 守備表示
+	効果条件名前 = ハーピィ・レディ三姉妹
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"攻避")
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"対耐")
+ENDIF

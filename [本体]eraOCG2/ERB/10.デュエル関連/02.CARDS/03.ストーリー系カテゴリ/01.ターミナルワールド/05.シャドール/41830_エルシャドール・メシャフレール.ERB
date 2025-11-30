@@ -1,0 +1,185 @@
+﻿@CARDNAME_41830,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘섀도르 메샤플레르
+	CASE "略称"
+		RESULTS = 메샤플레르
+	CASE "カテゴリ"
+		RESULTS:0 = 섀도르
+		RESULTS:1 = 윈다
+ENDSELECT
+
+
+@CARD_41830(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+	CASE "특수불가"
+		RETURN 1
+	CASE "連動ID"
+		RETURN 1830
+	CASE "추가日"
+		RETURN 251122
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_41830(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「섀도르」モンスター＋어둠속성モンスター＋땅속성モンスター
+PRINTL このカードは융합소환でしか특수소환できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：フィールドのこのカードは상대の마법・함정・モンスターカードの효과を受けない。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：１ターンに１度、８００ＬＰを払って발동できる。
+PRINTL 덱から「섀도르」カードか「연옥」마법・함정カード１枚を손패に加える。
+CALLFORM CARD_ABLE(0,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지)
+PRINTL ③：このカードが묘지へ送られた場合に발동できる。
+PRINTL 자신の묘지から「섀도르」モンスター１体を특수소환する。
+
+
+
+@CARDSUMMON_41830(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 섀도르
+ELSEIF EX参照 == 10
+	素材条件속성 = 어둠속성
+ELSEIF EX参照 >= 10
+	素材条件속성 = 땅속성
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,41830) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_41830(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 使用済み
+#DIM DYNAMIC 효과使用불가,3
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,41830)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 800
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件スーパーカテゴリ = 섀도르
+	효과条件종류 = 마함全般
+	효과条件カテゴリ = 연옥
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 섀도르
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_41830(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 条件달성,3
+#DIM DYNAMIC 選択肢표시
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 破壊カード
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"魔耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41830,10)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",800)
+		CALL FULLRESET
+		효과条件スーパーカテゴリ = 섀도르
+		효과条件종류 = 마함全般
+		효과条件カテゴリ = 연옥
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41830)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 섀도르
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+	ENDIF
+ENDIF
+

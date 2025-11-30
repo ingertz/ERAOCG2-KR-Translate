@@ -1,0 +1,151 @@
+﻿@CARDNAME_30459,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데우스 엑스크롤러
+	CASE "略称"
+		RESULTS = ＤＸ크롤러
+	CASE "カテゴリ"
+		RESULTS:0 = 크롤러
+		RESULTS:1 = 성유물
+ENDSELECT
+
+
+@CARD_30459(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 3000
+	CASE "추가日"
+		RETURN 251123
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_30459(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：자신の「크롤러」モンスターとレベル９モンスターは대상耐性を得る。
+PRINTL また、このカードが覚醒状態なら、상대フィールドのモンスターの효과は無効になる。
+CALLFORM CARD_ABLE(1,リバース誘発)
+PRINTL ②：このカードがリバースした時、１度だけ「覚醒」できる。
+PRINTL 「覚醒」は１ターンに１度しか行えない。
+CALLFORM CARD_ABLE(2,破壊→묘지,戦闘→묘지)
+PRINTL ③：このカードが戦闘・효과で破壊された場合に발동できる。
+PRINTL このカード名以外のレベル９モンスター１体を덱・묘지から選んで손패に加える。
+
+@CARDCAN_30459(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,30459)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 常在無効
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") == 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == リバース誘発
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,覚醒발동)
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	SIF 발동済_2(듀얼리스트,30459)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件レベル = 9
+	효과条件固名前 = 데우스 엑스크롤러
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_30459(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 破壊カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 크롤러
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+
+	CALL FULLRESET
+	효과条件종류 = レベル持ち
+	효과条件レベル = 9
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+
+ELSEIF 종류 == 常在無効
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"無効")
+
+ELSEIF 종류 == リバース誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+	ENDIF
+
+ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,30459,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件レベル = 9
+		효과条件固名前 = 데우스 엑스크롤러
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+

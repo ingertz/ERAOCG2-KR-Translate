@@ -369,21 +369,15 @@ FOR カウンタ,0,サーチ範囲
 	SIF 条件달성 != 1
 		CONTINUE
 
-;	IF 듀얼리스트 == "상대"
-;		CALL ENEMY_RUTIN_SOZAI(参照先,カウンタ,소환플래그,소환カード_ID)
-;		SIF RESULT == 1
-;		CONTINUE
-;	ENDIF
 
 	$SKIP_RESTRICTION
 	IF 듀얼리스트 == "자신"
 		SIF チェック플래그 == 1
 			SKIPDISP チェック플래그
 		CALL CARD_SETCOLOR(実行者,参照先,カウンタ)
-		CALLFORM CARD_KANPRINT(元参照先,(カウンタ + 上級値),GETVAR(@"%実行者%_%参照先%:カウンタ"))
+		CALLFORM CARD_KANPRINT(元参照先,(カウンタ + 上級値),대상カードID)
 		RESETCOLOR
 	ELSEIF 듀얼리스트 == "상대"
-;		CALL ENEMY_RUTIN_SOZAI(参照先,カウンタ,소환플래그,소환カード_ID)
 		CALL ENEMY_RUTIN_SOZAI(대상カードID,元参照先,カウンタ,소환カード_ID,소환플래그)
 		IF RESULT >= 100000
 			CONTINUE

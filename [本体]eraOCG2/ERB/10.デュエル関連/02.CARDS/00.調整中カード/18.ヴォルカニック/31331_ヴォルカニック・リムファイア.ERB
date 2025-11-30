@@ -1,0 +1,230 @@
+﻿@CARDNAME_31331,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 볼캐닉 림파이어
+	CASE "略称"
+		RESULTS = V 림파이어
+	CASE "カテゴリ"
+		RESULTS:0 = 볼캐닉
+ENDSELECT
+
+
+@CARD_31331(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 300
+	CASE "守備力"
+		RETURN 0
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31331(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+;묘지送り時묘지送りorブレイズ
+CALLFORM CARD_ABLE(0,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지)
+PRINTL ①：このカードが묘지へ送られた場合、以下の효과から１つを選択して발동できる
+PRINTL （このカード名の以下の효과はそれぞれ１ターンに１度しか選択できない）。
+CALLFORM CARD_ABLE(1,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지)
+PRINTL ●묘지のこのカードを제외し、
+PRINTL 덱から「볼캐닉 림파이어」以外の「볼캐닉」モンスター１体を묘지へ送る。
+CALLFORM CARD_ABLE(2,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지)
+PRINTL ●손패・덱から「브레이즈 캐논」지속마법・지속함정カード１枚を자신フィールドに表側표시で置く。
+;リリースリクルート
+CALLFORM CARD_ABLE(3,필드起動)
+PRINTL このカードをリリースして발동できる。
+PRINTL 덱からレベル４以下の「볼캐닉」モンスター１体を특수소환する。
+PRINTL この효과の발동後、ターン終了時まで자신は화염속성モンスターしか특수소환できない。
+
+
+
+@CARDCAN_31331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC VBC有
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31331)
+SIF RESULT == 1
+	RETURN 0
+;묘지送り時효과
+IF  종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	SIF 발동済_1(듀얼리스트,31331)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,31331)
+		발동불가:1 = 1
+	;묘지送りからチェック
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 볼캐닉
+	효과条件固名前 = 볼캐닉 림파이어
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+	;ここからブレイズキャノンセット
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 볼캐닉 브레이즈 캐논
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		;VBCは唯一だから既にあったら出せないよ
+		VBC有 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과条件カテゴリ = 브레이즈 캐논
+	SIF VBC有 == 1
+		효과条件固名前 = 볼캐닉 브레이즈 캐논
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,31331)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 볼캐닉
+	CALL 효과条件レベル_ADV(4, "以下")
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+
+#DIM DYNAMIC VBC有
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;묘지送り時효과
+IF  종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31331)
+	IF RESULT == 0	
+		SIF 발동済_1(듀얼리스트,31331)
+			발동불가:0 = 1
+		SIF 발동済_2(듀얼리스트,31331)
+			발동불가:1 = 1
+		;묘지送りからチェック
+		SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 볼캐닉
+		효과条件固名前 = 볼캐닉 림파이어
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+		;ここからブレイズキャノンセット
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 볼캐닉 브레이즈 캐논
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			VBC有 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲손패 = 1
+		효과条件カテゴリ = 브레이즈 캐논
+		SIF VBC有 == 1
+			효과条件固名前 = 볼캐닉 브레이즈 캐논
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+		;選択
+		IF 발동불가:0 != 1 && 발동불가:1 != 1
+			CALL YN_CHOICE(듀얼리스트,"●묘지のこのカードを제외し、덱から「볼캐닉 림파이어」以外の「볼캐닉」モンスター１体を묘지へ送る。","●손패・덱から「브레이즈 캐논」지속마법・지속함정カード１枚を자신フィールドに表側표시で置く。")
+		ELSEIF 발동불가:0 != 1
+			RESULT = 0
+		ELSEIF 발동불가:1 != 1
+			RESULT = 1
+		ENDIF
+		IF RESULT == 0
+			CALL CARD_EFFECT_USE(듀얼리스트,31331,1)
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 =볼캐닉 림파이어
+			효과条件行先플래그 = 제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = 볼캐닉
+				효과条件固名前 = 볼캐닉 림파이어
+				효과条件종류 = モン全般
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ELSEIF RESULT == 1
+			CALL CARD_EFFECT_USE(듀얼리스트,31331,2)
+			CALL FULLRESET
+			효과範囲마함 = 1
+			효과条件名前 = 볼캐닉 브레이즈 캐논
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				VBC有 = 1
+
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲손패 = 1
+			효과条件カテゴリ = 브레이즈 캐논
+			SIF VBC有 == 1
+				효과条件固名前 = 볼캐닉 브레이즈 캐논
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31331,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 볼캐닉
+		CALL 효과条件レベル_ADV(4, "以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		SS소환可能속성:0 = 화염속성
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF
+

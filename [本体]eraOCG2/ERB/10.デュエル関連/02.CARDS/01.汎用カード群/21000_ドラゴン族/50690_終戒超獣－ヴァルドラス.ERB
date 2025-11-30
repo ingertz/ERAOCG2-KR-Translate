@@ -1,0 +1,185 @@
+﻿@CARDNAME_50690,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데카네로그－발드라스
+	CASE "略称"
+		RESULTS = 발드라스
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_50690(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 3000
+	CASE "성별"
+		RETURN 雄性
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50690(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 5
+素材条件レベル = 10
+素材条件数自由 = 1
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,50690) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_50690(종류)
+#DIM DYNAMIC 종류
+
+PRINTL レベル１０モンスター×２体以上
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：상대が효과を발동した時、このカードのＸ素材を１つ取り除いて발동できる。
+PRINTL その발동を無効にする。
+PRINTL その後、このカードのＸ素材を１つ取り除く事ができる。その場合、さらにフィールドのカード１枚を破壊する。
+CALLFORM CARD_ABLE(2,攻撃時誘発)
+PRINTL ②：Ｘ素材を持っているこのカードが攻撃する場合に발동できる。
+PRINTL フィールドのカード１枚を破壊する。
+CALLFORM CARD_ABLE(3,戦破壊→묘지)
+PRINTL ③：Ｘ소환したこのカードが破壊された場合に발동できる。
+PRINTL フィールドのカード１枚を破壊する。
+
+
+@CARDCAN_50690(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50690)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,50690)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= 0
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF 발동済_2(듀얼리스트,50690)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= 0
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	IF 듀얼리스트 != "자신"
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 戦破壊→묘지
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,50690)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種EX덱
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"戦闘破壊","破壊")
+		RETURN 0
+	IF 듀얼리스트 != "자신"
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_50690(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択カード속성
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50690,1,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+		IF RESULT == 1
+			IF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= 0
+				CALL FULLRESET
+				효과条件任意 = 1
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場単体",場所,"묘지")
+				SIF RESULT == 1
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"Ｘ",-1)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃時誘発 || 종류 == 戦破壊→묘지
+	SIF 종류 == 攻撃時誘発
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50690,2)
+	SIF 종류 == 戦破壊→묘지
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50690,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場単体",場所,"묘지")
+	ENDIF
+ENDIF
+

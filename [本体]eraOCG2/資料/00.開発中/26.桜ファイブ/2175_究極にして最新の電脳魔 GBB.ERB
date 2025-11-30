@@ -1,0 +1,164 @@
+﻿@CARDNAME_2175,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 極にして最新の電脳魔！ ゴールデンBBちゃん！
+	CASE "略称"
+		RESULTS = GOLD ＢＢちゃん
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+		RESULTS:2 = ムーンキャンサー
+		RESULTS:3 = 英霊
+ENDSELECT
+
+
+@CARD_2175(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN リンク
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN サイバース族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 900
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2175(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「M∀LICE」モンスターを含むモンスター３体
+PRINTL このカードをL召喚する際のリンク数は全て１になる。
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,戦場起動)
+PRINTL ①：自分・相手ターンに発動できる。
+PRINTL （自分フィールドに他のモンスターが存在する場合、この効果の発動と効果は無効化されない）
+PRINTL 自分の除外状態の「M∀LICE」カード１枚をデッキに戻し、フィールドのカード１枚を除外する。
+CALLFORM CARD_ABLE(2,除外時)
+PRINTL ②：このカードが除外された場合、９００ＬＰを払って発動できる。
+PRINTL このカードの攻撃力を2500アップして特殊召喚する。
+
+
+@CARDSUMMON_2175(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要リンク数 = 3
+素材条件L数制限 = 1
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = マリス
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(決闘者,召喚カード,2175) 
+	RETURN RESULT
+ENDIF
+
+@CARDSUMMON_AA_2175
+
+
+@CARDCAN_2175(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2175)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_1(決闘者,2175)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲除外 = 1
+	効果条件カテゴリ = マリス
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 除外時
+	SIF 発動済_2(決闘者,2175)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%決闘者%") <= 900
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,2175,"除外")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_2175(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件達成
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件他所 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT == 1
+		効果無効不能 = 1
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2175,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲除外 = 1
+		効果条件行先フラグ = デッキ行き
+		効果条件カテゴリ = マリス
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL SHUFFLE(決闘者)
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(決闘者,"両全場単体",場所,"除外")
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 除外時
+	CALL CARD_CHOICE(決闘者,種類,"除外",場所,2175,2)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",900)
+		CALL FULLRESET
+		効果範囲除外 = 1
+		効果条件名前 = M∀LICE＜Q＞HEARTS OF CRYPTER
+		効果追加種類 = 効追永攻 + 2500
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+
+	ENDIF
+ENDIF
+

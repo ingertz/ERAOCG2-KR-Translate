@@ -1,0 +1,161 @@
+﻿@CARDNAME_81055,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィの羽根嵐
+	CASE "略称"
+		RESULTS = ハーピィの羽根嵐
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_81055(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 通常罠
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_81055(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①の効果は１ターンに１度しか使用できず、
+PRINTL 自分フィールドに「ハーピィ」モンスターが存在する場合、このカードの発動は手札からもできる。
+CALLFORM CARD_ABLE(1,召喚誘発)
+PRINTL ①：相手がモンスターを召喚する際、自分の墓地・除外状態の「ハーピィ」モンスター２体をデッキに戻して発動できる。
+PRINTL それを無効にして破壊する。その後、デッキに戻した通常モンスターの数まで、
+PRINTL 相手フィールドのモンスターを選んで表示形式を変更できる。
+CALLFORM CARD_ABLE(2,破壊→墓地,戦闘→墓地)
+PRINTL ②：魔法＆罠ゾーンのこのカードが効果で破壊された場合に発動できる。
+PRINTL 自分の墓地・除外状態から「ハーピィの羽根帚」１枚を選んで手札に加える。
+
+
+
+@CARDCAN_81055(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,81055)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚誘発
+	IF ゾーン == "手札"
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = ハーピィ
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "魔罠"
+		CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	SIF 発動済_1(決闘者,81055)
+		RETURN 0
+	SIF 最終召喚決者 == 決闘者
+		RETURN 0
+	SIF 最終召喚タイプ != "通常"
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果範囲除外 = 1
+	効果条件カテゴリ = ハーピィ
+	効果条件種類 = モン全般
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果範囲除外 = 1
+	効果条件名前 = ハーピィの羽根帚
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_81055(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID,2
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 表示変更_数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 召喚誘発
+	;カード発動確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,81055)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		FOR カウンタ,0,2
+			CALL FULLRESET
+			効果範囲墓地 = 1
+			効果範囲除外 = 1
+			効果条件カテゴリ = ハーピィ
+			効果条件種類 = モン全般
+			効果条件行先フラグ = デッキ行き
+			CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+			IF RESULT == 1
+				選択カード_ID:カウンタ = RESULT:1
+			ELSE
+				BREAK
+			ENDIF
+		NEXT
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(決闘者,"自動処理",最終召喚場所,"完全墓地")
+		IF RESULT == 1
+			FOR カウンタ,0,2
+				TRYCALLFORM CARD_{選択カード_ID:カウンタ}("種類")
+				SIF RESULT == 通常モン
+					表示変更_数 ++
+			NEXT
+			IF 表示変更_数 != 0
+				CALL FULLRESET
+				SIF 表示変更_数 == 1
+					効果条件任意 = 1
+				SIF 表示変更_数 != 1
+					効果条件複数 = 100 - 表示変更_数
+				効果追加種類 = 3
+				CALL CARD_REMOVAL_BASIC(決闘者,"戦場単体",場所,"表示変更")
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 破壊→墓地 || 種類 == 戦闘→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,81055)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果範囲除外 = 1
+		効果条件名前 = ハーピィの羽根帚
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ENDIF

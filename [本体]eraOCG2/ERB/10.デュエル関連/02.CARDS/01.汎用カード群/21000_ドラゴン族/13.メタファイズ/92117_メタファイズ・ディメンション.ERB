@@ -1,0 +1,144 @@
+@CARDNAME_92117,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 메타파이즈 디멘션
+	CASE "略称"
+		RESULTS = 환계차원
+	CASE "カテゴリ"
+		RESULTS:0 = 메타파이즈
+ENDSELECT
+
+
+@CARD_92117(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_92117(종류)
+#DIM DYNAMIC 종류
+#DIMS DYNAMIC 듀얼리스트
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,효과後誘発)
+PRINTL ①：상대がモンスターを특수소환した場合に발동できる。
+PRINTL 제외状態の자신の「메타파이즈」モンスター１体を특수소환する。
+PRINTL この효과で특수소환したモンスターはエンドフェイズに제외される。
+CALL CARD_ABLE(2,효과後誘発)
+PRINTL ②：자신の「메타파이즈」カードが제외された場合に발동できる。
+PRINTL 상대フィールドのカード１枚を제외する。
+
+
+@CARDCAN_92117(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92117)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	IF 발동済_1(듀얼리스트,92117) == 0
+		CALL FULLRESET
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+		SIF RESULT != 1
+			RETURN 0
+		SIF FINAL_SUMMON_TARGET(듀얼리스트,1) == 5 
+			RETURN 0
+	ELSEIF 발동済_2(듀얼리스트,92117) == 0
+		SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+			RETURN 0
+		CALL FULLRESET
+		효과条件カテゴリ = 메타파이즈
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과除送")
+		SIF RESULT != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_92117(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 行先플래그
+#DIM DYNAMIC ライフ회복量
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92117)
+	IF RESULT == 0
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	IF RESULT == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92117,1)
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲제외 = 1
+			효과条件カテゴリ = 메타파이즈
+			효과추가종류 = 10 + 제외行き
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+	CALL FULLRESET
+	효과条件カテゴリ = 메타파이즈
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과除送")
+	IF RESULT == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92117,2)
+		IF RESULT == 0
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"제외")
+		ENDIF
+	ENDIF
+ENDIF

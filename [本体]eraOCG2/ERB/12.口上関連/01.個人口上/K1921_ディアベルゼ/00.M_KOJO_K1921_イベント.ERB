@@ -7,14 +7,15 @@
 ;eraTheWorld proto4.07パッチ取り込み用 Ver1.13 改変
 ;eraOCG2用
 ;テンプレートの使い方
-;初めに置換コマンド等により KX を K(캐릭터No) に변경して下さい  
-;캐릭터NoはCSVフォルダのCharaファイルを参照　例(ブラックマジシャンガールの場合)：KX =置換=> K1000
+;初めに置換コマンド等により K1921 を K(캐릭터No) に변경して下さい  
+;캐릭터NoはCSVフォルダのCharaファイルを参照　例(ブラックマジシャンガールの場合)：K1921 =置換=> K1000
 ;
 ;------ ｷﾘﾄﾘ ｵﾜﾘ -----------
 
 ;**** FlagManagement **********************************************************
 ;本구상にて使用しているCFLAG・TCVAR等
-;
+;CFLAG:1000 ディアベルスターの캐릭터ID보존
+;CFLAG:1010 ディアベルスター面識플래그
 ;
 ;
 ;******************************************************************************
@@ -64,13 +65,22 @@ SIF CSTR:TARGET:SELFCALL == ""
 SIF CSTR:TARGET:MASCALL == ""
 	CSTR:TARGET:MASCALL = マスター
 
+FOR LOCAL,0,CHARANUM
+	IF NAME:LOCAL == "黒魔女ディアベルスター"
+		CFLAG:LOCAL:1001 = TARGET
+		CFLAG:LOCAL:1011 = 0
+		CFLAG:TARGET:1000 = LOCAL
+		CFLAG:TARGET:1010 = 0
+	ENDIF
+NEXT
+
 ;召還した場合の初対面。
 IF 구상ID == 1
 	IF CFLAG:TARGET:호감도 >= 3000
 		PRINTFORML 
 		PRINTFORMW 「ふふっ…何を驚いているのかしら？ %CSTR:TARGET:MASCALL%…%CSTR:TARGET:SELFCALL%のことを忘れてしまったのかしら？」
 		PRINTFORMW 「あら、わかっているじゃない それならどうして、そんな反応をするのかしら？ 私を呼んだのは他ならぬ%CSTR:TARGET:MASCALL%でしょう？」
-		PRINTFORMW 「でも改めて自己紹介しておくならば、%CSTR:TARGET:SELFCALL%は原罪のディアベルゼ、%CSTR:TARGET:MASCALL%の僕…」
+		PRINTFORMW 「でも改めて自己紹介しておくならば、%CSTR:TARGET:SELFCALL%は원죄의 디아벨제、%CSTR:TARGET:MASCALL%の僕…」
 		PRINTFORMW 「…なんて言い方は、しないで欲しいものね これまで一緒に戦ってきたのだから、相棒とでもいうべきかしら？」
 		PRINTFORMW 「ま、改めてよろしくね、%CSTR:TARGET:MASCALL%…こちらの世界でも、それなりに楽しくやらせてもらうわ」
 		PRINTFORMW
@@ -80,10 +90,9 @@ IF 구상ID == 1
 		PRINTFORMW 「あなたは誰…？ ふぅん、別の世界…なるほど、大体わかったわ」
 		PRINTFORMW 「簡単に信じすぎ？ そうかしら～？ でもあなたって嘘とか苦手そうよ～？」
 		PRINTFORMW 「一応、あなたは私を使役していたのよね？ それなら%CSTR:TARGET:MASCALL%とでも呼ぼうかしら～？」
-		PRINTFORMW 「%CSTR:TARGET:SELFCALL%は原罪のディアベルゼ…なんて言うまでもないのかしら～？ ふふっ、よろしくね%CSTR:TARGET:MASCALL%…」
+		PRINTFORMW 「%CSTR:TARGET:SELFCALL%は원죄의 디아벨제…なんて言うまでもないのかしら～？ ふふっ、よろしくね%CSTR:TARGET:MASCALL%…」
 		PRINTFORMW 
 	ENDIF
-	RETURN 0
 ENDIF
 RETURN 1
 
@@ -97,10 +106,22 @@ RETURN 1
 ; 	TALENT:TARGET:연모 = 1
 ; ENDIF
 
-; SIF CSTR:TARGET:SELFCALL == ""
-; 	CSTR:TARGET:SELFCALL = 私
-; SIF CSTR:TARGET:MASCALL == ""
-; 	CSTR:TARGET:MASCALL = マスター
+SIF CSTR:TARGET:SELFCALL == ""
+	CSTR:TARGET:SELFCALL = 私
+SIF CSTR:TARGET:MASCALL == ""
+	CSTR:TARGET:MASCALL = マスター
+
+IF !CFLAG:TARGET:1000
+	FOR LOCAL,0,CHARANUM
+		IF NAME:LOCAL == "黒魔女ディアベルスター"
+			CFLAG:LOCAL:1001 = TARGET
+			CFLAG:LOCAL:1011 = 1
+			CFLAG:TARGET:1000 = LOCAL
+			CFLAG:TARGET:1010 = 1
+		ENDIF
+	NEXT
+ENDIF
+
 
 ;※※※※※※※※※※※※※※※※※※※※※※※※※※
 ;"SP_EVENT"系이벤트
@@ -108,7 +129,7 @@ RETURN 1
 ;==================================================
 ;デート帰りにファーストKISS（合意も付く）
 ;==================================================
-@M_KOJO_SPEVENT_K1920_1(ARG,ARG:1)
+@M_KOJO_SPEVENT_K1921_1(ARG,ARG:1)
 ;구상主はTARGET
 ;地の文표시
 CALL SPEVENT_MESSAGE_1(ARG,ARG:1)
@@ -126,7 +147,7 @@ RETURN 1
 ;==================================================
 ;デート帰りにプロポーズ（애처が付く、親愛前提）
 ;==================================================
-@M_KOJO_SPEVENT_KX_2(ARG,ARG:1)
+@M_KOJO_SPEVENT_K1921_2(ARG,ARG:1)
 ;구상主はTARGET
 ;地の文표시
 CALL SPEVENT_MESSAGE_2(ARG,ARG:1)
@@ -172,7 +193,7 @@ RETURN 1
 ;==================================================
 ;デート帰り
 ;==================================================
-@M_KOJO_SPEVENT_KX_3(ARG,ARG:1)
+@M_KOJO_SPEVENT_K1921_3(ARG,ARG:1)
 ;구상主はTARGET
 ;地の文표시
 ;CALL SPEVENT_MESSAGE_3(ARG,ARG:1)
@@ -260,6 +281,12 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG == 1
 		PRINTFORMW 「あら、%CSTR:TARGET:MASCALL%」
+		IF CFLAG:TARGET:현재위치 == CFLAG:(CFLAG:TARGET:1000):현재위치 && !CFLAG:TARGET:1010
+			PRINTFORMW 「んん～？ ああ、少しびっくりしていたのよ～ こっちにディアベルスターがいたものだから…」
+			PRINTFORMW 「あの子も呼ばれているなんてね～ あはっ♥ やっぱり%CSTR:TARGET:SELFCALL%達は運命の赤い糸で結ばれているのかしら～」
+			CFLAG:TARGET:1010 = 1
+			CFLAG:(CFLAG:TARGET:1000):1011 = 1
+		ENDIF
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
@@ -270,6 +297,12 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG == 2
 		PRINTFORMW 「あら、%CSTR:TARGET:MASCALL%」
+		IF CFLAG:TARGET:현재위치 == CFLAG:(CFLAG:TARGET:1000):현재위치 && !CFLAG:TARGET:1010
+			PRINTFORMW 「あら？ あらあらあら～？ そこにいるのは…ディアベルスターじゃな～い」
+			PRINTFORMW 「ふ～ん？ あなたもこっちに呼ばれていたのね？ あはっ！ ふふっ～ なんだか思ったよりも楽しいことになりそうじゃな～い」
+			CFLAG:TARGET:1010 = 1
+			CFLAG:(CFLAG:TARGET:1000):1011 = 1
+		ENDIF
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
@@ -281,6 +314,12 @@ IF LOCAL
 	IF LOCAL:1 && ARG == 3
 		PRINTFORMW 「あら、%CSTR:TARGET:MASCALL%が入っていたのね…」
 		PRINTFORMW 「ふふっ…せっかくだし、背中でも洗ってもらおうかしら？」
+		IF CFLAG:TARGET:현재위치 == CFLAG:(CFLAG:TARGET:1000):현재위치 && !CFLAG:TARGET:1010
+			PRINTFORMW 「あら？ あらあらあら～？ そこにいるのは…ディアベルスターじゃな～い」
+			PRINTFORMW 「ふ～ん？ あなたもこっちに呼ばれていたのね？ …え？ どうしてあなたが%CSTR:TARGET:MASCALL%と一緒にお風呂に？ ん～？ んんっ…？」
+			CFLAG:TARGET:1010 = 1
+			CFLAG:(CFLAG:TARGET:1000):1011 = 1
+		ENDIF
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
@@ -291,7 +330,14 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG == 4
 		PRINTFORMW 「あら、%CSTR:TARGET:MASCALL%が入っていたのね…」
-		PRINTFORMW 「それなら%CSTR:TARGET:SELFCALL%はまた後で入るとしましょうか」
+		IF CFLAG:TARGET:현재위치 == CFLAG:(CFLAG:TARGET:1000):현재위치 && !CFLAG:TARGET:1010
+			PRINTFORMW 「あら？ あらあらあら～？ そこにいるのは…ディアベルスターじゃな～い」
+			PRINTFORMW 「ふ～ん？ あなたもこっちに呼ばれていたのね？ …え？ どうしてあなたが%CSTR:TARGET:MASCALL%と一緒にお風呂に？ ん～？ んんっ…？」
+			CFLAG:TARGET:1010 = 1
+			CFLAG:(CFLAG:TARGET:1000):1011 = 1
+		ELSE
+			PRINTFORMW 「それなら%CSTR:TARGET:SELFCALL%はまた後で入るとしましょうか」
+		ENDIF
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
@@ -349,6 +395,9 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG == 0
 		PRINTFORMW 「ふふっ…%CSTR:TARGET:MASCALL%の顔を寝起きでみられるなんてね…」
+		IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+			PRINTFORMW 「つ、い、で、に…♥ ディアベルスターの顔を見られたのも、悪くはないかも～？」
+		ENDIF
 		PRINTFORMW 「まあ、少しは良い目覚めになったかしら…」
 		RETURN 1
 	ENDIF
@@ -359,6 +408,9 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG == 1
 		PRINTFORMW 「ふふっ…♥ おはよう、%CSTR:TARGET:MASCALL%…♥ 朝から元気そうで何よりだわ…♥」
+		IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+			PRINTFORMW 「ディアベルスター、あなたはどうかしら～？ ま、あなたは감기なんて引かないかも～？」
+		ENDIF
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
@@ -367,8 +419,10 @@ IF LOCAL
 	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG == 2
-		PRINTFORMW 「おはよう、%CSTR:TARGET:MASCALL%…♥ 朝から元気そうで何よりだわ…♥」
-		PRINTFORMW 「それで、続きはどうするのかしら？ なんて聞くまでもないわよね…♥」
+		PRINTFORMW 「んん～♥ 朝の目覚めは良好そうかしら～？ それで…続きはどうするのかしら？ なんて聞くまでもないわよね…♥」
+		IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+			PRINTFORMW 「ディアベルスター？ あなたも準備はいいわよね～？ あはっ♥ 一緒にいくわよ～♥」
+		ENDIF
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
@@ -388,6 +442,9 @@ IF LOCAL
 	IF LOCAL:1 && ARG == 4
 		PRINTFORMW 「おはよう、%CSTR:TARGET:MASCALL%」
 		PRINTFORMW 「朝は弱いのよね…ふわぁ…%CSTR:TARGET:MASCALL%は元気かしら？」
+		IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+			PRINTFORMW 「ディアベルスター、あなたはどうかしら～？ ま、あなたは감기なんて引かないかも～？」
+		ENDIF
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
@@ -398,6 +455,9 @@ IF LOCAL
 	IF LOCAL:1 && ARG == 5
 		PRINTFORMW 「あら、%CSTR:TARGET:MASCALL%…顔色が悪いわね」
 		PRINTFORMW 「감기には気を付けなければ駄目よ…しばらく横になっていなさい」
+		IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1000):시작위치 && CFLAG:TARGET:1010
+			PRINTFORMW 「ディアベルスター？ あなたも看病を手伝いなさ～い」
+		ENDIF
 		RETURN 1
 	ENDIF
 ENDIF
@@ -441,7 +501,7 @@ IF LOCAL
 	ENDIF
 
 	;-------------------------------------------------
-	;쇠약して寝る（체력500以下,우후후時は우후후強制終了）
+	;衰弱して寝る（체력500以下,우후후時は우후후強制終了）
 	;（캐릭터の自室以外：～を【現在地】から【캐릭터の自室】に運びました）
 	;（캐릭터の自室　　：～は疲れたと言って、横になりました）
 	;この後ARG == 1 が流れる
@@ -538,8 +598,15 @@ LOCAL = 1
 ;-------------
 IF LOCAL
 	IF NAME:ARG == "黒魔女ディアベルスター"
-		PRINTFORML 「ディアベルスター？ 何をしにき、た、の、か、し、ら？」
-		PRINTFORML 「お邪魔虫であることを理解できないの？ 早く立ち去りなさい」
+		IF !CFLAG:TARGET:1010
+			PRINTFORMW 「あら？ あらあらあら～？ そこにいるのは…ディアベルスターじゃな～い」
+			PRINTFORMW 「ふ～ん？ あなたもこっちに呼ばれていたのね？ でも間が悪～い 今…♥ いい雰囲気だったのよ～？」
+			CFLAG:TARGET:1010 = 1
+			CFLAG:(CFLAG:TARGET:1000):1011 = 1
+		ELSE
+			PRINTFORML 「ディアベルスター？ 何をしにき、た、の、か、し、ら？」
+			PRINTFORML 「お邪魔虫であることを理解できないの？ 早く立ち去りなさい」
+		ENDIF
 	ELSEIF NAME:ARG == "白き森のアステーリャ"
 		PRINTFORML 「アステーリャ…もう、仕方ないわね」
 		PRINTFORML 「せっかくいい雰囲気だったのに、相変わらず間が悪いわねあなたは…ふふっ」
@@ -591,12 +658,18 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG:1 == 1
 		IF NAME:ARG == "黒魔女ディアベルスター"
-			PRINTFORML 「ディアベルスター…まさかあなたが、%CSTR:TARGET:MASCALL%となんて…」
-			PRINTFORM 「ふふっ…滑稽だわぁ 
-			IF TALENT:MASTER:성별 != 2
-				PRINTFORML 恋愛になんて興味がありませんなんて顔してる癖にぃ…あははっ！」
+			IF !CFLAG:TARGET:1010
+				PRINTFORMW 「あら？ あらあらあら～？ そこにいるのは…ディアベルスター…え？」
+				PRINTFORMW 「あ、あなた、何をしているのよ？」
+				CFLAG:TARGET:1010 = 1
 			ELSE
-				PRINTFORML 男になんて興味がありませんなんて顔してる癖にぃ…あははっ！」
+				PRINTFORML 「ディアベルスター…まさかあなたが、%CSTR:TARGET:MASCALL%となんて…」
+				PRINTFORM 「ふふっ…滑稽だわぁ 
+				IF TALENT:MASTER:성별 != 2
+					PRINTFORML 恋愛になんて興味がありませんなんて顔してる癖にぃ…あははっ！」
+				ELSE
+					PRINTFORML 男になんて興味がありませんなんて顔してる癖にぃ…あははっ！」
+				ENDIF
 			ENDIF
 		ELSEIF NAME:ARG == "白き森のアステーリャ"
 			PRINTFORML 「アステーリャ…アステーリャ？ ちょ、ちょっと待ちなさい」
@@ -627,14 +700,20 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG:1 == 2
 		IF NAME:ARG == "黒魔女ディアベルスター"
-			PRINTFORML 「ディアベルスター…%CSTR:TARGET:SELFCALL%も混ぜてもらっていいわよね…？」
-			PRINTFORML 「ふふっ…♥ 嫌がったって駄目よぉ…♥ あなたと%CSTR:TARGET:MASCALL%となんて…♥ %CSTR:TARGET:SELFCALL%が我慢できる訳ないでしょう？」
+			IF !CFLAG:TARGET:1010
+				PRINTFORMW 「あら？ あらあらあら～？ そこにいるのは…ディアベルスター…って～♥ あはっ♥ 楽しそうなことしてるじゃな～い♥」
+				PRINTFORMW 「%CSTR:TARGET:SELFCALL%も混ぜてもらわよ～♥ 再会を祝して…♥ 一緒に%CSTR:TARGET:MASCALL%を可愛がりましょう～♥」
+				CFLAG:TARGET:1010 = 1
+			ELSE
+				PRINTFORML 「ディアベルスター…%CSTR:TARGET:SELFCALL%も混ぜてもらっていいわよね…？」
+				PRINTFORML 「ふふっ…♥ 嫌がったって駄目よぉ…♥ あなたと%CSTR:TARGET:MASCALL%となんて…♥ %CSTR:TARGET:SELFCALL%が我慢できる訳ないでしょう？」
+			ENDIF
 		ELSEIF NAME:ARG == "白き森のアステーリャ"
 			PRINTFORML 「アステーリャ…その、%CSTR:TARGET:SELFCALL%も混ぜてもらってもいいかしら…？」
 			PRINTFORML 「あなただけ%CSTR:TARGET:MASCALL%を独り占めなんてずるいでしょう？ まあ、昔のよしみということで…♥ ね？ いいでしょう？」
 		ELSEIF NAME:ARG == "白き森のリゼット"
 			PRINTFORML 「リゼット…いいわ あなたがそんなことしているなら…%CSTR:TARGET:SELFCALL%も混ぜてもらうわ」
-			PRINTFORML 「大人の매력というものを、見せてあげるわ…♥ あなたにはないものを%CSTR:TARGET:SELFCALL%は持っているのよぉ？」
+			PRINTFORML 「大人の魅力というものを、見せてあげるわ…♥ あなたにはないものを%CSTR:TARGET:SELFCALL%は持っているのよぉ？」
 		ELSEIF NAME:ARG == "白き森のルシア"
 			PRINTFORML 「ルシア…ふふっ、%CSTR:TARGET:SELFCALL%も混ぜてもらうわよ？ 嫌とは言わなせないのだから…♥」
 			PRINTFORML 「%CSTR:TARGET:MASCALL%…一緒にルシアを責めましょう？ いつもの仕返しがしたいのよぉ…♥」
@@ -687,13 +766,19 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG:1 == 1
 		IF NAME:ARG == "黒魔女ディアベルスター"
-			PRINTFORM 「ディアベルスター…ふん、別にいいでしょう？ 
-			IF TALENT:MASTER:성별 != 2
-				PRINTFORML あなたには関係がないことなのだから」
+			IF !CFLAG:TARGET:1010
+				PRINTFORML 「ディアベルスター…？ あはっ…まさか、あなたとこんな所で会うなんてね～…」
+				PRINTFORML 「う、우후후っ…♥ あー、えっと…別にいいでしょう？ あなたには関係ないこと、なのだから…」
+				CFLAG:TARGET:1010 = 1
 			ELSE
-				PRINTFORML 男と女がすることなのだから」
+				PRINTFORM 「ディアベルスター…ふん、別にいいでしょう？ 
+				IF TALENT:MASTER:성별 != 2
+					PRINTFORML あなたには関係がないことなのだから」
+				ELSE
+					PRINTFORML 男と女がすることなのだから」
+				ENDIF
+				PRINTFORML 「悔しかったらぁ、あなたも混ざればいいじゃな～い？ ふふっ…まあ、あなたには無理よねぇ…」
 			ENDIF
-			PRINTFORML 「悔しかったらぁ、あなたも混ざればいいじゃな～い？ ふふっ…まあ、あなたには無理よねぇ…」
 		ELSEIF NAME:ARG == "白き森のアステーリャ"
 			PRINTFORML 「ア、アステーリャ？ その、これは違うわよ…？ ただ%CSTR:TARGET:MASCALL%と激しいデュエルを…」
 			PRINTFORML 「ご、誤魔化しきれない…？ ああ、どうしましょうか…%CSTR:TARGET:MASCALL%、何か名案はないかしら？」
@@ -728,14 +813,20 @@ IF LOCAL
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG:1 == 2
 		IF NAME:ARG == "黒魔女ディアベルスター"
-			PRINTFORML 「ディアベルスター…この%CSTR:TARGET:SELFCALL%と勝負しようということかしら？」
-			PRINTFORML 「いいわよ？ 受けて立ってあげるわぁ…ふふっ♥ 二人とも骨抜きにしてあげるわよ…♥」」
+			IF !CFLAG:TARGET:1010
+				PRINTFORML 「ディアベルスター…意外だわ～♥ あなたって結構大胆だったのね？ 久し振りに会ったのにこれだもの～…♥」
+				PRINTFORML 「まあいいわ～♥ あはっ♥ 再会を祝して…♥ 一緒に%CSTR:TARGET:MASCALL%を可愛がってあげましょうか～♥」
+				CFLAG:TARGET:1010 = 1
+			ELSE
+				PRINTFORML 「ディアベルスター…この%CSTR:TARGET:SELFCALL%と勝負しようということかしら？」
+				PRINTFORML 「いいわよ？ 受けて立ってあげるわぁ…ふふっ♥ 二人とも骨抜きにしてあげるわよ…♥」」
+			ENDIF
 		ELSEIF NAME:ARG == "白き森のアステーリャ"
 			PRINTFORML 「ア、アステーリャ？ 参加するつもりなの…？ 別に構わないけれど…だ、大胆なのね」
 			PRINTFORML 「お、おかしいわね…%CSTR:TARGET:SELFCALL%の記憶だともう少し大人しかったような気がするのだけれど…？」
 		ELSEIF NAME:ARG == "白き森のリゼット"
 			PRINTFORML 「リゼット…嫉妬に狂うなんて、子供ね～まあいいわ あなたの参加も許してあげる…」
-			PRINTFORML 「ふふっ…格の違いというものを見せつけてあげないと 大人の매력…♥ 見せてあげるわぁ～」
+			PRINTFORML 「ふふっ…格の違いというものを見せつけてあげないと 大人の魅力…♥ 見せてあげるわぁ～」
 		ELSEIF NAME:ARG == "白き森のルシア"
 			PRINTFORML 「ルシア…ふふっ、いい子ぶっている割には大胆なことをするじゃない？」
 			PRINTFORML 「まあ、いいわ あなたと組むのも悪くはないし…一緒に%CSTR:TARGET:MASCALL%を責め立てましょうか？」
@@ -757,7 +848,7 @@ IF LOCAL
 	;目撃者が立ち去る
 	;eraOCG2_V0.40_BT_240522時点では流れないため注意
 	;記入チェック（=0, 非표시、1, 표시）
-	LOCAL:1 = 0
+	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG:1 == 3
 		PRINTFORMW 「あら…？ 行ってしまったようね…まあ、それならいいわよね？ 続きをしましょうか…♥」
@@ -771,7 +862,7 @@ RETURN 1
 ;==================================================
 ;パンツ没収された
 ;==================================================
-@M_KOJO_EVENT_KX_9(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_9(ARG,ARG:1)
 ;구상主はTARGET
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
@@ -786,7 +877,7 @@ RETURN 1
 ;==================================================
 ;押し倒した
 ;==================================================
-@M_KOJO_EVENT_KX_10(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_10(ARG,ARG:1)
 ;구상主はTARGET
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
@@ -887,7 +978,7 @@ RETURN 1
 ;==================================================
 ;帰宅時/外出時
 ;==================================================
-@M_KOJO_EVENT_KX_11(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_11(ARG,ARG:1)
 ;구상主はLOCALS or RESULT
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
@@ -997,7 +1088,7 @@ RETURN 1
 ;==================================================
 ;自室暮らしを承認して貰う
 ;==================================================
-@M_KOJO_EVENT_KX_19(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_19(ARG,ARG:1)
 ;구상主はARG
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
@@ -1041,7 +1132,7 @@ RETURN 1
 ;陥落素質취득時
 ;流れるのは一日の終わり、MASTERが眠った後
 ;==================================================
-@M_KOJO_EVENT_KX_21(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_21(ARG,ARG:1)
 ;구상主はARG
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
@@ -1145,7 +1236,7 @@ IF LOCAL
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
-	;음란취득
+	;淫乱취득
 	;記入チェック（=0, 非표시、1, 표시）
 	LOCAL:1 = 0
 	;-------------------------------------------------
@@ -1195,7 +1286,7 @@ RETURN 1
 ;==================================================
 ;조교終了時に자위
 ;==================================================
-@M_KOJO_EVENT_KX_22(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_22(ARG,ARG:1)
 ;구상主はARG
 ;ARG:0に자위상황
 ;ARG:1に자위종류
@@ -1232,13 +1323,13 @@ IF LOCAL
 		RETURN 1
 	ENDIF
 	;-------------------------------------------------
-	;무지持ち（자위경험(조교자위경험は差し引き)による분기あり
+	;無知持ち（자위경험(조교자위경험は差し引き)による분기あり
 	;記入チェック（=0, 非표시、1, 표시）
 	LOCAL:1 = 0
 	;-------------------------------------------------
 	IF LOCAL:1 && ARG == 4
 		LOCAL:2 = EXP:자위경험 - EXP:조교자위경험
-		;무지消去이벤트あり（표시は一度だけ
+		;無知消去이벤트あり（표시は一度だけ
 		IF LOCAL:1 >= 25
 		;地の文분기。書きたい場合は[SKIPSTART][SKIPEND]を削除してください
 		
@@ -1356,7 +1447,7 @@ RETURN 1
 ;==================================================
 ;浴場連れだし
 ;==================================================
-@M_KOJO_EVENT_KX_23(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_23(ARG,ARG:1)
 ;구상主はLOCAL
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
@@ -1390,7 +1481,7 @@ RETURN 1
 ;懐妊
 ;eraOCG2_V0.40_BT_240522時点では流れないため注意
 ;==================================================
-@M_KOJO_EVENT_KX_24(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_24(ARG,ARG:1)
 ;구상主はLOCAL
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
@@ -1440,7 +1531,7 @@ RETURN 1
 ;==================================================
 ;출산
 ;==================================================
-@M_KOJO_EVENT_KX_25(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_25(ARG,ARG:1)
 ;구상主はLOCAL
 ;ARG:1	何人目の子供か
 ;20250310では子供の数は入っていない
@@ -1491,9 +1582,9 @@ RETURN 1
 ;==================================================
 ;분노구상
 ;==================================================
-@M_KOJO_EVENT_KX_29(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_29(ARG,ARG:1)
 ;구상主はTARGET
-;ARGはTARGETの배짱で분기
+;ARGはTARGETの度胸で분기
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
 LOCAL = 1
@@ -1523,7 +1614,7 @@ RETURN 1
 ;==================================================
 ;オナバレ系
 ;==================================================
-@M_KOJO_EVENT_KX_35(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_35(ARG,ARG:1)
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
 LOCAL = 1
@@ -1570,7 +1661,7 @@ RETURN 1
 ;==================================================
 ;MASTERを看病する
 ;==================================================
-@M_KOJO_EVENT_KX_36(ARG,ARG:1)
+@M_KOJO_EVENT_K1921_36(ARG,ARG:1)
 ;구상主はARG
 ;--------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）

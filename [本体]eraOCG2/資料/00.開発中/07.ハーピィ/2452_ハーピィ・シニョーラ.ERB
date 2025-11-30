@@ -1,0 +1,103 @@
+﻿@CARDNAME_2452,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィ・シニョーラ
+	CASE "略称"
+		RESULTS = Hp・シニョーラ
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_2452(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 300
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_2452(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,召喚時,特殊召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。デッキの上からカードを２枚墓地へ送る。
+PRINTL その中に「ハーピィ」モンスターがいた場合、さらに自分は１枚ドローできる。
+
+@CARDCAN_2452(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2452)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,2452)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_2452(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ドロー判定
+
+
+IF 種類 == 召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2452,1)
+	IF RESULT == 0
+		FOR カウンタ,0,2
+			TRYCALLFORM CARDNAME_{GETVAR(@"%決闘者%_デッキ:カウンタ")}("カテゴリ")
+			SIF !MATCH(RESULTS,"ハーピィ")
+				CONTINUE
+			TRYCALLFORM CARD_{GETVAR(@"%決闘者%_デッキ:カウンタ")}("種類")
+			SIF RESULT > 10
+				CONTINUE
+			ドロー判定 = 1
+		NEXT
+		CALL CARD_DECK_DISPOSE(決闘者,"デッキ",2)
+		SIF ドロー判定 != 0
+			CALL CARDDRAW_BASIC(決闘者,1)
+	ENDIF
+ENDIF

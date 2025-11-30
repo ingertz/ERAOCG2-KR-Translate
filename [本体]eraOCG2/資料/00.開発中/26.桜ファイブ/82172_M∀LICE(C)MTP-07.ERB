@@ -1,0 +1,154 @@
+﻿@CARDNAME_82172,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = M∀LICE＜C＞MTP-07
+	CASE "略称"
+		RESULTS = MTP-07
+	CASE "カテゴリ"
+		RESULTS:0 = マリス
+ENDSELECT
+
+
+@CARD_82172(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常罠
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_82172(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名のカードは１ターンに１枚しか発動できない。
+PRINTL このカードは自分フィールドの表側表示の「M∀LICE」モンスター１体を除外し、
+PRINTL セットしたターンに発動する事もできる。
+CALLFORM CARD_ABLE(1,魔罠起動,フリー誘発)
+PRINTL ①：デッキから「M∀LICE」モンスター１体を手札に加える。
+PRINTL 自分フィールドに「M∀LICE」Ｌモンスターが存在する場合、
+PRINTL さらにフィールドのカード１枚を除外できる。
+
+
+@CARDSUMMON_AA_82172
+
+
+@CARDCAN_82172(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 特殊発動
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,82172)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == フリー誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF 発動済_1(決闘者,82172)
+		RETURN 0
+	IF GETVAR(@"%決闘者%_魔_表:場所") == 3
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = マリス
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT == 1
+			特殊発動 = 1
+	ENDIF
+
+	IF 特殊発動 == 0
+		CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = マリス
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = マリス
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_82172(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 特殊発動
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 魔罠起動 || 種類 == フリー誘発
+	SIF GETVAR(@"%決闘者%_魔_表:場所") == 3
+		特殊発動 = 1
+	;カード発動確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,82172,1)
+	;効果処理
+	IF RESULT == 0	
+		IF 特殊発動 == 1
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件カテゴリ = マリス
+			効果条件行先フラグ = 除外行き
+			CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+			SIF RESULT != 1
+				RETURN 0
+		ENDIF
+		
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = マリス
+		効果条件種類 = モン全般
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			選択カードID = RESULT:1
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件カテゴリ = マリス
+			効果条件種類 = リンク
+			CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(決闘者,"両全場単体",場所,"除外")
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"魔自身",場所,"発可")
+ENDIF
+
+

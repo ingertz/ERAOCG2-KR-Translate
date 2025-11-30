@@ -11,7 +11,7 @@ PRINTFORML ({체력値}/{MAXBASE:0})
 @STAIN_INFO
 #DIM DYNAMIC カウンタ
 ;主人の汚れ
-PRINTFORML 【 %CALLNAME:MASTER%의 얼룩】
+PRINTFORML 【%CALLNAME:MASTER%의 얼룩】
 FOR カウンタ,0,6
 	SIF カウンタ == 2 && HAS_PENIS(MASTER) == 0
 		CONTINUE
@@ -798,6 +798,10 @@ ELSEIF GROUPMATCH(천후설정,천후_豪雨,천후_吹雪) && OPENPLACE(CFLAG:M
 	CFLAG:MASTER:감기플래그 = 5
 ENDIF
 
+IF INRANGE(CFLAG:MASTER:현재위치,場所_Reホテル,場所_RePビーチ)
+	천후설정 = 천후_晴れ
+	RETURN 0
+ENDIF
 
 ランダム설정 = RAND:100
 SELECTCASE 천후설정
@@ -925,7 +929,7 @@ FOR 캐릭터_ID,1,CHARANUM
 	IF CFLAG:캐릭터_ID:아르바이트 == PT_カドショ
 		カドショ宣伝효과 += 5
 	ENDIF
-	SIF INRANGE(CFLAG:캐릭터_ID:현재위치,場所_CDS入口,場所_CDSレジ裏)
+	SIF INRANGE(CFLAG:캐릭터_ID:현재위치,場所_CDS入口,場所_CDS入口)
 		ショップ在住 ++
 
 	IF ショップ在住 >= 15
@@ -934,7 +938,7 @@ FOR 캐릭터_ID,1,CHARANUM
 NEXT
 
 カドショ宣伝효과 += カドショ宣伝
-FOR カウンタ,場所_CDS入口,場所_CDSレジ裏
+FOR カウンタ,場所_CDS入口,場所_CDS入口
 	IF FLAG:(1000 + カウンタ) <= 100
 		カドショ宣伝효과 += 10
 	ELSEIF FLAG:(1000 + カウンタ) <= 500
@@ -964,7 +968,12 @@ ELSE
 	개시시간 = 6
 ENDIF
 
-IF RAND:3 == 0
+IF RAND:3 == 0 && オプション_訪問拒否 == 0
+	;訪問캐릭터_ID >= 0　訪問したい캐릭터がいる
+	;INRANGE(時間帯변경,開始時間,8) 大体10時と12時から20時まで
+	;CFLAG:MASTER:현재위치 <= 自宅部屋最大値 プレイヤーは家にいる
+	;CFLAG:訪問캐릭터_ID:현재위치 >= 自宅部屋最大値 訪問캐릭터が外にいる
+	;オプション_訪問拒否	;訪問拒否 == 0
 	IF 訪問캐릭터_ID >= 0 && INRANGE(時間帯변경,개시시간,8) && CFLAG:MASTER:현재위치 <= 自宅部屋最大値 && CFLAG:訪問캐릭터_ID:현재위치 >= 自宅部屋最大値
 		PRINTFORMW %CALLNAME:訪問캐릭터_ID%가 방문한 것 같다。
 		IF CFLAG:MASTER:우후후 == 0
@@ -1023,7 +1032,7 @@ IF ショップ満員 != 1 && INRANGE(TIME,KANTAN_TIME(10,00),KANTAN_TIME(20,00)
 	FOR カウンタ,0,カドショ総評価
 		캐릭터_ID = 듀얼리스트캐릭터:カウンタ	
 		IF RAND:3 == 0
-			IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
+			IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDS入口)
 				PRINTFORML %CALLNAME:캐릭터_ID%가 카드샵에 방문했습니다。
 			ENDIF
 			CFLAG:캐릭터_ID:현재위치 = 場所_CDS入口 + RAND:3
@@ -1104,7 +1113,7 @@ FOR 캐릭터_ID,1,CHARANUM
 	IF INRANGE(CFLAG:캐릭터_ID:현재위치,50,69)
 		IF RAND:10 == 0
 			IF ショップ運営中 == 1 && INRANGE(TIME,KANTAN_TIME(10,00),KANTAN_TIME(20,00))
-				IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDSレジ裏)
+				IF INRANGE(CFLAG:MASTER:현재위치,場所_CDS入口,場所_CDS入口)
 					PRINTFORML %CALLNAME:캐릭터_ID%가 카드샵에 방문했다。
 				ENDIF
 				CFLAG:캐릭터_ID:현재위치 = 場所_CDS入口 + RAND:3

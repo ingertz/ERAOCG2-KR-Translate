@@ -1,0 +1,194 @@
+﻿@CARDNAME_62062,参照先
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ウィッチクラフト特製ボールギャグ
+	CASE "略称"
+		RESULTS = WCボールギャグ
+	CASE "カテゴリ"
+		RESULTS:0 = ウィッチクラフト
+		RESULTS:1 = ウィッチコスプレイヤー
+		RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_62062(参照先)
+;名称専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 装備魔法
+ENDSELECT
+
+RETURN 0
+
+
+
+@CARD_EXPLANATION_62062(種類)
+#DIM DYNAMIC 種類
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+PRINTL  ①：このカードの相手によって効果が変わる。
+CALL CARD_ABLE(0,永続効果)
+PRINTFORM ●相手が%CALLNAME:MASTER%でない場合：相手の牝性モンスターにのみ装備可能、装備モンスターは発情し効果は無効化される。
+PRINTL
+CALL CARD_ABLE(0,効果後誘発)
+PRINTFORM ●相手が%CALLNAME:MASTER%の場合：ドローした時に即座に発動する。決闘者はこのカードを装備しようと試みる。
+PRINTL
+CALL CARD_ABLE(2,戦場→墓地,デッキ→墓地,破壊→墓地,手札→墓地)
+PRINTL ②：このカードが墓地へ送られた時に発動できる。
+PRINTL このカードを相手に売る。
+
+
+@CARDCAN_62062(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件達成
+#DIMS DYNAMIC 決闘者名称
+#DIMS DYNAMIC 対面者名称
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,62062)
+SIF RESULT == 1
+	RETURN 0
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	IF 種類 == 魔罠起動
+		SIF GETVAR(@"%決闘者%_魔_表:場所") == 1
+			RETURN 0
+	ENDIF
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 対面者 == "自分"
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1	
+	効果条件性別 = 牝性 
+	効果条件表示 = 表側表示
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") >= 2
+		RETURN 0
+	;SIF 対面者 !== "自分"
+	SIF 対面者 == "自分"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 効果後誘発
+	SIF ゾーン != "手札"
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,1632,"手札")
+	SIF 対面者 == "相手"
+		RETURN 0
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	効果条件名前 = ウィッチクラフト特製ボールギャグ
+	CALL CARD_CHECK_FIN_DATA(決闘者,"Ｃドロー")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 戦場→墓地 || 種類 == デッキ→墓地 || 種類 == 破壊→墓地 || 種類 == 手札→墓地
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	SIF ゾーン != "墓地"
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+
+@CARDEFFECT_62062(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 装備者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 調教対象
+
+CALL 装備判定(決闘者,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,62062)
+	IF RESULT == 0
+		;手卡から发动後、魔法トラップゾーンに卡片移動
+		CALL FULLRESET
+		効果範囲相手戦場 = 1	
+		効果条件性別 = 牝性 
+		CALLFORM CARD_EQUIP_ADV(決闘者,場所,ゾーン)
+
+		CALL CARD_EROTICS(RESULT:1)
+		IF RESULT != -1
+			調教対象 = RESULT
+			PRINTFORML 
+			PRINTFORMW %NAME:調教対象%は%CALLNAME:MASTER%に装備された……
+			PRINTFORML 
+			CALL EROTIC_MOVE("露出単発",調教対象,-1,100)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"装備",場所,"発情")
+    CALL STATCHANGE_EFFECT(決闘者,"装備",場所,"無効")
+ELSEIF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,62062)		
+	IF RESULT == 0
+		PRINTFORM text
+			
+		REPEAT 2
+			CALL CARD_GENERATE_DECK(対面者,62062)
+		REND
+	ENDIF
+ELSEIF 種類 == 戦場→墓地 || 種類 == デッキ→墓地 || 種類 == 破壊→墓地 || 種類 == 手札→墓地
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,62062,2)
+	IF RESULT == 0
+		IF 対面者 == "自分" 
+			CALL CARD_DISPOSE(決闘者,ゾーン,場所,デッキ行き)
+		ELSE
+			CALL 対面者判定(決闘者)
+			対面者 = %RESULTS%
+			CALL CARD_EROTICS(相手プレイヤー,決闘者)
+			IF RESULT != -1
+				調教対象 = RESULT
+				CALL OOO_SELL
+			ENDIF
+			REPEAT 1
+				CALL CARD_GENERATE_DECK(対面者,62062)
+			REND
+			CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+			
+		ENDIF
+	ENDIF
+ENDIF
+		
+
+

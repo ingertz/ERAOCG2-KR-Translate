@@ -1,0 +1,97 @@
+﻿@CARDNAME_81054,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィ・レディ　－朱雀の陣－
+	CASE "略称"
+		RESULTS = －朱雀の陣－
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+		RESULTS:1 = ゲームオリジナル
+ENDSELECT
+
+
+@CARD_81054(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常罠
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_81054(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(0,魔罠起動,フリー誘発)
+PRINTL ①：自分フィールドに「ハーピィ」モンスターが存在する場合に発動できる。
+PRINTL その数によって、ターン終了時まで以下の効果を適用する。
+PRINTL ●１体以上：自分の「ハーピィ」モンスターは戦闘では破壊されない。
+PRINTL ●２体以上：自分が受ける戦闘ダメージは０になる。
+PRINTL ●３体以上：自分が受ける効果ダメージは０になる。
+
+@CARDCAN_81054(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,81054)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == フリー誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = ハーピィ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 短紋章起動
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_81054(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+IF 種類 == 魔罠起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,81054)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = ハーピィ
+		効果条件CNT = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		カウンタ = RESULT
+		SIF カウンタ > 0
+			CALL CARD_RESERV(決闘者,91090,短紋章予約)
+		SIF カウンタ > 1
+			CALL SET_PLAYER_INFO(決闘者,"ダメージ無効",1)
+		SIF カウンタ > 2
+			CALL SET_PLAYER_INFO(決闘者,"効果ダメージ無効",1)
+	ENDIF
+ELSEIF 種類 == 短紋章起動
+	CALL FULLRESET
+	効果条件カテゴリ = ハーピィ
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"戦耐")
+ENDIF

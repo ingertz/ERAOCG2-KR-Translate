@@ -1,0 +1,135 @@
+﻿@CARDNAME_31315,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 티스티나의 장신
+	CASE "略称"
+		RESULTS = 티스티나 장신
+	CASE "カテゴリ"
+		RESULTS:0 = 티스티나
+ENDSELECT
+
+
+@CARD_31315(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 0
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31315(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは상대フィールドの裏側표시モンスター１体をリリースして表側표시でアドバンス소환できる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：通常소환したこのカードのレベルは１０になる。
+CALLFORM CARD_ABLE(0,X素材時효과,손패→묘지,덱→묘지)
+PRINTL ②：このカードがＸ素材となった場合、またはフィールド以外から묘지へ送られた場合、
+PRINTL 자신フィールドの「티스티나」モンスター１体を대상として발동できる。
+PRINTL このターン、자신はモンスター１体でしか攻撃できず、대상のモンスターは２回攻撃できる。
+
+
+@CARDSUMMON_AA_31315
+
+
+@CARDCAN_31315(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31315)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과소환
+	SIF モンスター数(듀얼리스트) == 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 裏側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時強制
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드" 
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") == 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == X素材時효과 || 종류 == 손패→묘지 || 종류 == 덱→묘지
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 티스티나
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_31315(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과소환
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 裏側표시
+	CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",現필드(듀얼리스트),"条達",2,1)
+	RETURN 1
+ELSEIF 종류 == 소환時強制
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一星",10,1)
+ELSEIF 종류 == X素材時효과 || 종류 == 손패→묘지 || 종류 == 덱→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31315)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 티스티나
+		CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)	
+		選択カード = RESULT
+		SIF 選択カード != 9999
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"戦",2,1)
+		CALL SET_PLAYER_INFO(듀얼리스트,"単体攻撃",1)
+	ENDIF
+ENDIF
+
+

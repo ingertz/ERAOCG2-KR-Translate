@@ -1,0 +1,175 @@
+﻿@CARDNAME_93101,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 볼캐닉 에미션
+	CASE "略称"
+		RESULTS = V 에미션
+	CASE "カテゴリ"
+		RESULTS:0 = 볼캐닉
+ENDSELECT
+
+
+@CARD_93101(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93101(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0,마함起動,フリー誘発)
+PRINTL ①：以下の효과から１つを選択して발동できる
+PRINTL （このカード名の以下の효과はそれぞれ１ターンに１度しか選択できない）。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ●덱から「볼캐닉」モンスター１体を選んで특수소환する。
+PRINTL この효과で특수소환したモンスターはエンドフェイズに손패に戻る。
+CALLFORM CARD_ABLE(2,마함起動,フリー誘発)
+PRINTL ●フィールドの화염속성・원소정령족モンスター１体の元々の攻撃力の半分のダメージを상대に与える。
+
+@CARDCAN_93101(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93101)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,93101)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,93101)
+		발동불가:1 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 볼캐닉
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件속성 = 화염속성
+	효과条件종족 = 원소정령족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_93101(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93101)
+	IF RESULT == 0
+		SIF 발동済_1(듀얼리스트,93101)
+			발동불가:0 = 1
+		SIF 발동済_2(듀얼리스트,93101)
+			발동불가:1 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 볼캐닉
+		효과条件종류 = モン全般
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件속성 = 화염속성
+		효과条件종족 = 원소정령족
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+	
+		IF 듀얼리스트 == "자신"
+			SIF 발동불가:0 != 1
+				PRINTL [0] - ●덱から「볼캐닉」モンスターを특수소환する。
+			SIF 발동불가:1 != 1
+				PRINTL [1] - ●フィールドの화염속성・원소정령족モンスターの攻撃力の半分のダメージを与える。
+			SIF 발동불가:0 == 1 && 발동불가:1 == 1
+				PRINTL [9999] - 戻る
+			BINPUT
+		ELSE
+			IF 발동불가:1 != 1
+				RESULT = 1
+			ELSE
+				RESULT = 0
+			ENDIF
+		ENDIF
+
+		IF RESULT == 0
+			CALL CARD_EFFECT_USE(듀얼리스트,93101,1)
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 볼캐닉
+			효과条件종류 = モン全般
+			효과추가종류 = 10 + 손패行き
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ELSEIF RESULT == 1
+			CALL CARD_EFFECT_USE(듀얼리스트,93101,2)
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1
+			효과条件속성 = 화염속성
+			효과条件종족 = 원소정령족
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			CALL CARD_SELECT(듀얼리스트,RESULT)
+			選択カード = RESULT
+			選択カード_ID = RESULT:99
+			CALLFORM CARD_{選択カード_ID}("攻撃力")
+			IF RESULT > 0
+				ダメージ量 = RESULT / 2
+				CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

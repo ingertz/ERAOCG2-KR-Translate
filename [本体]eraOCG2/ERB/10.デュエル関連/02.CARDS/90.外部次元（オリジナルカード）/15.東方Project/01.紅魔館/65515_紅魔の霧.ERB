@@ -136,26 +136,28 @@ ELSEIF 종류 == 지속효과
 
 	CALL FULLRESET
 	효과条件T1召種 = 全召種
-	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"表",2,65515)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"表",2)
 ELSEIF 종류 == ターン終了時強制
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65515,3)
 	IF RESULT == 0	
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
-		CALL FULLRESET
-		효과範囲덱 = 1
-		효과条件カテゴリ = 이변
-		효과条件固名前 = -이변- 홍마의 안개
-		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			選択カード_ID = RESULT:1
-			CALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
-			설정カテゴリ = %RESULTS%
-
 			CALL FULLRESET
 			효과範囲덱 = 1
-			효과条件カテゴリ = %설정カテゴリ%
-			CALLFORM 효과条件レベル_ADV(4,"以下")
+			효과条件カテゴリ = 이변
+			효과条件固名前 = -이변- 홍마의 안개
 			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				選択カード_ID = RESULT:1
+				CALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+				설정カテゴリ = %RESULTS%
+
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = %설정カテゴリ%
+				CALLFORM 효과条件レベル_ADV(4,"以下")
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
 		ENDIF
 	ENDIF
 ENDIF

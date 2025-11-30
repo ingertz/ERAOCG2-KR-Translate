@@ -14,12 +14,23 @@ CALL CHECK_STRUC_GET
 IF 初回カウンタ == 0
 	PRINTFORML 
 	PRINTFORML 
-	PRINTFORML 점원 「어서오세요ー」
+	IF GROUPMATCH(CFLAG:MASTER:현재위치,場所_裏通り,場所_Re違カドショ,場所_STカドショ)
+		PRINTFORML 점원「섭셔ー、개쩌는거 들어와있슴다ー」
+	ELSE
+		PRINTFORML 점원 「어서오세요ー」
+	ENDIF
 ELSE 
 	PRINTFORML 
 	PRINTFORML 
-	PRINTFORML 점원 「달리 뭔가 필요하신가요？」
+
+	IF GROUPMATCH(CFLAG:MASTER:현재위치,場所_裏通り,場所_Re違カドショ,場所_STカドショ)
+		PRINTFORML 점원「감삼다ー」	
+	ELSE
+		PRINTFORML 점원 「달리 뭔가 필요하신가요？」
+	ENDIF
 ENDIF
+
+
 CUSTOMDRAWLINE ―
 IF CFLAG:MASTER:현재위치 == 場所_カドショ
 	PRINTL 【카드샵 「주사위놀이」4호점】
@@ -28,11 +39,20 @@ ELSEIF CFLAG:MASTER:현재위치 == 場所_モール
 ELSEIF CFLAG:MASTER:현재위치 == 場所_MZカドショ
 	PRINTL 【카드샵 「새티스팩션」】
 ELSEIF CFLAG:MASTER:현재위치 == 場所_STカドショ
+	IF TIME_ZONE() == T_夜時間
+		SETCOLOR C_GRAY
+		PRINT (뒤)	
+	ENDIF
 	PRINTL 【리사이클샵 「뒷 우물」】
+	RESETCOLOR
 ELSEIF CFLAG:MASTER:현재위치 == 場所_KCカドショ
 	PRINTL 【카이바 코퍼레이션 샵 카드 직영점】
 ELSEIF CFLAG:MASTER:현재위치 == 場所_裏通り
 	PRINTL 【카드샵 「카드헌터」9호점】
+ELSEIF CFLAG:MASTER:현재위치 == 場所_Reカドショ
+	PRINTL 【카이바 코퍼레이션 샵 카드 직영점 마계 지부】
+ELSEIF CFLAG:MASTER:현재위치 == 場所_Re違カドショ
+	PRINTL 【위법 도박점 데스페라도】
 ENDIF
 PRINTPLAINFORM 소지금:{MONEY}엔　　　　　　　　　　　　　　　　　　　　　　　　　　　　
 SETCOLOR C_BLACK
@@ -41,7 +61,7 @@ RESETCOLOR
 CUSTOMDRAWLINE ―
 初回カウンタ = 1
 
-IF CFLAG:MASTER:현재위치 == 場所_裏通り
+IF GROUPMATCH(CFLAG:MASTER:현재위치,場所_裏通り,場所_Re違カドショ) || (GROUPMATCH(CFLAG:MASTER:현재위치,場所_STカドショ) && TIME_ZONE() == T_夜時間)
 	PRINTL 
 	PRINTL [1] - 테마팩을 산다　　　　(1팩 2500엔)
 	PRINTL 
@@ -80,7 +100,7 @@ ELSEIF RESULT == 1
 		PRINTFORMW 「죄송합니다 지금 팩이 품절이라서요……」
 		PRINTFORMW 「내일 와주세요！」
 	ELSE
-		IF CFLAG:MASTER:현재위치 == 場所_裏通り
+		IF GROUPMATCH(CFLAG:MASTER:현재위치,場所_裏通り,場所_Re違カドショ)
 			CALL CARD_PACK_CHOOSE(2)
 		ELSE
 			CALL CARD_PACK_CHOOSE(1)
@@ -95,7 +115,7 @@ ELSEIF RESULT == 4
 	$DECK_CHOICE
 	IF CFLAG:MASTER:현재위치 == 場所_カドショ
 		CUSTOMDRAWLINE ―
-		PRINTL 구입하고싶은 덱을 선택해 주세요：（일률：2500엔）
+		PRINTL 구입하고싶은 덱을 선택해 주세요：（일괄：2500엔）
 		CUSTOMDRAWLINE ―
 		FOR カウンタ,0,20
 			IF カウンタ == 1
@@ -119,7 +139,7 @@ ELSEIF RESULT == 4
 	;Anonym추가、裏ショップストラクチャー구입
 	ELSEIF CFLAG:MASTER:현재위치 == 場所_裏通り
 		CUSTOMDRAWLINE ―
-		PRINTL 구입하고싶은 덱을 선택해 주세요：（일률：25000엔）
+		PRINTL 구입하고싶은 덱을 선택해 주세요：（일괄：25000엔）
 		CUSTOMDRAWLINE ―
 
 		FOR カウンタ,500,510
@@ -165,7 +185,7 @@ ELSEIF RESULT == 9
 	CALL CARD_SELL
 	GOTO INPUT_LOOP1
 ELSEIF RESULT == 100
-	PRINTFORML 「감사합니다～」
+	PRINTFORML "감사합니다～"
 	RETURN 1
 ELSEIF RESULT == 9999
 	CALL CARD_PACK_CHOOSE(3)

@@ -1,0 +1,165 @@
+﻿@CARDNAME_31337,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 볼캐닉 퀸
+	CASE "略称"
+		RESULTS = V 퀸
+	CASE "カテゴリ"
+		RESULTS:0 = 볼캐닉
+ENDSELECT
+
+
+@CARD_31337(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 1200
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31337(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは通常소환できない。
+PRINTL このカードの①효과の발동に対して、상대はカードの효과を발동できない。
+;壊獣
+CALLFORM CARD_ABLE(0,손패起動)
+PRINTL ①：자신メインフェイズに소환権を消費し、상대フィールドのモンスター１体をリリースして발동できる。
+PRINTL このカードを상대フィールドに특수소환する。
+;バーン
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：１ターンに１度、フィールドの他のカード１枚を묘지に送って발동できる。
+PRINTL 상대に１０００ダメージを与える。
+;強制リリース
+CALLFORM CARD_ABLE(1,ターン終了時強制)
+PRINTL ③：자신エンドフェイズに발동する。
+PRINTL 자신フィールドの他のモンスター１体をリリースするか、자신は１０００ダメージを受ける。
+
+
+
+@CARDCAN_31337(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31337)
+SIF RESULT == 1
+	RETURN 0
+;壊獣ふみ
+IF 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,31337,"손패",1)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 소환権 == 0
+		RETURN 0
+	RETURN 1
+;バーン
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) != 0
+		条件달성 ++
+	;필드起動なので１体は確定、他にいるか
+	SIF モンスター数(듀얼리스트) != 1
+		条件달성 ++
+	SIF 条件달성 == 0
+		RETURN 0
+
+	RETURN 1
+;セルフバーン
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	SIF !GROUPMATCH(チェーン可否종류, 손패起動)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31337(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;壊獣ふみ
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31337)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"상대필드",ゾーン,場所)	
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所,"",1)
+			소환権 --
+		ENDIF
+	ENDIF
+;バーン
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31337,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과範囲필드 = 1
+		효과条件他所 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			ダメージ量 = 1000
+			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+		ENDIF
+	ENDIF
+;セルフバーン
+ELSEIF 종류 == ターン終了時強制
+	ダメージ量 = 1000
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量)
+ENDIF
+

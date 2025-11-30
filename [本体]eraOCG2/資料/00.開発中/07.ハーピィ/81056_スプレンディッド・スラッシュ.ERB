@@ -1,0 +1,104 @@
+﻿@CARDNAME_81056,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = スプレンディッド・スラッシュ
+	CASE "略称"
+		RESULTS = Splendid Slash
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_81056(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 通常罠
+	CASE "追加日"
+		RETURN 251114
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_81056(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(0,効果後誘発)
+PRINTL ①：自分フィールドのモンスターが戦闘・効果で破壊された場合、
+PRINTL 自分の墓地の「ハーピィ」モンスター１体を除外して発動できる。
+PRINTL 相手フィールドのカード１枚を選んで除外する。
+
+@CARDCAN_81056(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,81056)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 効果後誘発
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	CALL CARD_SET_ACT(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(決闘者,"破壊全般")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = ハーピィ
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果範囲相手魔罠 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_81056(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+IF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,81056)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件カテゴリ = ハーピィ
+		効果条件種類 = モン全般
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲相手戦場 = 1
+			効果範囲相手魔罠 = 1
+			CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"除外")
+		ENDIF
+	ENDIF
+ENDIF

@@ -1,0 +1,125 @@
+﻿@CARDNAME_35353,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 피시보그 아처
+	CASE "略称"
+		RESULTS = FB－아처
+	CASE "カテゴリ"
+		RESULTS:0 = 피시보그
+ENDSELECT
+
+@CARD_35353(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 300
+	CASE "守備力"
+		RETURN 300
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251127
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35353(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,묘지起動)
+PRINTL ①：자신フィールドにモンスターが存在しない場合、
+PRINTL 손패の물속성モンスター１体を捨てて발동できる。このカードを묘지から특수소환する。
+CALLFORM CARD_ABLE(0,バトル開始時強制)
+PRINTL ②：このカード名の①の효과を使用したターンのバトルフェイズ開始時に발동する。
+PRINTL 자신フィールドの물속성以外のモンスターを全て破壊する。
+
+
+@CARDCAN_35353(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35353)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,35353)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,35353,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件속성 = 물속성
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == バトル開始時強制
+	SIF 발동済_1(듀얼리스트,35353) == 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	CALLFORM 효과条件속성_ADV(물속성,"以外")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35353(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+IF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35353,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件속성 = 물속성
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 피시보그 아처
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == バトル開始時強制
+	CALL FULLRESET
+	CALLFORM 효과条件속성_ADV(물속성,"以外")
+	CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지",0,1)
+ENDIF
+

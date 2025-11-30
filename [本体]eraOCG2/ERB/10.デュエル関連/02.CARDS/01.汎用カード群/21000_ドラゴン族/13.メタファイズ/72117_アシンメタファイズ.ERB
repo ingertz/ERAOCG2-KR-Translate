@@ -1,0 +1,136 @@
+﻿@CARDNAME_72117,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 어심메타파이즈
+	CASE "略称"
+		RESULTS = 환계비대칭
+	CASE "カテゴリ"
+		RESULTS:0 = 메타파이즈
+ENDSELECT
+
+
+@CARD_72117(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속마법
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72117(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(10,마함起動)
+PRINTL ①：１ターンに１度、손패を１枚제외して발동できる。자신は１枚ドローする。
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ②：자신の「메타파이즈」カードが제외された場合に발동できる。そのターンによって、以下の효과を適用する。
+PRINTL ●자신ターン：フィールドの「메타파이즈」以外の全てのモンスターの攻撃力・守備力は５００ダウンする。
+PRINTL ●상대ターン：フィールドの「메타파이즈」以外の全てのモンスターの표시形式を변경する。
+
+@CARDCAN_72117(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72117)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 메타파이즈
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과除送")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件固カテゴリ = 메타파이즈
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72117(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72117,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72117)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72117)
+	IF RESULT == 0
+		IF ターンプレイヤー == 듀얼리스트
+			CALL FULLRESET
+			효과条件固カテゴリ = 메타파이즈
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"永攻DOWN",500)
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"永守DOWN",500)
+		ELSE
+			CALL FULLRESET
+			효과条件固カテゴリ = 메타파이즈
+			효과추가종류 = 3
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"표시변경")
+		ENDIF
+	ENDIF
+ENDIF
+

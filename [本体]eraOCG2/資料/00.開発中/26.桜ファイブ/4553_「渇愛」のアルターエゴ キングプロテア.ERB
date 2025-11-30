@@ -1,0 +1,180 @@
+﻿@CARDNAME_2174,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = M∀LICE＜Q＞WHITE BINDER
+	CASE "略称"
+		RESULTS = WHITE BINDER
+	CASE "カテゴリ"
+		RESULTS:0 = マリス
+ENDSELECT
+
+
+@CARD_2174(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN リンク
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN サイバース族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 900
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2174(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「M∀LICE」モンスターを含むモンスター２体以上
+PRINTL このカード名の①②③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX召喚時,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。
+PRINTL 自分・相手の墓地のカードを合計３枚まで除外する。
+CALLFORM CARD_ABLE(2,戦場起動)
+PRINTL ②：自分メインフェイズに発動できる。
+PRINTL 自分のデッキ・墓地から「M∀LICE」罠カード１枚を自分フィールドにセットする。
+CALLFORM CARD_ABLE(3,除外時)
+PRINTL ③：このカードが除外された場合、９００ＬＰを払って発動できる。
+PRINTL このカードを特殊召喚する。
+PRINTL その後、自分は１枚ドローする。
+
+
+@CARDSUMMON_2174(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要リンク数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = マリス
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(決闘者,召喚カード,2174) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDSUMMON_AA_2174
+
+
+@CARDCAN_2174(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2174)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EX召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,2174)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果範囲相手墓地 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_2(決闘者,2174)
+		RETURN 0
+	SIF 魔罠数(決闘者) >= 5
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果範囲墓地 = 1
+	効果条件カテゴリ = マリス
+	効果条件種類 = 罠全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK(1)
+	RETURN 1
+ELSEIF 種類 == 除外時
+	SIF 発動済_3(決闘者,2174)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%決闘者%") <= 900
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,2174,"除外")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2174(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 元攻撃力
+#DIM DYNAMIC 元守備力
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == EX召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2174,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果範囲相手墓地 = 1
+		効果条件任意 = 1
+		効果条件複数 = 97
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2174,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果範囲墓地 = 1
+		効果条件カテゴリ = マリス
+		効果条件種類 = 罠全般
+		CALL CARD_SET_ADV(決闘者,ゾーン,場所,"裏側表示")
+	ENDIF
+ELSEIF 種類 == 除外時
+	CALL CARD_CHOICE(決闘者,種類,"除外",場所,2174,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",900)
+		CALL FULLRESET
+		効果範囲除外 = 1
+		効果条件名前 = M∀LICE＜Q＞WHITE BINDER
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+
+		CALL CARDDRAW_BASIC(決闘者,1)
+	ENDIF
+ENDIF
+

@@ -14,7 +14,8 @@ SELECTCASE 参照先
 		RESULTS:0 = オラクル
 		RESULTS:1 = ゴッド
 		RESULTS:2 = ゴッド・ノヴァ
-		RESULTS:4 = DUEL MASTERS
+	CASE "出典作品"
+		RESULTS:0 = DUEL MASTERS
 ENDSELECT
 
 
@@ -61,7 +62,7 @@ CALLFORM CARD_ABLE(1,手札起動)
 PRINTL ①：このカードが手札に存在し、自分の魔法＆罠ゾーンに「極限右神 オメガ」が存在せず、
 PRINTL 自分の魔法＆罠ゾーンにPモンスターが２枚以下の場合に発動できる。
 PRINTL このカードを自分の魔法＆罠ゾーンに表側表示で置く。
-PRINTL 그 후、自分の魔法＆罠ゾーンに「ゴッド・ノヴァ」Pモンスターが１枚以下の場合、
+PRINTL その後、自分の魔法＆罠ゾーンに「ゴッド・ノヴァ」Pモンスターが１枚以下の場合、
 PRINTL 手札を１枚捨てる事で、
 PRINTL デッキから「極限右神 オメガ」以外の「ゴッド・ノヴァ」Pモンスター１体を自分の魔法＆罠ゾーンに表側表示で置くことができる。
 CALLFORM CARD_ABLE(0,召喚強制誘発)
@@ -159,7 +160,11 @@ IF 種類 == 手札起動
 	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,29944,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
-		SIF 手札数(決闘者) <= 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果条件他所 = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
 			RETURN 0
 		CALL FULLRESET
 		効果範囲デッキ = 1

@@ -1,0 +1,157 @@
+﻿@CARDNAME_48008,参照先
+;ココで指定卡片の名称、简称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ウィッチコスプレイヤー・メイド服のアレイナ
+	CASE "略称"
+		RESULTS = cosアレイナ
+	CASE "カテゴリ"
+		RESULTS:0 = ウィッチクラフト
+		RESULTS:1 = ウィッチコスプレイヤー
+        RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_48008(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 魔法使い族
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 2100
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_48008(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「ウィッチクラフト怪兽」+「ウィッチコスプレイヤー怪兽」
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX召喚時)
+PRINTL ①：このカードがR召喚した場合に発動できる。
+PRINTL 墓地から「ウィッチコスプレイヤー」モンスター１体を特殊召喚する。
+PRINTL この効果の発動後、ターン終了時まで魔法使い族モンスターしか特殊召喚できない。
+CALLFORM CARD_ABLE(0,墓地起動)
+PRINTL ②：１０００LPを払い、このカードを墓地からエクストラデッキに戻して発動できる。
+PRINTL 相手はあなたに３０００円を支払い、任意でデッキに「ウィッチクラフトの広告」を３枚加える。
+
+@CARDSUMMON_48008(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = ウィッチクラフト
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = ウィッチコスプレイヤー
+ENDIF
+
+IF EX参照 == 1
+	;PRINTL サモンまでは言ってるよ
+	CALL FUSCAN(決闘者,召喚カード,48008) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_48008(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 効果制限達成
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 調教対象 = -1
+#DIMS DYNAMIC 調教対象名
+#DIM DYNAMIC 回復量
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,48008)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 種類 == EX召喚時 
+	SIF 発動済_1(決闘者,48008)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = ウィッチクラフト
+	効果条件他所 = 1
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 墓地起動
+	SIF RESULT == 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF ゾーン != "墓地"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_48008(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 効果制限達成
+#DIM DYNAMIC カウンタ
+
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EX召喚時 
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,48008,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件カテゴリ = ウィッチクラフト
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	ENDIF
+	SS召喚可能種族 = 魔法使い族
+	CALL CARD_SS_RESTRICTION(決闘者)
+ELSEIF 種類 == 墓地起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,48008)
+	IF RESULT == 0
+		CALL MONEY_GET(3000)
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",1000)		
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,デッキ行き)
+		REPEAT 3
+			CALL CARD_GENERATE_DECK(対面者,62070)
+		REND
+		CALL SHUFFLE(対面者)		
+	ENDIF
+ENDIF

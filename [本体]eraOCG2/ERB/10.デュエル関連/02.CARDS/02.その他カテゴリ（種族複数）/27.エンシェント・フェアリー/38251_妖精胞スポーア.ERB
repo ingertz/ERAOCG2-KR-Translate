@@ -47,13 +47,13 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 
-PRINTL 이 카드명은 룰 상 "페어리" 카드로서도 취급한다.
+PRINTL 이 카드명은 룰 상 "요정" 카드로서도 취급한다.
 PRINTL 이 카드명의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,특수소환時)
 PRINTL ①: 이 카드가 특수 소환했을 경우에 발동할 수 있다.
 PRINTL 이 카드의 레벨을 자신 필드의 몬스터의 수까지 올린다.
 CALLFORM CARD_ABLE(2,묘지起動)
-PRINTL ②: 이 카드가 묘지에 존재하고, 자신 필드에 "앤션트 페어리 드래곤"
+PRINTL ②: 이 카드가 묘지에 존재하고, 자신 필드에 "고대 요정 드래곤"
 PRINTL 또는 야수족 식물족 천사족의 빛 속성 몬스터가 존재할 경우에 발동할 수 있다. 이 카드를 특수 소환한다.
 PRINTL 이 효과의 발동 후, 턴 종료시까지 자신은 싱크로 몬스터밖에 엑스트라 덱에서 특수 소환할 수 없다.
 
@@ -124,23 +124,24 @@ IF 종류 == 특수소환時
 		;PRINTFORMW モンスター数：{条件合致数}
 		IF 듀얼리스트 == "자신"
 			CUSTOMDRAWLINE -
-PRINTL 몬스터의 레벨을 얼마나 올리겠습니까?
+			PRINTL 몬스터의 레벨을 얼마나 올리겠습니까?
 			CUSTOMDRAWLINE -
-PRINTL [0] - 상승시키지 않는다.
+			PRINTL [0] - 상승시키지 않는다.
 			FOR カウンタ,1,条件合致数
-				PRINTFORML [{カウンタ}] - {カウンタ}レベル상승させる。
+				PRINTFORML [{カウンタ}] - {カウンタ}레벨 상승시킨다。
 			NEXT
 			BINPUT
 			選択レベル = RESULT
 			IF 選択レベル != 0
 				CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",選択レベル)
-				PRINTFORMW 妖精胞スポ-アの레벨을 {選択レベル}상승させました。
+				PRINTFORMW 요정포 스포어의 레벨을 {選択レベル}상승 시켰습니다。
 			ELSE
-				PRINTFORMW 레벨을 상승させませんでした。
+				PRINTFORMW 레벨을 상승시키지 않았습니다。
 			ENDIF
 		ELSE
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",条件合致数-1)
-			PRINTFORMW 妖精胞スポ-アの레벨을 {選択レベル}상승させました。
+			選択レベル = 条件合致数-1
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",選択レベル)
+			PRINTFORMW 요정포 스포어의 레벨을 {選択レベル}상승 시켰습니다。
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 묘지起動

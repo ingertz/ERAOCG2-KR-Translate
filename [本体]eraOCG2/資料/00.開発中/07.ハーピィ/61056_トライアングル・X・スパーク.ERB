@@ -1,0 +1,89 @@
+﻿@CARDNAME_61056,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = トライアングル・エクスタシー・スパーク
+	CASE "略称"
+		RESULTS = Ｔ・Ｘ・スパーク
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_61056(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61056(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(0,魔罠起動,手札起動)
+PRINTL ①：自分フィールドに「ハーピィ・レディ三姉妹」が存在する場合に発動できる。
+PRINTL 自分フィールドの全ての「ハーピィ・レディ三姉妹」の攻撃力はターン終了時まで７５０アップする。
+PRINTL このターン、相手は罠カードを発動できず、相手フィールドの罠カードの効果は無効化される。
+
+@CARDCAN_61056(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,61056)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件名前 = ハーピィ・レディ三姉妹
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 短紋章起動
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_61056(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	;カード発動確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,61056)
+	IF RESULT == 0
+		;通常魔法汎用発動後墓地送り処理
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果条件名前 = ハーピィ・レディ三姉妹
+		CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"一攻",800)
+		CALL SET_PLAYER_INFO(決闘者,"罠無効",1,1)
+		CALL CARD_RESERV(決闘者,61056,短紋章予約)
+	ENDIF
+ELSEIF 種類 == 短紋章起動
+	CALL FULLRESET
+	効果条件種類 = 罠全般
+	CALL STATCHANGE_EFFECT(決闘者,"魔罠",場所,"無効")
+ENDIF

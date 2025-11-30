@@ -246,6 +246,7 @@ FOR カウンタ,0,CHARANUM
 		LTARGETNUM ++
 	ENDIF
 NEXT
+
 SELECTCASE デュエル타입
 CASE 2
 	CALL DUEL_KANNI
@@ -288,8 +289,17 @@ RETURN デュエル結果
 #DIM DYNAMIC 패배のロストバージン
 #DIM DYNAMIC ラブホ以外
 #DIM DYNAMIC ＢＳＳ
-
+#DIM DYNAMIC 설정倍率
 ラブホ以外 = 0
+
+IF TARGET > 0
+	IF CFLAG:TARGET:듀얼환영 == 1
+		설정倍率 = 2
+	ELSE
+		설정倍率 = 1
+	ENDIF
+	CFLAG:TARGET:듀얼환영 = 0
+ENDIF
 
 IF 選択モード == 0
 	IF デュエル結果 == 結果_승리
@@ -297,13 +307,12 @@ IF 選択モード == 0
 			CFLAG:TARGET:전화번호 = 1
 			PRINTFORMW 듀얼에서 승리하여 %CALLNAME:TARGET%로부터 전화번호를 받았다！
 		ENDIF
-		CALL SOURCE_CALC_환락(TARGET, MASTER, 500)
-		CALL SOURCE_CALC_정복(TARGET, MASTER, 100)
+		CALL SOURCE_CALC_환락(TARGET, MASTER, 500 * 설정倍率)
+		CALL SOURCE_CALC_정복(TARGET, MASTER, 100 * 설정倍率)
 	ELSEIF デュエル結果 == 結果_패배
-		CALL SOURCE_CALC_환락(TARGET, MASTER, 200)
-		CALL SOURCE_CALC_정복(TARGET, MASTER, 50)
+		CALL SOURCE_CALC_환락(TARGET, MASTER, 500 * 설정倍率)
 	ELSEIF デュエル結果 == 結果_引分
-		CALL SOURCE_CALC_환락(TARGET, MASTER, 200)
+		CALL SOURCE_CALC_환락(TARGET, MASTER, 200 * 설정倍率)
 	ENDIF
 	;ザポルグ追記
 	TFLAG:SELECTCOM분기 = デュエル結果

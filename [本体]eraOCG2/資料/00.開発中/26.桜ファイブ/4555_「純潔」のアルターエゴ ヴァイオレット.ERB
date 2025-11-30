@@ -1,0 +1,177 @@
+﻿@CARDNAME_2176,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = M∀LICE＜Q＞RED RANSOM
+	CASE "略称"
+		RESULTS = RED RANSOM
+	CASE "カテゴリ"
+		RESULTS:0 = マリス
+ENDSELECT
+
+
+@CARD_2176(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN リンク
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN サイバース族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 900
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2176(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「M∀LICE」モンスターを含むモンスター２体以上
+PRINTL このカード名の①③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX召喚時,特殊召喚時)
+PRINTL ①：このカードが特殊召喚した場合に発動できる。
+PRINTL デッキから「M∀LICE」魔法カード１枚を手札に加える。
+CALLFORM CARD_ABLE(2,攻守変動)
+PRINTL ②：自分フィールドに他のモンスターが存在する限り、
+PRINTL 相手フィールドの効果モンスターの攻撃力と守備力は入れ替わる。
+CALLFORM CARD_ABLE(3,除外時)
+PRINTL ③：このカードが除外された場合、９００ＬＰを払って発動できる。
+PRINTL このカードを特殊召喚する。
+PRINTL その後、デッキからサイバース族モンスター１体を除外できる。
+
+
+@CARDSUMMON_2176(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要リンク数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = マリス
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(決闘者,召喚カード,2176) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDSUMMON_AA_2176
+
+
+@CARDCAN_2176(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2176)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EX召喚時 || 種類 == 特殊召喚時
+	SIF 発動済_1(決闘者,2176)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = マリス
+	効果条件種類 = 魔法全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 攻守変動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件他所 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 除外時
+	SIF 発動済_3(決闘者,2176)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%決闘者%") <= 900
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,2176,"除外")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2176(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 元攻撃力
+#DIM DYNAMIC 元守備力
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == EX召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2176,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件カテゴリ = マリス
+		効果条件種類 = 魔法全般
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 攻守変動
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_戦場:{カウンタ}") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_戦場:{カウンタ}") == -1
+			CONTINUE
+		元攻撃力 = GETVAR(@"%対面者%_MZ_攻:カウンタ")
+		元守備力 = GETVAR(@"%対面者%_MZ_守:カウンタ")
+		CALL SET_FIELD_INFO(対面者,"戦場",カウンタ,"攻",元守備力,上書きモード)
+		CALL SET_FIELD_INFO(対面者,"戦場",カウンタ,"守",元攻撃力,上書きモード)
+	NEXT
+ELSEIF 種類 == 除外時
+	CALL CARD_CHOICE(決闘者,種類,"除外",場所,2176,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",900)
+		CALL FULLRESET
+		効果範囲除外 = 1
+		効果条件名前 = M∀LICE＜Q＞RED RANSOM
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件行先フラグ = 除外行き
+		効果条件種族 = サイバース族
+		効果条件任意 = 1
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ENDIF
+

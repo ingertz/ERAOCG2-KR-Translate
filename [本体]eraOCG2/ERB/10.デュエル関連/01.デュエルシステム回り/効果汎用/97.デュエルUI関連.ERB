@@ -573,6 +573,7 @@ FOR カウンタB,0,10
 				FONTSTYLE 0
 				PRINTFORM (%"？",2%)
 			ELSEIF カウンタB == 6
+				CALL XON_FONT("守備표시",C_MONS_BR)
 				PRINTFORM 뒷면수비표시
 				SETCOLOR C_GRAY
 				PRINTFORM 　／　／　／
@@ -644,7 +645,7 @@ FOR カウンタB,0,10
 							HTML_PRINT @"<button value='{2000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
 						ELSE
 							SUBSTRING カード名, 0, 19
-							カード名 = %RESULTS:0,16,LEFT%
+							カード名 = %RESULTS:0,19,LEFT%
 							HTML_PRINT @"<button value='{2000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1
 						ENDIF
 					ELSE
@@ -680,27 +681,43 @@ FOR カウンタB,0,10
 				SELECTCASE GETVAR(@"%듀얼리스트%_MZ_属:カウンタ") 
 					CASE 1
 						SETCOLOR C_LIGHT_T
-						PRINTFORM (%"光",2%)
+						CALL XON_FONT("(,빛속성,)",C_LIGHT_T)
+						;SETCOLOR C_LIGHT_T
+						;PRINTFORM (%"光",2%)
 					CASE 2
 						SETCOLOR C_DARK_T
-						PRINTFORM (%"闇",2%)
+						CALL XON_FONT("(,어둠속성,)",C_DARK_T)
+						;SETCOLOR C_DARK_T
+						;PRINTFORM (%"闇",2%)
 					CASE 3
 						SETCOLOR C_GROUND_T
-						PRINTFORM (%"地",2%)
+						CALL XON_FONT("(,땅속성,)",C_GROUND_T)
+						;SETCOLOR C_GROUND_T
+						;PRINTFORM (%"地",2%)
 					CASE 4
 						SETCOLOR C_WATER_T
-						PRINTFORM (%"水",2%)
+						CALL XON_FONT("(,물속성,)",C_WATER_T)
+						;SETCOLOR C_WATER_T
+						;PRINTFORM (%"水",2%)
 					CASE 5
 						SETCOLOR C_FIRE_T
-						PRINTFORM (%"炎",2%)
+						CALL XON_FONT("(,화염속성,)",C_FIRE_T)
+						;SETCOLOR C_FIRE_T
+						;PRINTFORM (%"炎",2%)
 					CASE 6
 						SETCOLOR C_WIND_T
-						PRINTFORM (%"風",2%)
+						CALL XON_FONT("(,바람속성,)",C_WIND_T)
+						;SETCOLOR C_WIND_T
+						;PRINTFORM (%"風",2%)
 					CASE 7
 						SETCOLOR C_LIGHT_T
-						PRINTFORM (%"神",2%)
+						CALL XON_FONT("(,신속성,)",C_LIGHT_T)
+						;SETCOLOR C_LIGHT_T
+						;PRINTFORM (%"神",2%)
 					CASE 9
-						PRINTFORM (%"무",2%)
+						SETCOLOR C_WHITE
+						CALL XON_FONT("(,無속성,)",C_WHITE)
+						;PRINTFORM (%"무",2%)
 					CASEELSE
 						PRINTFORM (%"？",2%)
 				ENDSELECT
@@ -710,24 +727,25 @@ FOR カウンタB,0,10
 				;レベル
 				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("종류")
 				IF RESULT == 엑시즈
-					PRINTFORM %"",18,RIGHT%
+					PRINTFORM %"",19,RIGHT%
 					CALL XON_FONT("★",C_XYZ_LBLACK)
 					SETCOLOR C_XYZ_LBLACK
-					PRINTFORM  {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
+					PRINTFORM {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
 				ELSEIF RESULT == 링크
 					SETCOLOR C_LINK_BLUE
 					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("レベル")
-					PRINTFORM %"LINK －",21,RIGHT% {RESULT,2,RIGHT}
+					PRINTFORM %"LINK－",22,RIGHT% {RESULT,1,RIGHT}
 				ELSE
-					PRINTFORM %"",18,RIGHT%
+					PRINTFORM %"",19,RIGHT%
 					CALL XON_FONT("★",C_ORANGE)
 					SETCOLOR C_ORANGE
-					PRINTFORM  {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
+					PRINTFORM {GETVAR(@"%듀얼리스트%_MZ_星:カウンタ"),3,RIGHT}
 				ENDIF
 				RESETCOLOR
 
 			ELSEIF カウンタB == 3
-				PRINTFORM %GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:カウンタ")),15,LEFT%
+				CALL XON_FONT(GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:カウンタ")))
+				PRINTFORM %GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:カウンタ")),13,LEFT%
 				;14が限界、5までOK
 				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("分割")
 				IF RESULT == 0
@@ -768,10 +786,14 @@ FOR カウンタB,0,10
 				ELSEIF RESULT == 2 || RESULT == 31
 					PRINTFORM %"통상",4%
 				ELSEIF RESULT == 의식
-					PRINTFORM %"의식",4%
+					PRINTFORM %"",1%
+					CALL XON_FONT("의식")
+					PRINTFORM %"",1%
+					;PRINTFORM %"의식",4%
 				ELSEIF RESULT == 융합
+					PRINTFORM %"",1%
 					CALL XON_FONT("융합")
-					PRINTFORM %"",2%
+					PRINTFORM %"",1%
 					;PRINTFORM %"융합",4%
 				ELSEIF RESULT == 싱크로
 					PRINTFORM %"",1%
@@ -780,7 +802,7 @@ FOR カウンタB,0,10
 					;PRINTFORM %"シン",4%
 				ELSEIF RESULT == 엑시즈
 					PRINTFORM %"",1%
-					CALL XON_FONT("엑시즈")
+					CALL XON_FONT("엑시즈",C_XYZ_LBLACK)
 					PRINTFORM %"",1%
 					;PRINTFORM %"XYZ ",4%
 				ELSEIF RESULT == 링크
@@ -789,7 +811,10 @@ FOR カウンタB,0,10
 					PRINTFORM %"",1%
 					;PRINTFORM %"LINK",4%
 				ELSEIF RESULT == 초차원
-					PRINTFORM %"PSY",4%
+					PRINTFORM %"",1%
+					CALL XON_FONT("초차원")
+					PRINTFORM %"",1%
+					;PRINTFORM %"PSY",4%
 				ELSEIF INRANGE(RESULT,20,29)
 					PRINTFORM %"마법",4%
 				ELSEIF RESULT >= 30
@@ -848,17 +873,20 @@ FOR カウンタB,0,10
 						PRINTFORM 　　　　　　　
 					ENDIF
 				ELSEIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 2
+					CALL XON_FONT("守備표시",C_AQUA)
 					SETCOLOR C_AQUA
-					CALL XON_FONT("수비표시",C_AQUA)
 					PRINTFORM 수비표시　　　　　　　
 				ELSEIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
-					PRINTFORM 　뒷면수비표시　　　　　
+					CALL XON_FONT("守備표시",C_MONS_BR)
+					PRINTFORM 뒷면수비표시　　　　　
 				ENDIF
 			ELSEIF カウンタB == 7
 
 
 				IF GETVAR(@"%듀얼리스트%_MZ_Ｘ:カウンタ") != -1 
-					PRINTFORM Ｘ소재:{(GETVAR(@"%듀얼리스트%_MZ_Ｘ:カウンタ") + 1),5,LEFT}　　　　　　
+					CALL XON_FONT("엑시즈",C_YELLOW)
+					PRINTFORM 素材:{(GETVAR(@"%듀얼리스트%_MZ_Ｘ:カウンタ") + 1),5,LEFT}　　　　　　
+					;PRINTFORM Ｘ소재:{(GETVAR(@"%듀얼리스트%_MZ_Ｘ:カウンタ") + 1),5,LEFT}　　　　　　
 				ELSE
 					PRINTFORM 　　　　　　　　　　　　
 				ENDIF	
@@ -1202,7 +1230,8 @@ FOR カウンタB,0,5
 				CALL CARD_SETCOLOR(듀얼리스트,"마함",カウンタ)
 				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("종류")	
 				IF RESULT == 通常마법
-					PRINTFORM %"일반마법",15,LEFT%
+					CALL XON_FONT("無속성")
+					PRINTFORM %"일반마법",13,LEFT%
 				ELSEIF RESULT == 速攻마법
 					CALL XON_FONT("速攻")
 					PRINTFORM %"속공마법",13,LEFT%
@@ -1216,11 +1245,13 @@ FOR カウンタB,0,5
 					CALL XON_FONT("フィールド")
 					PRINTFORM %"필드",13,LEFT%
 				ELSEIF RESULT == 通常함정
-					PRINTFORM %"일반함정",15,LEFT%
+					CALL XON_FONT("無속성")
+					PRINTFORM %"일반함정",13,LEFT%
 				ELSEIF RESULT == 지속함정
 					CALL XON_FONT("지속")
 					PRINTFORM %"지속함정",13,LEFT%
 				ELSEIF RESULT == 초차원
+					CALL XON_FONT("초차원")
 					PRINTFORM %"초차원",15,LEFT%
 				ELSE
 					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("分割")
@@ -1827,7 +1858,6 @@ PRINTFORM （수）　{GETVAR(@"%듀얼리스트%_MZ_守:選択カード"),6,RIG
 RESETCOLOR
 
 VARSET RESULT
-;TRYCALLFORM CARD_{選択カード_ID}("성별")
 IF GETVAR(@"%듀얼리스트%_MZ_性:選択カード") == 牝性
 	SETCOLOR C_PINK
 	PRINTFORM （%"♀",2%）
@@ -2000,7 +2030,7 @@ IF GETVAR(@"%듀얼리스트%_MZ_条達:選択カード") != 0
 ENDIF
 
 PRINTL
-PRINT 각부위내성:
+PRINT 각부위내성：
 IF GETVAR(@"%듀얼리스트%_MZ_モ耐:選択カード") != 0 && GETVAR(@"%듀얼리스트%_MZ_魔耐:選択カード") != 0 && GETVAR(@"%듀얼리스트%_MZ_함정耐:選択カード") != 0
 	SETCOLOR C_GOLD
 	RESULTS = 【완전내성】
@@ -2089,7 +2119,7 @@ IF RESULT > 0
 ENDIF
 
 PRINTL
-PRINT 약화효과:
+PRINT 약화효과：
 IF GETVAR(@"%듀얼리스트%_MZ_無効:選択カード") != 0
 	SETCOLOR C_CREAM
 	RESULTS = 【효과무효】
@@ -2862,7 +2892,7 @@ ENDIF
 
 PRINTL
 
-PRINTL 각부내성:
+PRINTL 각부내성：
 IF GETVAR(@"%듀얼리스트%_魔_破耐:選択カード") != 0
 	SETCOLOR C_AQUA_2
 	RESULTS = 【파괴내성】
@@ -2885,7 +2915,7 @@ IF GETVAR(@"%듀얼리스트%_魔_一破:選択カード") != 0
 ENDIF
 
 PRINTL
-PRINTL 약화효과:
+PRINTL 약화효과：
 IF GETVAR(@"%듀얼리스트%_魔_無効:選択カード") != 0
 	SETCOLOR C_CREAM
 	RESULTS = 【효과무효】
@@ -3845,7 +3875,7 @@ FOR カウンタ,0,20
 			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}("名前")
 			カード名前 = %RESULTS%
 			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}("略称")
-			カード略称 = %RESULTS%
+			カード略称 = %RESULTS,16,LEFT%
 			HTML_PRINT @"<button value='{설정_ボタン:実カウンタ}' title='%HTML_ESCAPE(カード名前)%'><font color='#%TOSTR(설정色,"X6")%'> [%HTML_ESCAPE(カード略称), 16, LEFT%]</font></button>",1
 			RESETCOLOR
 		ENDIF

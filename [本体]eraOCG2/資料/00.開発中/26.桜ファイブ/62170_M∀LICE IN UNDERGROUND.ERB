@@ -1,0 +1,129 @@
+﻿@CARDNAME_62170,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = M∀LICE IN UNDERGROUND
+	CASE "略称"
+		RESULTS = UNDERGROUND
+	CASE "カテゴリ"
+		RESULTS:0 = マリス
+ENDSELECT
+
+
+@CARD_62170(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN フィールド
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62170(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 自分フィールドは「UNDERGROUND」となる。
+PRINTL このカード名のカードは１ターンに１枚しか発動できない。
+CALLFORM CARD_ABLE(1,魔罠起動,手札起動)
+PRINTL ①：このカードの発動時の効果処理として、
+PRINTL 自分の手札・デッキ・墓地から「M∀LICE」カード１枚を除外できる。
+CALLFORM CARD_ABLE(2,攻守変動)
+PRINTL ②：自分の除外状態の「M∀LICE」罠カードが３種類以上存在する限り、
+PRINTL 自分フィールドの「M∀LICE」Ｌモンスターの攻撃力は３０００アップする。
+CALLFORM CARD_ABLE(3,永続効果)
+PRINTL ③：自分フィールドに「M∀LICE」Ｌモンスターが存在する限り、
+PRINTL 相手モンスターはＬモンスターしか攻撃対象に選択できない。
+
+@CARDCAN_62170(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 存在判定
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,62170)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF 発動済_1(決闘者,62170)
+		RETURN 0
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 攻守変動
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	効果範囲除外 = 1
+	効果条件種類 = 罠全般
+	効果条件カテゴリ = マリス
+	効果条件固名前起動 = 1;CARDCHECK_ADV専用
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = リンク
+	効果条件カテゴリ = マリス
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_62170(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件達成
+
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	;カード発動＆設置まで
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,62170,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果範囲デッキ = 1
+		効果範囲墓地 = 1
+		効果条件行先フラグ = 除外行き
+		効果条件カテゴリ = マリス
+		効果条件任意 = 1
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 攻守変動
+	CALL FULLRESET
+	効果条件カテゴリ = マリス
+	効果条件種類 = リンク
+	CALL STATCHANGE_BASIC(決闘者,"戦場",場所,3000)
+ELSEIF 種類 == 永続効果
+	CALL SET_FIELD_MAGIC_INFO(決闘者,"UNDERGROUND")
+	CALL FULLRESET
+	効果条件種類 = リンク以外
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"攻避")
+ENDIF

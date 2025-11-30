@@ -83,48 +83,9 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		발동불가:1 = 1
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
 	RETURN 1
-
-ELSEIF 종류 == 발동誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF 발동済_3(듀얼리스트,61530)
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 3
-		RETURN 0
-	CALL FULLRESET
-	효과条件名前 = 싸이크론
-	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
-	SIF RESULT != 1
-		RETURN 0
-	SIF 발동済_1(듀얼리스트,61530)
-		발동불가:0 = 1
-	SIF 발동済_2(듀얼리스트,61530)
-		발동불가:1 = 1
-
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件カテゴリ = 현람
-	효과条件종류 = モン全般
-	CALLFORM 효과条件レベル_ADV(4,"以下")
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		발동불가:0 = 1
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과範囲묘지 = 1
-	효과条件名前 = 싸이크론
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		발동불가:1 = 1
-	RETURN 1
-
-ELSEIF 종류 == 효과後強制誘発
-	SIF ゾーン != "마함"
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
-		RETURN 0
-	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 
 ELSEIF 종류 == 破壊→묘지
 	TRYCALLFORM CARDNAME_{処理中_효과ID}("名前")
@@ -150,7 +111,7 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 
-IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発 || 종류 == 발동誘発
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 종류 == 발동誘発
 		CALL CARD_EFFECT_USE(듀얼리스트,61530,3)
 
@@ -186,7 +147,6 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	IF RESULT == 0
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61530,1)
 		IF RESULT == 0
-			SIF !GROUPMATCH(종류,フリー誘発,발동誘発)
 			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 			CALL FULLRESET
 			효과範囲덱 = 1
@@ -195,11 +155,9 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 			CALLFORM 효과条件レベル_ADV(4,"以下")
 			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
-	
 	ELSEIF RESULT == 1
 		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61530,2)
 		IF RESULT == 0
-			SIF !GROUPMATCH(종류,フリー誘発,발동誘発)
 			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 			CALL FULLRESET
 			효과範囲덱 = 1

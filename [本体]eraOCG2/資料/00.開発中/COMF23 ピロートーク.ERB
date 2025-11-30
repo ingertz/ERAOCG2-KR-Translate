@@ -1,0 +1,150 @@
+﻿;-------------------------------------------------
+;ピロートーク
+;-------------------------------------------------
+
+@COM23
+#DIM 回復前体力
+#DIM 回復前気力
+#DIM 回復後体力
+#DIM 回復後気力
+#DIM 回復前精力
+#DIM 回復後精力
+#DIM DYNAMIC 歓楽強度
+#DIM DYNAMIC 征服強度
+#DIM DYNAMIC 受動強度
+
+
+;会話累積値が閾値を超えると失敗
+IF TCVAR:302
+	PRINTFORML %CALLNAME:TARGET%に話しかけようとしたが言葉が見つからない
+	PRINTW あたりに気まずい空気が流れた…
+	TIME += 10
+	DOWNBASE:気力 += 100
+	DOWNBASE:MASTER:気力 += 100
+	RETURN 1
+ENDIF
+
+;======会話からｺﾋﾟﾍﾟ======
+;固定で獲得するソース
+歓楽強度 = 200
+
+;ABL:親密をみる
+IF ABL:親密 <= 1
+	歓楽強度 += (ABL:従順 * 40)
+ELSEIF ABL:親密 <= 3
+	歓楽強度 += 200 + (ABL:従順 * 40)
+ELSEIF ABL:親密 <= 5
+	歓楽強度 += 500 + (ABL:従順 * 40)
+ELSEIF ABL:親密 <= 8
+	歓楽強度 += 750 + (ABL:従順 * 60)
+ELSEIF ABL:親密 <= 10
+	歓楽強度 += 1000 + (ABL:従順 * 60)
+ELSE
+	歓楽強度 += 1600 + (ABL:従順 * 30)
+ENDIF
+
+;好感度をみる
+IF CFLAG:好感度 <= 1000
+	歓楽強度 += CFLAG:好感度
+ELSEIF CFLAG:好感度 <= 5000
+	歓楽強度 += 500 + (CFLAG:好感度 - 500) / 3
+ELSE
+	歓楽強度 += 2000 + (CFLAG:好感度 - 5000) / 5
+ENDIF
+SIF 歓楽強度 < 0
+	歓楽強度 = 0
+
+
+受動強度 = 100 + 100 * ABL:従順
+征服強度 = 100 + 100 * ABL:サドっ気
+
+;しかし恋慕でないと成功率が下がる
+LOCAL = RAND:(220 - TALENT:恋慕 * 100)
+
+IF LOCAL <= 20
+	;大成功
+	EXP:MASTER:会話経験 ++
+	TFLAG:SELECTCOM分岐 = 1
+ELSEIF LOCAL >= 95
+	;運が悪いと失敗
+	TFLAG:好感度マイナス = 2
+	TFLAG:SELECTCOM分岐 = -1
+ENDIF
+
+IF TFLAG:SELECTCOM分岐 == -1
+	TIMES 歓楽強度 , 0.10
+	TIMES 征服強度 , 0.50
+	TIMES 受動強度 , 0.50
+ELSEIF TFLAG:SELECTCOM分岐 == 0
+	TIMES 歓楽強度 , 1.00
+	TIMES 征服強度 , 1.00
+	TIMES 受動強度 , 1.00
+ELSE
+	TIMES 歓楽強度 , 2.00
+	TIMES 征服強度 , 2.00
+	TIMES 受動強度 , 2.00
+ENDIF
+SELECTCASE ABL:MASTER:話術技能
+	CASE 0
+		TIMES 歓楽強度 , 0.20
+		TIMES 征服強度 , 0.20
+		TIMES 受動強度 , 0.20
+	CASE 1
+		TIMES 歓楽強度 , 0.40
+		TIMES 征服強度 , 0.40
+		TIMES 受動強度 , 0.40
+	CASE 2
+		TIMES 歓楽強度 , 0.70
+		TIMES 征服強度 , 0.70
+		TIMES 受動強度 , 0.70
+	CASE 3
+		TIMES 歓楽強度 , 1.00
+		TIMES 征服強度 , 1.00
+		TIMES 受動強度 , 1.00
+	CASE 4
+		TIMES 歓楽強度 , 1.20
+		TIMES 征服強度 , 1.20
+		TIMES 受動強度 , 1.20
+	CASEELSE
+		TIMES 歓楽強度 , 1.50
+		TIMES 征服強度 , 1.50
+		TIMES 受動強度 , 1.50
+ENDSELECT
+;==================================
+;会話累積値
+TCVAR:会話累積 += 1200 / (10 + ABL:MASTER:話術技能)
+
+CALL SOURCE_CALC_歓楽(TARGET, MASTER, 歓楽強度)
+CALL SOURCE_CALC_受動(TARGET, MASTER, 受動強度)
+CALL SOURCE_CALC_征服(TARGET, MASTER, 征服強度)
+
+CALL RECOVER_PERMIL(MASTER, 50, "体力", 1)
+CALL RECOVER_PERMIL(TARGET, 50, "体力", 1)
+IF TFLAG:SELECTCOM分岐 == 1
+	CALL RECOVER_PERMIL(MASTER, 100, "気力", 1)
+	CALL RECOVER_PERMIL(TARGET, 150, "気力", 1)
+	CALL RECOVER_PERMIL(MASTER, 150, "精力", 1)
+ELSEIF TFLAG:SELECTCOM分岐 == -1
+	CALL RECOVER_PERMIL(MASTER, -100, "気力", 1)
+	CALL RECOVER_PERMIL(TARGET, -100, "気力", 1)
+	CALL RECOVER_PERMIL(MASTER, 50, "精力", 1)
+ELSE
+	CALL RECOVER_PERMIL(MASTER, 100, "気力", 1)
+	CALL RECOVER_PERMIL(TARGET, 100, "気力", 1)
+	CALL RECOVER_PERMIL(MASTER, 100, "精力", 1)
+ENDIF
+
+TIME += 30
+RETURN 1
+
+;-------------------------------------------------
+;実行判定
+;-------------------------------------------------
+@COM_ABLE23
+;愛撫実行判定
+SIF !TFLAG:100
+	RETURN 0
+;一括管理
+SIF GLOBAL_COMABLE(0)
+	RETURN RESULT
+RETURN 1

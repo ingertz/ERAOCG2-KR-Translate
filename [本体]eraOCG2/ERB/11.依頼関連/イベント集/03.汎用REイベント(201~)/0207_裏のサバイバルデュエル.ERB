@@ -311,13 +311,25 @@ IF 依頼_進行보존:207
 			CALL CARD_ADD("자신", "손패", "덱",RAND:5)
 			CALL SHUFFLE("자신")
 			CASE 1
-			PRINTFORMW "듀얼 머신이 패를 두 장 늘려서 시작합니다!"
-			PRINTFORML
-			CALL CARD_GENERATE_HAND("상대",39610)
-			PRINTFORML
-			CALL CARD_GENERATE_HAND("상대",39611)
-			PRINTFORML
-			PRINTFORMW "……덱에서 드로우한다고는 말 안 했는데요?"
+			IF 依頼_進行보존:207 < 30
+				PRINTFORMW "듀얼 머신이 패를 두 장 늘려서 시작합니다!"
+				PRINTFORML
+				CALL CARD_GENERATE_HAND("상대",39610)
+				PRINTFORML
+				CALL CARD_GENERATE_HAND("상대",39611)
+				PRINTFORML
+				PRINTFORMW "……덱에서 드로우한다고는 말 안 했는데요?"
+			ELSE
+				PRINTFORMW "듀얼 머신이 패를 세 장 늘려서 시작합니다!"
+				PRINTFORML
+				CALL CARD_GENERATE_HAND("상대",39610)
+				PRINTFORML
+				CALL CARD_GENERATE_HAND("상대",39611)
+				PRINTFORML
+				CALL CARD_GENERATE_HAND("상대",31100)
+				PRINTFORML
+				PRINTFORMW "……덱에서 드로우한다고는 말 안 했는데요?"
+			ENDIF
 			CASE 2
 			PRINTFORMW "도전자님의 라이프를 절반으로 해서 시작합니다!"
 			CALL LIFE_CHANGE("자신","減少","효과",ライフ_자신 / 2)
@@ -542,6 +554,7 @@ ENDIF
 
 IF 종류 == 永攻紋章起動
 	CALL CARD_EFFECT_PROHIB(듀얼리스트,79685,,1)
+	CALL CARD_EFFECT_PROHIB(듀얼리스트,56550,,1)
 ENDIF
 
 

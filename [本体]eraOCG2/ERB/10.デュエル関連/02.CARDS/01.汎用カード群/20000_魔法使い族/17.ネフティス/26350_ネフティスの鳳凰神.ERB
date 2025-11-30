@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 네프티스의 봉황신
+		RESULTS = 네프티스의 봉황신
 	CASE "略称"
-RESULTS = 봉황신 네프티스
+		RESULTS = 봉황신 네프티스
 	CASE "カテゴリ"
-RESULTS:0 = 네프티스
+		RESULTS:0 = 네프티스
 ENDSELECT
 
 
@@ -67,7 +67,11 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 특수소환時
-	SIF 마함数(듀얼리스트) < 1 && 마함数(対面者) < 1
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -91,7 +95,7 @@ IF 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,26350)
 	IF RESULT == 0
 		SETCOLOR C_RED
-		PRINTW 鳳凰신の業火が필드에 吹き荒れる！
+		PRINTW 봉황신의 업화가 필드에 요동친다！
 		RESETCOLOR
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両마함全体",場所,"묘지")
@@ -104,11 +108,11 @@ ELSEIF 종류 == 破壊→묘지
 	ENDIF
 ELSEIF 종류 == ターン開始時予約
 	IF モンスター数(듀얼리스트) >= 5
-		PRINTW 場がいっぱいなので특수소환できません
+		PRINTW 필드가 가득 찼기에 특수 소환할 수 없습니다
 		RETURN 0
 	ENDIF
 	SETCOLOR C_YELLOW
-PRINTL 봉황신이 재탄한다!
+	PRINTL 봉황신이 재탄한다!
 	RESETCOLOR
 	CALL FULLRESET
 	효과範囲묘지 = 1

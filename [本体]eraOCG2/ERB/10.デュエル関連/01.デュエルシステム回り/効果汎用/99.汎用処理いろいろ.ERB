@@ -2492,7 +2492,6 @@ TRYCALLFORM CARD_{カードID}("종류")
 IF RESULT == 0
 	RESETCOLOR
 ELSEIF 灰色플래그 >= 1
-
 	SETCOLOR C_L_GRAY
 ELSEIF RESULT <= 10
 	IF RESULT == 1
@@ -3510,12 +3509,7 @@ FOR カウンタ,0,캐릭터カウント
 		SIF CFLAG:캐릭터_ID:호감도 + 캐릭터호감도:カウンタ >= 호감도キャップ
 			캐릭터호감도:カウンタ = MAX(캐릭터호감도:カウンタ / 20, 호감도キャップ - CFLAG:캐릭터_ID:호감도, 1)
 	ENDIF
-
-	CFLAG:캐릭터_ID:호감도 += 캐릭터호감도:カウンタ
-	CFLAG:캐릭터_ID:호감도 = LIMIT(CFLAG:캐릭터_ID:호감도, 0, 999999)
-	SETCOLOR C_PINK
-	PRINTFORML %NAME:캐릭터_ID,30,LEFT% 호감도 + {캐릭터호감도:カウンタ}
-	RESETCOLOR
+	CALL EVENT_FAVUP(캐릭터_ID, 캐릭터호감도:カウンタ)
 NEXT
 
 
@@ -4211,6 +4205,8 @@ IF オプション_略표시 == 1
 				CALL XON_FONT("速攻")
 			ELSEIF 표시割 == 펜듈럼
 				CALL XON_FONT("펜듈럼",C_MAGIC_G)
+			ELSEIF 표시類 == 通常마법 || 표시類 == 通常함정
+				CALL XON_FONT("無속성")
 			ELSE
 				CALL XON_FONT("카드")
 			ENDIF
@@ -4233,6 +4229,10 @@ IF オプション_略표시 == 1
 				CALL XON_FONT("엑시즈")
 			ELSEIF 표시類 == 링크
 				CALL XON_FONT("링크")
+			ELSEIF 표시類 == 의식
+				CALL XON_FONT("의식")
+			ELSEIF 표시類 == 초차원
+				CALL XON_FONT("초차원")
 			ELSEIF 표시割 == 펜듈럼
 				CALL XON_FONT("펜듈럼",C_MAGIC_G)
 			ENDIF
@@ -4292,6 +4292,8 @@ ELSE
 				CALL XON_FONT("速攻")
 			ELSEIF 표시割 == 펜듈럼
 				CALL XON_FONT("펜듈럼",C_MAGIC_G)
+			ELSEIF 표시類 == 通常마법 || 표시類 == 通常함정
+				CALL XON_FONT("無속성")
 			ELSE
 				CALL XON_FONT("카드")
 			ENDIF
@@ -4314,6 +4316,10 @@ ELSE
 				CALL XON_FONT("엑시즈")
 			ELSEIF 표시類 == 링크
 				CALL XON_FONT("링크")
+			ELSEIF 표시類 == 의식
+				CALL XON_FONT("의식")
+			ELSEIF 표시類 == 초차원
+				CALL XON_FONT("초차원")
 			ELSEIF 표시割 == 펜듈럼
 				CALL XON_FONT("펜듈럼",C_MAGIC_G)
 			ENDIF
@@ -4371,7 +4377,6 @@ IF 표시可否 == 1
 ;		ELSEIF 표시類 == 通常モン
 ;			CALL XON_FONT("카드")
 ;		ELSEIF 표시類 == 通常モン
-
 ;		ENDIF
 		PRINTFORM /　（공:{표시攻,6}/방:{표시守,6}）
 		IF 参照先 == "필드"

@@ -26,7 +26,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-	
 		RETURN 효과モン
 	CASE "속성"
 		RETURN 땅속성
@@ -50,7 +49,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 CALL TEXT_DECORATION("ROGUE")
-PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL 이 카드명의 ①③의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,손패起動)
 PRINTL ①：이 카드는 패에서 "혹란마" 몬스터 １장 또는 "함정 속으로" 또는 "꿀구멍" 일반 함정 카드 １장을 버리는 것으로도 발동할 수 있다。
 PRINTL 이 카드를 패에서 특수 소환하고, 그 후 덱에서 이 카드 이름 이외의 "혹란마" 몬스터 １장을 묘지로 보낸다。
@@ -59,6 +58,11 @@ SETCOLOR C_PINK
 PRINTL ②：공격 표시인 이 카드가 공격 대상으로 선택되었을 때에 발동할 수 있다。
 PRINTL 공격 몬스터에게 이 카드의 벌레 문양을 새긴다、이 카드는 수비 표시가 된다。
 RESETCOLOR
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：상대 턴에、묘지의 이 카드와 자신 필드 / 묘지의 임의의 수의 "혹란마" 몬스터를 덱으로 되돌리고 발동할 수 있다。
+PRINTL 엑스트라 덱에서 "혹란마" 몬스터 １장을 특수 소환한다。그 후、특수 소환한 몬스터의 종류에 따라 이하의 효과를 적용한다。
+PRINTL ●엑시즈：추가로 덱으로 되돌린 "혹란마" 몬스터의 수 만큼 엑시즈 소재를 얻는다。
+PRINTL ●링크：이 효과로 덱으로 되돌린 "혹란마" 몬스터의 수가 이 카드의 링크 마커의 수보다 적은 경우、이 카드의 효과는 무효화된다。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -122,6 +126,15 @@ ELSEIF 종류 == 攻撃時強制誘発
 	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 2
 		RETURN 0
 	RETURN 1
+
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+    SIF 발동済_3(듀얼리스트,40083)
+    	RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	RETURN 1
 ENDIF
 
 
@@ -135,10 +148,13 @@ ENDIF
 #DIM DYNAMIC 自己守備力修正
 #DIM DYNAMIC 対面選択カード
 #DIM DYNAMIC 対面攻撃力修正
-#DIM DYNAMIC 选择묘지卡片
 #DIM DYNAMIC 조교대상
 #DIM DYNAMIC 성별판정
-
+#DIM DYNAMIC 返횟수量 = 0
+#DIM DYNAMIC 특수召唤卡片
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 效果先
+#DIM DYNAMIC 選択カード종류
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -212,5 +228,62 @@ ELSEIF 종류 == 攻撃時強制誘発
 			PRINTFORML %CALLNAME:조교대상%은 솜털에 닿은 순간、얽혀서 묶여버렸다。
 			RESETCOLOR
 		ENDIF		
+	ENDIF
+
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40083,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+		IF RESULT == 1
+			返횟수量 ++
+
+			$TARPSEX_40083_3
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 혹란마
+			효과条件표시 = 表側표시
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				PRINTFORML 추가로 "혹란마" 몬스터를 덱으로 되돌리시겠습니까? 현재 덱으로 되돌린 수: {返횟수量}
+				PRINTL [1] - ★YEAH!★
+				PRINTL [2] - NO
+				BINPUT
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과範囲묘지 = 1
+					효과条件カテゴリ = 혹란마
+					효과条件行先플래그 = 덱行き
+					효과条件표시 = 表側표시
+					CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+					SIF RESULT == 1
+						返횟수量 ++
+					GOTO TARPSEX_40083_3
+				ENDIF
+			ENDIF
+
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件カテゴリ = 혹란마
+			효과条件종류:0 = 엑시즈
+			효과条件종류:1 = 링크
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			選択カード_ID = RESULT:1
+			效果先 = カード소환先
+			IF 效果先 != 5
+				TRYCALLFORM CARD_{選択カード_ID},"종류"
+				SIF RESULT == 엑시즈
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",效果先,"Ｘ",(返횟수量 - 1))
+				IF RESULT == 링크
+					TRYCALLFORM CARD_{選択カード_ID},"レベル"
+					PRINTFORMW 되돌린 수: {返횟수量}, 링크 수: {RESULT}
+					IF 返횟수量 < RESULT
+						CALL FULLRESET
+						CALL CARD_REMOVAL_BASIC(対面者,"필드単体",效果先,"無効")
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
 	ENDIF
 ENDIF

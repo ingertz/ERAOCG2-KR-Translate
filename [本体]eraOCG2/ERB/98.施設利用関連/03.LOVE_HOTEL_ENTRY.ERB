@@ -7,16 +7,17 @@
 #DIM DYNAMIC 캐릭터동행中
 #DIM DYNAMIC 最終캐릭터
 
-
+;ラブホ内に캐릭터がいるor
 FOR 캐릭터_ID,1,CHARANUM
 	SIF !INRANGE(CFLAG:캐릭터_ID:현재위치,場所_ラブホ内,場所_ラブホ휴식)
 		CONTINUE
 	条件달성 = 1
 	BREAK
 NEXT
+;一時시작위치がラブホである場合、
 SIF CFLAG:MASTER:시작일시위치 == 場所_ラブホ内
 	条件달성 = 1
-
+;部屋に戻ります
 IF 条件달성 == 1
 	CFLAG:MASTER:현재위치 = 場所_ラブホ内
 	PRINTFORML 호텔 방으로 돌아왔다。
@@ -24,18 +25,20 @@ IF 条件달성 == 1
 	RETURN 1
 ENDIF
 
+;部屋に戻らない場合、
 FOR 캐릭터_ID,1,CHARANUM
 	SIF CFLAG:캐릭터_ID:동행 == 0
 		CONTINUE
 	캐릭터동행中 = 1
 	BREAK
 NEXT
-
+;部屋に戻らない場合、むなしくて帰る
 IF 캐릭터동행中 != 1
 	PRINTFORMW 혼자 이용하기에는 너무 허전하다……。
 	PRINTFORML 
 	RETURN 0
 ENDIF
+;お金は必要だぜ？
 IF MONEY < 5800
 	PRINTFORMW 돈이 부족한 것 같다.
 	PRINTFORML 
@@ -53,9 +56,13 @@ SIF RESULT == 1
 	RETURN 0
 CALL MONEY_GET(-5800)
 
+
+CFLAG:MASTER:숙박처 = CFLAG:MASTER:현재위치
 CFLAG:MASTER:현재위치 = 場所_ラブホ内
 CFLAG:MASTER:시작일시위치 = 場所_ラブホ内
+
 CFLAG:MASTER:여행중 = 1
+
 캐릭터동행中 = 0
 FOR 캐릭터_ID,1,CHARANUM
 	SIF CFLAG:캐릭터_ID:동행 == 0

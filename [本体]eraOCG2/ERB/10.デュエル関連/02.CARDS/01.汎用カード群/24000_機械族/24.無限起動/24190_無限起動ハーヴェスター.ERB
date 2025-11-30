@@ -1,0 +1,143 @@
+﻿@CARDNAME_24190,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 무한기동 하비스터
+	CASE "略称"
+		RESULTS = 무한 하비스터
+	CASE "カテゴリ"
+		RESULTS:0 = 무한기동
+ENDSELECT
+
+
+@CARD_24190(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 2100
+	CASE "추가日"
+		RETURN 251120
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_24190(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時 ,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「무한기동 하비스터」以外の「무한기동」モンスター１体を손패に加える。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：このカード以外の자신フィールドの기계족モンスター１体を대상として발동できる。
+PRINTL そのモンスターとこのカードは、ターン終了時までその２体の元々のレベルを合計したレベルになる。
+
+@CARDCAN_24190(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,24190)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,24190)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 무한기동
+	효과条件固名前 = 무한기동 하비스터
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,24190)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 기계족
+	효과条件종류 = レベル持ち
+	효과条件표시 = 表側표시
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_24190(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 合計レベル
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24190,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 무한기동
+		효과条件固名前 = 무한기동 하비스터
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24190,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종족 = 기계족
+		효과条件종류 = レベル持ち
+		효과条件표시 = 表側표시
+		효과条件他所 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			TRYCALLFORM CARD_{RESULT:99},"レベル"
+			合計レベル = RESULT + 2
+			CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"一星",合計レベル,1)
+			CALL SET_FIELD_INFO(듀얼리스트,ゾーン,選択カード,"一星",合計レベル,1)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+

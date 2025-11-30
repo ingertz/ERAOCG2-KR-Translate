@@ -1,0 +1,102 @@
+﻿@CARDNAME_72487,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = パワーカプセル　ブルー
+	CASE "略称"
+		RESULTS = パワーカプセル青
+	CASE "カテゴリ"
+		RESULTS:0 = 時空戦闘機
+	CASE "出典作品"
+		RESULTS:0 = Gradius
+		RESULTS:1 = パワーカプセル
+ENDSELECT
+
+
+@CARD_72487(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 通常魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72487(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(0,魔罠起動,手札起動)
+PRINTL ①：自分フィールドの「超時空戦闘機ビック・バイパー」１体を対象として発動できる。
+PRINTL そのモンスターのレベル＋２以下のコストを持つ、相手フィールドのモンスターを全て破壊する。
+PRINTL (コストはレベル・ランク・リンクを指す)
+PRINTL このターン、自分は「時空戦闘機」モンスターでしか攻撃できない。
+
+@CARDCAN_72487(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,72487)
+SIF RESULT == 1
+	RETURN 0
+
+;汎用処理
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件名前:0 = 超時空戦闘機ビック・バイパー
+	効果条件名前:1 = 超時空戦闘機ビクトリー・バイパー
+	効果条件名前:2 = 超次元戦闘機レジェンド・ビクトリー・バイパー
+	効果条件名前:3 = ビック・バイパー　フルカスタム
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_72487(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択レベル
+
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,72487)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件名前:0 = 超時空戦闘機ビック・バイパー
+		効果条件名前:1 = 超時空戦闘機ビクトリー・バイパー
+		効果条件名前:2 = 超次元戦闘機レジェンド・ビクトリー・バイパー
+		効果条件名前:3 = ビック・バイパー　フルカスタム
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT != 9999
+			選択レベル = GETVAR(@"%決闘者%_MZ_星:RESULT")
+			CALL FULLRESET
+			CALLFORM 効果条件レベル_ADV(選択レベル + 2,"以下")
+			CALL CARD_REMOVAL_BASIC(決闘者,"戦場全体",場所,"墓地")
+			CALL CARD_ATK_RESTRICTION(決闘者,"時空戦闘機")
+		ENDIF
+	ENDIF
+ENDIF

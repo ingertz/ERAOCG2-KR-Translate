@@ -1,0 +1,864 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;愛撫系コマンド
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;==================================================
+;0,愛撫
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_0
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_0_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_0_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「っ……、あ、あんまりベタベタすんな……っ」
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;삽입中
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	;V삽입
+	IF LOCAL:1 && TEQUIP:50 == MASTER
+		;사정した
+		IF NOWEX:MASTER:사정
+			PRINTFORMW 「ふぁ……❤　今カラダ、熱いからぁ……❤」
+			RETURN 1
+		ELSE
+			PRINTFORMW 「やっ……❤　今触られると、耐えられねえ……❤」
+			RETURN 1
+		ENDIF
+	;A삽입
+	ELSEIF LOCAL:1 && TEQUIP:51 == MASTER
+		;사정した
+		IF NOWEX:MASTER:사정
+			PRINTFORMW 「んっ❤　今、やさしくするな……❤　尻、あちい……❤」
+			RETURN 1
+		ELSE
+			PRINTFORMW 「はぁっ……❤　やっ、今、触んなぁ……っ❤」
+			RETURN 1
+		ENDIF
+	ENDIF
+
+	;-------------------------------------------------
+	;ふたなり
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && (TALENT:2 & 3) == 3
+		;書いたけどこれ以外표시されないの寂しいので一旦LOCAL0
+		PRINTFORMW 「やっ❤　カラダ中、おかしくなる……っ❤」
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 2
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 2
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「……%CSTR:TARGET:MASCALL%、手馴れてないか？　こういうの……」
+		CASE 2
+			PRINTFORMW 「そ、それは反則だっ……」
+		CASE 3
+			PRINTFORMW 「……別に、嫌がっては、ねえだろっ」
+		;연모
+		CASE 4
+			PRINTFORMW 「っ❤　%CSTR:TARGET:MASCALL%に触られると、弱くなっちまう……❤」
+		CASE 5
+			PRINTFORMW 「そんなにやさしされたら、わかんなくなる……❤」
+		;親愛
+		CASE 6
+			PRINTFORMW 「ぁっ❤　気持ちよさそうって……❤　当たり前だろ❤」
+		CASE 7
+			PRINTFORMW 「んぅっ❤　やめないでくれ……意地悪❤」
+		;애처
+		CASE 8
+			PRINTFORMW 「ふふ……❤　あとで、お返ししてやるからな……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+;==================================================
+;1,クンニ
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_1
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_1_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_1_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「――は！？　ちょ、どこ舐めて……！」
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;질내사정直後
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		IF TCVAR:질내사정플래그 
+			PRINTFORMW 「なんだ、%CSTR:TARGET:MASCALL%がキレイにしてくれるのか……❤」
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;절정した（この구상の後に절정）
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && NOWEX:0
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「うぅ……変な감각だぁ……」
+		CASE 2
+			PRINTFORMW 「や、やめるなら今の内だぞ……おい、聞けよぉ……」
+		CASE 3
+			PRINTFORMW 「こ、こんなの、おかしいってぇ……」
+		;연모
+		CASE 4
+			PRINTFORMW 「あっ❤　%CSTR:TARGET:MASCALL%にされると、変になっちまう……❤」
+		;親愛
+		CASE 5
+			PRINTFORMW 「はぁんっ❤　もっと、もっと欲しいっ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;2,펠라する
+;紛らわしいがあなたがTARGETに펠라をするのであって、펠라をしてもらうわけではない
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_2
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_2_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_2_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「おわっ！？　な、なにを……！　い、いきなりはやめろ……！」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「っ、ふ……、そ、そりゃ、気持ち、いい、けどよ……」
+		CASE 2
+			PRINTFORMW 「うぅ……、%CSTR:TARGET:MASCALL%、プライドとかないのか……？」
+		CASE 3
+			PRINTFORMW 「……なんか、楽しそうだな、%CSTR:TARGET:MASCALL%……くっ」
+		;연모
+		CASE 4
+			PRINTFORMW 「くぅっ❤　美味そうに、しゃぶりやがって……❤」
+		;親愛
+		CASE 5
+			PRINTFORMW 「はぁっ……❤　あ、あんまり吸い付くな……っ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;3,指삽입れ
+;TEQUIP:(바이브=바이브抜き差し 딜도=딜도抜き差し
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_3
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_3_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_3_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「っ！　う、うぅ……俺、俺は……っ、こんなの、知らない……っ」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「うぁ……、ナカ、擦れるっ……」
+		CASE 2
+			PRINTFORMW 「はぁっ……、なんてこと、すんだよぉ……っ」
+		CASE 3
+			PRINTFORMW 「うぅ……どうしていいか、わかんねえよ……っ」
+		;연모
+		CASE 4
+			PRINTFORMW 「っ❤　やらしい動き、しやがってぇ❤」
+		;親愛
+		CASE 5
+			PRINTFORMW 「やぁっ……❤　ソコ触られると、女の子になっちまう……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;4,애널舐め
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_4
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_4_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_4_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「ひっ！？　ななな、何してんだっ！？　この変態！」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「へ、変な音立ててんじゃねぇよ、バカ……っ」
+		CASE 2
+			PRINTFORMW 「うぅ……やめろって……は、恥ずかしいだろ……っ」
+		CASE 3
+			PRINTFORMW 「ひぁ……っ、こんな、こんなこと……っ」
+		CASE 4
+			PRINTFORMW 「うぁ……❤　変になりそ……❤」
+		CASE 5
+			PRINTFORMW 「んんっ❤　そんな、ダメだ……っ❤　もっと欲しく、なっちまう……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;5,애널愛撫
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_5
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_5_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_5_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「っ！　おい、ソコは入れるところじゃねえって……！」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「おい、優しくしろよ……っ」
+		CASE 2
+			PRINTFORMW 「うぁ……、無茶したら、恨むからな……」
+		CASE 3
+			PRINTFORMW 「うぅ……妙なことばっか、しやがってぇ……」
+		CASE 4
+			PRINTFORMW 「……っ、どれだけ、ソコ弄る気だよぉ……っ❤」
+		CASE 5
+			PRINTFORMW 「っは❤　%CSTR:TARGET:MASCALL%に、カラダのナカまで、おかしくされちまう……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;6,胸愛撫
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_6
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_6_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_6_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「お、おお……？　……楽しいのか……？」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 2
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:성별 == 2
+				PRINTFORMW 「……揉めるところなんて、ないだろ……？」
+			ELSE
+				PRINTFORMW 「あ、あんまり揉むなぁ……っ」
+			ENDIF
+		CASE 2
+			PRINTFORMW 「っ……、か、感じてなんか、ない……っ」
+		CASE 3
+			PRINTFORMW 「っ、なんの意味があんだよ、こんな……っ」
+		;연모
+		CASE 4
+			PRINTFORMW 「ぁっ……❤　やっ、今のは、ちがうっ……❤」
+		CASE 5
+			PRINTFORMW 「うぅ……❤　変な気分になっちまう……❤」
+		;親愛
+		CASE 6
+			PRINTFORMW 「んっ……❤　心臓、どきどきしてんの、バレちまうな……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;7,乳首責め
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_7
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_7_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_7_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「いっ！？　おい、乱暴なのはよせよ……！」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「っ、そんなとこ、抓るなってぇ……！」
+		CASE 2
+			PRINTFORMW 「つっ……！　や、やめろってぇ……！」
+		;연모
+		CASE 3
+			PRINTFORMW 「うぅ……❤　ちくび、おかしくなったら、どうしてくれんだよぉ……❤」
+		;親愛
+		CASE 4
+			PRINTFORMW 「うぁっ……❤　やっ❤　強くされるの、ムリだ……っ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;8,秘貝開帳
+;ABL:노출증(0=涙を浮かべてこちらを睨む 1=顔真っ赤 2=人差し指と中指でサインを作る 3=嬉々とした表情で陰核弄る 4=陰唇だけでなく膣口も 5=ガン開いて誘ってる
+;TALENT:PLYAER:羞恥心 > 0 && EXP:MASTER:조교경험 < 200　(あなたが顔を背ける
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_8
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_8_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_8_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「ぐぅ……恥ずかしいこと、させやがってぇ……屈辱だっ……！」
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;질내出し直後
+	;記入チェック
+	LOCAL:2 = 1
+	;-------------------------------------------------
+	IF LOCAL:2 && TCVAR:질내사정플래그
+		PRINTFORMW 「……見えるか……？　%CSTR:TARGET:MASCALL%が、俺で気持ちよくなった証だぞ……❤」
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;노출증분기。ここを記入した場合、これより下は流れない
+	;記入チェック
+	LOCAL:3 = 0
+	;-------------------------------------------------
+	IF LOCAL:3
+		SELECTCASE ABL:TARGET:노출증
+			CASE 0
+				PRINTFORMW 
+			CASE 1
+				PRINTFORMW 
+			CASE 2
+				PRINTFORMW 
+			CASE 3
+				PRINTFORMW 
+			CASE 4
+				PRINTFORMW 
+			CASEELSE
+				PRINTFORMW 
+		ENDSELECT
+		RETURN 1
+	ENDIF
+
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「……っ、ジロジロ見てんじゃねぇよっ、この大馬鹿野郎……っ！」
+		CASE 2
+			PRINTFORMW 「……%CSTR:TARGET:MASCALL%って、ほんとに……酷いやつだな……っ」
+		;연모
+		CASE 3
+			PRINTFORMW 「み、見られて、濡れてきてるわけ、ないだろ……っ❤」
+		;親愛
+		CASE 4
+			PRINTFORMW 「はぁ……❤　見られてるだけなのに、頭、白くなってくる……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;9,자위
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_9
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_9_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_9_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「자신でしろ、だとぉ……？　ああもう……やりゃあいいんだろっ、やりゃあ！」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「こんな、辱めて、楽しいのか……っ」
+		CASE 2
+			PRINTFORMW 「うぅ……みるな、みるなよぉっ……」
+		CASE 3
+			PRINTFORMW 「くっ……、なにか、したくなって、きたんじゃないか……？」
+		;연모
+		CASE 4
+			PRINTFORMW 「ふっ❤　あんたに、触られてるときの、こと❤　考えて、させてもらうぞ……❤」
+		;親愛
+		CASE 5
+			PRINTFORMW 「あっ❤　見てるだけで、いいのかよ❤　俺、こんなになってるのに……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;10,자위する
+;あなたが자위をする
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_10
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_10_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_10_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「な……！？　見てろってのか……変態……」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「見てるこっちが恥ずかしくなってくる……」
+		CASE 2
+			PRINTFORMW 「黙って見てなきゃいけないのか……？」
+		CASE 3
+			PRINTFORMW 「楽なのはいいが、手持ち無沙汰だなぁ……」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;11,乳首吸い
+;친밀10以上の時、ABL:Ｂ감각(1以下=苦笑しながら頭を撫でる　2-5=快感を堪える　6-9=嬌声をあげる　10以上=全身をよがらせて喘ぐ
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_11
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_11_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_11_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「っ！　な、なに吸ってんだぁ！」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;母乳体質
+	;記入チェック
+	LOCAL:2 = 1
+	;-------------------------------------------------
+	IF LOCAL:2 && MILK_CAN(TARGET) == 1
+		SELECTCASE RAND:호감도修正 + 1
+			CASE 1
+				PRINTFORMW 「うわっ……ほんとに、出てる……」
+			CASE 2
+				PRINTFORMW 「うぁっ……、まったく、好きに飲みやがって……」
+			;연모
+			CASE 3
+				PRINTFORMW 「おいおい、この食いしん坊め❤」
+			;親愛
+			CASE 4
+				PRINTFORMW 「ほーら、%CSTR:TARGET:MASCALL%のためのお乳だぞ……❤」
+		ENDSELECT
+		RETURN 1
+	ENDIF
+
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「そんなとこ吸っても、なにも出ねえぞ……っ」
+		CASE 2
+			PRINTFORMW 「んっ……、い、いきなり吸うなっ」
+		;연모
+		CASE 3
+			PRINTFORMW 「ん－？　随分大きな子どもだなぁ……❤」
+		;親愛
+		CASE 4
+			PRINTFORMW 「おーおー、そんなに吸っても乳は出ねえぞ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;ソフト系コマンド
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+
+;==================================================
+;20,키스する
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_20
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_20_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_20_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;ファースト키스
+		IF EXP:TARGET:Ｍ경험 == 1 && EXP:TARGET:펠라경험 == 0 && CALLNAME:(CFLAG:TARGET:키스상실상대) == CALLNAME:MASTER
+			PRINTFORMW 「っ！？　……い、いきなり、なんてことすんだよ……っ！」
+			SIF TALENT:TARGET:연모 > 0
+				PRINTFORMW 「……今日、%CSTR:TARGET:MASCALL%にされたってこと……忘れないからな……❤」
+		;それ以外
+		ELSE
+			PRINTFORMW 「……なんか、改めて、こういうのって……むず痒いな……」
+		ENDIF
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 5
+	SIF TALENT:TARGET:애처
+		호감도修正 += 1
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 2
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 4
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「へ、平気でいられるわけないだろっ！　こんな、いきなりっ！」
+		CASE 2
+			PRINTFORMW 「照れてないっ！　うるさいっ！」
+		CASE 3
+			PRINTFORMW 「……そんなやり方、ずるい……」
+		CASE 4
+			PRINTFORMW 「……顔、赤くなってるって……？　見間違いだっ」
+		CASE 5
+			PRINTFORMW 「あー、もう……%CSTR:TARGET:MASCALL%の顔、まともに見れねえ……」
+		;연모
+		CASE 6
+			PRINTFORMW 「へへ……❤　今だけは、%CSTR:TARGET:MASCALL%は俺のものだ……❤」
+		CASE 7
+			PRINTFORMW 「……もっと、欲張っても、いいか……❤」
+		CASE 8
+			PRINTFORMW 「はっ……❤　くちびる、きもちい……❤」
+		CASE 9
+			PRINTFORMW 「……これ、心臓に、悪いって……❤」
+		;親愛
+		CASE 10
+			PRINTFORMW 「……%CSTR:TARGET:MASCALL%ばっかり先に……ずるいぞ❤」
+		CASE 11
+			PRINTFORMW 「……%CSTR:TARGET:MASCALL%って、ほんとに俺のこと、好きなんだな……❤」
+		;애처
+		CASE 12
+			PRINTFORMW 「……なあ、もっと、しようぜ……❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;21,何もしない
+;==================================================
+@M_KOJO_MESSAGE_COM_K2620_21
+;CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2620_21_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2620_21_1
+#DIM DYNAMIC 욕망修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+	;基本セット
+	욕망修正 = 2
+	SIF ABL:TARGET:욕망 >= 9
+		욕망修正 += 1
+	SIF ABL:TARGET:욕망 >= 6
+		욕망修正 += 1
+	SIF ABL:TARGET:욕망 >= 3
+		욕망修正 += 1
+	SELECTCASE RAND:욕망修正 + 1
+		CASE 1
+			PRINTFORMW 「休憩は大事だからな……特に、%CSTR:TARGET:MASCALL%とするようなことは」
+		CASE 2
+			PRINTFORMW 「休むんなら、しっかり休んだ方がいいんじゃないか？」
+		;욕망３以上
+		CASE 3
+			PRINTFORMW 「……なんだ？　もう飽きたのか……？　……別に、期待してるわけじゃない」
+		;욕망６以上
+		CASE 4
+			PRINTFORMW 「……触れて、くれないのか……？」
+		;욕망９以上
+		CASE 5
+			PRINTFORMW 「……%CSTR:TARGET:MASCALL%ってやつは、意地が悪いよなぁ……❤」
+	ENDSELECT
+ENDIF
+RETURN 1

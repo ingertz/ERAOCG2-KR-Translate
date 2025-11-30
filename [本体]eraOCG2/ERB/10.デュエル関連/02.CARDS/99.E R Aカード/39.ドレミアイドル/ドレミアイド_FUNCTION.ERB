@@ -7,7 +7,6 @@
 #DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC 조교대상
 #DIM DYNAMIC 場所
-#DIM DYNAMIC 종류
 #DIM DYNAMIC 実行役대상
 #DIMS DYNAMIC 実行役대상名
 #DIMS DYNAMIC 설정최애
@@ -23,7 +22,6 @@ IF RESULT != -1
 	実行役대상 = RESULT
 	実行役대상名 = %CALLNAME:実行役대상%
 ELSE
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:実行役대상")}("名前")
 	実行役대상名 = 프로듀서
 ENDIF
 
@@ -549,25 +547,19 @@ RETURN 進程
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者 
 #DIM DYNAMIC 場所
-#DIM DYNAMIC 実行役대상場所
 #DIM DYNAMIC 조교대상
-#DIM DYNAMIC 実行役대상
 #DIMS DYNAMIC 実行役대상名
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-SIF 듀얼리스트 != "자신"
-	RETURN 0
-
 CALL CARD_EROTICS(現在プレイヤー,듀얼리스트)
 IF RESULT != -1
-	実行役대상 = RESULT
 	実行役대상名 = %CALLNAME:実行役대상%
 ELSE
-	TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:実行役대상場所")}("名前")
 	実行役대상名 = 프로듀서
 ENDIF
+
 
 PRINTFORMW %CALLNAME:조교대상%가 노래에 매료된 팬과 만나버렸다!
 PRINTFORML 팬은 욕망에 사로잡혀, 욕망이 이끄는 대로 %CALLNAME:조교대상%를 습격했다!

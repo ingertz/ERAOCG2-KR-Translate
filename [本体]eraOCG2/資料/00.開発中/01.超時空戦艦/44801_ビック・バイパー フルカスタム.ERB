@@ -1,0 +1,164 @@
+@CARDNAME_44801,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ビック・バイパー　フルカスタム
+	CASE "略称"
+		RESULTS = VIC VIPER FullCt
+	CASE "カテゴリ"
+		RESULTS:0 = 時空戦闘機
+	CASE "出典作品"
+		RESULTS:0 = Gradius
+ENDSELECT
+
+
+@CARD_44801(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 機械族
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 3200
+	CASE "守備力"
+		RETURN 800
+	CASE "連動ID"
+		RETURN 8001
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_44801(種類)
+#DIM DYNAMIC 種類
+
+PRINTL レベル４の「時空戦闘機」モンスター＋「オプション」または「バリアー」×２
+PRINTL このカードは自分フィールドの上記モンスターを素材としてコンタクト融合できる。
+PRINTL このカードはフィールドに存在する限り、「超時空戦闘機ビック・バイパー」としても扱う。
+PRINTL このカード名の②の効果は１ターン１度しか使用できない。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ①：このカードは破壊耐性と貫通能力を持つ。
+CALLFORM CARD_ABLE(1,攻撃後誘発)
+PRINTL ②：このカードが戦闘で相手モンスターを破壊した場合に発動できる。
+PRINTL デッキ外から「オプション」を可能な限り特殊召喚する。
+
+
+@CARDSUMMON_44801(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件レベル = 4
+	素材条件カテゴリ = 時空戦闘機
+ELSEIF EX参照 >= 10
+	素材条件名前:0 = オプション
+	素材条件名前:1 = バリアー
+ENDIF
+IF EX参照 == 1
+	CALL FUSCAN(決闘者,召喚カード,44801) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_44801(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,44801)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_EX_CHECK(決闘者,44801)
+	SIF RESULT == 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲戦場 = 1
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件固定 = 場所
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 攻撃後誘発
+	SIF 発動済_1(決闘者,44801)
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_戦闘カード") != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(決闘者,1) == 0
+		RETURN 0
+	SIF モンスター数(決闘者) >= 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_44801(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 素材数
+#DIM DYNAMIC 選択カード
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,44801)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲戦場 = 1
+		CALL FULLRESET
+		TRYCALLFORM CARDSUMMON_44801(決闘者,場所)
+		CALL FUSSUMMON(決闘者,場所,デッキ行き)
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"破耐")
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"貫通")
+ELSEIF 種類 == 攻撃後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,44801,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_GENERATE(決闘者,24800,"",0,4)
+	ENDIF
+ENDIF
+

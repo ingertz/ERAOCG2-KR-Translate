@@ -1,0 +1,151 @@
+﻿@CARDNAME_2177,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = M∀LICE＜P＞March Hare
+	CASE "略称"
+		RESULTS = March Hare
+	CASE "カテゴリ"
+		RESULTS:0 = マリス
+ENDSELECT
+
+
+@CARD_2177(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN サイバース族
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 600
+	CASE "守備力"
+		RETURN 300
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2177(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動,墓地起動,フリー誘発)
+PRINTL ①：このカードが手札に存在する場合、自分・相手のメインフェイズに発動できる。
+PRINTL 自分の手札・墓地からこのカード以外の「M∀LICE」カード１枚を除外し、このカードを特殊召喚する。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ②：自分フィールドに存在する「M∀LICE」Ｌモンスターを相手は効果の対象にできない。
+CALLFORM CARD_ABLE(3,除外時)
+PRINTL ③：このカードが除外された場合、３００ＬＰを払って発動できる。
+PRINTL 自分の除外状態の「M∀LICE」モンスター１体を手札に加える。
+
+
+
+@CARDSUMMON_AA_2177
+
+
+@CARDCAN_2177(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2177)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動 ||  種類 == フリー誘発
+	SIF 発動済_1(決闘者,2177)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"手札")
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,2177,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果範囲墓地 = 1
+	効果条件カテゴリ = マリス
+	効果条件他所 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 除外時
+	SIF 発動済_3(決闘者,2177)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%決闘者%") <= 300
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2177(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+
+IF 種類 == 手札起動 ||  種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2177,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果範囲墓地 = 1
+		効果条件カテゴリ = マリス
+		効果条件他所 = 1
+		効果条件行先フラグ = 除外行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL FULLRESET
+	効果条件種類 = リンク
+	効果条件カテゴリ = マリス
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"対耐")
+ELSEIF 種類 == 除外時
+	CALL CARD_CHOICE(決闘者,種類,"除外",場所,2177,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",300)
+		CALL FULLRESET
+		効果範囲除外 = 1
+		効果条件カテゴリ = マリス
+		効果条件種類 = モン全般
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+
+	ENDIF
+ENDIF
+

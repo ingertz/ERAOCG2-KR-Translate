@@ -112,11 +112,13 @@ PRINTFORM [8888] - 설정모드
 IF 選択モード == 0
 	PRINTFORM 「매번선택」
 ELSEIF 選択モード == 1
-	PRINTFORM 「조금보충」　（20 Box）
+	PRINTFORM 「조금보충」　（100 팩）
 ELSEIF 選択モード == 2
-	PRINTFORM 「충분히 보충」（50 Box）
+	PRINTFORM 「충분히 보충」（300 팩）
 ELSEIF 選択モード == 3
-	PRINTFORM 「많이 보충」（100 Box）
+	PRINTFORM 「많이 보충」（1000 팩）
+ELSEIF 選択モード == 4
+	PRINTFORM 「한계까지 보충」（3000 팩）
 ENDIF
 
 
@@ -136,20 +138,23 @@ ELSEIF RESULT == 7777
 	PRINTFORML 보충할 수를 선택해주세요（제２/제４ 일요일에 보충） 
 	CUSTOMDRAWLINE ―
 	PRINTFORML 
-	PRINTFORML [1] - 조금 보충　（ 20박스까지 보충）
-	PRINTFORML [2] - 충분히 보충（ 50박스까지 보충）
-	PRINTFORML [3] - 많이 보충（100박스까지 보충）
+	PRINTFORML [1] - 조금 보충　（ 100팩까지 보충）
+	PRINTFORML [2] - 충분히 보충（ 300팩까지 보충）
+	PRINTFORML [3] - 많이 보충（1000팩까지 보충）
+	PRINTFORML [4] - 한계까지 보충（3000팩까지 보충）
 	PRINTFORML 
 	PRINTFORML [9999] - 돌아간다
 	BINPUT
 	IF RESULT == 9999
 		GOTO PACK_LOOP
 	ELSEIF RESULT == 1
-		설정BOX数 = 20
-	ELSEIF RESULT == 2
-		설정BOX数 = 50
-	ELSEIF RESULT == 3
 		설정BOX数 = 100
+	ELSEIF RESULT == 2
+		설정BOX数 = 300
+	ELSEIF RESULT == 3
+		설정BOX数 = 1000
+	ELSEIF RESULT == 4
+		설정BOX数 = 3000
 	ENDIF
 	VARSET カウンタB
 	FOR カウンタ,0,1000
@@ -163,7 +168,7 @@ ELSEIF RESULT == 7777
 	NEXT
 	FOR カウンタ,0,カウンタB
 		パック_ID = パックセット:カウンタ
-		補充BOX数:カウンタ = 설정BOX数
+		補充BOX数:パック_ID = 설정BOX数
 	NEXT
 
 	GOTO PACK_LOOP
@@ -180,25 +185,30 @@ ELSEIF INRANGE(RESULT,0,1000)
 			PRINTFORML 보충할 수를 선택해주세요（제２/제４ 일요일에 보충） 
 			CUSTOMDRAWLINE ―
 			PRINTFORML 
-			PRINTFORML [1] - 조금 보충　（ 20박스까지 보충）
-			PRINTFORML [2] - 충분히 보충（ 50박스까지 보충）
-			PRINTFORML [3] - 많이 보충（100박스까지 보충）
+			PRINTFORML [1] - 조금 보충　（ 100팩까지 보충）
+			PRINTFORML [2] - 충분히 보충（ 300팩까지 보충）
+			PRINTFORML [3] - 많이 보충（1000팩까지 보충）
+			PRINTFORML [4] - 한계까지 보충（3000팩까지 보충）
 			PRINTFORML 
 			PRINTFORML [9999] - 돌아간다
 			BINPUT
 			IF RESULT == 1
-				補充BOX数:選択パック_ID = 20
-			ELSEIF RESULT == 2
-				補充BOX数:選択パック_ID = 50
-			ELSEIF RESULT == 3
 				補充BOX数:選択パック_ID = 100
+			ELSEIF RESULT == 2
+				補充BOX数:選択パック_ID = 300
+			ELSEIF RESULT == 3
+				補充BOX数:選択パック_ID = 1000
+			ELSEIF RESULT == 4
+				補充BOX数:選択パック_ID = 3000
 			ENDIF
 		CASE 1
-			補充BOX数:選択パック_ID = 20
-		CASE 2
-			補充BOX数:選択パック_ID = 50
-		CASE 3
 			補充BOX数:選択パック_ID = 100
+		CASE 2
+			補充BOX数:選択パック_ID = 300
+		CASE 3
+			補充BOX数:選択パック_ID = 1000
+		CASE 4
+			補充BOX数:選択パック_ID = 3000
 	ENDSELECT
 	GOTO PACK_LOOP
 ENDIF
@@ -408,6 +418,7 @@ ENDIF
 #DIM DYNAMIC 売却変動値
 #DIM DYNAMIC パック_ID
 #DIM DYNAMIC 実売却数
+#DIM DYNAMIC 合計売却数
 #DIM DYNAMIC 売却金額
 #DIM DYNAMIC シングル価格
 #DIM DYNAMIC 설정可能カード,100000
@@ -438,12 +449,14 @@ ENDIF
 IF ショップ運営中 == 1
 	CUSTOMDRAWLINE ―
 	PRINTFORML ■샵 운영
+	PRINTFORML 판매 팩 수	
 	CUSTOMDRAWLINE ―
 
+	来客者数 = 来客者数 + RAND:10
 	FOR パック_ID,0,1000
 		SIF 残BOX数:パック_ID <= 0
 			CONTINUE
-		売却変動値 = 来客者数 + RAND:10
+		売却変動値 = 来客者数 * RAND:10
 		IF MATCH(売れ筋パック,パック_ID)
 			売却変動値 = 売却変動値 * 2
 		ENDIF
@@ -451,11 +464,12 @@ IF ショップ運営中 == 1
 			CONTINUE
 
 		実売却数 = RAND:売却変動値
-		SIF 実売却数 <= 残BOX数:パック_ID
+		SIF 実売却数 > 残BOX数:パック_ID
 			実売却数 = 残BOX数:パック_ID
 
 		残BOX数:パック_ID -= 実売却数
-		売却金額 += 実売却数 * 150
+		売却金額 += 実売却数 * 15
+		合計売却数 += 実売却数
 
 		SIF 残BOX数:パック_ID <= 0
 			残BOX数:パック_ID = 0
@@ -509,6 +523,7 @@ FOR カウンタ,0,30
 	ENDIF
 NEXT
 	IF DAY:3 == 15 || DAY:3 == 29
+	;IF DAY:3 >= 1
 		CUSTOMDRAWLINE ―
 		PRINTFORML 팩 입하：
 		FOR パック_ID,0,1000
@@ -516,11 +531,11 @@ NEXT
 			SIF 購入BOX数 <= 0
 				CONTINUE
 			
-			支払予定金額 += 購入BOX数 * 100
+			支払予定金額 += 購入BOX数 * 10
 			IF MONEY < 支払予定金額
 				BREAK
 			ENDIF
-			支払金額 += 購入BOX数 * 100
+			支払金額 += 購入BOX数 * 10
 			残BOX数:パック_ID = 補充BOX数:パック_ID
 		NEXT
 	ENDIF

@@ -1,0 +1,100 @@
+﻿@CARDNAME_72488,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = パワーカプセル　レッド
+	CASE "略称"
+		RESULTS = パワーカプセル赤
+	CASE "カテゴリ"
+		RESULTS:0 = 時空戦闘機
+	CASE "出典作品"
+		RESULTS:0 = Gradius
+		RESULTS:1 = パワーカプセル
+ENDSELECT
+
+
+@CARD_72488(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 通常魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72488(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名のカードは１ターンに１枚しか発動できない。
+CALLFORM CARD_ABLE(1,手札起動,魔罠起動)
+PRINTL ①：デッキから「超時空戦闘機ビック・バイパー」１体と「時空戦闘機」カード１枚を手札に加える。
+PRINTL 
+PRINTL 
+PRINTL 
+
+@CARDCAN_72488(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,72488)
+SIF RESULT == 1
+	RETURN 0
+
+;汎用処理
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF 発動済_1(決闘者,72488)
+		RETURN 0
+	CALL CARD_CONT_M(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件名前 = 超時空戦闘機ビック・バイパー
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = 時空戦闘機
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_72488(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択レベル
+
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,72488,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果条件名前 = 超時空戦闘機ビック・バイパー
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+		CALL FULLRESET
+		効果条件カテゴリ = 時空戦闘機
+		CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+	ENDIF
+ENDIF

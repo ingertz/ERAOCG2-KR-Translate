@@ -1,0 +1,106 @@
+﻿@CARDNAME_35352,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 피시보그 플랜터
+	CASE "略称"
+		RESULTS = FB－플랜터
+	CASE "カテゴリ"
+		RESULTS:0 = 피시보그
+ENDSELECT
+
+@CARD_35352(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 200
+	CASE "守備力"
+		RETURN 200
+	CASE "추가日"
+		RETURN 251127
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35352(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,묘지起動)
+PRINTL ①：자신メインフェイズに발동できる。덱の一番上のカードを묘지へ送る。
+PRINTL そのカードが물속성モンスターだった場合、このカードを묘지から특수소환する。
+PRINTL 違った場合、묘지のこのカードを덱に戻す。
+
+
+@CARDCAN_35352(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35352)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,35352)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,35352,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35352(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+
+IF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35352,1)
+	IF RESULT == 0
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_덱:0")}("속성")
+		SIF MATCH(RESULT,물속성)
+			条件달성 ++
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",1)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 피시보그 플랜터
+		SIF 条件달성 != 0
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF 条件달성 == 0
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+

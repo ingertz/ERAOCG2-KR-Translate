@@ -1,0 +1,148 @@
+﻿@CARDNAME_31338,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 볼캐닉 데블
+	CASE "略称"
+		RESULTS = V 데블
+	CASE "カテゴリ"
+		RESULTS:0 = 볼캐닉
+ENDSELECT
+
+
+@CARD_31338(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 1800
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31338(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+;손패SS
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신の마법＆함정ゾーンに「브레이즈 캐논」カードが存在する場合발동できる。
+PRINTL 자신フィールドの「브레이즈 캐논」カード１枚を묘지に送り、このカードを손패から특수소환する。
+;攻撃強制
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：상대バトルフェイズ中、攻撃可能な상대の攻撃표시モンスターはこのカードを攻撃しなければならない。
+;破壊時バーン
+CALLFORM CARD_ABLE(0,攻撃後強制誘発)
+PRINTL ③：このカードが戦闘でモンスターを破壊した場合に발동する。
+PRINTL 상대フィールドのモンスターを全て破壊し、破壊した数×５００ダメージを상대に与える。
+
+
+
+@CARDCAN_31338(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31338)
+SIF RESULT == 1
+	RETURN 0
+;손패SS
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,31338)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,31338,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 브레이즈 캐논
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;バトル強制
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+;破壊時バーン
+ELSEIF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	;破壊するモンスターがいなければ無用
+	SIF モンスター数(対面者) == 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31338(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;손패SS
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31338,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 브레이즈 캐논
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+		ENDIF
+	ENDIF
+;バトル強制
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"戦狂")
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"直無")
+	CALL FULLRESET
+	효과条件固名前 = 볼캐닉 데블
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"攻避")
+;破壊時バーン
+ELSEIF 종류 == 攻撃後強制誘発
+	CALL FULLRESET
+	효과추가종류 = 3
+	CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지",500)
+ENDIF
+

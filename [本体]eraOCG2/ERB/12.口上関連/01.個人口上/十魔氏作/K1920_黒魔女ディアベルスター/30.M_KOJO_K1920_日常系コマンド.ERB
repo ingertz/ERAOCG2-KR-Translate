@@ -35,31 +35,49 @@ IF LOCAL
 		호감도修正 += 2
 	SIF TALENT:TARGET:연모 == 1
 		호감도修正 += 1
-	SELECTCASE RAND:호감도修正 + 1
-		CASE 1 && TIME <= 360 && TIME >= 1080
-PRINTFORMW 「아직 안 자고 있었어…… 너무 무리하지 마.」
-		CASE 2
-PRINTFORML 디아벨스타가 단검을 손질하고 있다…
-PRINTFORMW 죄보들이 %CALLNAME:MASTER%를 알아차리고 반응해 주었지만, 가만히 두었다.
-		CASE 3
-PRINTFORML 디아벨스타가 죄보 중 한 명에게 네일 케어를 받고 있다.
-PRINTFORMW 「얘가 이런 걸 좋아하는 거야……」
-		CASE 4
-PRINTFORML 어딘가에서 가져온 기구로 근력 운동을 하는 디아벨스타를 바라보고 있자니,
-PRINTFORMW 죄보들에게 근력 운동을 멈추라고 재촉받았다…
-		CASE 5
-PRINTFORML 「이 종이 팻말이 나를 부르는 도구인가.
-PRINTFORML 　…의외로, 이것도 내가 찾던 것 중 하나였을지도 모르겠군?」
-PRINTFORMW 『듀얼 몬스터즈』의 오컬트 소문이 많지만… 실제로는 어떨까?
-		CASE 6 && TALENT:연모
-PRINTFORML 「의외로 화려해? 아아… 이거 말인가.」
-PRINTFORML 　화제에 오르자, 디아벨스타는 수선 중이던 의상을 다시 바라본다.
-PRINTFORMW 「여러 가지가 섞여 있어서 이렇게 된 건데…… 뭐야, 이런 걸 좋아하는 거야?」
-		CASE 7 && TALENT:연모
-PRINTFORML 「어이, 뭔가 재밌는 얘기는 없어?
-PRINTFORML 　…애인님이시라면, 정보 수집 정도는 도와줘.」
-PRINTFORMW 거친 말투지만, 디아벨스타 나름대로 의지하고 있는 것 같다…
-	ENDSELECT
+	;우후후中の会話
+	IF CFLAG:TARGET:우후후
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「はあ……❤　はぁ……❤❤　なんだよ%CSTR:TARGET:MASCALL%……❤」
+			CASE 2
+				PRINTFORMW 「ふふっ……❤　んだよ？❤　ふふっ……❤　こんな時に何言ってんだ……❤」
+			CASE 3
+				PRINTFORMW 「ふう……❤　んあっ……❤　ああっ……❤　悪いな……❤　今はちょっと話に集中できそうにねぇ……❤❤」
+		ENDSELECT
+	;日常会話
+	ELSE
+		SELECTCASE TFLAG:SELECTCOM분기
+			CASE -1,-2
+				PRINTFORMW 「ァン？　ああ、悪いな　あまり聞いていなかった」
+			CASEELSE
+				SELECTCASE RAND:호감도修正 + 1
+					CASE 1 && TIME <= 360 && TIME >= 1080
+						PRINTFORMW 「아직 안 자고 있었어…… 너무 무리하지 마.」
+					CASE 2
+						PRINTFORML 디아벨스타가 단검을 손질하고 있다…
+						PRINTFORMW 죄보들이 %CALLNAME:MASTER%를 알아차리고 반응해 주었지만, 가만히 두었다.
+					CASE 3
+						PRINTFORML 디아벨스타가 죄보 중 한 명에게 네일 케어를 받고 있다.
+						PRINTFORMW 「얘가 이런 걸 좋아하는 거야……」
+					CASE 4
+						PRINTFORML 어딘가에서 가져온 기구로 근력 운동을 하는 디아벨스타를 바라보고 있자니,
+						PRINTFORMW 죄보들에게 근력 운동을 멈추라고 재촉받았다…
+					CASE 5
+						PRINTFORML 「이 종이 팻말이 나를 부르는 도구인가.
+						PRINTFORML 　…의외로, 이것도 내가 찾던 것 중 하나였을지도 모르겠군?」
+						PRINTFORMW 『듀얼 몬스터즈』의 오컬트 소문이 많지만… 실제로는 어떨까?
+					CASE 6 && TALENT:연모
+						PRINTFORML 「의외로 화려해? 아아… 이거 말인가.」
+						PRINTFORML 　화제에 오르자, 디아벨스타는 수선 중이던 의상을 다시 바라본다.
+						PRINTFORMW 「여러 가지가 섞여 있어서 이렇게 된 건데…… 뭐야, 이런 걸 좋아하는 거야?」
+					CASE 7 && TALENT:연모
+						PRINTFORML 「어이, 뭔가 재밌는 얘기는 없어?
+						PRINTFORML 　…애인님이시라면, 정보 수집 정도는 도와줘.」
+						PRINTFORMW 거친 말투지만, 디아벨스타 나름대로 의지하고 있는 것 같다…
+			ENDSELECT
+		ENDSELECT
+	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
@@ -109,28 +127,76 @@ CALL M_KOJO_MESSAGE_COM_K1920_302_1
 RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K1920_302_1
+#DIM DYNAMIC 호감도修正
 ;-------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	SELECTCASE TFLAG:SELECTCOM분기 
+	IF BATHROOM(CFLAG:MASTER:현재위치)
+		SELECTCASE TFLAG:SELECTCOM분기 
+			CASE 1
+				PRINTFORMW 「ふーっ……❤　ありがとよ%CSTR:TARGET:MASCALL%……❤　んで？　次は%CSTR:TARGET:SELFCALL%の番って所か　貸しは返さないとな……」
+			CASE 0
+				PRINTFORMW 「一応……礼は言っておく」
+			CASE -1
+				PRINTFORMW 「なんだ？　その触り方は？　……覚悟はできているんだろうなぁ？」
+		ENDSELECT
+	ELSE
+		호감도修正 = 1
+		SIF TALENT:TARGET:애처
+			호감도修正 += 2	
+		SIF TALENT:TARGET:연모 == 2
+			호감도修正 += 2
+		SIF TALENT:TARGET:연모 == 1
+			호감도修正 += 1
+		SELECTCASE TFLAG:SELECTCOM분기
 		CASE 1
-PRINTFORML 디아벨스타가 전혀 어울려 주지 않는 건지,
-PRINTFORML 심심해하던 죄보들에게 손톱 손질을 받았다.
-PRINTFORML 카드를 다루는 관계상, 손끝이 깨끗한 것은 좋은 일이지만…
-PRINTFORML 「뭐야, 너도 멋대로 당한 건가…?」
-PRINTFORMW 디아벨스타에게 동료 의식을 갖게 된 것이 가장 큰 수확일지도 모른다.
-		CASE -1
-PRINTFORML 디아벨스타가 어울려 주지 않아,
-PRINTFORML 마찬가지로 심심해 보이는 죄보들과 바람 배놀이를 했다.
-PRINTFORMW ……그냥 즐거웠다!
+			SELECTCASE 호감도修正 + 1
+			CASE 1
+				PRINTFORML 디아벨스타가 전혀 어울려 주지 않는 건지,
+				PRINTFORML 심심해하던 죄보들에게 손톱 손질을 받았다.
+				PRINTFORML 카드를 다루는 관계상, 손끝이 깨끗한 것은 좋은 일이지만…
+				PRINTFORML 「뭐야, 너도 멋대로 당한 건가…?」
+				PRINTFORMW 디아벨스타에게 동료 의식을 갖게 된 것이 가장 큰 수확일지도 모른다.
+			CASE 2
+				PRINTFORML 「ァン？　なんだよ？　急に手なんか絡めてきやがって……」
+				PRINTFORML ディアベルスターの手を握ると、そっと握り返してくれた。
+				PRINTFORML 「……お前の手は温かいな　ふっ……❤　こんなことで幸福を覚えるなんておかしな話だが……❤」
+				PRINTFORML ディアベルスターは苦笑いを浮かべながらもなんだか嬉しそうにしている。
+				PRINTFORML そのまま二人でしばらくの間、手を握り合って過ごした。
+			CASE 3
+				PRINTFORML 「先に謝っておく……こいつら、こうなると長いんだよ　ったく、ネイルなんて何の役に立つんだか……❤」
+				PRINTFORML ディアベスターと一緒に、罪宝たちに爪のお手入れをされた。
+				PRINTFORML 愚痴を零しながらも、ディアベルスターはなんだか楽しそうだ。
+				PRINTFORML 「ァン？　何寄ってきてんだ？　まあいいがな……❤❤　はっ❤　しばらくこのままいるか……❤」
+				PRINTFORMW しばらくの間、ディアベルスターと身を寄せ合いながら罪宝たちの好きなようにされた。
+			CASE 4
+				PRINTFORML 「ン？　どうしたんだ？　もたれかかってきて……疲れているのかよ？」
+				PRINTFORML ディアベルスターにそっと身を寄せると、少し心配そうな言葉が返ってきた。
+				PRINTFORML 「……%CSTR:TARGET:SELFCALL%の膝でも使うか？❤　それ程いいものではないかもしれないが、少なくともこうしているよりはマシだろ？❤」
+				PRINTFORML %CALLNAME:MASTER%が疲れている訳ではないと答えると、ディアベルスターからは「そうか」という短い言葉が返ってきた。
+				PRINTFORMW そのまま二人でしばらくの間ゆっくりとした。
+			ENDSELECT
 		CASE 0
-PRINTFORML 디아벨스타가 어울려 주지 않아,
-PRINTFORML 마찬가지로 심심해 보이는 죄보들과 바바누키를 하며 놀았다.
-PRINTFORML 도중에 「나도 끼워줘」라고 말하며 참여했기에,
-PRINTFORMW 배척당하는 것은 그건 그거대로 불쾌하다…
-	ENDSELECT
+			SELECTCASE 호감도修正 + 1
+			CASE 1
+				PRINTFORML 디아벨스타가 어울려 주지 않아,
+				PRINTFORML 마찬가지로 심심해 보이는 죄보들과 바바누키를 하며 놀았다.
+				PRINTFORML 도중에 「나도 끼워줘」라고 말하며 참여했기에,
+				PRINTFORMW 배척당하는 것은 그건 그거대로 불쾌하다…
+			CASEELSE
+				PRINTFORML 「ァン？　なんだよ？　まあ別にいいがな……こういうのも悪くは、ない」
+				PRINTFORML ディアベルスターは満更でもなさそうだ。
+				PRINTFORML それを喜んでいるのか罪宝たちは元気にうごめている。
+				PRINTFORMW しばらくの間、ディアベルスターと罪宝達と身を寄せ合いながらまったりした。
+			ENDSELECT
+		CASE -1
+			PRINTFORML 디아벨스타가 어울려 주지 않아,
+			PRINTFORML 마찬가지로 심심해 보이는 죄보들과 바람 배놀이를 했다.
+			PRINTFORMW ……그냥 즐거웠다!
+		ENDSELECT
+	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
@@ -155,9 +221,17 @@ LOCAL = 1
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기 
 		CASE 0,1,2
-PRINTFORMW 「……다음에 또 그러면 죽여버릴 거니까.」
+			IF TALENT:MASTER:연령 <= -2
+				PRINTFORMW 「……다음에 또 그러면 꿀밤이다？」
+			ELSE
+				PRINTFORMW 「……다음에 또 그러면 죽여버릴 거니까.」
+			ENDIF
 		CASEELSE
-PRINTFORMW 아직 용서할 마음이 없는지, 말없이 살기를 내뿜었다…
+			IF TALENT:MASTER:연령 <= -2
+				PRINTFORMW 아직 용서할 마음이 없는지, 말없이 노려본다…
+			ELSE
+				PRINTFORMW 아직 용서할 마음이 없는지, 말없이 살기를 내뿜었다…
+			ENDIF
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -209,10 +283,15 @@ LOCAL = 1
 IF LOCAL
 	SELECTCASE ABL:친밀
 	CASE IS >= 6
-PRINTFORML 「…쟤도 이런 기분이었을까.」
-PRINTFORMW 디아벨스타가 그런 말을 중얼거렸다…
+		PRINTFORML 「…쟤도 이런 기분이었을까.」
+		PRINTFORMW 디아벨스타가 그런 말을 중얼거렸다…
+		IF CFLAG:TARGET:현재위치 == CFLAG:(CFLAG:TARGET:1001):현재위치
+			PRINTFORML するとディアベルゼがこちらに寄ってきてにやにやし始めた･･･
+			PRINTFORML 「……お前のことじゃねぇ」
+			PRINTFORMW ディアベルスターは不服そうだ･･･
+		ENDIF
 	CASEELSE
-PRINTFORMW 「……만족해?」
+		PRINTFORMW 「……만족해?」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -233,11 +312,11 @@ LOCAL = 0
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기 
 		CASE 0
-					PRINTFORMW 
+			PRINTFORMW 「……っ❤　腹なんて触って楽しいのかよ？」
 		CASE 1
-					PRINTFORMW 
+			PRINTFORMW 「……筋肉が気になるのか？　鍛え方くらいは教えてやってもいいが……」
 		CASE -1
-					PRINTFORMW 
+			PRINTFORMW 「人の腹ぁ触るとはいい度胸だな？　で？　覚悟はできてるのか？」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -316,15 +395,15 @@ LOCAL = 1
 IF LOCAL
 	SELECTCASE TFLAG:SELECTCOM분기 
 		CASE 1
-PRINTFORML 「…얼른 끝내.」
-PRINTFORML 디아벨스타는 그런 말을 하지만,
-PRINTFORMW %CALLNAME:MASTER%에게서 신뢰를 느끼고 있는 건지, 머리를 계속 쓰다듬어졌다……
+			PRINTFORML 「…얼른 끝내.」
+			PRINTFORML 디아벨스타는 그런 말을 하지만,
+			PRINTFORMW %CALLNAME:MASTER%에게서 신뢰를 느끼고 있는 건지, 머리를 계속 쓰다듬어졌다……
 		CASE -1
-PRINTFORML 「…함부로 만지지 마.」
-PRINTFORMW 디아벨스타에게 아이언 클로를 당했다…
+			PRINTFORML 「…함부로 만지지 마.」
+			PRINTFORMW 디아벨스타에게 아이언 클로를 당했다…
 		CASE 0
-PRINTFORML 「흥…」
-PRINTFORMW 머리를 쓰다듬어지는 디아벨스타는 불만스러워 보이지만, 저항하지 않았다.
+			PRINTFORML 「흥…」
+			PRINTFORMW 머리를 쓰다듬어지는 디아벨스타는 불만스러워 보이지만, 저항하지 않았다.
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -526,17 +605,30 @@ RETURN RESULT
 @M_KOJO_MESSAGE_COM_K1920_350_1
 ;-------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
-LOCAL = 0
+LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
+	;抱き寄せ初回
+	IF FIRSTTIME(TOSTR(350),1)
+		PRINTFORMW 「はっ……❤　やる気満々だな？　ァン？　なんだ？　まさか今更びびってる訳じゃねだろうな？」
+		PRINTFORMW 「……嫌ならとっくに抵抗してんだよ？❤　力で%CSTR:TARGET:SELFCALL%に勝てると思っているのかよ？❤」
+		PRINTFORMW 「おら、わかったなら%CSTR:TARGET:SELFCALL%を抱いてみせろ……❤　ちっ❤　こんな恥ずいこと言わせてんじゃねぇよ……❤」
+	ELSE
+		;通常押し倒し
+		IF CFLAG:MASTER:우후후 == 1
 	SELECTCASE RAND:3
 		CASE 0
-			PRINTFORMW 
-		CASE 1
-			PRINTFORMW 
-		CASE 2
-			PRINTFORMW 
-	ENDSELECT
+			PRINTFORMW 「んっ……❤　やる気か……❤　わかった……始めるか❤」
+				CASE 1
+					PRINTFORMW 「……っ❤　やるならさっさとやれ❤　ジロジロと顔見てんじゃねぇよ……❤」
+				CASE 2
+					PRINTFORMW 「……早く始めろっ❤　この空気が一番気まずいんだよ……❤」
+			ENDSELECT
+		;攻守反転（MASTERが受け）
+		ELSEIF CFLAG:MASTER:우후후 == 2
+			PRINTFORMW 「はっ❤　こっちが主導か？❤　ならもみくちゃにしてやるよっ❤❤」
+		ENDIF
+	ENDIF
 ENDIF
 RETURN 1
 ;==================================================
@@ -779,10 +871,43 @@ RETURN RESULT
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	IF !TALENT:TARGET:연모
-PRINTFORMW 「……잘 자.」
-	ELSE 
-PRINTFORMW 「…또 봐.」
+	;TARGETがすでに寝ている
+	IF CFLAG:TARGET:수면 == 1
+		 
+	;それ以外
+	ELSE
+		IF CFLAG:TARGET:시작위치 == CFLAG:MASTER:시작위치
+			PRINTFORM 「寝るんだろ？　早くこっちに来い……
+			IF TALENT:TARGET:체형 > TALENT:MASTER:체형
+				IF TALENT:MASTER:연령 <= -2
+					PRINTFORMW どうせ乳に顔埋めたいんだろ？　許してやるから、早く顔埋めろ❤」
+				ELSE
+					PRINTFORMW どうせ乳に顔埋めたいんだろ？　まあ、許してやる……❤」
+				ENDIF
+				IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1001):시작위치 && CFLAG:TARGET:1011
+					PRINTFORMW 「ディアベルゼ……お前も寄るのはいいが、乳を押し付けすぎじゃねぇか？　%CSTR:TARGET:MASCALL%が苦しそう……でもないか？」
+				ENDIF
+			ELSE
+				IF TALENT:MASTER:연령 <= -2
+					PRINTFORMW ちゃんと体寄せろ……❤　夜は冷えるからな……❤」
+				ELSE
+					PRINTFORMW んっ❤　抱き寄せろとは言ってないが……まあ、悪くはない……❤」
+				ENDIF
+				IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1001):시작위치 && CFLAG:TARGET:1011
+					PRINTFORMW 「ディアベルゼ……お前も寄るのか？　まあ温かいのはいい……手？　……繋げばいいのか？　仕方ない奴だな……」
+				ENDIF
+			ENDIF
+			PRINTFORMW 「……おやすみ、%CSTR:TARGET:MASCALL%」
+			IF CFLAG:TARGET:시작위치 == CFLAG:(CFLAG:TARGET:1001):시작위치 && CFLAG:TARGET:1011
+				PRINTFORMW 「ディアベルゼ……お前も、おやすみ　また明日、な……？」
+			ENDIF
+		ELSE
+			IF !TALENT:TARGET:연모
+				PRINTFORMW 「……잘 자.」
+			ELSE 
+				PRINTFORMW 「…또 봐.」
+			ENDIF
+		ENDIF
 	ENDIF
 ENDIF
 RETURN 1
@@ -798,17 +923,36 @@ RETURN RESULT
 @M_KOJO_MESSAGE_COM_K1920_403_1
 ;-------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
-LOCAL = 0
+LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	SELECTCASE RAND:3
-		CASE 0
-			PRINTFORMW 
-		CASE 1
-			PRINTFORMW 
-		CASE 2
-			PRINTFORMW 
-	ENDSELECT
+	IF CFLAG:MASTER:감기플래그 >= 1
+		;MASTERが감기の場合に休憩すると、이벤트の看病구상が流れます
+		;文章を繋げられる自信の無い方はここに書かないようにしてください
+	ELSE
+		IF BATHROOM(CFLAG:MASTER:현재위치)
+			IF TALENT:TARGET:체형 > TALENT:MASTER:체형 && TALENT:MASTER:연령 <= -2
+				PRINTFORMW 「%CSTR:TARGET:SELFCALL%を背もたれにしてもいいから、ちゃんと温まれよ？　風呂はちゃんと入っておけ　わかってるならいい」
+			ELSEIF TALENT:TARGET:체형 < TALENT:MASTER:체형
+				PRINTFORMW 「まあ、背もたれとしては悪くはない　……少し体重かけてもいいか？　ありがとよ　ふう～っ❤」
+			ELSE
+				PRINTFORMW 「まあ、風呂でゆっくりするのも悪くはねぇな……」
+			ENDIF
+		;添い寝する時
+		ELSEIF CFLAG:TARGET:수면 == 1
+			PRINTFORMW 「くかー……ぁん？　んんっ……%CSTR:TARGET:MASCALL%？　……まあいいか……くー、かー、くー……」
+		;それ以外
+		ELSE
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「……まあ、休息は大切だ」
+				CASE 1
+					PRINTFORMW 「……少し疲れが溜まっているか？」
+				CASE 2
+					PRINTFORMW 「……休む時は休め　無理したっていいことはねぇ」
+			ENDSELECT
+		ENDIF
+	ENDIF
 ENDIF
 RETURN 1
 ;==================================================

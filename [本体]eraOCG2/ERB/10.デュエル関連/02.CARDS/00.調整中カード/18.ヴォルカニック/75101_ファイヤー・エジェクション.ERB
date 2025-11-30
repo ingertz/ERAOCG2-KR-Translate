@@ -1,0 +1,167 @@
+﻿@CARDNAME_75101,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 파이어 에젝션
+	CASE "略称"
+		RESULTS = F E
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_75101(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "生成カード"
+		RETURN 131330
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_75101(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか발동できない。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
+PRINTL ①：덱から화염속성・원소정령족モンスター１体を묘지に送る。
+PRINTL この효과で「볼캐닉」モンスターを묘지へ送った場合、さらに以下の효과から１つを選んで適用できる。
+PRINTL ●상대にそのレベル×１００ダメージを与える。
+PRINTL ●상대フィールドに「ボムトークン」１体を특수소환する。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신フィールドに「볼캐닉」モンスターが存在する場合、묘지のこのカードを제외して발동できる。
+PRINTL お互いのフィールドに「ボムトークン」１体を특수소환する。
+
+@CARDCAN_75101(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,75101)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,75101)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 화염속성
+	효과条件종족 = 원소정령족
+	효과条件종류 =  モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,75101)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 볼캐닉
+	효과条件종류 =  モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	SIF モンスター数(対面者) >= 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_75101(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75101,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件종류 = モン全般
+		효과条件속성 = 화염속성
+		효과条件종족 = 원소정령족
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+		;추가효과処理
+		選択カード = RESULT
+		選択カード_ID = RESULT:1
+		TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+		;CALLFORM CARD_{選択カード_ID}("カテゴリ")
+		IF RESULTS == "볼캐닉"
+			IF モンスター数(対面者) < 5
+				CALL YN_CHOICE(듀얼리스트,"●상대にレベル×１００ダメージを与える。","●상대フィールドに「ボムトークン」１体を특수소환する。")
+			ELSE
+				;敵필드が埋まってたら自動でバーン
+				RESULT = 0
+			ENDIF		
+			IF RESULT == 0
+				;バーン
+				CALLFORM CARD_{選択カード_ID}("レベル")
+				IF RESULT > 0
+					ダメージ量 = RESULT * 100
+					CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+				ENDIF
+			ELSEIF RESULT == 1
+				;ボムトークン生成
+				CALL FULLRESET
+				CALL CARD_GENERATE(듀얼리스트,131330,"",1)
+			ENDIF
+		ENDIF
+	ENDIF
+;トークン両生成
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,75101,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,131330)
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,131330,"",1)
+	ENDIF
+ENDIF
+

@@ -1,0 +1,156 @@
+﻿@CARDNAME_20356,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 토후섀도르 에그리스타
+	CASE "略称"
+		RESULTS = 섀도르에그리스타
+	CASE "カテゴリ"
+		RESULTS:0 = 섀도르
+ENDSELECT
+
+
+@CARD_20356(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2450
+	CASE "守備力"
+		RETURN 1950
+	CASE "추가日"
+		RETURN 251122
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_20356(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과は１ターンに１度、いずれか１つしか使用できない。
+CALLFORM CARD_ABLE(1,リバース誘発)
+PRINTL ①：このカードがリバースした場合に발동できる。
+PRINTL 「토후섀도르 에그리스타」以外の자신の묘지の「섀도르」モンスター１体のリバースした場合に발동する효과を適用する。
+CALLFORM CARD_ABLE(2,필드→묘지,손패→묘지,덱→묘지,破壊→묘지)
+PRINTL ②：このカードが묘지へ送られた場合に발동できる。
+PRINTL （この효과を발동するターン、자신は「섀도르」モンスターしかEX덱から특수소환できない）
+PRINTL 자신の손패・フィールド・묘지のモンスターを융합素材として제외し、
+PRINTL 「섀도르」융합モンスター１体を융합소환する。
+
+
+@CARDCAN_20356(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,20356)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == リバース誘発
+	SIF 발동済_1(듀얼리스트,20356)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,20356)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件固名前 = 토후섀도르 에그리스타
+	효과条件カテゴリ = 섀도르
+	효과条件종류 = 효과モン
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지
+	SIF 발동済_1(듀얼리스트,20356)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,20356)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件固カテゴリ = 섀도르
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"EX특수소환")
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL RESETAREA_MAT
+	素材範囲손패 = 1
+	素材範囲필드 = 1
+	素材範囲묘지 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
+	효과条件カテゴリ = 섀도르
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_20356(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == リバース誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20356,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件固名前 = 토후섀도르 에그리스타
+		효과条件カテゴリ = 섀도르
+		효과条件종류 = 효과モン
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		選択カード_ID = RESULT:99
+		選択カード = RESULT
+		TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,リバース誘発,"효과処理",選択カード)
+	ENDIF
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20356,2)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+		素材範囲묘지 = 1
+		CALL FULLRESET
+		효과条件종류 = 융합
+		효과条件カテゴリ = 섀도르
+		효과条件소환可 = 2
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+			CALL FUSSUMMON(듀얼리스트,選択カード,제외行き)
+		ENDIF
+		CALL CARD_EX_RESTRICTION(듀얼리스트,"섀도르")
+	ENDIF
+ENDIF
+

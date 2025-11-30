@@ -1,0 +1,801 @@
+﻿@OOO_SELL
+#DIM DYNAMIC キャラ_ID
+#DIM DYNAMIC キャラ_NO
+#DIM DYNAMIC 買取価格
+
+
+IF RESULT >= 0
+	キャラ_ID = RESULT
+	キャラ_NO = NO:キャラ_ID
+	;CALL PRINT_STATE(キャラ_ID)
+	PRINTFORMW 「評価《%NAME:キャラ_ID%》……」
+	PRINTFORML 
+	PRINTFORML 
+	CALL OOOO_SELL_VALUE(キャラ_ID,0)
+	買取価格 = RESULT
+	PRINTFORML 
+	PRINTFORML 
+	PRINTFORMW 「……はい、お客様専用の「プライベートな荷物」が完成しました」
+	PRINTFORMW 「お支払いいただく金額は約{買取価格}円です。」
+
+	CALL MONEY_GET(買取価格)
+
+
+ENDIF
+;-----------------------------------------------------------
+
+@OOOO_SELL_VALUE(キャラ_ID,初期価格)
+#DIM DYNAMIC キャラ_ID
+#DIM DYNAMIC 初期価格
+#DIM DYNAMIC 最終価値
+#DIM DYNAMIC 価格補正
+
+;査定基準＝別のバリアントを参考
+
+VARSET 最終価値
+
+
+VARSET 価格補正
+IF ABL:キャラ_ID:親密 == 0
+	価格補正 += 0
+ELSEIF ABL:キャラ_ID:親密 == 1
+	価格補正 += 40
+ELSEIF ABL:キャラ_ID:親密 == 2
+	価格補正 += 70
+ELSEIF ABL:キャラ_ID:親密 == 3
+	価格補正 += 85
+ELSEIF ABL:キャラ_ID:親密 == 4
+	価格補正 += 130
+ELSE
+	価格補正 += 45 * (ABL:キャラ_ID:親密)
+ENDIF
+SIF 価格補正 > 0
+	PRINTFORML 親密LV{ABL:キャラ_ID:親密} + {価格補正}
+最終価値 += 価格補正
+
+VARSET 価格補正
+IF ABL:キャラ_ID:従順 == 0
+	価格補正 += 0
+ELSEIF ABL:キャラ_ID:従順 == 1
+	価格補正 += 40
+ELSEIF ABL:キャラ_ID:従順 == 2
+	価格補正 += 70
+ELSEIF ABL:キャラ_ID:従順 == 3
+	価格補正 += 85
+ELSEIF ABL:キャラ_ID:従順 == 4
+	価格補正 += 130
+ELSE
+	価格補正 += 45 * (ABL:キャラ_ID:従順)
+ENDIF
+SIF 価格補正 > 0
+	PRINTFORML 従順LV{ABL:キャラ_ID:従順} + {価格補正}
+最終価値 += 価格補正
+
+VARSET 価格補正
+IF ABL:キャラ_ID:欲望 == 0
+	価格補正 += 0
+ELSEIF ABL:キャラ_ID:欲望 == 1
+	価格補正 += 65
+ELSEIF ABL:キャラ_ID:欲望 == 2
+	価格補正 += 150
+ELSEIF ABL:キャラ_ID:欲望 == 3
+	価格補正 += 190
+ELSEIF ABL:キャラ_ID:欲望 == 4
+	価格補正 += 230
+ELSE
+	価格補正 += 70 * (ABL:キャラ_ID:欲望)
+ENDIF
+SIF 価格補正 > 0
+	PRINTFORML 欲望LV{ABL:キャラ_ID:欲望} + {価格補正}
+最終価値 += 価格補正
+
+VARSET 価格補正
+IF ABL:キャラ_ID:技巧 == 0
+	価格補正 += 0
+ELSEIF ABL:キャラ_ID:技巧 == 1
+	価格補正 += 30
+ELSEIF ABL:キャラ_ID:技巧 == 2
+	価格補正 += 55
+ELSEIF ABL:キャラ_ID:技巧 == 3
+	価格補正 += 80
+ELSEIF ABL:キャラ_ID:技巧 == 4
+	価格補正 += 110
+ELSE
+	価格補正 += 35 * (ABL:キャラ_ID:技巧)
+ENDIF
+SIF 価格補正 > 0
+	PRINTFORML 技巧LV{ABL:キャラ_ID:技巧} + {価格補正}
+最終価値 += 価格補正
+
+VARSET 価格補正
+IF ABL:キャラ_ID:自慰中毒 == 0
+	価格補正 += 0
+ELSEIF ABL:キャラ_ID:自慰中毒 == 1
+	価格補正 += 100
+ELSEIF ABL:キャラ_ID:自慰中毒 == 2
+	価格補正 += 180
+ELSEIF ABL:キャラ_ID:自慰中毒 == 3
+	価格補正 += 270
+ELSEIF ABL:キャラ_ID:自慰中毒 == 4
+	価格補正 += 360
+ELSE
+	価格補正 += 110 * (ABL:キャラ_ID:自慰中毒)
+ENDIF
+SIF 価格補正 > 0
+	PRINTFORML 自慰中毒LV{ABL:キャラ_ID:自慰中毒} + {価格補正}
+最終価値 += 価格補正
+
+
+
+
+;刻印
+
+IF MARK:キャラ_ID:苦痛刻印 == 1
+	PRINTFORML 苦痛刻印LV1 + 35
+	最終価値 += 100
+ENDIF
+IF MARK:キャラ_ID:苦痛刻印 == 2
+	PRINTFORML 苦痛刻印LV2 + 120
+	最終価値 += 400
+ENDIF
+IF MARK:キャラ_ID:苦痛刻印 == 3
+	PRINTFORML 苦痛刻印LV3 + 300
+	最終価値 += 1000
+ENDIF
+
+IF MARK:キャラ_ID:快楽刻印 == 1
+	PRINTFORML 快楽刻印LV1 + 50
+	最終価値 += 100
+ENDIF
+IF MARK:キャラ_ID:快楽刻印 == 2
+	PRINTFORML 快楽刻印LV2 + 200
+	最終価値 += 400
+ENDIF
+IF MARK:キャラ_ID:快楽刻印 == 3
+	PRINTFORML 快楽刻印LV3 + 500
+	最終価値 += 1000
+ENDIF
+
+IF MARK:キャラ_ID:屈服刻印 == 1
+	PRINTFORML 屈服刻印LV1 + 100
+	最終価値 += 100
+ENDIF
+IF MARK:キャラ_ID:屈服刻印 == 2
+	PRINTFORML 屈服刻印LV2 + 400
+	最終価値 += 400
+ENDIF
+IF MARK:キャラ_ID:屈服刻印 == 3
+	PRINTFORML 屈服刻印LV3 + 1000
+	最終価値 += 1000
+ENDIF
+
+
+IF ABL:キャラ_ID:指 >= 1
+	PRINTFORML 指性技LV{ABL:キャラ_ID:指} + {30 * (ABL:キャラ_ID:指)}
+	最終価値 += 30 * (ABL:キャラ_ID:指)
+ENDIF
+
+IF ABL:キャラ_ID:舌 >= 1
+	PRINTFORML 舌性技LV{ABL:キャラ_ID:舌} + {30 * (ABL:キャラ_ID:舌)}
+	最終価値 += 30 * (ABL:キャラ_ID:舌)
+ENDIF
+
+IF ABL:キャラ_ID:胸 >= 1
+	PRINTFORML 胸性技LV{ABL:キャラ_ID:胸} + {30 * (ABL:キャラ_ID:胸)}
+	最終価値 += 100 * (ABL:キャラ_ID:胸)
+ENDIF
+
+IF ABL:キャラ_ID:腰 >= 1
+	PRINTFORML 腰性技LV{ABL:キャラ_ID:腰} + {30 * (ABL:キャラ_ID:腰)}
+	最終価値 += 100 * (ABL:キャラ_ID:腰)
+ENDIF
+
+IF ABL:キャラ_ID:膣 >= 1
+	PRINTFORML 膣性技LV{ABL:キャラ_ID:膣} + {30 * (ABL:キャラ_ID:膣)}
+	最終価値 += 100 * (ABL:キャラ_ID:膣)
+ENDIF
+
+IF ABL:キャラ_ID:アナル >= 1
+	PRINTFORML アナル门性技LV{ABL:キャラ_ID:アナル} + {30 * (ABL:キャラ_ID:アナル)}
+	最終価値 += 100 * (ABL:キャラ_ID:アナル)
+ENDIF
+
+価格補正 = 100
+IF ABL:キャラ_ID:奉仕精神 == 3
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:奉仕精神 == 4
+	価格補正 = 130
+	TIMES 最終価値 , 1.30
+ELSEIF ABL:キャラ_ID:奉仕精神 >= 5
+	価格補正 = 150
+	TIMES 最終価値 , 1.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML 奉仕精神LV{ABL:キャラ_ID:奉仕精神} × {価格補正/100}.{価格補正%100}
+
+価格補正 = 100
+IF ABL:キャラ_ID:露出癖 == 3
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:露出癖 == 4
+	価格補正 = 130
+	TIMES 最終価値 , 1.30
+ELSEIF ABL:キャラ_ID:露出癖 >= 5
+	価格補正 = 150
+	TIMES 最終価値 , 1.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML 露出癖LV{ABL:キャラ_ID:露出癖} × {価格補正/100}.{価格補正%100}
+
+価格補正 = 100
+IF ABL:キャラ_ID:マゾっ気 == 1
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:マゾっ気 == 2
+	価格補正 = 130
+	TIMES 最終価値 , 1.30
+ELSEIF ABL:キャラ_ID:マゾっ気 == 3
+	価格補正 = 150
+	TIMES 最終価値 , 1.50
+ELSEIF ABL:キャラ_ID:マゾっ気 == 4
+	価格補正 = 200
+	TIMES 最終価値 , 2.00
+ELSEIF ABL:キャラ_ID:マゾっ気 >= 5
+	価格補正 = 250
+	TIMES 最終価値 , 2.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML マゾっ気LV{ABL:キャラ_ID:マゾっ気} × {価格補正/100}.{価格補正%100}
+	
+価格補正 = 100
+IF ABL:キャラ_ID:サドっ気 == 1
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:サドっ気 == 2
+	価格補正 = 130
+	TIMES 最終価値 , 1.30
+ELSEIF ABL:キャラ_ID:サドっ気 == 3
+	価格補正 = 150
+	TIMES 最終価値 , 1.50
+ELSEIF ABL:キャラ_ID:サドっ気 == 4
+	価格補正 = 200
+	TIMES 最終価値 , 2.00
+ELSEIF ABL:キャラ_ID:サドっ気 >= 5
+	価格補正 = 250
+	TIMES 最終価値 , 2.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML サドっ気LV{ABL:キャラ_ID:サドっ気} × {価格補正/100}.{価格補正%100}
+
+価格補正 = 100
+IF ABL:キャラ_ID:Ｃ感覚 == 2
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:Ｃ感覚 == 3
+	価格補正 = 120
+	TIMES 最終価値 , 1.20
+ELSEIF ABL:キャラ_ID:Ｃ感覚 == 4
+	価格補正 = 140
+	TIMES 最終価値 , 1.40
+ELSEIF ABL:キャラ_ID:Ｃ感覚 >= 5
+	価格補正 = 150
+	TIMES 最終価値 , 1.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML Ｃ感覚LV{ABL:キャラ_ID:Ｃ感覚} × {価格補正/100}.{価格補正%100}
+
+価格補正 = 100
+IF ABL:キャラ_ID:Ｖ感覚 == 2
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:Ｖ感覚 == 3
+	価格補正 = 120
+	TIMES 最終価値 , 1.20
+ELSEIF ABL:キャラ_ID:Ｖ感覚 == 4
+	価格補正 = 140
+	TIMES 最終価値 , 1.40
+ELSEIF ABL:キャラ_ID:Ｖ感覚 >= 5
+	価格補正 = 150
+	TIMES 最終価値 , 1.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML Ｖ感覚LV{ABL:キャラ_ID:Ｖ感覚} × {価格補正/100}.{価格補正%100}
+
+価格補正 = 100
+IF ABL:キャラ_ID:Ａ感覚 == 2
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:Ａ感覚 == 3
+	価格補正 = 120
+	TIMES 最終価値 , 1.20
+ELSEIF ABL:キャラ_ID:Ａ感覚 == 4
+	価格補正 = 140
+	TIMES 最終価値 , 1.40
+ELSEIF ABL:キャラ_ID:Ａ感覚 >= 5
+	価格補正 = 150
+	TIMES 最終価値 , 1.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML Ａ感覚LV{ABL:キャラ_ID:Ａ感覚} × {価格補正/100}.{価格補正%100}
+
+価格補正 = 100
+IF ABL:キャラ_ID:Ｂ感覚 == 2
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:Ｂ感覚 == 3
+	価格補正 = 120
+	TIMES 最終価値 , 1.20
+ELSEIF ABL:キャラ_ID:Ｂ感覚 == 4
+	価格補正 = 140
+	TIMES 最終価値 , 1.40
+ELSEIF ABL:キャラ_ID:Ｂ感覚 >= 5
+	価格補正 = 150
+	TIMES 最終価値 , 1.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML Ｂ感覚LV{ABL:キャラ_ID:Ｂ感覚} × {価格補正/100}.{価格補正%100}
+
+価格補正 = 100
+IF ABL:キャラ_ID:Ｍ感覚 == 2
+	価格補正 = 110
+	TIMES 最終価値 , 1.10
+ELSEIF ABL:キャラ_ID:Ｍ感覚 == 3
+	価格補正 = 120
+	TIMES 最終価値 , 1.20
+ELSEIF ABL:キャラ_ID:Ｍ感覚 == 4
+	価格補正 = 140
+	TIMES 最終価値 , 1.40
+ELSEIF ABL:キャラ_ID:Ｍ感覚 >= 5
+	価格補正 = 150
+	TIMES 最終価値 , 1.5
+ENDIF
+SIF 価格補正 != 100
+	PRINTFORML Ｍ感覚LV{ABL:キャラ_ID:Ｍ感覚} × {価格補正/100}.{価格補正%100}
+
+
+IF TALENT:キャラ_ID:Ｃ感度 == -1
+	PRINTFORML Ｃ鈍感 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:Ｃ感度 == 1
+	PRINTFORML Ｃ敏感 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:Ｖ感度 == -1
+	PRINTFORML Ｖ鈍感 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:Ｖ感度 == 1
+	PRINTFORML Ｖ敏感 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:Ａ感度 == -1
+	PRINTFORML Ａ鈍感 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:Ａ感度 == 1
+	PRINTFORML Ａ敏感 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:Ｂ感度 == -1
+	PRINTFORML Ｂ鈍感 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:Ｂ感度 == 1
+	PRINTFORML Ｂ敏感 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:Ｍ感度 == -1
+	PRINTFORML Ｍ鈍感 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:Ｍ感度 == 1
+	PRINTFORML Ｍ敏感 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+
+;性格
+
+IF TALENT:キャラ_ID:態度 == -1
+	PRINTFORML 素直 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:態度 == +1
+	PRINTFORML 反抗的 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+IF TALENT:キャラ_ID:応答 == -1
+	PRINTFORML 大人しい × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:応答 == +1
+	PRINTFORML 生意気 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+IF TALENT:キャラ_ID:自己顕示欲 == -1
+	PRINTFORML 引っ込み思案 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:自己顕示欲 == 1
+	PRINTFORML 目立ちたがり × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:無知 == 1
+	PRINTFORML 無知 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:ペース配分 == 1
+	PRINTFORML ペース配分 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:依存体質 == 1
+	PRINTFORML 依存体質 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+
+IF TALENT:キャラ_ID:貞操 == -1
+	PRINTFORML 貞操無頓着 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:貞操 == 1
+	PRINTFORML 貞操観念 × 0.7
+	TIMES 最終価値 , 0.70
+ENDIF
+
+IF TALENT:キャラ_ID:抵抗 == -1
+	PRINTFORML 抵抗 × 0.7
+	TIMES 最終価値 , 0.70
+ENDIF
+
+IF TALENT:キャラ_ID:羞恥心 == -1
+	PRINTFORML 恥薄い × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:羞恥心 == 1
+	PRINTFORML 恥じらい × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+IF TALENT:キャラ_ID:習得速度 == -1
+	PRINTFORML 習得遅い × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:習得速度 == 1
+	PRINTFORML 習得早い × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:器用な指
+	PRINTFORML 器用な指 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:舌使い
+	PRINTFORML 舌使い × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:猫舌
+	PRINTFORML 猫舌 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+IF TALENT:キャラ_ID:薬毒耐性
+	PRINTFORML 薬毒耐性 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+IF TALENT:キャラ_ID:おもらし癖
+	PRINTFORML おもらし癖 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:自慰しやすい
+	PRINTFORML 自慰しやすい × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:プライド == -1
+	PRINTFORML プライド低い × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:プライド == 1
+	PRINTFORML プライド高い × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+
+IF TALENT:キャラ_ID:自制心
+	PRINTFORML 自制力 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+
+IF TALENT:キャラ_ID:無関心
+	PRINTFORML 無関心 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+IF TALENT:キャラ_ID:感情乏しい
+	PRINTFORML 感情乏しい × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+
+IF TALENT:キャラ_ID:性的興味 == 1
+	PRINTFORML 好奇心 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:性的興味 == -1
+	PRINTFORML 保守的 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+IF TALENT:キャラ_ID:一線越えない
+	PRINTFORML 一線越えない × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+
+
+IF TALENT:キャラ_ID:自己愛 == -1
+	PRINTFORML 抑圧 × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:自己愛 == 1
+	PRINTFORML 解放 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+
+IF TALENT:キャラ_ID:濡れやすさ == -1
+	PRINTFORML 濡れにくい × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:濡れやすさ == 1
+	PRINTFORML 濡れやすい × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:献身的
+	PRINTFORML 献身的 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:快感応答 == -1
+	PRINTFORML 快感の否定 × 0.6
+	TIMES 最終価値 , 0.60
+ENDIF
+IF TALENT:キャラ_ID:快感応答 == 1
+	PRINTFORML 快感に素直 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+
+IF TALENT:キャラ_ID:中毒しやすい
+	PRINTFORML 中毒しやすい × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:倒錯的
+	PRINTFORML 倒錯的 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:即堕ち == 1
+	PRINTFORML 即堕ち × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:即堕ち == 2
+	PRINTFORML 雑魚雌 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+
+
+IF TALENT:キャラ_ID:性別嗜好 == -1
+	PRINTFORML 両刀 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+IF TALENT:キャラ_ID:性別嗜好 == 1
+	PRINTFORML 男嫌い × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:性別嗜好 == 2
+	PRINTFORML 女嫌い × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:性別嗜好 == 3
+	PRINTFORML 人間不信 × 0.6
+	TIMES 最終価値 , 0.60
+ENDIF
+
+IF TALENT:キャラ_ID:マゾ
+	PRINTFORML マゾ × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:妄信
+	PRINTFORML 妄信 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:小悪魔
+	PRINTFORML 小悪魔 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+
+IF TALENT:キャラ_ID:自慰狂い
+	PRINTFORML 自慰狂い × 1.3
+	TIMES 最終価値 , 1.30
+ENDIF
+
+IF TALENT:キャラ_ID:淫壺
+	PRINTFORML 淫壺 × 1.3
+	TIMES 最終価値 , 1.30
+ENDIF
+
+IF TALENT:キャラ_ID:尻穴狂い
+	PRINTFORML 尻穴狂いい × 1.3
+	TIMES 最終価値 , 1.30
+ENDIF
+
+IF TALENT:キャラ_ID:淫乳
+	PRINTFORML 淫乳 × 1.3
+	TIMES 最終価値 , 1.30
+ENDIF
+
+IF TALENT:キャラ_ID:恋慕 == 1
+	PRINTFORML 恋慕 × 1.3
+	TIMES 最終価値 , 1.30
+ENDIF
+IF TALENT:キャラ_ID:恋慕 == 2
+	PRINTFORML 親愛 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+IF TALENT:キャラ_ID:愛妻
+	PRINTFORML 愛妻 × 2
+	最終価値 = 最終価値 * 2
+ENDIF
+
+IF TALENT:キャラ_ID:淫乱 == 1
+	PRINTFORML 淫乱 × 1.3
+	TIMES 最終価値 , 1.30
+ENDIF
+IF TALENT:キャラ_ID:淫乱 == 2
+	PRINTFORML 快楽狂 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+IF TALENT:キャラ_ID:屈服済 == 1
+	PRINTFORML 屈服済 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+
+;素質:虚胸を見る
+IF TALENT:キャラ_ID:バストサイズ == -3
+	PRINTFORML 虚胸 × 0.6
+	TIMES 最終価値 , 0.60
+ENDIF
+;素質:絶壁を見る
+IF TALENT:キャラ_ID:バストサイズ == -2
+	PRINTFORML 絶壁 × 1.1
+	TIMES 最終価値 , 1.10
+ENDIF
+IF TALENT:キャラ_ID:バストサイズ == -1
+	PRINTFORML 貧乳 × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+;素質:巨乳を見る
+IF TALENT:キャラ_ID:バストサイズ >= 1
+	価格補正 = 200
+	TIMES 最終価値 , 2.0
+	PRINTFORML バストサイズ{TALENT:キャラ_ID:バストサイズ} × {価格補正/100}.{価格補正%100}
+ENDIF
+
+IF TALENT:キャラ_ID:母乳体質 == 1
+	PRINTFORML 母乳体質 × 1.4
+	TIMES 最終価値 , 1.40
+ENDIF
+
+
+IF TALENT:キャラ_ID:回復速度 == -1
+	PRINTFORML 回復遅い × 0.8
+	TIMES 最終価値 , 0.80
+ENDIF
+IF TALENT:キャラ_ID:回復速度 == 1
+	PRINTFORML 回復早い × 1.2
+	TIMES 最終価値 , 1.20
+ENDIF
+
+IF TALENT:キャラ_ID:容姿 == -1
+	PRINTFORML 醜悪 ÷ 2
+	最終価値 = 最終価値 / 2
+ENDIF
+
+IF TALENT:キャラ_ID:容姿 == 1
+	PRINTFORML 容姿端麗 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+IF TALENT:キャラ_ID:ペット
+	PRINTFORML ペット × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+IF TALENT:キャラ_ID:性別 == 2
+	PRINTFORML オトコ ÷ 2
+	TIMES 最終価値 , 0.50
+ENDIF
+
+
+IF TALENT:キャラ_ID:崩壊
+	PRINTFORML 崩壊 ÷ 10
+	TIMES 最終価値 , 0.10
+ENDIF
+
+IF TALENT:キャラ_ID:人気
+	PRINTFORML 人気 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+IF TALENT:キャラ_ID:魅力
+	PRINTFORML 魅力 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+IF TALENT:キャラ_ID:魅惑
+	PRINTFORML 魅惑 × 1.5
+	TIMES 最終価値 , 1.50
+ENDIF
+
+IF TALENT:キャラ_ID:謎の魅力
+	PRINTFORML 謎の魅力 × 4
+	TIMES 最終価値 , 4.00
+ENDIF
+
+IF TALENT:キャラ_ID:処女
+	PRINTFORML 処女 × 3
+	最終価値 = 最終価値 * 3
+ENDIF
+
+IF MARK:キャラ_ID:反発刻印 == 1
+	PRINTFORML 反発刻印LV1 ÷ 5
+	TIMES 最終価値 , 0.20
+ENDIF
+IF MARK:キャラ_ID:反発刻印 == 2
+	PRINTFORML 反発刻印LV2 ÷ 10
+	TIMES 最終価値 , 0.10
+ENDIF
+IF MARK:キャラ_ID:反発刻印 == 3
+	PRINTFORML 反発刻印LV3 ÷ 100
+	TIMES 最終価値 , 0.01
+ENDIF
+IF TALENT:キャラ_ID:中古
+	PRINTFORML 中古 ÷ 3
+	TIMES 最終価値 , 0.33
+ENDIF
+
+
+
+最終価値 = 初期価格 + 最終価値
+
+
+RETURN 最終価値
+
+
+;-----------------------------------------------------------

@@ -76,7 +76,7 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 	효과範囲덱 = 1
 	효과条件종류 = モン全般
 	효과条件カテゴリ = 타락천사
-	효과条件소환可 = 1
+	효과条件소환可 = 2
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -100,25 +100,15 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2231,1)
 	IF RESULT == 0
+
 		CALL FULLRESET
 		효과範囲손패 = 1
 		효과範囲덱 = 1
+		효과条件종류 = モン全般
 		효과条件固名前:0 = 열락의 타락천사
 		효과条件종류 = モン全般
 		효과条件カテゴリ = 타락천사
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		選択カード = RESULT
-		IF INRANGE (選択カード , 100, 199)
-			選択カード -= 100
-			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_손패:{選択カード}")}("名前")
-			상대특수소환 = %RESULTS%
-			CALL CARD_SP_SUMMON(듀얼리스트, "손패", 選択カード, "守備표시",1)
-		ELSEIF INRANGE (選択カード , 300, 399)
-			選択カード -= 300
-			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_덱:{選択カード}")}("名前")
-			상대특수소환 = %RESULTS%
-			CALL CARD_SP_SUMMON(듀얼리스트, "덱", 選択カード, "守備표시",1)
-		ENDIF
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시",,1)
 		
 		CALL FULLRESET
 		효과範囲덱 = 1

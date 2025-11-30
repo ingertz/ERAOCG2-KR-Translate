@@ -1,0 +1,191 @@
+﻿@CARDNAME_93380,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 성유물의 괴뢰
+	CASE "略称"
+		RESULTS = 성유물의 괴뢰
+	CASE "カテゴリ"
+		RESULTS:0 = 성유물
+ENDSELECT
+
+
+@CARD_93380(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+	CASE "추가日"
+		RETURN 251123
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93380(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：자신の손패・묘지の「크롤러」カードまたは「성유물」カード１枚を덱に戻し、
+PRINTL 자신フィールドのモンスター１体を대상として발동できる。
+PRINTL そのモンスターの표시形式に応じて、以下の효과を適用する。
+PRINTL ●表側표시：そのモンスターを裏側守備표시にする。
+PRINTL ●裏側守備표시：そのモンスターを表側守備표시にする。
+
+@CARDCAN_93380(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 효과制限달성
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93380)
+SIF RESULT == 1
+	RETURN 0
+
+IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,93380)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ:0 = 성유물
+	효과条件カテゴリ:1 = 크롤러
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_93380(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 발동불가,2
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || (종류 == フリー誘発 && ゾーン == "마함")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93380,1)
+	IF RESULT == 0
+		$EFFECT_93380_1
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ:0 = 성유물
+		효과条件カテゴリ:1 = 크롤러
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件표시 = 表側표시
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				발동불가:0 = 1
+		
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件표시 = 裏側표시
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				발동불가:1 = 1
+
+			IF 듀얼리스트 == "자신"
+				PRINTL 【효과を選択してください】
+				PRINTL
+				IF 발동불가:0 != 1
+					PRINTL [0] - 자신フィールドの表側표시モンスター１体を裏側守備표시にする。
+				ELSE
+					PRINTL [-] - 자신フィールドの表側표시モンスター１体を裏側守備표시にする。
+				ENDIF
+				IF 발동불가:1 != 1
+					PRINTL [1] - 자신フィールドの裏側守備표시モンスター１体を表側守備표시にする。
+				ELSE
+					PRINTL [-] - 자신フィールドの裏側守備표시モンスター１体を表側守備표시にする。
+				ENDIF
+				BINPUT
+			ELSE
+				IF 발동불가:0 != 1
+					RESULT = 0
+				ELSE
+					RESULT = 1
+				ENDIF
+			ENDIF
+
+			IF RESULT == 0
+				CALL FULLRESET
+				효과条件표시 = 表側표시
+				CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)
+				選択カード = RESULT
+				IF 選択カード != 9999
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"表",3,1)
+				ENDIF
+
+			ELSEIF RESULT == 1
+				CALL FULLRESET
+				효과条件표시 = 裏側표시
+				CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+				IF RESULT != 9999
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",RESULT,"表",2,1)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+
+ELSEIF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함" && GETVAR(@"%듀얼리스트%_魔_表:場所") == 2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93380)
+	IF RESULT == 0
+		;①の효과が발동可能か確認し、발동可能であれば使用することも選択できる。
+		TRYCALLFORM CARDCAN_93380(듀얼리스트,フリー誘発,"마함",場所)
+		IF RESULT == 1
+			CUSTOMDRAWLINE —
+			PRINTFORML 
+			PRINTFORML 今、「성유물의 괴뢰」の효과を使用しますか？
+			PRINTFORML 
+			PRINTL ①：자신の손패・묘지の「크롤러」モンスター１体または「성유물」カード１枚を덱に戻し、
+			PRINTL 자신フィールドのモンスター１体を대상として발동できる。
+			PRINTL そのモンスターの표시形式に応じて、以下の효과を適用する。
+			PRINTL ●表側표시：そのモンスターを裏側守備표시にする。
+			PRINTL ●裏側守備표시：そのモンスターを表側守備표시にする。
+			PRINTFORML 
+			CALL YN_CHOICE(듀얼리스트)
+			IF RESULT == 0
+				CALL CARD_EFFECT_USE(듀얼리스트, 93380, 1)
+				GOTO EFFECT_93380_1
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

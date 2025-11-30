@@ -1,0 +1,190 @@
+﻿@CARDNAME_42044,参照先
+;ココで指定卡片の名称、简称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ウィッチコスプレイヤー・制服のヴェール
+	CASE "略称"
+		RESULTS = cosヴェール
+	CASE "カテゴリ"
+		RESULTS:0 = ウィッチクラフト
+		RESULTS:1 = ウィッチコスプレイヤー
+        RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_42044(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN シンクロ
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 魔法使い族
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 1000
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+
+
+RETURN 0
+
+@CARD_EXPLANATION_42044(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 魔法使い族チューナーモンスター＋魔法使い族モンスター１体以上
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX召喚時)
+PRINTL ①：このカードがS召喚した場合に発動できる。
+PRINTL 自分のデッキの上から３枚のカードを墓地へ送る。
+CALLFORM CARD_ABLE(2,戦場起動)
+PRINTL ②：相手フィールドのカード１枚を対象として発動できる。
+PRINTL そのカードを除外し、デッキから「ウィッチクラフト」カード１枚と除外したカードと同じ種類のカードを手札に加える。
+CALLFORM CARD_ABLE(0,墓地起動)
+PRINTL ③：１０００LPを払い、このカードを墓地からエクストラデッキに戻して発動できる。
+PRINTL 相手は手札を１枚選び除外し、任意でデッキに「ウィッチクラフトの広告」を３枚加える。
+
+@CARDSUMMON_42044(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 8
+IF EX参照 == 0 || EX参照 == 1
+	素材条件チューナー = 1
+	素材条件種族 = 魔法使い族
+ELSEIF EX参照 >= 10
+	素材条件種族 = 魔法使い族
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(決闘者,召喚カード,42044) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_42044(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC モン可能
+#DIM DYNAMIC 魔法可能
+#DIM DYNAMIC 罠可能
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,42044)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 種類 == EX召喚時
+	SIF 発動済_1(決闘者,42044)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+;4932
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_2(決闘者,42044)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果範囲相手魔罠 = 1
+	効果条件種類 = モン全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+
+	RETURN 1
+
+ELSEIF 種類 == 墓地起動
+	SIF RESULT == 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF ゾーン != "墓地"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_42044(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード種類
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == EX召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42044,1)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(決闘者,"デッキ",3)
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42044,2)
+	IF RESULT ==0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(決闘者,"全場単体",場所,"除外")
+		IF RESULT == 1
+			選択カードID = RESULT:2
+			TRYCALLFORM CARD_{選択カードID}("種類")
+			選択カード種類 = RESULT
+			
+			CALL FULLRESET
+			効果範囲デッキ = 1
+			効果条件カテゴリ = ウィッチクラフト
+			SELECTCASE 選択カード種類
+				CASE 21 TO 25
+					効果条件種類 = 魔法全般
+				CASE 31 TO 32
+					効果条件種類 = 罠全般
+				CASEELSE
+					効果条件種類 = モン全般
+			ENDSELECT
+			CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 墓地起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42044)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",1000)		
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,デッキ行き)
+		CALL MONEY_GET(3000)	
+		REPEAT 3
+			CALL CARD_GENERATE_DECK(対面者,62070)
+		REND
+		CALL SHUFFLE(対面者)		
+	ENDIF
+ENDIF

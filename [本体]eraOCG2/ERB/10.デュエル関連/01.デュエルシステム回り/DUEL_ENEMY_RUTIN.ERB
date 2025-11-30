@@ -514,6 +514,21 @@ SELECTCASE RESULTS
 			SIF RESULT != 1
 				RETURN 1
 		ENDIF
+	CASE "무한기동 리바스톰","무한기동 코로살마운틴","무한기동 어스셰이커"
+		IF 종류 == 묘지起動
+			CALL FULLRESET
+			濾過範囲필드 = 1
+			濾過条件종류 = 링크
+			濾過条件종족 = 기계족
+			濾過条件固名前 = 무한기동요새 메가톤게일
+			CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+			SIF RESULT != 1
+				RETURN 1
+		ENDIF
+	CASE "드래곤메이드 플란메"
+		IF 종류 == 손패起動 || 종류 == フリー誘発
+			RETURN 1
+		ENDIF
 ENDSELECT
 
 ;カテゴリチェック
@@ -864,6 +879,26 @@ IF 효과条件손패취득 == 1
 				효과条件優先名前 = 지나의 충혹마
 			SIF 발동済_1("상대",1382) == 0
 				효과条件優先名前 = 키노의 충혹마
+		CASE "무한기동 하비스터"
+			SIF 발동済_1("상대",24196) == 0
+				효과条件優先名前 = 무한기동 브루탈도우저
+		CASE "헤비 포워드"
+			SIF 발동済_1("상대",24196) == 0
+				효과条件優先名前 = 무한기동 브루탈도우저
+			SIF 발동済_1("상대",24190) == 0 && 소환権 != 0
+				효과条件優先名前 = 무한기동 하비스터
+		CASE "드래곤메이드 티루루"
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前 = 트래곤메이드 플란메
+			CALL CARD_CHECK_EXT("상대")
+			IF RESULT != 1
+				효과条件優先名前 = 트래곤메이드 플란메
+			ENDIF
+		CASE "엘섀도르 메샤플레르"
+			효과条件優先종류:0 = 通常마법
+			효과条件優先종류:1 = 速攻마법
+			효과条件優先종류:2 = 지속마법
 	ENDSELECT
 ELSE ;その他、묘지に送る、제외するなどの処理の분기
 	SELECTCASE カード名
@@ -1164,9 +1199,31 @@ ELSE ;その他、묘지に送る、제외するなどの処理の분기
 				CALL CARD_CHECK_EXT("상대")
 				IF RESULT == 1
 					효과条件優先カテゴリ = 삼환신
-					효과条件優先종류 = モン全般
+					효과条件優先종류 = 효과モン
 				ENDIF
 			ENDIF
+		CASE "드래곤메이드 파루라"
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前 = 드래곤메이드 루프트
+			CALL CARD_CHECK_EXT("상대")
+			IF RESULT != 1
+				효과条件優先名前 = 드래곤메이드 루프트
+			ELSE
+				SIF 발동済_1("상대",62055) == 0
+					효과条件優先名前 = 드래곤메이드의 전환
+			ENDIF
+		CASE "드래곤메이드 티루루"
+			CALL FULLRESET_EXT
+			濾過範囲묘지 = 1
+			濾過条件名前 = 드래곤메이드 플란메
+			CALL CARD_CHECK_EXT("상대")
+			IF RESULT != 1
+				효과条件優先名前 = 드래곤메이드 플란메
+			ENDIF
+		CASE "레브섀도르 퓨전"
+			SIF 발동済_3("상대",1831) == 0
+				효과条件優先名前 = 엘섀도르 아프카로네
 		CASEELSE ;汎用指名
 			효과条件劣後名前:0 = 네크로파데스의 용사
 ENDSELECT
@@ -1599,6 +1656,8 @@ SELECTCASE RESULTS
 			RETURN -10000
 	CASE "푸티카의 충혹마"
 		RETURN 1000
+	CASE "리섀도르 웬디크루프"
+		RETURN 2400
 	CASEELSE
 		IF 손패플래그
 			TRYCALLFORM CARDCAN_{カードID}("상대",소환時,"필드")
@@ -1613,7 +1672,7 @@ RETURN 0
 
 
 ;カードをサーチ、효과での특수소환する時の優先度ボーナスはここで설정
-@ENEMY_PRIORITY_FILTER(カードID,参照先,場所)
+@ENEMY_PRIORITY_FILTER(カードID,参照先,場所,발동カードID)
 #DIMS DYNAMIC 参照先
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カードID
@@ -1809,9 +1868,9 @@ SELECTCASE RESULTS
 		ELSE
 			修正値 += 1000
 		ENDIF
-	CASE "센츄리온 에메트ＶＩ"
+	CASE "센츄리온 에메트Ⅵ"
 		修正値 += -1000
-	CASE "센츄리온 가고일ＩＩ"
+	CASE "센츄리온 가고일Ⅱ"
 		修正値 += -1000
 	CASE "상검사－막야"
 		修正値 += 200
@@ -1821,6 +1880,13 @@ SELECTCASE RESULTS
 		修正値 += 1000
 	CASE "저승사자 고즈"
 		修正値 -= 10000
+	CASE "리섀도르 웬디크루프"
+		修正値 += 2400
+	CASE "토후섀도르 에그리스타"
+		SIF 발동済_1("상대",カードID)
+			修正値 += -2000
+		SIF 발동済_2("상대",カードID)
+			修正値 += -2000
 ENDSELECT
 
 TRYCALLFORM CARDNAME_{カードID}("名前")
@@ -1831,12 +1897,24 @@ TRYCALLFORM CARDNAME_{カードID}("名前")
 SIF MATCH(효과条件劣後名前, RESULTS)
 	修正値 += -10000
 
+TRYCALLFORM CARD_{カードID}("カテゴリ")
+SIF MATCH(효과条件優先カテゴリ, RESULTS)
+	修正値 += 10000
+
+TRYCALLFORM CARD_{カードID}("종류")
+SIF MATCH(효과条件優先종류, RESULT)
+	修正値 += 10000
+
 TRYCALLFORM CARD_{カードID}("レベル")
 SIF MATCH(효과条件優先レベル, RESULT)
 	修正値 += 10000
 
 TRYCALLFORM CARD_{カードID}("攻撃力")
 SIF MATCH(효과条件優先攻撃力, RESULT)
+	修正値 += 10000
+
+TRYCALLFORM CARD_{カードID}("성별")
+SIF MATCH(효과条件優先성별, RESULT)
 	修正値 += 10000
 
 $SKIP_RUTIN
@@ -1899,7 +1977,7 @@ SELECTCASE RESULTS
 ENDSELECT
 
 
-;本当に이 몬스터의 표시を표시변경権を使って変えていいのかの설정
+;メインフェイズ１に本当に이 몬스터의 표시を표시변경権を使って変えていいのかの설정
 @ENEMY_RUTIN_CHANGE_POSE(場所)
 #DIM DYNAMIC 場所
 

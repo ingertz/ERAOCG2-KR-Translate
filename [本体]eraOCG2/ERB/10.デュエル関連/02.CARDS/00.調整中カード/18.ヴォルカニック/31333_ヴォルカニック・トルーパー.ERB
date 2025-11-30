@@ -1,0 +1,201 @@
+﻿@CARDNAME_31333,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 볼캐닉 트루퍼
+	CASE "略称"
+		RESULTS = V 트루퍼
+	CASE "カテゴリ"
+		RESULTS:0 = 볼캐닉
+ENDSELECT
+
+
+@CARD_31333(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+	CASE "生成カード"
+		RETURN 131330
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31333(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+;テーマサーチ
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「볼캐닉 트루퍼」以外の「볼캐닉」カード１枚を손패に加える。
+;トークン生成
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：손패を１枚捨てて발동できる。
+PRINTL 상대フィールドに「ボムトークン」１体を특수소환する。
+
+
+
+@CARDCAN_31333(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31333)
+SIF RESULT == 1
+	RETURN 0
+;テーマサーチ
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,31333)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 볼캐닉
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;トークン生成
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,31333)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(対面者) >= 5
+		RETURN 0
+	SIF 손패数(듀얼리스트) == 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31333(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+;テーマサーチ
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31333,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 볼캐닉
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+;トークン生成
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31333,2)
+	IF RESULT == 0
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,131330,"",1)
+	ENDIF
+ENDIF
+
+;トークン参照
+@CARDNAME_131330,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ボムトークン
+	CASE "略称"
+		RESULTS = ボムトークン
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+;トークン情報
+@CARD_131330(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+ENDSELECT
+
+
+@CARD_EXPLANATION_131330(종류)
+#DIM DYNAMIC 종류
+
+;バーン
+PRINTL このカードが破壊された場合に발동する。
+PRINTL 상대に５００ダメージを与える。
+
+@CARDCAN_131330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_131330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+IF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	ダメージ量 = 500
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+ENDIF

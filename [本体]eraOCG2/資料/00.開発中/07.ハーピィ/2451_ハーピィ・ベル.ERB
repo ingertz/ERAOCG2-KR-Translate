@@ -1,0 +1,106 @@
+﻿@CARDNAME_2451,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィ・ベル
+	CASE "略称"
+		RESULTS = ハーピィ・ベル
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_2451(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 0
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 鳥獣族
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 500
+	CASE "守備力"
+		RETURN 500
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_2451(種類)
+#DIM DYNAMIC 種類
+
+CALLFORM CARD_ABLE(0,召喚時)
+PRINTL ①：このカードが召喚・特殊召喚した場合に発動できる。自分の墓地の鳥獣族・レベル２モンスター１枚を特殊召喚する。
+PRINTL この効果で通常モンスターを特殊召喚した場合、さらに相手フィールドのカード１枚を選んで破壊できる。
+
+
+@CARDCAN_2451(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2451)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 召喚時
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件種族 = 鳥獣族
+	効果条件レベル = 2
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_2451(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+IF 種類 == 召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2451)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件種族 = 鳥獣族
+		効果条件レベル = 2
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		IF RESULT
+			TRYCALLFORM CARD_{RESULT:1}("種類")
+			IF RESULT == 通常モン
+				CALL FULLRESET
+				効果範囲相手戦場 = 1
+				効果範囲相手魔罠 = 1
+				効果条件任意 = 1
+				CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"墓地")
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

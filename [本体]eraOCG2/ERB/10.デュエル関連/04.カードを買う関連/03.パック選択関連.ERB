@@ -50,6 +50,8 @@ FOR カウンタ,スタート数,エンド数
 NEXT
 ;PRINTL 
 FOR カウンタ,0,カウンタB
+	SIF カウンタ % 2 == 0 && カウンタ != 0
+		PRINTL
 	VARSET RESULTS
 	CALL CARD_PACK_NAME(パックセット:カウンタ)
 	IF RESULTS != ""
@@ -58,8 +60,6 @@ FOR カウンタ,0,カウンタB
 		PRINTBUTTON "[수록확인]",パックセット:カウンタ + 5000
 		RESETCOLOR
 	ENDIF
-	SIF カウンタ == カウンタB - 1
-		PRINTL
 NEXT
 PRINTL
 CUSTOMDRAWLINE ―
@@ -159,7 +159,6 @@ ELSEIF INRANGE(RESULT,5000,6000)
 	PRINTBUTTON "[9999] - 돌아간다", 99999
 	BINPUT
 	IF RESULT != 99999
-;		PRINTL ■ 카드정보
 		選択カード_ID = RESULT
 		TRYCALLFORM CARD_UI(選択カード_ID,1);　パックリストでのカード情報確認
 		GOTO LIST_LOOP
@@ -206,6 +205,7 @@ IF 仮組確認 == 0
 		CALLFORM MYDECK("仮組",選択덱)
 	ENDIF
 ENDIF
+CALL DECK_SORT(1)
 $RETURN_DECK
 VARSET カウンタB
 CUSTOMDRAWLINE ―

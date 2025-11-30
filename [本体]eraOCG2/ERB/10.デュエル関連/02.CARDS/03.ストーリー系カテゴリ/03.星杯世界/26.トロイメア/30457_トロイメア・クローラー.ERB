@@ -1,0 +1,161 @@
+﻿@CARDNAME_30457,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트로이메어 크롤러
+	CASE "略称"
+		RESULTS = 악몽환기괴충
+	CASE "カテゴリ"
+		RESULTS:0 = 트로이메어
+		RESULTS:1 = 크롤러
+		RESULTS:3 = 게임 오리지널
+
+ENDSELECT
+
+
+@CARD_30457(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 100
+	CASE "守備力"
+		RETURN 2400
+	CASE "추가日"
+		RETURN 251123
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_30457(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,リバース誘発)
+PRINTL ①：このカードが소환に成功した場合、またはこのカードがリバースした場合に발동できる。
+PRINTL 덱から「성유물」モンスター１体を묘지へ送り、「성유물」마법・함정カード１枚を손패に加える。
+PRINTL このターン、자신はＬモンスターしかEX덱から특수소환できない。
+CALLFORM CARD_ABLE(2,L素材時효과)
+PRINTL ②：このカードが링크素材として묘지へ送られた場合に발동できる。
+PRINTL 자신フィールドの「트로이메어」モンスターの数まで、손패・덱から「트로이메어・크롤러」を특수소환する。
+
+@CARDCAN_30457(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,30457)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == リバース誘発
+	SIF 발동済_1(듀얼리스트,30457)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+    효과条件カテゴリ = 성유물
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+    효과条件カテゴリ = 성유물
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == L素材時효과
+	SIF 발동済_2(듀얼리스트,30457)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 트로이메어
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과条件名前 = 트로이메어・크롤러
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_30457(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 破壊カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC リピート횟수
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == リバース誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,30457,1)
+	IF RESULT == 0
+		CALL FULLRESET
+	    효과条件カテゴリ = 성유물
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+		CALL FULLRESET
+		효과条件カテゴリ = 성유물
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+		EX소환可能종류 = 링크
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == L素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,30457,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 트로이메어
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		リピート횟수 = RESULT
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲손패 = 1
+		효과条件名前 = 트로이메어・크롤러
+		효과条件複数 = 100 - リピート횟수
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

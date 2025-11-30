@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 섀도르 웬디고
 	CASE "略称"
-		RESULTS = 섀도르 웬디고
+		RESULTS = 웬디고
 	CASE "カテゴリ"
 		RESULTS:0 = 섀도르
 		RESULTS:1 = 게임 오리지널
@@ -98,7 +98,7 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX덱起動
-	SIF 발동済_1(듀얼리스트,41833)
+	SIF 발동済_3(듀얼리스트,41833)
 		RETURN 0
 	SIF ゾーン != "EX덱"
 		RETURN 0
@@ -118,7 +118,7 @@ IF 종류 == EX덱起動
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
-	SIF 발동済_2(듀얼리스트,41833)
+	SIF 발동済_1(듀얼리스트,41833)
 		RETURN 0
 	SIF 마함数(듀얼리스트) >= 5
 		RETURN 0
@@ -132,7 +132,7 @@ ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 	CALL CARD_DRAW_CHECK(1)
 	RETURN 1
 ELSEIF 종류 == 필드起動
-	SIF 발동済_3(듀얼리스트,41833)
+	SIF 발동済_2(듀얼리스트,41833)
 		RETURN 0
 	SIF ゾーン != "필드"
 		RETURN 0
@@ -165,7 +165,7 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == EX덱起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41833,1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41833,3)
 	IF RESULT == 0
 		CALL FULLRESET
 		;필드의 뒷면 표시인 "섀도르" 몬스터 １장을 リリースする
@@ -183,7 +183,7 @@ IF 종류 == EX덱起動
 	ENDIF
 ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 	;カード발동確認
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41833,2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41833,1)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과条件カテゴリ = 섀도르
@@ -191,7 +191,7 @@ ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 		CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"裏側표시")
 	ENDIF
 ELSEIF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41833,3)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,41833,2)
 	IF RESULT == 0
 		CALL FULLRESET
 		;묘지의  카드를 제외한다

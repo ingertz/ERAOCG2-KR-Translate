@@ -1,0 +1,102 @@
+﻿@CARDNAME_35351,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 피시보그 런처
+	CASE "略称"
+		RESULTS = FB－런처
+	CASE "カテゴリ"
+		RESULTS:0 = 피시보그
+ENDSELECT
+
+@CARD_35351(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 200
+	CASE "守備力"
+		RETURN 100
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251127
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35351(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,묘지起動)
+PRINTL ①：자신の묘지に물속성モンスターしか存在しない場合に발동できる。このカードを묘지から특수소환する。
+PRINTL この효과で특수소환したこのカードは、フィールドから離れた場合に제외される。
+PRINTL このターン、자신は물속성モンスターしかＥＸ덱から특수소환できない。
+
+
+@CARDCAN_35351(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35351)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,35351)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,35351,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	CALLFORM 효과条件속성_ADV(물속성,"以外")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35351(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+IF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35351,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 피시보그 런처
+		효과추가종류 = 2
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		EX소환可能속성 = 물속성
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF
+

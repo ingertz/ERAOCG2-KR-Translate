@@ -12,12 +12,14 @@
 #DIM DYNAMIC めくり数
 #DIM DYNAMIC 選択カード,99
 #DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 返選択カード_ID,99
 #DIM DYNAMIC 行先보존
 #DIM DYNAMIC 条件달성
 #DIMS DYNAMIC 対面者
 #DIM DYNAMIC 複数カウンタ
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
 #DIM DYNAMIC 対面カード使用
 
 #DIM DYNAMIC 最大値
@@ -45,7 +47,7 @@ IF GROUPMATCH(元参照先,"묘지","상대묘지") && 효과条件行先플래�
 	CUSTOMDRAWLINE —
 	RETURN 0
 ENDIF
-IF GROUPMATCH(효과条件行先플래그,제외行き,一時제외行き) && GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+IF GROUPMATCH(효과条件行先플래그,제외行き) && GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 	PRINTFORML 카드를 제외할 수 없습니다。
 	CUSTOMDRAWLINE —
 	RETURN 0
@@ -136,10 +138,10 @@ IF 효과条件複数
 		효과条件選択済:カウンタ = 選択カード:カウンタ 
 	NEXT
 ENDIF
-
+;PRINTFORML ここまでOK1!!
 CALL CARD_FILTER_BASIC(듀얼리스트,元参照先,ゾーン,場所,めくり数)
 条件달성 = RESULT:1
-
+;PRINTFORML ここまでOK2!!({RESULT})
 IF 듀얼리스트 == "자신"
 	PRINTL
 	IF  (INRANGE(효과条件複数,90,99) || 효과条件複数 == 任意の数) && 複数カウンタ >= 1
@@ -234,6 +236,8 @@ IF 효과条件複数 != 0
 		SIF 選択カード:カウンタ == -1
 			CONTINUE
 		選択カード_ID = GETVAR(@"%대상者%_%参照先%:(選択カード:カウンタ)")
+
+
 		SIF 듀얼리스트 != 대상者
 			対面カード使用 = 1
 		VARSET RESULT
@@ -244,6 +248,9 @@ IF 효과条件複数 != 0
 		TRYCALLFORM CARD_{選択カード_ID}("レベル")
 		レベル合計 += RESULT
 		CALL CARD_DISPOSE(대상者,参照先,(選択カード:カウンタ),行先보존,추가플래그)
+
+		返選択カード_ID:カウンタC = 選択カード_ID
+		カウンタC ++
 	NEXT
 ELSE
 	選択カード_ID = GETVAR(@"%대상者%_%参照先%:選択カード")
@@ -265,6 +272,13 @@ RESULT:10 = 対面カード使用
 RESULT:98 = 守備力合計
 RESULT:99 = 攻撃力合計
 RESULT:200 = レベル合計
+
+
+FOR カウンタ,0,カウンタC
+	RESULT:(300 + カウンタ) = 返選択カード_ID:カウンタ
+NEXT
+
+
 CUSTOMDRAWLINE —
 RETURN 1
 
@@ -281,6 +295,8 @@ RETURN 1
 #DIM DYNAMIC カードID
 #DIM DYNAMIC 選択カード,99
 #DIM DYNAMIC 選択カード_ID,99
+#DIM DYNAMIC 返選択カード_ID,99
+
 #DIM DYNAMIC 行先보존
 #DIM DYNAMIC 上級値
 #DIMS DYNAMIC 参照先
@@ -288,6 +304,7 @@ RETURN 1
 #DIM DYNAMIC 複数カウンタ
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
+#DIM DYNAMIC カウンタC
 #DIM DYNAMIC 対面カード使用
 
 #DIM DYNAMIC 最大値
@@ -495,6 +512,9 @@ IF 효과条件複数 != 0
 		TRYCALLFORM CARD_{選択カード_ID}("レベル")
 		レベル合計 += RESULT
 		CALL CARD_DISPOSE(대상者（CS）,参照先（CS）,選択カード（CS）,行先보존,추가플래그)
+
+		返選択カード_ID:カウンタC = 選択カード_ID
+		カウンタC ++
 	NEXT
 ELSE
 	;묘지送り処理
@@ -512,8 +532,10 @@ ENDIF
 SIF 덱サーチ플래그
 	CALL SHUFFLE(듀얼리스트)
 
-;PRINTFORML リピート数A:{複数カウンタ}
 VARSET RESULT
+FOR カウンタ,0,カウンタC
+	RESULT:(300 + カウンタ) = 返選択カード_ID:カウンタ
+NEXT
 
 SIF 덱サーチ플래그
 	RESULT:80 = 1
@@ -618,19 +640,20 @@ ENDIF
 IF 行先플래그 == 마함行き && 마함数(듀얼리스트) == 5 && ゾーン != "마함"
 	行先플래그 = 0
 ENDIF
-
-IF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き) && GETVAR(@"%듀얼리스트%_제외置換") >= 1 && ゾーン != "제외"
+;PRINTFORML　行先플래그:１{行先플래그}　/GETVAR(@"%듀얼리스트%_제외置換")：{GETVAR(@"%듀얼리스트%_제외置換")}
+IF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き,효과묘지行き) && GETVAR(@"%듀얼리스트%_제외置換") >= 1 && ゾーン != "제외"
 	行先플래그 = 제외行き
 ENDIF
+;PRINTFORML　行先플래그２:{行先플래그} /GETVAR(@"%듀얼리스트%_제외置換")：{GETVAR(@"%듀얼리스트%_제외置換")}
 
 IF ゾーン == "손패" || ゾーン == "덱"
-	SIF GROUPMATCH(行先플래그,묘지行き,破壊行き) && GETVAR(@"%듀얼리스트%_空제외置換") >= 1
+	SIF GROUPMATCH(行先플래그,묘지行き,破壊行き,효과묘지行き) && GETVAR(@"%듀얼리스트%_空제외置換") >= 1
 		行先플래그 = 제외行き
 ELSEIF ゾーン == "필드" || ゾーン == "마함"
-	SIF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き,絶対破壊行き) && GETVAR(@"%듀얼리스트%_땅제외置換") >= 1
+	SIF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き,絶対破壊行き,효과묘지行き) && GETVAR(@"%듀얼리스트%_땅제외置換") >= 1
 		行先플래그 = 제외行き
 	IF ゾーン == "마함"
-		SIF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き,絶対破壊行き) && GETVAR(@"%듀얼리스트%_魔제외置換") >= 1
+		SIF GROUPMATCH(行先플래그,묘지行き,破壊行き,戦闘破壊行き,絶対破壊行き,효과묘지行き) && GETVAR(@"%듀얼리스트%_魔제외置換") >= 1
 			行先플래그 = 제외行き
 	ENDIF
 ENDIF

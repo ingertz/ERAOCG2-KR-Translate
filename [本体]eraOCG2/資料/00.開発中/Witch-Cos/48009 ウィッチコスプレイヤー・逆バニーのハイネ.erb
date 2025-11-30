@@ -1,0 +1,214 @@
+﻿@CARDNAME_42045,参照先
+;ココで指定卡片の名称、简称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ウィッチコスプレイヤー・逆バニーのハイネ
+	CASE "略称"
+		RESULTS = cosハイネ
+	CASE "カテゴリ"
+		RESULTS:0 = ウィッチクラフト
+		RESULTS:1 = ウィッチコスプレイヤー
+        RESULTS:2 = E.R.A
+ENDSELECT
+
+
+@CARD_42045(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN エクシーズ
+	CASE "属性"
+		RETURN 闇属性
+	CASE "種族"
+		RETURN 魔法使い族
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 1500
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_42045(種類)
+#DIM DYNAMIC 種類
+
+PRINTL レベル７のウィッチクラフトモンスター X ３
+CALLFORM CARD_ABLE(1,EX召喚時)
+PRINTL ①：このカードがX召喚した場合に発動できる。
+PRINTL 我が除外ゾーンのカードをデッキに戻す。
+PRINTL 自分は戻したカードの数＊３００LPを回復する。
+CALLFORM CARD_ABLE(0,発動強制誘発)
+PRINTL ②：このカードがモンスターゾーンに存在する限り、自分または相手が魔法カードを発動した時に発動できる。
+PRINTL X素材を１つ増やす。
+CALLFORM CARD_ABLE(2,戦場起動,フリー誘発)
+PRINTL ③：この効果は相手ターンでも発動できる。
+PRINTL このカードのX素材を２つ取り除いて発動できる。
+PRINTL 相手フィールドのカード１枚を破壊する。
+PRINTL その後、残りのX素材を取り除く。取り除いたX素材１つにつき
+PRINTL サイコロを１回投げ、出た目＊１００のダメージを与える。
+CALLFORM CARD_ABLE(0,墓地起動)
+PRINTL ④：１０００LPを払い、このカードを墓地からエクストラデッキに戻して発動できる。
+PRINTL 相手はあなたに３０００円を支払い、任意でデッキに「ウィッチクラフトの広告」を３枚加える。
+
+@CARDSUMMON_42045(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件レベル = 7
+
+素材条件カテゴリ = ウィッチクラフト
+
+IF EX参照 == 1
+	CALL XYZCAN(決闘者,召喚カード,42045) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_42045(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 効果制限達成
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 調教対象 = -1
+#DIMS DYNAMIC 調教対象名
+#DIM DYNAMIC 回復量
+#DIM DYNAMIC 選択カード
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,42045)
+SIF RESULT == 1
+	RETURN 0
+;41810
+IF 種類 == EX召喚時
+	SIF 発動済_1(決闘者,42045)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲除外 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 発動強制誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	CALL FULLRESET
+	効果条件種類 = 魔法全般
+	CALL CARD_CHECK_START_DATA_2(決闘者,2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") < 1
+		RETURN 0
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果範囲相手魔罠 = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	RETURN 1
+ELSEIF 種類 == 墓地起動
+	SIF RESULT == 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF ゾーン != "墓地"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_42045(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 効果制限達成
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダイス結果
+#DIM DYNAMIC サイコロ回数
+#DIM DYNAMIC X素材合計
+#DIM DYNAMIC X素材数
+#DIM DYNAMIC 取り除く数
+#DIM DYNAMIC 決闘者ダイス結果
+#DIM DYNAMIC 対面者ダイス結果
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC ダメージ量
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == EX召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42045)
+	IF RESULT == 0
+		FOR LOCAL,0,紙束最大値
+			IF GETVAR(@"%決闘者%_除外:{カウンタ}") == -1
+				カウンタ ++
+				CONTINUE
+			ENDIF
+			CALL LIFE_CHANGE(決闘者,"増加","効果",300 * カウンタ)
+			CALL CARD_DISPOSE(決闘者,"除外",カウンタ,2)
+		NEXT
+	ENDIF
+ELSEIF 種類 == 発動強制誘発
+	CALL SET_FIELD_INFO(決闘者,"戦場",場所,"Ｘ",1)
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42045,X消費2)
+		IF RESULT == 0
+			CALL FULLRESET
+		;效果条件表示 = 表側表示
+			CALL CARD_REMOVAL_BASIC(決闘者,"全場単体",場所,通常罠)
+			X素材数 = GETVAR(@"%決闘者%_MZ_Ｘ:場所") +1
+				IF RESULT
+	
+					REPEAT X素材数-2
+
+						CALL DICE_ROLL(決闘者,1)
+						ダイス結果 = RESULT
+						PRINTFORMW 出た目は……{サイコロ結果}だ！
+						CALL LIFE_CHANGE(決闘者,"減少","効果",ダイス結果 * 100,1)
+					REND
+				ENDIF
+			CALL SET_FIELD_INFO(決闘者,"戦場",場所,"Ｘ",-X素材数)
+
+		ENDIF
+
+
+
+ELSEIF 種類 == 墓地起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,42045)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(決闘者,"減少","コスト",1000)	
+		CALL MONEY_GET(3000)	
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,デッキ行き)
+		REPEAT 3
+			CALL CARD_GENERATE_DECK(対面者,62070)
+		REND
+		CALL SHUFFLE(対面者)		
+	ENDIF
+ENDIF
+
+

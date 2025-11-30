@@ -99,19 +99,19 @@ RESETCOLOR
 PRINTL
 
 SETCOLOR C_FUSE_PUR
-SIF 필터条件종류:4 == 4
+SIF 필터条件종류:4 == 융합
 	SETCOLOR C_YELLOW
 PRINTBUTTON "【　　 융합 　　】",4
 RESETCOLOR
 
 SETCOLOR C_SYN_WHITE
-SIF 필터条件종류:5 == 마함起動
+SIF 필터条件종류:5 == 싱크로
 	SETCOLOR C_YELLOW
 PRINTBUTTON "【　  싱크로  　】",5
 RESETCOLOR
 
 SETCOLOR C_XYZ_BLACK
-SIF 필터条件종류:6 == 6
+SIF 필터条件종류:6 == 엑시즈
 	SETCOLOR C_YELLOW
 PRINTBUTTON "【　  엑시즈  　】",6
 RESETCOLOR
@@ -536,6 +536,8 @@ ELSEIF INRANGE(RESULT, 300,319)
 				필터条件レベル:0 = 999
 		NEXT
 	ELSE
+		SIF RESULT >= 12
+			RESULT = 12
 		필터条件レベル:RESULT = RESULT
 		필터条件レベル:0 = 999
 	ENDIF
@@ -1500,21 +1502,41 @@ ENDIF
 #DIM DYNAMIC PSYリスト,紙束最大値
 #DIM DYNAMIC PSYカウンタ
 
+#DIMS DYNAMIC 編集설정
+
 VARSET 一時보존 , -1
 VARSET EX一時보존 , -1
 
+IF ソート설정 == 1
+	編集설정 = 仮組
+ELSE
+	編集설정 = 編集
+ENDIF
 
+;GETVARで行うとものすごく処理が遅くなったので、負担かからんようにあえてIFで설정
 FOR カウンタ,0,紙束最大値
 	VARSET 現在最小値, 999999
-	FOR カウンタB,0,紙束最大値
-		IF 編集_덱:カウンタB < 現在最小値 && 編集_덱:カウンタB > 0			
-			現在最小値 = 編集_덱:カウンタB
-			一時보존:カウンタ = 編集_덱:カウンタB
-			消去カード = カウンタB
-		ENDIF
-	NEXT
-	ARRAYREMOVE 編集_덱, 消去カード, 1
-	編集_덱:(VARSIZE("編集_덱")-1) = -1
+	IF 編集설정 == "仮組"
+		FOR カウンタB,0,紙束最大値
+			IF 仮組_덱:カウンタB < 現在最小値 && 仮組_덱:カウンタB > 0			
+				現在最小値 = 仮組_덱:カウンタB
+				一時보존:カウンタ = 仮組_덱:カウンタB
+				消去カード = カウンタB
+			ENDIF
+		NEXT
+		ARRAYREMOVE 仮組_덱, 消去カード, 1
+		仮組_덱:(VARSIZE("仮組_덱")-1) = -1
+	ELSE
+		FOR カウンタB,0,紙束最大値
+			IF 編集_덱:カウンタB < 現在最小値 && 編集_덱:カウンタB > 0
+				現在最小値 = 編集_덱:カウンタB
+				一時보존:カウンタ = 編集_덱:カウンタB
+				消去カード = カウンタB
+			ENDIF
+		NEXT
+		ARRAYREMOVE 編集_덱, 消去カード, 1
+		編集_덱:(VARSIZE("編集_덱")-1) = -1
+	ENDIF
 NEXT
 
 FOR カウンタ,0,紙束最大値
@@ -1540,24 +1562,39 @@ FOR カウンタ,0,紙束最大値
 NEXT
 
 
-
-FOR カウンタ,0,NRMカウンタ
-	編集_덱:現山札数("編集") = NRMリスト:カウンタ
-NEXT
-FOR カウンタ,0,EFFカウンタ
-	編集_덱:現山札数("編集") = EFFリスト:カウンタ
-NEXT
-FOR カウンタ,0,RITカウンタ
-	編集_덱:現山札数("編集") = RITリスト:カウンタ
-NEXT
-FOR カウンタ,0,MAGカウンタ
-	編集_덱:現山札数("編集") = MAGリスト:カウンタ
-NEXT
-FOR カウンタ,0,TRPカウンタ
-	編集_덱:現山札数("編集") = TRPリスト:カウンタ
-NEXT
-
-
+IF 編集설정 == "仮組"
+	FOR カウンタ,0,NRMカウンタ
+		仮組_덱:現山札数("仮組") = NRMリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,EFFカウンタ
+		仮組_덱:現山札数("仮組") = EFFリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,RITカウンタ
+		仮組_덱:現山札数("仮組") = RITリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,MAGカウンタ
+		仮組_덱:現山札数("仮組") = MAGリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,TRPカウンタ
+		仮組_덱:現山札数("仮組") = TRPリスト:カウンタ
+	NEXT
+ELSE
+	FOR カウンタ,0,NRMカウンタ
+		編集_덱:現山札数("編集") = NRMリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,EFFカウンタ
+		編集_덱:現山札数("編集") = EFFリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,RITカウンタ
+		編集_덱:現山札数("編集") = RITリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,MAGカウンタ
+		編集_덱:現山札数("編集") = MAGリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,TRPカウンタ
+		編集_덱:現山札数("編集") = TRPリスト:カウンタ
+	NEXT
+ENDIF
 
 
 
@@ -1565,15 +1602,27 @@ NEXT
 
 FOR カウンタ,0,紙束最大値
 	VARSET 現在最小値, 999999
-	FOR カウンタB,0,紙束最大値
-		IF 編集_EX덱:カウンタB < 現在最小値 && 編集_EX덱:カウンタB > 0			
-			現在最小値 = 編集_EX덱:カウンタB
-			EX一時보존:カウンタ = 編集_EX덱:カウンタB
-			消去カード = カウンタB
-		ENDIF
-	NEXT
-	ARRAYREMOVE 編集_EX덱, 消去カード, 1
-	編集_EX덱:(VARSIZE("編集_EX덱")-1) = -1
+	IF 編集설정 == "仮組"
+		FOR カウンタB,0,紙束最大値
+			IF 仮組_EX덱:カウンタB < 現在最小値 && 仮組_EX덱:カウンタB > 0			
+				現在最小値 = 仮組_EX덱:カウンタB
+				EX一時보존:カウンタ = 仮組_EX덱:カウンタB
+				消去カード = カウンタB
+			ENDIF
+		NEXT
+		ARRAYREMOVE 仮組_EX덱, 消去カード, 1
+		仮組_EX덱:(VARSIZE("仮組_EX덱")-1) = -1
+	ELSE
+		FOR カウンタB,0,紙束最大値
+			IF 編集_EX덱:カウンタB < 現在最小値 && 編集_EX덱:カウンタB > 0
+				現在最小値 = 編集_EX덱:カウンタB
+				EX一時保存:カウンタ = 編集_EX덱:カウンタB
+				消去カード = カウンタB
+			ENDIF
+		NEXT
+		ARRAYREMOVE 編集_EX덱, 消去カード, 1
+		編集_EX덱:(VARSIZE("編集_EX덱")-1) = -1
+	ENDIF
 NEXT
 
 
@@ -1601,24 +1650,39 @@ FOR カウンタ,0,紙束最大値
 NEXT
 
 
-FOR カウンタ,0,FUSカウンタ
-	編集_EX덱:現EX山札数("編集") = FUSリスト:カウンタ
-NEXT
-FOR カウンタ,0,SYNカウンタ
-	編集_EX덱:現EX山札数("編集") = SYNリスト:カウンタ
-NEXT
-FOR カウンタ,0,XYZカウンタ
-	編集_EX덱:現EX山札数("編集") = XYZリスト:カウンタ
-NEXT
-FOR カウンタ,0,LINカウンタ
-	編集_EX덱:現EX山札数("編集") = LINリスト:カウンタ
-NEXT
-FOR カウンタ,0,PSYカウンタ
-	編集_EX덱:現EX山札数("編集") = PSYリスト:カウンタ
-NEXT
-
-
-
+IF 編集설정 == "仮組"
+	FOR カウンタ,0,FUSカウンタ
+		仮組_EX덱:現EX山札数("仮組") = FUSリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,SYNカウンタ
+		仮組_EX덱:現EX山札数("仮組") = SYNリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,XYZカウンタ
+		仮組_EX덱:現EX山札数("仮組") = XYZリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,LINカウンタ
+		仮組_EX덱:現EX山札数("仮組") = LINリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,PSYカウンタ
+		仮組_EX덱:現EX山札数("仮組") = PSYリスト:カウンタ
+	NEXT
+ELSE
+	FOR カウンタ,0,FUSカウンタ
+		編集_EX덱:現EX山札数("編集") = FUSリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,SYNカウンタ
+		編集_EX덱:現EX山札数("編集") = SYNリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,XYZカウンタ
+		編集_EX덱:現EX山札数("編集") = XYZリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,LINカウンタ
+		編集_EX덱:現EX山札数("編集") = LINリスト:カウンタ
+	NEXT
+	FOR カウンタ,0,PSYカウンタ
+		編集_EX덱:現EX山札数("編集") = PSYリスト:カウンタ
+	NEXT
+ENDIF
 @DECK_FILTER(カードID)
 #DIM DYNAMIC カードID
 #DIM DYNAMIC 条件달성

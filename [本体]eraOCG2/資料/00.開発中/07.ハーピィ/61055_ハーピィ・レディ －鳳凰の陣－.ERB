@@ -1,0 +1,107 @@
+﻿@CARDNAME_61055,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ハーピィ・レディ　－鳳凰の陣－
+	CASE "略称"
+		RESULTS = －鳳凰の陣－
+	CASE "カテゴリ"
+		RESULTS:0 = ハーピィ
+ENDSELECT
+
+
+@CARD_61055(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 通常魔法
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61055(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカードを発動するターン、自分はバトルフェイズを行えない。
+CALLFORM CARD_ABLE(0,魔罠起動,手札起動)
+PRINTL ①：自分フィールドに「ハーピィ」モンスターが存在する場合、
+PRINTL その数まで可能な限り相手フィールドのモンスターを対象として発動できる。
+PRINTL 対象のモンスターを破壊し、破壊したモンスターの攻撃力の合計の半分のダメージを相手に与える。
+
+@CARDCAN_61055(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,61055)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF メインフェイズ２ == 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = ハーピィ
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_61055(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+IF 種類 == 魔罠起動 || 種類 == 手札起動
+	;カード発動確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,61055)
+	IF RESULT == 0
+		;通常魔法汎用発動後墓地送り処理
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所)
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件カテゴリ = ハーピィ
+		効果条件CNT = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		カウンタ = RESULT
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件CNT = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		IF RESULT > カウンタ
+			CALL FULLRESET
+			効果条件複数 = カウンタ
+			効果追加種類 = 2
+			CALL CARD_REMOVAL_BASIC(決闘者,"戦場単体",場所,"墓地")
+		ELSE
+			CALL FULLRESET
+			効果追加種類 = 2
+			CALL CARD_REMOVAL_BASIC(決闘者,"戦場全体",場所,"墓地")
+		ENDIF
+		CALL SET_PLAYER_INFO(決闘者,"バトルスキップ", 1)
+	ENDIF
+ENDIF

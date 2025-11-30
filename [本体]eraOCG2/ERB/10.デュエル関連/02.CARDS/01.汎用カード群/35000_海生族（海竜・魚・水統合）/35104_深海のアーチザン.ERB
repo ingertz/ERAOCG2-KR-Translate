@@ -1,0 +1,128 @@
+﻿@CARDNAME_35104,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 심해의 아티장
+	CASE "略称"
+		RESULTS = 심해의 아티장
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+@CARD_35104(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 500
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 251127
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35104(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：このカードが물속성モンスターの효과で덱・묘지から손패に加わった場合に발동できる。
+PRINTL 상대の손패を全て確認する。その後、このカードを손패から특수소환できる。
+CALLFORM CARD_ABLE(2,특수소환時)
+PRINTL ②：このカードが특수소환した場合、자신の덱の上からカードを１枚묘지へ送り、
+PRINTL このカード名以外の자신の묘지のレベル４以下の물속성モンスター１体を대상として발동できる。
+PRINTL そのモンスターを특수소환する。この효과で특수소환したモンスターの효과は無効化される。
+
+
+@CARDCAN_35104(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35104)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,35104)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF 処理中_효과ID <= 0
+		RETURN 0
+	TRYCALLFORM CARD_{処理中_효과ID}("속성")
+	SIF RESULT != 물속성
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = 심해의 아티장
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,35104)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35104(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35104,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대손패 = 1
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件任意 = 1
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35104,2)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",1)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 물속성
+		효과条件固名前 = 심해의 아티장
+		효과추가종류 = 効追無効
+		CALL 효과条件レベル_ADV(4, "以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

@@ -1,0 +1,199 @@
+﻿@CARDNAME_21032,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 메타파이즈 이그제큐터
+	CASE "略称"
+		RESULTS = 이그제큐터
+	CASE "カテゴリ"
+		RESULTS:0 = 메타파이즈
+ENDSELECT
+
+
+@CARD_21032(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 雄性
+	CASE "소환불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251125
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_21032(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは通常소환できない。
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,손패起動)
+PRINTL ①：자신のフィールド・묘지の「메타파이즈」カード５종류を１枚ずつ제외して발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ②：このカードが특수소환した場合に발동できる。
+PRINTL 덱から「메타파이즈」カード１枚を자신の마법＆함정ゾーンに表側표시で置く。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：「메타파이즈」カードの효과で특수소환したこのカードは「覚醒」し、完全耐性を得る。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ④：１ターンに１度、자신の제외状態の「메타파이즈」モンスター１体を대상として발동できる。
+PRINTL そのモンスターを특수소환する。この효과で특수소환したモンスターはエンドフェイズに제외される。
+
+
+@CARDCAN_21032(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21032)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,21032,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 메타파이즈
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時強制
+	TRYCALLFORM CARDNAME_{処理中_효과ID}("カテゴリ")
+	SIF !MATCH(RESULTS,"메타파이즈")
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,21032)
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 메타파이즈
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") == 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件カテゴリ = 메타파이즈
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+	
+
+@CARDEFFECT_21032(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21032)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 메타파이즈
+		효과条件固名前選択  = 1
+		효과条件複数 = 5
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 특수소환時強制
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21032,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 메타파이즈
+		CALL CARD_SET_BASIC(듀얼리스트,"덱",ゾーン,場所,"表側표시")
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"魔耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21032,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件カテゴリ = 메타파이즈
+		효과추가종류 = 10 + 제외行き
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
