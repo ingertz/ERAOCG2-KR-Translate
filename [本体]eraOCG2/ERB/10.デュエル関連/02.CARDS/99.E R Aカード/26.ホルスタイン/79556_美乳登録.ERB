@@ -41,7 +41,7 @@ PRINTL 이 카드는 １턴에 １번밖에 발동할 수 없으며, ①의 효�
 CALLFORM CARD_ABLE(1,마함起動,손패起動)
 PRINTL ①：패 / 덱 / 필드에서 "호루스타인" 이외의 암컷 몬스터를 １장 선택하여、
 PRINTL 자신의 덱 / 패 / 필드 / 묘지에 존재하는 모든 같은 이름의 카드를 "【미유】호루스타인"으로 재정의한다。
-PRINTL 그 후、덱밖에서 "【미유】호루스타인" １장을 패에 넣는다、
+PRINTL 그 후、덱 밖에서 "【미유】호루스타인" １장을 패에 넣는다、
 PRINTL 이 효과의 처리 후、이하의 효과에서 선택한다。
 PRINTL ●패에서 "【미유】호루스타인" １장을 특수 소환한다。
 PRINTL ●덱에서 "호루스타인─밀크 팜" １장을 패에 넣는다。
@@ -529,7 +529,7 @@ ELSE
 	IF RESULT != -1
 		搾手名称 = %CALLNAME:RESULT%
 	ELSE
-		搾手名称 = "対戦者"
+		搾手名称 = 対戦者
 	ENDIF
 	搾手 = RESULT
 ENDIF
@@ -543,7 +543,7 @@ IF 종류 == 攻撃後強制誘発 || 종류 == 효과後誘発
 		IF RESULT != -1
 			상대名称 = %CALLNAME:RESULT%
 		ELSE
-			상대名称 = "対戦상대"
+			상대名称 = 対戦상대
 		ENDIF
 	ELSE
 		攻撃대상カードID = GETVAR(@"%対面者%_MZ_ID:攻撃대상")
@@ -575,13 +575,13 @@ ELSEIF 종류 == 필드起動 && バトルフェイズ == 1
 			CALL HORUSTEIN_KOJO_BATTLE_MILK(듀얼리스트,書換先カードID,1)
 			
 			CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"発情",175)
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"個Ｃ",1,上書きモード)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"個Ｃ",2,上書きモード)
 		ELSE
 			;◆バトルフェイズ：乳搾りパターン２
 			CALL HORUSTEIN_KOJO_BATTLE_MILK(듀얼리스트,書換先カードID,2)
 			
 			CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"発情",185)
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"個Ｃ",0,上書きモード)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"個Ｃ",1,上書きモード)
 		ENDIF
 		;二回攻撃、一한번만 파괴되어 ない
 		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦",1)
@@ -641,7 +641,7 @@ ELSEIF 종류 == 효과後誘発
 			SETCOLOR C_PINK
 			
 			;암소の鳴き声を鳴らす
-			CALL HORUSTEIN_RAND_COW_TXT(절정횟수,암소鳴き声)
+			CALL HORUSTEIN_RAND_COW_TXT(절정횟수,암소절정声)
 			
 			IF 암소대상 != -1
 				REPEAT 절정횟수

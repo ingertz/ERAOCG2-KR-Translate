@@ -39,9 +39,9 @@ RETURN 0
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드는 １턴에 １번밖에 발동할 수 없으며, ①의 효과는 듀얼중 1번밖에 적용할 수 없다.
 CALLFORM CARD_ABLE(1,마함起動,손패起動)
-PRINTL ①：패 / 덱에서 "호루스타인" 이외의 암컷 몬스터를 １장 선택하여、그 몬스터를 지속 마법카드 취급으로 자신의 마법＆함정 존에 앞면 표시로 둔다。
-PRINTL 그 후、덱밖에서 "【애유】호루스타인" １장을 패에 넣는다、
+PRINTL ①：덱 / 패 / 필드에서 "호루스타인" 이외의 암컷 몬스터를 １장 선택하여、
 PRINTL 자신의 덱 / 패 / 몬스터 존 / 묘지에 존재하는 모든 같은 이름의 카드를 "【애유】호루스타인" 으로 재정의한다。
+PRINTL 그 후、덱밖에서 "【애유】호루스타인" １장을 패에 넣는다。
 PRINTL 이 효과의 처리 후、이하의 효과에서 선택한다。
 PRINTL ●패에서 "【애유】호루스타인" １장을 특수 소환한다。
 PRINTL ●덱에서 "호루스타인" 일반마법을 １장 골라 패에 넣는다。
@@ -606,7 +606,7 @@ ELSE
 	IF RESULT != -1
 		搾手名称 = %CALLNAME:RESULT%
 	ELSE
-		搾手名称 = "対戦者"
+		搾手名称 = 対戦者
 	ENDIF
 	搾手 = RESULT
 ENDIF
@@ -620,7 +620,7 @@ IF 종류 == 攻撃後強制誘発 || 종류 == 효과後誘発
 		IF RESULT != -1
 			상대名称 = %CALLNAME:RESULT%
 		ELSE
-			상대名称 = "対戦상대"
+			상대名称 = 対戦상대
 		ENDIF
 	ELSE
 		攻撃대상カードID = GETVAR(@"%対面者%_MZ_ID:攻撃대상")
@@ -720,7 +720,7 @@ ELSEIF 종류 == 효과後誘発
 			SETCOLOR C_PINK
 			
 			;암소の鳴き声を鳴らす
-			CALL HORUSTEIN_RAND_COW_TXT(절정횟수,암소鳴き声)
+			CALL HORUSTEIN_RAND_COW_TXT(절정횟수,암소절정声)
 			
 			IF 암소대상 != -1
 				REPEAT 절정횟수
@@ -732,7 +732,7 @@ ELSEIF 종류 == 효과後誘発
 			PRINTFORML 울음소리가 끝나니、%암소名称%는 "철퍽" 하는 소리를 내며 하얀 물웅덩이에 쓰러졌다…
 			PRINTFORMW 마음껏 기분 좋아진 %암소名称%는、만족한것같은 미소를 띄우고있다…
 			;절정後の암소鳴き声
-			CALL HORUSTEIN_RAND_COW_TXT(2,암소鳴き声)
+			CALL HORUSTEIN_RAND_COW_TXT(2,암소弛緩声)
 			PRINTFORMW 
 		ELSE
 			;モンスター攻撃時に失敗
