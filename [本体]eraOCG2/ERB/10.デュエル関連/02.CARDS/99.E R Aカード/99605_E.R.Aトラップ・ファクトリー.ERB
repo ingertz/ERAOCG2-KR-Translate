@@ -36,10 +36,12 @@ RETURN 0
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드는 세트한 턴에도 발동할 수 있다.
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번만 사용할 수 있다.
-CALL CARD_ABLE(1,마함起動,フリー誘発)
+SIF ターンプレイヤー == "자신"
+	CALL CARD_ABLE(1,마함起動);,フリー誘発)
 PRINTL ①：자신 턴에 발동할 수 있다.
 PRINTL 묘지의 “E.R.A” 일반 함정 카드 3장을 덱의 맨 아래로 되돌리고, 1장을 드로우한다.
-CALL CARD_ABLE(2,마함起動,フリー誘発)
+SIF ターンプレイヤー != "자신"
+	CALL CARD_ABLE(2,마함起動);,フリー誘発)
 PRINTL ②：상대 턴에 발동할 수 있다.
 PRINTL 덱에서 “E.R.A” 일반 함정 카드 1장을 자신 필드에 세트한다.
 PRINTL 이 효과로 세트한 카드는 세트한 턴에도 발동할 수 있다.
@@ -64,14 +66,16 @@ SIF RESULT == 1
 	RETURN 0
 
 
-IF 종류 == 마함起動 || 종류 == フリー誘発
+IF 종류 == 마함起動; || 종류 == フリー誘発
 	SIF ゾーン != "마함"
 		RETURN 0
 	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-		SIF 발동済_1(듀얼리스트,99605)
-			RETURN 0
 		IF ターンプレイヤー == 듀얼리스트
+			SIF 발동済_1(듀얼리스트,99605)
+			RETURN 0
 			CALL CARD_DRAW_CHECK
+			SIF RESULT == 1
+                RETURN 0
 			CALL FULLRESET
 			효과範囲묘지 = 1
 			효과条件カテゴリ = E.R.A
@@ -92,9 +96,31 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 				RETURN 1
 		ENDIF
 	ELSE
-		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT != 1
-			RETURN 0
+		IF ターンプレイヤー == 듀얼리스트
+			SIF 발동済_1(듀얼리스트,99605)
+                RETURN 0
+			CALL CARD_DRAW_CHECK
+			SIF RESULT == 1
+                RETURN 0
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = E.R.A
+			효과条件종류 = 通常함정
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT >= 3
+				RETURN 1
+		ELSEIF ターンプレイヤー != 듀얼리스트
+			SIF 마함数(듀얼리스트) == 5
+				RETURN 0
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = E.R.A
+			효과条件종류 = 通常함정
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				RETURN 1
+		ENDIF
 	ENDIF
 	RETURN 0
 ELSEIF 종류 == 효과後強制誘発
@@ -139,7 +165,7 @@ CALL 対面者판정(듀얼리스트)
 
 
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || (종류 == フリー誘発 && ゾーン == "마함")
+IF 종류 == 마함起動 ;&& GETVAR(@"%듀얼리스트%_魔_表:場所") == 1 || (ゾーン == "마함"); && 종류 == フリー誘発)
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99605,1)
 	IF RESULT == 0
 		IF ターンプレイヤー == 듀얼리스트
