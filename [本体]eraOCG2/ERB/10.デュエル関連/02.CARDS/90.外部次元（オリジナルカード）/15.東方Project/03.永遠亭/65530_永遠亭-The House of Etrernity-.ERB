@@ -49,7 +49,7 @@ PRINTL 이 효과의 발동 후、이 턴 자신은 배틀 페이즈를 이행�
 CALLFORM CARD_ABLE(2,지속효과)
 PRINTL ②：지속인 카드가 자신 몬스터 존에 존재하는 한、이 카드는 파괴 내성을 갖는다。
 PRINTL （지속인 카드는 지속 마법 / 지속 함정 / P 몬스터를 가리킨다）
-CALLFORM CARD_ABLE(0,지속효과)
+CALLFORM CARD_ABLE(0,ターン開始時強制)
 PRINTL ③：자신 필드에 "영원과 수유의 죄인 카구야"가 존재하는 경우에 강제로 발동한다。
 PRINTL 이 카드에 연구 카운터를 １개 놓는다。
 PRINTL 이렇게 ３개째 카운터가 놓인 경우、자신의 패에 "봉래의 약"을 １장 넣는다。
@@ -113,7 +113,7 @@ ELSEIF 종류 == ターン開始時強制
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") >= 3
+	SIF GETVAR(@"%듀얼리스트%_魔_汎数:場所") >= 3
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -154,8 +154,8 @@ ELSEIF 종류 == 지속효과
 	CALL FULLRESET
 	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
 ELSEIF 종류 == ターン開始時強制
-	SETVAR @"%듀얼리스트%_MZ_汎数:場所", GETVAR(@"%듀얼리스트%_MZ_汎数:場所") + 1
-	IF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") >= 3
+	CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"汎数",1)
+	IF GETVAR(@"%듀얼리스트%_魔_汎数:場所") >= 3
 		CALL CARD_GENERATE_HAND(듀얼리스트,165530)
 	ENDIF
 ENDIF

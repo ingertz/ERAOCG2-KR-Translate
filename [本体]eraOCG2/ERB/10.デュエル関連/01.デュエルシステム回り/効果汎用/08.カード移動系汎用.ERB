@@ -120,7 +120,7 @@ ENDIF
 IF 実行出処 == "필드"
 	TRYCALLFORM CARD_{GETVAR(@"%保有者%_필드:選択カード")}("종류")
 	IF RESULT == 초차원 && GROUPMATCH(추가場所,"묘지","제외","손패","덱","EX덱")
-		TRYCALLFORM CARDNAME_{GETVAR(@"%保有者%_필드:選択カード")}("カテゴリ")
+		TRYCALLFORM CARDNAME_{GETVAR(@"%保有者%_필드:選択カード")}("出典作品")
 		IF MATCH(RESULTS,"뱅가드")
 			IF GETVAR(@"%保有者%_MZ_変化元ID:選択カード") > 0
 				カードID = GETVAR(@"%保有者%_MZ_変化元ID:選択カード")
@@ -927,17 +927,16 @@ ENDIF
 $INPUT_LOOP
 SIF モンスター数(듀얼리스트) >= 5
 	RETURN 0
-
+화상ボタン無効 = 1
 TRYCALLFORM CARD_UI(カードID);　カード生成からくるUI（受け渡し必要：듀얼리스트情報のみ）
+화상ボタン無効 = 0
 WAIT
 
 SETVAR @"%듀얼리스트%_특수소환횟수", GETVAR(@"%対面者%_특수소환횟수") + 1
 SETVAR @"%듀얼리스트%_モン出現数", GETVAR(@"%듀얼리스트%_モン出現数") + 1
 
 IF 듀얼리스트 == "자신" && 표시形式 == ""
-	화상ボタン無効 = 1
 	TRYCALLFORM CARD_UI(カードID)
-	화상ボタン無効 = 0
 	PRINTL 【표시형식을 선택해 주세요】
 	PRINTL 
 	PRINTL [0] 공격표시
@@ -1242,7 +1241,7 @@ CALL SWAP_VAR(@"%元듀얼리스트%_MZ_ID:{元選択場所}",@"%듀얼리스트
 	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_召種:{元選択場所}",@"%듀얼리스트%_MZ_召種:{選択場所}")
 	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_T1召種:{元選択場所}",@"%듀얼리스트%_MZ_T1召種:{選択場所}")
 
-	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_束縛:{元選択場所}",@"%듀얼리스트%_MZ_束縛:{選択場所}")
+;	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_束縛:{元選択場所}",@"%듀얼리스트%_MZ_束縛:{選択場所}")
 	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_個ID:{元選択場所}",@"%듀얼리스트%_MZ_個ID:{選択場所}")
 
 	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_MAX成立:{元選択場所}",@"%듀얼리스트%_MZ_MAX成立:{選択場所}")
@@ -1347,8 +1346,6 @@ CALL SWAP_VAR(@"%元듀얼리스트%_MZ_ID:{元選択場所}",@"%듀얼리스트
 
 	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_특수状態:{元選択場所}",@"%듀얼리스트%_MZ_특수状態:{選択場所}")
 
-	;ボツ
-	CALL SWAP_VAR(@"%元듀얼리스트%_MZ_阻害:{元選択場所}",@"%듀얼리스트%_MZ_阻害:{選択場所}")
 
 	;装備カードの情報も連動して변경されます。
 	FOR カウンタ,0,5
@@ -1398,7 +1395,6 @@ ELSE
 
 	;その他
 	CALL SWAP_VAR(@"%元듀얼리스트%_魔_所有:{元選択場所}",@"%듀얼리스트%_魔_所有:{選択場所}")
-	CALL SWAP_VAR(@"%元듀얼리스트%_魔_阻害:{元選択場所}",@"%듀얼리스트%_魔_阻害:{選択場所}")
 	CALL SWAP_VAR(@"%元듀얼리스트%_魔_無効:{元選択場所}",@"%듀얼리스트%_魔_無効:{選択場所}")
 	CALL SWAP_VAR(@"%元듀얼리스트%_魔_除処:{元選択場所}",@"%듀얼리스트%_魔_除処:{選択場所}")
 	
@@ -1953,7 +1949,7 @@ ELSEIF INRANGE(選択カード, 0,紙束最大値)
 		IF 듀얼리스트 == "자신"
 			TRYCALLFORM CARDSUMMON_{選択カード_ID}(듀얼리스트,選択カード,1)
 			IF RESULT == 1 && ターンプレイヤー == 듀얼리스트 && バトルフェイズ == 0
-				TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+				TRYCALLFORM CARDNAME_{選択カード_ID}("出典作品")
 				SIF MATCH(RESULTS,"뱅가드")
 					PRINTL [0] - 초월한다
 			ENDIF
@@ -2041,7 +2037,7 @@ ELSEIF RESULT == 0
 		TRYCALLFORM LINSUMMON(듀얼리스트,選択カード)
 	CASE 초차원
 		TRYCALLFORM CARDSUMMON_{選択カード_ID}(듀얼리스트,選択カード)
-		TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+		TRYCALLFORM CARDNAME_{選択カード_ID}("出典作品")
 		IF MATCH(RESULTS,"뱅가드")
 			TRYCALLFORM STRIDE(듀얼리스트,"EX덱",選択カード,選択カード_ID)
 		ENDIF

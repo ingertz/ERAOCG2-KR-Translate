@@ -1,0 +1,286 @@
+﻿@CARDNAME_59525,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 예점술공주 크리스탈 운디네
+	CASE "略称"
+		RESULTS = 예 Ｃ운디네
+	CASE "カテゴリ"
+		RESULTS:0 = 예점술공주
+		RESULTS:1 = 점술공주
+		RESULTS:3 = E.R.A
+ENDSELECT
+
+
+@CARD_59525(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 1400
+	CASE "守備力"
+		RETURN 2200
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+
+	CASE "추가日"
+		RETURN 251109
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_59525(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL TEXT_DECORATION("P_MAGIC")
+CALL CARD_ABLE(0,손패起動)
+PRINTL 
+PRINTL 이 카드명의 ②의 Ｐ효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ①：이 카드가 마법＆함정존에 존재하는 한、
+PRINTL 자신 필드의 "점술공주" 몬스터는 앞면 수비 표시인채로 공격할 수 있다（데미지 계산은 수비력을 공격력으로 취급）。
+CALL CARD_ABLE(P2,마함起動)
+PRINTL ②：자신의 패 / ＥＸ덱（앞면 표시）의 "점술공주" 몬스터 １장을 특수 소환한다。그 후、자신의 몬스터 존에 앞면 표시인
+PRINTL レベル９ "점술공주" 몬스터가 존재하는 경우、상대의 ＥＸ덱를 확인하고、그 안에서 １장을 선택하고、그 카드명을 카피할 수 있다。
+CALL CARD_ABLE(0,常在無効)
+PRINTL 카드명을 카피한 이 카드가 필드에 존재하는 한、그 카드명의 몬스터는 필드에서 발동하는 몬스터 효과를 발동할 수 없다。
+;PRINTL フィールドに「예점술공주 비블리오무사」が存在する場合、상대プレイヤーの裏側守備표시の部分も確認する。
+CALL TEXT_DECORATION("P_MAGIC_2")
+PRINTL 이 카드명의 ①의 몬스터 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,소환時,특수소환時,R素材時효과)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우 또는 의식 소재로서 릴리스 된 경우에 발동할 수 있다。
+PRINTL 자신의 묘지 / ＥＸ덱（앞면 표시）의 "예점술공주" 몬스터 １장을 패에 넣는다。
+PRINTL 그 후、필드 / ＥＸ덱（앞면 표시）의 "예점술공주 크리스탈 운디네" １장을 마법＆함정 존에 놓을 수 있다。
+CALL TEXT_DECORATION("ROGUE")
+
+;「예점술공주」のもう１体のＰ소환효과持ちのＰモンスター。こちらはＰ소환の後に条件を満たすと상대のＥＸ덱を見通す효과を持つ。
+;これで상대側のＥＸモンスターでの捲り方を予測し、先手を打ってその方法を１つだけ封じる事ができる。
+;フィールド발동を封じるだけであるが상대の攻め手を１つ潰せると考えると優秀。발동불가なのでＥＸ１枚제외よりもロック性能は高いかも。
+;마함の지속효과に相当する효과なので、割られるとロック解除されるのは仕様である。
+;フレーバー的な意味合いとしては、水晶玉に상대のＥＸ몬스터의 姿を映し取って、そのモンスター효과の一部を封印するというイメージ。
+;守備표시のままで攻撃できるようになる지속효과は、守備力が高い冥점술공주を活かす攻撃手段として用意しているが、権現坂のイメージも若干含む。
+;これはeraOCG2のERAカードとして再検討するよりも前に、真っ当な「점술공주」強化としてARC-Vの本編後イメージで新規Ｐカードを妄想していた名残。
+
+;점술공주Ｐ몬스터의 共通효과でNS・SS・의식素材の발동条件で、自身をＰゾーンに置きつつ묘지やＥＸのテーマカードを回収できる。
+;そこまで激しいアドを得られる효과ではないが、ロングゲームになった際に의식소환で失いがちな손패リソースを회복させる手段として活用できる。
+
+
+@CARDSUMMON_AA_59525
+
+
+@CARDCAN_59525(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59525)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_P2(듀얼리스트,59525)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 점술공주
+	효과条件종류 = EX以外全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 常在無効
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_変化元ID:場所") <= 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時 || 종류 == R素材時효과
+	SIF 발동済_1(듀얼리스트,59525)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 예점술공주
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_59525(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 無効カードID
+#DIMS DYNAMIC 無効カード名称
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 조교강도
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC TEXT番号
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59525)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59525,P2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 점술공주
+		효과条件종류 = EX以外全般
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 0
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件レベル = 9
+			효과条件カテゴリ = 점술공주
+			효과条件종류 = モン全般
+			효과条件표시 = 表側표시
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				;상대のＥＸ덱を確認し、その中から選択したカードの名称を得る処理。
+				PRINTFORML 카피할 카드명을 선택해주세요。（카피할 필요가 없는 경우는 [9999] - 돌아간다 를 선택해주세요。）
+				PRINTL 
+				CALL FULLRESET
+				효과条件任意 = 1
+				CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대EX덱",ゾーン,場所)
+				IF RESULT != 9999
+					無効カードID = RESULT:99
+					CALL SET_FIELD_INFO(듀얼리스트, "마함", 場所, "変化元ID", 無効カードID, 上書きモード)
+					TRYCALLFORM CARDNAME_{無効カードID}("名前")
+					無効カード名称 = %RESULTS%
+					
+					
+					PRINTFORML クリスタルウンディーネが捧げ持つ水晶玉が、상대のＥＸ몬스터의 姿を写し取る……
+					PRINTFORMW 写し取った%無効カード名称%がフィールドで발동する효과は、水晶玉へと封印されてしまった！
+					PRINTFORML 
+				ENDIF
+				;エロ효과処理
+				;フィールドに隷ビブリオムーサが存在する場合、暗示をかけて상대プレイヤーの裏側部分を確認できる。
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과範囲마함 = 1
+				효과範囲상대필드 = 1
+				효과範囲상대마함 = 1
+				효과条件표시 = 表側표시
+				효과条件名前 = 예점술공주 비블리오무사
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					CALL CARD_EROTICS(상대プレイヤー, 듀얼리스트)
+					IF RESULT != -1
+						조교대상 = RESULT
+						
+						PRINTFORML クリスタルウンディーネ의 효과로 ＥＸ덱を確認する際には、
+						PRINTFORMW 상대プレイヤーも隠された部分を公開しなければならない……
+						PRINTFORML 
+						CALL ROSYUTSU_LV_CHECK(조교대상)
+						TEXT番号 = RESULT:1 + RAND:25 + 1
+						SETCOLOR C_PINK
+						CALL BIBLIOMUSE_TEXT_PRINT(59526,TEXT番号)
+						WAIT
+						PRINTFORML 
+						RESETCOLOR
+						PRINTFORML ビブリオムーサの暗示によって、焦点の合わぬ虚ろな瞳の%CALLNAME:조교대상%は、
+						PRINTFORMW %CALLNAME:MASTER%が덱を確認している間、笑顔を貼り付けた表情で衣服をずらしてパンツを見せ続けた……
+						;텍스트番号で강도は4段階変動
+						IF TEXT番号 >= 90
+							조교강도 = 500
+						ELSEIF TEXT番号 >= 60
+							조교강도 = 300
+						ELSEIF TEXT番号 >= 30
+							조교강도 = 200
+						ELSE
+							조교강도 = 150
+						ENDIF
+						CALL EROTIC_MOVE("최면パンツ晒し", 조교대상, -1, 조교강도)
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 점술공주
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"守戦")
+ELSEIF 종류 == 常在無効
+	無効カードID = GETVAR(@"%듀얼리스트%_魔_変化元ID:場所")
+	CALL FULLRESET
+	효과条件ID = 無効カードID
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発無")
+	CALL FULLRESET
+	효과条件ID = 無効カードID
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無")
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時 || 종류 == R素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59525,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 예점술공주
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 0 && 마함数(듀얼리스트) <= 4
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲EX덱 = 1
+			효과条件名前 = 예점술공주 크리스탈 운디네
+			효과条件任意 = 1
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+		ENDIF
+	ENDIF
+ENDIF
+
+

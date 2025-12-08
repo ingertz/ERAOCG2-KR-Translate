@@ -67,17 +67,17 @@ STAIN:MASTER:2 |= STAIN:3
 ;-------------------------------------------------
 ;경험の処理
 ;-------------------------------------------------
-;同性愛　레즈なら戻り値1게이なら戻り値2
+;同性愛　ＧＬなら戻り値1、ＢＬなら戻り値2
 IF HETEROSEX(TARGET,MASTER)
 	EXP:(50 + HETEROSEX(TARGET,MASTER)) += 3
 	EXP:MASTER:(50 + HETEROSEX(TARGET,MASTER)) += 3
 ENDIF
-;同性愛　레즈なら戻り値1게이なら戻り値2
+;同性愛　ＧＬなら戻り値1、ＢＬなら戻り値2
 IF HETEROSEX(TARGET,LOCAL)
 	EXP:LOCAL:(50 + HETEROSEX(TARGET,LOCAL)) += 3
 	EXP:TARGET:(50 + HETEROSEX(TARGET,LOCAL)) += 3
 ENDIF
-;同性愛　레즈なら戻り値1게이なら戻り値2
+;同性愛　ＧＬなら戻り値1、ＢＬなら戻り値2
 IF HETEROSEX(LOCAL,MASTER)
 	EXP:LOCAL:(50 + HETEROSEX(LOCAL,MASTER)) += 3
 	EXP:MASTER:(50 + HETEROSEX(LOCAL,MASTER)) += 3
@@ -148,27 +148,27 @@ IF GETPALAMLV(PALAM:욕정,5)
 	PRINTV 'LV,GETPALAMLV(PALAM:욕정,5),'(,GETPALAMLV(PALAM:욕정,5) * 1,')
 	素質確認 = 1
 ENDIF
-;恥じらい
+;부끄럼쟁이
 IF TALENT:수치심 > 0
 	PRINT  - 
 	판정値 -= 1
-	PRINT 恥じらい
+	PRINT 부끄럼쟁이
 	PRINTV '(,1,')
 	素質確認 = 1
 ENDIF
-;쾌락の부정（음란、쾌락狂で無効）
+;쾌락에 부정（음란、쾌락광で無効）
 IF TALENT:쾌감반응 < 0 && !TALENT:음란
 	PRINT  - 
 	판정値 -= 3
-	PRINT 쾌락の부정
+	PRINT 쾌락에 부정
 	PRINTV '(,3,')
 	素質確認 = 1
 ENDIF
-;男嫌い（연모、친애で無効）
+;남성혐오（연모、친애で無効）
 IF TALENT:성별기호 & 1 && !(TALENT:MASTER:성별 & 1) && (!TALENT:연모 || MASTER != MASTER)
 	PRINT  - 
 	판정値 -= 7
-	PRINT 男嫌い
+	PRINT 남성혐오
 	PRINTV '(,7,')
 	素質確認 = 1
 ENDIF
@@ -181,12 +181,12 @@ IF TALENT:음란
 	PRINTV '(,3,')
 	S = 3
 ENDIF
-;쾌락狂
+;쾌락광
 IF TALENT:음란 > 1
 	SIF 素質確認
 		PRINT  + 
 	판정値 += 3
-	PRINT 쾌락狂
+	PRINT 쾌락광
 	PRINTV '(,3,')
 	素質確認 = 1
 ENDIF
@@ -196,7 +196,7 @@ IF (TALENT:MASTER:성별 & 3) == 3
 	SIF 素質確認
 		PRINT  + 
 	판정値 += 8
-	PRINT ふたなり
+	PRINT 후타나리
 	PRINTV '(,8,')
 	素質確認 = 1
 ENDIF

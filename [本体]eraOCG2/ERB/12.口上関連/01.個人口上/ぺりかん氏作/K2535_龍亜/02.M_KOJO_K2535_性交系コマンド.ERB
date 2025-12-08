@@ -1,0 +1,1199 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;성교系コマンド
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;全て *삽입をする時* の구상のため、気持ちいい所を抉ったり、子宮を潰したい時は파생コマンドへ
+;Ａ系は파생しないため、삽입継続で喘がせるといい感じになる
+;==================================================
+;60,正常位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_60
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_60_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_60_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;正常位
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2535_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「お願い、いっきに来て……❤　おれをオンナのコにして……❤」
+				PRINTFORMW 「あ゛あっ❤　チンチン、삽입ってるぅ❤　龍可ぁ❤　おれ、お姉ちゃんになっちゃったぁ❤」
+			ELSE
+				PRINTFORML 「まって！？　おれを押さえつけてなにをするつもりなのさ%CALLNAME:MASTER%！？」
+				PRINTFORMW 「ぐ！？　ぎぃぃ……っ！？　なんでぇ……なんでこんなことするのさ……！？」
+			ENDIF
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;삽입したままこの체위に切り替える
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 1
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 2
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「へへ……❤　この체위、いいよな❤　ラブラブってかんじでさ……❤」
+			ELSE
+				PRINTFORML 「……見るなぁ……！　お、おれは男だ……っ、オンナのコじゃ、ないのにぃ……！」
+				PRINTFORMDW 顔を隠し強情に男と言い張る%CALLNAME:TARGET%。そんな「彼」の「オマンコ」に肉棒をあてがい、たっぷりと「オンナのコ」の悦びを教えてやった……
+			ENDIF
+		CASE 2
+			PRINTFORMW 「あ゛っ❤　ナカにきたぁ❤　へへ、なんでおれ、男って言い張ってたんだろう❤」
+		CASE 3
+			PRINTFORMW 「おれのナカ、気持ちよかったらいつでも사정してくれよな❤　だいじょうぶ、おれは「男」だから임신なんかしないってっ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;61,後背位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_61
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_61_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_61_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2535_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「へへ、これから%CALLNAME:MASTER%に食べられちゃうみたいだねっ❤」
+			ELSE
+				PRINTFORMW 「や、やめろ……！　背中、組み伏せるなぁ……！」
+			ENDIF
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 1
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 2
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「あっ❤　%CALLNAME:MASTER%の手がおれをガッチリ固定してる❤　おれ、もう逃げられないんだ……❤」
+			ELSE
+				PRINTFORMW 「こ、腰を掴むなぁ……！」
+			ENDIF
+		CASE 2
+			PRINTFORMW 「突いてぇ❤　もっと突いてぇ❤」
+		CASE 3
+			PRINTFORMW 「わんっ❤　わんわんっ❤　わぉ～んっ❤」
+	ENDSELECT
+ENDIF
+;==================================================
+;62,正常位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_62
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_62_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_62_1
+#DIM DYNAMIC 호감도修正
+[SKIPSTART]
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL && TFLAG:SELECTCOM분기
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			PRINTFORMW 
+			RETURN 1
+		ELSE
+			PRINTFORMW 
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	;時姦中
+	IF FLAG:70
+		PRINTFORMW 
+		RETURN 1
+	;연모
+	ELSEIF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+[SKIPEND]
+;-------------------------------------------------
+;正常位
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2535_ANALSHOJO_BREAK
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「おれ、嬉しいよ……❤　%CALLNAME:MASTER%の顔を見ながら、一緒に繋がれるんだねっ❤　いいよ、いつでも好きにきてねっ❤」
+			ELSE
+				PRINTFORMW 「こ、こんどは真正面から……っ。や、やめろ……可愛らしいなんて、褒める──お゛っ！？」
+			ENDIF
+		ENDIF
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「おれ、%CALLNAME:MASTER%との애널섹스、好きだよっ❤」
+			ELSE
+				PRINTFORMW 「ま、またヤるの……？」
+			ENDIF
+		CASE 2
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「お、おれ、変じゃないよねっ❤　애널で感じるの、変じゃないよねっ❤」
+			ELSE
+				PRINTFORMW 「か、感じてなんかないっ！　顔を、みるなぁ……！」
+			ENDIF
+		CASE 3
+			PRINTFORMW 「もっとっ❤　もっとしようよ%CALLNAME:MASTER%っ❤　正面からだけじゃないっ❤　後ろからもおれのお尻を突いてよぉ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;63,後背位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_63
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_63_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_63_1
+#DIM DYNAMIC 호감도修正
+[SKIPSTART]
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL && TFLAG:SELECTCOM분기
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			PRINTFORMW 
+			RETURN 1
+		ELSE
+			PRINTFORMW 
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	;時姦中
+	IF FLAG:70
+		PRINTFORMW 
+		RETURN 1
+	;연모
+	ELSEIF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+[SKIPEND]
+;-------------------------------------------------
+;後背位
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2535_ANALSHOJO_BREAK
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「今度は後ろからなんだね……❤　顔が見えないのが怖いけど、頑張ってガマンす──お゛おっ❤」
+			ELSE
+				PRINTFORMW 「う、後ろから……！　や、やめて……ダメだ、逃げられ──お゛っ！？」
+			ENDIF
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「%CALLNAME:MASTER%っておれのお尻大好きだよな～❤　ほ～れほれ、フリフリ～❤」
+				PRINTFORMDW こちらに丸いお尻を見せつけ、挑発する%CALLNAME:TARGET%。そんな悪い子にたっぷりと「オシオキ」をしてやった……
+			ELSE
+				PRINTFORMW 「な、なんでおれのお尻ばっか狙うんだよ～！？　は、%CALLNAME:TARGET%のお尻がキレイなのが悪い！？　なんだよそれ～！？」
+			ENDIF
+		CASE 2
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「お゛うっ❤　お゛うっ❤　もっとっ❤　はげしくっ❤　もっとっ❤　突いてぇ❤」
+			ELSE
+				PRINTFORMW 「キツイっ！？　もっとっ、ゆっくりぃ！　やめ、とまれっ、とまってってばぁ……っ」
+			ENDIF
+		CASE 3
+			PRINTFORMW 「後ろからだね、いいよっ❤　……じゃ～ん♪　へへ、こんなに애널が拡がるようになったんだぜ❤　すごいでしょっ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;====================================================================
+;64,逆レイプする
+;紛らわしいが女あなたが上に乗るのであり、あなたが襲われるわけではない
+;====================================================================
+@M_KOJO_MESSAGE_COM_K2535_64
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_64_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_64_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;조교者が처녀
+		IF TCVAR:MASTER:파과 == 1
+			PRINTFORMW 「%CALLNAME:MASTER%！？　血、血がでてるよっ！？」
+			RETURN 1
+		ELSE
+			PRINTFORMW 「うわぁ！？　お、オカシイよ%CSTR:TARGET:MASCALL%……っ。ち、チンチンが熱くて、柔らかいのに包まれて……気持ちよすぎてなんだか怖いよぉ……っ」
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:MASTER:100 == TARGET
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「や、やめてぇ❤　たった今、사정したばっかだって知ってるでしょ！？　そんなすぐに、できないってばぁ……❤」
+				PRINTFORMW 「ひゃああっ❤　み、耳に囁かないで……っ❤　こ、こんなときだけ男の子扱いしてっ、見てろよおれ、だってぇ……❤」
+			ELSE
+				PRINTFORMW 「うわぁ！？　だ、사정したばっかりだって……っ、無理だよ……っ、止まってってばぁ……っ！？」
+			ENDIF
+			RETURN 1
+		ELSE
+			SELECTCASE RAND:3
+				CASE 0
+					IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+						PRINTFORML 「き、気持ちいいっ❤　%CALLNAME:MASTER%のナカ、気持ちいいよぉ❤　사정るっ❤　사정していいよねっ❤
+						PRINTFORMW 　……えっ！？　そんな、お預け！？　%CALLNAME:TARGET%ならもっとガマンできるってそんな勝手な……っ❤　あっ❤　ダメだっ❤　ガマンなんてぇ……❤」
+					ELSE
+						PRINTFORMW 「わ、わかんないっ！？　わかんないよぉ！？　チンチンが熱くて気持ちよくて、おれ、どうしちゃったのさぁ！？」
+					ENDIF
+				CASE 1
+					IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+						PRINTFORML 「お、おれだって……っ❤　おれだって%CALLNAME:MASTER%を気持ちよくさせてみせる……っ❤　ヤラれっぱなしで終わるもんかぁ……っ❤
+						PRINTFORMW 　あぁっ❤　だ、ダメだぁ❤　おれのチンチンっ❤　小さすぎて上手く、いかないっ❤　ダメだっ❤　%CALLNAME:MASTER%に負けちゃう……っ❤」
+					ELSE
+						PRINTFORMW 「お、おれだって……！　訳わかんないけど%CALLNAME:MASTER%のヤラれっぱなしでたまるかぁ……っ！　ふん！　ふん！　ど、どうだ……っ」
+					ENDIF
+				CASE 2
+					IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+						PRINTFORML 「%CALLNAME:MASTER%っ❤　%CALLNAME:MASTER%好きっ❤　お、おれ頑張るからっ❤　まだ子供でちんちんも小さいけどっ❤　いつか%CALLNAME:MASTER%も만족させられるよう頑張るからっ❤
+						PRINTFORMDW 必死に腰をヘコヘコさせる%CALLNAME:TARGET%。その頭を撫でてやると、腟内で可愛らしい肉棒が「ビクンっ！」と跳ね上がった……
+					ELSE
+						PRINTFORMW 「うわぁ！？　%CALLNAME:MASTER%にい、一方的に搾り取られるぅ！」
+					ENDIF
+			ENDSELECT
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 「こ、今度こそ%CALLNAME:MASTER%に負けないぞ……っ❤　こ、今度こそ、今度こそ……っ❤」
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 「うわぁ！？　また%CALLNAME:MASTER%に襲われる……っ！？」
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;65,騎乗位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_65
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_65_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_65_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2535_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「お、おれが上だね……っ❤　うまくできるかな……え、心配しなくていい？　へへ、サンキュー❤
+				PRINTFORMW 　……ちょ、ちょっと怖いかも──ごっ❤　い、いきにゃり、チンチンを突き入れるにゃあぁ……❤」
+			ELSE
+				PRINTFORML 「お、おれが上に……！？　そんな、おれ男だからできないよぉ……！」
+				PRINTFORMDW つべこべ抜かす%CALLNAME:TARGET%の腰を持ち上げ、一気にその未成熟なオマンコを貫いた……
+			ENDIF
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 1
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 2
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「おれっ❤　チンチンにまたがってるっ❤　腰振ってっ❤　%CALLNAME:MASTER%に媚びてるっ❤
+				PRINTFORMW 　お゛ぉっ❤　い、今はおれが──がぁっ❤　%CALLNAME:MASTER%を気持ちよくする番っ❤　だよっ❤」
+			ELSE
+				PRINTFORMW 「違うんだって……おれは男なの……チンチンにまたがるなんてオカシイ──がぁっ！？」
+			ENDIF
+		CASE 2
+			PRINTFORMW 「ど、どう%CALLNAME:MASTER%っ❤　おれ、オンナのコらしく腰ふれてるっ❤　嬉しいっ❤　おれっ❤　もっとがんばってっ❤　%CALLNAME:MASTER%を気持ちよくしたげるからねっ❤」
+		CASE 3
+			PRINTFORMW 「さ、さぁ사정せっ❤　おれのナカ、たくさん사정せっ❤　おれを孕ませろっ❤　おれをママにしちゃえよぉ……っ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;66,騎乗位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_66
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_66_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_66_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2535_ANALSHOJO_BREAK
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「お、おれが上だね……っ❤　うまくできるかな……え、心配しなくていい？　へへ、サンキュー❤
+				PRINTFORMW 　……ちょ、ちょっと怖いかも──ごっ❤　い、いきにゃり、チンチンを突き入れるにゃあぁ……❤」
+			ELSE
+				PRINTFORML 「お、おれが上に……！？　そんなの、誰がやるもんか……っ！」
+				PRINTFORMDW つべこべ抜かす%CALLNAME:TARGET%の腰を持ち上げ、一気にその未成熟な애널を貫いた……。%CALLNAME:TARGET%から普段聞くことのない悲鳴が響き渡る……
+			ENDIF
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「ご、ごめん……❤　%CALLNAME:MASTER%のチンチンが硬すぎてっ❤　腰、うごかない……っ
+				PRINTFORMW 　わ、悪いんだけどさぁ～❤　%CALLNAME:MASTER%がおれを、下から突き上げて──お゛っ❤　きたぁ……❤」
+			ELSE
+				PRINTFORML 「は、삽입ったよ……っ、これで、いいんだろ……っ？」
+				PRINTFORMW 「えっ！？　お、おれが動くの！？　そ、そんなのできるわけない……っ！？」
+			ENDIF
+		CASE 2
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「もっとぉ❤　おれ、もっとお尻で気持ちよくなりたいよぉ……っ❤　腰っ❤　腰がとまらないんだぁ❤
+				IF TALENT:TARGET:성별 == 2
+				PRINTFORMW 　ああっ❤　おれのチンチンっ❤　ブルブル震えてるぅ❤　やめてっ❤　チンチン掴まないでっ❤　사정、しゃせーしちゃうよぉぉ❤」
+				ELSE
+				PRINTFORMW 　ご、ごめんっ❤　オマンコ、濡れてきちゃったぁ❤　あ、こらぁ❤　オマンコ触るなぁ❤　グチュグチュ音をたてるなぁ❤」
+				ENDIF
+			ELSE
+				PRINTFORML 「い、イヤだ……っ！　これ以上、お尻で気持ちよくなんかなりたくない……っ！」
+				IF TALENT:TARGET:성별 == 2
+				PRINTFORMW 「えっ！？ き、気持ちよく感じてるわけ、ないだろ……っ！？　あっ！？　ち、チンチンが勃ってるのは……ちがう！　違うんだぁ……っ！？」
+				ELSE
+				PRINTFORMW 「えっ！？ き、気持ちよく感じてるわけ、ないだろ……っ！？　あっ！？　ち、違う……っ！　股が濡れてなんか……ないんだぁ……っ！？」
+				ENDIF
+			ENDIF
+		CASE 3
+			IF TALENT:TARGET:성별 == 2
+				PRINTFORMW 「オンナのコってズルいよなぁ❤　お尻だけでも気持ちいいのに、もう一個気持ちいい穴があるんだろ～❤　はぁ、龍可が羨ましいよ～❤」
+			ELSE
+				PRINTFORMW 「%CALLNAME:MASTER%の気が向いたらでいいからぁ❤　おれのオマンコも使ってくれよな❤　ほら、見えるだろ❤　グチョグチョに濡れてるトコロがさ……❤」
+			ENDIF
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;67,対面座位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_67
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_67_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_67_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2535_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「いえ～い❤　%CALLNAME:MASTER%の顔が見えて、おれ嬉しいよっ❤
+				PRINTFORMW 　……もしかしたらおれ、この체위が一番好きかも……❤」
+			ELSE
+				PRINTFORMW 「うわわわっ！？　おれのカラダ、持ち上げないでよ！？」
+			ENDIF
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 1
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 2
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「き、気持ちいいよぉ❤　顔をみればわかるって？❤　やめろよぉ❤　顔をのぞきこむなぁ❤」
+			ELSE
+				PRINTFORMW 「やめろ……そんなにおれの顔、みるなよぉ……っ」
+			ENDIF
+		CASE 2
+			IF TALENT:TARGET:성별 ==0
+				PRINTFORMW 「ごめんっ❤　ごめんよぉ❤　%CALLNAME:MASTER%のカラダっ❤　おれのオマンコからでた汁で汚しちゃってるぅ❤」
+			ELSE
+				PRINTFORMW 「きもちいいっ❤　この体勢だとっ❤　おれのチンチンが挟まれてぇ❤　ダブルで気持ちいいよぉ❤」
+			ENDIF
+		CASE 3
+			PRINTFORMW 「で、できれば키스も一緒にしたいな～……❤　わ、笑うなよぉ❤」
+	ENDSELECT
+	RETURN 1
+ENDIF
+RETURN 1
+
+;==================================================
+;68,背面座位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_68
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_68_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_68_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2535_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「へへ……❤　後ろからだといつ挿れられるかわからなくて……ゾクゾクするねっ❤」
+			ELSE
+				PRINTFORMW 「ひっ……！？　な、なにしてんだよぉ……っ」
+			ENDIF
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	호감도修正 = 1
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 2
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「い、いつでも挿れていいっていったけどさぁ……❤　あんまりおれを焦らさないでくれる──とぉ゛っ❤」
+				PRINTFORMW 「急にっ❤　きたぁ❤　%CALLNAME:MASTER%のチンチンっ❤　顔が見えない分っ❤　オマンコ意識しちゃうよぉ❤」
+			ELSE
+				PRINTFORMW 「い、いつまで焦らすんだよぉ……っ！　ち、ちがう！？　期待とかじゃな──ああっ！？」
+			ENDIF
+		CASE 2
+			PRINTFORMW 「あっ❤　抱っこされてるぅ❤　へへ、%CALLNAME:MASTER%に抱きしめてもらえるならさぁ❤　おれ、子供のまんまでいいやっ❤」
+		CASE 3
+			PRINTFORMW 「さわってよぉ❤　おれのおっぱいっ❤　たくさん触ってぇ❤　おれはオンナのコなんだってっ❤　カラダに刻みつけてぇ❤」
+	ENDSELECT
+	RETURN 1
+ENDIF
+RETURN 1
+
+;==================================================
+;69,対面座位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_69
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_69_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_69_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2535_ANALSHOJO_BREAK
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「う、うん……❤　おれも、%CALLNAME:MASTER%の顔を見ながらできるの、うれしいよ……❤」
+				PRINTFORMW 「あ゛っ❤　や、やっぱあんま顔見ないでよぉ❤　ぜったい、ぜったいだよ……っ❤」
+			ELSE
+				PRINTFORML 「おわっ！？　こ、今度は向かい合って……するのかよっ」
+				PRINTFORMW 「ぐぅぅ……っ！　こ、こらっ！？　前髪、かき上げるなよぉ……っ！　顔をのぞくなぁ……っ」
+			ENDIF
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「気持ちいいよぉ❤　%CALLNAME:MASTER%との애널섹스っ❤　きもちいいっ❤　もっとっ❤　もっとおれを気持ちよくしてぇ❤」
+				IF TALENT:TARGET:성별 == 0
+					PRINTFORMW 「あ゛うっ❤　く、クリトリスまでぇ❤　ヤメてよぉ❤　おれ、耐えられないよぉ❤　おれ、オンナのコにしてもらってよかったぁ……❤」
+				ELSE
+					PRINTFORMW 「い゛っ❤　ち、チンチン触るのはっ❤　反則だろぉ……っ❤　うああっ❤　おれ、チンチンついててよかったっ❤　こんなのっ❤　龍可は味わえないもんねっ❤」
+				ENDIF
+			ELSE
+				PRINTFORML 「き、気持ち言いわけないだろ！？　お尻に、チンチン挿れられて……バカじゃないの……っちょ！？」
+				IF TALENT:TARGET:성별 == 0
+					PRINTFORMW 「く、クリ……変なとこ、イジるなぁ……っ！？　き、気持ちいいわけないだろっ！？　おれは男だっ！　オンナのコじゃないんだってぇ……っ」
+				ELSE
+					PRINTFORMW 「お、おれのチンチン、さわるなよ……っ！？　し、しごくなぁ……っ！　気持ちよくないっ！　こんなの、気持ち言いわけないだろぉ……っ」
+				ENDIF
+			ENDIF
+		CASE 2
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「へへ……❤　おれこの体勢好きだ……❤　%CALLNAME:MASTER%の顔が見えて、嬉しいよ……❤」
+				PRINTFORMW 「お゛うっ❤　お、おれぇ❤　いま絶対へんな顔してるっ❤　えっ！？　か、かわいいよ……❤　へへ……❤　嬉しいっ❤」
+			ELSE
+				PRINTFORMW 「また向かい合ってするのかよ……。いいか、今度はおれの顔、見るなよな……っ」
+			ENDIF
+		CASE 3
+			PRINTFORMW 「で、できれば키스も一緒にしたいな～……❤　わ、笑うなよぉ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;70,背面座位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2535_70
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2535_70_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2535_70_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2535_ANALSHOJO_BREAK
+		ELSE
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「へへ……❤　後ろからだといつ挿れられるかわからなくて……ゾクゾクするねっ❤」
+				PRINTFORMW 「ちょ、ちょっと怖いからさ……ぎゅってしてよっ……へへ、やった❤」
+			ELSE
+				PRINTFORMW 「う、後ろから……！？　やめ、やめろよぉ……っ！　腰、もちあげるなぁ……っ」
+			ENDIF
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2535_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「ほら……❤　お尻の穴、拡げてやるからさ、いつでも挿れてよ……❤」
+				PRINTFORMW 「あ゛っ❤　きたぁ❤　どう%CALLNAME:MASTER%っ❤　おれのお尻気持ちいいかなっ❤」
+			ELSE
+				PRINTFORMW 「ま、また後ろから……！？　せ、せめて挿れるときは挿れるって──んぎゅっ！？」
+			ENDIF
+		CASE 2
+			IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+				PRINTFORML 「ねぇ%CALLNAME:MASTER%……❤　もっかいぎゅってしてくれるかなっ❤　へへ、嬉しいなっ❤」
+				PRINTFORMW 「ほら、%CALLNAME:MASTER%の好きな時に挿れてよっ❤　おれのお尻はいつでも%CALLNAME:MASTER%のチンチンを受け入れるからさ……っ❤」
+			ELSE
+				PRINTFORMW 「い、いいから挿れろよ……っ！？　い、いつ突っ込んでくるかわからないのが一番怖い──ぎぃっ！？　ば、バカ！？　まだ喋ってる途中だろう！？」
+			ENDIF
+		CASE 3
+			PRINTFORMW 「うあ゛っ❤　挿れてるときにぃ❤　乳首ぃ❤　イジるなぁ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;처녀
+@M_KOJO_MESSAGE_COM_K2535_SHOJO_BREAK
+
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+
+;애널처녀
+@M_KOJO_MESSAGE_COM_K2535_ANALSHOJO_BREAK
+
+PRINTFORMW 「な、何するのさ%CALLNAME:MASTER%……さっきから目が怖いよ……」
+PRINTFORMDW いつもの生意気な態度はどこへやら、%CALLNAME:TARGET%はすっかり怯えきった様子だ
+PRINTFORMDW ……ふと嗜虐心がわいた。このまま黙って犯すのもいいが、折角だから今から자신がどういう目にあうか教えてあげよう
+PRINTFORMW …………
+PRINTFORMW ……！？
+PRINTFORMW 「ま、まってよ！？　お尻の、うんちする穴にチンチンを挿れる！？　無理だよ、そんなの삽입るわけない……！」
+PRINTFORMW 「やだ、やだっ！？　ゆ、許さないぞ！？　やめ、やめろ……っ」
+PRINTFORMDL ……うるさいなぁ。%CALLNAME:TARGET%の頭の近くへわざと大きな音がするように拳を下ろす
+PRINTFORMDW デュエルのため鍛えられたその脅しは、자신自身が驚くほど振動をあたえ……
+PRINTFORMDW ──%CALLNAME:TARGET%は目に涙を浮かべたまま、硬直してしまっている
+PRINTFORMDL なんと可哀想なのだろう。大丈夫、優しくするから……
+PRINTFORMDW 折角こちらが優しい言葉をかけているのに、%CALLNAME:TARGET%は動かない
+PRINTFORMDW ……だがまぁ、硬くなってるならその分しまりもいいだろう、%CALLNAME:TARGET%もそのうち、あまりの気持ちよさに硬直も解けるに違いない
+PRINTFORMDW %CALLNAME:MASTER%は%CALLNAME:TARGET%のカラダを好きな체위に持っていき……その可愛らしい애널に猛々しい肉棒を突き入れた……
+
+;膣성교
+@M_KOJO_MESSAGE_COM_K2535_AEGI_1
+
+SELECTCASE RAND:10 + 1
+	CASE 1
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「うんっ❤　おれはオンナのコなんだっ❤　%CALLNAME:MASTER%に恋するっ❤　オンナのコなんだぁ❤」
+		ELSE
+			PRINTFORMW 「やめろぉ！？　おれは、男だ！　女の子じゃない……っ」
+		ENDIF
+	CASE 2
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「オカシイよっ❤　おれっ❤　男だったのにっ❤　オンナのコになっちゃったぁ❤　%CALLNAME:MASTER%のせいだぁ❤」
+		ELSE
+			PRINTFORMW 「抜いてよぉ！？　こんなの、オカシイよっ！？」
+		ENDIF
+	CASE 3
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「絶対許さないからぁ❤　おれっ❤　%CALLNAME:MASTER%に見捨てられたら生きていけないっ❤　手放したら許さないからねっ❤」
+		ELSE
+			PRINTFORMW 「ぜ、絶対許さない……っ！　このままで、すませるもんか……っ」
+		ENDIF
+	CASE 4
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「ああっ❤　声、とまんなぁいっ❤　あっ❤　ああっ❤　そこぉ❤」
+		ELSE
+			PRINTFORMW 「うわぁ……っ❤　！？　い、今のはちが……っ！」
+		ENDIF
+	CASE 5
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「ひぃっ❤　おれっ❤　ナカで사정されたらどうなるのぉ❤　こわいっ❤　こわいよ%CALLNAME:MASTER%❤」
+		ELSE
+			PRINTFORMW 「ひっ！？　お、おれのナカでチンチンが膨らんでぇ……！？」
+		ENDIF
+	CASE 6
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「龍可ぁ❤　たすけて龍可ぁ❤　おれ、このままじゃあ❤　戻ってこれなくなっちゃう❤　気持ちよすぎてぇ❤　섹스中毒になっちゃうぅ❤」
+		ELSE
+			PRINTFORMW 「る、龍可ぁ！？　龍可たすけてっ！？　おれ、このままじゃ女の子にされちゃう……っ」
+		ENDIF
+	CASE 7
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORML 「ねぇ%CALLNAME:MASTER%っ❤　いつか龍可も一緒に섹스しよっ❤　あいつも寂しいだろっ❤　そんな思いさせたくないんだぁ❤
+			PRINTFORMW 　妹思いでエライ？　へへっ当然だろぉ❤　おれはぁ❤　龍可のぉ❤　お姉ちゃんだぞぉ❤」
+		ELSE
+			PRINTFORMW 「はやく抜けよ……っ！　……えっ！？　じゃあ代わりに龍可を……！？　そ、そんなのダメだっ！　ヤるならおれにしろぉ！」
+		ENDIF
+	CASE 8
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「おれが男ぉ❤　そうだっけぇ❤　おれはオンナのコだよっ❤　ヒーロー？　あはは、ないないっ❤　ヒーローがこんなオマンコじゅぽじゅぽされて悦ぶわけないじゃん……っ❤」
+		ELSE
+			PRINTFORMW 「こんなの、悪夢だ……っ！？　おれは、おれはぁ……男、なんだ……龍可のヒーロー、なんだっ……女の子じゃ、ないぃ……っ」
+		ENDIF
+	CASE 9
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「おれ、がんばるからっ❤　ちゃんとオンナのコになれるようがんばるからっ❤　だから%CALLNAME:MASTER%もさぁ❤　他のオンナのコにいかないでぇ❤　おれだけを見ててよっ❤」
+		ELSE
+			PRINTFORMW 「なんで男のおれ상대なんだよ！？　%CALLNAME:MASTER%だったらもっと他に女の子いただろ！？　なんでっ、おれなんだぁ……っ❤」
+		ENDIF
+	CASE 10
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORML 「夢じゃないよねっ❤　%CALLNAME:MASTER%と섹스してるよねぇ❤　おれ、おれ、幸せすぎてっ❤　夢じゃないかと不安で……っ❤」
+			PRINTFORMW 「もっとっ❤　もっと突いてよぉ❤　夢なら醒めたくないっ❤　現実ならカラダに刻みつけたいっ❤　もっとっ❤　もっとぉ❤」
+		ELSE
+			PRINTFORMW 「これは夢だ……！？　だからはやく醒めろ……っ！　夢だっ……夢なんだよぉ……！」
+		ENDIF
+ENDSELECT
+
+;肛門성교
+@M_KOJO_MESSAGE_COM_K2535_AEGI_2
+SELECTCASE RAND:7 + 1
+	CASE 1
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「うん好きだよっ❤　おれ、%CALLNAME:MASTER%とする애널섹스大好きぃ❤」
+		ELSE
+			PRINTFORMW 「%CALLNAME:MASTER%おかしいってぇ……っ！　なんでお尻に突っ込むんだよぉ……！？」
+		ENDIF
+	CASE 2
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「お゛おっ❤　もっと゛ぉ❤　も゛っとっ❤　も゛っどぉ❤　突いてぇ❤　おれのお尻、メチャクチャにしてぇ❤」
+		ELSE
+			PRINTFORMW 「い、痛いんだって……っ！　そんな、突くなぁ……！」
+		ENDIF
+	CASE 3
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「もうすっかりお尻にスッポリだよぉ❤　オムツしないとだめかもぉ❤　%CALLNAME:MASTER%のせいだぁ❤　ありがとう%CALLNAME:MASTER%❤」
+		ELSE
+			PRINTFORMW 「ううう……明日、うんちできないよぉ……」
+		ENDIF
+	CASE 4
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「お尻気持ちいいよぉ❤　こんなの負けちゃうよぉ❤　龍可ごめんよぉ❤　おれ、ヒーローじゃなかった……❤　ただのお尻で感じるぅ❤　変態さんだったんだぁ❤」
+		ELSE
+			PRINTFORMW 「こんなのに、屈してたまるかぁ……っ！　おれは、龍可のアニキでっ……！　かっこいいヒーローなんだぁ……！」
+		ENDIF
+	CASE 5
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORML 「絶対ダメだからなっ❤　龍可にこんなコトしちゃダメだからなっ❤　おれだけだっ❤　こんな気持ちいいこと、おれだけだからな……っ❤
+			IF TALENT:TARGET:성별 == 2
+			PRINTFORMW 　だ、だってさぁ……❤　あいつはオンナなんだぞっ❤　おれはお尻にしか挿れてもらえないのにぃ❤　あいつは前にも穴があるんだろっ❤　そんなのズルじゃんっ❤　だからお尻はおれだけにしろぉ❤」
+			ELSE
+			PRINTFORMW 　だってあいつのほうがかわいいだろうっ❤　龍可はおれから見てもかわいいもんっ❤　絶対%CALLNAME:MASTER%もメロメロになっちゃう……❤　そんなの、ダメだぁ❤　もっとおれを見ろぉ❤」
+			ENDIF
+		ELSE
+			PRINTFORML 「そ、それ以上するならぶん殴ってやる……！　……え！？　なら龍可を襲う！？　だ、ダメだ！　あいつにこんなコトさせられるもんか……！
+			PRINTFORMW 　……ほ、ほら！　はやく続きをしろよぉ！？　そのかわり、龍可を狙うなよ！　絶対だぞ！？」
+		ENDIF
+	CASE 6
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			IF TALENT:TARGET:성별 == 0
+				PRINTFORMW 「オマンコ濡れてきたぁ❤　だってお尻がぁ❤　気持ちよすぎるよぉ❤　オマンコが嫉妬してるんだよぉ❤　はやくこっちも挿れてって、嫉妬してるんだよぉ❤」
+			ELSE
+				PRINTFORML 「お尻が気持ちよくてぇ❤　おれのチンチンがビンビンになっちゃったぁ❤
+				PRINTFORMW 　でもさぁ❤　これホントにチンチンかなぁ❤　だってぇ❤　お尻にはいってるソレに比べたらぁ❤　まるで子供じゃんかぁ……❤」
+			ENDIF
+		ELSE
+			PRINTFORML 「き、気持ちいいわけないだろ……っ！？　痛いぐらいだ……！　だから早く、ぬけよぉ！？」
+			IF TALENT:TARGET:성별 == 2
+				PRINTFORMW 「えっ！？　オマンコが濡れてる……！？　そ、そんなわけないだろ！？　見間違いだ……っ絶対に、見間違いだぁ……！」
+			ELSE
+				PRINTFORMW 「ち、チンチンが勃ってるだって……！？　ち、違う！　これは、これは……き、危機感だ！　そう、今の상황がピンチだって、そう感じてるだけなんだぁ……！」
+			ENDIF				
+		ENDIF
+	CASE 7
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「あ゛っ❤　あ゛あっ❤　おしりぃ❤　きもちいいよぉ❤　お゛うっ❤　お゛おうっ❤　もっとぉ❤　お尻にぃ❤　あついの사정してぇ❤」
+		ELSE
+			PRINTFORMW 「あ゛っ❤　……ち、ちが……っ！？　お尻で感じるわけ、ないだろっ！？　感じる、わけ……」
+		ENDIF
+ENDSELECT
+
+;체위변경
+@M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_1
+SELECTCASE RAND:3 + 1
+	CASE 1
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「今度はこの体勢がいいのっ❤　いいよっ❤　全部%CALLNAME:MASTER%の好きにしてよぉ❤」
+		ELSE
+			PRINTFORMW 「あっ！？　な、なに勝手にカラダをつかんでんだよ！？　さわるなぁ！？」
+		ENDIF
+	CASE 2
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「お、おれっ❤　乱暴なのもすきだよっ❤　おれのカラダっ❤　オンナのコのカラダっ❤　好きにつかってよぉ❤」
+		ELSE
+			PRINTFORMW 「こ、こらぁ！？　やさしく、あつかえぇ……っ！　女の子のカラダだぞぉ……──あっ！？　ち、ちが……！？　お、おれは男だ……っ」
+		ENDIF
+	CASE 3
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「次はこっちでだねっ❤　いいよっ❤　%CALLNAME:MASTER%が만족するまで、おれ付き合うよっ❤」
+		ELSE
+			PRINTFORMW 「ま、まだするのかよ……ちょっとぐらい、休ませてくれよぉ……」
+		ENDIF
+ENDSELECT
+
+;前回사정した체위변경
+@M_KOJO_MESSAGE_COM_K2535_SEXCHANGE_2
+SELECTCASE RAND:3 + 1
+	CASE 1
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「へへ、いっぱい사정したな……❤　次はこの体勢？　いいよっ❤」
+		ELSE
+			PRINTFORMW 「うぇぇ……ナカでグチャグチャいってるよぉ……」
+		ENDIF
+	CASE 2
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「まだ만족できないんだな……❤　いいよ、もっと사정してくれっ❤　おれが全部、受け止めてやる……❤」
+		ELSE
+			PRINTFORMW 「だ、사정したんだろ？　なんでまだ硬いんだよぉ……」
+		ENDIF
+	CASE 3
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			PRINTFORMW 「へへ……❤　このままじゃオンナのコを通り越してママになっちゃうよ❤　ちょ、ちょっと！？　まだするの？　ママにする気、満々じゃん……❤」
+		ELSE
+			PRINTFORMW 「なぁ……ナカに사정されて、おれどうなっちゃうの……？　こ、答えてくれよぉ……！？」
+		ENDIF
+ENDSELECT

@@ -1,0 +1,169 @@
+﻿@CARDNAME_72262,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 용에게 다다르는 여정
+	CASE "略称"
+		RESULTS = 용에게 다다르는 여정
+	CASE "カテゴリ"
+		RESULTS:0 = 용각
+		RESULTS:1 = 쉐도우 팔라딘
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_72262(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72262(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②はそれぞれ１ターンに１枚しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：자신の묘지の드래곤족・마법사족で어둠속성のモンスターの数まで、자신の덱の上からカードを묘지へ送る。
+CALL PRINT_VRITUALTEXT("５")
+PRINTL このターン、자신フィールドのモンスターの攻撃力は자신の묘지の드래곤족・마법사족で어둠속성のモンスターの数×２００アップする。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：『의식３』
+SETCOLOR C_L_GRAY
+PRINTFORML （자신の묘지の드래곤족・마법사족で어둠속성のモンスターが３体以上の場合、以下の효과を適用する。）
+RESETCOLOR
+PRINTL このカードが묘지に存在する場合、
+PRINTL 묘지の드래곤족・마법사족で어둠속성のモンスター２体を덱に戻して발동できる。このカードを손패に加える。
+
+
+@CARDCAN_72262(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72262)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,72262)
+		RETURN 0
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족:0 = 드래곤족
+	효과条件종족:1 = 마법사족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,72262)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족:0 = 드래곤족
+	효과条件종족:1 = 마법사족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻紋章起動
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_72262(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 攻撃力修正
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72262,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 어둠속성
+		효과条件종족:0 = 드래곤족
+		효과条件종족:1 = 마법사족
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT >= 1
+			CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",RESULT)
+		ENDIF
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 어둠속성
+		효과条件종족:0 = 드래곤족
+		효과条件종족:1 = 마법사족
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT >= 5
+			CALL CARD_RESERV(듀얼리스트,72262,攻紋章予約)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72262,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 어둠속성
+		효과条件종족:0 = 드래곤족
+		효과条件종족:1 = 마법사족
+		효과条件複数 = 2
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+	ENDIF
+ELSEIF 종류 == 攻紋章起動
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족:0 = 드래곤족
+	효과条件종족:1 = 마법사족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 200
+
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻撃力修正)
+ENDIF
+
+

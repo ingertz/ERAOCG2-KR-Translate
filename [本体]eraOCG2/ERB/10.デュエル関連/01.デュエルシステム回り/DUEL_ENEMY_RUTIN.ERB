@@ -50,6 +50,9 @@ RETURN 返し値
 #DIM DYNAMIC 行数カウント
 #DIM DYNAMIC 行数カウント（終）
 #DIM DYNAMIC 使用行数
+#DIM DYNAMIC 参照値A
+#DIM DYNAMIC 参照値B
+#DIM DYNAMIC 参照値C
 
 #DIM DYNAMIC 後カード_ID
 #DIMS DYNAMIC 後듀얼리스트
@@ -123,6 +126,7 @@ SELECTCASE RESULTS
 			RETURN 1
 		SIF (モンスター数("상대") + 마함数("상대")) >= 3
 			RETURN 1
+
 	;無駄な殺傷はやめろ
 	CASE "뉴스타트", "격류장"
 		SIF モンスター数("자신") <= 1
@@ -139,14 +143,6 @@ SELECTCASE RESULTS
 			SIF 상대_魔_個Ｃ:場所 <= 1
 				RETURN 1
 		ENDIF
-	;상대のモンスターがいなければ使わせない…？けど意図が分からなかったので一旦コメントアウト
-	; CASE "드래그마의 기사 플루르드리스"
-	; 	SIF (モンスター数("자신")) == 0
-	; 		RETURN 1
-	;(CPU)から見て자신의 ターン、 메인 페이즈에 は使わせない…んだったけど、ゼロが来て話が変わったので一旦コメントアウト
-	; CASE "섬도희－레이"
-	; 	SIF ターンプレイヤー == "상대" && メインフェイズ == 1
-	; 		RETURN 1
 	CASE "다크 다이브 봄버"
 		;攻撃する前は使わせない
 		IF 종류 == 필드起動
@@ -529,6 +525,40 @@ SELECTCASE RESULTS
 		IF 종류 == 손패起動 || 종류 == フリー誘発
 			RETURN 1
 		ENDIF
+	CASE "스프라이트 스타터"
+		;ライフが덱にある最小攻撃力のスプライトモンスター以下なら발동させない
+		参照値A = 0
+		参照値B = 現山札数("상대")
+		FOR カウンタ,0,参照値B
+			대상효과ID = GETVAR(@"상대_덱:{カウンタ}")
+			VARSET RESULT
+			TRYCALLFORM CARD_{대상효과ID}("종류")
+			SIF !GROUPMATCH(RESULT,通常モン,효과モン)
+				CONTINUE
+			TRYCALLFORM CARDNAME_{대상효과ID}("カテゴリ")
+			SIF !MATCH(RESULTS,"스프라이트")
+				CONTINUE
+			TRYCALLFORM CARD_{대상효과ID}("攻撃力")
+			IF RESULT < 参照値A
+				参照値A = RESULT
+			ENDIF
+		NEXT
+		IF 参照値A >= ライフ_상대
+			RETURN 1
+		ENDIF
+	CASE "더블 툴 D＆C"
+		CALL FULLRESET
+		濾過範囲필드 = 1
+		濾過条件종류 = 싱크로
+		濾過条件レベル:0 = 7
+		濾過条件レベル:1 = 8
+		濾過条件レベル:2 = 9
+		濾過条件レベル:3 = 10
+		濾過条件レベル:4 = 11
+		濾過条件レベル:5 = 12
+		CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
+		SIF RESULT != 1
+			RETURN 1
 ENDSELECT
 
 ;カテゴリチェック
@@ -625,7 +655,7 @@ SELECTCASE 소환法
 	CASE 의식
 
 	CASE 융합
-		IF 参照先 == "필드"
+		IF 参照先 == "필드" && モンスター数("상대") >= 5
 			修正値 -= 15000
 		ELSEIF 参照先 == "상대제외"
 			修正値 -= 12000
@@ -643,15 +673,17 @@ SELECTCASE 소환法
 				修正値 += 98000
 		ENDIF
 	CASE 엑시즈
-		CALLFORM CARD_{소환カード_ID}("レベル")
-		IF RESULT < 5
-			SIF 상대_MZ_攻:場所 > 1950
-				修正値 += 98000
+		IF 효과条件重ねてＸ == 0 && 重ねてＸ == 0 && なんでもＸ == 0
+			CALLFORM CARD_{소환カード_ID}("レベル")
+			IF RESULT < 5
+				SIF 상대_MZ_攻:場所 > 1950
+					修正値 += 98000
+			ENDIF
 		ENDIF
 	CASE 링크
-		TRYCALLFORM CARD_{素材カードID}("レベル")
+		TRYCALLFORM CARD_{素材カードID}("攻撃力")
 		参照値１ = RESULT
-		TRYCALLFORM CARD_{소환カード_ID}("レベル")
+		TRYCALLFORM CARD_{소환カード_ID}("攻撃力")
 		参照値２ = RESULT
 		CALL ENEMY_RUTIN_PRIORITY(소환カード_ID,場所)
 		参照値２ += RESULT
@@ -1683,10 +1715,33 @@ RETURN 0
 #DIM DYNAMIC 修正値
 #DIM DYNAMIC 返し値
 
-IF GROUPMATCH(参照先,"상대필드","상대마함","상대묘지","상대손패","상대덱","상대제외","상대EX덱")
-	修正値 += 99999
-ELSEIF GROUPMATCH(参照先,"덱")
-	修正値 += 50000
+#DIM DYNAMIC 後カード_ID
+#DIMS DYNAMIC 後듀얼리스트
+#DIM DYNAMIC 後효과種
+#DIMS DYNAMIC 後ゾーン
+#DIM DYNAMIC 後場所
+
+IF 効後_カウンタ != 0
+	後カード_ID = 効後_효과ID:(効後_カウンタ - 1)
+	後듀얼리스트 = %効後_実行者:(効後_カウンタ - 1)%
+	後효과種 = 効後_효과種:(効後_カウンタ - 1)
+	後ゾーン = %効後_ゾーン:(効後_カウンタ - 1)%
+	後場所 = 効後_設場所:(効後_カウンタ - 1)
+ENDIF
+
+;アルザリオン専用분기
+IF 後カード_ID == 42235 && 後듀얼리스트 == "상대"
+	IF GROUPMATCH(参照先,"상대필드","묘지")
+		修正値 += 99999
+	ELSEIF GROUPMATCH(参照先,"자신필드","상대묘지")
+		修正値 -= 99999
+	ENDIF
+ELSE
+	IF GROUPMATCH(参照先,"상대필드","상대마함","상대묘지","상대손패","상대덱","상대제외","상대EX덱")
+		修正値 += 99999
+	ELSEIF GROUPMATCH(参照先,"덱")
+		修正値 += 50000
+	ENDIF
 ENDIF
 
 IF 효과条件손패취득 == 1
@@ -1974,6 +2029,9 @@ SELECTCASE RESULTS
 			효과条件優先名前 = 밤장미 흑기사
 	CASE "밤장미 흑기사"
 		효과条件劣後名前 = 밤장미 흑기사
+	CASE "스프라이트 스타터"
+		;ライフより低い攻撃力のモンスターだけを出すようにする
+		효과条件攻撃力 = ライフ_상대 - 100
 ENDSELECT
 
 
@@ -2135,14 +2193,15 @@ ENDIF
 #DIM DYNAMIC 攻撃元
 #DIM DYNAMIC 与攻撃カードID
 #DIM DYNAMIC 被攻撃カードID
+#DIM DYNAMIC 戦闘カードID
 #DIM DYNAMIC 攻撃力修正
 
 
-被攻撃カードID = GETVAR(@"%듀얼리스트%_필드:攻撃先")
-SIF 被攻撃カードID <= 0
+戦闘カードID = GETVAR(@"%듀얼리스트%_필드:攻撃先")
+SIF 戦闘カードID <= 0
 	RETURN 0
 
-CALLFORM CARDNAME_{被攻撃カードID}("名前")
+CALLFORM CARDNAME_{戦闘カードID}("名前")
 SELECTCASE RESULTS
 CASE "검의 미캉코 하레", "구슬의 미캉코 후우리", "거울의 미캉코 니니"
 	CALL FULLRESET
@@ -2164,9 +2223,20 @@ CASE "환상의 소환신 엑조디아"
 	RETURN 攻撃力修正
 ENDSELECT
 
-CALLFORM CARDNAME_{被攻撃カードID}("カテゴリ")
-SIF RESULTS == "시계신"
+CALLFORM CARDNAME_{戦闘カードID}("カテゴリ")
+SIF MATCH(RESULTS,"시계신")
 	RETURN 999999
+
+CALL FULLRESET_EXT
+濾過範囲필드 = 1
+濾過条件名前 = 아마조네스의 검사
+CALL CARD_CHECK_EXT("상대",0,"",0)
+IF RESULT == 1
+	CALLFORM CARDNAME_{戦闘カードID}("カテゴリ")
+	SIF MATCH(RESULTS,"아마조네스")
+		RETURN 999999
+ENDIF
+
 
 攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_攻:攻撃先")
 RETURN 攻撃力修正

@@ -1,0 +1,161 @@
+@CARDNAME_52081,参照先
+;ココで지정카드의 名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 크로노제트 드래곤
+	CASE "略称"
+		RESULTS = 크로노제트
+	CASE "カテゴリ"
+		RESULTS:0 = 기어 크로니클
+		RESULTS:1 = 크로노제트
+		RESULTS:5 = 십이지각수
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_52081(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+
+		RETURN 링크
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 드래곤족
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 雄性
+	CASE "レア度"
+		RETURN ULR
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_52081(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①: 이 카드가 덱 / EX덱으로 되돌아간 경우에 발동할 수 있다.
+PRINTL 이 카드를 패에서 특수 소환한다. 그 후, 상대 필드의 몬스터 1장을 원래 주인의 덱으로 되돌린다.
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ③: 이 카드의 공격력은, 자신의 제외 상태인 "기어 크로니클" 초차원 몬스터의 수x500 올리고,
+PRINTL 자신의 제외 상태인 "기어 크로니클" 초차원 몬스터가 2장 이상 존재하는 경우, 이 카드의 전투로 상대에게 부여하는 데미지는 배가 된다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③: 이 카드가 공격할 경우, 데미지 스텝 종료시까지 상대는 카드의 효과를 발동할 수 없다.
+
+
+@CARDCAN_52081(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,52081)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,52081)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,52081,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과山送",2)
+	SIF RESULT != 1
+		RETURN 0	
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件종류 = 초차원
+	효과条件カテゴリ = 기어 크로니클
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_52081(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52081,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件除去種 = 덱
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	SIF ターンプレイヤー == 듀얼리스트
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦阻")
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件종류 = 초차원
+	효과条件カテゴリ = 기어 크로니클
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 500
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ倍化",3,1)
+ENDIF
+
+
+

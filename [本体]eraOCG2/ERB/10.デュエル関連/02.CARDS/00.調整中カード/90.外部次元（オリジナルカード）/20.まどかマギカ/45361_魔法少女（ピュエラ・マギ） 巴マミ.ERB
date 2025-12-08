@@ -1,0 +1,181 @@
+﻿@CARDNAME_45361,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 금색의 마법소녀 토모에 마미
+	CASE "略称"
+		RESULTS = 마법소녀 마미
+	CASE "カテゴリ"
+		RESULTS:0 = 푸엘라 마기
+	CASE "出典作品"
+		RESULTS:0 = 마법소녀 마도카☆마기카
+ENDSELECT
+
+
+@CARD_45361(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2700
+	CASE "守備力"
+		RETURN 1200
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 5361
+	CASE "生成カード"
+		RETURN 105361
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_45361(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 튜너＋튜너以外の「푸엘라 마기」モンスター１体以上
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがS소환に成功した場合に발동できる。
+PRINTL 자신は덱から１枚ドローする。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：お互いのターンに손패を１枚捨てて발동できる。
+PRINTL 상대フィールドのモンスター１体の효과を次のフェイズまで無効にする。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ③：このカードがフィールドに存在する限り、
+PRINTL 他の「푸엘라 마기」モンスターの攻撃力は５００アップする。
+
+
+
+@CARDSUMMON_45361(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 5
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+	素材条件カテゴリ = 푸엘라 마기
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,45361) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_45361(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,45361)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,45361)
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,45361)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件他所 = 1
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_45361(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,45361,1)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,45361,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과추가종류 = 9
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"필드単体",場所,"無効")
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件カテゴリ = 푸엘라 마기
+	효과条件他所 = 1
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,500)
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲필드 = 1
+	효과範囲상대마함 = 1
+	효과範囲상대필드 = 1
+	효과条件名前 = 금색의 소울젬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+
+ENDIF
+
+
+

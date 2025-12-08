@@ -1,0 +1,182 @@
+﻿@CARDNAME_44821,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 미츠네 인섹트 헌터
+	CASE "略称"
+		RESULTS = 포호의 비충 헌터
+	CASE "カテゴリ"
+		RESULTS:0 = 헌터
+	CASE "出典作品"
+		RESULTS:0 = Monster Hunter
+ENDSELECT
+
+
+@CARD_44821(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 4821
+	CASE "추가日"
+		RETURN 251201
+ENDSELECT
+
+RETURN 0
+
+
+@CARDSUMMON_44821(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件종족:0 = 드래곤족
+素材条件종족:1 = 야수족
+素材条件종족:2 = 비행야수족
+素材条件종족:3 = 비늘야수족
+素材条件종족:4 = 악마족
+素材条件종족:5 = 바다생물족
+素材条件종족:6 = 미확인족
+素材条件종족:7 = 원소정령족
+
+IF EX参照 == 1
+	;PRINTL サモンまでは言ってるよ
+	CALL FUSCAN(듀얼리스트,소환カード,44821) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_44821(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「포호룡 타마미츠네」 + 「헌터」モンスター
+PRINTL このカード名の②③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：このカードがフィールドに存在する限り、猟獣であるモンスターは守備표시になる。
+PRINTL （猟獣とは、드래곤족・야수족・비행야수족・비늘야수족・악마족・곤충족・바다생물족・미확인족・원소정령족モンスターを指す）
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：お互いのターンに발동できる。
+PRINTL フィールドのこのカードは攻撃回避と대상耐性を得る。
+PRINTL この효과を상대フィールドのモンスターの효과にチェーンして발동した場合、そのモンスターを破壊する。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：レベル６以上の『猟獣』であるモンスターがフィールドから묘지へ送られた場合に발동できる。
+PRINTL 덱から「헌터」마법・함정カードを손패に加える。
+
+
+@CARDCAN_44821(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,44821)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,44821)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,64820)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL SET_MONSTER_HUNTER
+	CALL 효과条件レベル_ADV(6, "以上")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般",1)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 헌터
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_44821(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件표시 = 1
+	CALL SET_MONSTER_HUNTER
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드全体",場所,"表",2)
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44821,2)
+	IF RESULT == 0
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻避",1)
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐",1)
+
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_START_DATA(듀얼리스트,1,2)
+		IF RESULT == 1
+			選択カード = 効後_設場所:(処理中番号 - 1) 
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44821,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 헌터
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ENDIF

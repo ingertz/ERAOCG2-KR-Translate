@@ -7,9 +7,9 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 명도 시환룡
+		RESULTS = 명도의 시환룡
 	CASE "略称"
-		RESULTS = 명도 시환룡
+		RESULTS = 명도의 시환룡
 	CASE "カテゴリ"
 		RESULTS:0 = 기어 크로니클
 		RESULTS:1 = 십이지각수
@@ -36,14 +36,15 @@ RETURN 0
 @CARD_EXPLANATION_71661(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 ①② 효과는 1턴에 각각 1번만 사용할 수 있다.
-CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
-PRINTL ①: 자신의 제외 상태인 "기어 크로니클" 몬스터 1장을 대상으로 발동할 수 있다.
-PRINTL 그 몬스터를 특수 소환한다.
-PRINTL 그 후, 자신 필드의 몬스터 1장까지를 타임 리프시킨다.
-CALLFORM CARD_ABLE(2,제외時)
-PRINTL ②: 이 카드가 제외되었을 경우에 발동할 수 있다.
-PRINTL 상대 필드의 몬스터 1장을 주인의 덱으로 되돌린다.
+PRINTL ①：이하의 효과에서 １개를 선택해서 발동할 수 있다
+PRINTL （이 카드명의 이하의 효과는 각각 1턴에 각각 1번만 사용할 수 있다）.
+CALL CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ●자신의 묘지 / 제외 상태인 "기어 크로니클" 몬스터 1장을 특수 소환한다.
+PRINTL 상대 필드에 몬스터가 존재하는 경우, 추가로 자신 필드의 몬스터 1장을 타임 리프시킬 수 있다.
+CALL PRINT_VTIMELEEPTEXT
+CALL CARD_ABLE(2,마함起動 ,손패起動,フリー誘発)
+PRINTL ●자신 필드에 "크로노제트" 몬스터가 존재하는 경우,
+PRINTL 상대 필드의 몬스터 1장을 대상으로 해서 발동할 수 있다. 그 몬스터를 원래 주인의 덱으로 되돌린다.
 
 
 @CARDCAN_71661(듀얼리스트,종류,ゾーン,場所)
@@ -52,6 +53,7 @@ PRINTL 상대 필드의 몬스터 1장을 주인의 덱으로 되돌린다.
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과使用불가,2
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71661)
 SIF RESULT == 1
@@ -64,24 +66,35 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
+
 	SIF 발동済_1(듀얼리스트,71661)
-		RETURN 0
+		효과使用불가:0 = 1
+	SIF 발동済_2(듀얼리스트,71661)
+		효과使用불가:1 = 1
+
 	CALL FULLRESET
+	효과範囲묘지 = 1
 	효과範囲제외 = 1
 	효과条件カテゴリ = 기어 크로니클
 	효과条件종류 = モン全般
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 제외時
-	SIF 발동済_2(듀얼리스트,71661)
-		RETURN 0
+		효과使用불가:0 = 1
 	CALL FULLRESET
-	효과範囲상대필드 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 기어 크로니클
+	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
+		효과使用불가:1 = 1
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 덱
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		효과使用불가:1 = 1
+	SIF 효과使用불가:0 == 1 && 효과使用불가:1 == 1
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -97,40 +110,120 @@ ENDIF
 #DIM DYNAMIC 選択レベル
 #DIM DYNAMIC 속성数
 #DIMS DYNAMIC 参照先
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 효과使用불가,2
 
 IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71661,1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71661)
 	IF RESULT == 0
-		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		SIF 발동済_1(듀얼리스트,71661)
+			효과使用불가:0 = 1
+		SIF 발동済_2(듀얼리스트,71661)
+			효과使用불가:1 = 1
 		CALL FULLRESET
+		효과範囲묘지 = 1
 		효과範囲제외 = 1
 		효과条件カテゴリ = 기어 크로니클
-		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			CALL FULLRESET
-			효과範囲필드 = 1
-			효과条件任意 = 1
-			효과条件종류 = レベル持ち
-			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
-			選択カード = RESULT
-			IF 選択カード != 9999
-				選択レベル = GETVAR(@"%듀얼리스트%_MZ_星:選択カード") + 1
-				CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード,제외行き,1)
-				
-				CALL FULLRESET
-				효과範囲덱 = 1
-				효과条件カテゴリ = 기어 크로니클
-				CALL 효과条件レベル_ADV(選択レベル, "以上")
-				효과条件종류 = モン全般
-				효과추가종류 = 10 + 덱行き
-				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+		효과条件종류 = モン全般
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			효과使用불가:0 = 1
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 크로노제트
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			효과使用불가:1 = 1
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件除去種 = 덱
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			효과使用불가:1 = 1
+	
+		IF 듀얼리스트 == "자신"
+			IF 효과使用불가:0 != 1 && 효과使用불가:1 != 1
+				CALL YN_CHOICE(듀얼리스트,"●「기어 크로니클」몬스터 １장을 특수 소환한다。","●상대 필드의 몬스터 １장을 덱으로 되돌린다。")
+			ELSEIF 효과使用불가:0 != 1
+				RESULT = 0
+			ELSEIF 효과使用불가:1 != 1
+				RESULT = 1
+			ELSE
+				PRINTW 발동할 수 있는 효과가 없습니다
+				RETURN 0
+			ENDIF
+		ELSE
+			IF 효과使用불가:0 != 1
+				RESULT = 0
+			ELSEIF 효과使用불가:1 != 1
+				RESULT = 1
+			ELSE
+				RETURN 0
 			ENDIF
 		ENDIF
-	ENDIF
-ELSEIF 종류 == 제외時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71661,2)
-	IF RESULT == 0
-		CALL FULLRESET
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"덱",71661)
+
+		IF RESULT == 0
+			CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71661,1)
+			IF RESULT == 0
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+					条件달성 = 1
+
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과範囲제외 = 1
+				효과条件カテゴリ = 기어 크로니클
+				효과条件종류 = モン全般
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+				IF 条件달성 == 1 && GETVAR(@"%듀얼리스트%_제외NG置換") < 1
+					PRINTL 타임 리프하시겠습니까？
+					CALL YN_CHOICE(듀얼리스트)
+				ELSE
+					RESULT = いいえ
+				ENDIF
+				IF RESULT == はい
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과条件종류 = モン全般
+					CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+					選択カード = RESULT
+					IF 選択カード != 9999
+						選択レベル = GETVAR(@"%듀얼리스트%_MZ_星:選択カード") + 2
+						CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード,제외行き,1)
+						CALL FULLRESET
+						효과範囲덱 = 1
+						효과条件カテゴリ = 기어 크로니클
+						효과条件レベル = 選択レベル
+						효과条件종류 = モン全般
+						효과条件소환可 = 1
+						CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+						IF RESULT == 1
+							CALL FULLRESET
+							효과範囲덱 = 1
+							효과条件カテゴリ = 기어 크로니클
+							효과条件任意 = 1
+							효과条件レベル = 選択レベル
+							효과条件종류 = モン全般
+							효과추가종류 = 10 + 덱行き
+							CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+						ENDIF
+					ENDIF
+				ENDIF
+			ENDIF
+		ELSEIF RESULT == 1
+			CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71661,2)
+			IF RESULT == 0
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")
+			ENDIF
+		ENDIF
 	ENDIF
 ENDIF

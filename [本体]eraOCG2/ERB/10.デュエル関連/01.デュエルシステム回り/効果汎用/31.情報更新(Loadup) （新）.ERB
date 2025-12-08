@@ -176,6 +176,25 @@ IF RESULT == 1
 	VARSET 適応효과_ID
 ENDIF
 
+
+
+FOR カウンタ,0,5
+	VARSET RESULT
+	SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+		CONTINUE
+	TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}(듀얼리스트,상황確認,"필드",カウンタ)
+	SIF RESULT == 1
+		TRYCALLFORM CARDEFFECT_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}(듀얼리스트,상황確認,"필드",カウンタ)
+NEXT
+FOR カウンタ,0,5
+	VARSET RESULT
+	SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+		CONTINUE
+	TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}(듀얼리스트,상황確認,"마함",カウンタ)
+	SIF RESULT == 1
+		TRYCALLFORM CARDEFFECT_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}(듀얼리스트,상황確認,"마함",カウンタ)
+NEXT
+
 VARSET 맥시멈状態
 FOR カウンタ,1,4
 	VARSET RESULT
@@ -250,18 +269,20 @@ FOR カウンタ,0,サーチ範囲
 		適応효과_ID = GETVAR(@"%듀얼리스트%_%参照先%:カウンタ")
 		TRYCALLFORM CARDEFFECT_{GETVAR(@"%듀얼리스트%_%参照先%:カウンタ")}(듀얼리스트,攻守変動,参照先,カウンタ)
 		VARSET 適応효과_ID
-		IF 参照先 == "마함"
-			IF GETBIT(GETVAR(@"%듀얼리스트%_魔_武種:カウンタ"),0) == 1
-				VARSET 攻撃修正
-				VARSET 守備修正
-				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("攻撃力")
-				攻撃修正 = RESULT
-				IF GETBIT(GETVAR(@"%듀얼리스트%_魔_武種:カウンタ"),1) == 1
-					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("守備力")
-					守備修正 = RESULT
-				ENDIF
-				CALL STATCHANGE_BASIC(듀얼리스트,"装備",カウンタ,攻撃修正,守備修正)
+	ENDIF
+
+	IF 参照先 == "마함"
+		IF GETBIT(GETVAR(@"%듀얼리스트%_魔_武種:カウンタ"),0) == 1
+			VARSET 攻撃修正
+			VARSET 守備修正
+			TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("攻撃力")
+			攻撃修正 = RESULT
+			IF GETBIT(GETVAR(@"%듀얼리스트%_魔_武種:カウンタ"),1) == 1
+				TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("守備力")
+				守備修正 = RESULT
 			ENDIF
+
+			CALL STATCHANGE_BASIC(듀얼리스트,"装備",カウンタ,攻撃修正,守備修正)
 		ENDIF
 	ENDIF
 NEXT

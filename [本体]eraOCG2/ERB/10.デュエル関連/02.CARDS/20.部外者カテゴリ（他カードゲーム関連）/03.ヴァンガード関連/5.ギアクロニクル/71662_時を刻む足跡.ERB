@@ -1,0 +1,194 @@
+﻿@CARDNAME_71662,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 시간을 새기는 족적
+	CASE "略称"
+		RESULTS = 시간을 새기는 족적
+	CASE "カテゴリ"
+		RESULTS:0 = 기어 크로니클
+		RESULTS:5 = 십이지각수
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_71662(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71662(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과は１ターンに１度、いずれか１つしか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：자신のフィールド（表側표시）・묘지・제외状態のモンスター１体を대상として발동できる。
+PRINTL そのモンスターを持ち主の덱に戻す。
+PRINTL その後、덱からそのモンスターのコスト＋２のレベルを持つ「기어 크로니클」モンスター１体を選び、손패に加えるか특수소환する。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：묘지のこのカードを제외し、자신の제외状態の「기어 크로니클」초차원モンスター１体を대상として발동できる。
+PRINTL 덱から어둠속성・기계족・レベル２モンスター１体を손패に加える。その後、대상のモンスターをEX덱に戻す。
+
+
+@CARDCAN_71662(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71662)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,71662)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,71662)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件표시 = 表側표시
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,71662)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,71662)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족 = 기계족
+	효과条件レベル = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲제외 = 1
+	효과条件カテゴリ:0 = 기어 크로니클
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_71662(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択レベル
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 攻撃力修正
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71662,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件표시 = 表側표시
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			TRYCALLFORM CARD_{RESULT:1}("レベル")
+			選択レベル = RESULT + 2
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 기어 크로니클
+			효과条件レベル = 選択レベル
+			효과条件종류 = モン全般
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = 기어 크로니클
+				효과条件レベル = 選択レベル
+				효과条件종류 = モン全般
+				CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT != 9999
+					選択カード_ID = RESULT:99
+					CALL CARD_SELECT(듀얼리스트,RESULT)
+					選択カード = RESULT
+					CALL CARD_SS_CHECK(듀얼리스트,選択カード_ID,参照先（CS）)
+					IF RESULT != 1
+						CALL YN_CHOICE(듀얼리스트,"특수소환する","손패に加える")
+					ELSE
+						RESULT = 1
+					ENDIF
+					IF RESULT == 0
+						CALL FULLRESET
+						CALL CARD_SP_SUMMON(듀얼리스트,参照先（CS）,選択カード)
+					ELSEIF RESULT == 1
+						CALL CARD_DISPOSE(듀얼리스트,参照先（CS）,選択カード,손패行き)
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71662,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件속성 = 어둠속성
+		효과条件종족 = 기계족
+		효과条件レベル = 2
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲제외 = 1
+			효과条件カテゴリ:0 = 기어 크로니클
+			효과条件종류 = 초차원
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+
+

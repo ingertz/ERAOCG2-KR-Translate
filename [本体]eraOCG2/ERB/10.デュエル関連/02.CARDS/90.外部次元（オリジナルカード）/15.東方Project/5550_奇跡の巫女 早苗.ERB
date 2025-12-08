@@ -1,0 +1,329 @@
+﻿@CARDNAME_5550,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 기적의 무녀 사나에
+	CASE "略称"
+		RESULTS = 코치야 사나에
+	CASE "カテゴリ"
+		RESULTS:0 = 모리야 신사
+		RESULTS:1 = 환상소녀
+	CASE "出典作品"
+		RESULTS:0 = 동방 Project
+ENDSELECT
+
+
+@CARD_5550(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+	CASE "生成カード"
+		RETURN 205550
+	CASE "추가日"
+		RETURN 251130
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5550(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환に成功した場合に발동できる。
+PRINTL 손패を１枚捨て、자신の덱の一番上をめくり、
+PRINTL その中から의식마법、의식モンスター、そして「모리야 신사」カードをそれぞれ１枚ずつ손패に加える。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：묘지のこのカード名以外の「모리야 신사」モンスター１体を덱の一番上に戻して발동できる、
+PRINTL このカードを손패に加える。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：자신フィールドに바람속성の의식モンスターが특수소환された場合に발동できる。
+PRINTL 덱外から「秘術 그레이 서머터지」１枚を손패に加える。
+
+;秘術 그레이 서머터지（速攻마법）
+;①：자신フィールドのモンスターはこのターン中１度だけ戦闘、효과では破壊されない。
+;자신フィールドの「기적의 무녀 사나에」が破壊されていた場合、このカードは「ラストワード」となり、以下を実行する。
+;●자신の묘지から「기적의 무녀 사나에」を특수소환する。
+;●손패から바람속성の의식モンスターを２体まで소환条件を無視して특수소환する。
+
+@CARDCAN_5550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5550)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,5550)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,5550)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件固名前 = 기적의 무녀 사나에
+	효과条件カテゴリ = 모리야 신사
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,1405)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件속성 = 바람속성
+	효과条件종류 = 의식
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード,10
+#DIM DYNAMIC 複数カウンタ
+#DIM DYNAMIC 一時보존
+#DIM DYNAMIC 消去カード
+#DIM DYNAMIC 最大値
+#DIM DYNAMIC カウンタB
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5550,1)
+	IF RESULT == 0
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			VARSET 選択カード,-1
+
+
+			CALL FULLRESET
+			효과条件カテゴリ = 의식마법
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"덱",ゾーン,場所,3)
+			IF RESULT != 9999
+				選択カード:0 = RESULT
+				複数カウンタ ++
+			ENDIF
+			CALL FULLRESET
+			효과条件종류 = 의식
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"덱",ゾーン,場所,3)
+			IF RESULT != 9999
+				選択カード:1 = RESULT
+				複数カウンタ ++
+			ENDIF
+			CALL FULLRESET
+			효과条件종류 = モン全般
+			효과条件カテゴリ = 모리야 신사
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"덱",ゾーン,場所,3)
+			IF RESULT != 9999
+				選択カード:2 = RESULT
+				複数カウンタ ++
+			ENDIF
+
+			FOR カウンタ,0, (複数カウンタ + 1)
+				最大値 = -1
+				FOR カウンタB,0,(複数カウンタ + 1)
+					IF 選択カード:カウンタB >= 最大値
+						最大値 = 選択カード:カウンタB
+						一時보존:カウンタ = 選択カード:カウンタB
+						消去カード = カウンタB
+					ENDIF
+				NEXT
+				ARRAYREMOVE 選択カード, 消去カード, 1
+			NEXT
+			FOR カウンタ,0,(複数カウンタ + 1)
+				選択カード:カウンタ = 一時보존:カウンタ
+			NEXT
+			FOR カウンタ,0,(複数カウンタ + 1)
+				CALL CARD_DISPOSE(듀얼리스트,"덱",選択カード:カウンタ,손패行き)
+			NEXT
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5550,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종류 = モン全般
+		효과条件固名前 = 기적의 무녀 사나에
+		효과条件カテゴリ = 모리야 신사
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			CALL CARD_ADD_DECK_SPC(듀얼리스트,"묘지",選択カード)
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 기적의 무녀 사나에
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5550,3)
+	IF RESULT == 0
+		CALL CARD_GENERATE_HAND(듀얼리스트,205550)
+	ENDIF
+ENDIF
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+@CARDNAME_205550,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 비술 그레이 서머터지
+	CASE "略称"
+		RESULTS = 비술 그레이 서머터지
+	CASE "カテゴリ"
+		RESULTS:0 = 스펠 카드
+ENDSELECT
+
+
+@CARD_205550(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_205550(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(10,마함起動 ,손패起動)
+PRINTL ①：자신フィールドのモンスターはこのターン中１度だけ戦闘、효과では破壊されない。
+PRINTL 자신フィールドの「기적의 무녀 사나에」が破壊されていた場合、
+PRINTL 자신の묘지から「기적의 무녀 사나에」を특수소환し、このカードは「ラストワード」となる。
+CALL TEXT_DECORATION("LASTWORD")
+PRINTL ●손패・묘지から바람속성の의식モンスターを２体まで소환条件を無視して특수소환する。
+
+
+@CARDCAN_205550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,205550)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,205550)
+		RETURN 0
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_205550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,205550,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		
+		CALL FULLRESET
+		효과条件名前 = 기적의 무녀 사나에
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 기적의 무녀 사나에
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+			CALLFORM CHARA_CUTIN("Last Word","모 세 의 기 적",,,,,1)
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件종류 = 의식
+			효과条件속성 = 바람속성
+			효과条件特不無視 = 1
+			효과条件複数 = 98
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ELSE			
+			CALLFORM CHARA_CUTIN("Spell Card","「비술」그레이 서머터지",,,,,1)
+		ENDIF
+		CALL FULLRESET
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一破",1)
+
+	ENDIF
+ENDIF

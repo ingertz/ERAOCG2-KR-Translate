@@ -1,0 +1,172 @@
+﻿@CARDNAME_4552,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 「애증」의 얼터에고 패션립
+	CASE "略称"
+		RESULTS = Ｐ립
+	CASE "カテゴリ"
+		RESULTS:0 = 영령
+		RESULTS:1 = SE.RA.PH
+		RESULTS:2 = 얼터에고
+ENDSELECT
+
+
+@CARD_4552(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251207
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4552(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：このカードが손패に存在する場合に발동できる。
+PRINTL （자신フィールドに表側표시の「SE.RA.PH」마법カードが存在する場合、この효과は상대ターンでも발동できる）
+PRINTL お互いの묘지の光・어둠속성モンスター１体を제외し、このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL このターンのエンドフェイズに、자신の덱・묘지から
+PRINTL このカード名以外の以外の「얼터에고」モンスター１体を손패に加える。
+
+
+
+@CARDSUMMON_AA_4552
+
+
+@CARDCAN_4552(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4552)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,4552)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4552,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = SE.RA.PH
+	효과条件종류 = 마법全般
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT != 1 && 종류 == 손패起動
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+		SIF メインフェイズ != 1
+			RETURN 0
+	ELSEIF RESULT != 1 && 종류 == フリー誘発
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과条件속성:0 = 빛속성
+	효과条件속성:1 = 어둠속성
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,4552)
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 얼터에고
+	효과条件종류 = モン全般
+	효과条件固名前 = 「애증」의 얼터에고 패션립
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4552(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4552,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲상대묘지 = 1
+		효과条件속성:0 = 빛속성
+		효과条件속성:1 = 어둠속성
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4552,2)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,4552)
+	ENDIF
+ELSEIF 종류 == ターン終了時予約
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4552)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 얼터에고
+		효과条件종류 = モン全般
+		효과条件固名前 = 「애증」의 얼터에고 패션립
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

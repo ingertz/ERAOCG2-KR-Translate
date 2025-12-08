@@ -23,7 +23,8 @@ ENDIF
 G_イベ起動 = 이벤트起動
 
 $MYDECK_INPUT
-SIF 詰め플래그
+;普通の詰めデュエルは덱選択をスキップする
+SIF 詰め플래그 == 1
 	GOTO GAMESTART
 
 IF 連戦플래그 >= 1 && 連戦덱 >= 0 ;Anonym修正
@@ -142,14 +143,29 @@ CUSTOMDRAWLINE —
 PRINTW
 ALIGNMENT LEFT
 
-$FULLRESET_LOOP
-CALL CARD_GAMELOADUP
 
-IF 詰め플래그
+
+$FULLRESET_LOOP
+;ダンジョンデュエルは특수なLOADUP処理を行う
+IF 특수듀얼종류 == ダンジョンＤ
+	IF 자신_승리数 >= 1
+		CALL CARD_GAMELOADUP(1)	
+	ELSE
+		CALL CARD_GAMELOADUP
+	ENDIF
+	ターンプレイヤー = 자신
+	ターン数 = 1
+	先攻설정 = 2
+;詰めデュエルは덱설정をスキップ
+ELSEIF 詰め플래그 == 1
+CALL CARD_GAMELOADUP
 	ターンプレイヤー = 상대
 	ターン数 = 2
 	GOTO PUZZLE_SET
+ELSE
+	CALL CARD_GAMELOADUP
 ENDIF
+
 IF 덱選択 >= 1000
 	CALLFORM DUELDECK_{덱選択}("자신")
 ELSE
@@ -162,7 +178,7 @@ IF 상대덱選択 >= 1000
 ELSE
 	CALLFORM MYDECK("상대",상대덱選択)
 ENDIF
-;ザポルグ追記20241016
+
 IF 先攻설정 != 0
 	IF 先攻설정 == 1
 		PRINTW 상대의 선공입니다
@@ -218,6 +234,7 @@ IF RESULT == 1
 	RESETCOLOR
 	ERA起動 = 1
 ENDIF
+
 IF 특수듀얼종류 == ライディングＤ
 	자신_엔진 = 설정_엔진
 	자신_섀시 = 설정_섀시
@@ -241,7 +258,6 @@ ENDIF
 
 ; PREPARE PLAYBOARD
 ; CALL PREPARE_DUEL_THUMBNAIL(0)
-;①アトラ:ここでHTMLを作成し、
 CALL PREPARE_DUEL_PLAYBOARD(0)
 
 
@@ -256,6 +272,7 @@ ENDIF
 
 $INPUT_LOOP
 VARSET 処理中_효과ID, -1
+;１チェーン限定の효과付与（身代わり효과など）
 CALL RESET_FIELD_CONDITION(ターンプレイヤー,6,1)
 SIF ERA起動 < 2
 	CALL CHECK_PLAYERS_VIT
@@ -291,7 +308,11 @@ IF RESULT != 0
 		CUSTOMDRAWLINE —
 		PRINTW
 		IF RESULT == 1
+			상대_듀얼패배플래그 = 0
 			GOTO RECHECK_VICTORY
+		ELSEIF RESULT == 2
+			상대_듀얼패배플래그 = 0
+			GOTO FULLRESET_LOOP
 		ENDIF
 	ENDIF
 
@@ -446,7 +467,11 @@ ELSEIF RESULT == 1000
 			CUSTOMDRAWLINE —
 			PRINTW
 			IF RESULT == 1
+				상대_듀얼패배플래그 = 0
 				GOTO RECHECK_VICTORY
+			ELSEIF RESULT == 2
+				상대_듀얼패배플래그 = 0
+				GOTO FULLRESET_LOOP
 			ENDIF
 		ENDIF
 

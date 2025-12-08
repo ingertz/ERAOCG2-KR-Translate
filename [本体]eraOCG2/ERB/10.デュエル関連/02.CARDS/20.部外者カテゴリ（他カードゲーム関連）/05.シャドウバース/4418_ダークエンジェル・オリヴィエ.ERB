@@ -1,0 +1,175 @@
+﻿@CARDNAME_4418,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 타천사 올리비에
+	CASE "略称"
+		RESULTS = 올리비에
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = 진화가능
+	CASE "出典作品"
+		RESULTS:0 = Shadowverse
+ENDSELECT
+
+
+@CARD_4418(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 2400
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4418(종류)
+#DIM DYNAMIC 종류
+
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신フィールドにモンスターが存在しない場合、자신メインフェイズに발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환に成功した場合に발동する。
+PRINTL 덱から「진화가능」であるモンスター１体を손패に加える。
+CALLFORM CARD_ABLE(3,필드起動)
+PRINTL ③：このカードは、자신メインフェイズに１度だけ「進化」できる。
+PRINTL そうした場合、このカードの攻撃力・守備力は５００アップする。
+PRINTL その後、자신の他の表側표시のモンスター１体を選び、そのモンスターを「進化（覚醒状態）」にし、攻撃力を５００アップする。
+PRINTL このデュエル中に「자신のモンスターが進化（覚醒）した횟수」が３回以上なら、代わりに１０００アップし、貫通攻撃を得る。
+PRINTL 「進化（覚醒）」は１ターンに１度しか行えない。
+
+@CARDSUMMON_AA_4418
+
+@CARDCAN_4418(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4418)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,4418)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4418,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,4418)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 진화가능
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,覚醒발동)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4418(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4418,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4418,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 진화가능
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,覚醒발동,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		IF 覚醒횟수(듀얼리스트) >= 3
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",1000)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",1000)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"貫通",2)
+		ELSE
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",500)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",500)
+		ENDIF			
+        CALL FULLRESET
+		효과条件종류 = モン全般
+		효과条件他所 = 1
+		효과条件任意 = 1
+        CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+        IF RESULT != 9999
+			選択カード = RESULT
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"条達",2,1)
+			IF 覚醒횟수(듀얼리스트) >= 3
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永攻",1000)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永守",1000)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"貫通",2)
+			ELSE
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永攻",500)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永守",500)
+			ENDIF		
+		ENDIF
+	ENDIF
+ENDIF

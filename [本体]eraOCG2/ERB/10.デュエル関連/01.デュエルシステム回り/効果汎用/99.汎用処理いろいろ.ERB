@@ -41,6 +41,7 @@ VARSET 素材条件以守備力, -1
 VARSET 素材条件튜너
 VARSET 素材条件성별
 VARSET 素材条件装備
+VARSET 素材条件ゾーン
 
 VARSET 素材条件スーパー속성
 VARSET 素材条件スーパー종류
@@ -111,6 +112,7 @@ VARSET 효과条件スーパー종족, -1
 VARSET 효과条件スーパーレベル, -1
 VARSET 효과条件スーパー튜너
 VARSET 효과条件スーパー攻撃力
+VARSET 효과条件スーパー표시
 
 VARSET 효과条件固カテゴリ
 VARSET 효과条件종류, -1
@@ -946,7 +948,6 @@ IF ゾーン == "필드"
 			IF GETVAR(@"%듀얼리스트%_MZ_個ID:場所") == 効後_個別ID:処理中番号
 				RETURN 1
 			ENDIF
-		ELSE
 			RETURN 1
 		ENDIF
 	ENDIF
@@ -960,7 +961,7 @@ IF ゾーン == "마함"
 		RETURN 1
 	TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:場所")}("종류")
 	IF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2 && (RESULT == 지속마법 || RESULT == 지속함정 || RESULT == 装備마법 || RESULT == フィールド)
-		SIF !GROUPMATCH(종류,마함起動,フリー誘発)
+		SIF !GROUPMATCH(종류,마함起動,フリー誘発, 상황確認)
 			RETURN 1
 	ENDIF
 	IF !GROUPMATCH(종류, 攻守変動,지속효과,常在無効)
@@ -2200,6 +2201,7 @@ FOR カウンタ,0,5
 			ENDIF
 
 			IF 隷属先存在 == 0
+				SETVAR @"%듀얼리스트%_MZ_束縛:カウンタ", -1
 				CALL FULLRESET
 				CALL CARD_GET_CONTROL(듀얼리스트,カウンタ,0,1)
 			ENDIF
@@ -2215,6 +2217,7 @@ FOR カウンタ,0,5
 					爆破先存在 = 1
 			ENDIF
 			IF 爆破先存在 == 0
+				SETVAR @"%듀얼리스트%_MZ_束縛:カウンタ", -1
 				CALL FULLRESET
 				CALL CARD_DISPOSE(듀얼리스트,"필드",カウンタ,絶対破壊行き)
 			ENDIF
@@ -3659,7 +3662,7 @@ IF BASE:MASTER:체력 <= 1000
 	ALIGNMENT CENTER
 	SETCOLOR C_RED
 		PRINTL 　　　＊WARNING＊ 
-	PRINTFORML 체력이 한계에 가까워졌습니다！
+	PRINTFORML 　　　체력이 한계에 가까워졌습니다！
 		PRINTL 　　　＊WARNING＊ 	
 	RESETCOLOR
 	ALIGNMENT LEFT

@@ -12,6 +12,7 @@
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
+;１チェーン限定の효과付与リセット（身代わり효과など）
 CALL RESET_FIELD_CONDITION(ターンプレイヤー,6,1)
 
 ;소환情報のリセット
@@ -695,6 +696,8 @@ FOR カウンタ, (効後_カウンタ - 1), -1, -1
 		ENDIF
 		발동在り = 1
 	ENDIF
+	;１チェーン限定の효과付与（身代わり효과など）
+	CALL RESET_FIELD_CONDITION(ターンプレイヤー,6,1)
 	CALL CARD_LOADUP
 NEXT
 FOR カウンタ,0,5
@@ -731,6 +734,10 @@ ELSEIF 参照先 == "효과이력" && カード_ID >= 1
 	SETVAR @"%듀얼리스트%_효과이력:カウンタ数", カード_ID
 	SETVAR @"%듀얼리스트%_효과이력_CT", カウンタ数 + 1
 	RETURN 1
+ELSEIF GROUPMATCH(参照先,"덱취득","Ｃドロー")
+	カウンタ数 = GETVAR(@"%듀얼리스트%_취득이력_CT")
+	SETVAR @"%듀얼리스트%_취득이력:カウンタ数", カード_ID
+	SETVAR @"%듀얼리스트%_취득이력_CT", カウンタ数 + 1
 ENDIF
 
 カウンタ数 = GETVAR(@"%듀얼리스트%_%参照先%_保_CT")
@@ -995,8 +1002,13 @@ ENDIF
 
 IF 효과추가종류 == 1
 	IF 対面플래그 == 2
-		SIF GETVAR(@"%듀얼리스트%_%参照先%_CT") == 0 && GETVAR(@"%対面者%_%参照先%_CT") == 0 
-			RETURN 0
+		IF 효과条件CNT >= 1
+			SIF GETVAR(@"%듀얼리스트%_%参照先%_CT") < 효과条件CNT && GETVAR(@"%対面者%_%参照先%_CT") < 효과条件CNT
+				RETURN 0
+		ELSE
+			SIF GETVAR(@"%듀얼리스트%_%参照先%_CT") == 0 && GETVAR(@"%対面者%_%参照先%_CT") == 0 
+				RETURN 0
+		ENDIF
 	ELSE
 		SIF GETVAR(@"%実行者%_%参照先%_CT") == 0
 			RETURN 0

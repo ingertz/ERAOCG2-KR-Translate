@@ -1,0 +1,120 @@
+@CARDNAME_71430,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Ｓｉｎ Ｗｏｒｌｄ
+	CASE "略称"
+		RESULTS = ＳｉｎＷｏｒｌｄ
+	CASE "カテゴリ"
+		RESULTS:0 = Ｓｉｎ
+ENDSELECT
+
+@CARD_71430(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_71430(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドは「Ｓｉｎ Ｗｏｒｌｄ」となる。
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,마함起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 덱からこのカード名以外の「Ｓｉｎ」カード１枚を손패に加える。
+PRINTL 次の자신ドローフェイズをスキップする。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：このカードが마법＆함정ゾーンに存在する限り、このカードは상대の효과の대상にならない。
+PRINTL また、자신は「Ｓｉｎ」モンスターでしか攻撃宣言できない。
+
+@CARDCAN_71430(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ数
+
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71430)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,71430)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = Ｓｉｎ
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_71430(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+#DIM DYNAMIC 条件Ａ
+#DIM DYNAMIC 条件Ｂ
+#DIM DYNAMIC 選択효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71430,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = Ｓｉｎ
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		CALL SET_PLAYER_INFO(듀얼리스트,"ドロースキップ", 1)
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71430)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"Ｓｉｎ Ｗｏｒｌｄ")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
+	CALL FULLRESET
+	효과条件固カテゴリ:0 = Ｓｉｎ
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦無")
+ENDIF

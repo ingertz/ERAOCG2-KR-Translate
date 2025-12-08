@@ -51,12 +51,12 @@ RETURN 0
 @CARD_EXPLANATION_5535(종류)
 #DIM DYNAMIC 종류
 
-CALL TEXT_DECORATION("P_MAGIC")
+CALL TEXT_DECORATION("SYN_P_MAGIC")
 PRINTL 이 카드명의 P효과는 １턴에 １번밖에 사용할 수 없다。
-CALLFORM CARD_ABLE(P1,ターン終了時)
-PRINTL ①：이 턴、필드의 "환상소녀" 몬스터가 파괴되었을 경우、엔드 페이즈에 발동할 수 있다。
-PRINTL 이 카드를 마법＆함정 존에서 특수 소환한다。
-CALL TEXT_DECORATION("P_MAGIC")
+CALLFORM CARD_ABLE(P1,마함起動)
+PRINTL ①：이 턴에 세트 되어있지 않은 마법&함정 존에 세트된 이 카드를 앞면 표시로 발동할 수 있다。
+PRINTL 이 카드를 마법&함정 존에서 특수 소환한다。
+CALL TEXT_DECORATION("SYN_P_MAGIC_2")
 PRINTL "환상소녀" 튜너＋튜너 이외의 몬스터 １장 이상
 PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,EX소환時)
@@ -107,14 +107,12 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5535)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == ターン終了時
+IF 종류 == 마함起動
 	SIF 발동済_P1(듀얼리스트,5535)
 		RETURN 0
 	SIF !GROUPMATCH(ゾーン,"마함")
 		RETURN 0
-	CALL FULLRESET
-	효과条件固カテゴリ = 환상소녀
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊이력")
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -164,7 +162,7 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 
-IF 종류 == ターン終了時
+IF 종류 == 마함起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5535,P1)
 	IF RESULT == 0
 		CALL FULLRESET
@@ -197,11 +195,14 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 		ENDIF
 	ENDIF
-	
+
 ELSEIF 종류 == 戦破壊→묘지
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5535)
 	IF RESULT == 0
-		CALL CARD_RESERV(듀얼리스트,5535)
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件名前 = 봉래의 인형 모코우
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
 	ENDIF
 ENDIF
 

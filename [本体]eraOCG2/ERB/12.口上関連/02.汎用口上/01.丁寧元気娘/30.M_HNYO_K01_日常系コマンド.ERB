@@ -23,6 +23,7 @@ RETURN RESULT
 
 @M_HNYO_MESSAGE_COM_K1_300_1
 #DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ランダム値
 ;-------------------------------------------------
 ;기입 체크（=0, 미표시, 1, 표시）
 LOCAL = 1
@@ -35,7 +36,22 @@ IF LOCAL
 		호감도修正 += 2
 	SIF TALENT:TARGET:연모 >= 1
 		호감도修正 += 1
-	SELECTCASE RAND:호감도修正 + 1
+
+	ランダム値 = RAND:50
+	SELECTCASE ランダム値
+	CASE  0 TO  9
+	CASE 10 TO 19
+		SIF TALENT:TARGET:연모 == 0
+			RESTART
+	CASE 20 TO 29
+		SIF TALENT:TARGET:연모 <= 1
+			RESTART
+	CASE 30 TO 39
+		SIF TALENT:TARGET:애처 != 1
+			RESTART
+	ENDSELECT
+
+	SELECTCASE ランダム値
 		CASE 1
 			PRINTFORMW 「하지만 심심하네요……조금 밖에 산책하러 가고 싶어요」
 		CASE 2
@@ -46,21 +62,23 @@ IF LOCAL
 			PRINTFORMW 「오늘은 어떻게 할까……응? 앗, 아뇨 오늘 메뉴를 생각하고 있었어요!」
 		CASE 5
 			PRINTFORMW 「뭔가 몸을 움직이고 싶네~……좀 밖에 산책 가지 않을래요?」
-		CASE 6
+		CASE 10
 			PRINTFORMW 「%CSTR:TARGET:MASCALL%은 평소부터 방에 있습니다만 친구는……」
 			PRINTFORMW 「앗! 아니 아무것도 아니에요!」
-		CASE 7
+		CASE 11
 			PRINTFORMW 「하아~……이전에 새 카드 샀는데……규제됐어요」
 			PRINTFORMW 「대신할 카드 같이 찾지 않을래요?」
-		CASE 8
+		CASE 20
 			PRINTFORMW %CALLNAME:TARGET%은 콧노래를 부르며 만화를 읽고 있었다.
 			PRINTFORMW 그다지 말을 걸 수 있는 분위기가 아닌 것 같다.
-		CASE 9
+		CASE 21
 			PRINTFORMW 「후훗……응흐흐훗……!! 엄청 시시한 아재 개그인데……」
 			PRINTFORMW 「%CALLNAME:MASTER%그렇게 진지한 얼굴로 말하면 너무 웃겨요……정말」
-		CASE 10
+		CASE 30
 			PRINTFORMW 「………❤」
 			PRINTFORMW 「………앗 아뇨, 말하고 있는 것만으로도, 편안해지네 하고」
+		CASEELSE
+			RESTART
 	ENDSELECT
 ENDIF
 RETURN 1

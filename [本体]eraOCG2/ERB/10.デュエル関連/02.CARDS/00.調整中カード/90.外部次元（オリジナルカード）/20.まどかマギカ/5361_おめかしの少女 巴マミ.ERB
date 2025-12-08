@@ -1,0 +1,252 @@
+﻿@CARDNAME_5361,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 멋부린 소녀 토모에 마미
+	CASE "略称"
+		RESULTS = 소녀 마미
+	CASE "カテゴリ"
+		RESULTS:0 = 푸엘라 마기
+	CASE "出典作品"
+		RESULTS:0 = 마법소녀 마도카☆마기카
+ENDSELECT
+
+
+@CARD_5361(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 700
+	CASE "守備力"
+		RETURN 200
+	CASE "성별"
+		RETURN 牝性
+	CASE "生成カード"
+		RETURN 105361
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5361(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환に成功した場合、손패を１枚を捨てて발동できる。
+PRINTL 자신フィールドに「소울젬」１体を특수소환する。
+PRINTL このターン자신はSモンスターしかEX덱から특수소환できない。
+SETCOLOR C_D_GRAY
+PRINTL その後、このカードは언데드족になる。
+RESETCOLOR
+CALLFORM CARD_ABLE(2,S素材時효과)
+PRINTL ②：このカードがS素材として묘지へ送られた場合に발동できる。
+PRINTL フィールドの「금색의 마법소녀 토모에 마미」１体を選び、そのカードに「소울젬」を装備する。
+PRINTL その後、덱からこのカード名以外の「푸엘라 마기」モンスター１枚を손패に加える。
+PRINTL 
+PRINTL 「소울젬」
+PRINTL （마법사족・튜너・水・星１・攻／守０）
+
+
+@CARDCAN_5361(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5361)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,5361)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,105361,"")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == S素材時효과
+	SIF 발동済_2(듀얼리스트,5361)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 푸엘라 마기
+	효과条件종류 = モン全般
+	효과条件固名前 = 멋부린 소녀 토모에 마미
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5361(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5361,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_GENERATE(듀얼리스트,105361)
+			EX소환可能종류 = 싱크로
+			CALL CARD_EX_RESTRICTION(듀얼리스트)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永種",언데드족,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == S素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5361,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 금색의 마법소녀 토모에 마미
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_GENERATE_MAGIC(듀얼리스트,105361,1,選択カード)
+		ENDIF
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 푸엘라 마기
+		효과条件종류 = モン全般
+		효과条件固名前 = 멋부린 소녀 토모에 마미
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+
+
+
+@CARDNAME_105361,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 금색의 소울젬
+	CASE "略称"
+		RESULTS = 소울젬
+	CASE "カテゴリ"
+		RESULTS:0 = 푸엘라 마기
+ENDSELECT
+
+
+@CARD_105361(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "튜너"
+		RETURN 1
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_105361(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL このカードがモンスターゾーンを離れる場合、このカードは소멸する（ゲームから取り除かれる）
+PRINTL ①：このカードを装備したモンスターは破壊耐性を得る。
+
+
+@CARDCAN_105361(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+IF 종류 == 지속효과
+	SIF ゾーン == "마함"
+		RETURN 0
+	SIF 装備先 != 5
+		RETURN 1
+	RETURN 0
+ENDIF
+
+
+@CARDEFFECT_105361(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 装備先
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+IF 종류 == 지속효과
+	IF ゾーン == "마함"
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"戦耐")
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"破耐")
+	ENDIF
+ENDIF

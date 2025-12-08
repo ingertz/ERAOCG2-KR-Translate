@@ -1,0 +1,903 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;성교系コマンド
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;全て *삽입をする時* の구상のため、気持ちいい所を抉ったり、子宮を潰したい時は파생コマンドへ
+;Ａ系は파생しないため、삽입継続で喘がせるといい感じになる
+;==================================================
+;60,正常位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_60
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_60_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_60_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;正常位
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2236_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			PRINTFORMW 「正面からですね　本当は初めてがこれが良かったですけどね」
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;삽입したままこの체위に切り替える
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「あっ❤いい❤もっと奥まで삽입していいですよ❤」
+		CASE 2
+			PRINTFORMW 「貴女の顔を見ながらするの好きぃ❤」
+		CASE 3
+			PRINTFORMW 「お゛っ❤…しゅご❤삽입だけでイッちゃう❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;61,後背位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_61
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_61_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_61_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2236_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			PRINTFORMW 「後ろからですか　はい獣みたいに犯してください❤」
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「お゛っ❤…奥までとどいてる❤」
+		CASE 2
+			PRINTFORMW 「いいです❤そのまま獣の交尾みたいに乱暴にぃ❤」
+		CASE 3
+			PRINTFORMW 「あっ❤あっ❤いい❤強引なのも好き❤」
+	ENDSELECT
+ENDIF
+;==================================================
+;62,正常位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_62
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_62_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_62_1
+#DIM DYNAMIC 호감도修正
+[SKIPSTART]
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL && TFLAG:SELECTCOM분기
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			PRINTFORMW 
+			RETURN 1
+		ELSE
+			PRINTFORMW 
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	;時姦中
+	IF FLAG:70
+		PRINTFORMW 
+		RETURN 1
+	;연모
+	ELSEIF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+[SKIPEND]
+;-------------------------------------------------
+;正常位
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2236_ANALSHOJO_BREAK
+		ELSE
+			PRINTFORMW 
+		ENDIF
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;63,後背位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_63
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_63_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_63_1
+#DIM DYNAMIC 호감도修正
+[SKIPSTART]
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL && TFLAG:SELECTCOM분기
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			PRINTFORMW 
+			RETURN 1
+		ELSE
+			PRINTFORMW 
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	;時姦中
+	IF FLAG:70
+		PRINTFORMW 
+		RETURN 1
+	;연모
+	ELSEIF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+[SKIPEND]
+;-------------------------------------------------
+;後背位
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2236_ANALSHOJO_BREAK
+		ELSE
+			PRINTFORMW 
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;====================================================================
+;64,逆レイプする
+;紛らわしいが女あなたが上に乗るのであり、あなたが襲われるわけではない
+;====================================================================
+@M_KOJO_MESSAGE_COM_K2236_64
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_64_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_64_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;조교者が처녀
+		IF TCVAR:MASTER:파과 == 1
+			PRINTFORMW 
+			RETURN 1
+		ELSE
+			PRINTFORMW 
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:MASTER:100 == TARGET
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			RETURN 1
+		ELSE
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;65,騎乗位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_65
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_65_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_65_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2236_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			PRINTFORMW 「私が上ですね　ん❤それではこちらで動きますから抵抗したら駄目ですよ❤」
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「あぁ❤자신で動くのはいいですね❤」
+		CASE 2
+			PRINTFORMW 「はあっ❤はあっ❤どうです❤全部搾り取ってあげます❤」
+		CASE 3
+			PRINTFORMW 「お゛っ❤お゛っ❤マスター勝手に❤突いてはだめぇ❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;66,騎乗位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_66
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_66_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_66_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2236_ANALSHOJO_BREAK
+		ELSE
+			PRINTFORMW 
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;67,対面座位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_67
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_67_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_67_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2236_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			PRINTFORMW 「ちゅっ…この体勢愛し合っている風でいいですね」
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「ん❤ん❤…マスター好きです❤」
+		CASE 2
+			PRINTFORMW 「あんっ❤…もっと❤強く抱きしめてください❤」
+		CASE 3
+			PRINTFORMW 「マスター❤マスター❤好き❤好き❤」
+	ENDSELECT
+	RETURN 1
+ENDIF
+RETURN 1
+
+;==================================================
+;68,背面座位
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_68
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_68_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_68_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;처녀
+		IF TCVAR:파과 == 1
+			CALL M_KOJO_MESSAGE_COM_K2236_SHOJO_BREAK
+			RETURN 1
+		ELSE
+			PRINTFORMW 「後ろから抱きしめてくれるんですね」
+			RETURN 1
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:V삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:질내사정플래그 
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_1
+			RETURN 1
+		ENDIF
+	ENDIF
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「あっ❤…はい気持ちいい所に届いてます❤」
+		CASE 2
+			PRINTFORMW 「いいです❤そのまま突いて❤」
+		CASE 3
+			PRINTFORMW 「お゛っ❤いまのしゅごぃ❤」
+	ENDSELECT
+	RETURN 1
+ENDIF
+RETURN 1
+
+;==================================================
+;69,対面座位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_69
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_69_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_69_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2236_ANALSHOJO_BREAK
+		ELSE
+			PRINTFORMW 
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;70,背面座位애널
+;==================================================
+@M_KOJO_MESSAGE_COM_K2236_70
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K2236_70_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2236_70_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;初めて
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		;애널처녀
+		IF TCVAR:Ａ파과
+			CALL M_KOJO_MESSAGE_COM_K2236_ANALSHOJO_BREAK
+		ELSE
+			PRINTFORMW 
+		ENDIF
+	ENDIF
+	;-------------------------------------------------
+	;삽입継続
+	;記入チェック
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && TCVAR:A삽입관리플래그 == MASTER
+		;前回사정した
+		IF TCVAR:104
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ELSE
+			CALL M_KOJO_MESSAGE_COM_K2236_AEGI_2
+			RETURN 1
+		ENDIF
+	ENDIF
+	;基本セット
+	호감도修正 = 2
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 1
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 
+		CASE 2
+			PRINTFORMW 
+		CASE 3
+			PRINTFORMW 
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;처녀
+@M_KOJO_MESSAGE_COM_K2236_SHOJO_BREAK
+
+PRINTFORMW 「ああ、やっと…いえ、悲しいじゃないのです嬉しいんです」
+PRINTFORMW 
+PRINTFORMW 삽입すると伝えると涙を流し始めたファイメナに戸惑うもファイメナの言葉を聞いて安心する
+PRINTFORMW 
+PRINTFORMW 「マスター貴方に소환されるよりもずっとずっと前からこうして欲しかった」
+PRINTFORMW 「いつか貴方に初めてを捧げる日を想い焦がれていたんです」
+PRINTFORMW 「それがいま叶って嬉しい気持ちが止まりません」
+PRINTFORMW 
+PRINTFORMW 涙を流し続けるファイメナを優しく抱きしめるとファイメナの方からも抱きしめ返された
+PRINTFORMW 
+PRINTFORMW 「マスター삽입してください　私に貴方を刻みつけて」
+
+;애널처녀
+@M_KOJO_MESSAGE_COM_K2236_ANALSHOJO_BREAK
+
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+PRINTFORMW 
+
+;膣성교
+@M_KOJO_MESSAGE_COM_K2236_AEGI_1
+
+SELECTCASE RAND:10 + 1
+	CASE 1
+		PRINTFORMW 「ん❤上手ですよマスター❤」
+	CASE 2
+		PRINTFORMW 「あっ❤マスターのがいい所にあたって❤」
+	CASE 3
+		PRINTFORMW 「ん❤ん❤遠慮しないでもっと突いてください❤」
+	CASE 4
+		PRINTFORMW 「あっ❤あっ❤気持ちいいです❤」
+	CASE 5
+		PRINTFORMW 「んんぅ❤もっとください❤もっとです❤」
+	CASE 6
+		PRINTFORMW 「ひゃうっ❤いまの❤しゅごぃ❤」
+	CASE 7
+		PRINTFORMW 「お゛っ❤しょこぉ❤だめぇ❤」
+	CASE 8
+		PRINTFORMW 「お゛っ❤お゛っ❤汚い声出ちゃいますぅ❤」
+	CASE 9
+		PRINTFORMW 「お゛ほっ❤お゛っ❤奥まで犯されて❤」
+	CASE 10
+		PRINTFORMW 「お゛ほっ❤お゛ぐっ❤頭真っ白になりゅ❤しゅごぃぃ❤」
+ENDSELECT
+
+;肛門성교
+@M_KOJO_MESSAGE_COM_K2236_AEGI_2
+SELECTCASE RAND:5 + 1
+	CASE 1
+		PRINTFORMW 
+	CASE 2
+		PRINTFORMW 
+	CASE 3
+		PRINTFORMW 
+	CASE 4
+		PRINTFORMW 
+	CASE 5
+		PRINTFORMW 
+ENDSELECT
+
+;체위변경
+@M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_1
+SELECTCASE RAND:3 + 1
+	CASE 1
+		PRINTFORMW 「あっ❤체위変えるんですね❤」
+	CASE 2
+		PRINTFORMW 「ん❤ん❤こっちもすごいです❤いっぱい❤愛してください❤」
+	CASE 3
+		PRINTFORMW 「ひゃうっ❤삽입したまま動くんですね❤」
+ENDSELECT
+
+;前回사정した체위변경
+@M_KOJO_MESSAGE_COM_K2236_SEXCHANGE_2
+SELECTCASE RAND:3 + 1
+	CASE 1
+		PRINTFORMW 「ん❤さっきのに変えるんですね❤」
+	CASE 2
+		PRINTFORMW 「あっ❤こっち私も好きです❤もっと楽しみましょう❤」
+	CASE 3
+		PRINTFORMW 「あっ❤あっ❤さっきみたいにいっぱい사정てください❤」
+ENDSELECT

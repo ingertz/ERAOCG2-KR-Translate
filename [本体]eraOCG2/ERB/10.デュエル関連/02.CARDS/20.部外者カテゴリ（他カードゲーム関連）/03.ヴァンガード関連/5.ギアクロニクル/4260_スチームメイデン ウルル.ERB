@@ -1,0 +1,167 @@
+﻿@CARDNAME_4260,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 스팀메이든 우루루
+	CASE "略称"
+		RESULTS = 우루루
+	CASE "カテゴリ"
+		RESULTS:0 = 기어 크로니클
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_4260(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "튜너"
+		RETURN 1
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4260(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「스팀메이든 우루루」以外の「기어 크로니클」モンスター１体を選び、손패に加えるか제외する。 
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：このカードが묘지に存在する場合に발동できる。
+PRINTL 자신のフィールド（表側표시）・묘지から「스팀메이든 우루루」以外の「기어 크로니클」モンスター１体を덱に戻し、このカードを특수소환する。
+PRINTL この효과で특수소환したこのカードは、フィールドから離れた場合に제외される。
+
+
+@CARDCAN_4260(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4260)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,4260)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件固名前 = 스팀메이든 우루루
+	효과条件カテゴリ = 기어 크로니클
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,4260)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4260,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件표시 = 10
+	효과条件固名前 = 스팀메이든 우루루
+	효과条件カテゴリ = 기어 크로니클
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4260(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4260,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		IF GETVAR(@"%듀얼리스트%_제외NG置換") < 1
+			CALL YN_CHOICE(듀얼리스트,"손패に加える。","제외する。")
+		ELSE
+			RESULT = はい
+		ENDIF
+		IF RESULT == はい
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件固名前 = 스팀메이든 우루루
+			효과条件カテゴリ = 기어 크로니클
+			효과条件종류 = モン全般
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ELSEIF RESULT == いいえ
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件固名前 = 스팀메이든 우루루
+			효과条件カテゴリ = 기어 크로니클
+			효과条件종류 = モン全般
+			효과条件行先플래그 = 제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4260,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		SIF モンスター数(듀얼리스트) < 5
+			효과範囲묘지 = 1
+		효과範囲필드 = 1
+		효과条件표시 = 10
+		효과条件固名前 = 스팀메이든 우루루
+		효과条件カテゴリ = 기어 크로니클
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과추가종류 = 効追除処
+			CALL CARD_SP_SUMMON(듀얼리스트,"묘지",場所)
+		ENDIF
+	ENDIF
+ENDIF
+

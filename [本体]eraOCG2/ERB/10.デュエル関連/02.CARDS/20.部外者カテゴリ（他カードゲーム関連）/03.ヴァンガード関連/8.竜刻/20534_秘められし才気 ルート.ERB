@@ -1,0 +1,193 @@
+﻿@CARDNAME_20534,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 드래그프린스 루트
+	CASE "略称"
+		RESULTS = 루트
+	CASE "カテゴリ"
+		RESULTS:0 = 용각
+		RESULTS:1 = 쉐도우 팔라딘
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_20534(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 600
+	CASE "守備力"
+		RETURN 1000
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_20534(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に、손패を１枚捨てて발동できる。
+PRINTL 덱から마법사족・어둠속성と드래곤족・어둠속성のモンスターと「용각」モンスターをそれぞれ１体まで묘지へ送る。
+PRINTL その後、덱から의식モンスター１体を손패に加える事ができる。
+CALLFORM CARD_ABLE(2,破壊→묘지)
+PRINTL ②：『의식３』
+SETCOLOR C_L_GRAY
+PRINTFORML （자신の묘지の드래곤족・마법사족で어둠속성のモンスターが３体以上の場合、以下の효과を適用する。）
+RESETCOLOR
+PRINTL このカードが효과で破壊され묘지へ送られた場合に발동できる。
+PRINTL 덱から「드래그프린스 루트」以外の「용각」モンスター１体を選んで破壊する。
+
+
+@CARDCAN_20534(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,20534)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,20534)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == 破壊→묘지
+	SIF 발동済_2(듀얼리스트,20534)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족:0 = 드래곤족
+	효과条件종족:1 = 마법사족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 용각
+	효과条件固名前 = 드래그프린스 루트
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_20534(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20534,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件속성 = 어둠속성
+			효과条件종족:0 = 마법사족
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件속성 = 어둠속성
+				효과条件종족:0 = 마법사족
+				효과条件任意 = 1
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件속성 = 어둠속성
+			효과条件종족:0 = 드래곤족
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件속성 = 어둠속성
+				효과条件종족:0 = 드래곤족
+				효과条件任意 = 1
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 용각
+			효과条件종류 = モン全般
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件カテゴリ = 용각
+				효과条件종류 = モン全般
+				효과条件任意 = 1
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件종류 = 의식
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件종류 = 의식
+				효과条件任意 = 1
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20534,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 용각
+		효과条件固名前 = 드래그프린스 루트
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

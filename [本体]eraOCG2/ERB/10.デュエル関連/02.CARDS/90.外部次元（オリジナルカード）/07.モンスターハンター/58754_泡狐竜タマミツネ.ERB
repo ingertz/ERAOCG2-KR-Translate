@@ -1,0 +1,191 @@
+﻿@CARDNAME_58754,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 포호룡 타마미츠네
+	CASE "略称"
+		RESULTS = 포호룡타마미츠네
+	CASE "カテゴリ"
+		RESULTS:0 = 수렵조수
+	CASE "出典作品"
+		RESULTS:0 = Monster Hunter
+ENDSELECT
+
+
+@CARD_58754(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2700
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251201
+ENDSELECT
+
+RETURN 0
+
+
+@CARDSUMMON_58754(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件종족:0 = 드래곤족
+素材条件종족:1 = 야수족
+素材条件종족:2 = 비행야수족
+素材条件종족:3 = 비늘야수족
+素材条件종족:4 = 악마족
+素材条件종족:5 = 바다생물족
+素材条件종족:6 = 미확인족
+素材条件종족:7 = 원소정령족
+
+IF EX参照 == 1
+	;PRINTL サモンまでは言ってるよ
+	CALL FUSCAN(듀얼리스트,소환カード,58754) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_58754(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 『猟獣』であるモンスター×２
+PRINTL （猟獣とは、드래곤족・야수족・비행야수족・비늘야수족・악마족・곤충족・바다생물족・미확인족・원소정령족モンスターを指す）
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：このカードがフィールドに存在する限り、특수소환されたモンスターは守備표시になる。
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ②：お互いのターンに１度、발동できる。
+PRINTL 상대フィールドのモンスター１体の효과を無効にする。
+CALLFORM CARD_ABLE(3,묘지起動,フリー誘発)
+PRINTL ③：お互いのメインフェイズに발동できる。
+PRINTL 묘지のこのカードを含むモンスターを덱に送り、전사족の융합モンスター１体を융합소환する。
+PRINTL この효과の발동後、ターン終了時まで자신はEX덱からモンスターを특수소환できない。
+
+@CARDCAN_58754(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58754)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == 묘지起動 || 종류 == フリー誘発
+	IF ゾーン == "필드"
+		SIF 효과발동済(듀얼리스트,場所,ゾーン)
+			RETURN 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件除去種 = 묘지
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "묘지"
+		SIF 발동済_3(듀얼리스트,58754)
+			RETURN 0
+		SIF メインフェイズ != 1
+			RETURN 0
+		SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+			RETURN 0
+		CALL RESETAREA_MAT
+		素材範囲필드 = 1
+		素材範囲묘지 = 1
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종류 = 융합
+		효과条件종족 = 전사족
+		효과条件소환可 = 1
+		強制素材場所 = 지정場所(場所,ゾーン)
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_58754(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件표시 = 1
+	효과条件召種 = 召種全특수
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드全体",場所,"表",2)
+ELSEIF 종류 == 필드起動 || 종류 == 묘지起動 || 종류 == フリー誘発
+	IF ゾーン == "필드"
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58754,10)
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ELSEIF ゾーン == "묘지"
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58754,3)
+		IF RESULT == 0
+			CALL RESETAREA_MAT
+			素材範囲필드 = 1
+			素材範囲묘지 = 1
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件종류 = 융합
+			효과条件종족 = 전사족
+			효과条件소환可 = 1
+			強制素材場所 = 지정場所(場所,ゾーン)
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			選択カード = RESULT
+			IF 選択カード != 9999
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:選択カード")}(듀얼리스트,選択カード)
+				CALL FUSSUMMON(듀얼리스트, 選択カード, 덱行き)
+			ENDIF
+			CALL SET_PLAYER_INFO(듀얼리스트,"EX制限",2)
+		ENDIF
+	ENDIF
+ENDIF

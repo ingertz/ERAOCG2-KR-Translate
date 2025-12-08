@@ -1,0 +1,148 @@
+﻿@CARDNAME_4550,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 달의 슈퍼 AI ＢＢ
+	CASE "略称"
+		RESULTS = ＢＢ쨩
+	CASE "カテゴリ"
+		RESULTS:0 = 영령
+		RESULTS:1 = SE.RA.PH
+		RESULTS:2 = 문캔서
+	CASE "出典作品"
+		RESULTS:0 = FATE
+ENDSELECT
+
+
+@CARD_4550(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251207
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4550(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL EX덱から사이버스족以外のモンスターを２枚제외し、
+PRINTL 덱から「사쿠라파이브」カード１枚を손패に加える。
+CALLFORM CARD_ABLE(2,제외時)
+PRINTL ②：このカードが제외された場合に발동できる。
+PRINTL このカードを특수소환する。
+
+
+@CARDSUMMON_AA_4550
+
+
+@CARDCAN_4550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4550)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,4550)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	CALL 효과条件종족_ADV(사이버스족,"以外")
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 사쿠라파이브
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 제외時
+	SIF 발동済_2(듀얼리스트,4550)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,4550,"제외")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4550(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4550,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		CALL 효과条件종족_ADV(사이버스족,"以外")
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 사쿠라파이브
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+
+	ENDIF
+ELSEIF 종류 == 제외時
+	CALL CARD_CHOICE(듀얼리스트,종류,"제외",場所,4550,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件名前 = 달의 슈퍼 AI ＢＢ
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

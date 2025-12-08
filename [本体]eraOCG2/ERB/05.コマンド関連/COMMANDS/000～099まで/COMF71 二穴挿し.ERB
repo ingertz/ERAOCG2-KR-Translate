@@ -134,13 +134,13 @@ IF TALENT:LOCAL:처녀 && !GETBIT(CFLAG:3,9)
 	EXP:LOCAL:이상경험 += 2
 	SETBIT CFLAG:LOCAL:3,9
 ENDIF
-;同性愛　레즈なら戻り値1게이なら戻り値2
+;同性愛　ＧＬなら戻り値1、ＢＬなら戻り値2
 IF HETEROSEX(TARGET,MASTER)
 	EXP:(50 + HETEROSEX(TARGET,MASTER)) += 3
 	EXP:MASTER:(50 + HETEROSEX(TARGET,MASTER)) += 3
 ENDIF
 
-;同性愛　레즈なら戻り値1게이なら戻り値2
+;同性愛　ＧＬなら戻り値1、ＢＬなら戻り値2
 IF HETEROSEX(LOCAL,MASTER)
 	EXP:MASTER:(50 + HETEROSEX(TARGET,MASTER)) += 3
 	EXP:LOCAL:(50 + HETEROSEX(TARGET,MASTER)) += 3
@@ -174,14 +174,14 @@ SIF (TALENT:2 & 2) && BASE:발기 < 1000
 ;TARGET 이외의 誰かに삽입してないとダメ
 SIF !LOCAL:2 || LOCAL:2 == TARGET
 	RETURN 0
-;상대가 처녀で、순종4以下・레즈끼4이하의 場合はできない（새드ならＯＫ）
+;상대가 처녀で、순종4以下・ＧＬ지향4이하의 場合はできない（새드ならＯＫ）
 IF LOCAL:2 && TALENT:(LOCAL:2):처녀
-	SIF (ABL:순종 <= 4 || ABL:레즈끼 <= 4) && TALENT:새드 == 0
+	SIF (ABL:순종 <= 4 || ABL:ＧＬ지향 <= 4) && TALENT:새드 == 0
 		RETURN 0
 ENDIF
-;윤활不足で、순종3以下・레즈끼3이하의 ASSIの場合はできない（새드ならＯＫ）
+;윤활不足で、순종3以下・ＧＬ지향3이하의 ASSIの場合はできない（새드ならＯＫ）
 IF LOCAL:2 && PALAM:(LOCAL:2):윤활 < PALAMLV:2
-	SIF (ABL:순종 <= 3 || ABL:레즈끼 <= 3) && TALENT:새드 == 0
+	SIF (ABL:순종 <= 3 || ABL:ＧＬ지향 <= 3) && TALENT:새드 == 0
 		RETURN 0
 ENDIF
 ;オトコだとダメ

@@ -545,7 +545,7 @@ TFLAG:호감도관리 += (ABL:캐릭터_ID:순종 + ABL:캐릭터_ID:친밀) / 2
 
 ;主人と대상が同性
 IF HETEROSEX(캐릭터_ID,MASTER)
-	;男なら호모끼、女なら레즈끼を見る
+	;男ならＢＬ지향、女ならＧＬ지향を見る
 	IF ABL:캐릭터_ID:(HETEROSEX(캐릭터_ID,MASTER) + 16) == 0
 		TFLAG:호감도관리 -= 1
 	ELSEIF ABL:캐릭터_ID:(HETEROSEX(캐릭터_ID,MASTER) + 16) < 3
@@ -555,7 +555,7 @@ IF HETEROSEX(캐릭터_ID,MASTER)
 	ELSE
 		TFLAG:호감도관리 += 2
 	ENDIF
-	;男ならＢＬ중독、女なら레즈중독を見る
+	;男ならＢＬ중독、女ならＧＬ중독を見る
 	IF ABL:캐릭터_ID:(HETEROSEX(캐릭터_ID,MASTER) + 31) > 4
 		TFLAG:호감도관리 += 2
 	ELSEIF ABL:캐릭터_ID:(HETEROSEX(캐릭터_ID,MASTER) + 31) > 2
@@ -587,11 +587,11 @@ SIF TALENT:캐릭터_ID:헌신적 && TFLAG:호감도관리 > 0
 ;쾌락に素直
 IF TALENT:캐릭터_ID:쾌감반응 > 0
 	TFLAG:호감도관리 += 1
-;쾌락の부정
+;쾌락에 부정
 ELSEIF TALENT:캐릭터_ID:쾌감반응 < 0
 	TFLAG:호감도관리 -= 1
 ENDIF
-;男嫌い
+;남성혐오
 IF TALENT:캐릭터_ID:성별기호 & 1 && !(TALENT:MASTER:성별 & 1) && TALENT:MASTER:낭자애 == 0
 	TFLAG:호감도관리 -= 1
 ;女嫌い

@@ -1,0 +1,251 @@
+﻿@CARDNAME_52085,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 시공룡 크로노스커맨드 드래곤
+	CASE "略称"
+		RESULTS = 크로노스커맨드
+	CASE "カテゴリ"
+		RESULTS:0 = 기어 크로니클
+		RESULTS:1 = 크로노스커맨드
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_52085(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 드래곤족
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 雄性
+	CASE "특수불가"
+		RETURN 1
+	CASE "レア度"
+		RETURN ULR
+
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_52085(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 1
+素材条件カテゴリ:0 = 크로노제트
+
+IF EX参照 == 1
+	CALL STRIDECAN(듀얼리스트,소환カード,52085) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_52085(종류)
+#DIM DYNAMIC 종류
+
+;CALL PRINT_STRIDETEXT("크로노제트」または「クロノファング")
+CALL PRINT_STRIDETEXT("크로노제트")
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,攻撃後誘発)
+PRINTL ①：このカードの攻撃で상대モンスターを破壊した場合、
+PRINTL 묘지のカード２枚を제외し、손패を１枚捨てて발동できる。
+PRINTL 상대フィールドのカードを全て덱に戻す。
+CALLFORM CARD_ABLE(2,제외時)
+PRINTL ②：このカードが제외された場合に발동できる。
+PRINTL 덱から드래곤족・어둠속성モンスター１体を손패に加える。
+PRINTL その後、자신の손패を１枚選んで덱の一番下に戻す。
+
+
+@CARDCAN_52085(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,52085)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == EX덱起動
+	SIF 발동済_3(듀얼리스트,52085)
+		RETURN 0
+	SIF ターン数 <= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트)
+	SIF RESULT != 1
+		RETURN 0
+	SIF ゾーン != "EX덱"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 크로노제트
+	CALL CARD_CHECK_ADV(듀얼리스트)
+	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_超越済") != 0
+		RETURN 0
+	SIF 듀얼리스트 != "상대"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,52085)
+		RETURN 0
+	SIF 묘지数(듀얼리스트) < 2
+		RETURN 0
+	SIF 손패数(듀얼리스트) < 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 제외時
+	SIF 발동済_2(듀얼리스트,52085)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족 = 드래곤족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_52085(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC モンスター数
+#DIM DYNAMIC ダメージ量
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == EX덱起動
+ 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52085,3)
+ 	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件カテゴリ = 크로노제트
+			효과条件行先플래그 = 소멸行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				選択カードID = RESULT:1
+				CALL CARD_LOADUP
+				PRINTFORML
+				PRINTFORML
+				PRINTFORML 초월《스트라이드》、제너레이션！
+				RESETCOLOR
+				CALL PRINT_STATE_DUEL(選択カードID)
+				CALL FULLRESET
+				CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所,"攻撃표시")
+				SETVAR @"%듀얼리스트%_MZ_変化元ID:カード소환先", 選択カードID
+				CALL SET_PLAYER_INFO(듀얼리스트,"超越済",1)
+			ELSE
+				RETURN 0
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52085,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件複数 = 2
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과範囲상대마함 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"덱")
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 제외時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52085,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件속성 = 어둠속성
+		효과条件종족 = 드래곤족
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+

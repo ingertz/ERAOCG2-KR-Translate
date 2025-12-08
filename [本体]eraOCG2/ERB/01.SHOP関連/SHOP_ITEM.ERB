@@ -36,7 +36,7 @@ IF 아이템_구입 == 60 || 아이템_구입 == 61 || 아이템_구입 == 62
 	CALL CHOICE(아이템_名称, "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	SELECTCASE 아이템_구입
 		CASE 60
 			TALENT:MASTER:악취내성 = 2
@@ -54,7 +54,7 @@ IF 아이템_구입 == 100
 	CALL CHOICE("결혼반지를 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	ITEM:100 += 1
 	RESTART
 ENDIF
@@ -65,7 +65,7 @@ IF 아이템_구입 == 200
 	CALL CHOICE("【영혼의 카드】를 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	ITEM:200 += 1
 	RESTART
 ENDIF
@@ -74,7 +74,7 @@ IF 아이템_구입 == 27
 	CALL CHOICE("【소환권＋１】을 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	最大소환値 += 1
 	RESTART
 ENDIF
@@ -83,7 +83,7 @@ IF 아이템_구입 == 63
 	CALL CHOICE("【기교UP】을 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	ABL:MASTER:기교 += 1
 	RESTART
 ENDIF
@@ -92,7 +92,7 @@ IF 아이템_구입 == 64
 	CALL CHOICE("【기교DOWN】을 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	ABL:MASTER:기교 -= 1
 	RESTART
 ENDIF
@@ -102,7 +102,7 @@ IF 아이템_구입 == 65
 	CALL CHOICE("【정신조작】을 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	ITEM:70029 ++
 	RESTART
 ENDIF
@@ -139,7 +139,7 @@ IF 아이템_구입 == 69
 	CALL CHOICE("【우정 YU-JOU】을 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	ITEMSALES:아이템_구입 --
 	ITEM:69 ++
 	ITEM:71072 ++
@@ -265,6 +265,7 @@ IF 아이템_구입 == 78
 	RESTART
 ENDIF
 
+
 IF 아이템_구입 == 79
 	PRINTL 대상의 키를 변화시킵니다。
 	CALL CHOICE("【요술망치（신장）】을 구입하시겠습니까？", "네", "아니오")
@@ -305,22 +306,14 @@ IF 아이템_구입 == 80
 	CALL CHOICE("【레플리카 밀레니엄아이】을 구입하시겠습니까？", "네", "아니오")
 	SIF RESULT
 		RESTART
-	MONEY -= ITEMPRICE:아이템_구입
+	CALL MONEY_GET(-ITEMPRICE:아이템_구입)
 	ITEM:80 ++
-	RESTART
-ENDIF
-
-
-IF 아이템_구입 == 41
-	MONEY -= ITEMPRICE:아이템_구입
-	ITEM:아이템_구입 ++
-	PRINTW 최음약을 정제했습니다
 	RESTART
 ENDIF
 
 ;複数所持아이템
 SELECTCASE 아이템_구입
-	CASE 40 TO 60, 91, 92,
+	CASE 40 TO 60, 91, 92, 41
 		PRINTFORM %ITEMNAME:아이템_구입%을 몇 개 구입하시겠습니까？
 		SIF 아이템_구입 == 50
 			PRINTFORM (앞으로{ITEMSALES:아이템_구입}개)

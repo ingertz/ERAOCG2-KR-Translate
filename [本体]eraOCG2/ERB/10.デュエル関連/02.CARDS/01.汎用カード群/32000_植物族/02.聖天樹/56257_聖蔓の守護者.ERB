@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 생바인 가드너
+		RESULTS = 생바인 가드너
 	CASE "略称"
-RESULTS = 성만의 수호자
+		RESULTS = 성만의 수호자
 	CASE "カテゴリ"
-RESULTS:0 = 생바인
+		RESULTS:0 = 생바인
 ENDSELECT
 
 
@@ -60,7 +60,7 @@ ENDIF
 #DIM DYNAMIC 종류
 
 PRINTL 식물족 일반 몬스터 1체
-CALLFORM CARD_ABLE(0,지속효과)
+CALLFORM CARD_ABLE(0,상황確認)
 PRINTL ①: 자신 필드에 "생아발론" 링크 몬스터가 존재하지 않을 경우,
 PRINTL 이 카드는 파괴된다.
 CALLFORM CARD_ABLE(0,攻撃時強制誘発)
@@ -75,22 +75,27 @@ PRINTL 배틀 페이즈를 종료한다.
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
+
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,56257)
 SIF RESULT == 1
 	RETURN 0
-IF 종류 == 지속효과
+
+IF 종류 == 상황確認
 	SIF ゾーン != "필드"
 		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_破耐:場所") >= 1
+		RETURN 0
+
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件종류 = 링크
 	효과条件カテゴリ = 생아발론
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
 		RETURN 0
 
 	RETURN 1
-
 ELSEIF 종류 == 攻撃時強制誘発
 	SIF ゾーン != "필드"
 		RETURN 0
@@ -98,10 +103,12 @@ ELSEIF 종류 == 攻撃時強制誘発
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트,1) == 5
 		RETURN 0
+
 	RETURN 1
 ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
 	SIF バトルフェイズ != 1
 		RETURN 0
+		
 	RETURN 1
 ENDIF
 

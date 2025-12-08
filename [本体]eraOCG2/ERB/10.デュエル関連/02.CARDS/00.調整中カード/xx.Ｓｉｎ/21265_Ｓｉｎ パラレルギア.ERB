@@ -1,0 +1,150 @@
+﻿@CARDNAME_21265,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Ｓｉｎ 패러렐 기어
+	CASE "略称"
+		RESULTS = 패러렐 기어
+	CASE "カテゴリ"
+		RESULTS:0 = Ｓｉｎ
+ENDSELECT
+
+
+@CARD_21265(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "튜너"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_21265(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ②：손패のこのカードと손패の「Ｓｉｎ」モンスター１体を상대に見せて발동できる。
+PRINTL その２体を특수소환する。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：このカードをリリースして발동できる。
+PRINTL 덱から「Ｓｉｎ 패러렐 기어」以外の「Ｓｉｎ」モンスター１体を손패に加える。
+PRINTL ③：フィールド마법が表側표시で存在しない場合、このカードは破壊される。
+
+@CARDCAN_21265(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21265)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲상대마함 = 1
+	효과条件종류 = フィールド
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,21265)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,21265,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 4
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = Ｓｉｎ
+	효과条件종류 = モン全般
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,21265)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件固名前 = Ｓｉｎ 패러렐 기어
+	효과条件カテゴリ = Ｓｉｎ
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_21265(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+IF 종류 == 효과後強制誘発
+	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+ELSEIF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21265,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ = Ｓｉｎ
+		효과条件종류 = モン全般
+		효과条件特不無視 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21265,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件固名前 = Ｓｉｎ 패러렐 기어
+		효과条件カテゴリ = Ｓｉｎ
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

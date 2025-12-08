@@ -97,14 +97,14 @@ IF 종류 == EX덱起動
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과範囲마함 = 1
-	효과条件ID = 52354
+	효과条件名前 = VW─타이거 캐터펄트
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과範囲마함 = 1
-	효과条件ID = 52351
+	효과条件名前 = XYZ─하이퍼 드래곤 캐논
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -157,6 +157,10 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		RETURN 1
 	ENDIF
 	RETURN 0
+ELSEIF 종류 == 특수소환時強制 || 종류 == EX소환時強制
+	SIF 발동済_D1(듀얼리스트,52355)
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_52355(듀얼리스트,종류,ゾーン,場所)
@@ -182,8 +186,8 @@ IF 종류 == EX덱起動
 		효과範囲필드 = 1
 		효과範囲마함 = 1
 		효과条件行先플래그 = 제외行き
-		효과条件ID:0 = 52354
-		효과条件ID:1 = 52351
+		효과条件名前:0 = VW─타이거 캐터펄트
+		효과条件名前:1 = XYZ─하이퍼 드래곤 캐논
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			제외カードA = RESULT:1
@@ -192,9 +196,9 @@ IF 종류 == EX덱起動
 			효과範囲마함 = 1
 			효과条件行先플래그 = 제외行き
 			IF 제외カードA == 52354
-				효과条件ID:0 = 52351
+				효과条件名前:0 = VW─타이거 캐터펄트
 			ELSEIF 제외カードA == 52351
-				효과条件ID:1 = 52354
+				효과条件名前:0 = XYZ─하이퍼 드래곤 캐논
 			ENDIF
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 			IF RESULT == 1
@@ -236,5 +240,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
+ELSEIF 종류 == 특수소환時強制 || 종류 == EX소환時強制
+	CALL CARD_EFFECT_D1USE(듀얼리스트,52355)
 ENDIF
 

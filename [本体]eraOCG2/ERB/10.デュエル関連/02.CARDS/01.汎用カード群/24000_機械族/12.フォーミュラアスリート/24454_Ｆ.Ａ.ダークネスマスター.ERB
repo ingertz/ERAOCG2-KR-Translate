@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = F.A. 다크니스마스터
+		RESULTS = F.A. 다크니스마스터
 	CASE "略称"
-RESULTS = 다크니스마스터
+		RESULTS = Dark Dragster
 	CASE "カテゴリ"
-RESULTS:0 = 포뮬러 애슬리트
+		RESULTS:0 = 포뮬러 애슬리트
 ENDSELECT
 
 
@@ -49,10 +49,10 @@ RETURN 0
 CALLFORM CARD_ABLE(0,攻守変動)
 PRINTL ①: 이 카드 공격력은 이 카드 레벨 ×300 상승한다.
 CALLFORM CARD_ABLE(0,효과後誘発)
-PRINTL ②: 'F.A.' 마법 / 함정 카드의 효과가 발동했을 경우에 발동할 수 있다.
+PRINTL ②: "F.A."" 마법 / 함정 카드의 효과가 발동했을 경우에 발동할 수 있다.
 PRINTL 이 카드 레벨을 1개 올린다.
 CALLFORM CARD_ABLE(0,손패起動)
-PRINTL ③: 필드에 'F.A. 다크니스마스터' 이외의 레벨 7 이상의 'F.A.' 몬스터가 존재할 경우에 발동할 수 있다.
+PRINTL ③: 필드에 "F.A. 다크니스마스터" 이외의 레벨 7 이상의 "F.A." 몬스터가 존재할 경우에 발동할 수 있다.
 PRINTL 패의 이 카드를 특수 소환한다.
 CALLFORM CARD_ABLE(10,필드起動)
 PRINTL ④: 1턴에 1번, 필드의 카드 1장을 대상으로 하여 발동할 수 있다.
@@ -156,7 +156,11 @@ ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,24454,10)
 	IF RESULT == 0
 		CALL FULLRESET
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"両全場単体",場所,"묘지")
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 		IF RESULT == 1
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",-3)
 		ENDIF

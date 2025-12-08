@@ -60,12 +60,11 @@ CALL TEXT_DECORATION("P_MAGIC")
 PRINTL 이 카드명의 P효과는 1턴에 1번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(4,마함起動)
 PRINTL ①：자신의 메인 페이즈에 발동할 수 있다。
-PRINTL 이 카드를 앞면 표시로 EX덱에 넣고、그 후、덱에서 "도레미코드" 마법 / 함정 카드 １장을 패에 넣는다。
+PRINTL 이 카드를 EX덱에 넣고、그 후、덱에서 "도레미코드" 마법 / 함정 카드 １장을 패에 넣는다。
 PRINTL 이 효과를 발동한 턴, 자신은 천사족 몬스터밖에 특수 소환할 수 없다.
 	SETCOLOR C_GRAY ;（隠し효과）
-PRINTL 상대 필드에 "큐티아최애" 몬스터가 2장 이상 존재하는 경우。
-PRINTL 그 몬스터들을 내성을 무시하고 전부 파괴한다。
-PRINTL 그 후、파괴한 몬스터의 수×700 데미지를 자신이 받는다。
+PRINTL 그 후、상대 필드에 "큐티아최애"가 2장 이상 존재하는 경우、
+PRINTL 그 몬스터들은 내성을 무시하고 전부 파괴되며、자신은 파괴된 수×700 데미지를 받는다。
 	RESETCOLOR
 ;------------------------------펜듈럼------------------------------
 CALL TEXT_DECORATION("P_MAGIC_2")
@@ -74,7 +73,7 @@ CALLFORM CARD_ABLE(1,특수소환時)
 PRINTL ①：이 카드가 특수 소환에 성공한 경우에 발동할 수 있다。
 PRINTL "도레미아이돌" 몬스터를 포함한 자신 필드 몬스터를 소재로 하고 EX소환을 한다。
 CALLFORM CARD_ABLE(2,필드起動)
-PRINTL ②：EX덱（앞면）의 레벨4 이상의 "도레미아이돌" P몬스터 1장을 대상으로 하고 발동할 수 있다。
+PRINTL ②：EX덱의 레벨4 이상인 "도레미아이돌" P몬스터 1장을 대상으로 하고 발동할 수 있다。
 PRINTL 그 몬스터를 특수 소환하고、이 카드의 레벨을 2올린다。
 
 
@@ -214,8 +213,14 @@ ELSEIF 종류 == 특수소환時
 		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
 		選択場所 = RESULT
 		IF 選択場所 != 9999
-			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択場所}")}(듀얼리스트,選択場所)
-			CALL SYNSUMMON(듀얼리스트, 選択場所)
+			TRYCALLFORM CARD_{RESULT:99},"종류"
+			IF RESULT == 싱크로
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択場所}")}(듀얼리스트,選択場所)
+				CALL SYNSUMMON(듀얼리스트, 選択場所)
+			ELSEIF RESULT == 링크
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択場所}")}(듀얼리스트,選択場所)
+				CALL LINSUMMON(듀얼리스트,選択場所)
+			ENDIF
 		ENDIF
 	ENDIF
 

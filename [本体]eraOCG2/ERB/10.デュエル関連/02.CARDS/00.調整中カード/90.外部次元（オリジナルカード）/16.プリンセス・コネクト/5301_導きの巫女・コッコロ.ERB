@@ -1,0 +1,138 @@
+﻿@CARDNAME_5301,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 인도하는 무녀 콧코로
+	CASE "略称"
+		RESULTS = 콧코로
+	CASE "カテゴリ"
+		RESULTS:0 = 미식전
+	CASE "出典作品"
+		RESULTS:0 = 프린세스 커넥트！
+ENDSELECT
+
+
+@CARD_5301(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 200
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5301(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL 덱から「미식전」カード１枚を손패に加える。
+PRINTL このターン中、자신が２回以上カードの효과を使用している場合、さらにもう１枚を손패に加える。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ③：「覚醒」の효과が발동した場合に발동できる。
+PRINTL 자신は２０００ライフ회복し、자신フィールドのモンスターの攻撃力・守備力は８００アップする。
+PRINTL 
+IF 確認듀얼리스트 == "자신"
+	PRINTFORML （現在のターンにプレイヤーが발동した효과の数は{자신_발동数}回）
+ELSE
+	PRINTFORML （現在のターンにプレイヤーが발동した효과の数は{상대_발동数}回）
+ENDIF
+@CARDCAN_5301(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5301)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時 
+	SIF 발동済_1(듀얼리스트,5301)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 미식전
+	효과条件固名前 = 인도하는 무녀 콧코로
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,5301)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = 覚醒
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"발동誘発",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5301(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 소환時 || 종류 == 특수소환時 
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5301,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 미식전
+		효과条件固名前 = 인도하는 무녀 콧코로
+		IF 覚醒횟수(듀얼리스트) > 2
+			효과条件複数 = 98
+		ENDIF
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5301,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"永攻",800)
+		CALL FULLRESET
+		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"永守",800)
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",2000)
+	ENDIF
+ENDIF
+
+

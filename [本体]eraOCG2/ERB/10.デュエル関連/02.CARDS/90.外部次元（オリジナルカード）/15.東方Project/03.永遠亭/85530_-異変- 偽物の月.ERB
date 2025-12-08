@@ -43,7 +43,7 @@ CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①：자신 필드에 "영원정" 몬스터가 존재하는 경우、
 PRINTL 이 카드의 발동 처리로서、덱에서 "-이변- 끝나지않는 밤"을 필드에 세트한다。
 CALLFORM CARD_ABLE(0,효과後誘発)
-PRINTL ②：필드의 몬스터는 그 카드를 대상 / 선택되지 않은 효과를 받지 않는다。
+PRINTL ②：서로는 덱에서 몬스터를 특수 소환할 수 없다。
 CALLFORM CARD_ABLE(1,ターン終了時強制)
 PRINTL ③：상대 엔드 페이즈시에 "달의 두뇌 에이린"이 존재하지 않는 경우、강제로 발동한다。
 PRINTL 이 카드를 파괴하고、덱에서 이 카드명 이외의 "이변" 카드 1장과 그 카테고리의 레벨 4 이하 몬스터 1장을 패에 넣는다。
@@ -118,10 +118,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 지속효과
-	CALL FULLRESET
-	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"無差耐")
-	CALL FULLRESET
-	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"無差耐")
+	CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止덱",3)
+	CALL SET_PLAYER_INFO(듀얼리스트,"SS소환禁止덱",3,1)
 ELSEIF 종류 == ターン終了時強制
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,85530,3)
 	IF RESULT == 0	

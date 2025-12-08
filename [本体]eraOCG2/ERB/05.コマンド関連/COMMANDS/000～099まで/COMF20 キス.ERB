@@ -66,6 +66,13 @@ SIF TALENT:자기애 < 0 || TALENT:저항
 ;혀を使う조교では、조교者の혀사용자에 따라、쾌락のソース増加
 SIF TALENT:MASTER:혀사용자
 	CALL SOURCE_CALC_접촉(TARGET, MASTER, 50)
+SIF TALENT:TARGET:혀사용자
+	CALL SOURCE_CALC_접촉(MASTER, TARGET, 50)
+
+SIF TALENT:MASTER:긴혀
+	CALL SOURCE_CALC_접촉(TARGET, MASTER, 100)
+SIF TALENT:TARGET:긴혀
+	CALL SOURCE_CALC_접촉(MASTER, TARGET, 100)
 
 ;고양이혀では減少
 SIF TALENT:MASTER:고양이혀
@@ -81,7 +88,7 @@ STAIN:MASTER:0 |= STAIN:0
 ;-------------------------------------------------
 ;경험の処理
 ;-------------------------------------------------
-;同性愛　레즈なら戻り値1게이なら戻り値2
+;同性愛　ＧＬなら戻り値1、ＢＬなら戻り値2
 IF HETEROSEX(TARGET,MASTER)
 	EXP:(50 + HETEROSEX(TARGET,MASTER)) += 3
 	EXP:MASTER:(50 + HETEROSEX(TARGET,MASTER)) += 3
@@ -187,11 +194,11 @@ IF TALENT:헌신적
 	PRINTV '(,6,')
 	素質確認 = 1
 ENDIF
-;쾌감의 부정（음란、쾌락광で無効）
+;쾌감에 부정（음란、쾌락광で無効）
 IF TALENT:쾌감반응 < 0 && !TALENT:음란
 	PRINT  - 
 	판정値 -= 1
-	PRINT 쾌감의 부정
+	PRINT 쾌감에 부정
 	PRINTV '(,1,')
 	素質確認 = 1
 ENDIF

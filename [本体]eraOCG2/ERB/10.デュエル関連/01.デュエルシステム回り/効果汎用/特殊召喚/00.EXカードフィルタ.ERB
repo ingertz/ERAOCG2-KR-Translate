@@ -31,12 +31,15 @@
 #DIM DYNAMIC 現在最小攻撃力
 #DIM DYNAMIC ガーキマ플래그
 #DIM DYNAMIC 대상カードID
+#DIM DYNAMIC 適応カードID
 
 #DIMS DYNAMIC 소환カードカテゴリ
 
 VARSET 상대選択カード, -1 
 
-
+適応カードID = 処理中_효과ID 
+SIF CCHKカードID >= 1
+	適応カードID = CCHKカードID
 ;実行者 = %듀얼리스트%
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -114,16 +117,18 @@ ENDIF
 ;PRINTFORML ここ通りました！開始C5！！
 
 ;ガーキマ関連
-IF カウンタB >= 3 && 소환カード_ID == 52910
-	GOTO INPUTSKIP
+;IF カウンタB >= 3 && 소환カード_ID == 52910
+;	GOTO INPUTSKIP
 ;드래곤테일関連
-ELSEIF 条件合計 >= 1 && カウンタB != 2 && (INRANGE(소환カード_ID,42235,42239))
-	カウンタB ++
-	GOTO INPUTLOOP
-;문라이트 퓨전
-ELSEIF 条件合計 >= 1 &&  カウンタB >= 3 && 処理中_효과ID == 61156
+;ELSEIF 条件合計 >= 1 && カウンタB != 2 && (INRANGE(소환カード_ID,42235,42239))
+;	カウンタB ++
+;	GOTO INPUTLOOP
+;문라이트 퓨전등의 효과
+VARSET RESULT
+TRYCALLFORM CARDFUS_{適応カードID}(条件合計, カウンタB)
+SIF RESULT == 1
 	GOTO INPUTSKIP
-ENDIF
+
 ;PRINTFORML ここ通りました！開始D！！
 
 IF カウンタB == 0
@@ -234,15 +239,19 @@ ELSE
 ENDIF
 ;PRINTFORML ここ通りました！開始！！
 
+
+
 FOR カウンタ,0,サーチ範囲
 	VARSET 選択済カード
 	SIF GETVAR(@"%実行者%_%参照先%:カウンタ") == -1
 		CONTINUE
 	대상カードID = GETVAR(@"%実行者%_%参照先%:カウンタ")
-
 	SIF 대상カードID == 使用불가ゾーン
 		CONTINUE
-
+	IF 素材条件ゾーン != ""
+		SIF !MATCH(素材条件ゾーン,参照先)
+			CONTINUE
+	ENDIF
 	IF 素材条件固定 >= 0
 		SIF 参照先 == "필드" && GETVAR(@"%実行者%_MZ_不材:カウンタ") >= 1
 			CONTINUE

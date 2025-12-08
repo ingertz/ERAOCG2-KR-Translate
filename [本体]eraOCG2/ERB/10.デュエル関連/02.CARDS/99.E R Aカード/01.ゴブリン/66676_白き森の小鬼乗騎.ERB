@@ -1,0 +1,170 @@
+﻿@CARDNAME_66676,参照先
+;ココ66676で지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 고블린 아스테랴
+	CASE "略称"
+		RESULTS = 하얀숲의소귀승기
+	CASE "カテゴリ"
+		RESULTS:0 = 고블린라이더
+		RESULTS:1 = 고블린
+		RESULTS:2 = 하얀 숲
+		RESULTS:3 = E.R.A
+ENDSELECT
+
+
+@CARD_66676(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+
+SELECTCASE 参照先
+	CASE "종류"
+	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1930
+	CASE "추가日"
+		RETURN 251130
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_66676(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,특수소환時,소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「고블린」モンスターを１体손패に加える。
+CALL CARD_ABLE(2,필드起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL 덱から마법사족モンスター１体を묘지へ送り、このカードのレベルを２にする。
+CALLFORM CARD_ABLE(3,S素材時효과)
+PRINTL ③：このカードがＳ素材として묘지へ送られた場合に발동できる。
+PRINTL 덱から「죄보」カード１枚を손패に加える。
+CALL TEXT_DECORATION("ROGUE")
+
+
+
+@CARDCAN_66676(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,66676)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,66676)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 고블린
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,66676)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 마법사족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == S素材時효과
+	SIF 발동済_3(듀얼리스트,66676)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 죄보
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_66676(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 無効カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 攻撃力上昇値
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC レイプ횟수
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,66676,1)
+	IF RESULT == 0
+		;덱からサーチ
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 고블린
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,66676,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종족 = 마법사족
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一星", 2,1) 
+	ENDIF
+ELSEIF 종류 == S素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,66676,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 죄보
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",場所)
+	ENDIF
+ENDIF
+

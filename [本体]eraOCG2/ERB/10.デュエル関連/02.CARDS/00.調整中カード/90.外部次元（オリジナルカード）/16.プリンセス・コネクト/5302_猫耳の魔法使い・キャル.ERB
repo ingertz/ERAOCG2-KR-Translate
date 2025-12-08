@@ -1,0 +1,156 @@
+﻿@CARDNAME_5302,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 고양이 귀 마법소녀 캬루
+	CASE "略称"
+		RESULTS = 캬루
+	CASE "カテゴリ"
+		RESULTS:0 = 미식전
+		RESULTS:1 = 진화가능
+	CASE "出典作品"
+		RESULTS:0 = 프린세스 커넥트！
+ENDSELECT
+
+
+@CARD_5302(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 2400
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5302(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환に成功した場合に발동できる。
+PRINTL 상대ライフの上限を６０００にする
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：メインフェイズに１度だけ、このカードは「進化（覚醒）」できる。
+PRINTL そうした場合、このカードの攻撃力は８００アップし、
+PRINTL 상대フィールドの攻撃力２０００以下のモンスターをすべて破壊する。
+PRINTL フィールドにこのモンスター以外の「미식전」モンスターが２종류以上存在する場合、
+PRINTL このカードは상대ターンでも발동できる。
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ③：このカード名以外の「미식전」モンスターが효과を발동した場合に強制的に발동する。
+PRINTL 상대に５００ダメージを与える
+
+@CARDCAN_5302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5302)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時 
+	SIF 발동済_1(듀얼리스트,5302)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,5302)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") != 0
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	IF 종류 == フリー誘発
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 미식전
+		효과条件固名前 = 고양이 귀 마법소녀 캬루
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT < 2
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 永紋章起動
+	RETURN 1
+ELSEIF 종류 == 발동強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 미식전
+	효과条件종류 = モン全般
+	효과条件固名前 = 고양이 귀 마법소녀 캬루
+	CALL CARD_CHECK_START_DATA_2(듀얼리스트)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時 
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5302,1)
+	IF RESULT == 0
+		PRINTFORMW %対面者%のライフの上限は６０００になりました……。
+		CALL CARD_RESERV(듀얼리스트,71921,永紋章予約)
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5302,2)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",800)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+		CALL FULLRESET
+		효과条件攻撃力 = 2000
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 永紋章起動
+	SIF GETVAR(@"ライフ_%対面者%") >= 6000
+		CALL LIFE_CHANGE(対面者,"","변경",6000)
+ELSEIF 종류 == 발동強制誘発
+	PRINTFORML キャルの효과起動！
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",500,1)
+
+ENDIF
+
+

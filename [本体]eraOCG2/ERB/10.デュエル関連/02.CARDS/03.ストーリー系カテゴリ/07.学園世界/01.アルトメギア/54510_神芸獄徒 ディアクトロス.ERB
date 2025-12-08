@@ -88,6 +88,7 @@ ENDIF
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC 条件달성
+#DIM DYNAMIC 효과使用불가,3
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54510)
 SIF RESULT == 1
@@ -126,6 +127,14 @@ ELSEIF 종류 == 발동誘発
 	효과範囲마함 = 1
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	SIF RESULT != 1
+		효과使用불가 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		효과使用불가 = 1
+	SIF 효과使用불가 == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지

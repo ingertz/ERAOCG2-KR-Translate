@@ -1,0 +1,143 @@
+﻿@CARDNAME_2334,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 레전드 네크로맨서
+	CASE "略称"
+		RESULTS = L 네크로맨서
+	CASE "カテゴリ"
+		RESULTS:0 = 레전드
+ENDSELECT
+
+
+@CARD_2334(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 300
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251201
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2334(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신の묘지にレベル７以上の「레전드」モンスターが存在する場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+PRINTL その後、덱から「레전드 포제스트」１枚を손패に加えることができる。
+CALLFORM CARD_ABLE(2,필드→묘지,破壊→묘지,손패→묘지,덱→묘지)
+PRINTL ②：このカードが「레전드」カードの효과で묘지へ送られた場合に발동できる。
+PRINTL 덱から「레전드」カード１枚を묘지へ送る。
+
+
+@CARDCAN_2334(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2334)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,2334)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,2334,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 레전드
+	CALLFORM 효과条件レベル_ADV(7,"以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF GROUPMATCH(종류,필드→묘지,破壊→묘지,손패→묘지,덱→묘지)
+	SIF 발동済_2(듀얼리스트,2334)
+		RETURN 0
+	TRYCALLFORM CARDNAME_{処理中_효과ID},"カテゴリ"
+	SIF !MATCH(RESULTS,"레전드")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 레전드
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2334(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2334,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件名前 = 레전드 포제스트
+			효과条件任意 = 1
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF GROUPMATCH(종류,필드→묘지,破壊→묘지,손패→묘지,덱→묘지)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2334,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 레전드
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+

@@ -1,5 +1,5 @@
 ﻿@CARDNAME_2173,参照先
-;ココで指定カードの名前、略称を返す予定
+;ココで지정カードの名前、略称を返す予定
 #DIMS DYNAMIC 参照先
 
 VARSET RESULT
@@ -22,135 +22,135 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
-	CASE "種類"
-		RETURN 効果モン
-	CASE "属性"
-		RETURN 闇属性
-	CASE "種族"
-		RETURN サイバース族
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 사이버스족
 	CASE "レベル"
 		RETURN 3
 	CASE "攻撃力"
 		RETURN 900
 	CASE "守備力"
 		RETURN 300
-	CASE "性別"
+	CASE "성별"
 		RETURN 牝性
 ENDSELECT
 RETURN 0
 
-@CARD_EXPLANATION_2173(種類)
-#DIM DYNAMIC 種類
+@CARD_EXPLANATION_2173(종류)
+#DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 ①③の効果はそれぞれ１턴에 １장밖에 사용할 수 없다。
-CALLFORM CARD_ABLE(1,戦場起動)
-PRINTL ①：自分メインフェイズに発動できる。
-PRINTL デッキから「M∀LICE」몬스터 １장을 除外する。
+PRINTL 이 카드명의 ①③の효과はそれぞれ１턴에 １장밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 덱から「M∀LICE」몬스터 １장을 제외する。
 CALLFORM CARD_ABLE(0,攻紋章起動)
-PRINTL このターン、自分필드의 「M∀LICE」몬스터의 攻撃力は６００アップする。
-CALLFORM CARD_ABLE(2,永続効果)
-PRINTL ②：自分フィールドに存在する「M∀LICE」Ｌモンスターは効果では破壊されない。
-CALLFORM CARD_ABLE(3,除外時)
-PRINTL ③：이 카드가 除外された場合、３００ＬＰを払って発動できる。
-PRINTL 이 카드를 特殊召喚する。
-PRINTL このターン、自分はＬ 몬스터밖에 EXデッキから特殊召喚できない。
+PRINTL このターン、자신필드의 「M∀LICE」몬스터의 攻撃力は６００アップする。
+CALLFORM CARD_ABLE(2,지속효과)
+PRINTL ②：자신フィールドに存在する「M∀LICE」Ｌモンスターは효과では破壊されない。
+CALLFORM CARD_ABLE(3,제외時)
+PRINTL ③：이 카드가 제외された場合、３００ＬＰを払って발동できる。
+PRINTL 이 카드를 특수소환する。
+PRINTL このターン、자신はＬ 몬스터밖에 EX덱から특수소환できない。
 	RESETCOLOR
 
 
 @CARDSUMMON_AA_2173
 
 
-@CARDCAN_2173(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDCAN_2173(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 
-CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,2173)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2173)
 SIF RESULT == 1
 	RETURN 0
 
-IF 種類 == 戦場起動
-	SIF 発動済_1(決闘者,2173)
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,2173)
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
-	SIF ターンプレイヤー != 決闘者
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
 	CALL FULLRESET
-	効果範囲デッキ = 1
-	効果条件カテゴリ = マリス
-	効果条件種類 = モン全般
-	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	효과範囲덱 = 1
+	효과条件カテゴリ = マリス
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 種類 == 攻紋章起動
+ELSEIF 종류 == 攻紋章起動
 	RETURN 1
-ELSEIF 種類 == 永続効果
-	SIF ゾーン != "戦場"
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
-ELSEIF 種類 == 除外時
-	SIF 発動済_3(決闘者,2173)
+ELSEIF 종류 == 제외時
+	SIF 발동済_3(듀얼리스트,2173)
 		RETURN 0
-	SIF GETVAR(@"ライフ_%決闘者%") <= 300
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 300
 		RETURN 0
-	CALL CARD_SS_CHECK(決闘者,2173,"除外")
+	CALL CARD_SS_CHECK(듀얼리스트,2173,"제외")
 	SIF RESULT == 1
 		RETURN 0
 	RETURN 1
 ENDIF
 
-@CARDEFFECT_2173(決闘者,種類,ゾーン,場所)
-#DIMS DYNAMIC 決闘者
+@CARDEFFECT_2173(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC 対面者 
 #DIMS DYNAMIC ゾーン
-#DIM DYNAMIC 種類
+#DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択カードID
 
-CALL 対面者判定(決闘者)
+CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 
 
-IF 種類 == 戦場起動
-	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,2173,1)
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2173,1)
 	IF RESULT == 0
 		CALL FULLRESET
-		効果範囲デッキ = 1
-		効果条件行先フラグ = 除外行き
-		効果条件カテゴリ = マリス
-		効果条件種類 = モン全般
-		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		효과範囲덱 = 1
+		효과条件行先플래그 = 제외行き
+		효과条件カテゴリ = マリス
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		SIF RESULT
-			CALL CARD_RESERV(決闘者,2173,攻紋章予約)
+			CALL CARD_RESERV(듀얼리스트,2173,攻紋章予約)
 	ENDIF
-ELSEIF 種類 == 攻紋章起動
+ELSEIF 종류 == 攻紋章起動
 	CALL FULLRESET
-	効果条件カテゴリ = マリス
-	CALL STATCHANGE_BASIC(決闘者,"戦場",0,600)
-ELSEIF 種類 == 永続効果
+	효과条件カテゴリ = マリス
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",0,600)
+ELSEIF 종류 == 지속효과
 	CALL FULLRESET
-	効果条件種類 = リンク
-	効果条件カテゴリ = マリス
-	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"破耐")
-ELSEIF 種類 == 除外時
-	CALL CARD_CHOICE(決闘者,種類,"除外",場所,2173,3)
+	효과条件종류 = 링크
+	효과条件カテゴリ = マリス
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+ELSEIF 종류 == 제외時
+	CALL CARD_CHOICE(듀얼리스트,종류,"제외",場所,2173,3)
 	IF RESULT == 0
-		CALL LIFE_CHANGE(決闘者,"減少","コスト",300)
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",300)
 		CALL FULLRESET
-		効果範囲除外 = 1
-		効果条件名前 = M∀LICE＜P＞Dormouse
-		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		효과範囲제외 = 1
+		효과条件名前 = M∀LICE＜P＞Dormouse
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 
-		EX召喚可能種類 = リンク
-		CALL CARD_EX_RESTRICTION(決闘者)
+		EX소환可能종류 = 링크
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
 	ENDIF
 ENDIF
 

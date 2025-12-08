@@ -28,7 +28,6 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "종류"
 
-
 		RETURN 通常마법
 ENDSELECT
 
@@ -39,10 +38,10 @@ RETURN 0
 CALLFORM CARD_ABLE(0,마함起動,손패起動)
 PRINTL ①：덱 위에서 1장을 자신의 마법 & 함정 존에 세트한다.
 PRINTL 이 효과로 세트한 카드는 발동할 수 없다.
-CALLFORM CARD_ABLE(0,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지 ,戦闘→묘지)
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
 PRINTL ②：세트된 이 카드가 묘지로 보내졌을 경우에 발동할 수 있다.
 PRINTL 덱 위에서 1장을 자신의 마법 & 함정 존에 세트한다.
-PRINTL 
+PRINTL 이 효과로 세트한 카드는 발동할 수 없다.
 
 @CARDCAN_73903(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -67,8 +66,11 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 		RETURN 0
 	RETURN 1
 
-ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
-	SIF 마함数(듀얼리스트) >= 5
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") <= 1
 		RETURN 0
 	SIF 現山札数(듀얼리스트) < 1
 		RETURN 0
@@ -91,16 +93,16 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == 破壊→묘지
 		PRINTL
 		PRINTL "이 나를 위해 꽃을 피우는 것이다！"
 		PRINTL
-
 		SIF 종류 == 마함起動 || 종류 == 손패起動
 			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
 		CALL CARD_DISPOSE(듀얼리스트,"덱",0,마함行き,4)
 	ENDIF
-ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+ELSEIF 종류 == 戦破壊→묘지
 	;カード발동確認
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73904)
 	IF RESULT == 0
 		CALL FULLRESET
-		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き,4)
+		CALL CARD_DISPOSE(듀얼리스트,"덱",0,마함行き,4)
 	ENDIF
 ENDIF

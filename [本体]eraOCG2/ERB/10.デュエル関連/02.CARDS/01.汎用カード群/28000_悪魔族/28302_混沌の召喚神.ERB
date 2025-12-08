@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 혼돈의 소환신
+		RESULTS = 혼돈의 소환신
 	CASE "略称"
-RESULTS = 혼돈의 소환신
+		RESULTS = 혼돈의 소환신
 	CASE "カテゴリ"
-RESULTS:0 = 환마
+		RESULTS:0 = 환마
 ENDSELECT
 
 
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-	
 		RETURN 효과モン
 	CASE "속성"
 		RETURN 어둠속성
@@ -49,7 +48,7 @@ PRINTL "삼환마" 몬스터 중 어느 1장을 패에서 소환 조건을 무�
 CALLFORM CARD_ABLE(2,묘지起動)
 PRINTL ②: 묘지의 이 카드를 제외하고 발동할 수 있다.
 PRINTL 덱에서 "실락원" 1장을 패에 추가한다.
-PRINTL 
+
 
 @CARDCAN_28302(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -75,6 +74,7 @@ IF 종류 == 필드起動
 	효과範囲손패 = 1
 	효과条件カテゴリ = 삼환마
 	효과条件소환可 = 2
+	효과条件特不無視 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -90,7 +90,7 @@ ELSEIF 종류 == 묘지起動
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
-효과条件名前 = 실락원
+	효과条件名前 = 실락원
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -124,7 +124,7 @@ ELSEIF 종류 == 묘지起動
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
-효과条件名前 = 실락원
+		효과条件名前 = 실락원
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
 	ENDIF
 ENDIF

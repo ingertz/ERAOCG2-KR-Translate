@@ -13,6 +13,7 @@ RESETCOLOR
 
 @OPTION
 #DIM 가슴_설정値
+#DIM カウンタ
 #DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC 화상持ち
 $INPUT_LOOP
@@ -35,19 +36,11 @@ CALL OPTION_ON_OFF(オプション_체력기력상승)
 PRINTL
 PRINTFORM [{2,2}] %"가슴 성장 설정",40,LEFT% 
 CALL OPTION_ON_OFF(オプション_가슴AWS)
-IF 限界値_가슴AWS > 0
-	PRINTFORM 【{(限界値_가슴AWS)/10}mm】
-ELSEIF 限界値_가슴AWS == 0
-	PRINTFORM 【한계 설정 없음】
-ENDIF
+PRINTFORM %TOSTR_AWS_TALENT_BUST()%
 PRINTL
 PRINTFORM [{7,2}] %"엉덩이 성장 설정",40,LEFT% 
 CALL OPTION_ON_OFF(オプション_尻AWS)
-IF 限界値_尻AWS > 0
-	PRINTFORM 【{(限界値_가슴AWS)/10}mm】
-ELSEIF 限界値_尻AWS == 0
-	PRINTFORM 【한계 설정 없음】
-ENDIF
+PRINTFORM %TOSTR_AWS_TALENT_HIP()%
 PRINTL
 
 PRINTFORM [{3,2}] %"배 성장 설정",40,LEFT% 
@@ -177,81 +170,177 @@ SELECTCASE RESULT
 	CASE 2
 		;オプション_가슴성장
 		PRINTL OPTION:가슴설정
-		$INPUT_LOOP2
+		$INPUT_LOOP_BUST
+		PRINTL 
 		PRINTFORML [1] 가슴 성장 기능 \@ オプション_가슴AWS ? 【ON】 # 【OFF】 \@
-		PRINTFORM [2] 가슴 성장 한계 설정：
-		IF 限界値_가슴AWS > 0
-			PRINTFORML {(限界値_가슴AWS)/10}mm
-		ELSEIF 限界値_가슴AWS == 0
-			PRINTFORML 설정 없음
-		ENDIF
+		PRINTFORML [2] 가슴 성장 한계 / 수치 지정
+		PRINTFORML [3] 가슴 성장 한계 / 소질 지정
+		PRINTFORML 현재 설정값：%TOSTR_AWS_TALENT_BUST()%
 		PRINTL [0] 뒤로
 		BINPUT
-		IF RESULT == 1
-			オプション_가슴AWS ^= 1
-			GOTO INPUT_LOOP2
-		ELSEIF RESULT == 2
-			$INPUT_LOOP3
-			PRINTFORML 한계치를 설정합니다。직접 밀리미터(mm)로 설정 부탁드립니다。
-			SIF 限界値_가슴AWS == 0
-				PRINTFORML 현재 설정값：없음
-			SIF 限界値_가슴AWS > 0
-				PRINTFORML 현재 설정값：{(限界値_가슴AWS)/10}mm	
+		SELECTCASE RESULT
+			CASE 1 ;成長설정切り替え
+				オプション_가슴AWS ^= 1
+				GOTO INPUT_LOOP_BUST
+			CASE 2 ;数値지정
+				$INPUT_LOOP_BUST2
+				PRINTL
+				PRINTFORML 한계치를 설정합니다。직접 밀리미터(mm)로 설정 부탁드립니다。
+				IF 限界値_가슴AWS >= 0
+					PRINTFORML 현재 설정값：%TOSTR_AWS_TALENT_BUST()%
+				ELSEIF 限界値_가슴AWS < 0
+					PRINTFORML 현재 설정값：소질 지정됨
+				ENDIF
 			PRINTL [1] 한계치 없음
 			PRINTL [0] 뒤로
+			PRINTL
 			PRINTL 설정값:(최소500,최대9999)
+			PRINTL (소질 지정의 성장 한계는 해제됩니다)
 			INPUT
 			IF RESULT >= 500 && RESULT <= 9999 
 				限界値_가슴AWS = (RESULT*10)
-				PRINTFORML 한계치를 {(限界値_가슴AWS)/10}mm로 설정했습니다
-				GOTO INPUT_LOOP3
+				PRINTFORMW 한계치를 {(限界値_가슴AWS)/10}mm로 설정했습니다
+				GOTO INPUT_LOOP_BUST2
 			ELSEIF RESULT == 0
 				PRINTW 가슴 설정으로 돌아갑니다
-				GOTO INPUT_LOOP2
+				GOTO INPUT_LOOP_BUST
 			ELSEIF RESULT == 1
 				限界値_가슴AWS = 0　
+				GOTO INPUT_LOOP_BUST2
+			ELSE
+				PRINTW 입력값이 무효입니다
+				GOTO INPUT_LOOP_BUST2
 			ENDIF
-		ENDIF
+		CASE 3 ;素質지정
+				$INPUT_LOOP_BUST3
+				PRINTL
+				PRINTFORML 소질을 참조하여 한계치를 설정합니다。
+				IF 限界値_가슴AWS <= 0
+					PRINTFORML 현재 설정값：%TOSTR_AWS_TALENT_BUST()%
+				ELSEIF 限界値_가슴AWS > 0
+					PRINTFORML 현재 설정값：수치 지정됨
+				ENDIF
+				FOR カウンタ, -3, 6
+					PRINTFORM [{カウンタ+4}] %"【"+TOSTR_BUSTSIZE_FROMINT(カウンタ)+"】직전까지",28,LEFT%
+				NEXT
+				PRINTL
+				PRINTL
+				FOR カウンタ, -3, 6
+					PRINTFORM [{カウンタ+14}] %"【"+TOSTR_BUSTSIZE_FROMINT(カウンタ)+"】가 될때까지",28,LEFT%
+				NEXT
+				PRINTL
+				PRINTL 
+				PRINTL [30] 한계치 없음
+				PRINTL [0] 돌아간다
+				PRINTL 
+				PRINTL (수치 지정의 성장 한계는 해제됩니다)
+				PRINTL ("직전까지"는 그 소질로 성장하는 한단계 앞에서、
+				PRINTL  "가 될때까지"는 그 소질로 성장하는 수치에서 성장이 멈춥니다)
+				BINPUT
+				SELECTCASE RESULT
+					CASE 1 TO 9, 11 TO 19 
+						;素質지정は負数で설정
+						;10の位が1で「寸前まで」、2でに「なるまで」
+						;1の位が素質番号(虚胸から1~)
+						限界値_가슴AWS = (10 + RESULT) * -1
+						GOTO INPUT_LOOP_BUST3
+					CASE 30
+						限界値_가슴AWS = 0
+						GOTO INPUT_LOOP_BUST3
+					CASEELSE
+						PRINTW 가슴 설정으로 돌아갑니다
+						GOTO INPUT_LOOP_BUST
+				ENDSELECT
+			CASEELSE
+				;処理なし
+		ENDSELECT
 	CASE 7
 		;オプション_가슴성장
 		PRINTL OPTION:엉덩이 설정
-		$INPUT_LOOP_BOOB
+		$INPUT_LOOP_HIP
+		PRINTL
 		PRINTFORML [1] 엉덩이 성장 기능 \@ オプション_尻AWS ? 【ON】 # 【OFF】 \@
-		PRINTFORM [2] 엉덩이 성장 한계 설정：
-		IF 限界値_尻AWS > 0
-			PRINTFORML {(限界値_尻AWS)/10}mm
-		ELSEIF 限界値_尻AWS == 0
-			PRINTFORML 설정 없음
-		ENDIF
-		PRINTL [0] 뒤로
+		PRINTFORML [2] 엉덩이 성장 한계 / 수치 지정
+		PRINTFORML [3] 엉덩이 성장 한계 / 소질 지정
+		PRINTFORML 현재 설정값：%TOSTR_AWS_TALENT_HIP()%
+		PRINTL [0] 돌아간다
 		BINPUT
-		IF RESULT == 1
-			オプション_尻AWS ^= 1
-			GOTO INPUT_LOOP_BOOB
-		ELSEIF RESULT == 2
-			$INPUT_LOOP_BOOB2
-			PRINTFORML 한계치를 설정합니다。직접밀리미터(mm)로 설정부탁드립니다。
-			SIF 限界値_尻AWS == 0
-				PRINTFORML 현재 설정값：없음
-			SIF 限界値_尻AWS > 0
-				PRINTFORML 현재 설정값：{(限界値_尻AWS)/10}mm	
-			PRINTL [1] 한계치 없음
-			PRINTL [0] 뒤로
-			PRINTL 설정값:(최소500,최대9999)
+		SELECTCASE RESULT
+			CASE 1 ;成長설정切り替え
+				オプション_尻AWS ^= 1
+				GOTO INPUT_LOOP_HIP
+			CASE 2 ;수치지정
+				$INPUT_LOOP_HIP2
+				PRINTL
+				PRINTFORML 한계치를 설정합니다。직접밀리미터(mm)로 설정부탁드립니다。
+				IF 限界値_尻AWS >= 0
+					PRINTFORML 현재 설정값：%TOSTR_AWS_TALENT_HIP()%
+				ELSEIF 限界値_尻AWS < 0
+					PRINTFORML 현재 설정값：소질 지정됨
+				ENDIF
+				PRINTL [1] 한계치 없음
+				PRINTL [0] 뒤로
+				PRINTL
+				PRINTL 설정값:(최소500,최대9999)
+				PRINTL (소질 지정의 성장 한계는 해제됩니다)
 			INPUT
 			IF RESULT >= 500 && RESULT <= 9999 
 				限界値_尻AWS = (RESULT*10)
-				PRINTFORML 한계지를 {(限界値_尻AWS)/10}mm로 설정했습니다
-				GOTO INPUT_LOOP_BOOB2
+				PRINTFORMW 한계치를 {(限界値_尻AWS)/10}mm로 설정했습니다
+				GOTO INPUT_LOOP_HIP2
 			ELSEIF RESULT == 0
 				PRINTW 엉덩이 설정으로 돌아갑니다
-				GOTO INPUT_LOOP_BOOB
+				GOTO INPUT_LOOP_HIP
 			ELSEIF RESULT == 1
 				限界値_尻AWS = 0　
+				GOTO INPUT_LOOP_HIP2
+			ELSE
+				PRINTW 입력값이 무효입니다
+				GOTO INPUT_LOOP_HIP2
 			ENDIF
-		ENDIF
-
-
+		CASE 3 ;素質지정
+				$INPUT_LOOP_HIP3
+				PRINTL
+				PRINTFORML 소질을 참조하여 한계치를 설정합니다。
+				IF 限界値_尻AWS <= 0
+					PRINTFORML 현재 설정값：%TOSTR_AWS_TALENT_HIP()%
+				ELSEIF 限界値_尻AWS > 0
+					PRINTFORML 현재 설정값：수치 지정됨
+				ENDIF
+				FOR カウンタ, -1, 4
+					PRINTFORM [{カウンタ+2}] %"【"+TOSTR_HIPSIZE_FROMINT(カウンタ)+"】직전까지",28,LEFT%
+				NEXT
+				PRINTL
+				PRINTL
+				FOR カウンタ, -1, 4
+					PRINTFORM [{カウンタ+12}] %"【"+TOSTR_HIPSIZE_FROMINT(カウンタ)+"】가 될때까지",28,LEFT%
+				NEXT
+				PRINTL
+				PRINTL 
+				PRINTL [30] 한계치 없음
+				PRINTL [0] 돌아간다
+				PRINTL
+				PRINTL (수치 지정의 성장 한계는 해제됩니다)
+				PRINTL ("직전까지"는 그 소질로 성장하는 한단계 앞에서、
+				PRINTL  "가 될때까지"는 그 소질로 성장하는 수치에서 성장이 멈춥니다)
+				BINPUT
+				SELECTCASE RESULT
+					CASE 1 TO 5, 11 TO 15
+						;素質지정は負数で설정
+						;10の位が1で「寸前まで」、2でに「なるまで」
+						;1の位が素質番号(貧尻から1~)
+						限界値_尻AWS = (10 + RESULT) * -1
+						GOTO INPUT_LOOP_HIP3
+					CASE 30
+						限界値_尻AWS = 0
+						GOTO INPUT_LOOP_HIP3
+					CASEELSE
+						PRINTW 엉덩이 설정으로 돌아갑니다
+						GOTO INPUT_LOOP_HIP
+				ENDSELECT
+			CASEELSE
+				;処理なし
+		ENDSELECT
 	CASE 3
 		オプション_腹AWS ^= 1
 	CASE 4

@@ -1,0 +1,136 @@
+﻿@CARDNAME_2336,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 코즈믹 서커
+	CASE "略称"
+		RESULTS = Cosm 서커
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_2336(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251201
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_2336(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신のＬＰが상대より少ない場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL 자신は１０００ＬＰ회복する。
+PRINTL その後、상대フィールドのモンスター（表側표시）のコストの合計が１０以上の場合、
+PRINTL 자신は덱から１枚ドローできる。
+
+
+@CARDCAN_2336(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2336)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,2336)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") >= GETVAR(@"ライフ_%対面者%")
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,2336,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,2336)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2336(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2336,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2336,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT:2 < 10
+			RETURN 0
+		SIF 듀얼리스트 == "자신"
+			PRINTL 드로우 하시겠습니까？
+		CALL YN_CHOICE(듀얼리스트)
+		SIF RESULT == はい
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ENDIF
+
+

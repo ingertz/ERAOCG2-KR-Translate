@@ -1,0 +1,163 @@
+﻿@CARDNAME_5331,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 무사무녀 토모에
+	CASE "略称"
+		RESULTS = 무사무녀 토모에
+	CASE "カテゴリ"
+		RESULTS:0 = 미투사
+	CASE "出典作品"
+		RESULTS:0 = 퀸즈 블레이드
+ENDSELECT
+
+
+@CARD_5331(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 1200
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5331(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환に成功した時に발동できる。
+PRINTL 자신の묘지の「미투사」モンスター１体を특수소환する。
+CALLFORM CARD_ABLE(2,발동誘発,攻撃時誘発)
+PRINTL ②：このカードの攻撃宣言時、または상대が손패・묘지からモンスターの효과を발동した時に발동できる。
+PRINTL 자신の덱の一番上のカードをめくる。そのカードの종류によって、以下の효과を適用する。
+PRINTL ●モンスター：その효과を無効にして제외する。攻撃宣言時の場合、상대の마법・함정カードを１枚破壊する。
+PRINTL ●마법・함정　：상대の묘지のカードを３枚まで제외する。
+
+
+
+@CARDCAN_5331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5331)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時 
+	SIF 발동済_1(듀얼리스트,5331)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 미투사
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+    SIF 발동済_2(듀얼리스트,5331)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1	
+ELSEIF 종류 == 攻撃時誘発
+	SIF 발동済_2(듀얼리스트,5331)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5331(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 소환時 || 종류 == 특수소환時 
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5331,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 미투사
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 발동誘発 || 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5331,2)
+	IF RESULT == 0
+		TRYCALLFORM CARD_UI(GETVAR(@"%듀얼리스트%_덱:0"))
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_덱:0")}("종류")
+		IF RESULT <= モン全般
+			IF 종류 == 발동誘発 
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+			ELSEIF 종류 == 攻撃時誘発
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+			ENDIF
+		ELSEIF RESULT >= 20
+			CALL FULLRESET
+			효과条件複数 = 97
+			효과条件任意 = 1		
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"상대묘지",ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

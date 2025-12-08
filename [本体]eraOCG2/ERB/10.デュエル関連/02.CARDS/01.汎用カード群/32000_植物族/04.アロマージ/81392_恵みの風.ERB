@@ -1,0 +1,218 @@
+﻿@CARDNAME_81392,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 은혜의 바람
+	CASE "略称"
+		RESULTS = 은혜의 바람
+	CASE "カテゴリ"
+		RESULTS:0 = 아로마
+ENDSELECT
+
+
+@CARD_81392(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 지속함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_81392(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1, 마함起動)
+PRINTL ①：이하의 효과에서 １개 선택해서 발동할 수 있다。
+PRINTL ●자신의 패 / 필드（앞면 표시）에서 식물족 몬스터 １장을 묘지로 보내고 발동할 수 있다。자신은 ５００LP회복한다。
+PRINTL ●자신 묘지의 식물족 몬스터 １장을 대상으로 하고 발동할 수 있다。그 몬스터를 덱으로 되돌린다。그 후、자신은 ５００LP회복한다。
+PRINTL ●１０００LP를 지불하고 발동할 수 있다。자신의 묘지에서 "아로마" 몬스터 １장을 특수 소환한다。
+
+
+@CARDCAN_81392(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 효과발동可,3
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 81392)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트, 81392)
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件종족 = 식물족
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT == 1
+		효과발동可:0 = 1
+	
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 식물족
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT == 1
+		효과발동可:1 = 1
+	
+	IF GETVAR(@"ライフ_%듀얼리스트%") > 1000
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 아로마
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+		SIF RESULT == 1
+			효과발동可:2 = 1
+	ENDIF
+	
+	SIF 효과발동可:0 == 0 && 효과발동可:1 == 0 && 효과발동可:1 == 0
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 마함起動
+	CALL CARD_SET_ACT(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_81392(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 효과발동可,3
+#DIM DYNAMIC ライフ差
+#DIM DYNAMIC 選択효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 81392, 1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件종족 = 식물족
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+		SIF RESULT == 1
+			효과발동可:0 = 1
+		
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 식물족
+		CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+		SIF RESULT == 1
+			효과발동可:1 = 1
+		
+		IF GETVAR(@"ライフ_%듀얼리스트%") > 1000
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종류 = モン全般
+			효과条件カテゴリ = 아로마
+			효과条件소환可 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+			SIF RESULT == 1
+				효과발동可:2 = 1
+		ENDIF
+		
+		IF 듀얼리스트 == "자신"
+			IF 효과발동可:0 == 1 || 효과발동可:1 == 1 || 효과발동可:2 == 1
+				PRINTL 효과를 선택해 주세요
+				PRINTL
+				SIF 효과발동可:0 == 1
+					PRINTL [0] - 패 / 필드（앞면 표시）에서 식물족 몬스터를 묘지로 보내고、５００LP회복한다
+				SIF 효과발동可:1 == 1
+					PRINTL [1] - 묘지의 식물족 몬스터를 덱으로 되돌리고、５００LP회복한다
+				SIF 효과발동可:2 == 1
+					PRINTL [2] - １０００LP를 지불하고、묘지에서 "아로마" 몬스터를 특수 소환한다
+				BINPUT
+				選択효과 = RESULT
+			ELSE
+				選択효과 = -1
+			ENDIF
+		ELSE
+			;CPUは3つ目＞2つ目＞1つ目の優先順位で효과を選択する。
+			;ただし、３つ目の효과を選択するとLPの優位が崩れる場合は、他の효과を優先して選択する。
+			ライフ差 = GETVAR(@"ライフ_%듀얼리스트%") - GETVAR(@"ライフ_%対面者%")
+			IF 효과발동可:2 == 1 && (ライフ差 <= 0 || ライフ差 > 1000 || (효과발동可:0 != 1 && 효과발동可:1 != 1))
+				選択효과 = 2
+			ELSEIF 효과발동可:1 == 1
+				選択효과 = 1
+			ELSEIF 효과발동可:0 == 1
+				選択효과 = 0
+			ELSE
+				選択효과 = -1
+			ENDIF
+			SIF 選択효과 != -1
+				PRINTFORML %듀얼리스트%는 {選択효과 + 1}번째 효과를 선택했습니다。
+		ENDIF
+		
+		IF 選択효과 == 0
+			;1つ目の효과を選択した場合の処理
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲필드 = 1
+			효과条件종족 = 식물족
+			효과条件표시 = 表側표시
+			CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+			IF RESULT == 1
+				CALL LIFE_CHANGE(듀얼리스트, "増加", "효과", 500)
+			ENDIF
+		ELSEIF 選択효과 == 1
+			;2つ目の효과を選択した場合の処理
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종족 = 식물족
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+			IF RESULT == 1
+				CALL LIFE_CHANGE(듀얼리스트, "増加", "효과", 500)
+			ENDIF
+		ELSEIF 選択효과 == 2
+			;3つ目の효과を選択した場合の処理
+			CALL LIFE_CHANGE(듀얼리스트, "減少", "コスト", 1000)
+			
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종류 = モン全般
+			효과条件カテゴリ = 아로마
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트, ゾーン, 場所)
+		ELSE
+			;효과발동時点では효과の발동条件を満たしていたが、효과処理時点ではどの효과の발동条件も満たしていない場合の処理
+			PRINTL 선택할 수 있는 효과가 없습니다。
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 81392)
+	IF RESULT == 0
+	ENDIF
+ENDIF

@@ -1,0 +1,108 @@
+﻿@CARDNAME_4631,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 푸른 소녀 노엘=버밀리온
+	CASE "略称"
+		RESULTS = 노엘
+	CASE "カテゴリ"
+		RESULTS:0 = 블레이블루
+		RESULTS:1 = 가설치
+	CASE "出典作品"
+		RESULTS:0 = BLAZBLUE
+ENDSELECT
+
+
+@CARD_4631(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4631(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환に成功した場合に발동できる。
+PRINTL 덱からこのカード名以外の「블레이블루」モンスター１体を손패に加える。
+PRINTL ②（효과調整中）
+
+
+@CARDSUMMON_AA_4631
+
+
+@CARDCAN_4631(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4631)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,4631)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 블레이블루
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4631(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 속성チェック,5
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4631,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 블레이블루
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

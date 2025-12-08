@@ -1,5 +1,5 @@
-﻿@CARD_GAMELOADUP
-
+﻿@CARD_GAMELOADUP(설정플래그);ゲーム起動時のリセット処理
+#DIM DYNAMIC 설정플래그
 
 CALL DUEL_PLAYER_UI(1)
 ;モンスターゾーン整理
@@ -20,9 +20,10 @@ VARSET リザルト：함정발동
 VARSET リザルト：마법발동
 
 VARSET 運命済み
-VARSET 자신_승리数
-VARSET 상대_승리数
-
+IF 설정플래그 == 0
+	VARSET 자신_승리数
+	VARSET 상대_승리数
+ENDIF
 ;자신ゲーム情報リセット
 VARSET 자신_손패, -1
 VARSET 자신_필드, -1
@@ -198,14 +199,23 @@ CALL CARD_SAV_RESET
 
 
 ;ライフリセット
-SELECTCASE デュエル타입
-CASE 1
-	ライフ_자신 = 4000
-	ライフ_상대 = 4000
-CASEELSE
-	ライフ_자신 = 8000
-	ライフ_상대 = 8000
-ENDSELECT
+IF 설정플래그 == 1
+	SELECTCASE デュエル타입
+	CASE 1
+		ライフ_상대 = 4000
+	CASEELSE
+		ライフ_상대 = 8000
+	ENDSELECT
+ELSE
+	SELECTCASE デュエル타입
+	CASE 1
+		ライフ_자신 = 4000
+		ライフ_상대 = 4000
+	CASEELSE
+		ライフ_자신 = 8000
+		ライフ_상대 = 8000
+	ENDSELECT
+ENDIF
 
 VARSET バトルフェイズ
 VARSET メインフェイズ
@@ -268,6 +278,8 @@ $INPUT_LOOP
 FOR カウンタ,0,5
 	SETVAR @"%듀얼리스트%_MZ_T1召種:カウンタ", 0
 	SETVAR @"%듀얼리스트%_MZ_戦済:カウンタ", 0
+	SETVAR @"%듀얼리스트%_MZ_リ数:カウンタ", 0
+
 	;耐性효과
 	SIF GETVAR(@"%듀얼리스트%_MZ_破耐:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_MZ_破耐:カウンタ", 0	
@@ -329,6 +341,7 @@ FOR カウンタ,0,5
 		SETVAR @"%듀얼리스트%_MZ_貫通:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_MZ_直攻:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_MZ_直攻:カウンタ", 0
+
 	SIF GETVAR(@"%듀얼리스트%_MZ_条達:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_MZ_条達:カウンタ", 0
 
@@ -341,8 +354,6 @@ FOR カウンタ,0,5
 		SETVAR @"%듀얼리스트%_MZ_一性:カウンタ", 0
 
 	;효과阻害
-	SIF GETVAR(@"%듀얼리스트%_MZ_阻害:カウンタ") == 1
-		SETVAR @"%듀얼리스트%_MZ_阻害:カウンタ", 0
 
 	SIF GETVAR(@"%듀얼리스트%_MZ_戦阻:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_MZ_戦阻:カウンタ", 0
@@ -384,8 +395,9 @@ FOR カウンタ,0,5
 		SETVAR @"%듀얼리스트%_MZ_一種:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_MZ_一性:カウンタ") >= 1
 		SETVAR @"%듀얼리스트%_MZ_一性:カウンタ", 0
+NEXT
 
-
+FOR カウンタ,0,5
 	SETVAR @"%듀얼리스트%_魔_リ数:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_魔_破耐:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_魔_破耐:カウンタ", 0
@@ -393,23 +405,23 @@ FOR カウンタ,0,5
 		SETVAR @"%듀얼리스트%_魔_無効:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_魔_効済:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_魔_効済:カウンタ", 0
-	SIF GETVAR(@"%듀얼리스트%_魔_接可:カウンタ") == 1
-		SETVAR @"%듀얼리스트%_魔_接可:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_魔_発無:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_魔_発無:カウンタ", 0
+
 	SIF GETVAR(@"%듀얼리스트%_魔_発可:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_魔_発可:カウンタ", 0
-	SIF GETVAR(@"%듀얼리스트%_魔_T1汎数:カウンタ") >= 1
-		SETVAR @"%듀얼리스트%_魔_T1汎数:カウンタ", 0
-
 	SIF GETVAR(@"%듀얼리스트%_魔_一破:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_魔_一破:カウンタ", 0
+	SIF GETVAR(@"%듀얼리스트%_魔_接可:カウンタ") == 1
+		SETVAR @"%듀얼리스트%_魔_接可:カウンタ", 0
+
+
+	SIF GETVAR(@"%듀얼리스트%_魔_T1汎数:カウンタ") >= 1
+		SETVAR @"%듀얼리스트%_魔_T1汎数:カウンタ", 0
 	SIF GETVAR(@"%듀얼리스트%_魔_一破済:カウンタ") == 1
 		SETVAR @"%듀얼리스트%_魔_一破済:カウンタ", 0
-
 	SIF GETVAR(@"%듀얼리스트%_魔_表:カウンタ") == 3
 		SETVAR @"%듀얼리스트%_魔_表:カウンタ", 2
-	SETVAR @"%듀얼리스트%_MZ_リ数:カウンタ", 0
 NEXT
 
 FOR カウンタ,0,紙束最大値
@@ -563,6 +575,13 @@ IF ターン数 != 1
 				ENDIF
 			ELSE
 				PRINTFORMW 운명은 자신이 붙잡는것으로 했다。
+				IF GETVAR(@"%ターンプレイヤー%_ドロー倍化") >= 1
+					CALL CARDDRAW_BASIC( "자신",2,1)
+					SIF GETVAR(@"%ターンプレイヤー%_ドロー倍化") == 1
+						SETVAR @"%ターンプレイヤー%_ドロー倍化", 0
+				ELSE 
+					CALL CARDDRAW_BASIC( "자신",1,1)
+				ENDIF
 			ENDIF
 			運命済み = 1
 		ENDIF
@@ -587,6 +606,7 @@ $DRAW_SKIP
 
 PRINTL ＞『스탠바이 페이즈』
 スタンバイフェイズ = 1
+;１フェイズ限定の효과付与リセット
 CALL RESET_FIELD_CONDITION(ターンプレイヤー,5,1)
 
 CALL SPECIAL_EFFECT_RUN
@@ -641,6 +661,7 @@ CALL 対面者판정(ターンプレイヤー)
 非ターンプレイヤー = %RESULTS%
 
 PRINTFORMW ＞『엔드 페이즈』
+;１フェイズ限定の효과付与リセット
 CALL RESET_FIELD_CONDITION(ターンプレイヤー,5,1)
 メインフェイズ = 0
 エンドフェイズ = 1
@@ -786,7 +807,7 @@ FOR カウンタ,0,5
 	TRYCALLFORM CARD_{GETVAR(@"%ターンプレイヤー%_필드:カウンタ")}("종류")
 	SIF !MATCH(RESULT,초차원)
 		CONTINUE
-	TRYCALLFORM CARDNAME_{GETVAR(@"%ターンプレイヤー%_필드:カウンタ")}("カテゴリ")
+	TRYCALLFORM CARDNAME_{GETVAR(@"%ターンプレイヤー%_필드:カウンタ")}("出典作品")
 	SIF !MATCH(RESULTS,"뱅가드")
 		CONTINUE
 	SIF GETVAR(@"%ターンプレイヤー%_MZ_変化元ID:カウンタ") <= 0
@@ -819,10 +840,10 @@ FOR カウンタ,0,紙束最大値
 		TRYCALLFORM CARDNAME_{자신_제외:カウンタ}("名前")
 		PRINTFORML 제외되어 있던 %RESULTS%가 묘지로 보내졌다。
 		CALL CARD_ADD("자신","제외", "묘지",カウンタ)
-	ELSEIF 상대_除_帰還:カウンタ == 3
-		TRYCALLFORM CARDNAME_{상대_제외:カウンタ}("名前")
+	ELSEIF 자신_除_帰還:カウンタ == 3
+		TRYCALLFORM CARDNAME_{자신_제외:カウンタ}("名前")
 		PRINTFORML 제외되어 있던 %RESULTS%가 패로 보내졌다。
-		CALL CARD_ADD("상대","제외", "손패",カウンタ)
+		CALL CARD_ADD("자신","제외", "손패",カウンタ)
 	ENDIF
 	자신_除_帰還:カウンタ = 0
 NEXT
@@ -944,8 +965,6 @@ FOR カウンタ,0,5
 		SETVAR @"%実行者%_MZ_無差耐:カウンタ", 0
 	SIF GETVAR(@"%実行者%_MZ_効済:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_効済:カウンタ", 0
-	SIF GETVAR(@"%実行者%_MZ_発無:カウンタ") == 설정数値
-		SETVAR @"%実行者%_MZ_発無:カウンタ", 0
 
 	SIF GETVAR(@"%実行者%_MZ_モ耐:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_モ耐:カウンタ", 0
@@ -958,16 +977,16 @@ FOR カウンタ,0,5
 		SETVAR @"%実行者%_MZ_一破:カウンタ", 0	
 
 	;デメリット효과
-	IF 설정数値 == 5
-		SIF GETVAR(@"%実行者%_MZ_無効:カウンタ") == 설정数値
-			SETVAR @"%実行者%_MZ_無効:カウンタ", 0
-	ENDIF
+	SIF GETVAR(@"%実行者%_MZ_無効:カウンタ") == 설정数値
+		SETVAR @"%実行者%_MZ_無効:カウンタ", 0
+	SIF GETVAR(@"%実行者%_MZ_発無:カウンタ") == 설정数値
+		SETVAR @"%実行者%_MZ_発無:カウンタ", 0
 	SIF GETVAR(@"%実行者%_MZ_表固:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_表固:カウンタ", 0
 	SIF GETVAR(@"%実行者%_MZ_不材:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_不材:カウンタ", 0
-	SIF GETVAR(@"%実行者%_MZ_戦除:カウンタ") == 설정数値
-		SETVAR @"%実行者%_MZ_戦除:カウンタ", 0
+	SIF GETVAR(@"%実行者%_MZ_接可:カウンタ") == 설정数値
+		SETVAR @"%実行者%_MZ_接可:カウンタ", 0
 
 	;戦闘系효과의 효과
 	SIF GETVAR(@"%実行者%_MZ_戦無:カウンタ") == 설정数値
@@ -983,7 +1002,8 @@ FOR カウンタ,0,5
 		SETVAR @"%実行者%_MZ_連戦:カウンタ", 0
 	SIF GETVAR(@"%実行者%_MZ_守戦:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_守戦:カウンタ", 0
-
+		SIF GETVAR(@"%実行者%_MZ_戦除:カウンタ") == 설정数値
+		SETVAR @"%実行者%_MZ_戦除:カウンタ", 0
 
 	SIF GETVAR(@"%実行者%_MZ_攻誘:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_攻誘:カウンタ", 0
@@ -995,14 +1015,10 @@ FOR カウンタ,0,5
 	SIF GETVAR(@"%実行者%_MZ_直攻:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_直攻:カウンタ", 0
 
-	SIF GETVAR(@"%実行者%_MZ_守戦:カウンタ") == 설정数値
-		SETVAR @"%実行者%_MZ_守戦:カウンタ", 0
 
 	SIF GETVAR(@"%実行者%_MZ_戦阻:カウンタ") == 설정数値
 		SETVAR @"%実行者%_MZ_戦阻:カウンタ", 0
 
-	SIF GETVAR(@"%実行者%_MZ_接可:カウンタ") == 설정数値
-		SETVAR @"%実行者%_MZ_接可:カウンタ", 0
 NEXT
 
 FOR カウンタ,0,5
@@ -1014,8 +1030,13 @@ FOR カウンタ,0,5
 		SETVAR @"%実行者%_魔_効済:カウンタ", 0
 	SIF GETVAR(@"%実行者%_魔_発無:カウンタ") == 설정数値
 		SETVAR @"%実行者%_魔_発無:カウンタ", 0
+
+	SIF GETVAR(@"%実行者%_魔_発可:カウンタ") == 설정数値
+		SETVAR @"%実行者%_魔_発可:カウンタ", 0
 	SIF GETVAR(@"%実行者%_魔_一破:カウンタ") == 설정数値
 		SETVAR @"%実行者%_魔_一破:カウンタ", 0
+	SIF GETVAR(@"%実行者%_魔_接可:カウンタ") == 설정数値
+		SETVAR @"%実行者%_魔_接可:カウンタ", 0
 NEXT
 
 
@@ -1201,8 +1222,6 @@ VARSET 상대_単体攻撃
 
 
 ;阻害情報リセット
-VARSET 자신_阻害起動_種
-VARSET 상대_阻害起動_種
 VARSET 자신_AAZEUS
 VARSET 상대_AAZEUS
 VARSET 자신_TYPHON
@@ -1386,6 +1405,8 @@ VARSET 자신_SS이력_CT
 VARSET 자신_破壊이력, -1
 VARSET 자신_破壊이력_CT
 
+VARSET 자신_취득이력, -1
+VARSET 자신_취득이력_CT
 
 VARSET 자신_攻紋章, -1
 VARSET 자신_攻紋章カウンタ
@@ -1439,6 +1460,8 @@ VARSET 상대_SS이력_CT
 VARSET 상대_破壊이력, -1
 VARSET 상대_破壊이력_CT
 
+VARSET 상대_취득이력, -1
+VARSET 상대_취득이력_CT
 
 VARSET 상대_攻紋章, -1
 VARSET 상대_攻紋章カウンタ

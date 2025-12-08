@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 생바인 스래셔
+		RESULTS = 생바인 스래셔
 	CASE "略称"
-RESULTS = 성만의 검사
+		RESULTS = 성만의 검사
 	CASE "カテゴリ"
-RESULTS:0 = 생바인
+		RESULTS:0 = 생바인
 
 ENDSELECT
 
@@ -40,7 +40,7 @@ SELECTCASE 参照先
 ENDSELECT
 
 RETURN 0
-@CARDSUMMON_56256(듀얼리스트,소환カード,EX参照)
+@CARDSUMMON_56256(듀얼리스트, 소환カード, EX参照)
 #DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 소환カード
@@ -53,7 +53,7 @@ CALL RESETCONDITION_MAT
 素材条件종족 = 식물족
 
 IF EX参照 == 1
-	CALL LINCAN(듀얼리스트,소환カード,56256) 
+	CALL LINCAN(듀얼리스트, 소환カード, 56256) 
 	RETURN RESULT
 ENDIF
 
@@ -61,13 +61,13 @@ ENDIF
 #DIM DYNAMIC 종류
 
 PRINTL 식물족의 일반 몬스터 1체
-CALLFORM CARD_ABLE(0,지속효과)
+CALLFORM CARD_ABLE(0, 상황確認)
 PRINTL ①: 자신 필드에 "생아발론" L 몬스터가 존재하지 않을 경우,
 PRINTL 이 카드는 파괴된다.
-CALLFORM CARD_ABLE(0,EX소환時, 특수소환時)
+CALLFORM CARD_ABLE(0, EX소환時, 특수소환時)
 PRINTL ②: 이 카드가 특수 소환했을 경우, 필드의 "생아발론" L 몬스터 1장을 대상으로 하여 발동할 수 있다.
 PRINTL 이 카드의 공격력은 그 몬스터의 링크 × 800 증가한다.
-CALLFORM CARD_ABLE(0,攻撃後誘発)
+CALLFORM CARD_ABLE(0, 攻撃後誘発)
 PRINTL ③: 이 카드가 전투로 상대 몬스터를 파괴하고 묘지로 보냈을 경우에 발동할 수 있다.
 PRINTL 그 몬스터를 자신 필드에 효과를 무효로 하여 특수 소환한다.
 
@@ -85,19 +85,34 @@ CALL 対面者판정(듀얼리스트)
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,56256)
 SIF RESULT == 1
 	RETURN 0
-IF 종류 == 지속효과
+	
+IF 종류 == 상황確認
 	SIF ゾーン != "필드"
 		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_破耐:場所") >= 1
+		RETURN 0
+
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件종류 = 링크
 	효과条件カテゴリ = 생아발론
-	효과条件固カテゴリ = 생아발론
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
 		RETURN 0
-	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+	RETURN 1
 ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件종류 = 링크
+	효과条件カテゴリ = 생아발론
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+
 	RETURN 1
 ELSEIF 종류 == 攻撃後誘発
 	SIF ゾーン != "필드"
@@ -106,10 +121,11 @@ ELSEIF 종류 == 攻撃後誘発
 		RETURN 0
 	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
 		RETURN 0	
+
 	RETURN 1
 ENDIF
 
-@CARDEFFECT_56256(듀얼리스트,종류,ゾーン,場所)
+@CARDEFFECT_56256(듀얼리스트, 종류, ゾーン, 場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
@@ -122,30 +138,35 @@ ENDIF
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
-IF 종류 == 지속효과
-	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+
+IF 종류 == 상황確認
+	CALL CARD_DISPOSE(듀얼리스트, ゾーン, 場所, 破壊行き)
 ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56256)
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 56256)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
 		효과条件종류 = 링크
 		효과条件カテゴリ = 생아발론
-		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)	
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_ADV(듀얼리스트, ゾーン, 場所)	
 		選択カード = RESULT
 		IF 選択カード != 9999
-			攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_星:選択カード") * 800
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",攻撃力修正)
+			CALL CARD_SELECT(듀얼리스트, 選択カード)
+			攻撃力修正 = GETVAR(@"%대상者（CS）%_MZ_星:選択カード（CS）") * 800
+			CALL SET_FIELD_INFO(듀얼리스트, "필드", 場所, "永攻", 攻撃力修正)
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 攻撃後誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56256)
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 56256)
 	IF RESULT == 0
 		TRYCALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트,1)}("名前")
 		選択カード名前 = %RESULTS%
 		CALL FULLRESET
 		효과範囲상대묘지 = 1
-효과条件名前 = %選択カード名前%
+		효과条件名前 = %選択カード名前%
 		효과추가종류 = 効追無効
-		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트, ゾーン, 場所)
 	ENDIF
 ENDIF

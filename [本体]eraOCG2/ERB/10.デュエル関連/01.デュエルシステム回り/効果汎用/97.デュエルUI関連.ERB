@@ -1252,7 +1252,7 @@ FOR カウンタB,0,5
 					PRINTFORM %"지속함정",13,LEFT%
 				ELSEIF RESULT == 초차원
 					CALL XON_FONT("초차원")
-					PRINTFORM %"초차원",15,LEFT%
+					PRINTFORM %"초차원",13,LEFT%
 				ELSE
 					TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("分割")
 					IF RESULT == 펜듈럼
@@ -1879,6 +1879,10 @@ CALL COLOR_LINE(설정色,설정色２)
 PRINTFORM 【
 PRINTFORM %GET_TALENTNAME(191,GETVAR(@"%듀얼리스트%_MZ_種:選択カード"))% /　
 
+TRYCALLFORM CARD_{選択カード_ID}("종족")
+SIF RESULT:1
+	PRINTFORM %GET_TALENTNAME(191,RESULT:1)% /　
+
 
 
 
@@ -2474,7 +2478,7 @@ IF RESULT >= 9000
 		PRINTL 
 	ELSEIF RESULT == 9040
 		PRINTL 【종료 시 처리】
-		PRINTL 턴 종료시에 행해지는 제거 처리.
+		PRINTL 엔드 페이즈시에 행해지는 제거 처리.
 		PRINTL 
 	ELSEIF RESULT == 9041
 		PRINTL 【범용 수치】
@@ -2864,6 +2868,7 @@ IF GETVAR(@"%듀얼리스트%_魔_装:選択カード") != 5
 	ELSE
 		CALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:(%듀얼리스트%_魔_装:選択カード)")}("名前")
 		PRINTFORM 【장착처：%RESULTS% <%듀얼리스트%필드「{GETVAR(@"%듀얼리스트%_魔_装:選択カード")}」>】
+		;武種：「{GETVAR(@"%듀얼리스트%_魔_武種:選択カード")}」
 	ENDIF
 ENDIF
 
@@ -3007,7 +3012,7 @@ IF RESULT >= 9000
 	ELSEIF RESULT == 9017
 		PRINTL 【일시 파괴 내성】
 		PRINTL 이 카드는 1턴에 1번만 카드 효과/전투에 의해선 파괴되지 않는다.
-
+		PRINTL （이 효과는 중복되지 않는다：예를들어 이미 그 턴에 １번 파괴를 회피하고、다른 카드로 새로 얻어도 파괴를 회피할 수 없다）
 	ELSEIF RESULT == 9020
 		PRINTL 【효과 무효】
 		PRINTL 이 카드의 효과는 무효화되어 있으며, 발동도 할 수 없다.
@@ -3051,7 +3056,7 @@ IF RESULT >= 9000
 		PRINTL 
 	ELSEIF RESULT == 9040
 		PRINTL 【종료 시 처리】
-		PRINTL 턴 종료시에 행해지는 제거 처리.
+		PRINTL 엔드 페이즈시에 행해지는 제거 처리.
 		PRINTL 
 	ELSEIF RESULT == 9999
 		특수カード_ID = GETVAR(@"%듀얼리스트%_MZ_특수状態:{選択カード}")
@@ -5089,6 +5094,7 @@ ELSE
 		バトルフェイズ = 1
 		バトルフェイズ移行 = 0
 		CALL CARD_REACTION_EFFECT
+		;１フェイズ限定の효과付与リセット
 		CALL RESET_FIELD_CONDITION(ターンプレイヤー,5,1)
 
 		IF GETVAR(@"%ターンプレイヤー%_バトルスキップ") >= 1
@@ -5140,6 +5146,7 @@ ELSE
 		メインフェイズ２ = 1
 		メインフェイズ２移行 = 0
 		CALL CARD_REACTION_EFFECT
+		;１フェイズ限定の효과付与リセット
 		CALL RESET_FIELD_CONDITION(ターンプレイヤー,5,1)
 		PRINTFORMW 『메인 페이즈２』
 		CALL CARD_TIMERLOOP("バトル終了時")

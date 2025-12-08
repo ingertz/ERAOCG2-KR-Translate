@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 생바인 힐러
+		RESULTS = 생바인 힐러
 	CASE "略称"
-RESULTS = 생바인 힐러
+		RESULTS = 성만의 치유사
 	CASE "カテゴリ"
-RESULTS:0 = 생바인
+		RESULTS:0 = 생바인
 ENDSELECT
 
 
@@ -60,7 +60,7 @@ ENDIF
 #DIM DYNAMIC 종류
 
 PRINTL 식물족 일반 몬스터 1체
-CALLFORM CARD_ABLE(0,지속효과)
+CALLFORM CARD_ABLE(0,상황確認)
 PRINTL ①: 자신 필드에 "생아발론" 링크 몬스터가 존재하지 않을 경우,
 PRINTL 이 카드는 파괴된다.
 CALLFORM CARD_ABLE(0,EX소환時, 특수소환時)
@@ -74,21 +74,38 @@ PRINTL ③: 자신 몬스터가 상대에게 전투 데미지를 주었을 때 �
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
+
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,56258)
 SIF RESULT == 1
 	RETURN 0
-IF 종류 == 지속효과
+
+IF 종류 == 상황確認
 	SIF ゾーン != "필드"
 		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_破耐:場所") >= 1
+		RETURN 0
+
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件종류 = 링크
 	효과条件カテゴリ = 생아발론
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
 		RETURN 0
+
 	RETURN 1
 ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件종류 = 링크
+	효과条件カテゴリ = 생아발론
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+
 	RETURN 1
 ELSEIF 종류 == ライフ変強制誘発
 	SIF ゾーン != "필드"
@@ -97,6 +114,7 @@ ELSEIF 종류 == ライフ変強制誘発
 		RETURN 0
 	SIF !GROUPMATCH(ダメージ종류,"直接戦闘","戦闘")
 		RETURN 0
+
 	RETURN 1
 ENDIF
 
@@ -115,12 +133,16 @@ ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56258)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
 		효과条件종류 = 링크
 		효과条件カテゴリ = 생아발론
-		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)	
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)	
 		選択カード = RESULT
 		IF 選択カード != 9999
-			회복量 = GETVAR(@"%듀얼리스트%_MZ_星:選択カード") * 300
+			CALL CARD_SELECT(듀얼리스트, 選択カード)
+			회복量 = GETVAR(@"%대상者（CS）%_MZ_星:選択カード（CS）") * 300
 			CALL LIFE_CHANGE(듀얼리스트,"増加","효과",회복量)
 		ENDIF
 	ENDIF

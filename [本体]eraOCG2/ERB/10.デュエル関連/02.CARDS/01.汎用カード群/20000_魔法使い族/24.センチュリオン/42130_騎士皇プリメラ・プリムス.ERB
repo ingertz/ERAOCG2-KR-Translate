@@ -55,7 +55,7 @@ PRINTL 그 후, 자신 및 상대 필드의 카드를 1장씩 파괴할 수 있�
 CALLFORM CARD_ABLE(2,지속효과)
 PRINTL ②: 엑스트라 덱 이외에서 특수 소환한 이 카드는 전투로는 파괴되지 않는다。
 CALLFORM CARD_ABLE(3,효과後誘発)
-PRINTL ③: 이 카드명 이외의 자신의 필드 위 "센츄리온" 카드가 
+PRINTL ③: "센츄리온 프리메라 프리머스"를 제외한 "센츄리온" 카드가, 
 PRINTL 상대 효과로 필드에서 벗어났을 경우에 발동할 수 있다。
 PRINTL 이 카드를 묘지에서 특수 소환한다。
 
@@ -85,6 +85,7 @@ ENDIF
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,42130)
 SIF RESULT == 1
@@ -118,8 +119,28 @@ ELSEIF 종류 == 효과後誘発
 	CALL FULLRESET
 	효과条件カテゴリ = 센츄리온
 	효과条件固名前 = 센츄리온 프리메라 프리머스
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般")
-	SIF RESULT != 1
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과破壊",1)
+	SIF RESULT == 1
+		条件달성 = 1
+	CALL FULLRESET
+	효과条件カテゴリ = 센츄리온
+	효과条件固名前 = 센츄리온 프리메라 프리머스
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"필드除送",1)
+	SIF RESULT == 1
+		条件달성 = 1
+	CALL FULLRESET
+	효과条件カテゴリ = 센츄리온
+	효과条件固名前 = 센츄리온 프리메라 프리머스
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"필드手送",1)
+	SIF RESULT == 1
+		条件달성 = 1
+	CALL FULLRESET
+	효과条件カテゴリ = 센츄리온
+	효과条件固名前 = 센츄리온 프리메라 프리머스
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"필드山送",1)
+	SIF RESULT == 1
+		条件달성 = 1
+	SIF 条件달성 == 0
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -152,22 +173,24 @@ IF 종류 == EX소환時
 			CALL FULLRESET
 			효과範囲상대필드 = 1
 			효과範囲상대마함 = 1
-			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			효과条件除去種 = 묘지
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1
-				PRINTL 카드를 파괴하시겠습니까?
+				SIF 듀얼리스트 == "자신"
+					PRINTL 카드를 파괴하시겠습니까?
 				CALL YN_CHOICE(듀얼리스트)
-			ENDIF
-			IF RESULT == はい
-				CALL FULLRESET
-				효과範囲필드 = 1
-				효과範囲마함 = 1
-				효과条件行先플래그 = 破壊行き
-				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)	
+				IF RESULT == はい
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과範囲마함 = 1
+					효과条件行先플래그 = 破壊行き
+					CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)	
 
-				CALL FULLRESET
-				효과範囲상대필드 = 1
-				효과範囲상대마함 = 1
-				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과範囲상대마함 = 1
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+				ENDIF
 			ENDIF
 		ENDIF
 	ENDIF

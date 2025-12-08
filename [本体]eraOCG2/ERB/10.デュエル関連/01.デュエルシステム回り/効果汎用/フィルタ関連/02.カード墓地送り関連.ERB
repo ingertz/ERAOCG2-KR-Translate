@@ -680,11 +680,8 @@ IF ゾーン == "필드"
 	IF GROUPMATCH(元行先플래그,제외行き,덱行き,손패行き,마함行き,破壊行き,戦闘破壊行き,破壊제외行き) && 身代불가 == 0
 		SIF 듀얼리스트 == "상대" && GETVAR(@"%듀얼리스트%_MZ_表:場所") == 3
 			選択カード_名 = 伏せカード
-		CALL CARD_SUBSTEFFECT(듀얼리스트,場所,ゾーン,選択カード_ID,行先플래그)
-		IF RESULT == 1
-			PRINTFORMW 대역효과가 %選択カード_名%를 지켰습니다。
-			RETURN 0
-		ENDIF
+		
+
 		IF 元行先플래그 == 破壊行き || 元行先플래그 == 破壊제외行き
 			IF GETVAR(@"%듀얼리스트%_MZ_破耐:場所") >= 1
 				PRINTFORMW 파괴내성이 %듀얼리스트%의 %選択カード_名%를 지켰습니다。
@@ -705,6 +702,13 @@ IF ゾーン == "필드"
 				RETURN 0
 			ENDIF
 		ENDIF
+
+		CALL CARD_SUBSTEFFECT(듀얼리스트,場所,ゾーン,選択カード_ID,行先플래그)
+		IF RESULT == 1
+			PRINTFORMW 대역효과가 %選択カード_名%를 지켰습니다。
+			RETURN 0
+		ENDIF
+
 	ENDIF
 
 	;――実除去処理――――――――――――――――――――――――――――――――――――――――――――――――
@@ -808,11 +812,8 @@ ELSEIF ゾーン == "마함"
 	IF GROUPMATCH(元行先플래그,제외行き,덱行き,손패行き,마함行き,破壊行き,戦闘破壊行き)
 		SIF 듀얼리스트 == "상대" && GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
 			選択カード_名 = 伏せカード
-		CALL CARD_SUBSTEFFECT(듀얼리스트,場所,ゾーン,選択カード_ID,行先플래그)
-		IF RESULT == 1
-			PRINTFORMW 대역효과가 %選択カード_名%를 지켰습니다。
-			RETURN 0
-		ENDIF
+		
+
 		IF 元行先플래그 == 破壊行き
 			IF GETVAR(@"%듀얼리스트%_魔_破耐:場所") >= 1
 				PRINTFORMW 파괴내성이 %듀얼리스트%의 %選択カード_名%를 지켰습니다。
@@ -822,6 +823,12 @@ ELSEIF ゾーン == "마함"
 				PRINTFORMW 일시적 파괴내성이 %듀얼리스트%의 %選択カード_名%를 지켰습니다。
 				RETURN 0
 			ENDIF
+		ENDIF
+
+		CALL CARD_SUBSTEFFECT(듀얼리스트,場所,ゾーン,選択カード_ID,行先플래그)
+		IF RESULT == 1
+			PRINTFORMW 대역효과가 %選択カード_名%를 지켰습니다。
+			RETURN 0
 		ENDIF
 	ENDIF
 	IF 行先플래그 == 제외行き

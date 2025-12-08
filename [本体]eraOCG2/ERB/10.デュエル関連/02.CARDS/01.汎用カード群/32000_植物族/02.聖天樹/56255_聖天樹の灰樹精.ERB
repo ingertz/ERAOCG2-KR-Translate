@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 생아발론 멜리아스
+		RESULTS = 생아발론 멜리아스
 	CASE "略称"
-RESULTS = 성천수의 회수정
+		RESULTS = 성천수의 회수정
 	CASE "カテゴリ"
-RESULTS:0 = 생아발론
+		RESULTS:0 = 생아발론
 ENDSELECT
 
 
@@ -63,12 +63,12 @@ ENDIF
 
 PRINTL L 몬스터를 포함하는 식물족 몬스터 2장
 CALLFORM CARD_ABLE(0,EX소환時)
-PRINTL ①: 이 카드가 L 소환했을 경우에 발동할 수 있다.
+PRINTL ①: 이 카드가 L 소환했을 경우에 발동할 수 있다. 자신의 묘지에서 "생시드 게니우스 로키" 1장을 특수 소환한다.
 CALLFORM CARD_ABLE(0,지속효과)
-PRINTL 자신의 묘지에서 "성종의 지령" 1장을 특수 소환한다.
-CALLFORM CARD_ABLE(10,필드起動)
 PRINTL ②: 이 카드는 공격 회피를 가진다.
-PRINTL ③: 1턴에 1번, 자신 필드의 "샌바인" L 몬스터 1장을 대상으로 하여 발동할 수 있다.
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ③: 1턴에 1번, 자신 필드의 "생바인" L 몬스터 1장을 대상으로 하여 발동할 수 있다.
+PRINTL 이 턴, 그 몬스터는 자신 필드의 "생아발론" L몬스터의 수 만큼 공격할 수 있다.
 
 
 @CARDCAN_56255(듀얼리스트,종류,ゾーン,場所)
@@ -76,14 +76,17 @@ PRINTL ③: 1턴에 1번, 자신 필드의 "샌바인" L 몬스터 1장을 대�
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
+
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,56255)
 SIF RESULT == 1
 	RETURN 0
+
 IF 종류 == EX소환時
 	RETURN 1
 ELSEIF 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
+
 	RETURN 1
 ELSEIF 종류 == 필드起動
 	SIF 효과발동済(듀얼리스트,場所,ゾーン)
@@ -92,13 +95,16 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
+
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件종류 = 링크
 	효과条件カテゴリ = 생아발론
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
+
 	RETURN 1
 ENDIF
 
@@ -116,12 +122,11 @@ IF 종류 == EX소환時
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲묘지 = 1
-효과条件名前 = 생시드 게니우스 로키
+		효과条件名前 = 생시드 게니우스 로키
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻避")
-
 ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,56255,10)
 	IF RESULT == 0
@@ -129,6 +134,7 @@ ELSEIF 종류 == 필드起動
 		효과範囲필드 = 1
 		효과条件종류 = 링크
 		효과条件カテゴリ = 생아발론
+		효과条件표시 = 表側표시
 		효과条件CNT = 1
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		攻撃횟수 = RESULT

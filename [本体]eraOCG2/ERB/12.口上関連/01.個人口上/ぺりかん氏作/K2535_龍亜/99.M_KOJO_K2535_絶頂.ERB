@@ -1,0 +1,807 @@
+﻿;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;분기作りに有用そうな変数などのメモ
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;NOWEX:절정
+;4以上で昇天、3で超強절정、2で強절정、1で절정
+
+;NOWEX:Ｃ절정 NOWEX:Ｖ절정 NOWEX:Ｂ절정 NOWEX:Ａ절정 NOWEX:Ｍ절정
+;各部位の절정
+
+;NOWEX:二重절정、NOWEX:三重절정、NOWEX:四重절정、NOWEX:五重절정
+;同時に절정した時の状態
+;上記五つに加えてNOWEX:Ｅ절정でも판정
+
+;TOTALEX
+;地の文の판정に使われているもの
+;5以上で潮を吹き、4以下で背中を反らせて절정する
+;詳しくはEVENT_MESSAAGE_ORGASMを参照
+
+;TEQUIP:50
+;Ｖに誰の竿が入ってるか。TEQUIP:50 = MASTERであなたが삽입中となる。
+;TEQUIP:51
+;Ａに誰の竿が入ってるか。TEQUIP:51 = MASTERであなたが삽입中となる。
+;NOWEX:사정
+;사정量、最大3。たとえばIF NOWEX:MASTER:사정 > 1だと、あなたが大量사정以上した場合となる。
+
+;-------------------------------------------------
+;절정時の구상
+;-------------------------------------------------
+@M_KOJO_MESSAGE_PALAMCNG_B_K2535(ARG)
+#DIM TOTALEX
+#DIM DYNAMIC 호감도修正
+CALL PALAM_MESSAGE_B(ARG)
+TOTALEX =  NOWEX:ARG:Ｃ절정 + NOWEX:ARG:Ｖ절정 + NOWEX:ARG:Ａ절정 + NOWEX:ARG:Ｂ절정+ NOWEX:ARG:Ｍ절정 + NOWEX:ARG:Ｅ절정 + NOWEX:ARG:분유 + NOWEX:ARG:사정
+SIF !(TOTALEX + NOWEX:ARG:방뇨)
+	RETURN 0
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;분유
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1 && NOWEX:ARG:분유
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;사정した
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && NOWEX:ARG:사정
+		IF FIRSTTIME(SELECTCOM)
+			PRINTFORML 「うわっ、なにっ！？　お、おれ、チンチンからっ、何か来る、来ちゃう──！」
+			PRINTFORMDW 男性器から勢いよく吹き出す정액に戸惑う%CALLNAME:TARGET%。どうやら今回が精通だったようだ……
+		RETURN 1
+		ENDIF
+		IF TALENT:TARGET:연모 || TALENT:TARGET:굴복됨
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「こ、こんな気持ちいいの、ガマンできないよぉ❤　あっ❤　でるっ❤　チンチンからでるぅ❤」
+				CASE 1
+					PRINTFORMW 「あ゛あっ❤　でるぅ❤　사정ちゃうよぉ❤　あ゛っ❤　ああっ❤　あ゛ーーーーっ❤　あ゛ーーーーーーっ❤」
+				CASE 2
+					PRINTFORML 「で、사정ちゃうぅ❤　ダメだぁ❤　こんなの、笑われちゃうぅ❤　早くてわらわれちゃうぅ❤」
+					PRINTFORMW 「やだっ❤　子供じゃないもんっ❤　おれだってぇ❤　ガマンっ❤　ガマンっ、できないっ❤　あっ❤　ダメッ❤　あっ❤　あ゛っ❤　あ゛あ゛あぁぁぁっ❤」
+			ENDSELECT
+		ELSE
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「あ゛あっ！　で、사정ちゃうっ❤　やめろ、사정るっ、ダメだっ、사정ちゃうっ、あっ、あ゛あっ……❤」
+				CASE 1
+					PRINTFORMW 「み、みるなぁ！　おれが사정してるトコロ、みるなぁ……！」
+				CASE 2
+					PRINTFORMW 「だ、ダメだっ！？　ガマン、ガマンできない……っ❤」
+			ENDSELECT
+			ENDIF
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;방뇨
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && NOWEX:ARG:방뇨
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「ち、ちがう！？　おれ、もう子供じゃないもん！　これは、これは、何かの間違いだ……っ」
+			CASE 1
+				PRINTFORMW 「やめろよ……みるなぁ……」
+			CASE 2
+				PRINTFORMW 「も、もうお漏らしなんかしないよ！？　きょ、今日はたまたまガマンできなかっただけ……っ！　普段はお漏らしなんかしてないからね！？」
+		ENDSELECT
+		RETURN 1
+	ENDIF
+
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	IF LOCAL:1
+		RETURN 1
+	ENDIF
+	;구상の色の변경　この状態だとピンク色　必要ない場合はこことRESETCOLORを消す
+	SETCOLOR C_H_PINK
+	;基本セット
+	SELECTCASE NOWEX:ARG:절정
+		;절정
+		CASE 1
+			IF TOTALEX >= 5
+				IF TEQUIP:ARG:Ｖ섹스 == MASTER
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ELSE
+				IF TOTALEX >= 3
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ENDIF
+		;強절정
+		CASE 2
+			IF TOTALEX >= 5
+				IF TEQUIP:ARG:Ｖ섹스 == MASTER
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ELSE
+				IF TOTALEX >= 3
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ENDIF
+		;超強절정
+		CASE 3
+			IF TOTALEX >= 5
+				IF TEQUIP:ARG:Ｖ섹스 == MASTER
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ELSE
+				IF TOTALEX >= 3
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ENDIF
+		;昇天
+		CASE 4 TO 5
+			IF TOTALEX >= 5
+				IF TEQUIP:ARG:Ｖ섹스 == MASTER
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ELSE
+				IF TOTALEX >= 3
+					PRINTFORMW 
+				ELSE
+					PRINTFORMW 
+				ENDIF
+			ENDIF
+	ENDSELECT
+	RESETCOLOR
+ENDIF
+RETURN 1
+
+
+;-------------------------------------------------
+;あなたが사정したときに関する구상の표시
+;一時的にTARGETを구상主に설정している
+;-------------------------------------------------
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_00(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;TARGETの手による사정で、사정대상が非TARGET
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_0(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;コンドーム
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+;==================================================
+;13,交互삽입
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_33(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(6,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K2535_33_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(6,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_33_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+
+;一人目구상
+;TARGETが先に喋る時の구상
+;ARGは二人目
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_33_1(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_33_2(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;11,ダブル파이즈리
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_32(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(5,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K2535_32_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(5,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_32_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+
+;一人目구상
+;TARGETが先に喋る時の구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_32_1(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_32_2(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;10,ダブル스마타
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_31(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(2,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K2535_31_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(2,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_31_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+
+;一人目구상
+;TARGETが先に喋る時の구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_31_1(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_31_2(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;9,ダブル펠라
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_30(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(4,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K2535_30_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(4,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_30_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+
+;一人目구상
+;TARGETが先に喋る時の구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_30_1(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_30_2(ARG)
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;ここを記入した場合、これより下は流れない
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1
+		;NAME:ARGで二人目を識別できる
+		;IF NAME:ARG == "黒魔女ディアベルスター"など
+		RETURN 1
+	ENDIF
+	;基本セット
+	;연모
+	IF TALENT:연모
+		PRINTFORMW 
+		RETURN 1
+
+	;それ以外
+	ELSE
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_23(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;イラマチオ
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_22(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;식스나인
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;同時사정
+	IF NOWEX:사정 && NOWEX:MASTER:사정
+		PRINTFORMW
+		RETURN 1
+	;TARGETだけ사정
+	ELSEIF NOWEX:사정
+		;PLAYERについてる
+		IF GETBIT(TALENT:MASTER:성별,1)
+			PRINTFORMW
+			RETURN 1
+		;付いてない
+		ELSE
+			PRINTFORMW
+			RETURN 1
+		ENDIF
+	;PLAYERだけ사정
+	ELSE
+		;TARGETについてる
+		IF GETBIT(TALENT:성별,1)
+			PRINTFORMW
+			RETURN 1
+		;付いてない
+		ELSE
+			PRINTFORMW 
+			RETURN 1
+		ENDIF
+	ENDIF
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_26(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;授乳プレイ
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_21(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;파이즈리펠라
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_20(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;수음펠라
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_9(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;애널奉仕
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_8(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;泡踊り
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;同時사정
+	IF NOWEX:사정 && NOWEX:MASTER:사정
+		PRINTFORMW
+		RETURN 1
+	;TARGETだけ사정
+	ELSEIF NOWEX:사정
+		;PLAYERについてる
+		IF GETBIT(TALENT:MASTER:성별,1)
+			PRINTFORMW
+			RETURN 1
+		;付いてない
+		ELSE
+			PRINTFORMW
+			RETURN 1
+		ENDIF
+	;PLAYERだけ사정
+	ELSE
+		;TARGETについてる
+		IF GETBIT(TALENT:성별,1)
+			PRINTFORMW
+			RETURN 1
+		;付いてない
+		ELSE
+			PRINTFORMW 
+			RETURN 1
+		ENDIF
+	ENDIF
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_7(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;足コキ
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_6(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;스마타
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_5(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;파이즈리
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_4(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;펠라치오
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL 
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_3(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;수음
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_2(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;애널
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+@M_KOJO_MESSAGE_PALAMCNG_A_K2535_1(ARG)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 사정人物箇所
+IF MASTER_POSE(6, 1, 1) > 0
+	사정人物箇所 = MASTER_POSE(6, 1, 1)
+ENDIF
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;질내
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1

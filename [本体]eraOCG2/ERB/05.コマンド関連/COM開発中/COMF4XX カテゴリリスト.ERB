@@ -1,0 +1,425 @@
+﻿;-------------------------------------------------
+;カテゴリリスト
+;-------------------------------------------------
+
+@COM4XX
+#DIM DYNAMIC 選択コマンド
+#DIM DYNAMIC ランダム数
+#DIM DYNAMIC カウンタ
+
+
+
+CUSTOMDRAWLINE ―
+PRINTFORML 【카테고리 리스트】
+CUSTOMDRAWLINE ―
+PRINTL
+PRINTL [0] - 카테고리 리스트를 열기
+PRINTL
+PRINTL [1] - 랜덤 픽업 1
+PRINTL [5] - 랜덤 픽업 5
+PRINTL 
+CUSTOMDRAWLINE ―
+PRINTL [100] - 뒤로
+BINPUT
+選択コマンド = RESULT
+;-------------------------------------------------
+IF 選択コマンド == 0
+	CALL CATEGORY_LIST
+;-------------------------------------------------
+
+ELSEIF 選択コマンド == 1 || 選択コマンド == 5
+	PRINTL
+	PRINTL 뭐가 나올까 뭐가 나올까
+	PRINTW 오늘의 테마는 이것!
+	PRINTL
+	FOR カウンタ,0,選択コマンド
+		$PICKUP_LOOP
+		ランダム数 = RAND:3500 + 1
+		TRYCALLFORM CATEGORY_STATE_{ランダム数},"存在판정"
+		SIF RESULT != 1
+			GOTO PICKUP_LOOP
+			
+		CALL CATEGORY_PRINT(ランダム数)
+		CALL REPEAT_PRINTL(5)
+	NEXT
+
+;-------------------------------------------------
+ELSEIF RESULT == 100
+	RETURN 0
+ENDIF
+RESTART
+
+;-------------------------------------------------
+@CATEGORY_LIST
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択行
+#DIM DYNAMIC 最低値
+#DIM DYNAMIC 最大値
+
+$LIST_START
+
+CUSTOMDRAWLINE ―
+PRINTLC [ 1] - 아행
+PRINTLC [ 2] - 카행
+PRINTLC [ 3] - 사행
+PRINTLC [ 4] - 타행
+PRINTLC [ 5] - 나행
+PRINTL
+PRINTLC [ 6] - 하행
+PRINTLC [ 7] - 마행
+PRINTLC [ 8] - 야행
+PRINTLC [ 9] - 라행
+PRINTLC [10] - 와행
+PRINTL
+PRINTLC [11] - 알파벳
+PRINTL
+;IF ITEM:YY
+	SETCOLOR C_RED
+	PRINTLC [50] - E.R.A
+	PRINTL
+	RESETCOLOR
+;ENDIF
+CUSTOMDRAWLINE ―
+PRINTL [0] - 뒤로
+CUSTOMDRAWLINE ―
+BINPUT
+PRINTL
+SIF RESULT == 0
+	RETURN 0
+選択行 = RESULT
+
+$LIST_SELECT_A
+
+IF 選択行 == 1
+	CUSTOMDRAWLINE ―
+	PRINTLC [1] - 아
+	PRINTLC [51] - 이
+	PRINTLC [101] - 우
+	PRINTLC [151] - 에
+	PRINTLC [201] - 오
+ELSEIF 選択行 == 2
+	CUSTOMDRAWLINE ―
+	PRINTLC [251] - 카
+	PRINTLC [301] - 키
+	PRINTLC [351] - 쿠
+	PRINTLC [401] - 케
+	PRINTLC [451] - 코
+ELSEIF 選択行 == 3
+	CUSTOMDRAWLINE ―
+	PRINTLC [501] - 사
+	PRINTLC [551] - 시
+	PRINTLC [601] - 스
+	PRINTLC [651] - 세
+	PRINTLC [701] - 소
+ELSEIF 選択行 == 4
+	CUSTOMDRAWLINE ―
+	PRINTLC [751] - 타
+	PRINTLC [801] - 치
+	PRINTLC [851] - 츠
+	PRINTLC [901] - 테
+	PRINTLC [951] - 토
+ELSEIF 選択行 == 5
+	CUSTOMDRAWLINE ―
+	PRINTLC [1001] - 나
+	PRINTLC [1051] - 니
+	PRINTLC [1101] - 누
+	PRINTLC [1151] - 네
+	PRINTLC [1201] - 노
+ELSEIF 選択行 == 6
+	CUSTOMDRAWLINE ―
+	PRINTLC [1251] - 하
+	PRINTLC [1301] - 히
+	PRINTLC [1351] - 후
+	PRINTLC [1401] - 헤
+	PRINTLC [1451] - 호
+ELSEIF 選択行 == 7
+	CUSTOMDRAWLINE ―
+	PRINTLC [1501] - 마
+	PRINTLC [1551] - 미
+	PRINTLC [1601] - 무
+	PRINTLC [1651] - 메
+	PRINTLC [1701] - 모
+ELSEIF 選択行 == 8
+	CUSTOMDRAWLINE ―
+	PRINTLC [1751] - 야
+	PRINTLC [1801] - 유
+	PRINTLC [1851] - 요
+ELSEIF 選択行 == 9
+	CUSTOMDRAWLINE ―
+	PRINTLC [1901] - 라
+	PRINTLC [1951] - 리
+	PRINTLC [2001] - 루
+	PRINTLC [2051] - 레
+	PRINTLC [2101] - 로
+ELSEIF 選択行 == 10
+	CUSTOMDRAWLINE ―
+	PRINTLC [2151] - 와
+	PRINTLC [2201] - 오
+	PRINTLC [2251] - 응
+ELSEIF 選択行 == 11
+	CUSTOMDRAWLINE ―
+	;アルファベットはキリのいい３０００番台にしよう
+	;１００個くらい使おう
+	FOR カウンタ,3001,3101
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CATEGORY_STATE_{カウンタ},"存在판정"
+		SIF RESULT != 1
+			CONTINUE
+		TRYCALLFORM CATEGORY_STATE_{カウンタ},"カテゴリ名"
+		PRINTFORMLC [{カウンタ,4}] - %RESULTS,26,LEFT%
+	NEXT
+ELSEIF 選択行 == 50
+	CUSTOMDRAWLINE ―
+	;ERAは５０００番台
+	;とりあえず１００
+	FOR カウンタ,5001,5101
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CATEGORY_STATE_{カウンタ},"存在판정"
+		SIF RESULT != 1
+			CONTINUE
+		TRYCALLFORM CATEGORY_STATE_{カウンタ},"カテゴリ名"
+		PRINTFORMLC [{カウンタ,4}] - %RESULTS,26,LEFT%
+	NEXT
+ENDIF
+PRINTL
+CUSTOMDRAWLINE ―
+PRINTL [0] - 뒤로
+CUSTOMDRAWLINE ―
+BINPUT
+;アルファベット
+IF INRANGE(RESULT,3001,3101)
+	REPEAT 5
+		PRINTL
+	REND
+	CALL CATEGORY_PRINT(RESULT)
+	;アルファベット選択へ
+	GOTO LIST_SELECT_A
+
+ELSEIF INRANGE(RESULT,5001,5101)
+	REPEAT 5
+		PRINTL
+	REND
+	CALL CATEGORY_PRINT(RESULT)
+	;ERA選択へ
+	GOTO LIST_SELECT_A
+	
+;行選択へ
+ELSEIF RESULT == 0
+	GOTO LIST_START
+;それ以外
+ELSE
+	最低値 = RESULT
+	最大値 = RESULT + 50
+	$LIST_SELECT_B
+	FOR カウンタ,最低値,最大値
+		VARSET RESULT
+		VARSET RESULTS
+		TRYCALLFORM CATEGORY_STATE_{カウンタ},"存在판정"
+		SIF RESULT != 1
+			CONTINUE
+		TRYCALLFORM CATEGORY_STATE_{カウンタ},"カテゴリ名"
+		PRINTFORMLC [{カウンタ,4}] - %RESULTS,26,LEFT%
+	NEXT
+	PRINTL
+	CUSTOMDRAWLINE ―
+	PRINTL [0] - 돌아간다
+	CUSTOMDRAWLINE ―
+	BINPUT
+	PRINTL
+	IF RESULT == 0
+		;頭文字選択へ
+		GOTO LIST_SELECT_A
+	ELSE
+		CALL CATEGORY_PRINT(RESULT)
+		;現在の지정頭文字のはじめへ
+		GOTO LIST_SELECT_B
+	ENDIF
+ENDIF
+
+RETURN 0
+
+;────────────────────────────────────────────────────
+
+@CATEGORY_PRINT(選択カテゴリ)
+#DIM DYNAMIC 選択カテゴリ
+#DIM DYNAMIC カウンタ
+
+CALL REPEAT_PRINTL(5)
+
+;名前표시
+CUSTOMDRAWLINE ―
+TRYCALLFORM CATEGORY_STATE_{選択カテゴリ},"カテゴリ名"
+PRINTFORML 　【%RESULTS%】
+CUSTOMDRAWLINE ―
+
+;속성
+PRINT 속성：
+TRYCALLFORM CATEGORY_STATE_{選択カテゴリ},"속성"
+IF RESULT == 10
+	PRINTFORM （복수）
+ELSE
+	FOR カウンタ,0,4
+		SELECTCASE RESULT:カウンタ
+			CASE 1
+				SETCOLOR C_LIGHT_T
+				PRINTFORM （%"빛",2%）
+			CASE 2
+				SETCOLOR C_DARK_T
+				PRINTFORM （%"어둠"%）
+			CASE 3
+				SETCOLOR C_GROUND_T
+				PRINTFORM （%"땅",2%）
+			CASE 4
+				SETCOLOR C_WATER_T
+				PRINTFORM （%"물",2%）
+			CASE 5
+				SETCOLOR C_FIRE_T
+				PRINTFORM （%"화염"%）
+			CASE 6
+				SETCOLOR C_WIND_T
+				PRINTFORM （%"바람"%）
+			CASE 7
+				SETCOLOR C_LIGHT_T
+				PRINTFORM （%"신",2%）
+		ENDSELECT
+		RESETCOLOR
+	NEXT
+ENDIF
+;종족
+PRINT 　종족：
+TRYCALLFORM CATEGORY_STATE_{選択カテゴリ},"종족"
+IF RESULT == 30
+	PRINTFORM （복수）
+ELSE
+	FOR カウンタ,0,4
+		SIF RESULT:カウンタ == 0
+			BREAK
+		SIF カウンタ != 0
+			PRINT  / 
+		SIF RESULT:カウンタ != 0
+			PRINTFORM %GET_TALENTNAME(191,RESULT:カウンタ),12,LEFT%
+	NEXT
+ENDIF
+;소환法
+PRINT 　사용하는 ＥＸ소환：
+TRYCALLFORM CATEGORY_STATE_{選択カテゴリ},"EX덱"
+IF RESULT == 10
+	PRINTFORM （복수）
+ELSEIF RESULT == 0
+	PRINTFORM （없음）
+ELSE
+	FOR カウンタ,0,4
+		SIF RESULT:カウンタ == 0
+			BREAK
+		IF RESULT:カウンタ == 의식
+			SETCOLOR C_GISK_BLUE
+			PRINT 【의식】
+		ELSEIF RESULT:カウンタ == 융합
+			SETCOLOR C_FUSE_PUR
+			PRINT 【융합】
+		ELSEIF RESULT:カウンタ == 싱크로
+			SETCOLOR C_SYN_WHITE
+			PRINT 【싱크로】
+		ELSEIF RESULT:カウンタ == 엑시즈
+			SETCOLOR C_XYZ_BLACK
+			PRINT 【엑시즈】
+		ELSEIF RESULT:カウンタ == 링크
+			SETCOLOR C_LINK_BLUE
+			PRINT 【링크】
+		ELSEIF RESULT:カウンタ == 초차원
+			SETCOLOR C_PSY_RED
+			PRINT 【초차원】
+		ENDIF
+		RESETCOLOR
+	NEXT
+ENDIF
+PRINTL
+CUSTOMDRAWLINE ―
+
+
+;関連カテゴリ
+TRYCALLFORM CATEGORY_STATE_{選択カテゴリ},"カテゴリ"
+IF RESULTS:1 != ""
+	PRINT 관련 카테고리：
+	FOR カウンタ,1,5
+		SIF RESULTS:カウンタ != ""
+			PRINTFORM 【%RESULTS:カウンタ%】
+	NEXT
+	PRINTL
+	CUSTOMDRAWLINE ―
+ENDIF
+
+IF 選択カテゴリ > 5000
+	;シチュエーション傾向
+	TRYCALLFORM CATEGORY_STATE_{選択カテゴリ},"シチュエーション"
+	PRINT 시추에이션 경향：
+	FOR カウンタ,0,6
+		SIF RESULTS:カウンタ != ""
+			PRINTFORML 【%RESULTS:カウンタ%】
+	NEXT
+
+ELSE
+	;出典
+	TRYCALLFORM CATEGORY_STATE_{選択カテゴリ},"出典"
+	PRINTFORML 출처：%RESULTS%
+ENDIF
+
+CUSTOMDRAWLINE ―
+TRYCALLFORM CATEGORY_TEXT_{選択カテゴリ}
+
+RETURN 0
+
+;-------------------------------------------------
+;実行판정
+;-------------------------------------------------
+;カテゴリリスト
+@COM_ABLE4XX
+;이동実行판정
+;SIF !TFLAG:100
+;	RETURN 0
+RETURN 1
+
+
+
+
+
+@CATEGORY_BUTTON(カード_ID,설정色)
+#DIM DYNAMIC カード_ID
+#DIM DYNAMIC 설정色
+
+IF 설정色 == 0
+	TRYCALLFORM CARD_{カード_ID}("종류")
+	IF RESULT <= 10
+		IF RESULT == 1
+			SETCOLOR C_MONS_BR
+		ELSEIF RESULT == 2
+			SETCOLOR C_BASM_BR
+		ELSEIF RESULT == 의식
+			SETCOLOR C_GISK_BLUE
+		ELSEIF RESULT == 융합
+			SETCOLOR C_FUSE_PUR
+		ELSEIF RESULT == 싱크로
+			SETCOLOR C_SYN_WHITE
+		ELSEIF RESULT == 엑시즈
+			SETCOLOR C_XYZ_BLACK
+		ELSEIF RESULT == 링크
+			SETCOLOR C_LINK_BLUE
+		ELSEIF RESULT == 초차원
+			SETCOLOR C_PSY_RED
+		ENDIF
+	ELSEIF RESULT >= 20 && RESULT < 30
+		SETCOLOR C_MAGIC_G
+	ELSEIF RESULT >= 30
+		SETCOLOR C_TRAP_PUR
+	ENDIF
+ELSE
+	SETCOLOR 설정色
+ENDIF
+
+TRYCALLFORM CARDNAME_{カード_ID}("名前")
+PRINTBUTTON @"《%RESULTS%》",カード_ID
+PRINTL
+
+RESETCOLOR

@@ -1,21 +1,26 @@
 ﻿;사정쾌락計算
 ;ARG 사정する人
 ;사정쾌락강도を返す
-@SHOOT_CALC(ARG)
+@SHOOT_CALC(射캐릭터_ID)
 #FUNCTION
+#DIM DYNAMIC 射캐릭터_ID
+#DIM DYNAMIC 受캐릭터_ID
+#DIM DYNAMIC 返し値
+
+
 VARSET LOCAL
-FOR LOCAL,0,CHARANUM
-	IF TCVAR:ARG:사정쾌락강도 > 0 && TCVAR:ARG:사정대상캐릭터_1 == LOCAL
+FOR 射캐릭터_ID,0,CHARANUM
+	IF TCVAR:射캐릭터_ID:사정쾌락강도 > 0 && TCVAR:射캐릭터_ID:사정대상캐릭터_1 == 受캐릭터_ID
 		FOR LOCAL:1, 1, 31
-			IF TCVAR:ARG:사정부위플래그 == LOCAL:1
+			IF TCVAR:射캐릭터_ID:사정부위플래그 == LOCAL:1
 				;사정플래그を立てる
-				TCVAR:ARG:1 = 1
-				LOCAL:10 += SHOOT_CALC1(ARG, LOCAL, LOCAL:1, TCVAR:ARG:사정쾌락강도)
+				TCVAR:射캐릭터_ID:1 = 1
+				返し値 += SHOOT_CALC1(射캐릭터_ID, 受캐릭터_ID, LOCAL:1, TCVAR:射캐릭터_ID:사정쾌락강도)
 			ENDIF
 		NEXT
 	ENDIF
 NEXT
-RETURNF LOCAL:10
+RETURNF 返し値
 
 @SHOOT_CALC1(ARG, ARG:1, ARG:2, ARG:3)
 #FUNCTION
@@ -102,6 +107,8 @@ SELECTCASE ARG:2
 			LOCAL:7 += 2
 	;펠라
 	CASE 4
+		SIF TALENT:(ARG:1):긴혀
+			LOCAL:7 += 3
 		SIF TALENT:(ARG:1):혀사용자
 			LOCAL:7 += 2
 		SIF TALENT:(ARG:1):고양이혀
@@ -140,7 +147,8 @@ RETURNF LOCAL:10
 @EVENT_SHOOT(ARG)
 #DIM DYNAMIC ベース사정A
 #DIM DYNAMIC ベース사정B
-
+#DIM DYNAMIC 射캐릭터_ID
+#DIM DYNAMIC 受캐릭터_ID
 VARSET LOCAL
 
 ベース사정A = 100 + BASE:ARG:정력

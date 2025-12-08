@@ -1,0 +1,168 @@
+﻿@CARDNAME_50599,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Ｓｉｎ 패러독스 드래곤
+	CASE "略称"
+		RESULTS = Ｓｉｎ패러독스
+	CASE "カテゴリ"
+		RESULTS:0 = Ｓｉｎ
+ENDSELECT
+
+
+@CARD_50599(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 4000
+	CASE "守備力"
+		RETURN 4000
+	CASE "소환불가"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+	CASE "単一存在"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50599(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 10
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = Ｓｉｎ
+	素材条件튜너 = 1
+ELSEIF EX参照 >= 10
+	素材条件カテゴリ = Ｓｉｎ
+	素材条件튜너 = -1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,50599) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50599(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「Ｓｉｎ」튜너＋튜너以外の「Ｓｉｎ」モンスター１体以上
+PRINTL 「Ｓｉｎ 패러독스 드래곤」は자신フィールドに１体しか表側표시で存在できない。
+PRINTL このカードはS소환か「Ｓｉｎ」カードの효과でのみ특수소환できる。
+CALLFORM CARD_ABLE(0,EX소환時)
+PRINTL ①：このカードがS소환した場合に발동できる。
+PRINTL 자신・상대の묘지・제외状態からSモンスター１体を소환条件を無視して특수소환する。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：상대フィールドの全てのモンスターの攻撃力は、このカード以外の자신フィールドのSモンスターの攻撃力の合計分ダウンする。
+PRINTL ③：フィールド마법が表側표시で存在しない場合、このカードは破壊される。
+
+
+@CARDCAN_50599(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50599)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과範囲상대마함 = 1
+	효과条件종류 = フィールド
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과範囲제외 = 1
+	효과範囲상대제외 = 1
+	효과条件종류 = 싱크로
+	효과条件소환可 = 1
+	효과条件特不無視 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_50599(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後強制誘発
+	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50599)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲상대묘지 = 1
+		효과範囲제외 = 1
+		효과範囲상대제외 = 1
+		효과条件종류 = 싱크로
+		효과条件特不無視 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件他所 = 1
+	효과条件종류 = 싱크로
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT:3
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-攻撃力修正)
+ENDIF

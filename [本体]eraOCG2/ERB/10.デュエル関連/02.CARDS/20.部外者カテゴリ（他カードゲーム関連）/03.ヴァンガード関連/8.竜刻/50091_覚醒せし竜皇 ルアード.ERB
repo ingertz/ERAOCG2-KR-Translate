@@ -78,12 +78,13 @@ ENDIF
 
 CALL PRINT_STRIDETEXT("루아드")
 CALLFORM CARD_ABLE(2,필드起動)
-PRINTL ①: 이 카드가 필드에 앞면 표시로 존재하는 한 1번만, 자신 메인 페이즈에 발동할 수 있다.
-PRINTL 자신 필드의 이 카드 이외의 몬스터 2장을 파괴하고,
-PRINTL 손패를 임의의 매수만큼 고르고, 파괴한다.
-PRINTL 파괴한 수만큼, 상대 필드의 카드를 고르고 파괴한다.
-PRINTL 이 카드는 턴 종료시까지 공격력은 파괴한 자신의 카드의 수× 300 올린다.
-PRINTL 이 턴에, 상대는 자신의 필드의 몬스터의 효과를 발동할 수 없다.
+PRINTL ①：『의식３』
+SETCOLOR C_L_GRAY
+PRINTFORML （자신の묘지の드래곤족・마법사족で어둠속성のモンスターが３体以上の場合、以下の효과を適用する。）
+RESETCOLOR
+PRINTL このカードが『超越』した場合、EX덱から「쉐도우 팔라딘」초차원モンスター１体を제외して발동できる。
+PRINTL 덱から드래곤족・마법사족で어둠속성のモンスターを제외状態の「드래그스트라이더 루아드」の数まで특수소환する。
+PRINTL その後、このカードの攻撃力はターン終了時まで자신の묘지の드래곤족・마법사족で어둠속성のモンスターモンスターの数×２００アップする。
 
 @CARDCAN_50091(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -103,7 +104,15 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX덱起動
-	SIF 발동済_1(듀얼리스트,50091)
+	SIF 발동済_3(듀얼리스트,50091)
+		RETURN 0
+	SIF ターン数 <= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트)
+	SIF RESULT != 1
  		RETURN 0
 	SIF ゾーン != "EX덱"
 		 RETURN 0
@@ -117,36 +126,41 @@ IF 종류 == EX덱起動
 	CALL CARD_CHECK_ADV(듀얼리스트)
 	SIF RESULT != 1
 		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件종류 = 초차원
-	효과条件カテゴリ = 뱅가드
-	CALL CARD_CHECK_ADV(듀얼리스트)
-	SIF RESULT == 1
+	SIF GETVAR(@"%듀얼리스트%_超越済") != 0
 		RETURN 0
-	SIF 발동済_2(듀얼리스트,4047) == 0 && 발동済_2(듀얼리스트,14047) == 0 
+	SIF 듀얼리스트 != "상대"
 		RETURN 0
  	RETURN 1
-ELSEIF 종류 == 지속효과
-	SIF ゾーン != "필드"
+ELSEIF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,50091)
 		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 필드起動
-	SIF 효과발동済(듀얼리스트,場所,ゾーン)
-		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件他所 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 쉐도우 팔라딘
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족:0 = 드래곤족
+	효과条件종족:1 = 마법사족
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT < 2
+	SIF RESULT < 3
 		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 어둠속성
+	효과条件종족:0 = 드래곤족
+	효과条件종족:1 = 마법사족
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
 	RETURN 1
 ENDIF
 
@@ -170,65 +184,67 @@ IF 종류 == EX덱起動
  	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50091,1)
  	IF RESULT == 0
 	CALL FULLRESET
-	효과条件カテゴリ = 루아드
-	효과条件行先플래그 = 소멸行き
-	효과条件任意 = 1
-	CALL CARD_ADD_GY_BASIC(듀얼리스트,"필드",ゾーン,場所)
-		IF RESULT == 1
-			選択カードID = RESULT:1
-			CALL CARD_LOADUP
-			PRINTFORML
-			PRINTFORML
-			PRINTFORML 초월《스트라이드》、제너레이션！
-			CALL PRINT_STATE_DUEL(カードID)
-			CALL FULLRESET
-			CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所,"攻撃표시")
-			SETVAR @"%듀얼리스트%_MZ_変化元ID:カード소환先", 選択カードID
-		ELSE
-			RETURN 0
-		ENDIF
-	ENDIF
-ELSEIF 종류 == 지속효과
-	CALL FULLRESET
-	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
-ELSEIF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50091,11)
-	IF RESULT == 0
-		CALL FULLRESET
-		효과条件他所 = 1
-		효과条件複数 = 2
-		효과範囲필드 = 1
-		효과条件行先플래그 = 破壊行き
+	효과範囲손패 = 1
+		효과条件종류 = モン全般
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-
-			REPEAT 2
-				カウンタ ++
-			REND
-
-			REPEAT 99
-				CALL FULLRESET
-				효과範囲손패 = 1
-				효과条件行先플래그 = 破壊行き
-				효과条件任意 = 1
-				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-				IF RESULT == 1
-					カウンタ ++
-				ELSE
-					BREAK
-				ENDIF
-			REND
-
 			CALL FULLRESET
-			효과条件任意 = 1
-			효과条件複数 = 100 - カウンタ
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"묘지",50091)
-			
-			攻撃力修正 = カウンタ * 300
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",攻撃力修正)
-			CALL CARD_RESERV(듀얼리스트,50091,短紋章予約)
+			효과範囲필드 = 1
+			효과条件カテゴリ = 루아드
+			효과条件行先플래그 = 소멸行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					選択カードID = RESULT:1
+					CALL CARD_LOADUP
+					PRINTFORML
+					PRINTFORML
+					PRINTFORML 초월《스트라이드》、제너레이션！
+					RESETCOLOR
+					CALL PRINT_STATE_DUEL(選択カードID)
+					CALL FULLRESET
+					CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所,"攻撃표시")
+					SETVAR @"%듀얼리스트%_MZ_変化元ID:カード소환先", 選択カードID
+					CALL SET_PLAYER_INFO(듀얼리스트,"超越済",1)
+			ELSE
+				RETURN 0
+			ENDIF
 		ENDIF
 	ENDIF
-ELSEIF 종류 == 短紋章起動
-	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無")
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50091,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 쉐도우 팔라딘
+		효과条件종류 = 초차원
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲제외 = 1
+			효과条件名前 = 드래그스트라이더 루아드
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			カウンタ = RESULT
+
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件속성 = 어둠속성
+			효과条件종족:0 = 드래곤족
+			효과条件종족:1 = 마법사족
+			효과条件複数 = 100 - カウンタ
+			효과条件任意 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件속성 = 어둠속성
+			효과条件종족:0 = 드래곤족
+			효과条件종족:1 = 마법사족
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			攻撃力修正 = RESULT * 200
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",攻撃力修正)
+		ENDIF
+	ENDIF
 ENDIF

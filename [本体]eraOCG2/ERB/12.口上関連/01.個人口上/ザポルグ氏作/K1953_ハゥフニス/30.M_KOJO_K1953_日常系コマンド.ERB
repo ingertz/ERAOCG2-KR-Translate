@@ -1391,24 +1391,6 @@ IF LOCAL
 ENDIF
 RETURN 1
 ;==================================================
-;353,イタズラする
-;FLAG:무능함(1=失敗)
-;==================================================
-@M_KOJO_MESSAGE_COM_K1953_353
-CALL TRAIN_MESSAGE
-CALL M_KOJO_MESSAGE_COM_K1953_353_1
-RETURN RESULT
-
-@M_KOJO_MESSAGE_COM_K1953_353_1
-;-------------------------------------------------
-;記入チェック（=0, 非표시、1, 표시）
-LOCAL = 0
-;-------------------------------------------------
-IF LOCAL
-
-ENDIF
-RETURN 1
-;==================================================
 ;354,반지を渡す
 ;==================================================
 @M_KOJO_MESSAGE_COM_K1953_354
@@ -1597,6 +1579,58 @@ IF LOCAL
 	ENDSELECT
 ENDIF
 RETURN 1
+
+;==================================================
+;353,許しを乞う
+;TFLAG:SELECTCOM분기(1=ムラムラ限界突破 2=サドor捕食者)
+;TCVAR:TARGET:전CT행동(61=腰ヘコ)
+;==================================================
+@M_KOJO_MESSAGE_COM_K1953_353
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K1953_353_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K1953_353_1
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF TCVAR:TARGET:전CT행동 == 61
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW "끝나길 원한다면❤ 더, 제대로 허리 쓰라구❤"
+			CASE 1
+				PRINTFORMW "핫❤핫❤ 그대로❤ 허리 계속 흔들면 생각해봐도 좋아❤"
+			CASE 2
+				PRINTFORMW "후훗❤ 그런 소릴 하고선❤ %CALLNAME:MASTER%도 즐거워 보이잖아❤"
+		ENDSELECT
+	ELSE
+		IF BASE:TARGET:만족 < 900
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW "아핫❤ 안 돼❤ 내가 만족할 때까지 어울리라구❤"
+				CASE 1
+					PRINTFORMW "뭐야? 벌써 지친 거야?❤ 칠칠치 못하네❤"
+				CASE 2
+					PRINTFORMW "우는 소리 할 틈이 있다면❤ 나를 만족시키는 걸 생각하란 말야❤"
+			ENDSELECT
+		ELSE
+			IF BASE:TARGET:만족 >= 900
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW "후우... 후우...❤ 조금 더... 아주 조금만 더...❤"
+					CASE 1
+						PRINTFORML "......❤"
+						PRINTFORMW %CALLNAME:TARGET%는 행복해 보이는 얼굴로 정사에 열중하고 있다...
+				ENDSELECT
+			ELSE
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+RETURN 1
+
 ;==================================================
 ;361,저항する
 ;TCVAR:TARGET:20(27=谷間を見せる 32=前から抱きつく 35=치마の中を見せる 53=파이즈리 73=ぱふぱふ 77=乳を吸わせる 85=Ｖ삽입する 86=だいしゅきホールド 87=Ａ삽입する 88=허리振りＶ 89=허리振りＡ
@@ -2659,25 +2693,54 @@ IF LOCAL
 ENDIF
 RETURN 1
 ;==================================================
-;445,카페에서 쉰다
+;445,施設を満喫する
+;内容については 05.コマンド関連/COMMANDS/400～499まで/COMF445 を参照すること 
 ;==================================================
-;流れるタイミングはパックを開けた後
 @M_KOJO_MESSAGE_COM_K1953_445
 CALL TRAIN_MESSAGE
 CALL M_KOJO_MESSAGE_COM_K1953_445_1
 RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K1953_445_1
+#DIM DYNAMIC 호감도修正
 ;-------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	IF CFLAG:TARGET:아르바이트 == 2
-		PRINTFORMW 「어때? 좋은 거 나왔어?」
-	ELSE
-		PRINTFORMW 「그거, 정말 맛있어?」
-	ENDIF
+	SELECTCASE CFLAG:MASTER:현재위치
+		CASE 場所_カフェ
+			IF CFLAG:TARGET:아르바이트 == PT_메이드 && CFLAG:TARGET:알바중
+				PRINTFORMW 「어때? 좋은 거 나왔어?」
+			ELSE
+				PRINTFORMW 「그거, 정말 맛있어?」
+			ENDIF
+		CASE 場所_KL広場
+			PRINTFORMW "캐스트와 사진을 찍을 수 있구나.　...모처럼이니, 우리도 찍을까?"
+		CASE 場所_ジャングル
+			PRINTFORMW "기술은 인정하지만, 아는 입장에서 보면 그저 어린애 속임수네"
+		CASE 場所_スリルゾーン
+			PRINTFORMW "기, 기다려... 다리가... 떨려서..."
+		CASE 場所_お城
+			PRINTFORMW "봐, 역시 저기서 오른쪽이야.　...막다른 길이네"
+		CASE 場所_観覧車
+			호감도修正 = 2
+			SIF TALENT:TARGET:연모
+				호감도修正 += 1
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW "엄청난 수네... 어디서 이렇게 솟아나오는 걸까"
+				CASE 1
+					PRINTFORMW "...저기, 다음엔 저기로 가보지 않을래?"
+				CASE 2
+					PRINTFORML "......❤"
+					PRINTFORMW %CALLNAME:TARGET%는 손을 겹치고, 손가락을 얽어왔다.
+			ENDSELECT
+		CASE 場所_KCステージ
+			PRINTFORMW "히, 힘내라...!"
+		CASE 場所_KCスタジアム
+			;未実装
+	ENDSELECT
 ENDIF
 RETURN 1
 ;==================================================
