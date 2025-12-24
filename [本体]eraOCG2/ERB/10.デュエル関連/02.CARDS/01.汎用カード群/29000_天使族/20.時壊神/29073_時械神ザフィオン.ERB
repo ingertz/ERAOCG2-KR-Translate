@@ -49,7 +49,8 @@ PRINTL ②：이 카드는 전투/효과로는 파괴되지 않으며, 이 카�
 CALLFORM CARD_ABLE(0,バトル終了時)
 PRINTL ③：이 카드가 전투를 실행한 배틀 페이즈 종료 시에 발동할 수 있다. 상대 필드의 마법/함정 카드를 전부 덱으로 되돌린다.
 CALLFORM CARD_ABLE(0,필드→戦離)
-PRINTL ④：이 카드가 필드에서 벗어났을 경우에 발동할 수 있다. 자신은 패가 5장이 될 때까지 드로우한다.
+PRINTL ④：이 카드가 필드에서 벗어났을 때、자신 필드에 "시계신" 지속 함정이 존재하는 경우에 발동할 수 있다.
+PRINTL 자신은 패가 5장이 될때까지 드로우한다.
 CALLFORM CARD_ABLE(0,효과後強制誘発)
 PRINTL ⑤：자신 스탠바이 페이즈에 발동한다. 이 카드를 주인의 덱 맨 아래로 되돌린다.
 
@@ -94,7 +95,7 @@ ELSEIF 종류 == ターン開始時強制
 		RETURN 0
 	CALL FULLRESET
 	효과範囲마함 = 1
-효과条件名前 = 무한광 아인 소프 오르
+	효과条件名前 = 무한광 아인 소프 오르
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT == 1
 		RETURN 0
@@ -107,6 +108,12 @@ ELSEIF 종류 == バトル終了時
 	RETURN 1
 ELSEIF 종류 == 필드→戦離
 	SIF 손패数(듀얼리스트) >= 5
+		RETURN 0
+	CALL F1ULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 시계신
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 0
 		RETURN 0
 	RETURN 1
 ENDIF

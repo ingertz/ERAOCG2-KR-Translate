@@ -67,26 +67,28 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	SIF 발동済_1(듀얼리스트,92254)
+	SIF ゾーン != "마함"
 		RETURN 0
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		SIF 발동済_1(듀얼리스트,92254)
 		RETURN 0
-
-	CALL CARD_SS_CHECK(듀얼리스트,92254,"마함")
-	SIF RESULT == 1
-		발동불가:0 = 1
-	CALL FULLRESET
-	효과範囲제외 = 1
-	효과条件カテゴリ:0 = 황금향
-	효과条件カテゴリ:1 = 엘드릭시르
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		발동불가:1 = 1
-
-	SIF 발동불가:0 == 1 && 발동불가:1 == 1
-		RETURN 0
-
+		CALL CARD_SS_CHECK(듀얼리스트,92254,"마함")
+		SIF RESULT == 1
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件カテゴリ:0 = 황금향
+		효과条件カテゴリ:1 = 엘드릭시르
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+		SIF 발동불가:0 == 1 && 발동불가:1 == 1
+			RETURN 0
+	ELSE
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
 	RETURN 1
 ENDIF
 
@@ -103,46 +105,51 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 IF 종류 == 마함起動 || 종류 == フリー誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92254,1)
-	IF RESULT == 0
-		CALL CARD_SS_CHECK(듀얼리스트,92254,"마함")
-		SIF RESULT == 1
-			발동불가:0 = 1
-
-		CALL FULLRESET
-		효과範囲제외 = 1
-		효과条件カテゴリ:0 = 황금향
-		효과条件カテゴリ:1 = 엘드릭시르
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT != 1
-			발동불가:1 = 1
-
-		IF 발동불가:0 == 0 && 발동불가:1 == 0
-			CALL YN_CHOICE(듀얼리스트,"●몬스터 존에 특수 소환한다","●자신의 제외 상태인 「황금향」마법 / 함정 카드 또는「엘드릭시르」마법 / 함정 카드 １장을 자신 필드에 세트한다。")
-		ELSEIF 발동불가:0 == 1
-			RESULT = 1
-		ELSEIF 발동불가:1 == 1
-			RESULT = 0
-		ENDIF
-
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92254,1)
 		IF RESULT == 0
-			CALL FULLRESET		
-			CALL CARD_SP_SUMMON(듀얼리스트, "마함", 場所)
+			CALL CARD_SS_CHECK(듀얼리스트,92254,"마함")
+			SIF RESULT == 1
+				발동불가:0 = 1
 			CALL FULLRESET
-			효과範囲필드 = 1
-			효과条件カテゴリ = 엘드리치
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			IF RESULT == 1
-				CALL FULLRESET
-				효과条件任意 = 1
-				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"손패")
-			ENDIF
-		ELSEIF RESULT == 1
-			CALL FULLRESET
+			효과範囲제외 = 1
 			효과条件カテゴリ:0 = 황금향
 			효과条件カテゴリ:1 = 엘드릭시르
-			효과条件종류 = 마함全般
-			CALL CARD_SET_BASIC(듀얼리스트,"제외",ゾーン,場所,"裏側표시")
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				발동불가:1 = 1
+
+			IF 발동불가:0 == 0 && 발동불가:1 == 0
+				CALL YN_CHOICE(듀얼리스트,"●몬스터 존에 특수 소환한다","●자신의 제외 상태인 「황금향」마법 / 함정 카드 또는「엘드릭시르」마법 / 함정 카드 １장을 자신 필드에 세트한다。")
+			ELSEIF 발동불가:0 == 1
+				RESULT = 1
+			ELSEIF 발동불가:1 == 1
+				RESULT = 0
+			ENDIF
+
+			IF RESULT == 0
+				CALL FULLRESET		
+				CALL CARD_SP_SUMMON(듀얼리스트, "마함", 場所)
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件カテゴリ = 엘드리치
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과条件任意 = 1
+					CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"손패")
+				ENDIF
+			ELSEIF RESULT == 1
+				CALL FULLRESET
+				효과条件カテゴリ:0 = 황금향
+				효과条件カテゴリ:1 = 엘드릭시르
+				효과条件종류 = 마함全般
+				CALL CARD_SET_BASIC(듀얼리스트,"제외",ゾーン,場所,"裏側표시")
+			ENDIF
+		ENDIF
+	ELSE
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92254)
+		IF RESULT == 0
 		ENDIF
 	ENDIF
 ENDIF

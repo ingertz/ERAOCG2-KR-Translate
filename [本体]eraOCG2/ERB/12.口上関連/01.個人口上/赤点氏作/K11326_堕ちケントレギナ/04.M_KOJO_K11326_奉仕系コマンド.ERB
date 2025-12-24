@@ -1,5 +1,5 @@
 ﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
-;봉사계커맨드
+;奉仕系コマンド
 ;※※※※※※※※※※※※※※※※※※※※※※※※※
 ;==================================================
 ;80,수음
@@ -21,10 +21,11 @@ IF LOCAL
 	;-------------------------------------------------
 	;初めて
 	;記入チェック
-	LOCAL:1 = 0
+	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
-		PRINTFORMW 
+		PRINTFORMW 「ふーん、手でシて欲しいんだぁ～？❤　初めてだから間違えて握りつぶしちゃってもごめんねぇ？❤
+		PRINTFORMW 　……冗談だからそんなに怖がらないでよ❤　頑張って優しくするから、気持ちよくなってね❤❤❤」
 		RETURN 1
 	ENDIF
 	;基本セット
@@ -37,15 +38,15 @@ IF LOCAL
 		호감도修正 += 1
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-PRINTFORMW 「후후후, 내 손으로 듬~뿍 봉사해 줄게❤」
+			PRINTFORMW 「ふふふ、私の手でたぁ～っぷりご奉仕して上げるからねぇ❤」
 		CASE 2
-PRINTFORMW 「흐읏❤ 내 손에 흠칫흠칫 반응해서, 왠지 귀여워❤」
+			PRINTFORMW 「ふーっ❤　私の手でビクビクって反応しちゃって、なんか可愛い❤」
 		CASE 3
-PRINTFORMW 「이런 흉악한 것이 나에게 들락날락거린다고 생각하니❤ 몸이 달아올라 버려……❤」
+			PRINTFORMW 「こんな凶悪なモノが私に出たり入ったりって思うと❤　身体が火照ってきちゃうよ……❤」
 		CASE 4
-PRINTFORMW 「어때? 기분 좋아? 내 손으로 더 기분 좋아졌으면 좋겠는데❤❤」
+			PRINTFORMW 「どう？気持ちいい？　私の手でもっと気持ちよくなってくれたら嬉しいなぁ❤❤」
 		CASE 5
-PRINTFORMW 「기분 좋아? 쌀 것 같아? 좋아❤ 잔뜩 싸도 돼❤ 나를 정액으로 하얗게 물들여 주세요❤❤」
+			PRINTFORMW 「気持ちいい？　出そう？　いいよ❤　いっぱい出して❤　私を정액で白く染め上げてぇ❤❤」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -70,10 +71,17 @@ IF LOCAL
 	;-------------------------------------------------
 	;初めて
 	;記入チェック
-	LOCAL:1 = 0
+	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
-		PRINTFORMW 
+		;ファースト키스
+		IF EXP:TARGET:Ｍ경험 == 0 && EXP:TARGET:펠라경험 == 1 && CALLNAME:(CFLAG:TARGET:키스상실상대) == CALLNAME:MASTER
+			PRINTFORMW 「んちゅっ❤❤　ふふ、私のファースト키스をちんぽにさせたいだなんて、マスターって相当な変態だね……？❤❤❤」
+		;それ以外
+		ELSE
+			PRINTFORMW 「えっと、これを舐めればいいんだね……？❤　ん……っ❤　ちゅ……っ❤
+			PRINTFORMW 　初めてだから、上手く出来てるか分かんないんだけど……　その顔を見れば、大丈夫そうだね❤❤」
+		ENDIF
 		RETURN 1
 	ENDIF
 	;基本セット
@@ -84,18 +92,26 @@ IF LOCAL
 		호감도修正 += 1
 	SIF TALENT:TARGET:연모 >= 1
 		호감도修正 += 1
+		
+	;お掃除펠라
+	IF STAIN:MASTER:2 & 4 && ABL:TARGET:기교 >= 3
+		PRINTFORMW 「ふふ、たくさん出したねぇ❤　今から、きれーにしてあげるよ……っ❤❤」
+
+	;通常
+	ELSE
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-PRINTFORMW 「낼름❤ 낼름❤ 이런 흉악한 것이 나에게 들락날락거리는구나……❤」
+			PRINTFORMW 「ぺろっ❤　ぺろっ❤　こんな凶悪なモノが私に出たり入ったりするんだよね……❤」
 		CASE 2
-PRINTFORMW 「츄릅, 츄릅❤ 이 맛, 자궁으로 와……❤」
+			PRINTFORMW 「じゅる、じゅるるっ❤　この味、子宮にくるぅ……❤」
 		CASE 3
-PRINTFORMW 「언제든지 싸 주세요❤ 전부 삼킬 테니까요❤」
+			PRINTFORMW 「いつでも出していいよっ❤　全部飲み込んであげるからぁっ❤❤」
 		CASE 4
-PRINTFORMW 「낼름, 음~……❤ 쩐다, 이거❤ 핥기만 했는데 젖어 버렸어……❤」
+			PRINTFORMW 「れろっ、んむっ……❤　やばい、これぇ❤　舐めてるだけで濡れてきちゃったぁ……❤」
 		CASE 5
-PRINTFORMW 「츄릅츄릅❤ 줘❤ 진~한 정액, 나에게 잔뜩 주세요❤❤」
-	ENDSELECT
+			PRINTFORMW 「じゅるじゅるっ❤　頂戴っ❤　濃ぉい정액、私にたっぷり出してぇっ❤❤❤」
+		ENDSELECT
+	ENDIF
 ENDIF
 RETURN 1
 
@@ -119,10 +135,10 @@ IF LOCAL
 	;-------------------------------------------------
 	;初めて
 	;記入チェック
-	LOCAL:1 = 0
+	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
-		PRINTFORMW 
+		PRINTFORMW 「えーっと、胸でして欲しいの？　全く、マスターはエッチだなぁ❤❤」
 		RETURN 1
 	ENDIF
 	;基本セット
@@ -135,15 +151,15 @@ IF LOCAL
 		호감도修正 += 1
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-PRINTFORMW 「응❤ 어때? 기분 좋아? 아직 익숙하지 않지만 노력할게❤」
+			PRINTFORMW 「んっ❤　どう？気持ちいい？　あんまり慣れてないけど頑張るから❤」
 		CASE 2
-PRINTFORMW 「응, 훗❤ 왠지 좀 즐거워졌어❤」
+			PRINTFORMW 「んっ、ふっ❤　なんかちょっと楽しくなってきた❤」
 		CASE 3
-PRINTFORMW 「에잇❤ 에잇❤ 평소엔 당하기만 하니까 이럴 때쯤은 말이야❤」
+			PRINTFORMW 「えいっ❤　えいっ❤　普段やられっぱなしだからこういう時くらいはねぇ？❤」
 		CASE 4
-PRINTFORMW 「어때? 기분 좋아?❤ 빨리 싸 줘❤ 정액 잔뜩 싸서 나를 하얗게 물들여 주세요❤」
+			PRINTFORMW 「どう？気持ちいい？❤　はやく出してぇ❤　정액いっぱい出して私を白く染めてぇっ❤」
 		CASE 5
-PRINTFORMW 「정액 줘❤ 주인님의 포상 정액, 많이 주세요❤❤」
+			PRINTFORMW 「정액頂戴っ❤　マスターのご褒美ザーメン、たくさん頂戴っ❤❤」
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -168,10 +184,11 @@ IF LOCAL
 	;-------------------------------------------------
 	;初めて
 	;記入チェック
-	LOCAL:1 = 0
+	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
-		PRINTFORMW 
+		PRINTFORMW 「ええっと……　太ももで挟んでしごく……？
+		PRINTFORMW 　……直接질내に삽입れれば良いのに、なんでこんなことして欲しいのかなぁ……」
 		RETURN 1
 	ENDIF
 	;基本セット
@@ -184,18 +201,18 @@ IF LOCAL
 		호감도修正 += 0
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-PRINTFORMW 「에잇❤ 꽉~❤ 내 허벅지 기분 좋지❤」
+			PRINTFORMW 「えいっ❤　ぎゅーっ❤　私のふともも気持ちいいでしょ❤」
 		CASE 2
-PRINTFORMW 「아앗❤ 자지 뜨거워❤ 내 허벅지, 데일 것 같아……❤❤」
+			PRINTFORMW 「ああっ❤　おちんぽ熱い❤　私のふともも、やけどしちゃいそぉ……❤❤」
 		CASE 3
-PRINTFORMW 「주인님❤ 스마타 말고 보지에 넣어 줬으면 좋겠어요❤❤」
-PRINTFORMW 「제 천한 암컷 보지 준비되어 있으니까요❤❤ 외로워서 애액이 멈추지 않아용❤❤❤」
+			PRINTFORMW 「マスター……っ❤　스마타じゃなくてさぁ❤　おまんこに挿れて欲しいなぁ……っ❤❤
+			PRINTFORMW 　私の雑魚雌おまんこ準備出来てるからぁ❤❤　寂しくって愛液が止まらにゃいのぉ❤❤❤」
 	ENDSELECT
 ENDIF
 RETURN 1
 
 ;==================================================
-;84,거품춤
+;84,泡踊り
 ;==================================================
 @M_KOJO_MESSAGE_COM_K11326_84
 CALL TRAIN_MESSAGE
@@ -217,7 +234,7 @@ IF LOCAL
 	LOCAL:1 = 0
 	;-------------------------------------------------
 	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
-		PRINTFORMW 
+		PRINTFORMW 作成者「泡踊り……？（ガチ困惑）」
 		RETURN 1
 	ENDIF
 	;基本セット
@@ -254,9 +271,61 @@ IF LOCAL
 	;-------------------------------------------------
 	;初めて
 	;記入チェック
-	LOCAL:1 = 0
+	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
+		PRINTFORMW 「ふーん？❤　足でして欲しいんだぁ……？❤　マスターってもしかして마조なのかなぁ？❤」
+		RETURN 1
+	ENDIF
+	;基本セット
+	호감도修正 = 3
+	SIF TALENT:TARGET:애처
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 == 2
+		호감도修正 += 0
+	SIF TALENT:TARGET:연모 >= 1
+		호감도修正 += 0
+	SELECTCASE RAND:호감도修正 + 1
+		CASE 1
+			PRINTFORMW 「んっ、難しいなぁ……　どう？気持ちいい？　良くなかったらすぐに言ってね？❤」
+		CASE 2
+			PRINTFORMW 「ほらほら❤　足でいっぱいしてあげるから、気持ちよくなったらいっぱい出しちゃってね❤」
+		CASE 3
+			PRINTFORMW 「あっ❤　おちんぽビクビクしてる……❤　そのままい～っぱい出していいんだよ❤❤」
+	ENDSELECT
+ENDIF
+RETURN 1
+
+;==================================================
+;86,スクワット
+;TEQUIP:TARGET:Ｖ섹스 == MASTER (男性器を軸にする
+;TEQUIP:딜도（딜도を軸にする
+;==================================================
+@M_KOJO_MESSAGE_COM_K11326_86
+CALL TRAIN_MESSAGE
+CALL M_KOJO_MESSAGE_COM_K11326_86_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K11326_86_1
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;파생
+	;記入チェック
+	LOCAL:1 = 0
+	;-------------------------------------------------
+	;기승위スクワット
+	IF LOCAL:1 && TEQUIP:TARGET:Ｖ섹스 == MASTER
+		PRINTFORMW 
+		RETURN 1
+	;딜도軸スクワット
+	ELSEIF LOCAL:1 && TEQUIP:딜도
 		PRINTFORMW 
 		RETURN 1
 	ENDIF
@@ -270,11 +339,11 @@ IF LOCAL
 		호감도修正 += 0
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-PRINTFORMW 「읏, 어렵네…… 어때? 기분 좋아? 안 좋으면 바로 말해 줘?❤」
+			PRINTFORMW 
 		CASE 2
-PRINTFORMW 「자자❤ 발로 잔뜩 해 줄 테니까, 기분 좋아지면 잔뜩 싸 버려❤」
+			PRINTFORMW 
 		CASE 3
-PRINTFORMW 「앗❤ 자지 흠칫거려……❤ 그대로 잔~뜩 싸도 돼❤❤」
+			PRINTFORMW 
 	ENDSELECT
 ENDIF
 RETURN 1

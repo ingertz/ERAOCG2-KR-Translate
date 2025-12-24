@@ -57,11 +57,11 @@ PRINTL 이 카드를 패에서 특수 소환한다.
 CALLFORM CARD_ABLE(2,소환時,특수소환時)
 PRINTL ②: 이 카드가 소환 / 특수 소환했을 경우에 발동할 수 있다.
 PRINTL EX덱에서 레벨 6 이상의 『렵수』인 몬스터 1장을 묘지로 보낸다.
-PRINTL 이 효과의 발동 후, 턴 종료 시까지 자신은 EX덱에서 몬스터를 특수 소환할 수 없다.
+PRINTL 이 효과의 발동 후, 턴 종료 시까지 자신은 EX덱에서 『렵수』인 몬스터를 특수 소환할 수 없다.
 ;サポ-トは任せて～。속성開放で麻痺효과
 CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
 PRINTL ③: 서로의 턴에 1번, 상대 필드의 『렵수』인 몬스터 1장을 대상으로 발동할 수 있다.
-PRINTL 그 몬스터를 수비 표시로 한다. 그 몬스터는 다음 페이즈까지 효과를 무효로 한다.
+PRINTL 그 몬스터의 효과를 다음 페이즈까지 무효로 하고, 공격 표시라면 수비 표시로 한다.
 
 @CARDCAN_4820(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -142,10 +142,12 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	IF RESULT == 0
 		CALL FULLRESET
 		CALL SET_MONSTER_HUNTER
-
+		효과条件종류 = レベル持ち
 		CALL 효과条件レベル_ADV(6, "以上")
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
-		CALL SET_PLAYER_INFO(듀얼리스트,"EX制限",2)
+
+		CALL SET_MONSTER_HUNTER_EX
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
 	ENDIF
 ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4820,10)
@@ -168,3 +170,17 @@ ENDIF
 효과条件종족:6 = 미확인족
 효과条件종족:7 = 원소정령족
 효과条件종족:8 = 곤충족
+
+
+@SET_MONSTER_HUNTER_EX
+EX소환可能종족:0 = 마법사족
+EX소환可能종족:1 = 언데드족
+EX소환可能종족:2 = 전사족
+EX소환可能종족:3 = 기계족
+EX소환可能종족:4 = 천사족
+EX소환可能종족:5 = 식물족
+EX소환可能종족:6 = 사이킥족
+EX소환可能종족:7 = 사이버스족
+EX소환可能종족:8 = 환신야수족
+
+

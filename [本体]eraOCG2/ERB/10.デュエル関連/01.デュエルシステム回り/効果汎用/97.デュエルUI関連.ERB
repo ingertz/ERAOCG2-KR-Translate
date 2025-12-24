@@ -1433,6 +1433,8 @@ IF 種別 == "戦闘" || 種別 == "直接戦闘"
 
 			PRINTFORMW 대미지가 반사되어、%対面者%의 라이프가 {変動値}포인트 줄었습니다。
 			SETVAR @"ライフ_%対面者%", GETVAR(@"ライフ_%対面者%") - 変動値
+			SETVAR @"%対面者%_LPD이력", GETVAR(@"%対面者%_LPD이력") + 変動値
+			SETVAR @"%対面者%_LPL이력", GETVAR(@"%対面者%_LPL이력") + 変動値
 			IF 種別 == "戦闘"
 				CALL CARD_FIN_BIT_SET(듀얼리스트,"戦闘",3)
 			ELSEIF 種別 == "直接戦闘" 
@@ -1459,6 +1461,10 @@ IF 種別 == "戦闘" || 種別 == "直接戦闘"
 			PRINTFORMW 대미지가 반사되어、서로의 라이프가 {変動値}포인트 줄었습니다。
 			SETVAR @"ライフ_%対面者%", GETVAR(@"ライフ_%対面者%") - 変動値
 			SETVAR @"ライフ_%대상者%", GETVAR(@"ライフ_%대상者%") - 変動値
+			SETVAR @"%対面者%_LPD이력", GETVAR(@"%対面者%_LPD이력") + 変動値
+			SETVAR @"%対面者%_LPL이력", GETVAR(@"%対面者%_LPL이력") + 変動値
+			SETVAR @"%대상者%_LPD이력", GETVAR(@"%대상者%_LPD이력") + 変動値
+			SETVAR @"%대상者%_LPL이력", GETVAR(@"%대상者%_LPL이력") + 変動値
 
 			IF 種別 == "戦闘"
 				CALL CARD_FIN_BIT_SET(듀얼리스트,"戦闘",3)
@@ -1486,6 +1492,8 @@ IF 種別 == "戦闘" || 種別 == "直接戦闘"
 
 			PRINTFORMW %대상者%의 라이프가 {変動値}포인트 줄었습니다。
 			SETVAR @"ライフ_%대상者%", GETVAR(@"ライフ_%대상者%") - 変動値
+			SETVAR @"%대상者%_LPD이력", GETVAR(@"%대상者%_LPD이력") + 変動値
+			SETVAR @"%대상者%_LPL이력", GETVAR(@"%대상者%_LPL이력") + 変動値
 			IF 種別 == "戦闘"
 				CALL CARD_FIN_BIT_SET(듀얼리스트,"戦闘",3)
 			ELSEIF 種別 == "直接戦闘" 
@@ -1511,6 +1519,8 @@ IF 種別 == "戦闘" || 種別 == "直接戦闘"
 
 		PRINTFORMW %대상者%의 라이프가 {変動値}포인트 회복되었습니다。
 		SETVAR @"ライフ_%대상者%", GETVAR(@"ライフ_%대상者%") + 変動値
+		SETVAR @"%대상者%_LPH이력", GETVAR(@"%대상者%_LPH이력") + 変動値
+
 			IF 대상者 == "상대"
 				CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,11)
 			ENDIF
@@ -1539,6 +1549,8 @@ ELSEIF 種別 == "효과"
 			PRINTFORM　　　　　　【대미지 반사！！】
 			PRINTFORMW 대미지가 반사되어、%対面者%의 라이프가 {変動値}포인트 줄었습니다。
 			SETVAR @"ライフ_%対面者%", GETVAR(@"ライフ_%対面者%") - 変動値
+			SETVAR @"%対面者%_LPD이력", GETVAR(@"%対面者%_LPD이력") + 変動値
+			SETVAR @"%対面者%_LPL이력", GETVAR(@"%対面者%_LPL이력") + 変動値
 			IF 対面者 == "상대"
 				CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,10,変動値)
 			ENDIF
@@ -1552,6 +1564,8 @@ ELSEIF 種別 == "효과"
 			ENDIF
 			PRINTFORMW 효과로 %대상者%의 라이프가 {変動値}포인트 줄었습니다。
 			SETVAR @"ライフ_%대상者%", GETVAR(@"ライフ_%대상者%") - 変動値
+			SETVAR @"%対面者%_LPD이력", GETVAR(@"%対面者%_LPD이력") + 変動値
+			SETVAR @"%対面者%_LPL이력", GETVAR(@"%対面者%_LPL이력") + 変動値
 			CALL CARD_FIN_BIT_SET(듀얼리스트,"효과",3)
 			IF 대상者 == "상대"
 				CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,10,変動値)
@@ -1566,12 +1580,16 @@ ELSEIF 種別 == "효과"
 			CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,11)
 		ENDIF
 		SETVAR @"ライフ_%대상者%", GETVAR(@"ライフ_%대상者%") + 変動値
+		SETVAR @"%대상者%_LPH이력", GETVAR(@"%대상者%_LPH이력") + 変動値
+
 		SETVAR @"%대상者%_変動値_保" , 変動値
 		SETVAR @"%대상者%_회복者_保" , 1
 	ENDIF
 ELSEIF 種別 == "コスト"
 	PRINTFORMW %대상者%는 라이프 코스트를 {変動値}포인트 지불했습니다。
 	SETVAR @"ライフ_%대상者%", GETVAR(@"ライフ_%대상者%") - 変動値
+	SETVAR @"%대상者%_LPL이력", GETVAR(@"%대상者%_LPL이력") + 変動値
+
 	CALL CARD_FIN_BIT_SET(듀얼리스트,"コスト",3)
 	TRYCALLFORM CARD_{処理中_효과ID}("종족")
 	SIF RESULT == 사이킥족
@@ -1631,7 +1649,7 @@ ENDIF
 SIF ライフ_자신 <= 0
 	자신_듀얼패배플래그 = 1
 IF ライフ_상대 <= 0
-	IF ERA起動 != 2
+	IF ERA起動 <= 1
 		상대_듀얼패배플래그 = 1
 	ENDIF
 ENDIF
@@ -3291,7 +3309,7 @@ ELSE
 ENDIF
 PRINTFORM 　┏──%"",20%
 SETCOLOR C_L_BLUE
-名前ボタン = 【%CALLNAME:MASTER,17,LEFT%】
+名前ボタン = 【%CALLNAME:MASTER,20,LEFT%】
 PRINTBUTTON @"%名前ボタン%",1101
 
 IF ターンプレイヤー == "자신"
@@ -3300,7 +3318,7 @@ ELSE
 	SETCOLOR C_L_RED
 ENDIF
 ;8削減
-PRINTFORM ——————— ／
+PRINTFORM ———— ／
 IF 자신_フィールド名 != "" && 상대_フィールド名 != ""
 	SETCOLOR C_L_BLUE
 	SUBSTRING 자신_フィールド名, 0, 12
@@ -3334,13 +3352,13 @@ PRINTFORM
 SETCOLOR C_L_RED
 IF OPPOSER == -1
 	IF OPPOSER名 != ""
-		名前ボタン = 【%OPPOSER名,17,LEFT%】
+		名前ボタン = 【%OPPOSER名,20,LEFT%】
 	ELSE
-		名前ボタン = 【OPPOSER　　　　　】
+		名前ボタン = 【OPPOSER　　   　　　】
 	ENDIF
 	PRINTBUTTON @"%名前ボタン%",1100
 ELSE
-	名前ボタン = 【%CALLNAME:OPPOSER,17,LEFT%】
+	名前ボタン = 【%CALLNAME:OPPOSER,20,LEFT%】
 	PRINTBUTTON @"%名前ボタン%",1100
 ENDIF
 
@@ -3349,7 +3367,7 @@ IF ターンプレイヤー == "자신"
 ELSE
 	SETCOLOR C_L_RED
 ENDIF
-PRINTFORM —————————┓　
+PRINTFORM ——————┓　
 
 IF ターンプレイヤー == "자신"
 	SETCOLOR C_L_BLUE
@@ -3378,12 +3396,12 @@ PRINTFORM 　┣──%"",20%
 
 SETCOLOR C_L_BLUE
 IF ライフ_자신 >= 99999
-	PRINTBUTTON @"【PLAYER  LP:99999+】",1101
+	PRINTBUTTON @"【PLAYER  LP:99999999+】",1101
 ;	PRINTFORM 【PLAYER  LP:99999+】
 ELSE
 	SIF ライフ_자신 <= 2000
 		SETCOLOR C_RED
-	PRINTBUTTON @"【PLAYER  LP:{ライフ_자신,6}】",1101
+	PRINTBUTTON @"【PLAYER  LP:{ライフ_자신,9}】",1101
 ;	PRINTFORM 【PLAYER  LP: {ライフ_자신,5}】
 ENDIF
 
@@ -3392,7 +3410,7 @@ RESETCOLOR
 IF ターンプレイヤー == "자신"
 	SETCOLOR C_L_BLUE
 ;	PRINTFORM ——————————————— │
-	PRINTFORM —————— │
+	PRINTFORM ——— │
 
 	FONTSTYLE 8
 	PRINTFORM  TURN【{ターン数,2}】/【PLAYER  TURN】
@@ -3401,7 +3419,7 @@ IF ターンプレイヤー == "자신"
 ELSE
 	SETCOLOR C_L_RED
 ;	PRINTFORM ——————————————— │
-	PRINTFORM —————— │
+	PRINTFORM ——— │
 	FONTSTYLE 8	
 	PRINTFORM  TURN【{ターン数,2}】/【OPPOSER TURN】
 	FONTSTYLE 0
@@ -3410,15 +3428,15 @@ ENDIF
 RESETCOLOR
 SETCOLOR C_L_RED
 IF ライフ_상대 >= 99999
-	PRINTBUTTON @"【OPPOSER LP:99999+】",1100
+	PRINTBUTTON @"【OPPOSER LP:99999999+】",1100
 ELSEIF ライフ_상대 <= -99999
-	PRINTBUTTON @"【OPPOSER LP:-99999】",1100
+	PRINTBUTTON @"【OPPOSER LP:-99999999】",1100
 
 ELSE
 	SIF ライフ_상대 <= 2000
 		SETCOLOR C_RED
 
-	PRINTBUTTON @"【OPPOSER LP:{ライフ_상대,6}】",1100
+	PRINTBUTTON @"【OPPOSER LP:{ライフ_상대,9}】",1100
 ENDIF
 IF ターンプレイヤー == "자신"
 	SETCOLOR C_L_BLUE
@@ -3426,7 +3444,7 @@ ELSE
 	SETCOLOR C_L_RED
 ENDIF
 ;PRINTFORM ———————————┫　
-PRINTFORM —————————┫　
+PRINTFORM ——————┫　
 
 IF ターンプレイヤー == "자신"
 	SETCOLOR C_L_BLUE
@@ -3456,12 +3474,13 @@ PRINTFORM 　┗──%"",20%
 SETCOLOR C_L_BLUE
 PRINTFORM 【
 CALL XON_FONT("덱")
-PRINTFORM :{現山札数("자신"),2}/
+PRINTFORM :{現山札数("자신"),2}
 CALL XON_FONT("손패")
-PRINTFORM :{손패数("자신"),2}/
+PRINTFORM :{손패数("자신"),2}
 CALL XON_FONT("묘지")
-PRINTFORM :{묘지数("자신"),2}】
-
+PRINTFORM :{묘지数("자신"),2}
+CALL XON_FONT("제외")
+PRINTFORM :{제외数("자신"),2}】
 
 
 IF ターンプレイヤー == "자신"
@@ -3470,8 +3489,7 @@ ELSE
 	SETCOLOR C_L_RED
 ENDIF
 
-PRINTFORM ——————— ＼
-
+PRINTFORM ———— ＼
 FONTSTYLE 8
 PRINTFORM —————【
 
@@ -3505,11 +3523,13 @@ PRINTFORM ／──%"",20%
 SETCOLOR C_L_RED
 PRINTFORM 【
 CALL XON_FONT("덱")
-PRINTFORM :{現山札数("상대"),2}/
+PRINTFORM :{現山札数("상대"),2}
 CALL XON_FONT("손패")
-PRINTFORM :{손패数("상대"),2}/
+PRINTFORM :{손패数("상대"),2}
 CALL XON_FONT("묘지")
-PRINTFORM :{묘지数("상대"),2}】
+PRINTFORM :{묘지数("상대"),2}
+CALL XON_FONT("제외")
+PRINTFORM :{제외数("상대"),2}】
 RESETCOLOR
 
 IF ターンプレイヤー == "자신"
@@ -3517,7 +3537,7 @@ IF ターンプレイヤー == "자신"
 ELSE
 	SETCOLOR C_L_RED
 ENDIF
-PRINTFORM —————————┛　
+PRINTFORM ——————┛　
 
 IF ターンプレイヤー == "자신"
 	SETCOLOR C_L_BLUE
@@ -4044,6 +4064,9 @@ SIF 묘지起動可 || EX起動可
 PRINTPLAINFORM ┗━━━━━━━━━━┛
 RESETCOLOR
 PRINTL
+
+
+
 ;PRINTFORML チェック！C　효과条件カテゴリ：%효과条件カテゴリ%
 IF 설정플래그 == 0
 	IF G_イベ起動 >= 1
@@ -4069,6 +4092,11 @@ IF 설정플래그 == 0
 			TRYCALLFORM DUEL_MESSAGE("자신")
 		CUSTOMDRAWLINE —
 	ENDIF
+ENDIF
+
+IF ERA起動 == 3
+	PRINTL 　　[9001] - 서치/회수　　　　　　　[9004] - 묘지 보내기 처리　　　　 [9005] - 상대 묘지 보내기 처리　　　　 
+	PRINTL 　　[9007] - 몬스터 소환　　　　 　[9008] - 상대 몬스터 소환　　 [9020] - 고문 대상 소환　　
 ENDIF
 IF デバッグコマンド == 1 && 설정플래그 == 0
 	PRINTFORML 
@@ -4332,9 +4360,7 @@ ELSEIF RESULT == 9008
 	CALL CARD_CHOOSE_ADV("자신")
 	選択カード = RESULT
 	;돌아간다
-	IF 選択カード == 9999
-
-	ELSE
+	IF 選択カード != 9999
 		選択カード -= 2000
 		PRINTL 표시형식선택：
 		PRINTL 
@@ -4387,6 +4413,32 @@ ELSEIF RESULT == 9010
 			PRINTFORML 『{カウンタ}』 - %RESULTS%　PASS！
 		NEXT
 	NEXT
+ELSEIF RESULT == 9020
+	CALL MONSTER_LIST(32)
+	選択カード = RESULT
+	;戻る
+	IF 選択カード != -1
+		選択カード = NO:選択カード
+		TRYCALLFORM CARD_UI(選択カード)
+		PRINTL 표시 형식 변경：
+		PRINTL 
+		PRINTL 　[1] - 공격표시
+		PRINTL 　[2] - 수비표시
+		PRINTL 　[3] - 뒷면표시
+		PRINTL 
+		BINPUT 
+		IF RESULT == 1
+			표시形式 = 攻撃표시
+		ELSEIF RESULT == 2
+			표시形式 = 守備표시
+		ELSEIF RESULT == 3
+			표시形式 = 裏側守備표시
+		ENDIF
+		CALL FULLRESET
+		효과추가종류:0 = 1
+		효과추가종류:1 = 695
+		CALL CARD_GENERATE("상대",選択カード,표시形式)
+	ENDIF
 ELSEIF RESULT == 9011
 	ライフ_자신 = 8000
 	ライフ_상대 = 8000
@@ -4623,7 +4675,7 @@ ELSE
 			VARSET 攻撃誘導플래그
 			;攻撃モンスター選択
 			CUSTOMDRAWLINE —
-			PRINTFORML 「공격 몬스터 선택 화면」
+			PRINTFORML 「공격 몬스터 선택」
 			CUSTOMDRAWLINE —
 			PRINTL
 			FOR カウンタ,0,5

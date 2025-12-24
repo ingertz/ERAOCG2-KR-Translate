@@ -1,0 +1,143 @@
+﻿@CARDNAME_65330,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 퀸즈 블레이드
+	CASE "略称"
+		RESULTS = 미투사결투
+	CASE "カテゴリ"
+		RESULTS:0 = 미투사
+	CASE "出典作品"
+		RESULTS:0 = 퀸즈 블레이드
+ENDSELECT
+
+@CARD_65330(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 251215
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_65330(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名のカードは１ターンに１枚までしか발동できず、
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動, 손패起動)
+PRINTL ①：このカードの발동処理として、덱から「미투사」モンスターを２体まで손패に加える。
+PRINTL その後、자신の손패のカードを１枚を덱の一番上に置く。
+
+CALLFORM CARD_ABLE(2,攻撃後誘発)
+PRINTL ②：자신の「미투사」モンスターが戦闘を行ったダメージ計算後に발동する。
+PRINTL カードを２枚ドローし、손패からカードを２枚덱の一番上と下に置く。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：お互いに「미투사」モであるモンスターは破壊耐性を得る。
+
+@CARDCAN_65330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,65330)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,65330)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF 발동済_2(듀얼리스트,36005)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF !MATCH(RESULTS,"미투사")
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_65330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード,10
+#DIM DYNAMIC ランダム
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65330,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 미투사
+		효과条件종류 = モン全般
+		효과条件複数 = 98
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+
+
+		CALL FULLRESET
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_ADD_DECK_SPC(듀얼리스트,"손패",RESULT)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65330,2)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,2)
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_ADD_DECK_SPC(듀얼리스트,"손패",RESULT)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	효과条件カテゴリ = 미투사
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+ENDIF

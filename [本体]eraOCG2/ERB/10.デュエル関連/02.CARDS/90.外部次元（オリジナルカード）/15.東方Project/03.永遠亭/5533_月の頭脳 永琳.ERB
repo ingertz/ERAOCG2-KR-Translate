@@ -63,9 +63,8 @@ PRINTL ②：이 카드가 마법＆함정 존에 존재하고、
 PRINTL 필드의 이 카드명 이외의 카드의 효과를 발동했을 때에 발동할 수 있다。
 PRINTL 이 카드를 마법＆함정 존에서 특수 소환한다。
 CALL TEXT_DECORATION("P_MAGIC_2")
-PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
-CALLFORM CARD_ABLE(1,발동誘発)
-PRINTL ①：이 카드가 몬스터 존에 존재하고、
+CALLFORM CARD_ABLE(10,발동誘発)
+PRINTL ①：１턴에 １번、이 카드가 몬스터 존에 존재하고、
 PRINTL 필드의 이 카드명 이외의 카드의 효과를 발동했을 때에 발동할 수 있다。
 PRINTL 이 카드 이외의 상대 필드의 카드 １장을 파괴한다
 
@@ -126,7 +125,7 @@ ELSEIF 종류 == 발동誘発
 		SIF RESULT == 1
 			RETURN 0
 	ELSEIF ゾーン == "필드"
-		SIF 발동済_1(듀얼리스트,52562)
+		SIF 효과발동済(듀얼리스트,場所,ゾーン)
 			RETURN 0
 		CALL FULLRESET
 		효과範囲필드 = 1
@@ -184,7 +183,7 @@ ELSEIF 종류 == 발동誘発
 			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ELSEIF ゾーン == "필드"
-		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5533,1)
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5533,10)
 		IF RESULT == 0
 			CALL FULLRESET
 			효과範囲상대필드 = 1

@@ -1,0 +1,228 @@
+﻿@CARDNAME_58350,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 지혜의 샘 에바
+	CASE "略称"
+		RESULTS = 지혜의 샘 에바
+	CASE "カテゴリ"
+		RESULTS:0 = 에바
+		RESULTS:1 = 황구자
+		RESULTS:2 = 브랜트 게이트
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_58350(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_58350(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+	必要링크数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 에바
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,58350) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_58350(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「에바」モンスターを含むモンスター２体
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがＬ소환した場合に발동できる。
+PRINTL 덱から「에바」마법・함정カード１枚を손패に加える。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：지속마법・モンスターの효과が발동した場合に、
+PRINTL 자신の손패・마법＆함정ゾーン（表側표시）のカード１枚を묘지に送って발동できる。
+PRINTL 덱・손패から「옵스크데이트」モンスター１体を특수소환する。
+CALLFORM CARD_ABLE(3,필드起動)
+PRINTL ③：このターンに자신が『超越』しておらず、かつ지속마법カードが３枚以上存在する場合に、
+PRINTL 자신フィールドの表側표시の지속마법カード１枚を묘지に送って발동できる。
+PRINTL ＥＸ덱の「포이즌 인 파라다이스 에바」１体をこのカードに『超越』する。
+PRINTL （この효과は先攻１ターン目にも발동できる）
+CALL TEXT_DECORATION_GRITTER_V
+
+@CARDCAN_58350(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,58350)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,58350)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 에바
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,58350)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件スーパー종류 = 지속마법
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",2)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과条件カテゴリ = 옵스크데이트
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_3(듀얼리스트,58350)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_超越済") != 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件종류 = 지속마법
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트)
+	SIF RESULT < 3
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件名前 = 포이즌 인 파라다이스 에바
+	CALL CARD_CHECK_ADV(듀얼리스트)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_58350(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58350,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 에바
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58350,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲마함 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲손패 = 1
+			효과条件カテゴリ = 옵스크데이트
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+ 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,58350,3)
+ 	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件표시 = 表側표시
+		효과条件종류 = 지속마법
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+			CALL FULLRESET
+			효과条件名前 = 포이즌 인 파라다이스 에바
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			IF RESULT != 9999
+				選択カード = RESULT
+				選択カードID = 58350
+				CALL CARD_LOADUP
+				PRINTFORML
+				PRINTFORML
+				PRINTFORML 超越《ストライド》、ジェネレーション！
+				RESETCOLOR
+				CALL PRINT_STATE_DUEL(選択カードID)
+				CALL FULLRESET
+				CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",選択カード,"攻撃표시")
+				SETVAR @"%듀얼리스트%_MZ_変化元ID:カード소환先", 選択カードID
+				CALL SET_PLAYER_INFO(듀얼리스트,"超越済",1)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

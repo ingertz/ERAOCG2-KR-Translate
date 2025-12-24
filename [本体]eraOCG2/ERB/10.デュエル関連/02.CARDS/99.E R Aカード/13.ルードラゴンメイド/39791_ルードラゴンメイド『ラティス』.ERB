@@ -72,6 +72,8 @@ CALL CARD_ABLE(2,ターン開始時)
 PRINTL ②：자신 / 상대의 스탠바이 페이즈에 발동할 수 있다。
 PRINTL 이 카드의 Ｘ소재를 １개 늘리는 것으로、자신 묘지의 카드 １장을 패로 되돌린다。
 PRINTL 이 카드가 각성 상태일 경우、추가로 자신의 제외상태인 카드 １장을 묘지로 보낸다。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ③：몬스터 존의 이 카드는 Ａ소환의 릴리스 및 EX덱 몬스터의 소재로 할 수 없다。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -127,6 +129,10 @@ ELSEIF 종류 == ターン開始時
 	효과範囲묘지 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -264,5 +270,7 @@ ELSEIF 종류 == ターン開始時
 			CALL CARD_ADD_GY_BASIC(듀얼리스트,"제외",ゾーン,場所)
 		ENDIF
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
 ENDIF
 

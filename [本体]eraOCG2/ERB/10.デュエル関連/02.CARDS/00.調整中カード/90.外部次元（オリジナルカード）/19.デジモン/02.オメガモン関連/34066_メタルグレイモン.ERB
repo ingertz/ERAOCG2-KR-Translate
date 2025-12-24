@@ -1,0 +1,268 @@
+﻿@CARDNAME_34066,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 메탈그레이몬
+	CASE "略称"
+		RESULTS = 메탈그레이몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34066(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 1700
+	CASE "レア度"
+		RETURN SPR
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34066(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①②③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ①：このカードが특수소환した場合に발동できる。
+PRINTL 자신の묘지に存在する비늘야수족「디지몬」モンスターの数だけ상대フィールドのカードを破壊することができる。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신の묘지の비늘야수족「디지몬」モンスターを１体を제외し、상대フィールドの表側표시のモンスターを１体を대상として발동できる。
+PRINTL そのモンスターを破壊する。
+CALLFORM CARD_ABLE(3,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに발동することができる。
+PRINTL このカードを묘지に送り、손패からレベル９・１０の비늘야수족「디지몬」モンスター１体を특수소환する。
+PRINTL 
+
+@CARDCAN_34066(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 발동불가,2
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34066)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,34066)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 비늘야수족
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,34066)
+		발동불가:0 = 1
+	SIF 발동済_3(듀얼리스트,34066)
+		발동불가:1 = 1
+	SIF ターンプレイヤー != 듀얼리스트
+		발동불가:0 = 1
+	SIF メインフェイズ != 1
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 비늘야수족
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ= 디지몬
+	효과条件종류 = モン全般
+	효과条件종족 = 비늘야수족
+	효과条件レベル:0 = 9
+	효과条件レベル:1 = 10
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34066(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 破壊횟수
+#DIM DYNAMIC 발동불가,2
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34066,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 비늘야수족
+		효과条件カテゴリ = 디지몬
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		破壊횟수 = RESULT
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件複数 = 100 - 破壊횟수
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34066)
+	IF RESULT == 0
+		SIF 발동済_2(듀얼리스트,34066)
+			발동불가:0 = 1
+		SIF 발동済_3(듀얼리스트,34066)
+			발동불가:1 = 1
+		SIF ターンプレイヤー != 듀얼리스트
+			발동불가:0 = 1
+		SIF メインフェイズ != 1
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 비늘야수족
+		효과条件カテゴリ = 디지몬
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		효과条件除去種 = 묘지
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ= 디지몬
+		효과条件종류 = モン全般
+		효과条件종족 = 비늘야수족
+		효과条件レベル:0 = 9
+		효과条件レベル:1 = 10
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+
+		IF 듀얼리스트 == "자신"
+			PRINTL 효과を選択してください
+			PRINTL
+			IF 발동불가:0 != 1
+				PRINTL [0] - ●상대フィールドの表側표시のモンスターを１体を破壊する。
+			ELSE
+				SETCOLOR C_GRAY
+				PRINTL ［X］- 발동条件を満たしていません！
+				RESETCOLOR
+			ENDIF
+			IF 발동불가:1 != 1
+				PRINTL [1] - ●손패から비늘야수족「究極体」モンスター１体を특수소환する。
+			ELSE
+				SETCOLOR C_GRAY
+				PRINTL ［X］- 발동条件を満たしていません！
+				RESETCOLOR
+			ENDIF
+			BINPUT
+		ELSE
+			IF 발동불가:1 != 1
+				RESULT = 1
+			ELSEIF 발동불가:0 != 1
+				RESULT = 0
+			ENDIF
+		ENDIF
+
+		IF RESULT == 0
+			CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34066,2)
+			IF RESULT == 0
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件종족 = 비늘야수족
+				효과条件カテゴリ = 디지몬
+				효과条件行先플래그 = 제외行き
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과条件표시 = 表側표시
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+				ENDIF
+			ENDIF
+		ELSEIF RESULT == 1
+			CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34066,3)
+			IF RESULT == 0
+				CALL FULLRESET
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲손패 = 1
+					효과条件カテゴリ= 디지몬
+					효과条件종류 = モン全般
+					효과条件종족 = 비늘야수족
+					효과条件レベル:0 = 9
+					효과条件レベル:1 = 10
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

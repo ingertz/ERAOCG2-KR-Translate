@@ -1430,6 +1430,7 @@ ELSE
 	;1 = 通常のSS
 	;2 = 場を開けた上でのSS
 	;3 = 마법함정のSS
+	;4 = 상대フィールドへのSS
 	IF 효과条件소환可 > 0
 		IF 효과条件特不無視 == 0
 			VARSET RESULT
@@ -1444,6 +1445,10 @@ ELSE
 						RETURN 戻り値
 				ELSEIF 효과条件소환可 == 2
 					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
+					SIF RESULT == 1
+						RETURN 戻り値
+				ELSEIF 효과条件소환可 == 4
+					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
 					SIF RESULT == 1
 						RETURN 戻り値
 				ENDIF
@@ -1490,6 +1495,10 @@ ELSE
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
 						SIF RESULT == 1
 							RETURN 戻り値
+					ELSEIF 효과条件소환可 == 4
+						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
+						SIF RESULT == 1
+							RETURN 戻り値
 					ENDIF
 				ENDIF
 			ELSE
@@ -1508,6 +1517,10 @@ ELSE
 					RETURN 戻り値
 			ELSEIF 효과条件소환可 == 2
 				CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
+				SIF RESULT == 1
+					RETURN 戻り値
+			ELSEIF 효과条件소환可 == 4
+				CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
 				SIF RESULT == 1
 					RETURN 戻り値
 			ENDIF
@@ -1943,6 +1956,11 @@ IF 参照先 != "필드"
 					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
 					SIF RESULT == 1
 						RETURN 0
+
+				ELSEIF 효과条件소환可 == 4
+					CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
+					SIF RESULT == 1
+						RETURN 0
 				ENDIF
 			ELSEIF INRANGE(RESULT,3,10)
 				IF RESULT == 의식
@@ -1983,6 +2001,11 @@ IF 参照先 != "필드"
 						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,1)
 						SIF RESULT == 1
 							RETURN 0
+					ELSEIF 효과条件소환可 == 4
+						CALL CARD_SS_CHECK(듀얼리스트,설정カードID,参照先,0,1)
+						SIF RESULT == 1
+							RETURN 0
+							
 					ENDIF
 				ENDIF
 			ELSE

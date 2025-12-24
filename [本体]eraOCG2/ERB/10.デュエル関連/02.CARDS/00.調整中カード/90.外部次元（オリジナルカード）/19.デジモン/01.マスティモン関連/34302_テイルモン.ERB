@@ -1,0 +1,243 @@
+﻿@CARDNAME_34302,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 가트몬
+	CASE "略称"
+		RESULTS = 가트몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34302(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251130
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34302(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬 카드는 사이버스족으로도 취급한다。
+PRINTL 이 카드명의 ①②③의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL またこのカードの①の효과は자신フィールドのレベル３・４の빛속성
+PRINTL 「디지몬」モンスター１体をリリースして발동することもできる。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신メインフェイズに발동することができる。
+PRINTL このカードを손패から특수소환する。
+PRINTL モンスターをリリースせずこの효과を발동した場合、상대は덱からカードを１枚ドローする。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환に成功した時に발동できる。
+PRINTL 덱からレベル８以下の「가트몬」以外の光・어둠속성「디지몬」モンスターをそれぞれ１体ずつ묘지へ送る。
+CALLFORM CARD_ABLE(3,묘지起動,フリー誘発)
+PRINTL ③：このカードが묘지に存在する場合、상대メインフェイズに발동することができる。
+PRINTL 자신の묘지に存在する「가트몬」以外の光・어둠속성「디지몬」モンスターをそれぞれ１体ずつ덱に戻す。
+PRINTL その後、このカードを효과を無効にして특수소환し、お互いのプレイヤーに５００ポイントのダメージを与える。
+PRINTL 
+
+@CARDCAN_34302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34302)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,34302)
+		RETURN 0
+
+	CALL FULLRESET
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(듀얼리스트,34302,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,34302)
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 빛속성
+	CALL 효과条件レベル_ADV(8, "以下")
+	효과条件カテゴリ= 디지몬
+	효과条件固名前 = 가트몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 어둠속성
+	CALL 효과条件レベル_ADV(8, "以下")
+	효과条件カテゴリ= 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+		
+	RETURN 1
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	SIF 발동済_3(듀얼리스트,34302)
+		RETURN 0
+
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 対面者
+		RETURN 0
+
+	CALL FULLRESET
+	SIF ゾーン != "묘지"
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(듀얼리스트,34302,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 빛속성
+	효과条件カテゴリ= 디지몬
+	효과条件固名前 = 가트몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	효과条件カテゴリ= 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34302,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件속성 = 빛속성
+		효과条件レベル:0 = 3
+		효과条件レベル:1 = 4
+		효과条件カテゴリ= 디지몬
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 = 1
+
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		IF 条件달성 < 1
+			CALL FULLRESET
+			CALL CARDDRAW_BASIC(対面者,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34302,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件속성 = 빛속성
+		CALL 효과条件レベル_ADV(8, "以下")
+		효과条件カテゴリ= 디지몬
+		효과条件固名前 = 가트몬
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件속성 = 어둠속성
+		CALL 효과条件レベル_ADV(8, "以下")
+		효과条件カテゴリ= 디지몬
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34303,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 빛속성
+		효과条件カテゴリ= 디지몬
+		효과条件固名前 = 가트몬
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 어둠속성
+		효과条件カテゴリ= 디지몬
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과추가종류 = 効追無効
+		CALL CARD_SP_SUMMON(듀얼리스트,"묘지",場所)
+
+		CALL FULLRESET
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",500,1)
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",500)
+	ENDIF
+ENDIF
+

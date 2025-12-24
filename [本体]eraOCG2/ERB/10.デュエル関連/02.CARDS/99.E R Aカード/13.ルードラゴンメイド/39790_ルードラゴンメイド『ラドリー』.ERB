@@ -71,6 +71,8 @@ PRINTL ②：자신 / 상대 메인 페이즈에 발동할 수 있다.
 PRINTL 이 카드의 엑시즈 소재를 1개 늘려, 상대 필드의 카드 1장을 덱으로 되돌린다.
 PRINTL 이 카드가 각성 상태일 경우, 추가로 상대 필드의 카드 1장을 덱으로 되돌린다.
 PRINTL 이후 이카드의 엑시즈 소재가 2개 이하면, 이 카드는 파괴된다.
+CALL CARD_ABLE(0,지속효과)
+PRINTL ③：몬스터 존의 이 카드는 Ａ소환의 릴리스 및 EX덱 몬스터의 소재로 할 수 없다。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -103,6 +105,7 @@ IF 종류 == EX덱起動
 	효과条件종족 = 드래곤족
 	효과条件속성 = 물속성
 	효과条件固名前 = 루 드래곤메이드『라도리』
+	효과条件除去種 = 素材
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -129,6 +132,10 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	효과範囲상대마함 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -163,6 +170,7 @@ IF 종류 == EX덱起動
 		효과条件종족 = 드래곤족
 		효과条件속성 = 물속성
 		효과条件固名前 = 루 드래곤메이드『라도리』
+		효과条件除去種 = 素材
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			소환素材 = RESULT:1
@@ -273,12 +281,14 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		IF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= 1
 			PRINTFORML
 			SETCOLOR C_L_BLUE
-			PRINTFORMW 그후, 라도리는 넘어져 쓰러졌다!
+			PRINTFORMW ……만, 그 후 넘어져 쓰러졌다!
 			RESETCOLOR
 			PRINTFORML
 			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
 		ENDIF
 
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
 ENDIF
 

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 지박계례 지오글라샤＝라볼라스
+		RESULTS = 지박계례 지오글라샤＝라볼라스
 	CASE "略称"
-RESULTS = 지오글라샤
+		RESULTS = Geo Grasha
 	CASE "カテゴリ"
-RESULTS:0 = 지박
+		RESULTS:0 = 지박
 ENDSELECT
 
 
@@ -148,19 +148,17 @@ ENDIF
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 戦闘攻撃力
 #DIM DYNAMIC 戦闘守備力
-
+#DIM DYNAMIC 選択カード
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 攻撃時強制誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54084)
 	IF RESULT == 0
-		SIF GETVAR(@"%対面者%_MZ_モ耐:戦闘場所(듀얼리스트,1)") >= 1
-			RETURN 0
-		戦闘攻撃力 = GETVAR(@"%対面者%_MZ_攻:戦闘場所(듀얼리스트,1)")
-		CALL SET_FIELD_INFO(対面者,"필드",戦闘場所(듀얼리스트,1),"一攻",)
-		戦闘守備力 = GETVAR(@"%対面者%_MZ_守:戦闘場所(듀얼리스트,1)")
-		CALL SET_FIELD_INFO(対面者,"필드",戦闘場所(듀얼리스트,1),"一守",)
+		選択カード = 戦闘場所(듀얼리스트,1)
+		CALL FULLRESET
+		효과추가종류 = 10
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"永攻DOWN",99999)
 	ENDIF
 
 ELSEIF 종류 == 효과後誘発

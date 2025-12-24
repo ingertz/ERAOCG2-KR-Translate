@@ -142,6 +142,14 @@ ENDIF
 CALL CARD_FILTER_BASIC(듀얼리스트,元参照先,ゾーン,場所,めくり数)
 条件달성 = RESULT:1
 ;PRINTFORML ここまでOK2!!({RESULT})
+
+IF 条件달성 == 0
+	CUSTOMDRAWLINE —
+	PRINTL 【선택 가능한 카드가 없습니다】
+	CUSTOMDRAWLINE —
+	RETURN 0
+ENDIF
+
 IF 듀얼리스트 == "자신"
 	PRINTL
 	IF  (INRANGE(효과条件複数,90,99) || 효과条件複数 == 任意の数) && 複数カウンタ >= 1
@@ -172,13 +180,15 @@ ELSEIF 듀얼리스트 == "상대"
 		選択カード:複数カウンタ = RESULT
 	ENDIF
 	SETCOLOR C_W_RED
-	IF 選択カード:複数カウンタ == 8888
+	IF 選択カード:複数カウンタ == 8888 && 複数カウンタ != 0
 		SETCOLOR C_W_RED
-		PRINTL 이 이상 선택하지 않는 것 같습니다。
+		PRINTL 이 이상 고르지 않는 것 같습니다。
+		RESETCOLOR
+	ELSEIF 選択カード:複数カウンタ == 8888 && 複数カウンタ == 0
+		SETCOLOR C_W_RED
+		PRINTL 이 이상 고르지 않는 것 같습니다。
 		RESETCOLOR
 	ENDIF
-	PRINTL
-	WAIT
 ENDIF
 IF 選択カード:複数カウンタ == 9999
 	PRINTFORMW 돌아갑니다。
@@ -398,6 +408,14 @@ ENDIF
 
 CALL CARD_FILTER_BASIC(듀얼리스트,"上級",ゾーン,場所)
 条件달성 = RESULT:1
+
+IF 条件달성 == 0
+	CUSTOMDRAWLINE —
+	PRINTL 【선택 가능한 카드가 없습니다】
+	CUSTOMDRAWLINE —
+	RETURN 0
+ENDIF
+
 IF 듀얼리스트 == "자신"
 	PRINTL
 	IF  (INRANGE(효과条件複数,90,99) || 효과条件複数 == 任意の数) && 複数カウンタ >= 1
@@ -426,9 +444,13 @@ ELSEIF 듀얼리스트 == "상대"
 	ELSE
 		選択カード:複数カウンタ = RESULT
 	ENDIF
-	IF 選択カード:複数カウンタ == 8888
+	IF 選択カード:複数カウンタ == 8888 && 複数カウンタ != 0
 		SETCOLOR C_W_RED
-		PRINTL 이 이상 선택하지 않는 것 같습니다。
+		PRINTL 이 이상 고르지 않는 것 같습니다。
+		RESETCOLOR
+	ELSEIF 選択カード:複数カウンタ == 8888 && 複数カウンタ == 0
+		SETCOLOR C_W_RED
+		PRINTL 이 이상 고르지 않는 것 같습니다。
 		RESETCOLOR
 	ENDIF
 ENDIF
@@ -738,6 +760,15 @@ IF ゾーン == "필드"
 			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,필드→戦離,"필드")	
 		ENDIF
 		CALL CARD_ADD(듀얼리스트, "필드", "덱",場所)
+	ELSEIF 行先플래그 == 덱上行き
+		묘지送り종류 = 덱
+		TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,戦破壊→묘지,ゾーン,場所)
+		IF RESULT == 1
+			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,戦破壊→묘지,"덱")
+		ELSE
+			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,필드→戦離,"필드")	
+		ENDIF
+		CALL CARD_ADD_DECK_SPC(듀얼리스트,"필드",場所)
 	ELSEIF 行先플래그 == 손패行き
 		묘지送り종류 = 손패
 		TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,戦破壊→묘지,ゾーン,場所)
@@ -797,6 +828,8 @@ IF ゾーン == "필드"
 		CALL CARD_ADD(듀얼리스트, "필드", "제외",場所)
 	ELSEIF 行先플래그 == 소멸行き
 		CALL CARD_BANISH(듀얼리스트,"필드",場所)
+
+
 	ELSE
 		묘지送り종류 = リリース
 		TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,戦破壊→묘지,ゾーン,場所)
@@ -855,6 +888,15 @@ ELSEIF ゾーン == "마함"
 			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,필드→戦離,"마함")	
 		ENDIF
 		CALL CARD_ADD(듀얼리스트, "마함", "덱",場所)
+	ELSEIF 行先플래그 == 덱上行き
+		묘지送り종류 = 덱
+		TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,戦破壊→묘지,ゾーン,場所)
+		IF RESULT == 1
+			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,戦破壊→묘지,"덱")
+		ELSE
+			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,필드→戦離,"마함")	
+		ENDIF
+		CALL CARD_ADD_DECK_SPC(듀얼리스트,"마함",場所)
 	ELSEIF 行先플래그 == 손패行き
 		묘지送り종류 = 손패
 		TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,戦破壊→묘지,ゾーン,場所)
@@ -916,6 +958,8 @@ ELSEIF ゾーン == "손패"
 
 	ELSEIF 行先플래그 == 덱行き
 		CALL CARD_ADD(듀얼리스트, "손패", "덱",場所)
+	ELSEIF 行先플래그 == 덱上行き
+		CALL CARD_ADD_DECK_SPC(듀얼리스트,"손패",場所)
 	ELSEIF 行先플래그 == 마함行き
 		IF 추가플래그 == 0
 			CALL CARD_ADD(듀얼리스트, "손패", "마함",場所)
@@ -960,6 +1004,9 @@ ELSEIF ゾーン == "덱"
 		ELSEIF 추가플래그 == 4
 			CALL CARD_ADD(듀얼리스트, "덱", "마함",場所,"使用불가")
 		ENDIF
+	
+	ELSEIF 行先플래그 == 덱上行き
+		CALL CARD_ADD_DECK_SPC(듀얼리스트,"덱",場所)
 	ELSEIF 行先플래그 == EX덱行き
 		CALL CARD_ADD(듀얼리스트, "덱", "EX덱",場所)
 	ELSEIF 行先플래그 == 完全묘지行き
@@ -989,6 +1036,8 @@ ELSEIF ゾーン == "EX덱"
 		CALLFORM CARD_STANBY(選択カード_ID,듀얼리스트,제외時,"제외")		
 	ELSEIF 行先플래그 == 덱行き
 		CALL CARD_ADD(듀얼리스트, "EX덱", "덱",場所)
+	ELSEIF 行先플래그 == 덱上行き
+		CALL CARD_ADD_DECK_SPC(듀얼리스트,"EX덱",場所)
 	ELSEIF 行先플래그 == 完全묘지行き
 		CALL CARD_ADD(듀얼리스트, "EX덱", "묘지",場所)
 	ELSEIF 行先플래그 == 完全제외行き
@@ -1016,6 +1065,9 @@ ELSEIF ゾーン == "묘지"
 		ELSEIF 추가플래그 == 4
 			CALL CARD_ADD(듀얼리스트, "묘지", "마함",場所,"使用불가")
 		ENDIF
+	ELSEIF 行先플래그 == 덱上行き
+		CALL CARD_ADD_DECK_SPC(듀얼리스트,"묘지",場所)
+
 	ELSEIF 行先플래그 == EX덱行き
 		CALL CARD_ADD(듀얼리스트, "묘지", "EX덱",場所)
 	ELSEIF 行先플래그 == 完全제외行き ;Anonym修正
@@ -1037,6 +1089,8 @@ ELSEIF ゾーン == "묘지"
 ELSEIF ゾーン == "제외"
 	IF 行先플래그 == 덱行き
 		CALL CARD_ADD(듀얼리스트, "제외", "덱",場所)
+	ELSEIF 行先플래그 == 덱上行き
+		CALL CARD_ADD_DECK_SPC(듀얼리스트,"제외",場所)
 	ELSEIF 行先플래그 == 손패行き
 		CALL CARD_ADD(듀얼리스트, "제외", "손패",場所)
 	ELSEIF 行先플래그 == 마함行き
@@ -1061,7 +1115,7 @@ IF 行先플래그 == 제외行き && ゾーン != "묘지"
 	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과除送")
 	SIF ゾーン == "필드"
 		CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"필드除送")
-ELSEIF 行先플래그 == 덱行き
+ELSEIF 行先플래그 == 덱行き || 行先플래그 == EX덱行き || 行先플래그 == 덱上行き
 	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과山送")
 	SIF ゾーン == "필드"
 		CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"필드山送")

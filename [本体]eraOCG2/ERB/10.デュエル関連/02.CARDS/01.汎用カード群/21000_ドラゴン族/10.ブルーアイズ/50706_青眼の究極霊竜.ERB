@@ -84,6 +84,7 @@ PRINTL 자신의 묘지에서 "궁극의 푸른 눈의 영룡" 이외의 드래�
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 必要カード
+#DIM DYNAMIC 효과使用불가
 #DIMS DYNAMIC 対面者
 
 CALL 対面者판정(듀얼리스트)
@@ -108,6 +109,14 @@ ELSEIF 종류 == 발동誘発
 	효과範囲마함 = 1
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	SIF RESULT != 1
+		효과使用불가 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		효과使用불가 = 1
+	SIF 효과使用불가 == 1
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지

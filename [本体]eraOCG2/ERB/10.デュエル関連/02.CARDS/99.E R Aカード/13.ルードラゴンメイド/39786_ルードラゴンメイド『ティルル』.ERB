@@ -69,7 +69,9 @@ PRINTL 자신 묘지에서『드래곤메이드』몬스터 1장을 특수 소�
 CALL CARD_ABLE(2,필드起動,フリー誘発)
 PRINTL ②：서로의 배틀 페이즈에 발동할 수 있다.
 PRINTL 이 카드의 엑시즈 소재를 1개 늘려 자신 필드의 모든 드래곤족 몬스터의 공격력을 1000 올린다.
-PRINTL 이 카드가 각성 상태일 경우, 추가로 상대 필드에 존재하는 모든 몬스터의 공격력을 1000 내린다
+PRINTL 이 카드가 각성 상태일 경우, 추가로 상대 필드에 존재하는 모든 몬스터의 공격력을 1000 내린다.
+CALL CARD_ABLE(0,지속효과)
+PRINTL ③：몬스터 존의 이 카드는 Ａ소환의 릴리스 및 EX덱 몬스터의 소재로 할 수 없다。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -103,6 +105,7 @@ IF 종류 == EX덱起動
 	효과条件종족 = 드래곤족
 	효과条件속성 = 화염속성
 	효과条件固名前 = 루 드래곤메이드『티루루』
+	효과条件除去種 = 素材
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -124,6 +127,10 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	SIF ゾーン != "필드"
 		RETURN 0
 	SIF バトルフェイズ != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -159,6 +166,7 @@ IF 종류 == EX덱起動
 		효과条件종족 = 드래곤족
 		효과条件속성 = 화염속성
 		효과条件固名前 = 루 드래곤메이드『티루루』
+		효과条件除去種 = 素材
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			소환素材 = RESULT:1
@@ -259,5 +267,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 			CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"永攻",-1000)
 		ENDIF
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
 ENDIF
 

@@ -1,0 +1,119 @@
+﻿@CARDNAME_31302,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 화지가구토
+	CASE "略称"
+		RESULTS = 화지가구토
+	CASE "カテゴリ"
+		RESULTS:0 = 스피릿
+ENDSELECT
+
+@CARD_31302(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2900
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251208
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_31302(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは특수소환できない。
+CALLFORM CARD_ABLE(0,ライフ変強制誘発)
+PRINTL ①：このカードが상대に戦闘ダメージを与えた場合に발동できる。
+PRINTL このターンのエンドフェイズに상대は손패を捨て、捨てた枚数×５００のダメージを受ける。
+CALLFORM CARD_ABLE(0,ターン終了時強制)
+PRINTL ②：このカードが通常소환されている場合、エンドフェイズに발동する。
+PRINTL このカードを持ち主の손패に戻す。
+
+@CARDCAN_31302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31302)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == ライフ変強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ダメージ受者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ダメージ종류,"直接戦闘","戦闘")
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時予約
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種通常
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31302(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == ライフ変強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31302)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,31302,エンド予約)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時予約
+	ダメージ量 = 손패数(対面者) * 500
+	FOR カウンタ,0,紙束最大値
+		SIF GETVAR(@"%対面者%_손패:カウンタ") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(対面者,"손패",カウンタ)
+	NEXT
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+
+ELSEIF 종류 == ターン終了時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31302)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+	ENDIF
+ENDIF

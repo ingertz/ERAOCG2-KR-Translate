@@ -7,6 +7,8 @@
 #DIM DYNAMIC 学生カウンタ
 #DIM DYNAMIC 非カードカウンタ
 #DIM DYNAMIC カードカウンタ
+#DIM DYNAMIC 외부자2カウンタ
+
 
 #DIM DYNAMIC 訪問カウンタ
 #DIM DYNAMIC 캐릭터_ID
@@ -16,6 +18,9 @@
 #DIM DYNAMIC 学生캐릭터,9999
 #DIM DYNAMIC 非カード캐릭터,9999
 #DIM DYNAMIC カード캐릭터,9999
+#DIM DYNAMIC 외부자2캐릭터,9999
+
+
 #DIM DYNAMIC 竿담당자,10
 #DIM DYNAMIC 입담당자,10
 #DIM DYNAMIC 竿담당수
@@ -24,6 +29,8 @@
 #DIM DYNAMIC 朝交尾이벤트
 #DIM DYNAMIC 화상在り
 #DIM DYNAMIC 화상持ち
+
+
 FOR 캐릭터_ID,1,CHARANUM
 	SIF ENUMFILES("RESOURCES/CHARA", @"{NO:캐릭터_ID}_*") || ENUMFILES("RESOURCES/CHARA", @"%NAME:캐릭터_ID%_*") 
 		화상持ち ++
@@ -100,6 +107,10 @@ FOR 캐릭터_ID,1,CHARANUM
 				放浪カウンタ ++
 			ENDIF
 		ENDIF
+	ELSEIF TALENT:캐릭터_ID:외부자 == 2
+		;リゾート行き캐릭터
+		외부자2캐릭터:외부자2カウンタ = 캐릭터_ID
+		외부자2カウンタ ++
 	;それ 이외의 캐릭터
 	ELSE
 		カード캐릭터:カードカウンタ = 캐릭터_ID
@@ -139,6 +150,13 @@ IF !GROUPMATCH(GET_DAY(), "토", "일")
 	NEXT
 ENDIF
 
+FOR カウンタ,0,외부자2カウンタ
+	캐릭터_ID = 외부자2캐릭터:カウンタ 
+	IF カウンタ <= 10
+		CFLAG:캐릭터_ID:현재위치 = RAND:21 + 260
+	ENDIF
+NEXT
+
 
 ;訪問캐릭터の설정
 VARSET 訪問캐릭터_ID, -1
@@ -161,70 +179,20 @@ ENDIF
 
 ;PRINTFORMW　방랑카운터:{放浪カウンタ}
 FOR カウンタ,0,放浪カウンタ
-	캐릭터_ID = 放浪캐릭터:カウンタ 
-	SIF CFLAG:캐릭터_ID:면식 == 0
-		CONTINUE
-
-	SIF RAND:3 == 0
+	캐릭터_ID = 放浪캐릭터:カウンタ
+	IF RAND:3 == 0
 		CFLAG:캐릭터_ID:듀얼환영 = 1
-	IF INRANGE (カウンタ, 0, 3)
-		CFLAG:캐릭터_ID:현재위치 = 場所_繁華街
-	ELSEIF INRANGE (カウンタ, 4, 7)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_カフェ
-	ELSEIF INRANGE (カウンタ, 8, 11)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_カドショ
-	ELSEIF INRANGE (カウンタ, 12, 15)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_公園
-	ELSEIF INRANGE (カウンタ, 16, 19)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_ジム
-	ELSEIF INRANGE (カウンタ, 20, 22)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_神社
-	ELSEIF INRANGE (カウンタ, 23, 25)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_教会
-	ELSEIF INRANGE (カウンタ, 26, 29)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_病院
-	ELSEIF INRANGE (カウンタ, 30, 32)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_学校内
-	ELSEIF INRANGE (カウンタ, 33, 36)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_식사通り
-	ELSEIF INRANGE (カウンタ, 37, 38)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_スーパー
-
-
-	ELSEIF INRANGE (カウンタ, 37, 38)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_東駅
-	ELSEIF INRANGE (カウンタ, 39, 41)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_スタジアム
-	ELSEIF INRANGE (カウンタ, 42, 44)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_モール
-
-	ELSEIF INRANGE (カウンタ, 45, 46)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_南駅
-	ELSEIF INRANGE (カウンタ, 47, 49)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_商店街
-	ELSEIF INRANGE (カウンタ, 50, 51)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_牧場
-
-	ELSEIF INRANGE (カウンタ, 52, 54)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_北駅
-	ELSEIF INRANGE (カウンタ, 55, 58)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_KCカドショ
-	ELSEIF INRANGE (カウンタ, 59, 60)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_STカドショ
-	ELSEIF INRANGE (カウンタ, 61, 65)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_KL広場
-	ELSEIF INRANGE (カウンタ, 66, 68)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_観覧車
-	ELSEIF INRANGE (カウンタ, 69, 70)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_スリルゾーン
-	ELSEIF INRANGE (カウンタ, 71, 73)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_お城
-	ELSEIF INRANGE (カウンタ, 74, 75)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_KCスタジアム
-	ELSEIF INRANGE (カウンタ, 76, 77)
- 		CFLAG:캐릭터_ID:현재위치 = 場所_ジャングル
-
-
+	ELSEIF CFLAG:캐릭터_ID:면식 == 0
+		CONTINUE
+	ENDIF
+	IF INRANGE (カウンタ, 0, 30)
+		CFLAG:캐릭터_ID:현재위치 = RAND:12 + 50
+	ELSEIF INRANGE (カウンタ, 31, 50)
+		CFLAG:캐릭터_ID:현재위치 = RAND:10 + 110
+	ELSEIF INRANGE (カウンタ, 31, 40)
+		CFLAG:캐릭터_ID:현재위치 = RAND:10 + 150
+	ELSEIF INRANGE (カウンタ, 41, 50)
+		CFLAG:캐릭터_ID:현재위치 = RAND:9 + 210
 	ENDIF
 NEXT
 

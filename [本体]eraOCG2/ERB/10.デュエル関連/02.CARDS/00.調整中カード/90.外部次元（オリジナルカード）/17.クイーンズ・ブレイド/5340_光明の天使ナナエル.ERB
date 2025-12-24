@@ -1,0 +1,170 @@
+﻿@CARDNAME_5340,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 광명의 천사 나나엘
+	CASE "略称"
+		RESULTS = 광천사 나나엘
+	CASE "カテゴリ"
+		RESULTS:0 = 미투사
+	CASE "出典作品"
+		RESULTS:0 = 퀸즈 블레이드
+ENDSELECT
+
+
+@CARD_5340(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251202
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5340(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：フィールドに「미투사」モンスターが存在する場合、손패のこのカードを公開して발동できる。
+PRINTL 덱から「퀸즈 블레이드」１枚を손패に加える。
+CALLFORM CARD_ABLE(2,제외時,攻撃時誘発)
+PRINTL ②：このカードの攻撃宣言時、または손패のこのカードが公開されている時、자신の「미투사」モンスターが戦闘を行う場合に발동できる。
+PRINTL 자신の덱の一番上のカードをめくる。そのカードの종류によって、以下の효과を適用する。
+PRINTL ●モンスター：そのモンスターの攻撃力はターン終了時まで２０００アップする。
+PRINTL ●마법・함정　：손패の빛속성「미투사」モンスター１体を특수소환し、
+PRINTL 　　　　　　　상대フィールドの특수소환されたモンスター１体を破壊する。
+
+
+
+@CARDCAN_5340(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5340)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,5340)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 미투사
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件名前 = 퀸즈 블레이드
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF 발동済_2(듀얼리스트,5340)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	IF ゾーン == "필드"
+		SIF 戦闘場所(듀얼리스트) != 場所
+			RETURN 0
+		SIF ターンプレイヤー != 듀얼리스트
+			RETURN 0
+	ELSEIF ゾーン == "손패"	
+		SIF GETVAR(@"%듀얼리스트%_手_公開:場所") == 0
+			RETURN 0
+
+		TRYCALLFORM CARD_{戦闘カードID(듀얼리스트)}("カテゴリ")
+		SIF !MATCH(RESULTS,"미투사")
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5340(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5340,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL STATCHANGE_HAND(듀얼리스트,"지정",場所,"公開",2)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件名前 = 퀸즈 블레이드
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 제외時 || 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5340,2)
+	IF RESULT == 0
+		TRYCALLFORM CARD_UI(GETVAR(@"%듀얼리스트%_덱:0"))
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_덱:0")}("종류")
+		IF RESULT <= モン全般
+			選択カード = 戦闘場所(듀얼리스트)
+			CALL FULLRESET
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一時",2000)
+		ELSEIF RESULT >= 20
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件カテゴリ = 미투사
+			효과条件속성 = 빛속성
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件召種 = 召種全특수
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"除処")
+ENDIF

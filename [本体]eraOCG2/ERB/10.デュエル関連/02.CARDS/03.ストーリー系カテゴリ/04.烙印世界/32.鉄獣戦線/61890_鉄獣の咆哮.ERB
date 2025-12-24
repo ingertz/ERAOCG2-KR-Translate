@@ -1,0 +1,118 @@
+﻿@CARDNAME_61890,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트라이브리게이드 로어
+	CASE "略称"
+		RESULTS = 철수의 포효
+	CASE "カテゴリ"
+		RESULTS:0 = 트라이브리게이드
+ENDSELECT
+
+
+@CARD_61890(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 251218
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61890(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動,フリー誘発)
+PRINTL ①：자신フィールドにＬモンスターが存在する場合、덱・ＥＸ덱から「트라이브리게이드」カード１枚を묘지へ送り、
+PRINTL フィールドの효과モンスター１体を대상として발동できる。
+PRINTL 묘지へ送ったカードの종류によって以下の효과を適用する。
+PRINTL ●モンスター：대상のモンスターの攻撃力をターン終了時まで０にする。
+PRINTL ●마법：대상のモンスターの효과をターン終了時まで無効にする。
+PRINTL ●함정：대상のモンスターを손패に戻す。
+
+@CARDCAN_61890(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,61890)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,61890)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 링크
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 트라이브리게이드
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_61890(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード종류
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61890,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 트라이브리게이드
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			TRYCALLFORM CARD_{RESULT:1},"종류"
+			選択カード종류 = RESULT
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1
+			IF 選択カード종류 < モン全般
+				효과추가종류 = 1
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"一攻DOWN")
+			ELSEIF 選択カード종류 > 함정全般
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+			ELSE
+				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"無効")
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+
+

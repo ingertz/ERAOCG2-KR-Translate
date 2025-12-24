@@ -28,7 +28,6 @@ SELECTCASE 参照先
 	CASE "외부자"
 		RETURN 1
 	CASE "종류"
-
 		RETURN 초차원
 	CASE "속성"
 		RETURN 빛속성
@@ -75,8 +74,8 @@ PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 �
 CALLFORM CARD_ABLE(1,EX소환時)
 PRINTL ①：이 카드가 『초월』한 경우、EX덱에서 "신성룡 릴리저스 소울 세이버" １장을 제외하고 발동할 수 있다。
 PRINTL 이 턴、자신 필드의 몬스터의 공격력은 １２００오른다。
-PRINTL 그 후、자신의 묘지에 "블래스터 블레이드" 몬스터와 "블래스터 다크" 몬스터가 존재하는 경우、
-PRINTL 덱에서 "블래스터 블레이드" 카드를 １장을 패에 넣는다。
+PRINTL 그 후、자신의 묘지에 "블래스터 블레이드" 카드와 "블래스터 다크" 카드가 존재하는 경우、
+PRINTL 자신은 １장 드로우한다。
 
 
 
@@ -218,16 +217,7 @@ ELSEIF 종류 == EX소환時
 				条件달성 += 1
 
 			IF 条件달성 >= 2
-				CALL FULLRESET
-				효과範囲덱 = 1
-				효과条件カテゴリ = 블래스터 블레이드
-				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-				IF RESULT == 1
-					CALL FULLRESET
-					효과範囲덱 = 1
-					효과条件カテゴリ = 블래스터 블레이드
-					CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-				ENDIF
+				CALL CARDDRAW_BASIC(듀얼리스트,1)
 			ENDIF
 		ENDIF
 	ENDIF

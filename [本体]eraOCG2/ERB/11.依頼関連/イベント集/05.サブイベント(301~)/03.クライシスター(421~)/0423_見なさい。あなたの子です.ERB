@@ -32,13 +32,14 @@ SELECTCASE 参照先
 	CASE "条件"
 		SIF 依頼_完了횟수:422 == 0
 			RETURN 0
+		SIF 依頼_完了횟수:424 != 0
+			RETURN 0
 		SIF 依頼_完了횟수:425 != 0
 			RETURN 0
 		SIF NAME:NO_TO_CHARANUM(2100) == "크라이시스터 에리스" && NAME:NO_TO_CHARANUM(2101) == "크라이시스터 스텔라" && NAME:NO_TO_CHARANUM(2102) == "크라이시스터 소피아" && NAME:NO_TO_CHARANUM(2103) == "크라이시스터 이렌느"
 			RETURN 0
 		SIF CFLAG:NO_TO_CHARANUM(2100):소유함 != 1 || CFLAG:NO_TO_CHARANUM(2101):소유함 != 1 || CFLAG:NO_TO_CHARANUM(2102):소유함 != 1 || CFLAG:NO_TO_CHARANUM(2103):소유함 != 1
 			RETURN 0
-		SIF (ITEM:2100 >= 3 && NAME:NO_TO_CHARANUM(2100) == "엑소시스터 에리스")|| (ITEM:2101 >= 3 && NAME:NO_TO_CHARANUM(2101) == "엑소시스터 스텔라") || (ITEM:2102 >= 3 && NAME:NO_TO_CHARANUM(2102) == "엑소시스터 소피아") || (ITEM:2103 >= 3 && NAME:NO_TO_CHARANUM(2103) == "엑소시스터 이렌느")
 			RETURN 1
 ENDSELECT
 
@@ -76,7 +77,7 @@ ELSEIF 依頼_달성상황 == 1
 	PRINTFORMW 마르파는 공손하게 고개를 숙였다.
 	PRINTFORMW 그녀에게, 카드를 모았다는 것을 알렸다.
 	PRINTFORMW "그렇습니까. 그럼, 어떤 카드를 강화하시겠습니까?"
-	IF (ITEM:2100 >= 3 && ITEM:2101 >= 3 && ITEM:2102 >= 3 && ITEM:2103 >= 3) && 依頼_完了횟수:423 == 0
+	IF (CFLAG:NO_TO_CHARANUM(2100):소유함 == 1 && CFLAG:NO_TO_CHARANUM(2101):소유함 == 1 && CFLAG:NO_TO_CHARANUM(2102):소유함 == 1 && CFLAG:NO_TO_CHARANUM(2103):소유함 == 1) && 依頼_完了횟수:423 == 0
 		PRINTFORMW 전부를 동시에 하는 것은 안 되는 걸까?
 		PRINTFORMW "죄송합니다. 저희 사정으로, 한 번의 의식으로 한 종류의 카드만 강화할 수 없습니다"
 		PRINTFORMW 그럼 어쩔 수 없지. 한 번에 한 종류씩 선택하기로 하자.
@@ -84,13 +85,13 @@ ELSEIF 依頼_달성상황 == 1
 	ENDIF
 	PRINTFORML 그럼, 어떤 카드를 크라이시스터 카드로 할까?
 	PRINTFORML 
-	SIF ITEM:2100 >= 3 && NAME:(이벤트主:0) == "엑소시스터 에리스"
+	SIF CFLAG:NO_TO_CHARANUM(2100):소유함 == 1 && NAME:(이벤트主:0) == "엑소시스터 에리스"
 		PRINTFORML [0] - %NAME:(이벤트主:0)%
-	SIF ITEM:2101 >= 3 && NAME:(이벤트主:1) == "엑소시스터 스텔라"
+	SIF CFLAG:NO_TO_CHARANUM(2101):소유함 == 1 && NAME:(이벤트主:1) == "엑소시스터 스텔라"
 		PRINTFORML [1] - %NAME:(이벤트主:1)%
-	SIF ITEM:2102 >= 3 && NAME:(이벤트主:2) == "엑소시스터 소피아"
+	SIF CFLAG:NO_TO_CHARANUM(2102):소유함 == 1 && NAME:(이벤트主:2) == "엑소시스터 소피아"
 		PRINTFORML [2] - %NAME:(이벤트主:2)%
-	SIF ITEM:2103 >= 3 && NAME:(이벤트主:3) == "엑소시스터 이렌느"
+	SIF CFLAG:NO_TO_CHARANUM(2103):소유함 == 1 && NAME:(이벤트主:3) == "엑소시스터 이렌느"
 		PRINTFORML [3] - %NAME:(이벤트主:3)%
 	PRINTFORML [4] - 좀 다시 생각해 본다
 	BINPUT

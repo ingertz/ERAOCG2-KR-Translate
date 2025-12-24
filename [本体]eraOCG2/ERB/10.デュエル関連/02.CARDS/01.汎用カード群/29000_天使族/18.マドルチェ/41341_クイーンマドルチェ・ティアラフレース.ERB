@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 퀸마돌체 티아라프헤즈
+		RESULTS = 퀸마돌체 티아라프헤즈
 	CASE "略称"
-RESULTS = 티아라프헤즈
+		RESULTS = 티아라프헤즈
 	CASE "カテゴリ"
-RESULTS:0 = 마돌체
+		RESULTS:0 = 마돌체
 ENDSELECT
 
 
@@ -36,6 +36,8 @@ SELECTCASE 参照先
 		RETURN 2500
 	CASE "성별"
 		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1341
 ENDSELECT
 RETURN 0
 
@@ -171,7 +173,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		CALL FULLRESET
 		효과条件カテゴリ = 마돌체
 		효과条件任意 = 1
-		IF GETVARS(@"%듀얼리스트%_フィールド名")  ==  "マドル シャト-"
+		IF GETVARS(@"%듀얼리스트%_フィールド名")  ==  "마돌 샤토"
 			효과条件行先플래그 = 손패行き
 		ELSE
 			효과条件行先플래그 = 덱行き
@@ -179,16 +181,19 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 		효과条件複数 = 98
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
 		IF RESULT == 1
+			戻した数 = RESULT:2
 			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
 			효과条件複数 = 100 - 戻した数
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"덱")	
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")	
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
 	CALL FULLRESET
 	효과条件名前 = 퀸마돌체 티아라프헤즈
 	
-	IF GETVARS(@"%듀얼리스트%_フィールド名")  ==  "マドル シャト-"
+	IF GETVARS(@"%듀얼리스트%_フィールド名")  ==  "마돌 샤토"
 		효과条件行先플래그 = 손패行き
 	ELSE
 		효과条件行先플래그 = 덱行き

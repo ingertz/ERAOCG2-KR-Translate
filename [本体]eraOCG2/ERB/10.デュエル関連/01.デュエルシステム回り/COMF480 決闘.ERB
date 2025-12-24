@@ -13,7 +13,7 @@
 #DIM DYNAMIC 事後カード化
 #DIM DYNAMIC 패배のロストバージン
 
-FOR カウンタ,0,TARGETNUM
+FOR カウンタ,0,GET_TARGETNUM()
 	ターゲット보존:カウンタ = TARGET:カウンタ
 NEXT
 VARSET TARGET
@@ -32,25 +32,29 @@ CUSTOMDRAWLINE —
 
 PRINTL 
 IF TARGET > 0
-	PRINTL 　　[0] - 듀얼개시！
+	PRINTL 　　[ 0] - 듀얼개시！
 	PRINTL 
 	SIF CFLAG:TARGET:내기플래그 == 0
-		PRINTL 　　[3] - 내기 듀얼을 신청한다
+		PRINTL 　　[ 3] - 내기 듀얼을 신청한다
 ENDIF
 PRINTL 
 IF CFLAG:MASTER:현재위치 == 場所_寝室
-	PRINTL 　　[2] - 온라인 듀얼 개시(연습)
+	PRINTL 　　[ 2] - 온라인 듀얼 개시(연습)
 	PRINTL 
+	IF FLAG:악랄치 >= 100　
+		PRINTL 　　[10] - 카드 괴롭히기 모드
+		PRINTL 
+	ENDIF
 ENDIF
 
 IF CFLAG:MASTER:현재위치 == 場所_寝室
-	PRINTL 　　[4] - 온라인 레이트 매치
+	PRINTL 　　[ 4] - 온라인 레이트 매치
 	PRINTFORML 　　　　현재 듀얼 레이트:{CFLAG:MASTER:듀얼레이트}
 	PRINTL
 ENDIF
 
 IF TARGET >= 1 && TALENT:TARGET:듀얼리스트 >= 1 && TALENT:TARGET:외부자 == 0
-	PRINTL 　　[5] - 레이트 매치
+	PRINTL 　　[ 5] - 레이트 매치
 	PRINTFORML 　　　　현재 자신의 듀얼 레이트:{CFLAG:MASTER:듀얼레이트}
 	PRINTFORML 　　　　현재 %CALLNAME:TARGET%의 듀얼 레이트:{CFLAG:TARGET:듀얼레이트}
 ENDIF
@@ -86,12 +90,11 @@ PRINTL 　[100] - 그만둔다
 
 BINPUT
 選択モード = RESULT
-IF INRANGE(選択モード,0,5)
+IF INRANGE(選択モード,0,10)
 	IF GROUPMATCH(選択モード,0,3) && BASE:TARGET:기력 <= 300
 		PRINTFORMW %CALLNAME:TARGET%은 지쳐서 듀얼은 사양하고 싶은 모양이다。
 		GOTO INPUT_RETURN
 	ENDIF
-
 	CALL DUEL_STANDBY(選択モード)
 
 	デュエル結果 = RESULT

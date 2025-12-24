@@ -24,6 +24,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
 	CASE "종류"	
 		RETURN 효과モン
 	CASE "속성"
@@ -53,7 +55,7 @@ PRINTL 덱에서 "미식전" 카드 １장을 패에 넣는다。
 PRINTL 이 턴 동안、자신이 ２번 이상 카드의 효과를 사용한 경우、추가로 １장 더 패에 넣는다。
 CALLFORM CARD_ABLE(2,효과後誘発)
 PRINTL ③："각성"의 효과가 발동한 경우에 발동할 수 있다。
-PRINTL 자신은 ２０００라이프 회복하고、자신 필드 몬스터의 공격력 / 수비력은８００오른다。
+PRINTL 자신은 ２０００라이프 회복하고、자신 필드 몬스터의 공격력 / 수비력은 ８００오른다。
 PRINTL 
 IF 確認듀얼리스트 == "자신"
 	PRINTFORML （현재 턴 플레이어가 발동한 효과의 수는{자신_발동数}회）
@@ -98,7 +100,7 @@ ELSEIF 종류 == 효과後誘発
 		RETURN 0
 	CALL FULLRESET
 	효과条件名前 = 각성
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"발동誘発",2)
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",2)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -119,13 +121,13 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 		효과範囲덱 = 1
 		효과条件カテゴリ = 미식전
 		효과条件固名前 = 인도하는 무녀 콧코로
-		IF 각성횟수(듀얼리스트) > 2
+		IF GETVAR(@"%듀얼리스트%_발동数") < 2
 			효과条件複数 = 98
 		ENDIF
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ELSEIF 종류 == 효과後誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5301,2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5301,3)
 	IF RESULT == 0
 		CALL FULLRESET
 		CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"永攻",800)

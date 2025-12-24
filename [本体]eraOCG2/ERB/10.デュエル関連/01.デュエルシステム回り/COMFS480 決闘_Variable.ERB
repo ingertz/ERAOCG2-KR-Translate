@@ -47,6 +47,7 @@ IF RESULT == 0
 	IF デュエル타입 == 2
 		CALL DUEL_KANNI
 	ELSE
+
 		CALL DUEL_SYSTEM(1,이벤트起動,連戦플래그,先攻설정)
 	ENDIF
 
@@ -237,11 +238,13 @@ CASE 4 ;オンラインレート戦
 CASE 5 ;オフラインレート戦
 	TFLAG:SELECTCOM분기 = 10
 	CALL KOJO_MESSAGE_SEND("COMMAND")
+CASE 10 ;いじめ戦
+	TARGET = 0
 ENDSELECT
 
 ;ターゲットの보존
 FOR カウンタ,0,CHARANUM
-	IF TARGET >= 1
+	IF TARGET:カウンタ >= 1
 		LTARGET:カウンタ = TARGET:カウンタ
 		LTARGETNUM ++
 	ENDIF
@@ -257,6 +260,8 @@ CASEELSE
 	;듀얼레이트マッチ
 	ELSEIF 選択モード == 4 || 選択モード == 5
 		CALL DUEL_SYSTEM(3)
+	ELSEIF 選択モード == 10
+		CALL DUEL_SYSTEM(10,,,2)
 	;公式デュエル
 	ELSE
 		CALL DUEL_SYSTEM(,,,先攻플래그)

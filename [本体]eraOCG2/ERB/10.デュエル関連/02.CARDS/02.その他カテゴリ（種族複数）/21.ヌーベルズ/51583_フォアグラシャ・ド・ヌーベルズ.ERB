@@ -1,4 +1,4 @@
-﻿@CARDNAME_51514,参照先
+﻿@CARDNAME_51583,参照先
 ;ココで지정카드의 名前、略称を返す予定
 ;#FUNCTIONS
 #DIMS DYNAMIC 参照先
@@ -16,7 +16,7 @@ SELECTCASE 参照先
 ENDSELECT
 
 
-@CARD_51514(参照先)
+@CARD_51583(参照先)
 
 #DIMS DYNAMIC 参照先
 VARSET RESULT
@@ -38,7 +38,7 @@ SELECTCASE 参照先
 ENDSELECT
 
 RETURN 0
-@CARDSUMMON_51514(듀얼리스트,소환カード,EX参照)
+@CARDSUMMON_51583(듀얼리스트,소환カード,EX参照)
 #DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 소환カード
@@ -48,12 +48,12 @@ CALL RESETCONDITION_MAT
 必要レベル数 = 4
 
 IF EX参照 == 1
-	CALL RITCAN(듀얼리스트,소환カード,51514) 
+	CALL RITCAN(듀얼리스트,소환カード,51583) 
 	RETURN RESULT
 ENDIF
 
 
-@CARD_EXPLANATION_51514(종류)
+@CARD_EXPLANATION_51583(종류)
 #DIM DYNAMIC 종류
 
 PRINTL "요리법" 카드에 의해 강림.
@@ -67,7 +67,7 @@ PRINTL 자신 필드의 "누밸즈" 몬스터 1장과 자신 / 상대 필드의 
 PRINTL 패 / 덱에서 레벨 5 / 6의 "누밸즈" 의식 몬스터 1장을 특수 소환한다.
 
 
-@CARDCAN_51514(듀얼리스트,종류,ゾーン,場所)
+@CARDCAN_51583(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
@@ -79,13 +79,13 @@ PRINTL 패 / 덱에서 레벨 5 / 6의 "누밸즈" 의식 몬스터 1장을 특�
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51514)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51583)
 SIF RESULT == 1
 	RETURN 0
 
 
 IF 종류 == 특수소환時 || 종류 == EX소환時
-	SIF 발동済_1(듀얼리스트,51514)
+	SIF 발동済_1(듀얼리스트,51583)
 		RETURN 0
 	IF 묘지数(듀얼리스트) == 0
 		SIF 묘지数(対面者) == 0 
@@ -96,7 +96,7 @@ IF 종류 == 특수소환時 || 종류 == EX소환時
 ELSEIF 종류 == 효과後誘発
 	SIF ゾーン != "필드"
 		RETURN 0
-	SIF 발동済_2(듀얼리스트,51514)
+	SIF 발동済_2(듀얼리스트,51583)
 		RETURN 0
 	CALL FULLRESET
 	효과条件종류 = 마법全般
@@ -149,7 +149,7 @@ ELSEIF 종류 == 효과後誘発
 ELSEIF 종류 == 攻撃時誘発
 	SIF ゾーン != "필드"
 		RETURN 0
-	SIF 발동済_2(듀얼리스트,51514)
+	SIF 발동済_2(듀얼리스트,51583)
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
@@ -187,7 +187,7 @@ ELSEIF 종류 == 攻撃時誘発
 	RETURN 1
 ENDIF
 
-@CARDEFFECT_51514(듀얼리스트,종류,ゾーン,場所)
+@CARDEFFECT_51583(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
@@ -201,7 +201,7 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 특수소환時 || 종류 == EX소환時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51514,1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51583,1)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲묘지 = 1
@@ -211,7 +211,7 @@ IF 종류 == 특수소환時 || 종류 == EX소환時
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ELSEIF 종류 == 효과後誘発 || 종류 == 攻撃時誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51514,2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51583,2)
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲필드 = 1

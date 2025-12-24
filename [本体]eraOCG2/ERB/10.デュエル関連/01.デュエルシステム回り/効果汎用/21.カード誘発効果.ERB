@@ -1424,30 +1424,44 @@ ENDSELECT
 ;一旦こっちで관리。本来の場所は「21.カード誘発효과.ERB」
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
-@CARD_GET_EMBLEM_VALUES(듀얼리스트,カードID,永短설정)
+@CARD_GET_EMBLEM_VALUES(듀얼리스트,カードID,永短설정,リセット설정)
 #DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC カードID
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 永短설정
+#DIM DYNAMIC リセット설정
 
 IF 永短설정 == 1
 	FOR カウンタ,0,99
 		SIF GETVAR(@"%듀얼리스트%_短紋章:カウンタ") != カードID
 			CONTINUE
-		;見つかったら値を설정
-		RESULT:1 = GETVAR(@"%듀얼리스트%_短紋_汎数１:カウンタ")
-		RESULT:2 = GETVAR(@"%듀얼리스트%_短紋_汎数２:カウンタ")
-		RETURN カウンタ
+		IF リセット설정 == 1
+			SETVAR @"%듀얼리스트%_短紋章:カウンタ", -1
+			SETVAR @"%듀얼리스트%_短紋_汎数１:カウンタ", -1
+			SETVAR @"%듀얼리스트%_短紋_汎数２:カウンタ", -1
+		ELSE
+			;見つかったら値を설정
+			RESULT:1 = GETVAR(@"%듀얼리스트%_短紋_汎数１:カウンタ")
+			RESULT:2 = GETVAR(@"%듀얼리스트%_短紋_汎数２:カウンタ")
+			RETURN カウンタ
+		ENDIF
 	NEXT
 ELSE
 	FOR カウンタ,0,99
 		SIF GETVAR(@"%듀얼리스트%_永紋章:カウンタ") != カードID
 			CONTINUE
-		;見つかったら値を설정
-		RESULT:1 = GETVAR(@"%듀얼리스트%_永紋_汎数１:カウンタ")
-		RESULT:2 = GETVAR(@"%듀얼리스트%_永紋_汎数２:カウンタ")
-		RESULT:3 = GETVAR(@"%듀얼리스트%_永紋_汎数３:カウンタ")
-		RETURN カウンタ
+		IF リセット설정 == 1
+			SETVAR @"%듀얼리스트%_永紋章:カウンタ", -1
+			SETVAR @"%듀얼리스트%_永紋_汎数１:カウンタ", -1
+			SETVAR @"%듀얼리스트%_永紋_汎数２:カウンタ", -1
+			SETVAR @"%듀얼리스트%_永紋_汎数３:カウンタ", -1
+		ELSE
+			;見つかったら値を설정
+			RESULT:1 = GETVAR(@"%듀얼리스트%_永紋_汎数１:カウンタ")
+			RESULT:2 = GETVAR(@"%듀얼리스트%_永紋_汎数２:カウンタ")
+			RESULT:3 = GETVAR(@"%듀얼리스트%_永紋_汎数３:カウンタ")
+			RETURN カウンタ
+		ENDIF
 	NEXT
 ENDIF
 ;見つからなかったら-1を返す

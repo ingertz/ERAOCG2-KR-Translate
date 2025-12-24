@@ -1,0 +1,219 @@
+@CARDNAME_34069,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 메탈가루몬
+	CASE "略称"
+		RESULTS = 메탈가루몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34069(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2900
+	CASE "守備力"
+		RETURN 2300
+	CASE "レア度"
+		RETURN ULR
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_34069(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件종족 = 야수족
+素材条件レベル = 9
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,34069) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_34069(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 야수족レベル９モンスター×２
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL ①：このカードは자신の묘지の「가루몬」「워가루몬モン」それぞれ１体を제외し、
+PRINTL 자신フィールドの「파피몬」１体の上に重ねてＸ소환する事もできる。
+PRINTL この方法でＸ소환したこのカードのＸ素材は２つ増える。
+CALLFORM CARD_ABLE(0,발동強制誘発)
+PRINTL ①：このカードがモンスターゾーンに存在する限り、
+PRINTL 상대はカードの효과を발동するたびに５００ダメージを受ける。
+CALLFORM CARD_ABLE(3,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターン、フィールドのカード１枚を대상として발동できる。
+PRINTL そのカードはこのターン、完全鉄壁（戦闘、破壊、대상耐性）を得て、효과は無効化される。
+PRINTL 
+
+@CARDCAN_34069(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34069)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,34069)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,34069)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件重ねてＸ = 1
+	효과条件名前 = 파피몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 가루몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 워가루몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA_2(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,34069)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_34069(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備마법数
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 판정
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34069,1)
+	IF RESULT == 0
+		SETCOLOR C_BLUE
+		PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+		PRINTFORML
+		PRINTFORML 파피몬、ワープ進化！
+		PRINTFORML 
+		RESETCOLOR
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 가루몬
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 워가루몬
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL RESETCONDITION_MAT
+				必要素材数 = 1
+				素材条件名前 = 파피몬
+				重ねてＸ = 1
+				효과추가종류 = 効追Ｘ素 + 2
+				TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+				SETCOLOR C_BLUE
+				PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+				PRINTFORML
+				PRINTFORML 메탈가루몬！
+				PRINTFORML 
+				RESETCOLOR
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 발동強制誘発
+	CALL LIFE_CHANGE(듀얼리스트,"減少","효과",500,1)
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34069,3,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			SIF 参照先（CS） == "필드"
+			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"無効",1)
+			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"戦耐",1)
+			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"破耐",1)
+			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"対耐",1)
+		ENDIF
+	ENDIF
+ENDIF
+

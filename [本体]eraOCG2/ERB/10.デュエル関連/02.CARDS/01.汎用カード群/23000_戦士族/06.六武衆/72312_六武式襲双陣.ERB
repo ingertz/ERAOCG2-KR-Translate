@@ -12,6 +12,8 @@ SELECTCASE 参照先
 		RESULTS = 여섯무식 습쌍진
 	CASE "カテゴリ"
 		RESULTS:0 = 여섯 무식
+	CASE "検索カテゴリ"
+		RESULTS:0 = 여섯 무사
 ENDSELECT
 
 
@@ -64,19 +66,11 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,72312)
 		RETURN 0
 	CALL FULLRESET
-	효과範囲상대묘지 = 1
-	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲손패 = 1
-	효과範囲묘지 = 1
+	효과範囲필드 = 1
 	효과条件カテゴリ = 여섯 무사
-	효과条件攻撃力 = 2000
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT <= 1
+	SIF RESULT < 2
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 묘지起動

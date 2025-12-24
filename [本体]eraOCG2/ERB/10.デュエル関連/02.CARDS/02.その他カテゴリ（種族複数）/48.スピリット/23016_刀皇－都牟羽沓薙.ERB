@@ -1,0 +1,171 @@
+﻿@CARDNAME_23016,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 도황－츠무하쿠츠나기
+	CASE "略称"
+		RESULTS = 츠무하쿠츠나기
+	CASE "カテゴリ"
+		RESULTS:0 = 스피릿
+ENDSELECT
+
+@CARD_23016(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 3000
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251208
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_23016(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは특수소환できない。
+PRINTL このカードは通常소환したモンスター１体をリリースしてアドバンス소환できる。
+CALLFORM CARD_ABLE(0,소환時,リバース誘発)
+PRINTL ①：このカードが소환・リバースした場合に발동できる。
+PRINTL 상대は自身のフィールドのカードを任意の数だけ選んで묘지へ送る事ができる。
+PRINTL その場合、その数だけお互いにドローする。
+PRINTL このターンのエンドフェイズに、お互いのフィールド・묘지・제외状態のカードを全て持ち主の덱に戻す。
+CALLFORM CARD_ABLE(0,ターン終了時強制)
+PRINTL ②：このカードが通常소환されている場合、エンドフェイズに발동する。
+PRINTL このカードを持ち主の손패に戻す。
+
+@CARDCAN_23016(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23016)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과소환
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件召種 = 召種通常
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == リバース誘発
+	RETURN 1
+ELSEIF 종류 == ターン終了時予約
+	RETURN 1
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種通常
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_23016(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC ドロー枚数
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과소환
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件召種 = 召種通常
+	CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == リバース誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23016)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件複数 = 90
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			ドロー枚数 = RESULT:2
+			CALL CARDDRAW_BASIC(듀얼리스트,ドロー枚数)
+			CALL CARDDRAW_BASIC(対面者,ドロー枚数)
+		ENDIF
+		CALL CARD_RESERV(듀얼리스트,23016,エンド予約)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"덱")
+	
+	FOR カウンタ,0,VARSIZE(@"%듀얼리스트%_묘지") - 1
+		VARSET RESULT
+		VARSET RESULTS
+		SIF GETVAR(@"%듀얼리스트%_묘지:{カウンタ}") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(듀얼리스트,"묘지",カウンタ,덱行き)
+	NEXT
+	FOR カウンタ,0,VARSIZE(@"%듀얼리스트%_제외") - 1
+		VARSET RESULT
+		VARSET RESULTS
+		SIF GETVAR(@"%듀얼리스트%_제외:{カウンタ}") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(듀얼리스트,"제외",カウンタ,덱行き)
+	NEXT
+
+	FOR カウンタ,0,VARSIZE(@"%対面者%_묘지") - 1
+		VARSET RESULT
+		VARSET RESULTS
+		SIF GETVAR(@"%対面者%_묘지:{カウンタ}") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(対面者,"묘지",カウンタ,덱行き)
+	NEXT
+	FOR カウンタ,0,VARSIZE(@"%듀얼리스트%_제외") - 1
+		VARSET RESULT
+		VARSET RESULTS
+		SIF GETVAR(@"%対面者%_제외:{カウンタ}") == -1
+			CONTINUE
+		CALL CARD_DISPOSE(対面者,"제외",カウンタ,덱行き)
+	NEXT
+	CALL SHUFFLE(듀얼리스트)
+	CALL SHUFFLE(対面者)
+
+ELSEIF 종류 == ターン終了時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23016)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+	ENDIF
+ENDIF

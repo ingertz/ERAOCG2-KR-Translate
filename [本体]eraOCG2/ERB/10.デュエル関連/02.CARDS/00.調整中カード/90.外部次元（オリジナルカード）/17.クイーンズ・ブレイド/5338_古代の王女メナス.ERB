@@ -1,0 +1,152 @@
+﻿@CARDNAME_5338,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 고대의 왕녀 메나스
+	CASE "略称"
+		RESULTS = 고대의왕녀메나스
+	CASE "カテゴリ"
+		RESULTS:0 = 미투사
+	CASE "出典作品"
+		RESULTS:0 = 퀸즈 블레이드
+ENDSELECT
+
+
+@CARD_5338(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 2100
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251215
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5338(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,묘지起動)
+PRINTL ①：상대が３体以上のモンスターを소환・특수소환した자신・상대ターンのメインフェイズに발동できる。
+PRINTL このカードを묘지から특수소환し、상대フィールドのモンスター１体の효과を無効にする。
+CALLFORM CARD_ABLE(2,손패→묘지,덱→묘지,攻撃時誘発)
+PRINTL ②：このカードの攻撃宣言時、またはフィールド以外から묘지へ送られた場合に발동できる。
+PRINTL 자신の덱の一番上のカードをめくる。そのカードの종류によって、以下の효과を適用する。
+PRINTL ●モンスター：묘지の언데드족「미투사」モンスター１体を특수소환する。
+PRINTL ●마법・함정　：상대の묘지のモンスター１体を특수소환する。
+
+
+@CARDCAN_5338(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5338)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 묘지起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,5338)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,5338,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패→묘지 || 종류 == 덱→묘지
+    SIF 발동済_2(듀얼리스트,5338)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == 攻撃時誘発
+	SIF 발동済_2(듀얼리스트,5338)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件うらら解除 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5338(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+IF 종류 == 묘지起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5338,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"無効")
+
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, ゾーン, 場所)
+	ENDIF
+ELSEIF 종류 == 戦破壊→묘지 || 종류 == 攻撃時誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5338)
+	IF RESULT == 0
+		TRYCALLFORM CARD_UI(GETVAR(@"%듀얼리스트%_덱:0"))
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_덱:0")}("종류")
+		IF RESULT <= モン全般
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 미투사
+			효과条件종족 = 언데드족
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ELSEIF RESULT >= 20
+			CALL FULLRESET
+			효과範囲상대묘지 = 1
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

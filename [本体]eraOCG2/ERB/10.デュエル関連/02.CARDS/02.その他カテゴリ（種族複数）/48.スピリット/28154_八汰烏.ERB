@@ -1,0 +1,113 @@
+﻿@CARDNAME_28154,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 야타 까마귀
+	CASE "略称"
+		RESULTS = 야타 까마귀
+	CASE "カテゴリ"
+		RESULTS:0 = 스피릿
+ENDSELECT
+
+@CARD_28154(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 200
+	CASE "守備力"
+		RETURN 100
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251208
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28154(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは특수소환できない。
+CALLFORM CARD_ABLE(0,ライフ変強制誘発)
+PRINTL ①：このカードが상대に戦闘ダメージを与えた場合に발동する。
+PRINTL 次の상대ドローフェイズをスキップする。
+CALLFORM CARD_ABLE(0,ターン終了時強制)
+PRINTL ②：このカードが通常소환されている場合、エンドフェイズに발동する。
+PRINTL このカードを持ち主の손패に戻す。
+
+@CARDCAN_28154(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28154)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == ライフ変強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ダメージ受者 == 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ダメージ종류,"直接戦闘","戦闘")
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種通常
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDFORCE_28154(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+VARSET RESULT
+IF 종류 == ライフ変強制誘発
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28154(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+
+IF 종류 == ライフ変強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28154)
+	IF RESULT == 0
+		CALL SET_PLAYER_INFO(듀얼리스트,"ドロースキップ",1,1)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28154)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+	ENDIF
+ENDIF

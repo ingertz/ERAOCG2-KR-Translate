@@ -1075,6 +1075,7 @@ ELSEIF RESULT == 91300
 
 ELSEIF RESULT == 91400
 	代表カード_ID = 選択カード_ID
+	$DIHYO_LOOP
 	TRYCALLFORM CARDNAME_{代表カード_ID}("名前")
 	PRINTFORML 《%RESULTS%》를 어떤 대표로 설정하시겠습니까？
 
@@ -1119,106 +1120,109 @@ ELSEIF RESULT == 91400
 	PRINTFORM 소환구상
 	PRINTBUTTON @"【%編集_アイドル_소환구상,40,LEFT%】", 23
 	PRINTFORML 
-
+	RESETCOLOR
 	PRINTFORML 
 	CUSTOMDRAWLINE ―
 	PRINTBUTTON "【돌아간다】", 0
 	BINPUT
-	IF RESULT == 1
-		編集_切り札 = 代表カード_ID
-		SIF 代表カード_ID == 編集_エース
-			編集_エース = -1
-		SIF 代表カード_ID == 編集_アイドル
-			編集_アイドル = -1
+	IF RESULT != 0
 
-	ELSEIF RESULT == 2
-		編集_エース = 代表カード_ID
-		SIF 代表カード_ID == 編集_切り札
-			編集_切り札 = -1
-		SIF 代表カード_ID == 編集_アイドル
-			編集_アイドル = -1
-	ELSEIF RESULT == 3
-		編集_アイドル = 代表カード_ID
-		SIF 代表カード_ID == 編集_切り札
-			編集_切り札 = -1
-		SIF 代表カード_ID == 編集_エース
-			編集_エース = -1
-	ELSEIF RESULT == 11
-		PRINT 비장의 카드의 기술명을 입력해주세요：(전각２０문자까지)
-		PRINTBUTTON @"【돌아간다】", ""
-		PRINTL 
-		PRINTL
-		INPUTS
-		IF RESULTS == ""
-			編集_切り札_技名 = ""
-		ELSE
-			SUBSTRING RESULTS, 0, 40
-			編集_切り札_技名 = %RESULTS%
+		IF RESULT == 1
+			編集_切り札 = 代表カード_ID
+			SIF 代表カード_ID == 編集_エース
+				編集_エース = -1
+			SIF 代表カード_ID == 編集_アイドル
+				編集_アイドル = -1
+
+		ELSEIF RESULT == 2
+			編集_エース = 代表カード_ID
+			SIF 代表カード_ID == 編集_切り札
+				編集_切り札 = -1
+			SIF 代表カード_ID == 編集_アイドル
+				編集_アイドル = -1
+		ELSEIF RESULT == 3
+			編集_アイドル = 代表カード_ID
+			SIF 代表カード_ID == 編集_切り札
+				編集_切り札 = -1
+			SIF 代表カード_ID == 編集_エース
+				編集_エース = -1
+		ELSEIF RESULT == 11
+			PRINT 비장의 카드의 기술명을 입력해주세요：(전각２０문자까지)
+			PRINTBUTTON @"【돌아간다】", ""
+			PRINTL 
+			PRINTL
+			INPUTS
+			IF RESULTS == ""
+				編集_切り札_技名 = ""
+			ELSE
+				SUBSTRING RESULTS, 0, 40
+				編集_切り札_技名 = %RESULTS%
+			ENDIF
+		ELSEIF RESULT == 12
+			PRINT 에이스의 기술명을 입력해주세요：(전각２０문자까지)
+			PRINTBUTTON @"【돌아간다】", ""
+			PRINTL 
+			PRINTL
+			INPUTS
+			IF RESULTS == ""
+				編集_エース_技名 = ""
+			ELSE
+				SUBSTRING RESULTS, 0, 40
+				編集_エース_技名 = %RESULTS%
+			ENDIF
+		ELSEIF RESULT == 13
+			PRINT 아이돌의 기술명을 입력해주세요：(전각２０문자까지)
+			PRINTBUTTON @"【돌아간다】", ""
+			PRINTL 
+			PRINTL
+			INPUTS
+			IF RESULTS == ""
+				編集_アイドル_技名 = ""
+			ELSE
+				SUBSTRING RESULTS, 0, 40
+				編集_アイドル_技名 = %RESULTS%
+			ENDIF
+		;ザポルグ追記20250309　ここから
+		ELSEIF RESULT == 21
+			PRINT 비장의 카드의 소환구상을 입력해주세요：(전각５０문자까지)
+			PRINTBUTTON @"【돌아간다】", ""
+			PRINTL 
+			PRINTL
+			INPUTS
+			IF RESULTS == ""
+				編集_切り札_소환구상 = ""
+			ELSE
+				SUBSTRING RESULTS, 0, 100
+				編集_切り札_소환구상 = %RESULTS%
+			ENDIF
+		ELSEIF RESULT == 22
+			PRINT 에이스의 소환구상을 입력해주세요：(전각５０문자까지)
+			PRINTBUTTON @"【돌아간다】", ""
+			PRINTL 
+			PRINTL
+			INPUTS
+			IF RESULTS == ""
+				編集_エース_소환구상 = ""
+			ELSE
+				SUBSTRING RESULTS, 0, 100
+				編集_エース_소환구상 = %RESULTS%
+			ENDIF
+		ELSEIF RESULT == 23
+			PRINT 아이돌의 소환구상을 입력해주세요：(전각５０문자까지)
+			PRINTBUTTON @"【돌아간다】", ""
+			PRINTL 
+			PRINTL
+			INPUTS
+			IF RESULTS == ""
+				編集_アイドル_소환구상 = ""
+			ELSE
+				SUBSTRING RESULTS, 0, 100
+				編集_アイドル_소환구상 = %RESULTS%
+			ENDIF
+		;ザポルグ追記20250309　ここまで
 		ENDIF
-	ELSEIF RESULT == 12
-		PRINT 에이스의 기술명을 입력해주세요：(전각２０문자까지)
-		PRINTBUTTON @"【돌아간다】", ""
-		PRINTL 
-		PRINTL
-		INPUTS
-		IF RESULTS == ""
-			編集_エース_技名 = ""
-		ELSE
-			SUBSTRING RESULTS, 0, 40
-			編集_エース_技名 = %RESULTS%
-		ENDIF
-	ELSEIF RESULT == 13
-		PRINT 아이돌의 기술명을 입력해주세요：(전각２０문자까지)
-		PRINTBUTTON @"【돌아간다】", ""
-		PRINTL 
-		PRINTL
-		INPUTS
-		IF RESULTS == ""
-			編集_アイドル_技名 = ""
-		ELSE
-			SUBSTRING RESULTS, 0, 40
-			編集_アイドル_技名 = %RESULTS%
-		ENDIF
-	;ザポルグ追記20250309　ここから
-	ELSEIF RESULT == 21
-		PRINT 비장의 카드의 소환구상을 입력해주세요：(전각５０문자까지)
-		PRINTBUTTON @"【돌아간다】", ""
-		PRINTL 
-		PRINTL
-		INPUTS
-		IF RESULTS == ""
-			編集_切り札_소환구상 = ""
-		ELSE
-			SUBSTRING RESULTS, 0, 100
-			編集_切り札_소환구상 = %RESULTS%
-		ENDIF
-	ELSEIF RESULT == 22
-		PRINT 에이스의 소환구상을 입력해주세요：(전각５０문자까지)
-		PRINTBUTTON @"【돌아간다】", ""
-		PRINTL 
-		PRINTL
-		INPUTS
-		IF RESULTS == ""
-			編集_エース_소환구상 = ""
-		ELSE
-			SUBSTRING RESULTS, 0, 100
-			編集_エース_소환구상 = %RESULTS%
-		ENDIF
-	ELSEIF RESULT == 23
-		PRINT 아이돌의 소환구상을 입력해주세요：(전각５０문자까지)
-		PRINTBUTTON @"【돌아간다】", ""
-		PRINTL 
-		PRINTL
-		INPUTS
-		IF RESULTS == ""
-			編集_アイドル_소환구상 = ""
-		ELSE
-			SUBSTRING RESULTS, 0, 100
-			編集_アイドル_소환구상 = %RESULTS%
-		ENDIF
-	;ザポルグ追記20250309　ここまで
+		GOTO DIHYO_LOOP
 	ENDIF
-
 
 ;戻ページ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 ELSEIF RESULT == 91500

@@ -100,6 +100,20 @@ PRINTL
 PRINTFORM [{15,2}] %"외부작품의 제한",40,LEFT%
 PRINTL
 
+PRINTFORM [{16,2}] %"하루 종료시의 고백 설정",40,LEFT%
+IF オプション_甲斐性 == 0
+	PRINTFORML 【상대에게 고백받는다】
+ELSEIF オプション_甲斐性 == 1
+	PRINTFORML 【매번 선택】
+ELSEIF オプション_甲斐性 == 2
+	PRINTFORML 【자신이 고백한다】
+ELSEIF オプション_甲斐性 == 3
+	PRINTFORML 【서로 고백하지 않는다】
+ENDIF
+PRINTL
+
+
+
 PRINTL
 PRINTL ――【듀얼계 옵션】――――――――――
 PRINTFORML [{40,2}] %"듀얼 옵션",40,LEFT% 
@@ -387,11 +401,17 @@ SELECTCASE RESULT
 		オプション_訪問拒否 ^= 1	
 	CASE 15
 		CALL RESTRICT_WORLD
-
-
+	CASE 16
+		PRINTL 하루 종료시의 고백 설정
+		PRINTL 
+		PRINTL [0] - 상대에게 고백받는다
+		PRINTL [1] - 매번 선택
+		PRINTL [2] - 자신이 고백한다（고백 명령어를 눌렀을 때와 같은 구상이 흐릅니다）
+		PRINTL [3] - 매번 얼버무린다
+		BINPUT
+		オプション_甲斐性 = RESULT
 	CASE 40
 		CALL OPTION_DUEL
-
 	CASE 50
 		CALL MONSTER_LIST(30)
 	CASE 51

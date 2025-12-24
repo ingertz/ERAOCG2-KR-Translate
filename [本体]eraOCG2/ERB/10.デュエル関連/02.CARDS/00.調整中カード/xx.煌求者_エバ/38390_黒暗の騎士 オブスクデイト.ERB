@@ -1,0 +1,261 @@
+﻿@CARDNAME_38390,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 흑암의 기사 옵스크데이트
+	CASE "略称"
+		RESULTS = 옵스크데이트
+	CASE "カテゴリ"
+		RESULTS:0 = 옵스크데이트
+		RESULTS:1 = 황구자
+		RESULTS:2 = 케테르 생츄어리
+		RESULTS:3 = 브랜트 게이트
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_38390(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2800
+	CASE "성별"
+		RETURN 雄性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_38390(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードの攻撃力・守備力は자신フィールドの지속마법カードの数×２００アップする。
+CALL TEXT_DECORATION_GRITTER_R("에바")
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ②：このカードが특수소환された場合に발동できる。
+PRINTL このカードは각성状態になる。
+PRINTL その後、상대フィールドのカード１枚を대상として破壊できる。
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ③：このカードが각성状態で、상대の효과が발동した時に、このカードを묘지に送って발동できる。
+PRINTL その효과を無効にして破壊する。
+
+
+@CARDCAN_38390(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,38390)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,38390)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 에바
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_2(듀얼리스트,38390)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 에바
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") < 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_38390(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 修正値
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38390,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"条達",2,上書きモード)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件除去種 = 묘지
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,38390,2)
+	IF RESULT == 0
+	    CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+			RETURN 1
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件종류 = 지속마법
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	修正値 = RESULT * 200
+	SIF 修正値 > 0
+		CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,修正値,修正値)
+ENDIF
+
+@TEXT_DECORATION_GRITTER_R(参照先)
+#DIMS DYNAMIC 参照先
+#DIMS DYNAMIC 上段文字
+#DIMS DYNAMIC 下段文字
+#DIM DYNAMIC 上段文字数
+#DIM DYNAMIC 下段文字数
+#DIM DYNAMIC 罫線文字数
+#DIMS DYNAMIC 罫線文字보존
+
+上段文字 = %" 황구자 - "+参照先+" "%
+下段文字 = %" 자신フィールドに「"+参照先+"」モンスターが存在する場合、 以下の효과が有効 "%
+
+STRLENFORM %上段文字%
+上段文字数 = RESULT
+STRLENFORM %下段文字%
+下段文字数 = RESULT
+
+;罫線文字は片側のみ（/2）＆全角を2文字換算してるので(/2)計÷４
+罫線文字数 = 38 - 上段文字数 / 4
+;全角を１文字換算した結果が奇数(折り返しで１文字余る)なら、罫線１個消して上段文字の左右にスペースを入れる
+;(１文字引くのは文字数調整用に真ん中に入れたスペース)
+STRLENFORMU %上段文字%
+IF (RESULT - 1) % 2 == 1
+	罫線文字数--
+	上段文字 = %" "+上段文字+" "%
+ENDIF
+REPEAT 罫線文字数
+	罫線文字보존 = %罫線文字보존%─
+REND
+ALIGNMENT CENTER
+CALL XON_GRADATION(C_W_RED,C_SILVER,罫線文字보존)
+CALL XON_GRADATION(C_SILVER,C_WHITE,上段文字)
+CALL XON_GRADATION(C_WHITE,C_AQUA_2,罫線文字보존)
+PRINTL 
+VARSET 罫線文字보존
+罫線文字数 = 38 - 下段文字数 / 4
+STRLENFORMU %下段文字%
+;下段は剰余판정が逆になる（参照先以外の文字数の関係）
+IF (RESULT - 1) % 2 == 0
+	罫線文字数--
+	下段文字 = %" "+下段文字+" "%
+ENDIF
+REPEAT 罫線文字数
+	罫線文字보존 = %罫線文字보존%─
+REND
+CALL XON_GRADATION(C_L_GREEN,C_WHITE,罫線文字보존)
+CALL XON_GRADATION(C_WHITE,C_SILVER,下段文字)
+CALL XON_GRADATION(C_SILVER,C_YELLOW_2,罫線文字보존)
+PRINTL 
+ALIGNMENT LEFT
+
+@TEXT_DECORATION_GRITTER_V
+#DIMS DYNAMIC 上段文字
+#DIMS DYNAMIC 下段文字
+#DIM DYNAMIC 上段文字数
+#DIM DYNAMIC 下段文字数
+#DIM DYNAMIC 罫線文字数
+#DIMS DYNAMIC 罫線文字보존
+
+上段文字 = %" 황구자 "%
+下段文字 = %" （このカードは煌結晶を求める【황구자】である） "%
+
+STRLENFORM %上段文字%
+上段文字数 = RESULT
+STRLENFORM %下段文字%
+下段文字数 = RESULT
+
+;罫線文字は片側のみ（/2）＆全角を2文字換算してるので(/2)計÷４
+罫線文字数 = 38 - 上段文字数 / 4
+;全角を１文字換算した結果が奇数(折り返しで１文字余る)なら、罫線１個消して上段文字の左右にスペースを入れる
+;(１文字引くのは文字数調整用に真ん中に入れたスペース)
+STRLENFORMU %上段文字%
+IF (RESULT - 1) % 2 == 1
+	罫線文字数--
+	上段文字 = %" "+上段文字+" "%
+ENDIF
+REPEAT 罫線文字数
+	罫線文字보존 = %罫線文字보존%─
+REND
+ALIGNMENT CENTER
+CALL XON_GRADATION(C_W_RED,C_SILVER,罫線文字보존)
+CALL XON_GRADATION(C_SILVER,C_WHITE,上段文字)
+CALL XON_GRADATION(C_WHITE,C_AQUA_2,罫線文字보존)
+PRINTL 
+VARSET 罫線文字보존
+罫線文字数 = 38 - 下段文字数 / 4
+STRLENFORMU %下段文字%
+;下段は剰余판정が逆になる（参照先以外の文字数の関係）
+IF (RESULT - 1) % 2 == 1
+	罫線文字数--
+	下段文字 = %" "+下段文字+" "%
+ENDIF
+REPEAT 罫線文字数
+	罫線文字보존 = %罫線文字보존%─
+REND
+CALL XON_GRADATION(C_L_GREEN,C_WHITE,罫線文字보존)
+CALL XON_GRADATION(C_WHITE,C_SILVER,下段文字)
+CALL XON_GRADATION(C_SILVER,C_YELLOW_2,罫線文字보존)
+PRINTL 
+ALIGNMENT LEFT

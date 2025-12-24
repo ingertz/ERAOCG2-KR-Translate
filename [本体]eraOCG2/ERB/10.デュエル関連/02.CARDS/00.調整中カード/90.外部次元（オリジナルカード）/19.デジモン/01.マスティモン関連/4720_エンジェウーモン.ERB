@@ -1,0 +1,245 @@
+﻿@CARDNAME_4720,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엔젤우몬
+	CASE "略称"
+		RESULTS = 엔젤우몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_4720(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 2800
+	CASE "성별"
+		RETURN 牝性
+	CASE "生成カード"
+		RETURN 34310
+	CASE "추가日"
+		RETURN 251130
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4720(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬 카드는 사이버스족으로도 취급한다。
+PRINTL 이 카드명의 ①②③의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL またこのカードの①の효과は자신フィールドのレベル５・６の빛속성
+PRINTL 「디지몬」モンスター１体をリリースして발동することもできる。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신メインフェイズに발동することができる。
+PRINTL このカードを손패から특수소환する。
+PRINTL モンスターをリリースせずこの효과を발동した場合、상대は덱からカードを２枚ドローする。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환に成功した時に
+PRINTL 자신フィールド・묘지の光・어둠속성「디지몬」モンスター１体を대상として발동できる。
+PRINTL そのカードの生成カード１枚を덱から손패に加えることができる。
+PRINTL この효과でカードを加えなかった場合、덱からカードを１枚ドローする。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：자신がダメージを受けた場合に발동できる。
+PRINTL 자신は１０００LP회복する。
+PRINTL その後、表側표시の상대モンスター１体を효과無効・攻撃불가にすることができる。
+PRINTL 
+
+@CARDCAN_4720(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4720)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,4720)
+		RETURN 0
+
+	CALL FULLRESET
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(듀얼리스트,4720,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,4720)
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
+	효과条件속성:0 = 빛속성
+	효과条件속성:1 = 어둠속성
+	효과条件カテゴリ = 디지몬
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,4720)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL CARD_CHECK_FIN_BIT(듀얼리스트,"被弾者")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4720(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード生成カード
+#DIMS DYNAMIC 選択カード生成カード名
+#DIM DYNAMIC 選択カード生成カード１
+#DIMS DYNAMIC 選択カード生成カード名１
+#DIM DYNAMIC 選択カード生成カード２
+#DIMS DYNAMIC 選択カード生成カード名２
+#DIM DYNAMIC 選択カード生成カード３
+#DIMS DYNAMIC 選択カード生成カード名３
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4720,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件속성 = 빛속성
+		효과条件レベル:0 = 5
+		효과条件レベル:1 = 6
+		효과条件カテゴリ= 디지몬
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 = 1
+
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		IF 条件달성 < 1
+			CALL FULLRESET
+			CALL CARDDRAW_BASIC(対面者,2)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4720,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲묘지 = 1
+		효과条件속성:0 = 빛속성
+		효과条件속성:1 = 어둠속성
+		효과条件カテゴリ = 디지몬
+		효과条件종류 = モン全般
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			TRYCALLFORM CARD_{RESULT:99}("生成カード")
+			IF RESULT != 0
+				選択カード生成カード = RESULT
+				選択カード生成カード１ = RESULT:1
+				選択カード生成カード２ = RESULT:2
+				選択カード生成カード３ = RESULT:3
+				CALL FULLRESET
+				TRYCALLFORM CARDNAME_{選択カード生成カード}("名前")
+				IF RESULTS != ""
+					選択カード生成カード名 = %RESULTS%
+					CALL FULLRESET
+					TRYCALLFORM CARDNAME_{選択カード生成カード１}("名前")
+					IF RESULTS != ""
+						選択カード生成カード名１ = %RESULTS%
+						CALL FULLRESET
+						TRYCALLFORM CARDNAME_{選択カード生成カード２}("名前")
+						IF RESULTS != ""
+							選択カード生成カード名２ = %RESULTS%
+							CALL FULLRESET
+							TRYCALLFORM CARDNAME_{選択カード生成カード３}("名前")
+							IF RESULTS != ""
+								選択カード生成カード名３ = %RESULTS%
+								CALL FULLRESET
+							ENDIF
+						ENDIF
+					ENDIF
+				ENDIF
+				효과範囲덱 = 1
+				효과条件名前:0 = %選択カード生成カード名%
+				효과条件名前:1 = %選択カード生成カード名１%
+				효과条件名前:2 = %選択カード生成カード名２%
+				효과条件名前:3 = %選択カード生成カード名３%
+				효과条件任意 = 1
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 0
+					CALL FULLRESET
+					CALL CARDDRAW_BASIC(듀얼리스트,1)
+				ENDIF
+			ELSE
+				CALL FULLRESET
+				CALL CARDDRAW_BASIC(듀얼리스트,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4720,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
+
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		효과条件任意 = 1
+		효과추가종류 = 4
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"지속無効")
+	ENDIF
+ENDIF

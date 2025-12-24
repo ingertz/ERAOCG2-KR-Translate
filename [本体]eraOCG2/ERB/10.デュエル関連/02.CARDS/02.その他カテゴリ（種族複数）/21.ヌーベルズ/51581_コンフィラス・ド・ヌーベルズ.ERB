@@ -1,4 +1,4 @@
-﻿@CARDNAME_51512,参照先
+﻿@CARDNAME_51581,参照先
 ;ココで지정카드의 名前、略称を返す予定
 ;#FUNCTIONS
 #DIMS DYNAMIC 参照先
@@ -16,7 +16,7 @@ SELECTCASE 参照先
 ENDSELECT
 
 
-@CARD_51512(参照先)
+@CARD_51581(参照先)
 
 #DIMS DYNAMIC 参照先
 VARSET RESULT
@@ -38,7 +38,7 @@ SELECTCASE 参照先
 ENDSELECT
 
 RETURN 0
-@CARDSUMMON_51512(듀얼리스트,소환カード,EX参照)
+@CARDSUMMON_51581(듀얼리스트,소환カード,EX参照)
 #DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 소환カード
@@ -48,12 +48,12 @@ CALL RESETCONDITION_MAT
 必要レベル数 = 2
 
 IF EX参照 == 1
-	CALL RITCAN(듀얼리스트,소환カード,51512) 
+	CALL RITCAN(듀얼리스트,소환カード,51581) 
 	RETURN RESULT
 ENDIF
 
 
-@CARD_EXPLANATION_51512(종류)
+@CARD_EXPLANATION_51581(종류)
 #DIM DYNAMIC 종류
 
 PRINTL "요리법" 카드에 의해 강림.
@@ -67,7 +67,7 @@ PRINTL 이 카드와 자신 상대 필드의 공격 표시 몬스터 1장을 릴
 PRINTL 손패 덱에서 레벨 3, 4의 "누밸즈" 의식 몬스터 1장을 특수 소환한다.
 
 
-@CARDCAN_51512(듀얼리스트,종류,ゾーン,場所)
+@CARDCAN_51581(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
@@ -79,13 +79,13 @@ PRINTL 손패 덱에서 레벨 3, 4의 "누밸즈" 의식 몬스터 1장을 특�
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51512)
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51581)
 SIF RESULT == 1
 	RETURN 0
 
 
 IF 종류 == 특수소환時 || 종류 == EX소환時
-	SIF 발동済_1(듀얼리스트,51512)
+	SIF 발동済_1(듀얼리스트,51581)
 		RETURN 0
 	SIF 마함数(対面者) == 0
 		RETURN 0
@@ -94,7 +94,7 @@ IF 종류 == 특수소환時 || 종류 == EX소환時
 ELSEIF 종류 == 효과後誘発
 	SIF ゾーン != "필드"
 		RETURN 0
-	SIF 발동済_2(듀얼리스트,51512)
+	SIF 발동済_2(듀얼리스트,51581)
 		RETURN 0
 	CALL FULLRESET
 	효과条件종류 = 마법全般
@@ -131,7 +131,7 @@ ELSEIF 종류 == 효과後誘発
 ELSEIF 종류 == 攻撃時誘発
 	SIF ゾーン != "필드"
 		RETURN 0
-	SIF 발동済_2(듀얼리스트,51512)
+	SIF 발동済_2(듀얼리스트,51581)
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트) != 場所
 		RETURN 0
@@ -158,7 +158,7 @@ ELSEIF 종류 == 攻撃時誘発
 	RETURN 1
 ENDIF
 
-@CARDEFFECT_51512(듀얼리스트,종류,ゾーン,場所)
+@CARDEFFECT_51581(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
@@ -172,13 +172,13 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 특수소환時 || 종류 == EX소환時
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51512,1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51581,1)
 	IF RESULT == 0
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"마함単体",場所,"묘지")
 	ENDIF
 ELSEIF 종류 == 효과後誘発 || 종류 == 攻撃時誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51512,2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51581,2)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET

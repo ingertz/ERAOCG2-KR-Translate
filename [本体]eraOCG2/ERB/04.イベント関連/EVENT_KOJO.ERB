@@ -2,7 +2,7 @@
 ;@KOJO_MESSAGE_COM관계
 ;コマンド実行時に출력されます
 ;--------------------------------------------------
-@KOJO_MESSAGE_SEND(종류,캐릭터_ID,이벤트_ID,変数A,変数B,文字変数A)
+@KOJO_MESSAGE_SEND(종류,캐릭터_ID,이벤트_ID = -1,変数A,変数B,文字変数A)
 #DIMS DYNAMIC 종류
 #DIM DYNAMIC 구상_ID
 #DIM DYNAMIC 이벤트_ID
@@ -21,15 +21,27 @@ SELECTCASE 종류
 ;コマンド系KOJO출력処理
 ;------------------------------------------------------------
 	CASE "COMMAND"
+		LTARGET = TARGET
+		IF 캐릭터_ID >= 1
+			TARGET = 캐릭터_ID
+		ENDIF
 		캐릭터_ID = TARGET
-		SIF 캐릭터_ID <= -1
+		IF 캐릭터_ID <= -1
+			TARGET = LTARGET
 			RETURN 0
+		ENDIF
+		IF 이벤트_ID >= 0
+			SELECTCOM = 이벤트_ID
+		ELSE
+			이벤트_ID = SELECTCOM
+		ENDIF
 		VARSET LOCAL
 		;PRINTFORMW FLAG:구상텍스트설정:{FLAG:구상텍스트설정}
 		IF FLAG:구상텍스트설정 <= 0
 			IF FLAG:배경텍스트설정 > 0
 				CALL TRAIN_MESSAGE
 			ENDIF
+			TARGET = LTARGET
 			RETURN 0
 		ENDIF
 		VARSET RESULT
@@ -44,6 +56,7 @@ SELECTCASE 종류
 		IF (!RESULT || CFLAG:캐릭터_ID:개인구상무효== 1) && FLAG:배경텍스트설정 > 0
 			IF TALENT:캐릭터_ID:구상성격 == 0
 				CALL TRAIN_MESSAGE
+				TARGET = LTARGET
 				RETURN 0
 			ELSEIF TALENT:캐릭터_ID:구상성격 >= 1
 				汎用구상 = 1
@@ -55,8 +68,10 @@ SELECTCASE 종류
 		ENDIF
 
 		VARSET RESULT
-		SIF 停止状態 == 1
+		IF 停止状態 == 1
+			TARGET = LTARGET
 			RETURN 0
+		ENDIF
 		IF 구상在り
 			TRYCALLFORM M_KOJO_SETTINGS_K{구상_ID}(캐릭터_ID)
 			IF CFLAG:캐릭터_ID:문자색설정 > 0
@@ -70,7 +85,7 @@ SELECTCASE 종류
 					CALL TRAIN_MESSAGE
 				ENDCATCH
 			ELSE
-				TRYCCALLFORM M_KOJO_MESSAGE_COM_K{구상_ID}_{SELECTCOM}
+				TRYCCALLFORM M_KOJO_MESSAGE_COM_K{구상_ID}_{이벤트_ID}
 				CATCH
 					CALL TRAIN_MESSAGE
 				ENDCATCH
@@ -93,7 +108,7 @@ SELECTCASE 종류
 					CALL TRAIN_MESSAGE
 				ENDCATCH
 			ELSE
-				TRYCCALLFORM M_HNYO_MESSAGE_COM_K{TALENT:캐릭터_ID:구상성격}_{SELECTCOM}
+				TRYCCALLFORM M_HNYO_MESSAGE_COM_K{TALENT:캐릭터_ID:구상성격}_{이벤트_ID}
 				CATCH
 					CALL TRAIN_MESSAGE
 				ENDCATCH
@@ -106,6 +121,8 @@ SELECTCASE 종류
 			RESETCOLOR
 		ENDIF
 		
+		TARGET = LTARGET
+		RETURN 1
 ;------------------------------------------------------------
 ;이벤트系KOJO출력処理
 ;------------------------------------------------------------

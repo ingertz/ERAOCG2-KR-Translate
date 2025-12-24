@@ -64,7 +64,7 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92885)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 마함起動 || 종류 == フリー誘発
+IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
 	SIF 발동済_1(듀얼리스트,92885)
 		RETURN 0
 	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
@@ -80,7 +80,6 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-
 	RETURN 1
 ELSEIF 종류 == 묘지起動
 	SIF 발동済_2(듀얼리스트,92885)
@@ -130,6 +129,7 @@ IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함"
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92885,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
 		효과範囲덱 = 1
 		효과範囲묘지 = 1
 		효과範囲제외 = 1
@@ -143,21 +143,22 @@ IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함"
 			CALL FULLRESET
 			효과範囲EX덱 = 1
 			효과条件종류 = 융합
-			효과条件소환可 = 1
+			효과条件소환可 = 2
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1
 				CALL RESETAREA_MAT
 				素材範囲필드 = 1
 				素材範囲손패 = 1
 				CALL FULLRESET
-				효과範囲EX덱 = 1
 				효과条件종류 = 융합
-				효과条件소환可 = 1
+				효과条件소환可 = 2
 				효과条件任意 = 1
-				CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+				CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
 				選択カード = RESULT
 				IF 選択カード != 9999
+					;カードの条件を読み込む：
 					TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+					;素材処理を読み込む
 					CALL FUSSUMMON(듀얼리스트,選択カード)
 				ENDIF
 			ENDIF

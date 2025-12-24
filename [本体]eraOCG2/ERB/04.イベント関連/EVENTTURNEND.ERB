@@ -88,15 +88,71 @@ FOR 캐릭터_ID,1,CHARANUM
 			CFLAG:캐릭터_ID:소유함 = 1
 		ENDIF
 
-	ELSEIF CFLAG:캐릭터_ID:호감도 > 2000 && ABL:캐릭터_ID:순종 >= 3 && !TALENT:캐릭터_ID:연모 && !TALENT:캐릭터_ID:굴복됨 && TALENT:캐릭터_ID:중고 == 0
-		CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 21, 1)
-		SETCOLOR C_PINK
-		PRINTFORML %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%와의 행위에서 기쁨을 느끼는 것 같다…
-		PRINTFORMW %CALLNAME:캐릭터_ID%는 【연모】를 얻었다
-		RESETCOLOR
-		TALENT:캐릭터_ID:연모 = 1
-		SETBIT CFLAG:캐릭터_ID:기정사실 , 0
-
+	ELSEIF CFLAG:캐릭터_ID:호감도 > 2000 && ABL:캐릭터_ID:순종 >= 3 && !TALENT:캐릭터_ID:연모 && !TALENT:캐릭터_ID:굴복됨 && TALENT:캐릭터_ID:중고 == 0 && CFLAG:캐릭터_ID:고백기다림 == 0
+		;毎回選ぶようにする
+		IF オプション_甲斐性 == 1
+			SETCOLOR C_PINK
+			PRINTFORML %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%와의 행위에 기쁨을 느껴버린것 같다……
+			RESETCOLOR
+			PRINTFORML 그리고 %CALLNAME:MASTER%는……。
+			PRINTFORML 
+			PRINTFORML [0] - 같은 기분이다（고백한다）
+			PRINTFORML [1] - %CALLNAME:캐릭터_ID%에게 맡긴다（고백을 받는다）
+			PRINTFORML [2] - 그 기분에 둔감하다
+			;甲斐性ある回答
+			IF RESULT == 0
+				CALL KOJO_MESSAGE_SEND("COMMAND", 캐릭터_ID, 352)
+				SETCOLOR C_PINK
+				PRINTFORMW %CALLNAME:캐릭터_ID%는【연모】를 얻었다
+				RESETCOLOR
+				TALENT:캐릭터_ID:연모 = 1
+				SETBIT CFLAG:캐릭터_ID:기정사실 , 0
+			;受け止められる男
+			ELSEIF RESULT == 1
+				CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 21, 1)
+				SETCOLOR C_PINK
+				PRINTFORMW %CALLNAME:캐릭터_ID%는 【연모】를 얻었다
+				RESETCOLOR
+				TALENT:캐릭터_ID:연모 = 1
+				SETBIT CFLAG:캐릭터_ID:기정사실 , 0
+			;カス
+			ELSE
+				RESETCOLOR
+				CFLAG:캐릭터_ID:고백기다림 = 1
+				PRINTFORMW 하지만 그것이 어떤 의미인지、서로에게 잘 승화하지 못한 것 같다。
+				PRINTFORML 
+			ENDIF
+		;完全に甲斐性！
+		ELSEIF オプション_甲斐性 == 2
+			SETCOLOR C_PINK
+			PRINTFORML %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%와의 행위에 기쁨을 느껴버린것 같다……
+			PRINTFORMW 그리고 그것을 %CALLNAME:MASTER%는 이해하고、자신의 마음을 전했다。
+			RESETCOLOR
+			CALL KOJO_MESSAGE_SEND("COMMAND", 캐릭터_ID, 352)
+			SETCOLOR C_PINK
+			PRINTFORMW %CALLNAME:캐릭터_ID%는 【연모】를 얻었다
+			RESETCOLOR
+			TALENT:캐릭터_ID:연모 = 1
+			SETBIT CFLAG:캐릭터_ID:기정사실 , 0
+			PRINTFORML 
+		;完全にカス！！
+		ELSEIF オプション_甲斐性 == 3
+			SETCOLOR C_PINK
+			PRINTFORML %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%와의 행위에 기쁨을 느껴버린것 같다……
+			RESETCOLOR
+			CFLAG:캐릭터_ID:고백기다림 = 1
+			PRINTFORMW 하지만 그것이 어떤 의미인지、서로에게 잘 승화하지 못한 것 같다。
+			PRINTFORML 
+		;通常、상대から待ち
+		ELSE
+			CALL KOJO_MESSAGE_SEND("EVENT", 캐릭터_ID, 21, 1)
+			SETCOLOR C_PINK
+			PRINTFORML %CALLNAME:캐릭터_ID%는 %CALLNAME:MASTER%와의 행위에서 기쁨을 느끼는 것 같다…
+			PRINTFORMW %CALLNAME:캐릭터_ID%는 【연모】를 얻었다
+			RESETCOLOR
+			TALENT:캐릭터_ID:연모 = 1
+			SETBIT CFLAG:캐릭터_ID:기정사실 , 0
+		ENDIF
 		PRINTL	
 		PRINTL	
 		PRINTL	
@@ -758,7 +814,18 @@ IF オプション_腹AWS == 1
 
 		SIF CFLAG:캐릭터_ID:지방 < 0
 			CFLAG:캐릭터_ID:지방 = 0
-
+		IF TALENT:캐릭터_ID:몸두께 >= 1 && CFLAG:캐릭터_ID:지방 == 0
+			SELECTCASE TALENT:캐릭터_ID:몸두께
+			CASE 1
+				CFLAG:캐릭터_ID:지방 = 150
+			CASE 2
+				CFLAG:캐릭터_ID:지방 = 250
+			CASE 3
+				CFLAG:캐릭터_ID:지방 = 350
+			CASE 4
+				CFLAG:캐릭터_ID:지방 = 450			
+			ENDSELECT
+		ENDIF
 		IF  INRANGE(CFLAG:캐릭터_ID:지방, 0, 99) && TALENT:캐릭터_ID:몸두께 != 0
 			TALENT:캐릭터_ID:몸두께 = 0
 			PRINTFORMW %CALLNAME:캐릭터_ID%의 배 둘레는 표준 체형이 되었다。

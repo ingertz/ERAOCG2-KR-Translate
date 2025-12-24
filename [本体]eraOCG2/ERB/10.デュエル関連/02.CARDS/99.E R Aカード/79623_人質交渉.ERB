@@ -1,0 +1,155 @@
+﻿@CARDNAME_79623,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 인질교섭
+	CASE "略称"
+		RESULTS = 인질교섭
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_79623(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79623(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALL CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：자신フィールドに元々の持ち主が상대であるモンスター１体を대상として발동する。
+PRINTL 상대は以下の효과から１つを選ぶ。
+PRINTL ●대상のモンスターのコントロールを元々の持ち主に戻し、このカードを발동したプレイヤーは자신の덱からカードを１枚選んで손패に加える。
+PRINTL ●대상のモンスターの所有権とコントロールは永久的にこのカードを발동したプレイヤーのものになる。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_79623(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79623)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,79623)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 10
+	효과条件所有 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_79623(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 조교대상
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79623)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件표시 = 10
+		효과条件所有 = 2
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 9999
+			RETURN 0
+		選択カード = RESULT
+		選択カード_ID = GETVAR(@"%듀얼리스트%_필드:選択カード")
+		IF 듀얼리스트 == "상대"
+			PRINTFORML 
+			PRINTFORML 適用する효과を選んで下さい。
+			PRINTFORML 
+			PRINTFORML [0] - ●대상モンスターのコントロールを元々の持ち主に戻し、このカードを발동したプレイヤーは자신の덱からカードを１枚選んで손패に加える。
+			PRINTFORML [1] - ●대상モンスターの所有権とコントロールは永久的にこのカードを발동したプレイヤーのものになる。
+			BINPUT
+		ELSE
+			IF OPPOSER == -1
+				RESULT = 1
+			ELSEIF OPPOSER >= 0
+				RESULT = 0
+			ELSE
+				RESULT = RAND:2
+			ENDIF
+			IF RESULT == 0
+				PRINTFORMW 「대상のコントロールを元々の持ち主に戻し、このカードを발동したプレイヤーは자신の덱からカードを１枚選んで손패に加える」효과が選ばれました。
+			ELSEIF RESULT == 1
+				PRINTFORMW 「대상の所有権とコントロールは永久的にこのカードを발동したプレイヤーのものになる」효과が選ばれました。
+			ENDIF
+			PRINTFORML 
+		ENDIF
+		IF RESULT == 0
+			CALL CARD_GET_CONTROL(対面者,選択カード)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ELSEIF RESULT == 1
+			IF 듀얼리스트 == "자신"
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"所有",1,1)
+				IF 選択カード < 100000
+					CALL CARD_GET_SINGLE(選択カード_ID,1)
+					PRINTFORML
+				ENDIF
+			ELSE
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"所有",2,1)
+				SETCOLOR C_RED
+				TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+				PRINTFORML 《%RESULTS%》を失いました……
+				ITEM:選択カード_ID -= 1
+				RESETCOLOR
+				PRINTFORMW
+			ENDIF
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"終処",0,1)
+		ELSE
+			CALL CARD_GET_CONTROL(対面者,選択カード)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+

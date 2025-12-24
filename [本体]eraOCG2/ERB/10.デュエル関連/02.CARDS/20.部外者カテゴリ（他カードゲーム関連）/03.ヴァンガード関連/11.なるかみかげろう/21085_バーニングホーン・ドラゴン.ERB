@@ -47,16 +47,14 @@ RETURN 0
 @CARD_EXPLANATION_21085(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+PRINTL 이 카드명의 ①의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,손패起動)
 PRINTL ①：EX덱의 "오버로드" 몬스터 １장을 상대에게 보여주고 발동할 수 있다。
 PRINTL 이 카드를 패에서 특수 소환한다。
 PRINTL 그 후、패에서 "버닝혼 드래곤" 이외의 "카게로우" 몬스터 １체를 특수 소환할 수 있다。
-CALLFORM CARD_ABLE(2,S素材時효과)
-PRINTL ②：이 카드가 S소환의 소재가 되었을 경우에 발동할 수 있다。
-PRINTL 이 게임 중、자신은 이하의 효과를 얻는다。（이 효과는 중복되지 않는다）
-PRINTL ●자신 필드에 "오버로드" 몬스터가 존재하는 경우、
-PRINTL 자신 필드의 화염속성 몬스터의 공격력은 ５００오른다。
+CALLFORM CARD_ABLE(0,攻撃時強制誘発)
+PRINTL ②：자신의 "오버로드" 몬스터가 공격 선언할 때 마다、
+PRINTL 이 카드의 공격력은 턴 종료시까지 ５００포인트 오른다。
 
 
 @CARDCAN_21085(듀얼리스트,종류,ゾーン,場所)
@@ -73,7 +71,7 @@ SIF RESULT == 1
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 손패起動 ||  종류 == フリー誘発
+IF 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,21085)
 		RETURN 0
 	SIF メインフェイズ != 1
@@ -90,20 +88,15 @@ IF 종류 == 손패起動 ||  종류 == フリー誘発
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == S素材時효과
-	SIF 발동済_2(듀얼리스트,21085)
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
 		RETURN 0
-	SIF 紋章済(듀얼리스트,21085)
+	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 永攻紋章起動
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件カテゴリ = 오버로드
-	효과条件종류 = モン全般
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	IF !MATCH(RESULTS,"오버로드")
 		RETURN 0
+	ENDIF
 	RETURN 1
 ENDIF
 
@@ -120,7 +113,7 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 손패起動 ||  종류 == フリー誘発
+IF 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21085,1)
 	IF RESULT == 0
 		CALL FULLRESET
@@ -152,15 +145,8 @@ IF 종류 == 손패起動 ||  종류 == フリー誘発
 			ENDIF
 		ENDIF
 	ENDIF
-ELSEIF 종류 == S素材時효과
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21085,2)
-	IF RESULT == 0
-		CALL CARD_RESERV(듀얼리스트,21085,永攻紋章予約)
-	ENDIF
-ELSEIF 종류 == 永攻紋章起動
-	CALL FULLRESET
-	효과条件속성 = 화염속성
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,500)
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",500)
 ENDIF
 
 

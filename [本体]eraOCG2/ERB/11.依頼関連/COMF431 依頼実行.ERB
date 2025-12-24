@@ -394,6 +394,27 @@ PRINTFORMW >> %CALLNAME:MASTER%는 %GETPLACENAME(目標위치)%까지 이동했�
 	RESETCOLOR
 ENDIF
 
+
+
+@EVENT_MOVE_MUL(目標位置,이동캐릭터_ID:0 = -1,이동캐릭터_ID:1 = -1,이동캐릭터_ID:2 = -1,이동캐릭터_ID:3 = -1,이동캐릭터_ID:4 = -1,이동캐릭터_ID:5 = -1,이동캐릭터_ID:6 = -1,이동캐릭터_ID:7 = -1,이동캐릭터_ID:8 = -1,이동캐릭터_ID:9 = -1)
+#DIM DYNAMIC 이동캐릭터_ID,20
+#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC 目標位置
+#DIM DYNAMIC カウンタ
+SIF 目標位置 == MAS位置
+	目標位置 = CFLAG:MASTER:현재위치
+
+FOR カウンタ,0,20
+	캐릭터_ID = 이동캐릭터_ID:カウンタ
+	SIF 캐릭터_ID <= 0
+		CONTINUE
+	CFLAG:캐릭터_ID:현재위치 = 目標位置
+	SIF 캐릭터_ID != 0
+		TARGET:カウンタ = 캐릭터_ID
+	;PRINTFORML %CALLNAME:캐릭터_ID%は%GETPLACENAME(目標位置)%まで이동した。
+NEXT
+
+
 @EVENT_DOUKOU(캐릭터_ID,동행時間)
 #DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC 동행時間

@@ -70,6 +70,8 @@ CALL CARD_ABLE(2,필드起動,フリー誘発)
 PRINTL ②：자신 / 상대의 메인 페이즈에 발동할 수 있다.
 PRINTL 이 카드의 엑시즈 소재를 1개 늘려, 묘지의"드래곤메이드"일반마법 / 일반함정을 제외하고, 그 발동 시 효과를 적용한다.
 PRINTL 이 카드가 각성 상태일 경우, 이 효과는 메인 페이즈 이외에도 발동할 수 있다.
+CALL CARD_ABLE(0,지속효과)
+PRINTL ③：몬스터 존의 이 카드는 Ａ소환의 릴리스 및 EX덱 몬스터의 소재로 할 수 없다。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -139,6 +141,10 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 	효과条件종류:1 = 通常함정
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -287,5 +293,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 			TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,마함起動,"효과処理",選択カード)
 		ENDIF
 	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
 ENDIF
 

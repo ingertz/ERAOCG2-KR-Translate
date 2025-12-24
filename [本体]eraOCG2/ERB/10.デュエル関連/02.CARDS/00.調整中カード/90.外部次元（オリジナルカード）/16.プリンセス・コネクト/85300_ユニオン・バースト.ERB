@@ -1,0 +1,133 @@
+@CARDNAME_85300,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 유니온 버스트
+	CASE "略称"
+		RESULTS = Union Burst！
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "出典作品"
+		RESULTS:0 = 프린세스 커넥트！
+ENDSELECT
+
+@CARD_85300(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 251215
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_85300(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_85300(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：자신フィールドの각성状態でない表側표시モンスター１体の攻撃力・守備力を５００アップし、각성状態にする。
+PRINTL その後、상대フィールドのモンスター１体を破壊する。
+PRINTL この효과は『각성』としても扱う。
+CALL CARD_ABLE(2,ターン終了時)
+PRINTL ②：お互いのエンドフェイズにこのターン、
+PRINTL いずれかのプレイヤーのLPが２０００以上変動した場合に발동できる。
+PRINTL 묘지のこのカードを자신フィールドにセットする。
+
+@CARDCAN_85300(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,85300)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,85300)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = モン全般
+	효과条件표시 = 表側표시
+	효과条件条件달성 = 888
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF 발동済_2(듀얼리스트,85300)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_LPL이력") < 2000 && GETVAR(@"%듀얼리스트%_LPH이력") < 2000
+		RETURN 0
+    RETURN 1
+ENDIF
+
+@CARDEFFECT_85300(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 修正値
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,각성발동)
+	IF RESULT == 0
+		CALL CARD_EFFECT_USE(듀얼리스트,85300,1)
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = モン全般
+		효과条件표시 = 表側표시
+		효과条件条件달성 = 888
+		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"進化",2)
+		IF RESULT == 1		
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,85300,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き,1)
+	ENDIF
+ENDIF

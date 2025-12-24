@@ -71,6 +71,8 @@ PRINTL ②：상대가 몬스터 효과를 발동했을 때 발동할 수 있다
 PRINTL 이 카드의 엑시즈 소재를 1개 늘림으로서, 그 발동을 무효로 하고 파괴한다.
 PRINTL 이 효과로 파괴한 몬스터가 암컷이고, 효과 발동 시 이 카드의 엑시즈 소재가 2개 이상일 경우,
 PRINTL 파괴한 몬스터와 같은 이름의 몬스터를 상대 묘지에서 자신 필드로 특수 소환하고,"메이드" 몬스터로 취급한다.
+CALL CARD_ABLE(0,지속효과)
+PRINTL ③：몬스터 존의 이 카드는 Ａ소환의 릴리스 및 EX덱 몬스터의 소재로 할 수 없다。
 CALL TEXT_DECORATION("ROGUE")
 
 
@@ -104,6 +106,7 @@ IF 종류 == EX덱起動
 	효과条件종족 = 드래곤족
 	효과条件속성 = 빛속성
 	효과条件固名前 = 루 드래곤메이드『하스키』
+	효과条件除去種 = 素材
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -131,6 +134,10 @@ ELSEIF 종류 == 발동誘発
 	효과条件종류 = モン全般
 	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
 ENDIF
@@ -166,6 +173,7 @@ IF 종류 == EX덱起動
 		효과条件종족 = 드래곤족
 		효과条件속성 = 빛속성
 		효과条件固名前 = 루 드래곤메이드『하스키』
+		효과条件除去種 = 素材
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			소환素材 = RESULT:1
@@ -275,5 +283,7 @@ ELSEIF 종류 == 발동誘発
 		RETURN 1
 	ENDIF
 	RETURN 0
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
 ENDIF
 

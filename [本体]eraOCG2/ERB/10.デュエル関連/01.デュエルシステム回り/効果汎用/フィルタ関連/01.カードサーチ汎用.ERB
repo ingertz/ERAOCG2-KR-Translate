@@ -111,6 +111,13 @@ ENDIF
 CALL CARD_FILTER_BASIC(듀얼리스트,元参照先,ゾーン,場所,めくり数)
 条件달성 = RESULT:1
 
+IF 条件달성 == 0
+	CUSTOMDRAWLINE —
+	PRINTL 【선택 가능한 카드가 없습니다】
+	CUSTOMDRAWLINE —
+	RETURN 0
+ENDIF
+
 IF 듀얼리스트 == "자신"
 	PRINTL
 	IF  (INRANGE(효과条件複数,90,99) || 효과条件複数 == 任意の数) && 複数カウンタ >= 1
@@ -141,7 +148,11 @@ ELSEIF 듀얼리스트 == "상대"
 	ELSE
 		選択カード:複数カウンタ = RESULT
 	ENDIF
-	IF 選択カード:複数カウンタ == 8888
+	IF 選択カード:複数カウンタ == 8888 && 複数カウンタ != 0
+		SETCOLOR C_W_RED
+		PRINTL 이 이상 선택하지 않는 것 같습니다。
+		RESETCOLOR
+	ELSEIF 選択カード:複数カウンタ == 8888 && 複数カウンタ == 0
 		SETCOLOR C_W_RED
 		PRINTL 이 이상 선택하지 않는 것 같습니다。
 		RESETCOLOR
@@ -325,6 +336,13 @@ ENDIF
 CALL CARD_FILTER_BASIC(듀얼리스트,"上級",ゾーン,場所)
 条件달성 = RESULT:1
 
+IF 条件달성 == 0
+	CUSTOMDRAWLINE —
+	PRINTL 【선택 가능한 카드가 없습니다】
+	CUSTOMDRAWLINE —
+	RETURN 0
+ENDIF
+
 IF 듀얼리스트 == "자신"
 	PRINTL
 	IF  (INRANGE(효과条件複数,90,99) || 효과条件複数 == 任意の数) && 複数カウンタ >= 1
@@ -356,7 +374,11 @@ ELSEIF 듀얼리스트 == "상대"
 	ELSE
 		選択カード:複数カウンタ = RESULT
 	ENDIF
-	IF 選択カード:複数カウンタ == 8888
+	IF 選択カード:複数カウンタ == 8888 && 複数カウンタ != 0
+		SETCOLOR C_W_RED
+		PRINTL 이 이상 고르지 않는 것 같습니다。
+		RESETCOLOR
+	ELSEIF 選択カード:複数カウンタ == 8888 && 複数カウンタ == 0
 		SETCOLOR C_W_RED
 		PRINTL 이 이상 고르지 않는것 같습니다。
 		RESETCOLOR
@@ -526,7 +548,7 @@ ELSEIF 발동종류 == "덱"
 		RETURN 1
 	ENDIF
 
-		IF GETVAR(@"%듀얼리스트%_超雷龍효과") >= 1 && GETVAR(@"%듀얼리스트%_超雷龍효과_済") != 0
+		IF GETVAR(@"%듀얼리스트%_超雷龍효과") >= 1 && GETVAR(@"%듀얼리스트%_超雷龍효과_済") == 0
 		CALL FLASH(2)
 		PRINTFORMW 성왕의 분쇄《초뇌룡－썬더 드래곤》의 효과로 무효화 되었습니다。
 		SETVAR @"%듀얼리스트%_超雷龍효과_済",1

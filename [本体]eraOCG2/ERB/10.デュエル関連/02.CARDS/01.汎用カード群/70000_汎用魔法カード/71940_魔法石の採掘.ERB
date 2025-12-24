@@ -32,7 +32,7 @@ RETURN 0
 
 @CARD_EXPLANATION_71940(종류)
 #DIM DYNAMIC 종류
-CALLFORM CARD_ABLE(0,마함起動 ,손패起動)
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動)
 PRINTL ①：패를 ２장 버리고、자신 묘지의 이 카드명 이외의 마법 카드 １장을 대상으로 하고 발동할 수 있다。
 PRINTL 그 카드를 패에 넣는다。
 PRINTL 
@@ -52,8 +52,7 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == 마함起動 || 종류 == 손패起動
-	SIF 발동済_1(듀얼리스트,71940)
-		RETURN 0
+
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
@@ -89,7 +88,7 @@ ENDIF
 
 IF 종류 == 마함起動 || 종류 == 손패起動
 	;カード발동確認
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71940,1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71940)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET

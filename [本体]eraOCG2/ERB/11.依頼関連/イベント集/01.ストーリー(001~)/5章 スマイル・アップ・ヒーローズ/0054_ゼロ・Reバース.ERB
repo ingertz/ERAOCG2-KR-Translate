@@ -517,10 +517,15 @@ PRINTFORMW 『모먼트 에너지에 과잉 반응!! 온도가 상승하고 있�
 @IRAI_DUEL_ENDING_54
 PRINTFORMW 『앗, 아하…… 대단해, %CALLNAME:MASTER%――― 엄청, 좋은 미소야~』
 PRINTFORMW 『그래, 듀얼은…… 듀얼은 싸우기 위한 도구가, 아니니까……』
-
-
-
-
+PRINTL
+PRINTFORML [0] - 듀얼로 웃음을……
+PRINTFORML [1] - 싸움도 듀얼이다
+BINPUT
+IF RESULT == 0
+	PRINTFORML 『그래, 그게 제일이지……』
+ELSEIF RESULT == 1
+	PRINTFORML 『에~, 거기까지 진지해질 수는 없지~……그래도, 그런 말도 멋지네……』
+ENDIF
 
 
 
@@ -622,8 +627,8 @@ RETURN 0
 @CARD_EXPLANATION_303050(종류)
 #DIM DYNAMIC 종류
 
-CALLFORM CARD_ABLE(2,발동強制誘発)
-PRINTL ①：자신의 카드가 파괴될때 마다 스피드 카운터를 １개 늘린다。
+CALLFORM CARD_ABLE(2,효과後強制誘発)
+PRINTL ①：카드가 파괴될때 마다 스피드 카운터를 ２개 늘린다。
 PRINTL 
 PRINTL 비고：감정을 읽는 행동원 모먼트를 사용한 엔진의 스크랩품을 ５개 이은것。
 PRINTL 　　　성질이 바뀌며、연결의 파괴에 반응해서 출력이 올라간다。
@@ -641,9 +646,9 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,303050)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 발동強制誘発
+IF 종류 == 효과後強制誘発
 	CALL FULLRESET
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般",2)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -660,7 +665,7 @@ ENDIF
 #DIM DYNAMIC 選択肢
 
 IF 종류 == 효과後強制誘発
-	CALL SET_PLAYER_INFO(듀얼리스트,"SpＣ",1,0,1)
+	CALL SET_PLAYER_INFO(듀얼리스트,"SpＣ",2,0,1)
 	IF GETVAR(@"%듀얼리스트%_SpＣ") >= 4
 		SETCOLOR C_YELLOW
 		PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>

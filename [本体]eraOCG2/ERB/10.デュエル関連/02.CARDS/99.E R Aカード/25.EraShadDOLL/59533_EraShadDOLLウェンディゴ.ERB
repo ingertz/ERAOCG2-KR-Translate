@@ -52,20 +52,34 @@ RETURN 0
 
 @CARD_EXPLANATION_59533(종류)
 #DIM DYNAMIC 종류
+#DIMS DYNAMIC HTML_STR0
+#DIMS DYNAMIC HTML_STR1
+#DIMS DYNAMIC HTML_COLOR
 #DIM DYNAMIC 조교대상 = -1
+
+TRYCALL ERASHADDOLLTEXT_PRINT(79531)
+HTML_STR0 = %RESULTS%
+TRYCALL ERASHADDOLLTEXT_PRINT(59533)
+HTML_STR1 = %RESULTS%
+TRYCALL ERASHADDOLLTEXT_PRINT(1)
+HTML_COLOR = %RESULTS%
 
 CALL TEXT_DECORATION("ROGUE")
 PRINTL "섀도르" 몬스터 ＋ 융합 몬스터
 ;PRINTL 이 카드는 융합 소환으로만 엑스트라 덱에서 특수 소환할 수 있다。
 PRINTL 자신은 "E.R.A.ShadDOLL.Wendigo"를 １턴에 １번밖에 특수 소환할 수 없다。
 PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없고,
-PRINTL 상대 플레이어가■■■■■■■■■■■■■인 경우, 이 카드의 효과 발동에 대해 상대는 효과를 발동할 수 없다。
+PRINT 상대 플레이어가
+HTML_PRINT @"<nonbutton title='%HTML_ESCAPE(HTML_STR0)%'><font color='#%HTML_COLOR%'><nobr>■■■■■■■■■■■■■</nobr></font></nonbutton>",1
+PRINTL 인 경우, 이 카드의 효과 발동에 대해 상대는 효과를 발동할 수 없다。
 CALL CARD_ABLE(1, EX덱起動)
-PRINTL ①：상대 플레이어가 ■■■■■■■■■■■■■인 경우,
+PRINT ①：상대 플레이어가 
+HTML_PRINT @"<nonbutton title='%HTML_ESCAPE(HTML_STR0)%'><font color='#%HTML_COLOR%'><nobr>■■■■■■■■■■■■■</nobr></font></nonbutton>",1
+PRINTL 인 경우,
 PRINTL 자신 메인 페이즈에 이 카드를 엑스트라 덱에서 묘지에 보내 발동할 수 있다。
-PRINTL 자신의 덱에서 "E.R.A"카드를
+PRINT 자신의 덱에서 "E.R.A"카드를
 IF 듀얼モード == 0
-	PRINT ■
+	HTML_PRINT @"<nonbutton title='%HTML_ESCAPE(HTML_STR1)%'><font color='#%HTML_COLOR%'><nobr>■</nobr></font></nonbutton>",1
 ELSE
 	;デュエル中に텍스트を確認すると、상대プレイヤーに応じたサーチ枚数の텍스트に変化します。
 	CALL CARD_EROTICS(상대プレイヤー, "자신")

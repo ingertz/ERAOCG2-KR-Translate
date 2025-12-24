@@ -58,7 +58,7 @@ SETCOLOR C_PINK
 PRINTL ②：공격 표시인 이 카드가 공격 대상으로 선택되었을 때에 발동할 수 있다。
 PRINTL 공격 몬스터에게 이 카드의 벌레 문양을 새긴다、이 카드는 수비 표시가 된다。
 RESETCOLOR
-CALLFORM CARD_ABLE(3,묘지起動)
+CALLFORM CARD_ABLE(3,묘지起動,フリー誘発)
 PRINTL ③：상대 턴에、묘지의 이 카드와 자신 필드 / 묘지의 임의의 수의 "혹란마" 몬스터를 덱으로 되돌리고 발동할 수 있다。
 PRINTL 엑스트라 덱에서 "혹란마" 몬스터 １장을 특수 소환한다。그 후、특수 소환한 몬스터의 종류에 따라 이하의 효과를 적용한다。
 PRINTL ●엑시즈：추가로 덱으로 되돌린 "혹란마" 몬스터의 수 만큼 엑시즈 소재를 얻는다。
@@ -237,30 +237,16 @@ ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
 		IF RESULT == 1
 			返횟수量 ++
 
-			$TARPSEX_40083_3
 			CALL FULLRESET
 			효과範囲필드 = 1
 			효과範囲묘지 = 1
 			효과条件カテゴリ = 혹란마
 			효과条件표시 = 表側표시
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			효과条件複数 = 任意の数
+			효과条件任意 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 			IF RESULT == 1
-				PRINTFORML 추가로 "혹란마" 몬스터를 덱으로 되돌리시겠습니까? 현재 덱으로 되돌린 수: {返횟수量}
-				PRINTL [1] - ★YEAH!★
-				PRINTL [2] - NO
-				BINPUT
-				IF RESULT == 1
-					CALL FULLRESET
-					효과範囲필드 = 1
-					효과範囲묘지 = 1
-					효과条件カテゴリ = 혹란마
-					효과条件行先플래그 = 덱行き
-					효과条件표시 = 表側표시
-					CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-					SIF RESULT == 1
-						返횟수量 ++
-					GOTO TARPSEX_40083_3
-				ENDIF
+				返횟수量 += RESULT:2
 			ENDIF
 
 			CALL FULLRESET
@@ -277,7 +263,7 @@ ELSEIF 종류 == 묘지起動 || 종류 == フリー誘発
 					CALL SET_FIELD_INFO(듀얼리스트,"필드",效果先,"Ｘ",(返횟수量 - 1))
 				IF RESULT == 링크
 					TRYCALLFORM CARD_{選択カード_ID},"レベル"
-					PRINTFORMW 되돌린 수: {返횟수量}, 링크 수: {RESULT}
+					;PRINTFORMW 되돌린 수: {返횟수量}, 링크 수: {RESULT}
 					IF 返횟수量 < RESULT
 						CALL FULLRESET
 						CALL CARD_REMOVAL_BASIC(対面者,"필드単体",效果先,"無効")

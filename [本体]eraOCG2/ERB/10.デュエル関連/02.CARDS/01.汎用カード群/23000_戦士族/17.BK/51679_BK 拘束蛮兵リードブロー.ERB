@@ -63,11 +63,11 @@ ENDIF
 PRINTL 레벨４"ＢＫ" 몬스터×２
 PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,身代효과)
-PRINTL ①：자신 필드의 "ＢＫ"몬스터가 전투 / 효과로 파괴될 경우、
+PRINTL ①：자신 필드의 "ＢＫ" 몬스터가 전투 / 효과로 파괴될 경우、
 PRINTL 대신에 이 카드의 Ｘ소재를 １개 제거할 수 있다。
-PRINTL ②：「ＢＫ」카드나 「카운터」함정 카드의 효과로 이 카드의 Ｘ소재가 제거된 경우에 발동한다。
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ②：자신의 "ＢＫ" 몬스터가 효과를 발동한 경우에 발동한다。
 PRINTL 이 카드의 공격력은 ８００올린다。
-;攻撃力アップは素材取り除く側で処理しています
 CALL CARD_ABLE(1,攻撃後誘発)
 PRINTL ③：이 카드가 전투로 몬스터를 파괴한 경우에 발동할 수 있다。
 PRINTL 그 몬스터의 원래 공격력 만큼의 데미지를 상대에게 준다。
@@ -108,8 +108,17 @@ ELSEIF 종류 == 攻撃後誘発
 	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
 		RETURN 0	
 	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = 엑시즈
+	효과条件カテゴリ = BK
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
+	SIF RESULT != 1
+		RETURN 0	
+	RETURN 1
 ENDIF
-
 @CARDEFFECT_51679(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
@@ -128,10 +137,9 @@ IF 종류 == 身代효과
 		CALL FULLRESET
 		PRINTL 
 		SETCOLOR C_YELLOW
-		PRINTL 리드블로の구속が解かれた！
+		PRINTL 리드블로의 구속이 해제되었다!
 		RESETCOLOR
 		PRINTL 
-		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",800)
 		RETURN 1
 	ENDIF
 	RETURN 0
@@ -146,5 +154,10 @@ ELSEIF 종류 == 攻撃後誘発
 		CALLFORM CARD_{直前戦闘破壊ID(듀얼리스트,1)}("攻撃力")
 		ダメージ量 = RESULT
 		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ量,1)
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51679)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",800)
 	ENDIF
 ENDIF

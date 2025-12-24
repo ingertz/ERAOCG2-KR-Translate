@@ -11,6 +11,7 @@
 #DIM DYNAMIC 발동カード_ID
 #DIM DYNAMIC 裏側플래그
 #DIM DYNAMIC 先攻설정
+#DIM DYNAMIC 先攻설정_上書き
 #DIMS DYNAMIC 名前ボタン
 #DIM DYNAMIC 選択カード_ID
 ;PRINTFORML 덱選択
@@ -105,6 +106,8 @@ IF RESULT == 0
 	ELSEIF 이벤트플래그 == 3
 		CALL CHOOSE_DECK_ONLINE_RATEMATCH
 		상대덱選択 = RESULT
+	ELSEIF 이벤트플래그 == 10
+		상대덱選択 = 99999
 	ENDIF
 ELSE
 	상대덱選択 = RESULT	
@@ -144,39 +147,31 @@ PRINTW
 ALIGNMENT LEFT
 
 
-
 $FULLRESET_LOOP
 ;ダンジョンデュエルは특수なLOADUP処理を行う
 IF 특수듀얼종류 == ダンジョンＤ
-	IF 자신_승리数 >= 1
-		CALL CARD_GAMELOADUP(1)	
-	ELSE
+	IF 자신_승리数 == 0
 		CALL CARD_GAMELOADUP
 	ENDIF
-	ターンプレイヤー = 자신
-	ターン数 = 1
-	先攻설정 = 2
+	VARSET RESULT
+	TRYCALLFORM IRAI_DUNGEON_SET_{G_イベ起動}
+	IF RESULT == 1
+		상대덱選択 = RESULT:1
+		ターン数 = RESULT:2
+		先攻설정 = RESULT:3
+	ELSE
+		ターン数 = 1
+		先攻설정 = 2
+	ENDIF
+
 ;詰めデュエルは덱설정をスキップ
 ELSEIF 詰め플래그 == 1
-CALL CARD_GAMELOADUP
+	CALL CARD_GAMELOADUP
 	ターンプレイヤー = 상대
-	ターン数 = 2
-	GOTO PUZZLE_SET
+	ターン数 = 1
+	先攻설정 = 2
 ELSE
 	CALL CARD_GAMELOADUP
-ENDIF
-
-IF 덱選択 >= 1000
-	CALLFORM DUELDECK_{덱選択}("자신")
-ELSE
-	CALLFORM MYDECK("자신",덱選択)
-	最終編集덱 = 덱選択
-ENDIF
-
-IF 상대덱選択 >= 1000
-	CALLFORM DUELDECK_{상대덱選択}("상대")
-ELSE
-	CALLFORM MYDECK("상대",상대덱選択)
 ENDIF
 
 IF 先攻설정 != 0
@@ -200,6 +195,24 @@ ELSE
 ENDIF
 IF 連戦플래그 == 2;Anonym추가
 	ライフ_자신 = 引継ライフ_자신
+ENDIF
+
+SIF 詰め플래그 == 1
+	GOTO PUZZLE_SET
+
+
+;덱설정
+	IF 덱選択 >= 1000
+	CALLFORM DUELDECK_{덱選択}("자신")
+ELSE
+	CALLFORM MYDECK("자신",덱選択)
+	最終編集덱 = 덱選択
+ENDIF
+
+IF 상대덱選択 >= 1000
+	CALLFORM DUELDECK_{상대덱選択}("상대")
+ELSE
+	CALLFORM MYDECK("상대",상대덱選択)
 ENDIF
 
 ;셔플＆5ドロー
@@ -234,7 +247,9 @@ IF RESULT == 1
 	RESETCOLOR
 	ERA起動 = 1
 ENDIF
-
+IF 이벤트플래그 == 10
+	ERA起動 = 3
+ENDIF
 IF 특수듀얼종류 == ライディングＤ
 	자신_엔진 = 설정_엔진
 	자신_섀시 = 설정_섀시
@@ -311,6 +326,9 @@ IF RESULT != 0
 			상대_듀얼패배플래그 = 0
 			GOTO RECHECK_VICTORY
 		ELSEIF RESULT == 2
+			SIF RESULT:1 > 0
+				G_イベ起動 = RESULT:1
+			CALL CARD_GAMELOADUP(1)	
 			상대_듀얼패배플래그 = 0
 			GOTO FULLRESET_LOOP
 		ENDIF
@@ -318,7 +336,7 @@ IF RESULT != 0
 
 	IF 詰め플래그 == 0
 		PRINTL
-		IF ERA起動 != 2
+		IF ERA起動 <= 1
 			CALL CHECK_DP_GET(승리판정,이벤트플래그)
 			SIF 상대_듀얼패배플래그 >= 1 && オプション_カード友 == 1
 				CALL DUEL_RESULT_BOND(덱選択,RESULT)		
@@ -471,13 +489,14 @@ ELSEIF RESULT == 1000
 				GOTO RECHECK_VICTORY
 			ELSEIF RESULT == 2
 				상대_듀얼패배플래그 = 0
+				CALL CARD_GAMELOADUP(1)	
 				GOTO FULLRESET_LOOP
 			ENDIF
 		ENDIF
 
 	IF 詰め플래그 == 0
 		PRINTL
-		IF ERA起動 != 2
+		IF ERA起動 <= 1
 			CALL CHECK_DP_GET(승리판정,이벤트플래그)
 			SIF 상대_듀얼패배플래그 >= 1 && オプション_カード友 == 1
 				CALL DUEL_RESULT_BOND(덱選択,RESULT)		
@@ -539,3 +558,4 @@ GOTO INPUT_LOOP
 특수듀얼종류 = 0
 詰め플래그 = 0
 듀얼モード = 0
+CALL CARD_GAMELOADUP

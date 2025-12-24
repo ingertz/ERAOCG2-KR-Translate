@@ -13,7 +13,7 @@ VARSET 필터_名前
 VARSET 필터_듀얼리스트
 VARSET 필터_전화번호
 VARSET 필터_消去可
-
+VARSET 필터_カード
 
 VARSET 필터_연모
 VARSET 필터_お気に入り
@@ -180,6 +180,13 @@ IF 필터_구상 > 0
 	VARSET RESULT
 	TRYCALLFORM M_KOJO_K{NO:캐릭터_ID}
 	SIF RESULT != 1
+		RETURN 0
+ENDIF
+
+IF 필터_カード > 0
+	VARSET RESULTS
+	TRYCALLFORM CARDNAME_{NO:캐릭터_ID}("名前")
+	SIF RESULTS == ""
 		RETURN 0
 ENDIF
 
@@ -1086,8 +1093,8 @@ SELECTCASE 使用場所
 					PRINTFORML 당신의 품에서 훌륭히 자라난 %NAME:캐릭터_ID%는、음교의 신도로서 가르침을 널리 퍼뜨리는 활동을 하게되었다。
 				ENDIF
 				PRINTFORML 건강해라、%NAME:캐릭터_ID%！！
-				RETURN 0
 				CALL DELETE_CHARA(캐릭터_ID)
+				RETURN 0
 			ENDIF
 		ELSEIF RESULT == 100
 			PRINTW 돌아갑니다。
@@ -1105,6 +1112,7 @@ SELECTCASE 使用場所
 			PRINTFORML 
 			PRINTL [0] - 아르바이트를 그만두게 한다
 			PRINTL [1] - 아무것도 하지 않는다
+			BINPUT
 			IF RESULT == 0
 				CFLAG:캐릭터_ID:아르바이트 = 0
 				PRINTFORML %CALLNAME:캐릭터_ID%에게 아르바이트를 그만두게 했다.
@@ -1125,6 +1133,7 @@ SELECTCASE 使用場所
 			PRINTFORML 
 			PRINTL [0] - 고용한다
 			PRINTL [1] - 고용하지 않는다
+			BINPUT
 			IF RESULT == 0
 				CFLAG:캐릭터_ID:아르바이트 = PT_カドショ
 				CALL PTJ_SETTINGS(캐릭터_ID,"名前")
@@ -1217,7 +1226,7 @@ SELECTCASE 使用場所
 				PRINTL [6] 두꺼움　（공격력2500）
 				PRINTL [7] 에엣……　（공격력3000）
 				PRINTL [8] 네놈에게 신을 보여주마
-			BINPUT
+				BINPUT
 				IF RESULT == 8
 					TALENT:캐릭터_ID:형태 = 8
 					PRINTFORMW 신근으로 설정했습니다

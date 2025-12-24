@@ -1,0 +1,1220 @@
+﻿@IRAI_EVENT_60(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE  "名前"
+		RESULTS = (ST6-1)결착
+	CASE "이벤트種"
+		RETURN 이벤트_物語
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL ６つの千年アイテムが集まった。
+		PRINTL KCの作った悪夢のアイテムたちが一つに集まる時何が起こるのか……。
+		PRINTL そして勇者たちは何を狙っているのだろうか……。
+		PRINTL 
+	CASE "条件"
+		SIF 依頼_完了횟수:54 == 0
+			RETURN 0
+		RETURN 1
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+
+
+@IRAI_ACT_60(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 획득モンスター
+#DIM DYNAMIC 이벤트主
+
+#DIM DYNAMIC ガイドさん
+#DIM DYNAMIC 龍仙女
+#DIM DYNAMIC 水遣い
+#DIM DYNAMIC ラビュリンス
+#DIM DYNAMIC アリアンナ
+#DIM DYNAMIC 乙女
+#DIM DYNAMIC セラ
+
+#DIM DYNAMIC 勇者
+#DIM DYNAMIC ヒュプノ
+#DIM DYNAMIC カメリア
+
+#DIM DYNAMIC 条件달성
+ガイドさん = NO_TO_CHARANUM(1310)
+龍仙女 = NO_TO_CHARANUM(1630)
+水遣い = NO_TO_CHARANUM(2241)
+
+ラビュリンス = NO_TO_CHARANUM(2110)
+アリアンナ = NO_TO_CHARANUM(2111)
+乙女 = NO_TO_CHARANUM(1021)
+セラ = NO_TO_CHARANUM(1370)
+
+勇者 = NO_TO_CHARANUM(2240)
+ヒュプノ = NO_TO_CHARANUM(1606)
+カメリア = NO_TO_CHARANUM(2002)
+
+
+
+IF 依頼_달성상황 == 0
+	PRINTFORMW 「……ところで疑問だったデースが、千年アイテム共集めたらどうなるんデース？」
+	PRINTFORMW 이동中、水遣いはその言葉を受け、少し考え込んだ。
+	PRINTFORMW 「そういえばあまり考えたことなかったですね」
+	PRINTFORMW 「こんなもん集めたらロクなことにならネーってのは結構楽に想像できるデスけど」
+	PRINTFORML 
+	PRINTFORMW 「邪神の封印が解けて復活、とか……簡単に考えられますね、ともあれ
+	PRINTFORMW 　今日の集まりで、乙女さんに直接聞きましょうか？」
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"ラビュリンス・ラビリンス城")
+	CALL EVENT_MOVE_MUL(MAS位置,ガイドさん,水遣い)
+	
+	依頼_달성상황 += 1
+	CALL EVENT_TIMER(60)
+ELSEIF 依頼_달성상황 == 1
+	PRINTFORML 	
+	PRINTFORMW 「おーっほっほ！　よくぞ来てくれましたわ！」
+	PRINTFORMW もはや集まりの定番となったラビュリンスの城。
+	PRINTFORMW 外観こそ今なお白銀の城らしい風格を保っていたが、度重なるリノベーションにより、内部はすっかり近代化されていた。
+	PRINTFORMW アリアンナに出迎えられ、スーツ姿のラビュリンス姫のもとへと案内される。
+	PRINTFORML 
+	PRINTFORMW 「スーツ姿に合いますね……」
+	PRINTFORMW 「ついに魔界の代表も一般KC従業員堕ちしたデスか……」
+	PRINTFORMW ガイドさんは両手を合わせ、魔界とその文化の最期に黙祷を捧げた。
+	PRINTFORML 
+	PRINTFORMW 「失礼な！　その逆ですわ！　説明してくださいまし、乙女童実野支部代表？」
+	PRINTFORMW 「はい、良いですよ、ラビュリンス"魔界支部代表"様」
+	PRINTFORMW そう言うと乙女がひょっこりと姿を現す。作り笑顔に静かな『怒』が見え隠れしていた。
+	PRINTFORML 
+	PRINTFORMW 「代表発案の出張메이드サービスが、今や듀얼世界だけでなく各部世界でも大人気でして。
+	PRINTFORMW 　KC社員による魔界リモート派遣事業も順調に拡大中で、我々KC分社『ミレニアムグループ』を凌ぐ勢いなんです！
+	PRINTFORMW 　正直、ただのおとぼけ姫様だと思っていましたが……見事な手腕ですね。完全に足元をすくわれました！」
+	PRINTFORMW 乙女らしからぬ、作り笑顔の奥から感情が滲み出る。
+	PRINTFORMW その言葉にわずかな棘を感じながらも、ラビュリンスはむしろ優越感を覚えていた。
+	PRINTFORML 
+	PRINTFORMW 「おほほ、さすが乙女代表、お口が達者ですこと！　私はただ、運とチャンスに恵まれただけの女ですわ。
+	PRINTFORMW 　恥ずかしながら、そちらが“元の世界に帰れない異世界人”の支援に集中していた隙を突いた形になってしまいましたの……。
+	PRINTFORMW 　腹黒で邪悪な巫女様かと思っていましたが、白龍霊堂の教えがしっかりと精神に刻まれているようで、少し救われましたわ～」
+	PRINTFORMW まるで小娘をあしらうように、ラビュリンスは勝ち誇った笑顔で乙女を見下ろす。
+	PRINTFORMW 互いの間には、バチバチと火花が飛び交っていた。
+	PRINTFORML 
+	PRINTFORMW アリアンナはポップコーン片手に「おもしろ……」と楽しんでいた。
+	PRINTFORMW しかし、わざわざ呼び出された救世主一行は……。
+	PRINTFORML 
+	PRINTFORMW 「帰りましょうか」
+	PRINTFORMW 「デス、この辺に美味しいお店あるんデース、あっ最近魔界にもカドショができてー」
+	PRINTFORMW 「あっちょっ！」
+	PRINTFORMW 「お待ちになって！」
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"ラビュリンス・ラビリンス-オフィス")
+	CALL EVENT_MOVE_MUL(MAS位置,ガイドさん,水遣い,アリアンナ,ラビュリンス,乙女,セラ)
+	依頼_달성상황 += 1
+	CALL EVENT_TIMER(10)
+ELSEIF 依頼_달성상황 == 2
+	PRINTFORMW その後、大きな会議室へと案内される。
+	PRINTFORMW 「またいろいろと調子に乗ってしまいましたわ……」
+	PRINTFORMW 「とりあえず現在の상황を纏めましょうか」
+	PRINTFORMW そう乙女が水遣いとガイドさんに言うと、パソコンを開き、モニターに繋げる。
+	PRINTFORMW いつタイピングを学んだのだろう……ファンタジー世界の住民である水遣いがデジタルに順応しすぎている。
+	PRINTFORML 
+	PRINTFORMW とりあえず、丁寧に作られた『現在所持中の千年アイテムと出来事のまとめ』のプレゼンテーションが始まる……。
+	$RETURN_SELECT
+	PRINTFORML 
+	PRINTFORML [1] - 千年スマホ
+	PRINTFORML [2] - 천년도어
+	PRINTFORML [3] - 千年マーカー
+	PRINTFORML [4] - 千年カメラ
+	PRINTFORML [5] - 千年マイク
+	PRINTFORML [6] - 千年ディスク
+	PRINTFORML 
+	PRINTFORML [100] - もう十分
+	BINPUT
+	IF RESULT == 1
+		PRINTFORMW 画面にスマートフォンが映る。水遣いの持っている千年スマホだ。
+		PRINTFORMW 「千年スマホ、謎の多い千年アイテムですか、ディスクを除けばこれが一番最初に手に入れたアイテムでしょうか？
+		PRINTFORMW 　暴走していたころの、私がこの世界に이동した際に持ってきたアイテムで、KCに修理してもらいましたね」
+		PRINTFORMW と実物の千年スマホをポケットから取り出す水遣い。
+		PRINTFORML 	
+		PRINTFORMW 「超ＡＩを搭載しており、超常現象を含むアプリの作成を行えますが、製作時間はまちまちで、
+		PRINTFORMW 　千年アイテムのレーダーをものの１分で作れたかと思ったら、単純計算の電卓に３日かかったりなど安定しませんね」
+		PRINTFORMW 「ずっと頼りになるんだかならないんだか、って感じデースね」
+		PRINTFORMW 「まだAI技術も発展途上の産物なので仕方ありませんね……中身を弄ろうとしましたが、それでオカルト化で元に戻りました」
+		PRINTFORML 	
+		PRINTFORMW 説明が終わり、ガイドさんと水遣いが軽く雑談を交わす。
+		PRINTFORMW 「あの時の水遣いさんマジ怖かったデースね……今こう話してるのも変な感じデース」
+		PRINTFORMW 「その時は本当に、ご迷惑をおかけしました」
+	ELSEIF RESULT == 2
+		PRINTFORMW 画面にドアの映像が映る。異世界への이동手段、『천년도어』。
+		PRINTFORMW 「천년도어、ラビュリンスさんの宝物庫に保管されてあった様々な世界につながるドア」
+		PRINTFORMW 「勇者の被害を受けた各部世界で復興が早まり、各部世界で連携が行えたのもコレのおかげでしたね」
+		PRINTFORMW 「もともとは珍しいと思って魔界のオークションで競り落としたものでしたけれど、まさかの活躍でしたわね」
+		PRINTFORML 
+		PRINTFORMW 本来、各部世界で個人が世界間旅行を行うことは水遣いのような특수な力をある者を覗いて行えない。
+		PRINTFORMW 例えば魔界ならば、ガイドさんが以前配属していた『DDD』社の傘下の装置や機械を使う必要がある。
+		PRINTFORMW 
+		PRINTFORMW 「勇者周りの事件が起きた際、まだ被害を受けていなかった듀얼世界を監視する目的ではありましたが……
+		PRINTFORMW 　そうして、%CALLNAME:MASTER%さんとの出会いがありましたね」
+		PRINTFORMW 「ラビュリンスさんが듀얼世界にアリアンナさんを調査に行かせたおかげで今がありますね」
+		PRINTFORML 
+		PRINTFORMW 「そして暫くアリアンナが留守したおかげで私達の城が虫と草まみれにされてしまいましたわ……」
+		PRINTFORMW 「後片付けに時間かかると思いましたが、3日でなんとかなりましたね」
+		PRINTFORMW と、大したことないみたいに言うが、アリアーヌと共に丸3日寝ずに掃除し続けていた。
+		PRINTFORML 
+		PRINTFORML 「千年マイクの干渉対策のために解体し、D-ホイールのボディに使いましたが……
+		PRINTFORMW 　まさか次元이동ができるようになるとは思いませんでしたね……」
+	ELSEIF RESULT == 3
+		PRINTFORMW 「千年マーカー、こちらヒュプノシスターさんが起こした事件で使われましたね……
+		PRINTFORMW 　私達の世界に伝わる『黄金の雫のルーン』で상대の心の욕망を開放し、シグナルの皆さんに犯罪行為に加担させていました
+		PRINTFORMW 　マーカーで書かれたものは水で洗い流すことができます」
+		PRINTFORMW と、水遣いが説明すると、乙女が反応する。
+		PRINTFORMW 「あら、마법陣（ルーン）の内容まで詳細が分かったのでしょうか？」
+		PRINTFORML 
+		PRINTFORML 「そうですね先ほども説明した通り、己の心の욕망に制限が効かなくなるかなり昔の마법です、
+		PRINTFORMW 　本来ならあんな洗脳時見た효과はないはずですが……」
+		PRINTFORMW 社会人サークル『シグナル』を使って、ディスク狩り事件にまで発展してしまった。
+		PRINTFORMW 「アーヌも一時的にマーカーを付けられ、シスターさんを通してしまい……勇者と関連疑われてしまいましたわね」
+		PRINTFORMW と、ラビュリンスは溜息を吐いた。あまり話さないが相当面倒な調査が入ったようだ。
+		PRINTFORML 
+		PRINTFORML 「しかしヨー、なんであの子……わざわざマーカー何か使ってたんデース？
+		PRINTFORMW 　%CALLNAME:MASTER%さんとか최면した第三の目とか、マーカーより強力じゃなかったデス？」
+		PRINTFORMW 確かに、最初からあの目を使っていればマーカーを洗い流されることはなかったはずである。
+		PRINTFORML 
+		PRINTFORMW 「使用するのに魔力量が激しいとか、複数人を操るのは難しい……もしくは精神的な理由などありそうですが
+		PRINTFORMW 　何はともあれ、とにかく今後もヒュプノ・シスターさんには要注意ですね」
+
+	ELSEIF RESULT == 4
+		PRINTFORMW 「千年カメラ、こちらアザレアさん達が引き起こした事件……
+		PRINTFORMW 　ディスクではできなかったこちらの世界の人間や物をカード化してしまう呪われたカメラ」
+		PRINTFORMW ディスクの力ではカードに出来ないはずの、듀얼世界の住民。その射程に入った存在は無関係にカードにしてしまう。
+		PRINTFORMW 水遣いが説明した後、乙女がカードの資料を広げる。
+		PRINTFORMW 「カード化された人たちは、カード化されたわたくし達同様、一度ディスクで読み込めば解除されますね」
+		PRINTFORML 
+		PRINTFORMW 「ただカード化を有効かするには大量の電気が必要で、オカルトパワーありきでも補えなかったようですね」
+		PRINTFORMW 「アザレアがロボットのキャノンに着けて連射しまくったのヤバすぎたデース……」
+		PRINTFORMW 「ふふっガイドさんがバスで来てくれなければ、大変でしたね」
+		PRINTFORMW と水遣いはガイドさんを褒めると、彼女は照れくさそうに視線を外した。
+		PRINTFORMW 「あれは～ちょっと小市民が勇気を出しただけデーヘヘー」
+		PRINTFORMW あの出来事以降、戦闘でも結構자신のできる範囲で勇気を出してくれる頻度が増えた気がする。
+		PRINTFORML 
+		PRINTFORMW 「勇者様に通用する可能性の高い武器です、時が来たら友好的に使いましょう」
+		PRINTFORMW と、水遣いは力強い決意で締める。
+	ELSEIF RESULT == 5
+		PRINTFORMW 「千年マイク、こちらもアザレアさん及び……」
+		PRINTFORMW 「ウィッチさんの事件ですね、機械に干渉して命令のまま自由に動かせるヘッドセットマイク。
+		PRINTFORMW 　ですが実体は、実際には世界の不思議現象の多くの要因である『精霊』へ干渉するアイテムです」
+		PRINTFORML 
+		PRINTFORMW 何年も前にスクラップされ放置された機械さえも動かし、一声でデュエルディスクさえも強制的に停止できてしまう。
+		PRINTFORMW 「アザレアさんによると、そもそも機械世界のロボットに指示を出すために使っていたようですね」
+		PRINTFORMW 「めちゃくちゃヤベーアイテムだから、あの事件で終わればよかったんデースけど……」
+		PRINTFORML 
+		PRINTFORMW 千年マイクが本領を発揮したのはアザレアの手から離れ、펜듈럼・ウィッチの手に渡ってからだ。
+		PRINTFORMW 「ウィッチさんの事件、正直胸が張り裂けると思いました……まさかあんなことになるとは」
+		PRINTFORMW 「騎士ちゃんの新しいお友達ですね。不安定な乗り物を操って暴走したと聞きました、
+		PRINTFORMW 　絶対安静なのに、ベッドに括り付けるだけでも非常に大変でしたわ」
+		PRINTFORMW 「ウィッチさんが乗っていた乗り物ももはや機械の域を超えて、一つの精霊となっていました
+		PRINTFORMW 　モノに宿った精霊が人間への분노と混乱、そしてまだ使われたいという意思によって暴走して……」
+		PRINTFORML 
+		PRINTFORMW 「精霊は怒らせたら超怖いって、魔界でも言われてるデースね……」
+		PRINTFORMW 「ふふっ、ですが正しく向き合えば……私達を守ってくれる盾にもなってくれますわ」
+		PRINTFORMW と、乙女は自信ありげに鼻を鳴らす。듀얼中に攻撃性のある干渉をすべて弾く障壁のことを話しているのだろう。
+		PRINTFORMW これが在るおかげで、こんな殺伐とした상황でも듀얼が成り立っていて、この町を守ってくれた、
+		PRINTFORML 
+		PRINTFORMW 「……本当にこの世界は、私達の世界と変わらず神秘が存在することを確信しましたね」
+		PRINTFORMW 水遣いは意味ありげに視線をそらし、スライドを消した。
+	ELSEIF RESULT == 6
+		PRINTFORMW 「千年ディスク！　通称ミレニアム！
+		PRINTFORMW 　質量を持つ立体映像の出力、接触した異世界人のカード化、カード化した人たちの소환などなど……」
+		PRINTFORMW 「これぞワタシ達の救世主の盾であり矛！！　この世界が誇る技術の結晶デース！！」
+		PRINTFORMW ディスクがよく見えるようにポーズをとる%CALLNAME:MASTER%と、左右にて腕を広げる水遣いとガイドさん。
+		PRINTFORMW 会議室にて乙女、姫とアリアンナの握手が響いた。
+		PRINTFORML 
+		PRINTFORMW その後、何事もなかったかのように元の席に戻らされ、詳細の説明が書かれたスライドが続く。
+		PRINTFORMW 「%CALLNAME:MASTER%さんのよう一部の人はカードを実際に소환したり、마함の효과を現実に再現することも可能だったりしますね」
+		PRINTFORML 「その原理を研究し、一部実現には成功しましたが……
+		PRINTFORMW 　듀얼世界以外では%CALLNAME:MASTER%さん以外の듀얼리스트は実体化攻撃を使えませんね」
+		PRINTFORMW 水遣いが言うには『精霊』の質が関係している、そして%CALLNAME:MASTER%自体も精霊を引き付けやすい性質を持っていたようだ。
+		PRINTFORML 
+		PRINTFORMW 「そして今%CALLNAME:MASTER%様が装着しているのは、今後の戦いを見据えて解放されたオリジナルのミレニアム
+		PRINTFORMW 　元々%CALLNAME:MASTER%様が持っていた量産先行モデル以上の出力を持ち、今まで実体化できなかった攻撃마법もいくらか使えるようになりましたね」
+		PRINTFORMW 「はい、これを装備した%CALLNAME:MASTER%さんなら、きっと勇者様にも負けません……存分にその力を見せてください！」
+		PRINTFORMW と水遣いに笑顔で期待を寄せられる。
+		PRINTFORMW 責任としてはこのディスクのように多少重いが、平気だ。
+	ELSEIF RESULT == 100
+		PRINTFORML
+		PRINTFORMW 「以上が、私達の持つ千年アイテムと、そのおさらいとなります」
+	ENDIF
+	SIF RESULT != 100
+		GOTO RETURN_SELECT
+	PRINTFORMW 「おさらいはこんな感じですね」
+	依頼_달성상황 += 1
+	CALL EVENT_TIMER(30)
+ELSEIF 依頼_달성상황 == 3
+	PRINTFORMW 「水遣いさんありがとうございます」
+	PRINTFORMW 「しばらく忙しくて現場から離れていましたので、상황を共有出来てよかったですわ」
+	PRINTFORMW と解散しそうな流れに進もうとしている中、デスガイドが手を上げて質問する。
+	PRINTFORML
+	PRINTFORMW 「とりあえず話まとまったデスケド、結局千年アイテムって集まるとどうなるデース？」
+	PRINTFORMW 突然の質問に乙女は顎を手に乗せ、質問の意味を考える。
+	PRINTFORMW 「どうって……わが社が研究データを得られて喜ぶ以上何もありませんよ？」
+	PRINTFORML
+	PRINTFORML 「こんな強力な효과を持つアイテムですわ、何かありませんの？
+	PRINTFORMW 　資料を読む限り、保持者は大体錯乱状態に陥っていると聞きますし、何が起きてもおかしくありませんわ」
+	PRINTFORML 
+	PRINTFORML 「なるほど……しかし、一応現在保持している千年アイテムたち自体にはそのような力はなく、
+	PRINTFORML 　そのような事件もすべて外的要因や邪神による直接の干渉のみですね、
+	PRINTFORMW 　マーカーは마법陣（ルーン）の力で他者の心を操ったり、水遣いさんもなんらかの干渉を受けた形です」
+	PRINTFORMW 確かに、保持しているだけで言うと、千年スマホや千年ディスクをずっと装備している%CALLNAME:MASTER%たちの方がすぐ問題出そうだ……。
+	PRINTFORML 
+	PRINTFORMW 「それでも、勇者様は千年アイテムを集めたがっていますので、集めることに何かしらを引き起こす可能性が高いです」
+	PRINTFORMW 「話はちょっと逸れるデスけど、듀얼世界以外で保管したほうがいいんじゃネーの？」
+	PRINTFORMW 「それも考えていましたが、保管先の世界へのリスクを考えてか魔界含め、許可は出ませんでしたわ」
+	PRINTFORML 
+	PRINTFORMW 結局のところ、答えは出なかったが、阻止をしなくてはいけないことは確かであった。
+	PRINTFORMW 全員が悩む中……。
+	PRINTFORML 
+	PRINTFORML [1] - いっそ壊してしまうのはどうだろう？　と提案する
+	PRINTFORML [2] - 新しく最後の千年アイテム作るのはどうだろう？　と提案する
+	BINPUT
+	IF RESULT == 1
+		PRINTFORMW 「いいですね、いっそ千年アイテム、破壊しちゃいましょうか」
+		PRINTFORMW 「ちょっ！？　水遣いさん！？」
+		PRINTFORMW 危険な提案だと思ったが、水遣いは意外と乗り気なようだ。
+		PRINTFORMW 「マーカー辺りとかは壊してもあんまり困らないですし、世界の平和を守る以上は必要だと思いますよ？」
+		PRINTFORMW 「ダメですよ！　私達が潤沢に資金を使えているのも社長が『冥府の扉プロジェクト』に入れ込んでいるからであってですね」
+	ELSE
+		PRINTFORMW 「えっ？　ええっ？」
+		PRINTFORMW 「面白くなってきましたね、話を続けましょう！」
+		PRINTFORMW 危険な提案だと思ったが、乙女は意外と乗り気なようだ。
+		PRINTFORMW 「ただでさえめんどくせー話をさらにややこしくするんじゃネー！」
+		PRINTFORMW 「でも千年アイテムの存在意義である『冥府の扉プロジェクト』には７つのアイテムが必要で……それなら試す価値はあるかも」
+	ENDIF
+	PRINTFORMW とうっかりラビュリンスの前で極秘プロジェクトを口走ってしまう乙女。
+	PRINTFORML 
+	PRINTFORMW 「なんですのそのプロジェクト？　初耳ですわ」
+	PRINTFORMW 「あっ……いえ、コレは本社側のプロジェクトでして～～」
+	PRINTFORMW とまた話が脱線し、乙女とラビュリンスでビジネス的な話が始まる。こうなると二人以外は蚊帳の外だ。
+	PRINTFORMW とりあえず結論としては、「冥府の扉」なるろくでもなさそうなことが起きると分かった。
+	PRINTFORMW 「%CALLNAME:MASTER%さん、このこと知っていました？」
+	PRINTFORML 
+	PRINTFORML [1] - そんな事言っていたような気がする（４章１話）
+	PRINTFORML [2] - 覚えてない
+	BINPUT
+	PRINTFORMW 「乙女サンの話、大体うさん臭いから、忘れててもおかしくくもないデース」
+	PRINTFORMW 「ちゃんと巫女さんらしいところもあるんですけどね……」
+	PRINTFORML 
+	PRINTFORMW とりあえず、これ以上は話が広がりそうにないので、三人ともアリアンナのお菓子を食べたら帰ろうと思ったが、
+	PRINTFORMW 久しぶりの来客で張り切っているのか、アリアンナは無限にクッキーを焼いてきた。
+	PRINTFORMW もう少し居ても問題なさそうだと、持参したお茶を取り出す際に、
+	PRINTFORMW ふと、部屋の隅で緑色の何かが目に入った。
+	PRINTFORML 
+	PRINTFORMW 「…………」
+	PRINTFORMW セラだ、なぜか鉢植えに入ってぐったりとしている……。
+	PRINTFORMW 「セラちゃん？　そんなに弱ってどうしたんですか？」
+	PRINTFORML 
+	PRINTFORMW 「この前の勇者の攻撃で城の地下を一刀両断されたじゃないですか、
+	PRINTFORMW 　壁やパイプ周りの隙間とかに根を張っていたセラ様が巻き込まれてしまいまして、こんな姿に」
+	PRINTFORMW とアリアンナは答えた。確かしばらくそれでごたごたしていたが、セラもひどい目に合っていたようだ。
+	PRINTFORMW 「せらのおはかはきれいなみずのとこでおねがい……」
+	PRINTFORML 
+	PRINTFORMW 水遣いは少し可哀そうだと思ったのか、朝に魔力を込めたばかりの水をセラに与える。
+	PRINTFORMW 全身で水を浴び、るとみるみる元気になっていくセラ。
+	PRINTFORML 
+	PRINTFORMW 「うひ～みずのお姉ちゃんありがとう～。アンナちゃんがくれるお水おいしくないんだー」
+	PRINTFORMW 「また城に根を張られたら面倒ですからね、普段は듀얼世界の水を与えています」
+	PRINTFORMW 「迷惑だったでしょうか？」
+	PRINTFORMW 「まぁ、たまにはいいでしょう」	
+	PRINTFORML 
+	PRINTFORMW 「いっぱい本体死んじゃったしさいあくー……もう少しでまた姫ちゃんのお城セラのものにできたのにー
+	PRINTFORMW 　何かずっと足もムズムズする感じで気持ち悪いし～」
+	PRINTFORMW 全然反省していないようだ、定期的に除草剤をまく必要ありそうだ……とアリアンナは考える。
+	PRINTFORML 
+	PRINTFORMW 「本体は草デースよね？　肥料が体に合わないとかデス？」
+	PRINTFORMW 「セラもわかんない、何か勝手に動いてる感じもするし、変な感じ～。」
+	PRINTFORMW 「ここにある本体のほかに、生き残りの苗が城の地下に落ちたとかでしょうか？」
+	PRINTFORMW 「知らないところで繁殖されていたら少し困りますね」
+	PRINTFORMW などと、セラで起こりえる様々な最悪の予想で談笑していると、突然電話の音が響く。
+	PRINTFORMW 乙女の電話だったようだ。ちゃっかりと次元間での通信も可能としている……。
+	PRINTFORML 
+	PRINTFORMW 「すみません電話ですのでこの話は後で……はい、白姫です、どうかしましたか？
+	PRINTFORMW 　……えっKCビルが植物に乗っ取られた！？」
+
+	依頼_달성상황 += 1
+	CALL EVENT_TIMER(30)
+ELSEIF 依頼_달성상황 == 4
+	;突入成功
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア２,1,"KCビル前")
+	CALL EVENT_MOVE_MUL(MAS位置,ガイドさん,水遣い)
+	CALL EVENT_DOUKOU(ガイドさん)
+	CALL EVENT_DOUKOU(水遣い)
+	PRINTFORMW 話を聞きつけた救世主一行はさっそく現場に駆け付けると、KCタワーが緑に覆われていた。
+	PRINTFORMW これだけ目立つと何事かと見に来た野次馬も多い。
+	PRINTFORMW 「うひえええ植物だらけデース……これも勇者さんの仕業デース？」
+	PRINTFORMW 「ええ、偶然としては出来過ぎています……」
+	PRINTFORMW すでにKCタワーの目の前にいる水遣い達。ここには千年アイテムが保管されている。
+	PRINTFORMW 狙われている以上はやることは一つしかない。
+	PRINTFORML 
+	PRINTFORML [1] - 突入だ！！
+	PRINTFORML [2] - 《火炎地獄》を발동する。
+	BINPUT
+	IF RESULT == 1
+		PRINTFORMW 「くそう、やな仕事押しつけやがっテー！」
+		PRINTFORMW 「KC式の隠蔽工作考えられるのは乙女さん達だけですからね……」
+	ELSEIF RESULT == 2
+		PRINTFORMW ボッ！！！
+		PRINTFORMW ………
+		PRINTFORMW ……
+		PRINTFORMW …
+		PRINTFORML
+		PRINTFORMW 水遣いが消火してくれたおかげで大火事にならずに済んだ……。
+		PRINTFORMW 「今は緊急事態なので、ふざけるのはやめてくださいね？」
+		PRINTFORMW ものすごく怒られてしまった……。
+		PRINTFORMW 「どっちもコエー……」
+	ENDIF
+
+	依頼_달성상황 += 1
+	CALL EVENT_TIMER(30)
+ELSEIF 依頼_달성상황 == 5
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア２,1,"セラのビルだよ。")
+	PRINTFORML
+	PRINTFORMW すでにタワーは大量の植物で覆われており、その中には牙を鳴らすものまでもいた。
+	PRINTFORMW 「ひぃ～全体がべとべとするデース……」
+	PRINTFORMW 「気を付けてください……たとえ精霊の庇護（듀얼中の障壁）があろうと、
+	PRINTFORMW 　食べられてしまったら簡単には抜け出せません！」
+	PRINTFORMW 「わかってるデース！　水遣いサン！　%CALLNAME:MASTER%サン、駆け抜けるデース！」
+	PRINTFORMW と、水遣いとガイドさんはお互い背中合わせようとしてくれるも、すでに捕食されてしまっていた……。
+	특수듀얼종류 = ダンジョンＤ
+	TARGET = -1
+	CALL CHOICE_DUEL_TYPE(20060)
+	IF RESULT != 1
+		PRINTL 
+		PRINTFORMW あっ……失敗してしまったよう――
+		PRINTFORMW 『パクッ！　ゴクン！！』
+		PRINTFORMW 「「%CALLNAME:MASTER%さーん！！」」
+		PRINTFORMW ………目の前が真っ暗になった！
+		PRINTL 
+		PRINTFORMW …………
+		PRINTFORMW ……
+		PRINTFORMW …
+		PRINTFORMW 
+		PRINTL 
+		RETURN 6
+	ENDIF
+	PRINTFORMW 「はぁ、はぁ、助かりました……うえぇえ、体中べとべと……」
+	PRINTFORMW 「ウへぇ～、お風呂入って、アンナサンのアイス食べて暖かい布団で寝たいデース……」
+	PRINTFORMW さすがにテンションが下がる二人。
+	依頼_달성상황 += 1
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア２,1,"KCビル最上階")
+	CALL EVENT_TIMER(60)
+ELSEIF 依頼_달성상황 == 6
+	SIF GETBIT(CFLAG:水遣い:기정사실,1) && GETBIT(CFLAG:ガイドさん:기정사실,1)
+		条件달성 = 1
+
+	PRINTFORML 
+	PRINTFORMW もうセラたちはすでにカードにされており、邪魔するものはなかった。
+	PRINTFORMW このオフィスに置いてすべての権限を持つガイドさんで、残りの千年アイテムが保管された金庫が解放される。
+	PRINTFORMW 中には千年マーカー、千年マイク、千年カメラと……いくらか拡張機能用の機械あった。
+	PRINTFORMW 「ふ～さっぱりデース！」
+	PRINTFORMW 「オフィス샤워壊されてなくてよかったですね！」
+	PRINTFORML 
+	PRINTFORML [1] - 待ちくたびれてオンラインデュエルをしていた
+	PRINTFORML [2] - 一緒に入りたかった……
+	IF TALENT:MASTER:성별 & 1 || (TALENT:MASTER:성별 & 2 && 条件달성 == 1)
+		SETCOLOR C_PINK
+		PRINTFORML [3] - 入った
+		RESETCOLOR
+	ENDIF
+	BINPUT
+	IF RESULT == 1
+		PRINTFORMW 「おう、悪かったナ！！」
+		PRINTFORMW 「こんな事態なのにちょっとのんびりしすぎていましたね」
+	ELSEIF RESULT == 2
+		PRINTFORMW 「……え～、珍しい冗談ですね……」
+		PRINTFORMW 「いや、この人の事だからマジで気持ち悪くて入りたかっただけデースね……」
+	ELSEIF RESULT == 3
+		IF TALENT:MASTER:성별 & 2 && 条件달성 == 1
+			PRINTFORMW 芯を通された火照った体のまま、二人は顔を赤らめた。
+			PRINTFORMW 「ちょっと……のんびりしすぎてしまいましたね……」
+			PRINTFORMW 「上司のオフィスでヤるの背徳感ヤバかったデスね……」
+			PRINTFORMW 三人だけの秘密として、いったん全員あの샤워室であったことは忘れた。
+		ELSE
+			PRINTFORMW 火照った体のまま、二人は顔を赤らめた。
+			PRINTFORMW 「ちょっと……はしゃぎ過ぎましたね……」
+			PRINTFORMW 「女子が３人も集まるとさすがに変なテンションになるよナー……」
+			PRINTFORMW 三人だけの秘密として、いったん全員あの샤워室であったことは忘れた。
+		ENDIF
+	ENDIF
+	CALL CLOTHES_SETTING(水遣い,351)	
+	CALL CLOTHES_SETTING(ガイドさん,351)
+	PRINTFORML 
+	PRINTFORMW さっぱりした後、３人はゆっくりと상황を整理し始めた。
+	PRINTFORMW 「アイテムも無事で、エレベーターも壊れてるからここに閉じ込められちまったヨ」
+	PRINTFORMW 「乙女さんも救助要請したものの、まだ近隣住民への説明が長引きそうとのことですね……」
+	PRINTFORMW 「じゃあしばらくはこのま――ん？　何か音しません」
+	PRINTFORML 
+	PRINTFORMW どう降りようかと考えていると。突然、エレベーター方面から大きな音が響く。
+	PRINTFORMW バイクの音か？　と廊下を見に行くと……エレベータのドアが吹き飛ばされ、大型のバイクに乗った何者かが飛び出した。
+	PRINTFORML 
+	PRINTFORML 「うひゃああ何かキター！？」
+	PRINTFORMW 「気を付けてください刺客です！！」
+	PRINTFORMW その何者かはこちらを見つめると……不機嫌そうに舌を鳴らしヘルメットを解除する。
+	PRINTFORMW　……知っている顔だ！
+	PRINTFORML 
+	;カメリア、バイクに乗って登場
+	PRINTFORMW 「アザレアデース！」
+	PRINTFORMW ……に、しては髪色が緑な気がする。
+	PRINTFORMW 「あなたは……！　確か妹さんの」
+	PRINTFORMW 「カメリアデース！」
+	PRINTFORML 
+	PRINTFORMW 「――先を越されたか」
+	PRINTFORMW 張り詰める空気が流れる――
+	PRINTFORMW その空気を砕いたのはカメリア、彼女は剣を前に出し……。
+	PRINTFORMW 水遣いは杖を回し、%CALLNAME:MASTER%はディスクを展開し、デスガイドは二人の背中に隠れた。
+	PRINTFORML 
+	PRINTFORMW 「もっている千年アイテムをすべて渡して、そいつの首を渡せ」
+	PRINTFORMW カメリアはそう言うと、デスガイドは千年アイテムをカバンの中に入れて強く抱く。
+	PRINTFORMW 今更物騒な要求には動じない。水遣いはむしろ強気に要求を返す。
+	PRINTFORMW 「……カメリアさんこそ、こちらへ投降しませんか？　アザレアさんは安全であなたのことを心配しています」
+	PRINTFORMW ダメ元での要求、ここにきている時点で和解など絶望的であるが、意外にカメリアは反応を返した。
+	PRINTFORMW 
+	PRINTFORMW 「私はあなたほど器用じゃない……」
+	PRINTFORMW 剣の一撃を、とっさに杖で受け止める水遣い。しかしその力は本物で、膝をついてしまう。
+	PRINTFORMW 「くぅっ！？」
+	PRINTFORMW 「자신の家を、できた友達を、そう簡単に裏切れるわけがないッ！」
+	PRINTFORMW 「ぅあッ！！」
+	PRINTFORMW 「水遣いサン！！」
+	PRINTFORMW カメリアの言葉で少し動揺してしまった水遣い。その隙を突かれ、剣を大きく振り払われてしまった。
+	PRINTFORMW デスガイドは何とかよろめいた水遣いを受け止めるも、カメリアの剣はまだまだ水遣いを狙っていた。
+	PRINTFORML 
+	PRINTFORMW 「――だから！！！」
+	PRINTFORMW そのまま後ろにいたデスガイドごと水遣いを両断しようとするも……
+	PRINTFORMW %CALLNAME:MASTER%が間に入り、千年ディスクで剣を受け止めた。
+	PRINTFORMW カメリアは力を入れるも、剣はオリジナルミレニアムを切り飛ばすどころか、傷一つ付けることはできなかった。
+	PRINTFORMW それどころか、カメリアの体が光り輝き始める……。それに気づいたカメリアは一度離れ、자신のディスクを展開する。
+	PRINTFORML 
+	PRINTFORMW 「――くっ！　油断も隙も無い！」
+	PRINTFORMW そのままカードを３枚ディスクに叩きつけると、ディスクに緑色の電流が走り……大きなカプセルのようなものが複数소환された。
+	PRINTFORMW 刺客も%CALLNAME:MASTER%との戦いに随分と対応できてしまっているようだ……
+	PRINTFORMW 「『ワイゼル』パーツ展開！！　一斉照射！」
+	PRINTFORML 
+	PRINTFORMW カメリアの掛け声とともにそれらは%CALLNAME:MASTER%たちを狙って変形しレーザー砲を吐き出した。
+	PRINTFORMW 水遣いは急いで마법で水の障壁を作り、光線を防いでいく。
+	PRINTFORML 
+	PRINTFORMW 「うわぁ！？　ソリッドヴィジョンで攻撃！？　部屋が滅茶苦茶デス！！」
+	PRINTFORMW 「モンスターで直接攻撃ができるようになるなんて、量産型のミレニアムを解析されたのでしょうか……？」
+	PRINTFORMW スペクトラ側はまだ持っていなかったはずの実体のあるソリッドヴィジョンの攻撃……%CALLNAME:MASTER%一行は息を飲む。
+	PRINTFORMW 「듀얼なんてさせない……このまま、瓦礫に埋もれさせてやるわ！」
+	PRINTFORML 
+	;カードからＤ-ホイールを소환して爆走する
+	PRINTFORMW 「くっ、%CALLNAME:MASTER%さん……こうなったら！」
+	PRINTFORMW 水遣いが何かを言い終える前に、%CALLNAME:MASTER%はカードを１枚取り出す。
+	CALL CARD_GET_SINGLE(60500,0,3)
+	PRINTFORMW それをディスクに叩きつけると、千年バイクがヘルメットと共に飛び出し、%CALLNAME:MASTER%達は巨大なバイクに跨った状態となる。
+	PRINTFORML 
+	PRINTFORMW 「うぉ！？　こんなことできるようなったデース！？」
+	PRINTFORMW 「소환技術のちょっとした応用です！　モノしか行き来できませんが、簡易的な『ホール』をディスクで作れるようになりました！」
+	PRINTFORMW 「イかれ技術～！　よーしっ……って、ここにバイクを出しても何の……あっ、待って！　心の準備ガー！？」
+	PRINTFORMW %CALLNAME:MASTER%はそのままバイクを走らせ――ガラスを砕いて空へと飛び出した。
+	依頼_달성상황 += 1
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア３,1,"上空３００メートル")
+	CALL EVENT_TIMER(10)
+ELSEIF 依頼_달성상황 == 7
+	PRINTFORMW 「ひいいっ！　落ちてる！　落ちてる！　シヌー！！」
+	PRINTFORMW ガラスと共に大型のバイクが落ちていく、当然ながらこのまま堕ちたらタダでは済まないが……。
+	PRINTFORMW 「大丈夫です！」
+	PRINTFORMW と水遣いはバイクを水の泡で囲い……落ちるショックを軽減して、そのまま道路を滑走した。
+	PRINTFORMW さすがにすべてのショックは軽減できず、%CALLNAME:MASTER%とガイドさんは腹に一撃を食らったかのような衝撃を受けた。
+	PRINTFORML 
+	PRINTFORMW ……あっ、痛い……思ったより大丈夫じゃなかったかもしれない。
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア４,1,"ハイウェイ")
+
+	PRINTFORML 「ぐえっ……パンピーにはキツイヨー……」
+	PRINTFORMW 「すみません、でもこれで逃れられましたね……あとは安全な場所でしばらく休めば……」
+	PRINTFORMW そんな一息を付けるなど、カメリアが許すはずがなく、%CALLNAME:MASTER%達の横に落ちるカメリア。
+	PRINTFORML  
+	PRINTFORMW 「逃すか！！」
+	PRINTFORMW 「逃がして、くれませんよねー……」
+	PRINTFORMW 「ひぃい！　機械世界の奴らやっぱり怖いデース！」
+	PRINTFORMW 「でも、こうなったら%CALLNAME:MASTER%さんの領域です！　応援します！」
+	PRINTFORML 
+	특수듀얼종류 = ライディングＤ
+	TARGET = カメリア
+	CALL CHOICE_DUEL_TYPE(60)
+	IF RESULT != 1
+		PRINTL 
+		PRINTFORMW バイクの制御が効かない！　もう、もうだめだぁ！
+		PRINTFORMW 
+		PRINTFORMW 「「%CALLNAME:MASTER%さーん！！」」
+		PRINTFORMW ………目の前が真っ暗になった！
+		PRINTL 
+		PRINTFORMW …………
+		PRINTFORMW ……
+		PRINTFORMW …
+		PRINTFORMW 
+		PRINTL 
+		RETURN 6
+	ENDIF
+
+	PRINTFORMW 「くっ！　そん―――なっ！！　うああっ！？」
+	PRINTFORMW ワイゼルは爆発し、それと共にカメリアはバイクから吹っ飛ばされてしまった。
+	PRINTFORML 「カメリアさん！」
+	PRINTFORMW 水遣いは急いで水마법で吹き飛ぶカメリアを保護した。
+	PRINTFORMW しかしあまりにもスピードを出し過ぎており、カメリアはアスファルトの形を変えながら転がっていく。
+	PRINTFORML 
+	PRINTFORMW 「大丈夫ですか！？　%CALLNAME:MASTER%さん！」
+	PRINTFORMW %CALLNAME:MASTER%は水遣いの意図を読み取りカメリアの元へと寄った。カード化が通れば、大怪我もある程度は抑えられる。
+	PRINTFORMW しかし、カメリアは大けがを負いつつもまだ意識を保ちつつ……。
+	PRINTFORMW 「……勇者、ごめん……せめて、役には立つ――から！」
+	PRINTFORMW 何らかの機械を地面に突き刺した……。
+	PRINTFORML 
+	PRINTFORMW それは大きく展開し、疑似的に次元同士をつないでしまった。
+	PRINTFORMW 「おー、ようやくつながった！　行先もくっきり見えるし、新型ホールも大成――カメリア！？」
+	PRINTFORMW 「カメリア！」
+	PRINTFORMW 次元の扉の先に居たのは……勇者とヒュプノシスターだ。
+	PRINTFORML 
+	PRINTFORMW 勇者はシスターと共にカメリアの保護に入ろうとしたものの……
+	PRINTFORMW 「いだっ……ぐっ、」
+	PRINTFORMW 障壁に阻まれてしまった。%CALLNAME:MASTER%は初めて見たが、本当に勇者は듀얼世界に이동することはできなかったようだ。
+	PRINTFORMW 水遣いとガイドさんは突然現れた黒幕を前にして息を飲む。
+	PRINTFORML 
+	PRINTFORMW 「――もう少しおとなしくしようっては伝えたんだけどね、思ったより暴れちゃった感じ？」
+	PRINTFORMW 「……」
+	PRINTFORMW 「会うたびに押し黙るのやめてくれないかな？」
+	PRINTFORMW シスターは勇者の服を引っ張りながらカメリアを心配し、何度も勇者に視線を移す。
+	PRINTFORMW 勇者は一度うなづくと、シスターの表情は明るくなり、急いでカメリアの救出に向かった。
+	PRINTFORML
+	PRINTFORML [0] - 千年アイテムを直々に奪いに来たのか？
+	PRINTFORML [1] - ここですべてを終わらせよう
+	BINPUT
+	PRINTFORML 
+	PRINTFORMW 「ねっ！　ただそうしたいのは山々だけれど、ほら……いだだだだ！？　呪いがさぁ」
+	PRINTFORMW もう一度手を듀얼世界に手を差し出すと、まるで電撃に撃たれたかのように苦しむ。
+	PRINTFORML
+	PRINTFORMW 「総取りなんてさせねーゼ！！　あっでも……魔界へ攻撃は本当にやめてくれると助かるカナ～っ？
+	PRINTFORMW 　マイク、はアレデスけど、マーカーとかならあげられるデースよ……」
+	PRINTFORMW 何気なくそう言ったガイドさんはバイクの陰に隠れる。
+	PRINTFORMW 「あー、そんな約束してたね……その件に関しても、別に必要もなくなったしいいよ」
+	PRINTFORMW 「……？　どういう、ことですか」
+	PRINTFORMW 水遣いは警戒を解かない、シスターが隙を見て第三の目でこちらを洗脳しようとしても、杖で強く地面をたたき威嚇する。
+	PRINTFORMW 大人げないが、효과は絶大で、シスターは「ぴっ！」と声を漏らし、カメリアの救出に集中する。
+	PRINTFORML 
+	PRINTFORMW 「その話の前に、千年アイテムが全部揃ったらどうなるかって知ってる？」	
+	PRINTFORMW 「冥府の扉が開く……それくらいしか知りません」
+	PRINTFORMW 水遣いはラビュリンス城での記憶を思い出す。
+	PRINTFORMW 「お～結構迫ってたんだね。じゃあその冥府の奥に、何がいる、何があるかとかは？」
+	PRINTFORML
+	PRINTFORML [0] - 死者？
+	PRINTFORML [1] - 邪神……
+	PRINTFORML [2] - ゴーズとか？
+	BINPUT
+	IF RESULT == 0
+		PRINTFORMW 「あー残念、それもあるけどちょっと惜しい！」
+		PRINTFORMW 「――邪神！」
+	ELSEIF RESULT == 2
+		PRINTFORMW 「うわ、ボクの世代から言ってもすっごい懐かしいよソレ……まだ使われてる？」
+		PRINTFORMW 「こんな時もカードの話するんじゃネー！」
+		PRINTFORML と、そんな%CALLNAME:MASTER%たちを無視して記憶をさかのぼっていた水遣いは答える。
+		PRINTFORMW 「――邪神！」
+	ENDIF
+	PRINTFORML 
+	PRINTFORMW 「おっ、正解！」
+	PRINTFORML 
+	PRINTFORMW 「……あなたは冥府に居て、자신自身の開放を望んでいるのですか！」
+	PRINTFORML 「まだまだ自認は勇者だよ～。ボクはただゾークの『帰りたい』って願いに共感しただけだよ
+	PRINTFORMW 　ゾークだけじゃない、冥府の先には帰りたい人が大勢いるんだ……！」
+	PRINTFORMW 勇者は大きく目を見開き、何かをして来そうな雰囲気を醸し出す。	
+	PRINTFORMW 水遣いは自身の魔力が회복したのを確認すると杖を勇者に向ける。それと同時に%CALLNAME:MASTER%もDホイールのエンジンを鳴らす。
+	PRINTFORML 
+	PRINTFORMW 「どちらにしろ、千年アイテムがすべてこちらの世界にある限りは安全です！
+	PRINTFORMW 　たとえこれからどんな刺客を送ろうと！　何度だって打倒してみせます！！」
+	PRINTFORMW 「だから、もう必要ないって――だって君たちのおかげで、千年アイテムは全部揃っているんだもの」
+	PRINTFORML 
+	PRINTFORMW 彼女が手袋を外すと最後の千年アイテムが姿を現した。
+	PRINTFORMW 『握手した상대に자신の本心を伝える』、心同士を繋げるという平和な目的のために作られた――すべての元凶。
+	PRINTFORMW 「……千年指輪（リング）～」
+	PRINTFORMW それを取り外し、まるで親指でコインを弾くかのように持ち……。
+	PRINTFORML 
+	PRINTFORMW 「……まさか！　%CALLNAME:MASTER%さん！　今すぐここから離れて！」
+	PRINTFORMW 水遣いは勇者の意図にいち早く気づいたが、遅かった……。
+	PRINTFORMW 勇者は、他のアイテム６つが集まっている%CALLNAME:MASTER%たちの元へ『ソレ』を打ち出した。
+	PRINTFORMW 電撃を纏ったリングはまるで打ち出された弾丸のように真っすぐ飛ぶ……。
+	PRINTFORML 
+	PRINTFORMW どんな防御姿勢よりも早く、高まった興奮で世界がスローに見えてもまだまだ早く飛ぶリング。
+	PRINTFORMW ７つのアイテムが揃った時、冥界の扉が開かれる。揃いさえすれば誰が持っていようと関係ない。
+	PRINTFORMW 最後の最後でしくじってしまった、最後の最後で勝てた、何が起きているのかわからない、
+	PRINTFORMW 様々な思考が渦巻く中その場にいた全員が息のやり方を忘れてしまっていた。
+	PRINTFORML 
+	PRINTFORMW なので――
+	PRINTFORMW 打ち出されたリングが軌道中に消えた瞬間、誰もが息を吐いた。
+	PRINTFORMW 
+	PRINTFORMW 
+	PRINTFORML 
+	PRINTFORMW 「……へっ？」
+	PRINTFORML 
+	PRINTFORMW それによって勇者は隙を晒すこととなり、
+	PRINTFORMW 「――はああああっ！！」
+	PRINTFORMW 水遣いは杖の先に특수な機械で合体した『千年カメラ』を勇者に向ける。
+	PRINTFORMW 対勇者のために研究し、作られた특수アタッチメント……水遣いの마법で水を動かし、電力に変換し……
+	PRINTFORMW 一発分だけ千年カメラの真価を発現させることに成功した小型砲台。
+	PRINTFORML 
+	PRINTFORMW 「勇者様！　カメリア入れ――」
+	CALL FLASH(3)
+	PRINTFORMW 「――た、よ？」
+	PRINTFORMW 雷鳴のごとき轟きと眩い光が辺りを、勇者は呑み込まれ……カードだけが残った。
+	PRINTFORML 
+	;カードにされる勇者
+	PRINTFORMW 「へ？　勇者さま？」
+	PRINTFORMW 地に落ちる前に、%CALLNAME:MASTER%は勇者を封印しただろうカードを奪い上げる。
+	SETCOLOR C_YELLOW
+	PRINTFORMW 《勇者のカード（両面裏）》を手に入れました！
+	RESETCOLOR
+
+
+	PRINTFORMW 「そん、なっ……勇――」
+	PRINTFORMW ガイドさんが地面に突き立てられた、カメリアの世界を繋ぐ機械を蹴り飛ばし、二つの世界のつながりも소멸した。
+	PRINTFORMW ………………
+	PRINTFORML 
+	PRINTFORMW 「……エっ……勝った？」
+	PRINTFORMW 数々の世界を混乱に陥れた勇者の封印に成功した――。
+
+	CALL EVENT_TIMER(180)
+	CALL EVENT_MOVE(MASTER,場所_寝室)
+	CALL RECOVER_PERMIL(MASTER,-1000,"체력")
+	CALL RECOVER_PERMIL(MASTER,-1000,"기력")
+	RETURN 2
+ENDIF
+
+@IRAI_REWARD_60
+CALL CARD_PACK_RELEASE(62)
+CALL CARD_PACK_RELEASE(63)
+
+
+
+;セラ戦（20060）――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+@IRAI_DECK_20060(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 20060
+RETURN 0
+
+@IRAI_DUEL_INTRO_20060
+IF 자신_승리数 == 0
+	PRINTFORML
+	PRINTFORMW 『くすくす、けらけら……』
+	PRINTFORMW このままでは……飲み込まれてしまう！
+
+	ライフ_상대 = 4000
+	CALL CARD_GENERATE("상대",1020061,"守備표시")
+	CALL CARD_GENERATE("상대",1020061,"守備표시")
+	CALL CARD_GENERATE("상대",1020061,"守備표시")
+	CALL CARD_GENERATE_HAND("상대",71022)
+	SETCOLOR C_YELLOW
+	CUSTOMDRAWLINE —
+	PRINTFORML 승리条件：상대のライフポイントを０にする。
+	CUSTOMDRAWLINE —
+	RESETCOLOR
+ELSEIF 자신_승리数 == 1
+	PRINTFORML
+	PRINTFORMW 「エレベーターはちゃんと動いているみたいデース！
+	PRINTFORMW 　ひぃ～～キーパッドがべとべとするデース、これ本当に動くの……？」
+	PRINTFORMW 「ちょっと怖くはありますが、行くしかありません！　いざ！！」
+	PRINTFORMW 水遣いが心の準備ができる前にボタンを押し、エレベーターが上がっていく……。
+	PRINTFORMW 景気の良さそうな音楽が、緊張感を和らげてくれた。
+	PRINTFORML
+	PRINTFORMW …………～♪
+	PRINTFORMW ………～♪
+	PRINTFORMW …～♪　ドンッ！！！！！！！
+	PRINTFORML
+	PRINTFORMW 強い揺れと共にエレベーターの証明が消え、急上昇を始める！
+	PRINTFORMW ガラス天井を見上げるとエレベーターは巨大な植物の口へと一直線に向かっていた！
+	PRINTFORMW 涙を流すガイドさん、なぜか楽しそうな水遣い、%CALLNAME:MASTER%の気持ちはどうであれ……とにかくディスクを構えた。
+	ライフ_상대 = 4000
+	CALL CARD_GENERATE("상대",1020061,"守備표시")
+	CALL CARD_GENERATE("상대",1020061,"守備표시")
+	CALL CARD_GENERATE("상대",1020061,"守備표시")
+	SETCOLOR C_YELLOW
+	CUSTOMDRAWLINE —
+	PRINTFORML 승리条件：상대のライフポイントを０にする。
+	PRINTFORML Warning ：소환・특수소환されたモンスターは守備표시になってしまう！
+	CUSTOMDRAWLINE —
+	RESETCOLOR
+	CALL CARD_RESERV("자신",240060,永紋章予約)
+ENDIF
+
+@IRAI_DUEL_VIC_20060
+IF 자신_승리数 == 0
+	자신_승리数 = 1
+	PRINTFORMW 「危なかったですね……」
+	PRINTFORMW 「音もなく消えるのヤメロ！！」
+	PRINTFORMW 水遣いは水마법で粘液を取ってくれて、ガイドさんには強めに叱られる。
+	PRINTFORMW 声を出す前に襲われた……なんて言い訳することも出来なさそうだ
+	PRINTFORMW 「セラちゃんだからか、デュエルの仕方分かっているデスねー」
+	PRINTFORMW しかし、듀얼ができるなら倒せないわけがない……。
+	PRINTFORMW このまま進むことにした。
+	PRINTFORML 
+	RETURN 2
+ELSEIF 자신_승리数 == 1
+	자신_승리数 = 2
+	PRINTFORMW エレベータは何とか最上階で止まってくれた。
+	PRINTFORMW 「ひぃ～ひっひいいい～～～……」
+	PRINTFORMW 「ダンジョン攻略はスリル満点ですね！」
+	PRINTFORMW 「なんで楽しそうなんデスかあんたら……」
+	PRINTFORMW そう言いながらもガイドさんはエレベーターの扉を操作して開けようとしてくれていた。
+	PRINTFORML 
+
+	;バリューの설정
+	CALL CARD_GET_EMBLEM_VALUES("자신",240060,0,1)
+	;ミッション書き換え
+	RESULT:1 = 20061
+	RETURN 2
+ENDIF
+
+;セラ戦2（20060）――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@IRAI_DUEL_INTRO_20061
+PRINTFORML
+PRINTFORMW 「これが終わったら、マジで乙女さんに昇給させてもらうデース！！」
+PRINTFORMW 「時間単位だと派遣扱いな私の方が貰っていますもんね……」
+PRINTFORMW ガイドさんは분노をそのままパソコンに叩きつけていると……
+PRINTFORMW 「よし！　開い――やっぱりギャー！！！」
+PRINTFORMW 突然扉が開き、デスガイドは洪水のような触手に飲まれて行く。
+PRINTFORMW 「しまっ……」
+PRINTFORMW 水遣いも飲み込まれてしまい、囚われてしまった！
+PRINTFORML
+PRINTFORMW 『くすくす……アハッ……』
+CALLFORM ANIME_TEST("　　　笑う捕食者　　　","イ　ビ　ル　セ　ラ　","Evil Sera",0,15)
+
+
+PRINTFORMW 触手の塊の中から真っ黒なセラが顔を出してしまう。
+PRINTFORMW それは触手をゆっくりと水遣いとガイドさんの体を沿わせ、熱い粘液を分泌する。
+PRINTFORMW セラの分体は、このエレベータ自体を捕食器官と変え、今まさに……水遣い達を捕食しようとしたが。
+PRINTFORML 
+PRINTFORMW 『アハーっあっ？』
+PRINTFORMW その体が光り出す。体が%CALLNAME:MASTER%と接触してしまったのだ。
+PRINTFORMW さぁ――
+PRINTL
+PRINTL [0] - 듀얼しよう
+PRINTL [1] - ……もうちょっと見ていたい
+BINPUT
+IF RESULT == 1
+	PRINTFORMW 「あのですね！！」
+	PRINTFORMW 「エロ野郎！！」
+ENDIF
+ライフ_상대 = 8000
+
+SETCOLOR C_YELLOW
+CUSTOMDRAWLINE —
+PRINTFORML 승리条件：상대のライフポイントを０にする。
+CUSTOMDRAWLINE —
+RESETCOLOR
+
+@IRAI_DUEL_VIC_20061
+PRINTFORML 
+PRINTFORMW 『うひゃあああ～～わー！？　しゃべれないフリしてごめんなさーい！！』
+PRINTFORML 
+RETURN 0
+
+
+
+@DUELDECK_20060(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+RESULTS = 捕食植物
+SIF 듀얼리스트 == "存在確認"
+    RETURN 1
+
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)",  32000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32400
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32400
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32400
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32401
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32401
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32402
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32403
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32403
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32403
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32404
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32404
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32404
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32405
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32405
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32406
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32406
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32407
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  32408
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  71010
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73250
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73250
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73250
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73251
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73251
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73251
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  73252
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  93250
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  93250
+
+
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 56051
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56051
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56052
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56052
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56052
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56053
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56053
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56053
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56054
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56054
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56054
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56050
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56050
+
+
+
+@IRAI_DUNGEON_SET_20061
+;덱書き換え
+RESULT:1 = 20061
+;ターン数（0=攻撃불가、1=攻撃可）
+RESULT:2 = 0
+;先攻설정（1=상대先攻、2=자신先攻）
+RESULT:3 = 1
+RETURN 1
+
+@DUELDECK_20061(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+RESULTS = 蕾禍
+
+SIF 듀얼리스트 == "存在確認"
+    RETURN 1
+
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)", 1436
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1436
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 1436
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 27430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 27430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 27430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 30430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 30430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 30430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 32000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 32000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 32000
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 32430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 32430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 32430
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70001
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70003
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70004
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 70036
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73240
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73240
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 73240
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93240
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93240
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93240
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93241
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93241
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)", 93241
+
+
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 1435
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1435
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 1435
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 53560
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 53560
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 53560
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 55350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 55350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 55350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 55351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 55351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 55351
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56350
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 56350
+
+
+
+
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@CARDNAME_1020061,参照先
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 植物の牙
+	CASE "略称"
+		RESULTS = 植物の牙
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+
+@CARD_1020061(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 식물족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 2000
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1020061(종류)
+#DIM DYNAMIC 종류
+CALLFORM CARD_ABLE(0, 戦闘→묘지, 破壊→묘지)
+PRINTL ①：このカードが破壊された場合に발동する。
+PRINTL 자신は１０００ダメージを受け、このカードを묘지から특수소환する。
+PRINTL こうして특수소환したこのカードはフィールドを離れる場合、代わりに제외される。
+CALLFORM CARD_ABLE(0, 지속효과)
+PRINTL ②：このカードはこのカードを대상としない효과を受けない。
+CALLFORM CARD_ABLE(0, ターン終了時)
+PRINTL ③：상대ターンのエンドフェイズ時に발동する、
+PRINTL 상대に１０００ダメージを与える。
+
+
+
+@CARDCAN_1020061(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1020061)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	SIF 발동済_1(듀얼리스트,1020061)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1020061,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1020061(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+IF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1020061)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 植物の牙
+		효과추가종류:0 = 効追除処
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"無差耐")
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1020061)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",1000,1)
+	ENDIF
+ENDIF
+
+
+
+@CARDNAME_240060,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 重力
+	CASE "略称"
+		RESULTS = GRAVITY
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+ENDSELECT
+
+
+@CARD_240060(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+
+@CARDCAN_240060(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,240060)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 永紋章起動
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_240060(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 永紋章起動
+	CALL FULLRESET
+	효과条件T1召種 = 全召種
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦狂",1)
+ENDIF
+
+
+
+;カメリア戦（60）――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@IRAI_DUEL_INTRO_60
+CALLFORM ANIME_TEST("　渇望する閃滅姫　","閃刀姫－カメリア","Sky Striker Ace - Camellia ",2,16)
+PRINTFORMW 「私達の目的を邪魔する奴は誰であろうと消してやる……
+PRINTFORMW 　起動して、『対듀얼世界侵略兵器、機皇帝ワイゼル インフィニティ』！！」
+
+PRINTFORML 
+PRINTFORMW 　　　　　　　　　「맥시멈소환！！」
+
+CALL CARD_GENERATE("상대",124320)
+CALL CARD_GENERATE("상대",124321)
+CALL CARD_GENERATE("상대",124322)
+PRINTFORML 
+PRINTFORMW 「新しい소환方！？」
+PRINTFORMW 「カードが同士が合体したデース！」
+PRINTFORML 
+PRINTFORMW 「すべてを奪ってあげるわ、救世主！」
+
+
+@IRAI_DECK_60(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+SIF 듀얼리스트 == "상대"
+	RETURN 20062
+RETURN 0
+
+
+@DUELDECK_20062(듀얼리스트)
+#DIMS DYNAMIC 듀얼리스트
+
+RESULTS = ベアルクティ
+SIF 듀얼리스트 == "存在確認"
+   RETURN 1
+
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(1)",  24175
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  24175
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  24175
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25160
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25161
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25162
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25163
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25164
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  25165
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72580
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72580
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72580
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72581
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72581
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72581
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72582
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72582
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  72582
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  75172
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  75172
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  75172
+SETVAR @"%듀얼리스트%_덱:POOL_COUNT(0)",  92580
+
+
+
+
+
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(1)", 52560
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52560
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52560
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52561
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52561
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52561
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52562
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52562
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52562
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52563
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52563
+SETVAR @"%듀얼리스트%_EX덱:POOL_COUNT(0)", 52563
+

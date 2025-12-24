@@ -73,7 +73,7 @@ IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함
 		RETURN 0
 	RETURN 1
 
-ELSEIF 종류 == 攻撃後誘発
+ELSEIF 종류 == 攻撃時誘発
 	SIF ゾーン != "마함"
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
@@ -114,7 +114,7 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC カウンタ
-
+#DIM DYNAMIC 破壊カード
 
 IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81031,10)
@@ -127,11 +127,12 @@ IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"一攻",500)
 	ENDIF
 
-ELSEIF 종류 == 攻撃後誘発
+ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,81031)
 	IF RESULT == 0
+		破壊カード = 戦闘場所(듀얼리스트,1)
 		CALL FULLRESET
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘場所(듀얼리스트,1),"제외")
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",破壊カード,"제외")
 	ENDIF
 
 ELSEIF 종류 == 戦破壊→묘지

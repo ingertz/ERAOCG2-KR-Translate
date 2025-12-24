@@ -1,0 +1,108 @@
+@CARDNAME_79491,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 악몽의 조교채찍
+	CASE "略称"
+		RESULTS = 악몽의 조교채찍
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_79491(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79491(종류)
+#DIM DYNAMIC 종류
+
+
+CALLFORM CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：상대の체력に５００ダメージを与える。
+CALLFORM CARD_ABLE(0,ターン開始時強制)
+PRINTL ②：자신のスタンバイフェイズ開始時、
+PRINTL 자신フィールドに「悪夢の조교師」または「悪夢の조교部屋」が存在する場合に발동する。
+PRINTL 묘지のこのカードを손패に戻す。
+
+@CARDCAN_79491(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79491)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF OPPOSER == -1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == ターン開始時強制
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前:0 = 悪夢の조교師
+	효과条件名前:1 = 悪夢の조교部屋
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_79491(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC ダメージ量
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79491)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
+		IF RESULT != -1
+			조교대상 = RESULT
+			PRINTFORML 
+			PRINTFORMW %NAME:MASTER%は%NAME:조교대상%に鞭を打つ！
+			DOWNBASE:조교대상:체력 += 500
+			CALL EROTIC_MOVE("拷問処理",조교대상,MASTER,500)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == ターン開始時強制
+	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,손패行き)
+ENDIF

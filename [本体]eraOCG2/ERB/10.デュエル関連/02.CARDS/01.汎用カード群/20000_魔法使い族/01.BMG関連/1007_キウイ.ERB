@@ -42,6 +42,7 @@ RETURN 0
 @CARD_EXPLANATION_1007(종류)
 #DIM DYNAMIC 종류
 
+PRINTL 이 카드명의 ③의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,攻撃時誘発)
 PRINTL ①：자신의 몬스터가 상대 몬스터와 전투를 행한 경우、이 카드를 패에서 버리고 발동할 수 있다。
 PRINTL 자신 필드의 "매지션 걸" 몬스터의 공격력 / 수비력은 턴 종료시까지、
@@ -49,6 +50,9 @@ PRINTL 서로의 필드 / 묘지의 "매지션 걸" 몬스터의 종류×３０�
 CALLFORM CARD_ABLE(2,지속효과)
 PRINTL ②：이 카드가 몬스터 존에 존재하는 한、
 PRINTL 자신 필드의 마법사족 몬스터는 효과로는 파괴되지 않으며、상대 효과의 대상이 되지 않는다。
+CALLFORM CARD_ABLE(3,발동誘発)
+PRINTL ②：자신 필드에 "매지션 걸" 몬스터가 존재하고、상대가 카드의 효과를 발동했을 때 발동할 수 있다。
+PRINTL 묘지의 이 카드를 특수 소환한다。이렇게 특수 소환된 이 카드는 엔드 페이즈시에 패로 돌아간다。
 
 
 @CARDSUMMON_AA_1007
@@ -67,19 +71,32 @@ SIF RESULT == 1
 IF 종류 == 攻撃時誘発
 	SIF ゾーン != "손패"
 		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件カテゴリ = 매지션 걸
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+
 	RETURN 1
 ELSEIF 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
-ENDIF
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_3(듀얼리스트,1007)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1007,ゾーン,1)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 매지션 걸
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
 
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
 
 @CARDEFFECT_1007(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -99,6 +116,8 @@ IF 종류 == 攻撃時誘発
 		CALL FULLRESET
 		효과範囲필드 = 1
 		효과範囲묘지 = 1
+		효과範囲상대필드 = 1
+		효과範囲상대묘지 = 1
 		효과条件カテゴリ = 매지션 걸
 		효과条件CNT = 1
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -117,6 +136,15 @@ ELSEIF 종류 == 지속효과
 	효과条件종족 = 마법사족
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
 	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"破耐")
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1007,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과추가종류 = 10 + 손패行き
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
 ENDIF
 
 
