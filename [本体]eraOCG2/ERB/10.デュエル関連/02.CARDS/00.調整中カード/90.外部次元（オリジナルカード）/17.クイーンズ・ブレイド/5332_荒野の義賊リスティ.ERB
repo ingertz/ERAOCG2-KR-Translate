@@ -24,6 +24,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
 	CASE "종류"
 		RETURN 효과モン
 	CASE "속성"
@@ -78,7 +80,10 @@ SIF RESULT == 1
 IF 종류 == 효과後誘発
 	SIF 발동済_1(듀얼리스트,5332)
 		RETURN 0
-	SIF ゾーン != "필드"
+	SIF !GROUPMATCH(ゾーン,"손패","묘지")
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,5332,ゾーン)
+	SIF RESULT == 1
 		RETURN 0
 	CALL FULLRESET
 	효과条件カテゴリ = 미투사

@@ -24,6 +24,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
 	CASE "종류"
 		RETURN 효과モン
 	CASE "속성"
@@ -77,10 +79,14 @@ SIF RESULT == 1
 IF 종류 == 묘지起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,5338)
 		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,5338,ゾーン)
 	SIF RESULT == 1
 		RETURN 0
 	SIF メインフェイズ != 1
+		RETURN 0
+	SIF GETVAR(@"%対面者%_モン出現数") < 3
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 손패→묘지 || 종류 == 덱→묘지
@@ -133,7 +139,7 @@ IF 종류 == 묘지起動 || 종류 == フリー誘発
 		CALL CARD_SP_SUMMON(듀얼리스트, ゾーン, 場所)
 	ENDIF
 ELSEIF 종류 == 戦破壊→묘지 || 종류 == 攻撃時誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5338)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5338,2)
 	IF RESULT == 0
 		TRYCALLFORM CARD_UI(GETVAR(@"%듀얼리스트%_덱:0"))
 		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_덱:0")}("종류")

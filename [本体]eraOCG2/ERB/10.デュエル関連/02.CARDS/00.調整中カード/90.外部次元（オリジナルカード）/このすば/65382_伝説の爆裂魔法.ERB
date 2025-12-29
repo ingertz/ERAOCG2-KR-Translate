@@ -1,0 +1,251 @@
+﻿@CARDNAME_65382,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 전설의 폭렬마법
+	CASE "略称"
+		RESULTS = 전설의 폭렬마법
+	CASE "カテゴリ"
+		RESULTS:0 = 의식 마법
+	CASE "検索カテゴリ"
+		RESULTS:0 = 코노스바
+	CASE "出典作品"
+		RESULTS:0 = 이 멋진 세계에 축복을！
+ENDSELECT
+
+
+@CARD_65382(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 251224
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_65382(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「전설의 폭렬마법사 메구밍」の降臨に必要
+PRINTL このカード名の②の효과はデュエル中に１度しか使用できない。
+CALL CARD_ABLE(0,마함起動 ,손패起動)
+PRINTL ①：レベルの合計が의식소환するモンスターのレベル以上になるように、자신の손패・フィールドのモンスターをリリースし、
+PRINTL 자신の손패から「전설의 폭렬마법사 메구밍」１体を의식소환する。
+CALL CARD_ABLE(20,효과後誘発)
+PRINTL ②：자신フィールドに「전설의 폭렬마법사 메구밍」が存在する状態で자신が「マジカル・エクスプロージョン」を발동した場合に、
+PRINTL 묘지のこのカードおよび「マジカル・エクスプロージョン」１枚を제외し、１００ＬＰになるようにＬＰを支払って발동できる。
+PRINTL 자신フィールドに「전설의 폭렬마법사 메구밍」が表側표시で存在する場合、この효과は「マジカル・エクスプロージョン」발동時の효과と同じになる。
+
+;메구밍をフィールドに降臨させる의식 마법にして、「マジカル・エクスプロージョン」の威力を必殺のものにする秘術。
+;【マジエクワンキル】には色々な型があるが、本当に４０枚以上の마법カードを묘지に送ってワンショットキルすることは少なく、
+;【ドグマブレード】での「Ｄ－ＨＥＲＯ ドグマガイ」や【マジエク帝】の「ライフチェンジャー」のように予め상대のＬＰを減らしておく型、
+;マジエクにはターン１がないため２枚以上のマジエクを伏せて使う型、【정크ブレード】で「정크・コレクター」を使って再利用する型など、
+;マジエクの효과を複数回起動するものがある。【메구밍マジエク】は、使用して묘지へ送られたマジエクを再利用する型の流れを汲んだギミック構造。
+
+;現代遊戯王では묘지肥やしの際に「トランザクション・ロールバック」を含めればそれだけで２度打ちが可能になっている。
+;ただ、最初から「トランザクション・ロールバック」ありきにしたり、덱枚数４０枚以上の構築を前提としたギミックにするのは
+;eraOCG2のゲームシステムへの配慮とエレガントさ（じゅうよう）に欠けるので、３０枚構築のギミック内で상대ＬＰを焼き切れるようにしている。
+;２発目を撃つ際には、효과処理のタイミングまでフィールドに「메구밍」を維持する必要がある。「ナチュル・ビースト」と同様の処置。
+
+
+@CARDCAN_65382(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,65382)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
+	素材範囲손패 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件名前 = 전설의 폭렬마법사 메구밍
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_D1(듀얼리스트,65382)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 100
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 전설의 폭렬마법사 메구밍
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = マジカル・エクスプロージョン
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = マジカル・エクスプロージョン
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_65382(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択結果
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 메구밍場所 = 2
+#DIM DYNAMIC ライフコスト
+#DIM DYNAMIC 상대残りライフ
+#DIM DYNAMIC 予測ダメージ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65382)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前 = 전설의 폭렬마법사 메구밍
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL RESETAREA_MAT
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:{選択カード（CS）}")}(듀얼리스트,選択カード（CS）)
+			素材範囲필드 = 1
+			素材範囲손패 = 1
+			TRYCALLFORM RITSUMMON(듀얼리스트,選択カード（CS）,参照先（CS）)
+			IF RESULT == 1
+				;セルフ소환구상シーン（※スキップできません）
+				PRINTFORML 
+				PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+				PRINTFORML 
+				PRINTFORML 「我が名は메구밍！　紅魔族随一の天才にして、最強の攻撃마법〈爆裂마법〉を極めんとする者！」
+				PRINTFORML 
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,65382,20)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 전설의 폭렬마법사 메구밍
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			
+			;메구밍の場所を確認しておく（後続処理で後々にバグらないための念のため処置）
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+					CONTINUE
+				SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+					CONTINUE
+				SIF GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ") == 5382
+					메구밍場所 = カウンタ
+			NEXT
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,제외行き)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件名前 = マジカル・エクスプロージョン
+				효과条件行先플래그 = 제외行き
+				CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+				IF RESULT == 1
+					IF GETVAR(@"ライフ_%듀얼리스트%") > 100
+						ライフコスト = GETVAR(@"ライフ_%듀얼리스트%") - 100
+						CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",ライフコスト)
+						
+						;おもしろトドメ演出システム搭載！
+						;상대のＬＰと状態を事前に確認して、この묘지효과で상대にトドメを刺せる場合は메구밍の厨二病演出がつくぞ！
+						;これのために、わざわざ의식 마법の효과で２発目を撃たせる面倒な手順を踏んでたり발동条件に메구밍を要求してる。
+						
+						상대残りライフ = GETVAR(@"ライフ_%対面者%")
+						
+						;まず효과ダメージを与えられるかを판정。無効・反射時は当然演出は出ない。
+						IF GETVAR(@"%対面者%_一時ダメージ無効") || GETVAR(@"%対面者%_효과ダメージ無効") || GETVAR(@"%対面者%_효과ダメージ反射")
+							;ダメージが与えられない！
+							TRYCALLFORM CARDEFFECT_5382(듀얼리스트,他효과起動,"필드",메구밍場所)
+						ELSE
+							CALL FULLRESET
+							효과範囲묘지 = 1
+							효과条件종류 = 마법全般
+							효과条件CNT = 1
+							CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+							予測ダメージ = RESULT * 200
+							
+							IF 상대残りライフ <= 予測ダメージ
+								;参考文献.a
+								;火花魔道士は叫び、彼が若かった頃の嵐の분노を呼び起こそうとした。
+								;驚いたことに、空はもう再び見られないと思った恐るべき力で応えた。
+								
+								;参考文献.b
+								;いにしえより伝わりし浄化の炎・・・落ちよ！
+								
+								PRINTFORML 
+								PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+								PRINTFORML 
+								PRINTFORML 「教条の刃、見えざる武庫、偶像の黙示録、毒華の妖魔、暴虐なる帝王、邂逅する御使い」
+								PRINTFORML 「封印されし究極の力よ 黎明の記憶とともに 紅魔の名のもとに集いて大罪の一撃と成せ」
+								PRINTFORML 「いにしえより語り継がれし 浄化の炎 いま再びここに顕れ 彼の者の魂を焼き払わん！」
+								PRINTFORMW 
+								SETCOLOR C_FIRE_T
+								PRINTFORML 　　　　　　　「 エ ク ス プ ロ ー ジ ョ ン ！ ！ ！ ！ 」
+								PRINTFORMW 
+								RESETCOLOR
+								PRINTFORML 
+								PRINTFORML 
+								TRYCALLFORM CARDEFFECT_105382(듀얼리스트,他효과起動,"필드",메구밍場所)
+							ELSE
+								TRYCALLFORM CARDEFFECT_5382(듀얼리스트,他효과起動,"필드",메구밍場所)
+							ENDIF
+						ENDIF
+					ENDIF
+				ENDIF
+			ENDIF
+		ELSE
+			PRINTFORMW しかし 「전설의 폭렬마법사 메구밍」が フィールドに いなかった　・・・
+		ENDIF
+	ENDIF
+ENDIF

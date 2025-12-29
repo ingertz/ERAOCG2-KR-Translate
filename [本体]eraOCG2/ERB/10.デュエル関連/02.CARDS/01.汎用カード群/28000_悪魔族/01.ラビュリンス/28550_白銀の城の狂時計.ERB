@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 라뷰린스 쿠클락
 	CASE "略称"
-		RESULTS = 라뷰린스 쿠쿨락
+		RESULTS = 백은성의미친시계
 	CASE "カテゴリ"
 		RESULTS:0 = 라뷰린스
 ENDSELECT
@@ -23,7 +23,6 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "종류"
-	
 		RETURN 효과モン
 	CASE "속성"
 		RETURN 어둠속성
@@ -47,8 +46,11 @@ PRINTL ①：자신 / 상대 턴에, "라뷰린스" 몬스터가 존재할 경�
 PRINTL 자신은 이 턴에 세트한 일반 함정 카드 1장을 대상으로 발동할 수 있다。
 PRINTL 그 카드는 세트한 턴에 발동할 수 있다。
 CALLFORM CARD_ABLE(2,효과後誘発)
-PRINTL ②：자신의 일반 함정카드의 효과로 몬스터가 필드를 벗어날 경우에 발동할 수 있다。
+PRINTL ②：이 카드가 묘지에 존재하는 상태로、
+PRINTL "라뷰린스 쿠클락" 이외의 "라뷰린스" 카드 또는 일반 함정 카드의 효과로、
+PRINTL 자신의 패의 카드가 묘지로 보내졌을 때에 발동할 수 있다。
 PRINTL 묘지의 이 카드를 패에 넣는다。
+
 
 @CARDCAN_28550(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -71,18 +73,18 @@ IF 종류 == 손패起動 || 종류 == フリー誘発
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,28550)
 		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件カテゴリ = 라뷰린스
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲마함 = 1
-	효과条件표시 = 30
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+	; CALL FULLRESET
+	; 효과範囲필드 = 1
+	; 효과条件カテゴリ = 라뷰린스
+	; CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	; SIF RESULT != 1
+	; 	RETURN 0
+	; CALL FULLRESET
+	; 효과範囲마함 = 1
+	; 효과条件표시 = 30
+	; CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	; SIF RESULT != 1
+	; 	RETURN 0
 	
 	RETURN 1
 ELSEIF 종류 == 효과後誘発
@@ -91,8 +93,14 @@ ELSEIF 종류 == 효과後誘発
 	SIF ゾーン != "묘지"
 		RETURN 0
 	CALL FULLRESET
-	효과条件종류 = 함정全般
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"除去成功")
+	효과条件固名前 = 라뷰린스 쿠클락
+	효과条件カテゴリ = 라뷰린스
+	효과条件スーパー종류 = 通常함정
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패墓送")
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -114,14 +122,14 @@ IF 종류 == 손패起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28550,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		CALL FULLRESET
-		효과範囲마함 = 1
-		효과条件표시 = 30
-		CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
-		選択カード = RESULT
-		IF 選択カード != 9999
-			CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"表",2,1)
-		ENDIF
+		; CALL FULLRESET
+		; 효과範囲마함 = 1
+		; 효과条件표시 = 30
+		; CALL CARD_CHOOSE_BASIC(듀얼리스트,"마함",ゾーン,場所)
+		; 選択カード = RESULT
+		; IF 選択カード != 9999
+		; 	CALL SET_FIELD_INFO(듀얼리스트,"마함",選択カード,"表",2,1)
+		; ENDIF
 	ENDIF
 
 ELSEIF 종류 == 효과後誘発

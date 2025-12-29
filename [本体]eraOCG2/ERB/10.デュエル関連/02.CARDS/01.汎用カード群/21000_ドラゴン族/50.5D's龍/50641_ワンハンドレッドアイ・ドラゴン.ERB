@@ -1,0 +1,213 @@
+﻿@CARDNAME_50641,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 원헌드레드 아이 드래곤
+	CASE "略称"
+		RESULTS = 백안룡
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索用カテゴリ"
+		RESULTS:0 = 인페르니티
+		RESULTS:1 = 지박신
+ENDSELECT
+
+
+@CARD_50641(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2500
+	CASE "추가日"
+		RETURN 251222
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50641(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 8
+IF EX参照 == 0 || EX参照 == 1
+	素材条件튜너 = 1
+	素材条件속성 = 어둠속성
+ELSEIF EX参照 >= 10
+	素材条件튜너 = -1
+	素材条件종족 = 악마족
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,50641) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50641(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 어둠속성튜너＋튜너以外の악마족モンスター１体以上
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ①：１ターンに１度、자신の묘지のモンスター１体を제외して발동できる。
+PRINTL フィールドのカード１枚を묘지へ送る。
+PRINTL この효과で어둠속성モンスターを제외した場合、さらに以下の효과を適用できる。
+PRINTL ●このカードを묘지へ送る。
+PRINTL 　その後、この효과で제외したモンスターのモンスターゾーンで起動する효과（필드起動효과）を適用する。
+CALLFORM CARD_ABLE(0,戦破壊→묘지)
+PRINTL ②：このカードが상대によって破壊された場合に발동できる。
+PRINTL 덱・묘지から「지박신」モンスターとフィールド마법をそれぞれ１枚まで손패に加える。
+PRINTL この효과の処理開始時に자신の손패が０枚の場合、さらに자신の제외状態のモンスター１体を특수소환できる。
+
+
+@CARDCAN_50641(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50641)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	IF 듀얼리스트 == "자신"
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+	ENDIF
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊")
+		RETURN 0
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 지박신
+	효과条件종류 = モン全般
+	효과条件スーパー종류 = フィールド
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_50641(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50641,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲마함 = 1
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"リリース")
+			IF RESULT == 1
+				TRYCALLFORM CARD_{選択カード_ID},"속성"
+				SIF !MATCH(RESULT,어둠속성)
+					RETURN 0
+				SIF 듀얼리스트 == "자신"
+					PRINTL 이 카드를 묘지로 보내시겠습니까？
+				CALL YN_CHOICE(듀얼리스트)
+				SIF RESULT == いいえ || 듀얼리스트 != "자신"
+					RETURN 0
+				CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+				TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,필드起動,"효과処理")
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50641)
+	IF RESULT == 0
+		SIF 손패数(듀얼리스트) == 0
+			条件달성 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 지박신
+		효과条件종류 = モン全般
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件종류 = フィールド
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+
+		SIF 条件달성 != 1
+			RETURN 0
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件任意 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

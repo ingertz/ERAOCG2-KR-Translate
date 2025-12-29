@@ -24,6 +24,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
 	CASE "종류"
 		RETURN 효과モン
 	CASE "속성"
@@ -102,11 +104,6 @@ ELSEIF 종류 == 필드起動
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	CALL FULLRESET
-	효과範囲손패 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件うらら解除 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -151,13 +148,6 @@ IF 종류 == 손패起動
 ELSEIF 종류 == 필드起動 || 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5334,2)
 	IF RESULT == 0
-		IF 종류 == 필드起動
-			CALL FULLRESET
-			효과範囲손패 = 1
-			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-			SIF RESULT != 1
-				RETURN 0
-		ENDIF
 		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_덱:0")}("종류")
 		IF RESULT <= モン全般
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",500)
@@ -165,6 +155,7 @@ ELSEIF 종류 == 필드起動 || 종류 == 攻撃時誘発
 			효과範囲필드 = 1
 			효과範囲상대필드 = 1
 			효과条件攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:場所")
+			효과条件他所 = 1
 			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 		ELSEIF RESULT >= 20
 			CALL FULLRESET

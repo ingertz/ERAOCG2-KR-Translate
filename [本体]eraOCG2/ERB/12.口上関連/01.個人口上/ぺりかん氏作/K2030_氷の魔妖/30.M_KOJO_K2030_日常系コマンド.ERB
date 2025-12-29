@@ -1620,9 +1620,10 @@ IF LOCAL
 	ENDIF
 ENDIF
 RETURN 1
-[SKIPSTART]
 ;==================================================
 ;353,용서를 빈다
+;TFLAG:SELECTCOM분기(1=ムラムラ限界突破 2=サドor捕食者)
+;TCVAR:TARGET:전CT행동(61=腰ヘコ)
 ;==================================================
 @M_KOJO_MESSAGE_COM_K2030_353
 CALL TRAIN_MESSAGE
@@ -1632,13 +1633,45 @@ RETURN RESULT
 @M_KOJO_MESSAGE_COM_K2030_353_1
 ;-------------------------------------------------
 ;기입 체크（=0, 비표시、1, 표시）
-LOCAL = 0
+LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-
+	IF TCVAR:TARGET:전CT행동 == 61
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「わからないわね……❤　ナニに対して許しを乞うているのかしら……❤」
+			CASE 1
+				PRINTFORMW 「ふふ……❤　許されたければもっと、頑張りなさいな……❤」
+			CASE 2
+				PRINTFORMW 「何を言ってるのかしら……❤　%CSTR:TARGET:MASCALL%も、気持ちいいのでしょう❤」
+		ENDSELECT
+	ELSE
+		IF BASE:TARGET:만족 < 900
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「何……？　まだ、만족してないわ……❤」
+				CASE 1
+					PRINTFORML 「わかってるじゃない……❤　私が上、それがあるべき姿なのよ……❤」
+					PRINTFORMW 「だから、ね……私が만족するまで、精々がんばりなさいな……❤」
+				CASE 2
+					PRINTFORMW 「ふふ……❤　やはりニンゲンはオロカ……❤　なぜ、%CSTR:TARGET:MASCALL%の許しを受け入れる必要が……？」
+			ENDSELECT
+		ELSE
+			IF BASE:TARGET:만족 >= 900
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「あと、ちょっと……❤　あとちょっとだけ……❤」
+					CASE 1
+						PRINTFORMW 「もう少し、なの……❤」
+					CASE 2
+						PRINTFORMW 「が、がんばって……❤　おねがい、あと、少し……❤」
+				ENDSELECT
+			ELSE
+			ENDIF
+		ENDIF
+	ENDIF
 ENDIF
 RETURN 1
-[SKIPEND]
 ;==================================================
 ;354, 반지를 건넨다
 ;하루가 종료된다
@@ -2768,26 +2801,71 @@ IF LOCAL
 ENDIF
 RETURN 1
 ;==================================================
-;445,카페에서 느긋하게 있기
+;445,시설을 만끽한다
+;内容については 05.コマンド関連/COMMANDS/400～499まで/COMF445 を参照すること
 ;==================================================
-;나오는 타이밍은 팩을 깐 후
 @M_KOJO_MESSAGE_COM_K2030_445
 CALL TRAIN_MESSAGE
 CALL M_KOJO_MESSAGE_COM_K2030_445_1
 RETURN RESULT
 
 @M_KOJO_MESSAGE_COM_K2030_445_1
+#DIM DYNAMIC 호감도修正
 ;-------------------------------------------------
 ;기입 체크（=0, 비표시、1, 표시）
 LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
-	IF TALENT:TARGET:연모 
-		PRINTFORMW 「팩, 깠어? 그래, 그럼 집어넣어.」
-		PRINTFORMW 「확인하는 건 집에 돌아가서도 할 수 있잖아. 지금은 나랑 같이 있어줬으면 해.」
-	ELSE
-		PRINTFORMW 「좋은 카드는 뽑았으려나.」
-	ENDIF
+	SELECTCASE CFLAG:MASTER:현재위치
+		CASE 場所_カフェ
+		IF TALENT:TARGET:연모 
+			PRINTFORMW 「팩, 깠어? 그래, 그럼 집어넣어.」
+			PRINTFORMW 「확인하는 건 집에 돌아가서도 할 수 있잖아. 지금은 나랑 같이 있어줬으면 해.」
+		ELSE
+			PRINTFORMW 「좋은 카드는 뽑았으려나.」
+		ENDIF
+	CASE 場所_KL広場
+			IF TALENT:TARGET:연모 
+				PRINTFORMW 「さて、どこからいこうかしら。……それとも何か……グッズでも買っていく？」
+			ELSE
+				PRINTFORML 「…………」
+				PRINTFORMDW %CALLNAME:TARGET%は無言だが、どこかソワソワしている……
+			ENDIF
+		CASE 場所_ジャングル
+			IF TALENT:TARGET:연모 
+				PRINTFORML 「安心しなさいな。この程度のモンスター、もし襲ってきても返り討ちよ？」
+				PRINTFORMDW ドヤ顔でズレたことを言う%CALLNAME:TARGET%に微笑ましくなった……
+			ELSE
+				PRINTFORMW 「……映像、なのよねこれ？」
+			ENDIF
+		CASE 場所_スリルゾーン
+			IF TALENT:TARGET:연모 
+				PRINTFORMW 「……私でも、こわいものはあったのね……%CSTR:TARGET:MASCALL%、ちょっと肩をかして、もらえるかしら……」
+			ELSE
+				PRINTFORML 「……なによ、これ……こんなものに、行列が……？　おかしい、やはりニンゲンはオロカ……！」
+				PRINTFORMDW %CALLNAME:TARGET%はフラフラでなにかブツブツと呟いている……
+			ENDIF
+		CASE 場所_お城
+			IF TALENT:TARGET:연모 >= 1 || TALENT:TARGET:굴복됨
+				PRINTFORML 「……こんなお城に、住んでみたいわねぇ……あ、いや、ちが！？　そ、その……雪娘のころの、감각が……」
+				PRINTFORMDW %CALLNAME:TARGET%は顔を真っ赤にして、モゴモゴしている
+			ELSE
+				PRINTFORML 「ほら、終点よ。余裕、だったわね」
+				PRINTFORMDW %CALLNAME:TARGET%の口ぶりこそ平易だったが、その表情はこころなしか嬉しそうだ
+			ENDIF
+		CASE 場所_観覧車
+			IF TALENT:TARGET:연모 >= 1
+				PRINTFORMW 「……키스、する？」
+			ELSE
+				PRINTFORMW 「ふふ……♪　ニンゲンがゴミのようね……！」
+			ENDIF
+		CASE 場所_KCステージ
+			IF TALENT:TARGET:연모 >= 1
+				PRINTFORMW 「……素敵ね……連れてきてくれてありがとう。%CSTR:TARGET:MASCALL%と一緒なのは……悪くないわ❤」
+			ELSE
+				PRINTFORMW 「……へぇ……なかなか……やる、じゃない……」
+			ENDIF
+	ENDSELECT
 ENDIF
 RETURN 1
 ;==================================================
@@ -3044,6 +3122,265 @@ IF LOCAL
 		ENDIF 
 ENDIF
 RETURN 1
+
+;==================================================
+;480,デュエル
+;勝敗はプレイヤーから見てのもの
+;TFLAG:SELECTCOM분기(1=通常승리 -1=通常패배 -2=引き分け
+;10=通常듀얼前 11=パック賭け듀얼前 12=デート賭け듀얼前 13=パンツ賭け듀얼前 14=お持ち帰り듀얼前 15=お前モンスターじゃないか？ 16=スケベ要求듀얼前 20=闇のゲーム
+;31=パック賭け승리 32=デート賭け승리 33=パンツ賭け승리 34=お持ち帰り成功 35=カード化승리（牝以外） 36=スケベ要求事後 40=罰ゲーム！
+;135=カード化見逃す 235=穏便カード化 335=凌辱後カード化 435=凌辱後見逃す
+;50=賭け듀얼패배怒られた 51=パック賭け패배 52=デート패배デート 55=カード化패배 56=スケベ要求패배 156=スケベ要求弱味削除 256=スケベ要求패배패배버릇付きおねだり)
+;==================================================
+@M_KOJO_MESSAGE_COM_K2030_480
+;デュエルにTRAIN_MESSAGEはない
+CALL M_KOJO_MESSAGE_COM_K2030_480_1
+RETURN RESULT
+
+@M_KOJO_MESSAGE_COM_K2030_480_1
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;これが０の時はデュエルしない時なのでおわり
+	SIF TFLAG:SELECTCOM분기 == 0
+		RETURN 1
+
+	;デュエル前
+	IF INRANGE(TFLAG:SELECTCOM분기,10,21)
+		SELECTCASE TFLAG:SELECTCOM분기
+			;通常듀얼
+			CASE 10
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「あら、私とデュエル？　ええ、いいわよ」
+					CASE 1
+						IF EXP:TARGET:듀얼경험 >= 15
+							PRINTFORMW 「あらあら……油断したらカチンコチン、よ？」
+						ELSE
+							PRINTFORMW 「ふぅん……弱いうちにカモに……ってところ？」
+						ENDIF
+					CASE 2
+						IF CFLAG:MASTER:듀얼레이트 >= 6000 || TALENT:MASTER:수라
+							PRINTFORML 「……ちょっと、ちょっと待って……！　なによこの威圧感、こんなのまるで……！」
+							PRINTFORMW 「いいわ……。ついでに私の……トラウマ克服、させてもらうわ……！」
+						ELSE
+							PRINTFORMW 「随分と自信があるのね……その自信、氷砕いてあげるわね？」
+						ENDIF
+				ENDSELECT
+			
+			;ここから賭け듀얼
+			;パック賭け
+			CASE 11
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「パックを……？　あらあら、私をさらに強くしてくれるのかしら」
+					CASE 1
+						IF CFLAG:MASTER:듀얼레이트 >= 6000 || TALENT:MASTER:수라
+							PRINTFORML 「……ああ、もう！　%CSTR:TARGET:MASCALL%すでに強いじゃない。これ以上カード手に入れてどうするのよ……！」
+							PRINTFORMW 「いいわ、%CSTR:TARGET:MASCALL%を倒して……もっともっと、強くなってやるわ……！」
+						ELSEIF EXP:TARGET:듀얼경험 >= 15
+							PRINTFORMW 「……正直、あまり美味しくはないけど……いいわ、白黒つけましょうか」
+						ELSE
+							PRINTFORMW 「……へぇ、私程度ならパックをむしり取れると？　後悔させてあげるわ……」
+						ENDIF
+				ENDSELECT
+			;デート賭け
+			CASE 12
+				IF TALENT:TARGET:연모 >= 1 || TALENT:TARGET:굴복됨
+					PRINTFORMW 「はい？　勝ったらデート？　ええ、構わないけど……」
+				ELSE
+					PRINTFORMW 「……ふぅん。そう」
+				ENDIF
+			;パンツ賭け
+			CASE 13
+				IF TALENT:TARGET:연모 >= 1 || TALENT:TARGET:굴복됨
+				PRINTFORMW 「……もう。欲しいなら、直接言えばいいのに……♪」
+			ELSE
+				PRINTFORMW 「……へぇ。痛い目、みたいらしいわね」
+			ENDIF
+			;お持ち帰り
+			CASE 14
+				PRINTFORMW 「……あらあら、雪女を招きたいなんて命知らずなのね？」
+			;モンスターか問い詰める（人間は불가）
+			CASE 15
+				PRINTFORMW 「……ちょっとはしゃぎすぎたかしら。昔はバレなかったのに……まぁいいわ、始末、すればいいものね？」
+			;スケベ強要
+			CASE 16
+				IF TALENT:TARGET:패배버릇
+					PRINTFORMW 「……魔妖の、プライドに賭けて……❤　簡単には退治、してやれないわ……❤」
+				ELSEIF CFLAG:TARGET:약점장악 == 1
+					IF EXP:TARGET:패배조교경험 >= 1
+						PRINTFORMW 「……本当に、消してもらえるのね……？　いいわ、やりましょうか……！」
+					ELSE
+						PRINTFORMW 「……絶対に、捨てなさいよ……！」
+					ENDIF
+				ELSE
+					PRINTFORMW 「……のったわ。勝てばいいのでしょう。ええ、容易いこと……♪」
+				ENDIF
+			;闇のゲーム
+			CASE 20
+				PRINTFORMW 「……まさか、封印……！？　ふ、巫山戯ないで私はまだ──！」
+		ENDSELECT
+
+	;デュエル後
+	ELSE
+		SELECTCASE TFLAG:SELECTCOM분기
+			;通常승리
+			CASE 1
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「……ふん。悔しくないわ。ええ、悔しくなんか、ないですとも」
+					CASE 1
+						IF EXP:TARGET:듀얼경험 >= 15
+							PRINTFORMW 「あらら、溶かされちゃったわね……ねぇ、ちょっとは強くなったでしょう？」
+						ELSE
+							PRINTFORMW 「くぅぅ……！　どうすれば、よかったのよ……！　……教えて、くれないかしら？」
+						ENDIF
+					CASE 2
+						IF CFLAG:MASTER:듀얼레이트 >= 6000 || TALENT:MASTER:수라
+							PRINTFORML 「ひぃ！？　……あ、あれ？　あ、そっか……ただの、遊び……だったわね……」
+							PRINTFORMW 「ごめんなさい……昔の、トラウマと……無意識に、重ねちゃってたみたい……」
+						ELSE
+							PRINTFORMW 「ふぅん……自信に見合うだけの実力があるのね……」
+						ENDIF
+				ENDSELECT
+			;通常패배
+			CASE 2
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「やったわ……！　ふふ、悔しいかしら？　悔しい、わよねぇ……！」
+					CASE 1
+						IF EXP:TARGET:듀얼경험 >= 15
+							PRINTFORMW 「……はい、カチンコチンね。……冗談よ、遊びでそんなことしないわ」
+						ELSE
+							PRINTFORMW 「ふ、ふん……！　初心者だからって、油断でもしたかしら」
+						ENDIF
+					CASE 2
+						IF CFLAG:MASTER:듀얼레이트 >= 6000 || TALENT:MASTER:수라
+							PRINTFORML 「……よし！　ありがとうね、%CSTR:TARGET:MASCALL%。少しだけ……自信に繋がったわ」
+							PRINTFORMW 「私は強くなってる……。少なくとも、カードでなら……不知火なんて、返り討ちよ……！」
+						ELSE
+							PRINTFORMW 「ふふん。どうやら過剰な自信だったようね♪」
+						ENDIF
+				ENDSELECT
+			;通常引き分け
+			CASE 3
+				PRINTFORMW 「……引き分け？　ふぅん……白黒つかないのは、なんだかモヤモヤするわね」
+
+			;ここから賭け승리
+			;パック賭け
+			CASE 31
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「はいはい、私の負け。……ほら、褒美のパックよ」
+					CASE 1
+						IF CFLAG:MASTER:듀얼레이트 >= 6000 || TALENT:MASTER:수라
+							PRINTFORML 「はいはい、パックよ。……ねぇ、%CSTR:TARGET:MASCALL%……どこまで強くなるつもり……？」
+							PRINTFORMW 「……え？　カードがほしいだけ？　……はぁ、このデュエルバカめ……」
+						ELSEIF EXP:TARGET:듀얼경험 >= 15
+							PRINTFORMW 「負け……ね、まぁいいわ。魔妖の新規でも出ない限り、パックなんて貰っても……ねぇ？」
+						ELSE
+							PRINTFORMW 「……次は絶対、返り討ちよ。見てなさい、カモでは終わらないのだから」
+						ENDIF
+				ENDSELECT
+			;デート賭け
+			CASE 32
+				IF TALENT:TARGET:연모 >= 1 || TALENT:TARGET:굴복됨
+					PRINTFORMW 「商品はデート……だったかしら。……私が断るとでも、本気で思ってたのかしら……♪」
+				ELSE
+					PRINTFORMW 「……負け、ね。じゃあほら……付き合ってあげるわ」
+				ENDIF
+			;パンツ賭け
+			CASE 33
+				IF TALENT:TARGET:연모 >= 1 || TALENT:TARGET:굴복됨 || CFLAG:TARGET:호감도 >= 2000
+					PRINTFORML 「はぁ、負け……ね❤　しょうがない、後ろ向きなさい……え？」
+					PRINTFORMW 「ぬ、脱ぐところを見てみたい……！？　しょ、しょうがないわね……もっと近くでも、いいわよ？」
+				ELSE
+					PRINTFORMW 「……こんな、辱め……恨んでやるわ……」
+				ENDIF
+			;お持ち帰り
+			CASE 34
+				PRINTFORMW 「……さ、案内しなさい。……不幸が訪れても、しらないから」
+			;下二桁３５は"モンスターか問い詰める"の분기
+			;カード化（牝以外、選択肢無し）
+			CASE 35
+				PRINTFORMW 
+			;カード化を見逃す（元気でな！）
+			CASE 135
+				PRINTFORML 「……見逃すの？　甘いわね……。……バカなニンゲン……」
+				PRINTFORMW 「……感謝なんか、死んでもしないから……期待、しないことね？」
+			;穏便に話してカード化（怖くないよ～痛くないよ～）
+			CASE 235
+				PRINTFORML 「……封印じゃ、ないのよね？　いつでも……呼び出せる、のよね？」
+				PRINTFORMW 「それなら……ええ、受け入れましょう。……必ず、呼んでね？」
+			;身体を対価に見逃す（見逃すとは言ってない）
+			CASE 335
+				PRINTFORML 「──いやっ！？　や、約束が、違うわ！？　そんな、それなら私、何のために──！」
+				PRINTFORMDW %CALLNAME:TARGET%は剥かれた肢体を隠すことなく、怯えと驚愕に染まった表情のままカード化されてしまった……
+			;身体を対価に見逃す（見逃す）（패배버릇付いたり弱み握られたりする）
+			CASE 435
+				PRINTFORML 「……こんな、こんなの……っ。……ふ、ふふ……っ！　私を、見逃したこと……絶対、後悔させて、やるわ……！」
+				PRINTFORMDW %CALLNAME:TARGET%は目尻から涙をこぼしながら、精一杯の負け惜しみを呟いている。
+			;身体要求事後
+			CASE 36
+				IF TALENT:TARGET:패배버릇
+					PRINTFORML 「……%CALLNAME:TARGET%はぁ❤　%CALLNAME:MASTER%に負けたぁ❤　負け犬、でぇす……❤」
+					PRINTFORMW 「このオロカなメスをぉ……❤　しつけて、いただきぃ❤　かんしゃ、してまぁす……❤」
+				ELSE
+					PRINTFORML 「……負けて、ないわ……っ」
+					PRINTFORMW 「……汚れても……泥を、すすっても……！　負けを認めない限り……まけて、ない……っ」
+				ENDIF
+			;闇のゲーム
+			CASE 40
+				PRINTFORMW 
+
+			;ここから賭け패배
+			;怒られた
+			CASE 50
+				PRINTFORMW 「……ふん、身の程を知りなさいな」
+			;パック賭け（パックを手渡す）
+			CASE 51
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「オロカねぇ……私に勝てると、本気で思ってたのかしら……♪」
+					CASE 1
+						CASE 1
+						IF CFLAG:MASTER:듀얼레이트 >= 6000 || TALENT:MASTER:수라
+							PRINTFORML 「ふん。……まさか、勝てるなんてね」
+							PRINTFORMW 「……ああ、パックを賭けてたっけ……。ほんとに、勝てたのね……♪」
+						ELSEIF EXP:TARGET:듀얼경험 >= 15
+							PRINTFORMW 「負け……ね、まぁいいわ。魔妖の新規でも出ない限り、パックなんて貰っても……ねぇ？」
+						ELSE
+							PRINTFORMW 「油断どうも。それじゃ、頂くものいただきましょうか」
+						ENDIF
+				ENDSELECT
+			;デート賭け（デートはしてくれる）
+			CASE 52
+				IF TALENT:TARGET:연모 >= 1 || TALENT:TARGET:굴복됨 || CFLAG:TARGET:호감도 >= 2000
+					PRINTFORMW 「なによ。デュエルで負けたぐらいで諦めるの？　……私を、諦めないでよ……バカ」
+				ELSE
+					PRINTFORMW 「……はぁ、せめて私を、楽しませなさい……」
+				ENDIF
+			;カード化패배（逃げられた）
+			CASE 55
+				PRINTFORMW 「……ちっ！　もう少し時間があれば始末できたのに……！　……これに懲りたら、もう二度と関わらないでちょうだい」
+			;身体要求패배（金払う）
+			CASE 56
+				PRINTFORMW 「よし……！　これで当面は安心ね……ふふ♪　せっかくだし、チョットだけ贅沢……しようかしら」
+			;身体要求패배（弱味削除）
+			CASE 156
+				PRINTFORMW 「……よし」
+			;身体要求패배（패배버릇付いてる時限定凌辱おねだり）（ラブホ直行）
+			CASE 256
+				PRINTFORML 「どうしたの……❤　負けた？　何を言ってるの……❤」
+				PRINTFORMW 「……まだ、勝負はついてない……でしょう❤　人に害をなす魔妖はまだ……目の前にいるでしょう？　退治……しないとね……❤」
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
 
 ;==================================================
 ;600, 산책한다

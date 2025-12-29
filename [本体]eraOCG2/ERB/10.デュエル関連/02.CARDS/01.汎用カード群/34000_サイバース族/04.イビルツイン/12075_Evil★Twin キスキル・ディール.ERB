@@ -55,9 +55,9 @@ PRINTL "키스킬" 몬스터 1장
 PRINTL 자신은 "Evil★Twin 키스킬 딜"은 1턴에 1번 밖에 특수 소환할 수 없다。
 PRINTL 이 카드명의 ①의 효과는 1턴에 1번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
-PRINTL ①：덱 / 엑스트라덱에서 "리일라" 몬스터 1장을 묘지로 보내고 발동할 수 있다。
+PRINTL ①：덱 / 엑스트라 덱에서 "리일라" 몬스터 1장을 묘지로 보내고 발동할 수 있다。
 PRINTL 이 턴 다음과 같은 효과르 적용한다。
-PRINTL ● 자신의"키스킬" 몬스터나 "리일라" 몬스터의 효과 발동에 대해 체인해 상대가 효과르 발동할 때마다,
+PRINTL ● 자신의 "키스킬" 몬스터나 "리일라" 몬스터의 효과 발동에 대해 체인해 상대가 효과르 발동할 때마다,
 PRINTL 자신은 1장 드로우한다。
 
 @CARDSUMMON_12075(듀얼리스트,소환カード,EX参照)
@@ -91,6 +91,11 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 条件달성
+#DIMS DYNAMIC 実行者
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(実行者)
+対面者 = %RESULTS%
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,12075)
 SIF RESULT == 1
@@ -114,6 +119,19 @@ IF 종류 == 필드起動
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 발동紋章起動
+	SIF 効後_カウンタ < 2
+		RETURN 0
+	SIF 効後_実行者:(効後_カウンタ - 2) != 対面者
+		RETURN 0
+	TRYCALLFORM CARDNAME_{効後_효과ID:(効後_カウンタ - 2)}("カテゴリ")
+	SIF GROUPMATCH(RESULTS:0,"키스킬","리일라")
+		条件달성 = 1
+	SIF GROUPMATCH(RESULTS:1,"키스킬","리일라")
+		条件달성 = 1
+	SIF 条件달성 != 1
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_12075(듀얼리스트,종류,ゾーン,場所)
@@ -125,6 +143,12 @@ ENDIF
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 実行者
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(実行者)
+対面者 = %RESULTS%
 
 
 IF 종류 == 필드起動
@@ -137,9 +161,16 @@ IF 종류 == 필드起動
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
 			PRINTFORMW 상대방은 키스킬과 계약을 체결한 거 같다。
-			CALL SET_PLAYER_INFO(듀얼리스트,"ディール효과",1,1)
+			CALL CARD_RESERV(듀얼리스트,12075,발동紋章予約)
 		ENDIF
 	ENDIF
+ELSEIF 종류 == 발동紋章起動
+
+	SETCOLOR C_H_PINK
+	PRINTFORMW "이런、계약 위반이네。입금 잘해줘야 해？"
+	CALL CARDDRAW_BASIC(対面者,1)
+	RESETCOLOR
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_12075_1(実行者)
@@ -163,7 +194,7 @@ SIF 条件달성 != 1
 	RETURN 0
 
 SETCOLOR C_H_PINK
-PRINTFORMW "이런 、계약 위반이네!。입금 잘해줘야 해？"
+PRINTFORMW "이런、계약 위반이네。입금 잘해줘야 해？"
 CALL CARDDRAW_BASIC(対面者,1)
 RESETCOLOR
 RETURN 1

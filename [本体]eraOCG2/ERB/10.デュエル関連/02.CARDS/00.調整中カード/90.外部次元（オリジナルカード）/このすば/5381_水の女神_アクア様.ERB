@@ -1,0 +1,286 @@
+﻿@CARDNAME_5381,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 물의 여신 아쿠아님
+	CASE "略称"
+		RESULTS = 아쿠아님
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 코노스바
+	CASE "出典作品"
+		RESULTS:0 = 이 멋진 세계에 축복을！
+ENDSELECT
+
+
+@CARD_5381(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"	
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		;RETURN 1
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1500
+	CASE "単一存在"
+		RETURN 1
+	CASE "성별"
+		RETURN 牝性
+	CASE "소환불가"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 251224
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5381(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「水の女神 アクア様」は자신フィールドに１体しか表側표시で存在できず、
+PRINT 通常소환できず、このカードの효과でのみ특수소환できる。
+SETCOLOR C_WATER_T
+FONTITALIC
+FONTBOLD
+PRINTL （そして、このカードはウルトラレアカードである。）
+FONTREGULAR
+RESETCOLOR
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：상대フィールドにのみモンスターが存在する場合、자신メインフェイズに발동できる。
+PRINTL 상대フィールドのモンスター１体をリリースして、손패から상대フィールドに守備표시で특수소환する。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：자신フィールド・묘지に융합・Ｓ・Ｘ・Ｌモンスターが存在しない状態で、
+PRINT 자신ターンに상대が융합・Ｓ・Ｘ・Ｌモンスターの효과を발동した場合に발동できる。
+SETCOLOR C_WATER_T
+FONTITALIC
+FONTBOLD
+PRINTL （この발동に対して상대はカードの효과を발동できない。）
+FONTREGULAR
+RESETCOLOR
+PRINTL 상대フィールドの융합・Ｓ・Ｘ・Ｌモンスターを２体までリリースして、손패・묘지から자신フィールドに攻撃표시で특수소환する。
+PRINTL この方法で특수소환したこのカードの攻撃力は、リリースしたモンスターの数×１５００アップする。
+CALLFORM CARD_ABLE(0,발동誘発)
+PRINTL ③：상대が마법・함정・モンスターの효과を발동した時、자신の묘지の마법カード３枚を제외して발동できる。
+PRINTL その발동を無効にして破壊する。
+
+;「私の名はアクア。日本において、若くして死んだ人間を導く女神よ」
+
+;ライトノベル「이 멋진 세계에 축복을！」シリーズのメインヒロインの一人で、正ヒロイン（？）である水の女神アクア様。
+;主人公カズマを異世界転生させる女神様だったが、すったもんだのあげくにカズマと一緒に冒険者として生活することになってしまう。
+;성격は尊大でひっじょーに偉そう。かと思えば、打たれ弱くて涙ぐんだり卑屈になったり、喜怒哀楽の激しい캐릭터。女神の肩書きが泣いている。
+;そんな体たらくでも一応は水の女神であり冒険者としても上級職の高僧（アークプリースト）で、마법系のスキルレベルは定命の存在とは一線を画している。
+;
+;효과はひらたく言えば「ガメシエル」と「倶利伽羅天童」を足して捻ったような性能。単純にいいとこどりとも、２で割ったとも言いがたい소환条件。
+;ガメシエル互換の③のターン１なし万能無効破壊は、コストが汎用的なので軽率に送りつけると逆襲されるリスクがある。（裏切ってくる駄女神）
+;자신フィールドに出すには상대フィールドにＥＸモンスターが必要かつ、こちらのＥＸモンスター利用불가。묘지まで参照するので誤魔化しにくい。
+;자신ターンじゃないといけないので、상대ターン妨害みたいな使い方も불가。そのぶん、묘지からも這い出てくるヤバい動きでフィールドに出てくる仕様。
+;
+;レベル１１というえげつないレベル설정は腐っても女神である点と、싱크로・엑시즈などの利用をできるだけ難しくするための措置。
+;ＥＸを使わないテーマとして「勇者トークン」との相性が悪く無い程度には良いのは、異世界ファンタジーの繋がりを意識している。
+;
+;なお、②のチェーン불가の文言は、アクア様が자신で勝手に텍스트に書き加えたという裏설정。インチキ女神の本領発揮。
+;わざわざウルトラレアカードなどというアホっぽい텍스트まで자신で書き加えてる、自動レアリティ설정でUR판정じゃなかったのが不服だったらしい。
+
+
+@CARDCAN_5381(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5381)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,5381)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,5381,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 = モン全般
+	효과条件除去種 = リリース
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,5381)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"손패","묘지")
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,5381,"손패")
+	SIF RESULT == 1 && ゾーン == "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,5381,"묘지")
+	SIF RESULT == 1 && ゾーン == "묘지"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 = EXモン全般
+	효과条件除去種 = リリース
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
+	효과条件종류 = EXモン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = EXモン全般
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	;SIF 발동済_3(듀얼리스트,5381)
+	;	RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 마법全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	SIF !GROUPMATCH(チェーン可否종류, 효과後誘発)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5381(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5381,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所,"攻撃표시",1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5381,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件종류 = EXモン全般
+		효과条件複数 = 98
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			攻撃力修正 = RESULT:2
+			CALL FULLRESET
+			효과추가종류 = 100000 + (攻撃力修正 * 1500)
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所,"攻撃표시")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5381)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = 마법全般
+		효과条件複数 = 3
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+			IF RESULT == 1
+				;특수演出はターン１
+				IF 발동済_3(듀얼리스트,5381) == 0
+					CALL CARD_EFFECT_USE(듀얼리스트,5381,3)
+					IF 듀얼리스트 == "자신"
+						;プレイヤーが발동した場合。格好いいところを見せることができて上機嫌なアクア様を見られる。
+						PRINTFORML
+						PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+						PRINTFORML
+						SETCOLOR C_WATER_T
+						PRINTFORML 「どう、あたしのこと見直した？　今ならトクベツにこの『女神アクア様』を崇め奉ってもいいのよ♪」
+						RESETCOLOR
+						PRINTFORML 水の女神アクア様は、調子に乗って饒舌になっているようだ。
+						PRINTFORML
+					ELSE
+						;상대が발동した場合。身売りした事にえらく憤慨して逆襲してくるアクア様を見られる。謎の差分あり。
+						PRINTFORML
+						PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+						PRINTFORML
+						SETCOLOR C_WATER_T
+						SELECTCASE RAND:3
+							CASE 0
+								PRINTFORML 「あっ、ごめーーん。つい無効にしちゃった♪　ま、あなたが送りつけたんだから自業自得ってやつよね」
+							CASE 1
+								PRINTFORML 「ねえねえ、せっかく발동したカードを無効にされちゃって今どんな気分？　プークスクスクス」
+							CASEELSE
+								PRINTFORML 「ふっふーん。あたしにこんな酷い扱いしたこと、たーっぷり後悔させてあげるわ」
+						ENDSELECT
+						RESETCOLOR
+						PRINTFORML ぞんざいに상대プレイヤーに送りつけられた水の女神アクア様は、完全にお분노モードのようだ。
+						PRINTFORML
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+

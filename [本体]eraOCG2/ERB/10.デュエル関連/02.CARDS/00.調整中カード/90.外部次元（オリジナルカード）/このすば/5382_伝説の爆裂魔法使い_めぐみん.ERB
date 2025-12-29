@@ -1,0 +1,453 @@
+﻿@CARDNAME_5382,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 전설의 폭렬마법사 메구밍
+	CASE "略称"
+		RESULTS = 메구밍
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 코노스바
+	CASE "出典作品"
+		RESULTS:0 = 이 멋진 세계에 축복을！
+ENDSELECT
+
+
+@CARD_5382(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"	
+		RETURN 의식
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 1400
+	CASE "守備力"
+		RETURN 1000
+	CASE "単一存在"
+		RETURN 1
+	CASE "성별"
+		RETURN 牝性
+	CASE "レア度"
+		RETURN SPR
+	CASE "生成カード"
+		RETURN 80002
+	;CASE "生成カード"
+	;	RETURN 105382
+	CASE "추가日"
+		RETURN 251224
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_5382(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 出処
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 7
+
+IF EX参照 == 1
+	CALL RITCAN(듀얼리스트,소환カード,5382)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_5382(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「전설의 폭렬마법」により降臨
+PRINTL 「전설의 폭렬마법사 메구밍」は、자신フィールドに１体しか表側표시で存在できず、
+PRINTL ①の효과は１ターンに１度しか使用できず、②の효과はデュエル中に１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신メインフェイズ１に、손패のこのカードを상대に見せて발동できる。
+PRINTL （この효과を발동するターン、자신は마법사족モンスターしか특수소환できず、次の자신バトルフェイズをスキップする。）
+PRINTL このカード以外の자신の손패・フィールドの마법사족モンスターカードおよび마법カードを３枚まで選んで묘지へ送り、
+PRINTL 送った枚数に応じて以下の효과をそれぞれ適用する。
+PRINTL ●３枚：덱・묘지から「전설의 폭렬마법」１枚を손패に加える。
+PRINTL ●２枚以上：덱からレベル４以上の마법사족モンスター１体を손패に加える。
+PRINTL ●１枚以上：덱から２枚ドローする。その後、자신の손패を１枚選んで묘지へ送る。このターン、상대プレイヤーは효과ダメージを受けない。
+CALLFORM CARD_ABLE(20,EX소환時)
+PRINTL ②：このカードが의식소환した場合に발동できる。
+PRINT 자신の마법＆함정ゾーンのカードを全て묘지へ送り、
+SETCOLOR C_FIRE_T
+PRINT 「マジカル・エクスプロージョン」
+RESETCOLOR
+PRINTL １枚を生成して자신フィールドにセットする。
+PRINTL その後、자신の손패をすべて묘지へ送ることで、このカードの攻撃力・守備力を１０００アップする事ができる。
+
+;「我が名は메구밍！　アークウィザードを生業とし、最強の攻撃마법〈爆裂마법〉を操りし者！」
+
+;ライトノベル「이 멋진 세계에 축복을！」シリーズのメインヒロインの一人で、優秀な마법使いを多く輩出してきた『紅魔族』の少女。
+;大きな魔女帽子を被り、마법の杖を携えて、攻撃마법としては威力・範囲ともに最強クラスの『爆裂마법（エクスプロージョン）』を使いこなす마법使い。
+;が、実際には爆裂마법は攻撃範囲が広すぎて一般的な冒険者パーティにとっては使う場面がほとんどなく、また消費魔力も莫大なために一発しか撃てない。
+;しかし、そういった逆風にも負けず『爆裂마법』使いの意地を貫いて冒険を続ける姿は、ある種の敬意すら抱くものである。実際に居たら厄介極まりないが。
+;
+;ところで、遊戯王OCGには「マジカル・エクスプロージョン」という、非常に豪快なバーン효과を持っているために禁止カードに지정されているカードがありまして……
+;ということで、eraOCG2に、あの禁止カード「マジカル・エクスプロージョン」を華麗に使いこなす稀代の天才마법使いとして降臨する運びになった。
+;
+;最上級レベルの의식モンスターであり、専用の의식마법とのセット運用が必要な非常に"重い"カードである。『デュエル中に１度』の文字も輝いている。
+;의식마법に気の利いた素材代替などの踏み倒しなんてものもないため、正攻法で의식素材と의식마법とこのカードをかき集める必要がある。
+;このカードの손패효과が、制約とコストは重いものの優秀なサーチ・ドロー・손패交換の효과なので出すだけなら苦労はしないが、
+;バーンダメージで勝つためにはさらに묘지に大量の마법カードを貯める必要があるため、割り切って【메구밍マジエク】構築に特化させるのも手。
+;
+;余談だが、「메구밍」のステータスなどは「伝説の爆炎使い（フレイムロード）」という、OCGに実在する古い의식モンスターが元ネタになっている。
+
+
+@CARDCAN_5382(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5382)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,5382)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF メインフェイズ２ == 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	;最低でも場と손패に마법カードか自身以外の마법사족モンスター1枚あればOK
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件他所 = 1
+	효과条件종족 = 마법사족
+	효과条件종류 = モン全般
+	효과条件スーパー종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;마법사족以外を특수소환していたら효과使用불가能
+	CALL FULLRESET
+	CALLFORM 효과条件종족_ADV(마법사족,"以外")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+	SIF RESULT != 0
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ELSEIF 종류 == EX소환時
+	SIF 발동済_D1(듀얼리스트,5382)
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") == 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 他효과起動
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5382(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択枚数
+#DIM DYNAMIC ダメージ修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5382,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件他所 = 1
+		효과条件종족 = 마법사족
+		효과条件종류 = モン全般
+		효과条件スーパー종류 = 마법全般
+		효과条件複数 = 97
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択枚数 = RESULT:2
+			
+			IF 選択枚数 == 3
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과範囲묘지 = 1
+				효과条件名前 = 전설의 폭렬마법
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+			
+			IF 選択枚数 >= 2
+				CALL FULLRESET
+				효과範囲덱 = 1
+				효과条件종족 = 마법사족
+				효과条件종류 = モン全般
+				CALLFORM 효과条件レベル_ADV(4, "以上")
+				CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+			
+			CALL CARDDRAW_BASIC(듀얼리스트,2)
+			CALL FULLRESET
+			효과範囲손패 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			
+			;このターン효과ダメージ無効（상대プレイヤー）
+			CALL SET_PLAYER_INFO(対面者,"효과ダメージ無効",1)
+		ENDIF
+		
+		;バトルスキップ
+		CALL SET_PLAYER_INFO(듀얼리스트,"バトルスキップ", 1)
+		;SS縛り（마법사족縛り）
+		CALL FULLRESET
+		SS소환可能종족 = 마법사족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5382,20)
+	IF RESULT == 0
+		;자신の마함のカードを全て묘지へ送る。
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+				CONTINUE
+			CALL CARD_DISPOSE(듀얼리스트,"마함",カウンタ)
+		NEXT
+		;マジカル・エクスプロージョンを生成して자신フィールドにセット。
+		CALL CARD_GENERATE_MAGIC(듀얼리스트,80002,3)
+		
+		;ビジュアルシーン（※スキップできません）
+		PRINTFORML 
+		PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+		PRINTFORML 
+		PRINTFORML 「禁じられた いにしえの秘術よ！　我が呼びかけに応えて この地に再びよみがえれ！」
+		PRINTFORMW 
+		PRINTFORML 
+		PRINTFORM フィールドに
+		SETCOLOR C_FIRE_T
+		PRINTFORM 「マジカル・エクスプロージョン」
+		RESETCOLOR
+		PRINTFORML がセットされました。
+		PRINTFORMW 
+		PRINTFORML 
+		PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+		PRINTFORML 
+		SETCOLOR C_L_GRAY
+		PRINTFORML （ﾋｿﾋｿ…… 詠唱中の私と爆裂마법は無防備ですので、サポートは頼みますよ……）
+		RESETCOLOR
+		PRINTFORMW 
+		PRINTFORML 
+		
+		IF 손패数(듀얼리스트) >= 1
+			;추가で자신の손패を全て捨てるかの確認
+			PRINTFORML 
+			PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+			PRINTFORML 
+			PRINTL 자신の손패をすべて묘지へ送りますか？
+			CALL YN_CHOICE(듀얼리스트)
+			IF RESULT == 0
+				FOR カウンタ,0,紙束最大値
+					SIF GETVAR(@"%듀얼리스트%_손패:カウンタ") == -1
+						CONTINUE
+					CALL CARD_DISPOSE(듀얼리스트,"손패",カウンタ)
+				NEXT
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,1000,1000)
+ELSEIF 종류 == 他효과起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5382,20)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = 마법全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		ダメージ修正 = RESULT * 200
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ修正,1)
+	ENDIF
+ENDIF
+
+
+
+;---------------------------------------------------------------------------------------
+;메구밍の「エクスプロージョン」でのトドメ演出のためのカードデータ部分（ダミーデータ）
+;---------------------------------------------------------------------------------------
+
+
+@CARDNAME_105382,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 전설의 폭렬마법사 메구밍
+	CASE "略称"
+		RESULTS = 메구밍
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 코노스바
+	CASE "出典作品"
+		RESULTS:0 = 이 멋진 세계에 축복을！
+ENDSELECT
+
+
+@CARD_105382(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"	
+		RETURN 의식
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 1400
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+	CASE "レア度"
+		RETURN SPR
+	CASE "生成カード"
+		RETURN 80002
+	CASE "추가日"
+		RETURN 251224
+ENDSELECT
+
+RETURN 0
+
+[SKIPSTART]
+@CARDSUMMON_105382(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 出処
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 7
+
+IF EX参照 == 1
+	CALL RITCAN(듀얼리스트,소환カード,105382)
+	RETURN RESULT
+ENDIF
+[SKIPEND]
+
+@CARD_EXPLANATION_105382(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 
+PRINTL 黒より黒く闇より暗き漆黒に 我が深紅の混淆を望みたもう
+PRINTL 
+PRINTL 각성のとき来たれり
+PRINTL 
+PRINTL 無謬の境界に落ちし理 無行の歪みとなりて現出せよ！
+PRINTL 
+PRINTL 踊れ踊れ踊れ 我が力の奔流に望むは崩壊なり 並ぶ者なき崩壊なり
+PRINTL 
+PRINTL 万象等しく灰塵に帰し 深淵より来たれ！
+PRINTL 
+PRINT これが人類最大の威力の攻撃手段 これこそが究極の攻撃마법
+PRINT 
+SETCOLOR C_FIRE_T
+PRINTL 　「 エ ク ス プ ロ ー ジ ョ ン ！ 」
+PRINTL 
+PRINTL 
+RESETCOLOR
+
+
+
+@CARDCAN_105382(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,105382)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 他효과起動
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_105382(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択枚数
+#DIM DYNAMIC ダメージ修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 他효과起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,105382,20)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = 마법全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		ダメージ修正 = RESULT * 200
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",ダメージ修正,1)
+	ENDIF
+ENDIF
+

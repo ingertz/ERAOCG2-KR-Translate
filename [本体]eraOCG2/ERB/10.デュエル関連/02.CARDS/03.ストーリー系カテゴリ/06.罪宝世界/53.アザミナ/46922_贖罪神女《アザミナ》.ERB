@@ -1,0 +1,181 @@
+﻿@CARDNAME_46922,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 아자미나
+	CASE "略称"
+		RESULTS = 속죄신녀
+	CASE "カテゴリ"
+		RESULTS:0 = 아자미나
+ENDSELECT
+
+
+@CARD_46922(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 4000
+	CASE "守備力"
+		RETURN 4000
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1922
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_46922(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「아자미나의 요마」＋융합・Sモンスター
+PRINTL このカードは융합소환及び以下の方法でのみEX덱から특수소환できる。
+CALLFORM CARD_ABLE(0,EX덱起動)
+PRINTL ●자신フィールドの「성 아자미나」１体と상대フィールドの表側표시モンスター１体をリリースした場合にEX덱から특수소환できる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：フィールドのこのカードは효과では破壊されない。
+CALLFORM CARD_ABLE(0,발동強制誘発)
+PRINTL ②：상대が마법・함정・モンスターの효과を발동する度に、상대フィールドの全てのモンスターの攻撃力は５００ダウンする。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：このカードがモンスターゾーンに存在する限り、상대は攻撃力０のモンスターの효과を발동できない。
+
+
+
+@CARDSUMMON_46922(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 아자미나의 요마
+ELSEIF EX参照 >= 10
+	素材条件종류:0 = 융합
+	素材条件종류:1 = 싱크로
+ENDIF
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,46922) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_46922(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,46922)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,59540)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 성 아자미나
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 10
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA_2(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_46922(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,46922)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 10
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件名前 = 성 아자미나
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	;①：효과では破壊されない
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
+	;③：このカードがモンスターゾーンに存在する限り、상대は攻撃力０のモンスターの효과を발동できない。
+	;今はフィールドだけ
+	CALL SET_PLAYER_INFO(듀얼리스트,"ゼロ효과無効",3,1)
+
+ELSEIF 종류 == 발동強制誘発
+	;②：상대が마법・함정・モンスターの효과を발동する度に、상대フィールドの全てのモンスターの攻撃力は５００ダウンする。
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,46922)
+	IF RESULT == 0
+		CALL FULLRESET
+		;場の상대モンスターすべてに지속で攻撃力-500を適用
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"永攻DOWN",500)
+	ENDIF
+ENDIF
+

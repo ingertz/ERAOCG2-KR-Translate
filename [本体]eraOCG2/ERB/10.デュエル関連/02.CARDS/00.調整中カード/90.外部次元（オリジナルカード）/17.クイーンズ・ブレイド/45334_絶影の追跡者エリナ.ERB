@@ -1,0 +1,213 @@
+﻿@CARDNAME_45334,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 언리미티드 에리나
+	CASE "略称"
+		RESULTS = 절영의 에리나
+	CASE "カテゴリ"
+		RESULTS:0 = 미투사
+	CASE "出典作品"
+		RESULTS:0 = 퀸즈 블레이드
+ENDSELECT
+
+
+@CARD_45334(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 5334
+	CASE "추가日"
+		RETURN 250426
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_45334(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 4
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,45334) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_45334(종류)
+#DIM DYNAMIC 종류
+
+PRINTL レベル４モンスター×２
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがX소환した場合に발동できる。
+PRINTL 자신の묘지の어둠속성モンスター１体を제외する。
+PRINTL その後、덱から「미투사」마법・함정カードを１枚を자신フィールドにセットする。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：お互いのターンに、자신のほかの어둠속성モンスター１体を破壊して발동できる。
+PRINTL 상대フィールドのカードを１枚破壊する。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：어둠속성モンスターが효과で제외・または破壊された場合、このカードのX素材を１つ取り除いて발동できる。
+PRINTL そのカードを자신フィールドに특수소환する。
+
+
+@CARDCAN_45334(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,45334)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,45334)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 어둠속성
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,45334)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件속성 = 어둠속성
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1	
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,45334)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件속성 = 어둠속성
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般+除",2)
+	SIF RESULT != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_45334(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID, 15
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,45334,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 어둠속성
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = 마함全般
+		효과条件カテゴリ = 미투사
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,45334,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件속성 = 어둠속성
+		효과条件他所 = 1
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,45334,3,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件속성 = 어둠속성
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般+除",2,1)
+		FOR カウンタ,1,10
+			選択カード_ID:カウンタ = RESULT:カウンタ
+		NEXT
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲상대묘지 = 1
+		효과範囲제외 = 1
+		효과範囲상대제외 = 1
+		FOR カウンタ,0,10
+			효과条件ID:カウンタ = 選択カード_ID:(カウンタ + 1)
+		NEXT
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

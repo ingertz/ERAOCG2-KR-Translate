@@ -1,0 +1,182 @@
+﻿@CARDNAME_23033,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 정크 마이스터
+	CASE "略称"
+		RESULTS = JUNK마이스터
+	CASE "カテゴリ"
+		RESULTS:0 = 정크
+ENDSELECT
+
+
+@CARD_23033(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 100
+	CASE "守備力"
+		RETURN 2300
+	CASE "추가日"
+		RETURN 251222
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_23033(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：ＥＸ덱の「워리어」、「스타더스트」Ｓモンスター１体を상대に見せて발동できる。
+PRINTL このカードを손패から특수소환する。
+PRINTL このターン、자신はＳモンスターしかＥＸ덱から특수소환できない。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「정크 마이스터」以外の「정크」カード１枚を손패に加える。
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：자신フィールドの「정크」モンスター１体を대상として발동できる。
+PRINTL そのモンスターのレベルを２つまで下げる。
+
+@CARDCAN_23033(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,23033)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,23033)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,23033,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件カテゴリ:0 = 워리어
+	효과条件カテゴリ:1 = 스타더스트
+	효과条件종류 = 싱크로
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,23033)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 정크
+	효과条件固名前 = 정크 마이스터
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,23033)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 정크
+	효과条件표시 = 表側표시
+	CALLFORM 효과条件レベル_ADV(2,"以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_23033(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23033,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件カテゴリ:0 = 워리어
+		효과条件カテゴリ:1 = 스타더스트
+		효과条件종류 = 싱크로
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+			EX소환可能종류 = 싱크로
+			CALL CARD_EX_RESTRICTION(듀얼리스트)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23033,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 정크
+		효과条件固名前 = 정크 마이스터
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,23033,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = 정크
+		효과条件표시 = 表側표시
+		CALLFORM 효과条件レベル_ADV(2,"以上")
+		IF RESULT != 9999
+			選択カード = RESULT
+			IF GETVAR(@"%듀얼리스트%_MZ_星:選択カード") == 2
+				RESULT = 1
+			ELSE
+				IF 듀얼리스트 == "자신"
+					PRINTL 下げるレベルを選択してください
+					PRINTL
+					PRINTL [1] - １
+					PRINTL [2] - ２
+				ELSE
+					RESULT = 2
+				ENDIF
+			ENDIF
+
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永星",-RESULT)
+		ENDIF
+	ENDIF
+ENDIF

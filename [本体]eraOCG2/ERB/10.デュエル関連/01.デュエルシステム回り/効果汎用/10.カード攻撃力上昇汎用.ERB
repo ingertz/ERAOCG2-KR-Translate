@@ -15,6 +15,8 @@
 #DIM DYNAMIC 攻撃力修正 
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 条件달성
+#DIM DYNAMIC 非ターン実行済
+
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
@@ -41,7 +43,7 @@ SELECTCASE 효과範囲
 		ELSE
 			実行者 = %듀얼리스트%
 		ENDIF
-
+		$EFFECT_LOOP
 		FOR カウンタ,0,5
 			SIF GETVAR(@"%実行者%_필드:カウンタ") == -1
 				CONTINUE
@@ -76,6 +78,12 @@ SELECTCASE 효과範囲
 			SETVAR @"%実行者%_MZ_攻:カウンタ", GETVAR(@"%実行者%_MZ_攻:カウンタ") + 修正値
 			SETVAR @"%実行者%_MZ_守:カウンタ", GETVAR(@"%実行者%_MZ_守:カウンタ") + 守備修正
 		NEXT
+
+		IF 효과範囲 == "필드全体" && 非ターン実行済 != 1
+			実行者 = %対面者%
+			非ターン実行済 = 1
+			GOTO EFFECT_LOOP
+		ENDIF
 ENDSELECT
 
 
@@ -97,6 +105,7 @@ ENDSELECT
 #DIM DYNAMIC 攻撃力修正 
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 条件달성
+#DIM DYNAMIC 非ターン実行済
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -127,7 +136,7 @@ SELECTCASE 효과範囲
 		ELSE
 			実行者 = %듀얼리스트%
 		ENDIF
-
+		$EFFECT_LOOP
 		FOR カウンタ,0,5
 			SIF GETVAR(@"%実行者%_필드:カウンタ") == -1
 				CONTINUE		
@@ -162,6 +171,11 @@ SELECTCASE 효과範囲
 				SETVAR @"%実行者%_MZ_%효과種%:カウンタ", 修正値
 			ENDIF
 		NEXT
+		IF 효과範囲 == "필드全体" && 非ターン実行済 != 1
+			実行者 = %対面者%
+			非ターン実行済 = 1
+			GOTO EFFECT_LOOP
+		ENDIF
 ENDSELECT
 
 
@@ -188,13 +202,22 @@ ENDSELECT
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC カードID
 #DIM DYNAMIC 上書き플래그
+#DIM DYNAMIC 非ターン実行済
+
+
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 효과種 == "永星上書"
+IF 효과種 == "永星変動"
 	효과種 = 永星
 	上書き플래그 = 1
 ENDIF
+
+IF 효과種 == "一星変動"
+	효과種 = 一星
+	上書き플래그 = 1
+ENDIF
+
 
 IF 適応효과_ID >= 1
 	カードID = 適応효과_ID
@@ -202,7 +225,6 @@ ELSE
 	カードID = 処理中_효과ID
 ENDIF
 
-カードID = 適応효과_ID
 SIF 효과条件표시 == -1
 	효과条件표시 = 表側표시
 
@@ -243,20 +265,19 @@ SELECTCASE 효과範囲
 			SETVAR @"%装備者%_MZ_%효과種%:装備先", 持続
 		ENDIF
 	CASE "필드","마함","상대필드","상대마함"
-
 		IF 효과範囲 == "상대필드" || 효과範囲 == "상대마함"
 			実行者 = %対面者%
 		ELSE
 			実行者 = %듀얼리스트%
 		ENDIF
-	
-		IF 효과範囲 == "필드" || 효과範囲 == "상대필드"
+		IF 효과範囲 == "필드" || 효과範囲 == "상대필드" || 효과範囲 == "필드全体"
 			参照先 = 필드
 			MZ魔판정 = MZ			
 		ELSEIF 효과範囲 == "마함" || 효과範囲 == "상대마함"
 			参照先 = 마함
 			MZ魔판정 = 魔
 		ENDIF
+		$EFFECT_LOOP
 		FOR カウンタ,0,5
 			SIF GETVAR(@"%実行者%_%参照先%:カウンタ") == -1
 				CONTINUE
@@ -298,8 +319,6 @@ SELECTCASE 효과範囲
 			ELSE
 				IF 参照先 == "필드" && GROUPMATCH(효과種,"一攻","永攻","一守","永守")
 					CALL SET_FIELD_INFO(実行者,"필드",カウンタ,효과種,持続)
-				ELSEIF 参照先 == "필드" && GROUPMATCH(효과種,"一星変動")
-					CALL SET_FIELD_INFO(実行者,"필드",カウンタ,"一星",持続)
 				ELSEIF 参照先 == "필드" && GROUPMATCH(효과種,"一星","永星")
 					CALL SET_FIELD_INFO(実行者,"필드",カウンタ,효과種,持続,上書き플래그)
 				ELSE
@@ -307,6 +326,11 @@ SELECTCASE 효과範囲
 				ENDIF
 			ENDIF
 		NEXT
+		IF 효과範囲 == "필드全体" && 非ターン実行済 != 1
+			実行者 = %対面者%
+			非ターン実行済 = 1
+			GOTO EFFECT_LOOP
+		ENDIF
 ENDSELECT
 
 

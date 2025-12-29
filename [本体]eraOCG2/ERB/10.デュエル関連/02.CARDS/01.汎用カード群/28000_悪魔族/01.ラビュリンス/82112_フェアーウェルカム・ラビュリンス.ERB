@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 페어웰컴 라뷰린스
 	CASE "略称"
-		RESULTS = 페어웰컴라뷰린스
+		RESULTS = F웰컴
 	CASE "カテゴリ"
 		RESULTS:0 = 라뷰린스
 ENDSELECT
@@ -30,13 +30,13 @@ RETURN 0
 
 @CARD_EXPLANATION_82112(종류)
 #DIM DYNAMIC 종류
+
 CALLFORM CARD_ABLE(1,攻撃時誘発)
 PRINTL ①: 자신 필드에 악마족 몬스터가 존재할 경우,
-PRINTL 자신 또는 상대 몬스터의 공격 선언시에, 필드의 카드 1장을 대상으로 하고 발동할 수 있다。
-PRINTL 그 공격을 무효로 하고, 대상의 카드를 파괴한다。
-PRINTL 그후, 덱에서 일반 함정 카드 1장을 선택해 자신 필드에 세트 할 수 있다。
-PRINTL 
-PRINTL 
+PRINTL 자신 또는 상대 몬스터의 공격 선언시에 발동할 수 있다。
+PRINTL 그 공격을 무효로 하고, 상대 필드의 카드 １장을 파괴한다。
+PRINTL 그 후, 덱에서 일반 함정 카드 1장을 골라 자신 필드에 세트 할 수 있다。
+
 
 @CARDCAN_82112(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -51,16 +51,30 @@ CALL 対面者판정(듀얼리스트)
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,82112)
 SIF RESULT == 1
 	RETURN 0
+
 IF 종류 == 攻撃時誘発
 	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
-
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件종족 = 악마족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 상황確認
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF !발동済_1(듀얼리스트,28550)
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,28550)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 라뷰린스
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -82,10 +96,11 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 攻撃時誘発
-	;カード발동確認
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+		CALL CARD_EFFECT_USE(듀얼리스트,28550,3)
+	ENDIF
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82112)
 	IF RESULT == 0
-		;通常마법汎用処理
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL EVADE_ATTACK(듀얼리스트)
 		CALL FULLRESET
@@ -104,4 +119,7 @@ IF 종류 == 攻撃時誘発
 		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
 		ENDIF
 	ENDIF
+ELSEIF 종류 == 상황確認
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"発可")
 ENDIF

@@ -67,16 +67,16 @@ ENDIF
 @CARD_EXPLANATION_51594(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 레벨 9의 "불꽃성기사제－샤를" 1체
-PRINTL 자신의 마법 & 함정 존에 장비 마법 카드가 존재하지 않을 경우, 이 카드는 L 소환할 수 없다.
+PRINTL 레벨 9의 "불꽃성기사제－샤를" 1장
+PRINTL 자신의 마법 & 함정 존에 장착 마법 카드가 존재하지 않을 경우, 이 카드는 L 소환할 수 없다.
 CALLFORM CARD_ABLE(0,EX소환時)
 PRINTL ①: 이 카드가 L 소환했을 경우, 자신 묘지의 "불꽃성기사제－샤를" 1장을 대상으로 하여 발동할 수 있다.
 PRINTL 이 카드는 그 카드와 동명 카드로 취급하고, 같은 효과를 얻는다.
-PRINTL 그 후, 대상의 몬스터를 장비 마법 카드 취급으로 이 카드에 장착한다.
-PRINTL 장비했을 경우, 이 카드의 공격력을 500 올린다.
+PRINTL 그 후, 대상의 몬스터를 장착 마법 카드 취급으로 이 카드에 장착한다.
+PRINTL 장착했을 경우, 이 카드의 공격력을 500 올린다.
 CALLFORM CARD_ABLE(10,발동誘発)
 PRINTL ②: 1턴에 1번, 마법 / 함정 카드의 효과가 발동했을 때,
-PRINTL 자신의 패 / 필드 (앞면 표시)의 장비 마법 카드 1장 또는 자신의 마법 & 함정 존의
+PRINTL 자신의 패 / 필드 (앞면 표시)의 장착 마법 카드 1장 또는 자신의 마법 & 함정 존의
 PRINTL 전사족 화염 속성 몬스터 1장을 묘지로 보내고 발동할 수 있다. 그 발동을 무효로 하고 파괴한다.
 
 
@@ -202,19 +202,13 @@ ELSEIF 종류 == 발동誘発
 		효과範囲마함 = 1
 		효과条件종류 = 装備마법
 		효과条件표시 = 表側표시
+		효과条件スーパー종족 = 전사족
+		효과条件スーパー속성 = 화염속성
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 0
-			CALL FULLRESET
-			효과条件종족 = 전사족
-			효과条件속성 = 화염속성
-			CALL CARD_ADD_GY_BASIC(듀얼리스트,"마함",ゾーン,場所)
-			SIF RESULT == 0
-				RETURN 0
+		IF RESULT == 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",0,"묘지")
 		ENDIF
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",0,"묘지")
-		RETURN 1
 	ENDIF
-	RETURN 0
 ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51594,1)
 	IF RESULT == 0

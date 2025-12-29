@@ -529,19 +529,19 @@ CALL KOJO_MESSAGE_SEND("CARD",カードID,2,종류)
 
 割込処理 = %効後_발동無:処理中番号%
 
+;PRINTFORML 割込処理 ：%割込処理% 効後_발동無：%効後_발동無:処理中番号%
 IF 割込処理 == "絶対破壊"
 	CALL FULLRESET
 	CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
 ELSEIF 割込処理 != ""
 	PRINTFORML %듀얼리스트%의 %발동カード名%의 효과는 처리할 수 없었습니다。
-
 	;カード側の구상（효과失敗）
 	CALL KOJO_MESSAGE_SEND("CARD",カードID,2,종류,1)
 	;場所データを読み込まない타입は無視
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,5,カードID,-1)
 
 	IF !GROUPMATCH(종류,필드→묘지,손패→묘지,덱→묘지,破壊→묘지,戦闘→묘지,필드→戦離,제외時,戦破壊→묘지,R素材時효과,F素材時효과,S素材時효과,X素材時효과,L素材時효과)
-		PRINTFORML 끼어듬 처리:%割込処理%
+		;PRINTFORML 끼어듬 처리:%割込処理%
 		IF 割込処理 == "無効"
 			TRYCALLFORM CARD_{カードID}("종류")
 			IF GROUPMATCH(RESULT,通常마법,速攻마법,通常함정) 
@@ -568,8 +568,11 @@ ELSEIF 割込処理 != ""
 		ELSE
 
 			IF ゾーン == "필드"
-			CALL FULLRESET
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",場所,割込処理)
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(対面者,"自動処理",場所,割込処理)
+			ELSEIF ゾーン == "마함"
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(対面者,"魔自動処理",場所,割込処理)
 			ELSE
 				SELECTCASE 割込処理
 				CASE "묘지"
@@ -594,8 +597,8 @@ ENDIF
 IF 無効불가 == 2
 	RETURN 0
 ELSE
-	SIF GETVAR(@"%듀얼리스트%_ディール효과")
-		CALLFORM CARDEFFECT_12075_1(듀얼리스트)
+;	SIF GETVAR(@"%듀얼리스트%_ディール효과")
+;		CALLFORM CARDEFFECT_12075_1(듀얼리스트)
 	SETVAR @"%듀얼리스트%_발동数" , GETVAR(@"%듀얼리스트%_발동数") + 1
 	TRYCALLFORM CARD_{カードID}("종류")
 	IF RESULT <= 10
@@ -857,6 +860,19 @@ IF !GROUPMATCH(종류, 攻守変動, 지속효과, 攻紋章起動, 短紋章起
 		TRYCALLFORM CARD_{カードID}("종류")
 		SIF RESULT == 링크
 			RETURN 1
+	ENDIF
+	TRYCALLFORM CARD_{カードID}("종류")
+	IF RESULT <= 10
+		IF GETVAR(@"%듀얼리스트%_ゼロ효과無効") >= 1
+			IF ゾーン == "필드"
+				SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") == 0
+					RETURN 1
+			ELSE
+				TRYCALLFORM CARD_{カードID}("攻撃力")
+				SIF RESULT == 0
+					RETURN 1
+			ENDIF
+		ENDIF
 	ENDIF
 
 	IF GETVAR(@"%듀얼리스트%_속성효과無効") >= 1
@@ -3137,8 +3153,6 @@ CASE "逆속성"
 			CONTINUE
 		SETVAR @"%듀얼리스트%_一時SS可속성番号:{カウンタ}", 0
 	NEXT
-CASE "全般"
-	SETVAR @"%듀얼리스트%_一時SS制限", 0
 ENDSELECT
 
 
@@ -4479,9 +4493,9 @@ ELSEIF INRANGE(설정플래그,100,300)
 		PRINTFORM /(배틀 종료시 유발)
 
 	ELSEIF 설정플래그 == 100 + 攻撃時誘発
-		PRINTFORM /(공격시 유발 유발)
+		PRINTFORM /(공격시 유발)
 	ELSEIF 설정플래그 == 100 + 攻撃後誘発
-		PRINTFORM /(공격후 유발 유발)
+		PRINTFORM /(공격후 유발)
 	ELSEIF 설정플래그 == 100 + 표시변경誘発
 		PRINTFORM /(표시변경 유발)
 	ELSEIF 설정플래그 == 100 + リバース誘発

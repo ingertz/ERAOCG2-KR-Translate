@@ -34,7 +34,7 @@ RETURN 0
 PRINTL 이 카드명의 카드는 1턴에 1장밖에 발동할 수 없고, ②의 효과는 1턴에 1번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(0,효과後誘発)
 PRINTL ①: 1턴에 2번까지, 자신 필드에 "B F" 몬스터가 소환 / 특수 소환되었을 경우,
-PRINTL 자신 필드의 "B F" 몬스터 1장을 대상으로 발동할 수 있다.
+PRINTL 자신 필드의 곤충족 몬스터 1장을 대상으로 발동할 수 있다.
 PRINTL 그 몬스터보다 공격력이 낮은 "B F" 몬스터 1장을 덱에서 패에 추가한다.
 CALLFORM CARD_ABLE(2,마함起動)
 PRINTL ②: 자신 필드의 레벨을 가지는 곤충족 몬스터 1장을 대상으로 발동할 수 있다.
@@ -63,20 +63,11 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
+	효과条件종류 = レベル持ち
 	효과条件종족 = 곤충족
-	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件カテゴリ = 비 포스
-	효과条件종류 = モン全般
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-
 	RETURN 1
 ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,73030)
@@ -116,6 +107,7 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73030,2)
 	IF RESULT == 0
 		CALL FULLRESET
+		효과範囲필드 = 1
 		효과条件종류 = レベル持ち
 		효과条件종족 = 곤충족
 		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"一Ｔ",1)

@@ -143,7 +143,7 @@ CALL CARD_FILTER_BASIC(듀얼리스트,元参照先,ゾーン,場所,めくり�
 条件달성 = RESULT:1
 ;PRINTFORML ここまでOK2!!({RESULT})
 
-IF 条件달성 == 0
+IF 条件달성 == 0 && 複数カウンタ == 0 && 효과条件複数 == 0
 	CUSTOMDRAWLINE —
 	PRINTL 【선택 가능한 카드가 없습니다】
 	CUSTOMDRAWLINE —
@@ -409,7 +409,7 @@ ENDIF
 CALL CARD_FILTER_BASIC(듀얼리스트,"上級",ゾーン,場所)
 条件달성 = RESULT:1
 
-IF 条件달성 == 0
+IF 条件달성 == 0 && 複数カウンタ == 0 && 효과条件複数 == 0
 	CUSTOMDRAWLINE —
 	PRINTL 【선택 가능한 카드가 없습니다】
 	CUSTOMDRAWLINE —
@@ -634,7 +634,11 @@ ELSEIF ゾーン == "필드"
 	ENDIF
 	IF 行先플래그 != 完全묘지行き
 		IF GETVAR(@"%듀얼리스트%_MZ_除処:場所") >= 1
-			行先플래그 = 제외行き
+			IF 行先플래그 == 破壊行き
+				行先플래그 = 破壊제외行き
+			ELSE
+				行先플래그 = 제외行き
+			ENDIF
 			IF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 				行先플래그 = 完全묘지行き
 			ENDIF
@@ -648,7 +652,11 @@ ELSEIF ゾーン == "마함"
 	ENDIF
 	IF 行先플래그 != 完全묘지行き
 		IF GETVAR(@"%듀얼리스트%_魔_除処:場所") >= 1
-			行先플래그 = 제외行き
+			IF 行先플래그 == 破壊行き
+				行先플래그 = 破壊제외行き
+			ELSE
+				行先플래그 = 제외行き
+			ENDIF
 			IF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 				行先플래그 = 完全묘지行き
 			ENDIF
@@ -791,6 +799,7 @@ IF ゾーン == "필드"
 		ENDIF
 	ELSEIF 行先플래그 == EX덱行き
 		CALL CARD_ADD(듀얼리스트, "필드", "EX덱",場所)
+
 	ELSEIF 行先플래그 == 破壊行き || 行先플래그 == 絶対破壊行き
 		묘지送り종류 = 破壊
 		TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,戦破壊→묘지,ゾーン,場所)
@@ -809,6 +818,7 @@ IF ゾーン == "필드"
 		ELSE
 			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,제외時,"필드")
 		ENDIF
+		CALL CARD_DT_HIST(듀얼리스트,選択カード_ID)
 		CALL CARD_ADD(듀얼리스트, "필드", "제외",場所)
 	ELSEIF 行先플래그 == 戦闘破壊行き
 		묘지送り종류 = 戦闘破壊
@@ -924,6 +934,15 @@ ELSEIF ゾーン == "마함"
 		ENDIF
 		CALL CARD_DT_HIST(듀얼리스트,選択カード_ID)
 		CALL CARD_ADD(듀얼리스트, "마함", "묘지",場所)
+	ELSEIF 行先플래그 == 破壊제외行き
+		묘지送り종류 = 破壊
+		TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,戦破壊→묘지,ゾーン,場所)
+		IF RESULT == 1
+			CALLFORM CARD_STANBY(選択カード_ID,효과대상者,戦破壊→묘지,"제외")
+		ENDIF
+		CALL CARD_DT_HIST(듀얼리스트,選択カード_ID)
+		CALL CARD_ADD(듀얼리스트, "마함", "제외",場所)
+
 	ELSEIF 行先플래그 == 完全묘지行き
 		CALL CARD_ADD(듀얼리스트, "마함", "묘지",場所)
 	ELSEIF 行先플래그 == 完全제외行き
@@ -1126,7 +1145,12 @@ ELSEIF 行先플래그 == 손패行き
 		CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"필드手送")
 	SIF ゾーン == "묘지"
 		CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"묘지手送")
-
+ELSEIF 行先플래그 == 破壊제외行き
+	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과破壊")
+	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"直前破壊")
+	SIF ゾーン == "필드"
+		ターン破壊数 += 1
+		
 ELSEIF 行先플래그 == 破壊行き
 	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과破壊")
 	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"直前破壊")

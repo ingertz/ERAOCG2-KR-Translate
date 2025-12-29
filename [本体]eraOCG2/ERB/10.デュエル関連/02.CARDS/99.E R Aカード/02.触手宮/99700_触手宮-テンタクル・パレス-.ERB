@@ -71,9 +71,9 @@ SIF RESULT == 1
 
 
 IF 종류 == 攻撃時強制誘発
-	; CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	; SIF RESULT != 1
-	; 	RETURN 0
+	 CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	 SIF RESULT != 1
+	 	RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー == 듀얼리스트
@@ -85,7 +85,7 @@ IF 종류 == 攻撃時強制誘発
 	SIF 戦闘場所(듀얼리스트,1) == 5
 		RETURN 0
 	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트,1)}("성별")
-	SIF RESULT != 牝性
+	SIF !GROUPMATCH(RESULT,牝性,ふたなり)
 		RETURN 0
 
 	RETURN 1
@@ -98,9 +98,6 @@ ELSEIF 종류 == ライフ変強制誘発
 	SIF ダメージ종류 != "直接戦闘"
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트,1) == 5
-		RETURN 0
-	TRYCALLFORM CARD_{戦闘カードID(듀얼리스트,1)}("성별")
-	SIF RESULT != 牝性
 		RETURN 0
 	RETURN 1
 

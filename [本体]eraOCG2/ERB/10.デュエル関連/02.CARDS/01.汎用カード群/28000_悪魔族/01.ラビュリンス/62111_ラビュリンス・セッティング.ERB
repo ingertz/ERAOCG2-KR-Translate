@@ -1,0 +1,112 @@
+﻿@CARDNAME_62111,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 라뷰린스 세팅
+	CASE "略称"
+		RESULTS = Labr세팅
+	CASE "カテゴリ"
+		RESULTS:0 = 라뷰린스
+ENDSELECT
+
+
+@CARD_62111(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_62111(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：자신の묘지・제외状態から、「라뷰린스 세팅」以外の「라뷰린스」마법・함정カード２枚を덱に戻す。
+PRINTL さらに、자신フィールドに악마족モンスターが存在する場合、
+PRINTL 戻した数だけ덱から「라뷰린스」カード以外の通常함정カードを選んで자신フィールドにセットできる（同名カードは１枚まで）。
+
+
+@CARDCAN_62111(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62111)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,62111)
+		RETURN 0
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件固名前 = 라뷰린스 세팅
+	효과条件カテゴリ = 라뷰린스
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_62111(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62111)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件固名前 = 라뷰린스 세팅
+		효과条件カテゴリ = 라뷰린스
+		효과条件複数 = 2
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT:2 >= 1
+			カウンタ = RESULT:2
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件종족 = 악마족
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과条件固カテゴリ = 라뷰린스
+				효과範囲덱 = 1
+				효과条件종류 = 通常함정
+				효과条件固名前選択 = 1
+				효과条件任意 = 1
+				SIF カウンタ == 2
+					효과条件複数 = 98
+				CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

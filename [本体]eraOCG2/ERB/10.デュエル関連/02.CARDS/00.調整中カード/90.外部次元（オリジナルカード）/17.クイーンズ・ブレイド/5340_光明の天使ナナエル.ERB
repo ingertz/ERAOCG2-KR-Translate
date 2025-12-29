@@ -24,6 +24,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
 	CASE "종류"
 		RETURN 효과モン
 	CASE "속성"
@@ -142,7 +144,7 @@ IF 종류 == 손패起動
 		효과条件名前 = 퀸즈 블레이드
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
-ELSEIF 종류 == 제외時 || 종류 == 攻撃時誘発
+ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5340,2)
 	IF RESULT == 0
 		TRYCALLFORM CARD_UI(GETVAR(@"%듀얼리스트%_덱:0"))
@@ -150,7 +152,6 @@ ELSEIF 종류 == 제외時 || 종류 == 攻撃時誘発
 		IF RESULT <= モン全般
 			選択カード = 戦闘場所(듀얼리스트)
 			CALL FULLRESET
-			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一時",2000)
 		ELSEIF RESULT >= 20
 			CALL FULLRESET

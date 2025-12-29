@@ -95,6 +95,13 @@ IF 종류 == 지속효과
 		RETURN 0
 	SIF GETVAR(@"ライフ_%듀얼리스트%") > 2000
 		RETURN 0
+	SIF 処理中_효과ID <= 0
+		RETURN 0
+
+	TRYCALLFORM CARDNAME_{処理中_효과ID}("カテゴリ")
+	SIF RESULTS != "다이놀피어"
+		RETURN 0
+
 	RETURN 1
 
 ELSEIF 종류 == 발동誘発
@@ -141,7 +148,8 @@ CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 지속효과
-	CALL SET_PLAYER_INFO(듀얼리스트,"ぺギア",3)
+	CALL SET_PLAYER_INFO(듀얼리스트,"コスト無効",3)
+	;CALL SET_PLAYER_INFO(듀얼리스트,"ぺギア",3)
 ELSEIF 종류 == 발동誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,53571,1)
 	IF RESULT == 0

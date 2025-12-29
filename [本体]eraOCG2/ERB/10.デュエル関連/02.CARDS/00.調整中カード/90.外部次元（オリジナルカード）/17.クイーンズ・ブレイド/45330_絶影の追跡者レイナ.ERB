@@ -1,0 +1,171 @@
+﻿@CARDNAME_45330,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 퀸즈 블레이드 레이나
+	CASE "略称"
+		RESULTS = 왕좌계승자레이나
+	CASE "カテゴリ"
+		RESULTS:0 = 미투사
+	CASE "出典作品"
+		RESULTS:0 = 퀸즈 블레이드
+ENDSELECT
+
+
+@CARD_45330(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 전사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 5330
+	CASE "추가日"
+		RETURN 250426
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_45330(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 4
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,45330) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_45330(종류)
+#DIM DYNAMIC 종류
+
+PRINTL レベル４モンスター×２
+PRINTL このカード名の②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードの攻撃力は자신の묘지の「미투사」モンスターの数×２００アップする。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：このカードのX素材を１つ取り除いて발동できる。
+PRINTL フィールドのカードを１枚選び、そのカードはこのターン戦闘・破壊耐性を得る。
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ③：このカードがモンスターとの戦闘を行い、そのモンスターが破壊されなかった場合に발동できる。
+PRINTL その상대モンスターのコントロールを得て、このカードはこのターンもう１度攻撃できる。
+
+
+
+@CARDCAN_45330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,45330)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,45330)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	RETURN 1	
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	PRINTFORML 戦闘場所:{戦闘場所(듀얼리스트,1)}
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_45330(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID, 15
+#DIM DYNAMIC 攻撃力修正
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+
+IF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 미투사
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 200
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,45330,2,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"戦破耐",1)
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,45330)
+	IF RESULT == 0
+		選択カード = 戦闘場所(듀얼리스트,1)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"強奪")
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦",1)
+	ENDIF
+ENDIF

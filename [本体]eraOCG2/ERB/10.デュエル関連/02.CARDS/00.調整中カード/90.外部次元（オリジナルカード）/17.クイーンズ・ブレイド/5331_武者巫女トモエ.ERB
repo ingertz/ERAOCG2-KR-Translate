@@ -24,6 +24,8 @@ VARSET RESULT
 VARSET RESULTS
 
 SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
 	CASE "종류"
 		RETURN 효과モン
 	CASE "속성"
@@ -49,8 +51,9 @@ RETURN 0
 
 PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,소환時,특수소환時)
-PRINTL ①：이 카드가 소환 / 특수 소환에 성공했을 때에 발동할 수 있다。
-PRINTL 자신 묘지의 "미투사" 몬스터 １장을 특수 소환한다。
+PRINTL ①：이 카드가 소환에 성공했을 때에 발동할 수 있다。
+PRINTL 자신 묘지 / 덱의 "미투사" 몬스터 １장을 패에 넣는다。
+PRINTL 그 후、패를 １장 덱 가장 위로 되돌린다。
 CALLFORM CARD_ABLE(2,발동誘発,攻撃時誘発)
 PRINTL ②：이 카드의 공격 선언시、또는 상대가 패 / 묘지에서 몬스터의 효과를 발동했을 때에 발동할 수 있다。
 PRINTL 자신의 덱 가장 위의 카드를 뒤집는다。그 카드의 종류에 따라、이하의 효과를 적용한다。
@@ -81,8 +84,8 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
+	효과範囲덱 = 1
 	효과条件カテゴリ = 미투사
-	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -137,8 +140,16 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲묘지 = 1
+		효과範囲덱 = 1
 		효과条件カテゴリ = 미투사
-		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_ADD_DECK_SPC(듀얼리스트,"손패",RESULT)
+		ENDIF
 	ENDIF
 ELSEIF 종류 == 발동誘発 || 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5331,2)

@@ -1,0 +1,189 @@
+﻿@CARDNAME_35006,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 인페르노퀸 새먼
+	CASE "略称"
+		RESULTS = 퀸 새먼
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索用カテゴリ"
+		RESULTS:0 = 암흑계
+ENDSELECT
+
+@CARD_35006(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+	CASE "生成カード"
+		RETURN 1035006
+	CASE "추가日"
+		RETURN 251224
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_35006(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환に成功した場合に발동できる。
+PRINTL 자신の손패・덱・묘지から魚族の通常モンスター１体を選んで특수소환する。
+CALLFORM CARD_ABLE(2,戦破壊→묘지)
+PRINTL ②：このカードが戦闘または상대の효과で破壊された場合に발동できる。
+PRINTL 자신フィールドに「헬폰 새먼 토큰」を任意の数だけ특수소환する。
+
+
+@CARDCAN_35006(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,35006)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,35006)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件종족 = 바다생물족
+	효과条件종류 = 通常モン
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_2(듀얼리스트,35006)
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊")
+		RETURN 0
+	SIF 処理中_듀얼리스트 == 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,135006,"",1)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_35006(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35006,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件종족 = 바다생물족
+		효과条件종류 = 通常モン
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,35006,2)
+	IF RESULT == 0
+		$INPUT_LOOP
+		CALL CARD_GENERATE(듀얼리스트,135006)
+
+		CALL CARD_SS_CHECK(듀얼리스트,135006,"")
+		SIF RESULT == 1
+			RETURN 0
+
+		SIF 듀얼리스트 == "자신"
+			PRINTL 추가로 토큰을 특수 소환합니까?
+		CALL YN_CHOICE(듀얼리스트)
+		SIF RESULT == はい
+			GOTO INPUT_LOOP
+	ENDIF
+ENDIF
+
+;────────────────────────────────────────────────────────────
+@CARDNAME_1035006,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 헬폰 새먼 토큰
+	CASE "略称"
+		RESULTS = 폰 새먼
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+@CARD_1035006(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 바다생물족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1035006(종류)
+#DIM DYNAMIC 종류
+
+PRINTL "인페르노퀸 새먼"의 효과로 특수 소환된다。
+PRINTL 
+PRINTL 
+PRINTL 
+
+
+@CARDCAN_1035006(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+RETURN 0

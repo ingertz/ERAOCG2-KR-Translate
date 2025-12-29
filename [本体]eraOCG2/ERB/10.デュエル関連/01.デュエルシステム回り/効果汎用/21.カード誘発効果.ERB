@@ -491,6 +491,7 @@ SIF カウンタ数 >= 1
 SETVAR @"%듀얼리스트%_破壊이력:カウンタ数", カードID
 SETVAR @"%듀얼리스트%_破壊이력_CT", カウンタ数 + 1
 
+
 @CARD_SUMEFFECT_FORCE(듀얼리스트)
 #DIMS DYNAMIC 듀얼리스트
 #DIM DYNAMIC 選択カード
@@ -749,6 +750,14 @@ FOR カウンタ,0,5
 	ENDIF
 NEXT
 
+
+;時限紋章起動
+FOR カウンタ,0,20
+	TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_발동紋章:カウンタ")}(듀얼리스트,발동紋章起動,"",カウンタ)
+	SIF RESULT == 1
+		TRYCALLFORM CARDEFFECT_{GETVAR(@"%듀얼리스트%_발동紋章:カウンタ")}(듀얼리스트,발동紋章起動,"",カウンタ)
+NEXT
+
 ;추가：ライディングデュエル関連
 TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_엔진")}(듀얼리스트,발동強制誘発,"",0)
 SIF RESULT == 1
@@ -833,6 +842,16 @@ FOR カウンタ,0,紙束最大値
 	SIF RESULT == 1
 		CALLFORM CARD_STANBY(カード_ID,実行者,효과種,"묘지",カウンタ)
 NEXT
+
+FOR カウンタ,0,紙束最大値
+	SIF GETVAR(@"%実行者%_제외:カウンタ") == -1
+		CONTINUE
+	カード_ID = GETVAR(@"%実行者%_제외:カウンタ")
+	TRYCALLFORM CARDCAN_{GETVAR(@"%実行者%_제외:カウンタ")}(実行者,효과種,"제외",カウンタ)
+	SIF RESULT == 1
+		CALLFORM CARD_STANBY(カード_ID,実行者,효과種,"제외",カウンタ)
+NEXT
+
 
 FOR カウンタ,0,紙束最大値
 	SIF GETVAR(@"%実行者%_EX덱:カウンタ") == -1
@@ -1164,16 +1183,21 @@ ENDIF
 
 IF 開始플래그 == 攻紋章予約
 	CALLFORM CARDNAME_{カードID}("名前")
-	PRINTFORMW %RESULTS%의 효과가 세트되었습니다。(턴 종료시에 사라집니다)
+	PRINTFORMW %RESULTS%의 효과가 세트되었습니다。(엔드 페이즈시에 사라집니다)
 	SETVAR @"%듀얼리스트%_攻紋章:%듀얼리스트%_攻紋章カウンタ", カードID
 	SETVAR @"%듀얼리스트%_攻紋章カウンタ", GETVAR(@"%듀얼리스트%_攻紋章カウンタ") + 1
 
 
 ELSEIF 開始플래그 == 短紋章予約
 	CALLFORM CARDNAME_{カードID}("名前")
-	PRINTFORMW %RESULTS%의 효과가 세트되었습니다。(턴 종료시에 사라집니다)
+	PRINTFORMW %RESULTS%의 효과가 세트되었습니다。(엔드 페이즈시에 사라집니다)
 	SETVAR @"%듀얼리스트%_短紋章:%듀얼리스트%_短紋章カウンタ", カードID
 	SETVAR @"%듀얼리스트%_短紋章カウンタ", GETVAR(@"%듀얼리스트%_短紋章カウンタ") + 1
+ELSEIF 開始플래그 == 발동紋章予約
+	CALLFORM CARDNAME_{カードID}("名前")
+	PRINTFORMW %RESULTS%의 효과가 세트되었습니다。(엔드 페이즈시에 사라집니다)
+	SETVAR @"%듀얼리스트%_발동紋章:%듀얼리스트%_발동紋章カウンタ", カードID
+	SETVAR @"%듀얼리스트%_발동紋章カウンタ", GETVAR(@"%듀얼리스트%_발동紋章カウンタ") + 1
 
 ELSEIF 開始플래그 == 永紋章予約
 	CALLFORM CARDNAME_{カードID}("名前")
@@ -1195,7 +1219,7 @@ ELSEIF 開始플래그 == 時限紋章予約
 
 ELSEIF 開始플래그 == 効後紋章予約
 	CALLFORM CARDNAME_{カードID}("名前")
-	PRINTFORMW %RESULTS%의 효과가 세트되었습니다。(턴 종료 시 사라집니다)
+	PRINTFORMW %RESULTS%의 효과가 세트되었습니다。(이 게임 중 계속)
 	SETVAR @"%듀얼리스트%_効後紋章:%듀얼리스트%_効後紋章カウンタ", カードID
 	SETVAR @"%듀얼리스트%_効後紋章カウンタ", GETVAR(@"%듀얼리스트%_効後紋章カウンタ") + 1
 

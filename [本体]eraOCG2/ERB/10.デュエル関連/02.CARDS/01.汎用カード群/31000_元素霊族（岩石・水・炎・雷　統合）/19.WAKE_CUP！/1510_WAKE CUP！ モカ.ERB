@@ -1,0 +1,173 @@
+﻿@CARDNAME_1510,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = WAKE CUP！ 모카
+	CASE "略称"
+		RESULTS = WAKE CUP！ 모카
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+		RESULTS:1 = 리버스
+ENDSELECT
+
+
+@CARD_1510(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 100
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_1510(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1, 손패起動)
+PRINTL ①：フィールドの裏側守備표시モンスター１体を대상として발동できる。
+PRINTL このカードを손패から특수소환し、대상のモンスターを表側攻撃표시にする。
+CALL CARD_ABLE(2, リバース誘発)
+PRINTL ②：このカードがリバースした場合、フィールドの表側표시モンスター１体を대상として발동できる。
+PRINTL そのモンスターは、攻撃力が１０００アップし、エンドフェイズに破壊される。
+CALL CARD_ABLE(0, ターン終了時)
+PRINTL ③：자신エンドフェイズに발동できる。このカードを裏側守備표시にする。
+
+
+@CARDCAN_1510(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 1510)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트, 1510)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트, 1510, "손패")
+	SIF RESULT == 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 裏側守備표시
+	효과条件除去種 = 표시변경
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == リバース誘発
+	SIF 발동済_2(듀얼리스트, 1510)
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == ターン終了時
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1510(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 대상者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 1510, 1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件표시 = 裏側守備표시
+		효과条件除去種 = 표시변경
+		CALL CARD_CHOOSE_ADV(듀얼리스트, ゾーン, 場所)
+		IF RESULT != 9999
+			CALL CARD_SELECT(듀얼리스트, RESULT)
+			選択カード = 選択カード（CS）
+			대상者 = %대상者（CS）%
+			
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+			IF RESULT == 1
+				CALL SET_FIELD_INFO(대상者, "필드", 選択カード, "表", 攻撃표시, 上書きモード)
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == リバース誘発
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 1510, 2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_ADV(듀얼리스트, ゾーン, 場所)
+		IF RESULT != 9999
+			CALL CARD_SELECT(듀얼리스트, RESULT)
+			選択カード = 選択カード（CS）
+			대상者 = %대상者（CS）%
+			
+			CALL SET_FIELD_INFO(대상者, "필드", 選択カード, "永攻", 1000)
+			CALL SET_FIELD_INFO(대상者, "필드", 選択カード, "終処", 破壊行き, 上書きモード)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 1510, 3)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트, "필드", 場所, "表", 裏側守備표시, 上書きモード)
+	ENDIF
+ENDIF
+
+

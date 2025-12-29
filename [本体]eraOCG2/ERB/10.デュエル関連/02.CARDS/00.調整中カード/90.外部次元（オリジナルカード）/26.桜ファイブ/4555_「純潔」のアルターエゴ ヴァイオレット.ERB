@@ -1,0 +1,131 @@
+﻿@CARDNAME_4555,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 「순결」의 얼터에고 바이올렛
+	CASE "略称"
+		RESULTS = 바이올렛
+	CASE "カテゴリ"
+		RESULTS:0 = 영령
+		RESULTS:1 = SE.RA.PH
+		RESULTS:2 = 얼터에고
+	CASE "出典作品"
+		RESULTS:0 = FATE
+ENDSELECT
+
+
+@CARD_4555(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251225
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4555(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드→묘지,戦闘→묘지,破壊→묘지,손패→묘지,덱→묘지,제외時)
+PRINTL ①：このカードが묘지へ送られた場合、または제외された場合に발동できる。
+PRINTL このカードを특수소환する。
+PRINTL この효과で특수소환したこのカードのレベルは６になる。
+PRINTL このターン、자신は「영령」、「SE.RA.PH」モンスターしか특수소환できない。
+
+
+@CARDSUMMON_AA_4555
+
+
+@CARDCAN_4555(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4555)
+SIF RESULT == 1
+	RETURN 0
+
+IF GROUPMATCH(종류,필드→묘지,戦闘→묘지,破壊→묘지,손패→묘지,덱→묘지,제외時)
+	SIF 발동済_1(듀얼리스트,4555)
+		RETURN 0
+	; このカードが묘지へ送られた場合、または제외された場合に발동できる。
+	IF 종류 == 제외時
+		CALL CARD_SS_CHECK(듀얼리스트,4555,"제외")
+		SIF RESULT == 1
+			RETURN 0
+	ELSE
+		CALL CARD_SS_CHECK(듀얼리스트,4555,"묘지")
+		SIF RESULT == 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4555(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 元攻撃力
+#DIM DYNAMIC 元守備力
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF GROUPMATCH(종류,필드→묘지,戦闘→묘지,破壊→묘지,손패→묘지,덱→묘지)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4555,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 「순결」의 얼터에고 바이올렛
+		; この효과で특수소환したこのカードのレベルは６になる。
+		효과추가종류 = 140 + 6
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		SS소환可能종족 = 사이버스족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+ELSEIF 종류 == 제외時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4555,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲제외 = 1
+		효과条件名前 = 「순결」의 얼터에고 바이올렛
+		; この효과で특수소환したこのカードのレベルは６になる。
+		효과추가종류 = 140 + 6
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		SS소환可能종족 = 사이버스족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF
+
+
+

@@ -1,0 +1,117 @@
+﻿@CARDNAME_71018,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 금지된 성관
+	CASE "略称"
+		RESULTS = 금지된 성관
+	CASE "カテゴリ"
+		RESULTS:0 = 금지된
+ENDSELECT
+
+
+@CARD_71018(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "レア度"
+		RETURN SPR
+	CASE "추가日"
+		RETURN 251222
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71018(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できず、
+PRINTL このカードの효과の발동に対して상대は효과を발동できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：フィールドの表側표시モンスター１体を選び、ターン終了時まで以下の효과を適用する。
+PRINTL この효과は無差別耐性以外の影響を受けない。
+PRINTL ●효과は無効化される。
+PRINTL ●攻撃できない。
+PRINTL ●戦闘・효과では破壊されない。
+PRINTL ●完全耐性を与える。
+PRINTL ●アドバンス소환・의식소환のためにリリースできない。
+PRINTL ●융합・Ｓ・Ｘ・Ｌ소환の素材にできない。
+
+@CARDCAN_71018(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71018)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == チェーン可否
+	SIF !GROUPMATCH(チェーン可否종류,마함起動,손패起動,フリー誘発)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_71018(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71018)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			CALL CARD_SELECT(듀얼리스트,RESULT)
+			選択カード = RESULT
+			IF GETVAR(@"%대상者（CS）%_MZ_無差耐:選択カード") >= 1
+				PRINTW 無差別耐性によって処理が行われませんでした
+				RETURN 0
+			ENDIF
+
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"無効",1)
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"戦無",1)
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"戦耐",1)
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"破耐",1)
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"モ耐",1)
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"魔耐",1)
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"함정耐",1)
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード,"不材",1)
+		ENDIF
+	ENDIF
+ENDIF

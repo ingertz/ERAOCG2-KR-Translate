@@ -1,0 +1,140 @@
+﻿@CARDNAME_92524,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 어둠에 떨어진 천사
+	CASE "略称"
+		RESULTS = 어둠에떨어진천사
+	CASE "カテゴリ"
+		RESULTS:0 = 타락천사
+ENDSELECT
+
+
+@CARD_92524(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 251222
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_92524(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードはルール上「타락천사」カードとしても扱う。
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALL CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：자신の손패・フィールド（表側표시）から천사족モンスター１体を묘지へ送って발동できる。
+PRINTL 자신の손패・덱・제외状態の「타락천사」モンスター１体を소환条件を無視して특수소환する。
+
+
+@CARDCAN_92524(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92524)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0 
+	SIF 발동済_1(듀얼리스트,92524)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	SIF モンスター数(듀얼리스트) < 5
+		효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件종족 = 천사족
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 타락천사
+	효과条件소환可 = 2
+	효과条件特不無視 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 他효과起動
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_92524(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92524,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		SIF モンスター数(듀얼리스트) < 5
+			효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件종족 = 천사족
+		효과条件표시 = 表側표시
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			효과範囲제외 = 1
+			효과条件カテゴリ = 타락천사
+			효과条件소환可 = 2
+			효과条件特不無視 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 他효과起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92524)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 타락천사
+		효과条件소환可 = 2
+		효과条件特不無視 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

@@ -1,0 +1,196 @@
+﻿@CARDNAME_4554,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 「자애」의 얼터에고 카즈라드롭
+	CASE "略称"
+		RESULTS = 카즈라드롭
+	CASE "カテゴリ"
+		RESULTS:0 = 영령
+		RESULTS:1 = SE.RA.PH
+		RESULTS:2 = 얼터에고
+	CASE "出典作品"
+		RESULTS:0 = FATE
+ENDSELECT
+
+
+@CARD_4554(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "レア度"
+		RETURN SPR
+	CASE "추가日"
+		RETURN 251225
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4554(종류)
+#DIM DYNAMIC 종류
+
+PRINTL レベル６以上のモンスターを含む사이버스족モンスター２体
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신・상대のメインフェイズに발동できる。
+PRINTL 자신の덱、または자신・상대のフィールド・묘지から
+PRINTL 「「자애」의 얼터에고 카즈라드롭」を除く「얼터에고」モンスター１体を제외する。
+PRINTL その後、제외したモンスターの③の효과を適用する。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：このカードが戦闘・상대の효과によってフィールドを離れる場合、
+PRINTL 代わりに자신の묘지・제외状態の「얼터에고」モンスター１体を손패に戻す事ができる。
+
+
+@CARDSUMMON_4554(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 3
+素材条件종족 = 사이버스족
+
+IF EX参照 == 0 || EX参照 == 1
+	CALLFORM 素材条件レベル_ADV(6, "以上")
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,4554)
+	RETURN RESULT
+ENDIF
+
+@CARDSUMMON_AA_4554
+
+
+@CARDCAN_4554(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4554)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,4554)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
+	효과条件カテゴリ = 얼터에고
+	효과条件固名前 = 「자애」의 얼터에고 카즈라드롭
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 身代효과
+	; ②の身代효과：자신のカードが戦闘・상대の효과で離れる場合に발동（ターン１）
+	SIF 발동済_2(듀얼리스트,4554)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 얼터에고
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_4554(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4554,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과範囲묘지 = 1
+		효과範囲상대묘지 = 1
+		효과条件カテゴリ = 얼터에고
+		효과条件固名前 = 「자애」의 얼터에고 카즈라드롭
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		選択カードID = RESULT:1
+		IF 選択カードID == 4551
+			TRYCALLFORM CARDEFFECT_{選択カードID}(듀얼리스트,バトル開始時,"효과処理",場所)
+		ELSEIF 選択カードID == 4552
+			TRYCALLFORM CARDEFFECT_{選択カードID}(듀얼리스트,필드起動,"효과処理",場所)
+		ELSEIF 選択カードID == 4553
+			TRYCALLFORM CARDEFFECT_{選択カードID}(듀얼리스트,필드起動,"효과処理",場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4554,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 얼터에고
+		효과条件CNT = 1
+		효과条件行先플래그 = 손패行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			RETURN 1
+		ENDIF
+	ENDIF
+ENDIF
+

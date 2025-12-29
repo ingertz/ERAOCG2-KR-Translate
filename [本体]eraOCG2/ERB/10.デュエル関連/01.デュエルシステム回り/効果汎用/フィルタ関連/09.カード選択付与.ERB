@@ -50,7 +50,7 @@ $INPUT_LOOP
 CALL CARD_FILTER_BASIC(듀얼리스트,"上級",ゾーン,場所)
 条件달성 = RESULT:1
 
-IF 条件달성 == 0
+IF 条件달성 == 0 && 複数カウンタ == 0 && 효과条件複数 == 0
 	CUSTOMDRAWLINE —
 	PRINTL 【선택 가능한 카드가 없습니다】
 	CUSTOMDRAWLINE —
@@ -168,6 +168,13 @@ CASE "戦＋破壊"
 	CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"戦",효과修正)
 	CALL CARD_SELECT(듀얼리스트,選択カード)
 	CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"終処",破壊行き)
+CASE "戦破耐"
+	CALL CARD_SELECT(듀얼리스트,選択カード)
+	SIF 参照先（CS） == "필드"
+		CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"戦耐",효과修正)
+
+	CALL CARD_SELECT(듀얼리스트,選択カード)
+	CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"破耐",효과修正)
 CASE "進化"
 	CALL CARD_SELECT(듀얼리스트,選択カード)
 	CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"条達",2)

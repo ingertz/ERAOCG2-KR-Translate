@@ -358,6 +358,7 @@ NEXT
 #DIM DYNAMIC 설정플래그
 #DIM DYNAMIC ERA플래그
 #DIM DYNAMIC 外部플래그
+#DIM DYNAMIC オリカ플래그
 VARSET カード_ID
 VARSET 캐릭터ID
 VARSET 지정カテゴリ
@@ -382,6 +383,9 @@ ELSE
 	TRYCALLFORM CARDNAME_{캐릭터ID}("カテゴリ")
 	SIF MATCH(RESULTS,"E.R.A")
 		ERA플래그 = 1
+	TRYCALLFORM CARDNAME_{캐릭터ID}("カテゴリ")
+	SIF MATCH(RESULTS,"게임 오리지널")
+		オリカ플래그 = 1
 	지정カテゴリ = %RESULTS:0%
 	TRYCALLFORM CARD_{캐릭터ID}("외부자")
 	SIF RESULT == 1
@@ -401,21 +405,21 @@ ENDIF
 SIF ERA플래그 == 1 && ITEM:천년마커 == 0
 	RETURN 0
 
-
 FOR カード_ID,1000,100000
 	;名前のない＝存在しない番号はスキップ
 	TRYCALLFORM CARDNAME_{カード_ID}("名前")
 	SIF RESULTS == ""
 		CONTINUE
+
 	;EX덱カードはスキップ
 	TRYCALLFORM CARD_{カード_ID}("종류")
 	SIF INRANGE(RESULT,4,10)
 		CONTINUE
-	
 	;トークンはスキップ
 	TRYCALLFORM CARD_{カード_ID}("トークン")
 	SIF RESULT == 1
 		CONTINUE
+
 	IF ERA플래그 == 0
 		;ERAカードはスキップ
 		TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
@@ -428,7 +432,12 @@ FOR カード_ID,1000,100000
 		SIF RESULT == 1
 			CONTINUE
 	ENDIF
-
+	IF オリカ플래그 == 0
+		;オリカをOKしてない場合、オリカはスキップ
+		TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
+		SIF MATCH(RESULTS,"게임 오리지널")
+			CONTINUE
+	ENDIF
 	;同じカテゴリを持たないカードはスキップ
 	TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
 	IF !MATCH(RESULTS,지정カテゴリ)
@@ -441,18 +450,28 @@ FOR カード_ID,1000,100000
 	TRYCALLFORM CARD_{カード_ID}("종류")
 	설정カード종류 = RESULT
 	SELECTCASE 설정カード종류
+	;モンスターなら
 	CASE 1 TO 10
-		; CALL FULLRESET
-		; 효과範囲덱 = 1
-		; 효과条件종류 = モン全般
-		; 효과条件CNT = 1
-		; CALL CARD_CHECK_ADV("仮組")
-		; IF RESULT >= 15
-		; 	リピート횟수 = 1
-		; ELSE
-		リピート횟수 = 3
-		; ENDIF
+		VARSET RESULT
+		;モンスターが多過ぎたら(덱の27枚目までがモンスターなら)NGを返す
+		TRYCALLFORM CARD_{仮組_덱:20}("종류")
+		IF INRANGE(RESULT,1,モン全般)
+			CONTINUE
+		ENDIF
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = モン全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV("仮組")
+		IF RESULT >= 15
+		 	リピート횟수 = 1
+		ELSE
+			リピート횟수 = 3
+		ENDIF
+	;마함なら
 	CASE 20 TO 29
+
 		IF GROUPMATCH(설정カード종류,지속마법, 速攻마법)
 			リピート횟수 = 2
 		ELSEIF RESULT == 装備마법 
@@ -460,9 +479,11 @@ FOR カード_ID,1000,100000
 		ELSE
 			リピート횟수 = 3		
 		ENDIF
+	;함정なら
 	CASE 30 TO 39
 		リピート횟수 = 1
 	ENDSELECT
+
 	CALL CARD_RESTRICTION_CHECK(カード_ID)
 	IF RESULT == 1
 		リピート횟수 = 1
@@ -472,42 +493,30 @@ FOR カード_ID,1000,100000
 		CONTINUE
 	ENDIF
 
+
 	FOR カウンタB,0,リピート횟수
 		SIF カード枚数チェック:カード_ID >= 3
 			BREAK
 		仮組_덱:カウンタDeck = カード_ID
 		カウンタDeck ++
 		カード枚数チェック:カード_ID ++
-	SIF カウンタDeck > 34 ;改덱確認=729
-			BREAK
 	NEXT
-	SIF カウンタDeck > 34 ;改덱確認=729
+	IF カウンタDeck > 34 ;改덱確認=729
 		BREAK
+	ENDIF
 NEXT
 
-VARSET RESULT
-; 몬스터가 多過ぎたら(덱の27枚目までがモンスターなら)NGを返す
-TRYCALLFORM CARD_{仮組_덱:26}("종류")
-IF RESULT <= 10
-	RETURN 0
-ENDIF
-
+;PRINTFORML 설정플래그:{설정플래그}
 ;덱が30枚になってない場合
 IF 仮組_덱:29 <= 0
 	;まずうらら
-;	カウンタDeck = 700
-;	FOR カウンタDeck,700,730
 	FOR カウンタDeck,0,30
-		;既にカードが入った枠はスキップ
-;		SIF CFLAG:캐릭터番号:カウンタDeck > 0
-;			CONTINUE
 		SIF 仮組_덱:カウンタDeck > 0
 			CONTINUE
-
+		IF 설정플래그 == 1
 		;うらら（3枚）
 		IF カード枚数チェック:1263 < 3
 			;うららin
-;			CFLAG:캐릭터番号:カウンタDeck = 1263
 			仮組_덱:カウンタDeck = 1263
 			;덱に入れたカード数を＋판정
 			カード枚数チェック:1263 ++
@@ -525,15 +534,87 @@ IF 仮組_덱:29 <= 0
 		ELSEIF カード枚数チェック:70004 < 1
 			仮組_덱:カウンタDeck = 70004
 			カード枚数チェック:70004 ++
+		;墓穴の指名者（2枚）
+			ELSEIF カード枚数チェック:70100 < 2
+				仮組_덱:カウンタDeck = 70100
+				カード枚数チェック:70100 ++
+			;わらし（2枚）
+			ELSEIF カード枚数チェック:1262 < 2
+				仮組_덱:カウンタDeck = 1262
+				カード枚数チェック:1262 ++
+			;うさぎ（2枚）
+			ELSEIF カード枚数チェック:1260 < 2
+				仮組_덱:カウンタDeck = 1260
+				カード枚数チェック:1260 ++
+			;大嵐（1枚）
+			ELSEIF カード枚数チェック:70005 < 1
+				仮組_덱:カウンタDeck = 70005
+				カード枚数チェック:70005 ++
+			;死者蘇生（1枚）
+			ELSEIF カード枚数チェック:70001 < 1
+				仮組_덱:カウンタDeck = 70001
+				カード枚数チェック:70001 ++
+
+			;禁じられた一滴（2枚）
+			ELSEIF カード枚数チェック:70115 < 2
+				仮組_덱:カウンタDeck = 70115
+				カード枚数チェック:70115 ++
+			;神の宣告（2枚）
+			ELSEIF カード枚数チェック:90500 < 2
+				仮組_덱:カウンタDeck = 90500
+				カード枚数チェック:90500 ++
+			;神の宣告（2枚）
+			ELSEIF カード枚数チェック:90501 < 2
+				仮組_덱:カウンタDeck = 90501
+				カード枚数チェック:90501 ++
+
+
+			;ヴェーラー（3枚）
+			ELSEIF カード枚数チェック:1095 < 3
+				仮組_덱:カウンタDeck = 1095
+				カード枚数チェック:1095 ++
+			;DDクロウ（3枚）
+			ELSEIF カード枚数チェック:26000 < 3
+				仮組_덱:カウンタDeck = 26000
+				カード枚数チェック:26000 ++
+			;パンクラ（3枚）
+			ELSEIF カード枚数チェック:27001 < 3
+				仮組_덱:カウンタDeck = 27001
+				カード枚数チェック:27001 ++
+			ENDIF
+			;30枚になったら終了
+			SIF カウンタDeck > 29 ;改덱確認=729
+				BREAK
+		ELSEIF 설정플래그 == 0
+			;うらら（3枚）
+			IF カード枚数チェック:1263 < 3
+				;うららin
+				仮組_덱:カウンタDeck = 1263
+				;덱に入れたカード数を＋판정
+				カード枚数チェック:1263 ++
+				;덱枠を＋
+			;サンボル（1枚）
+			ELSEIF カード枚数チェック:70003 < 1
+				;サンボルin
+				仮組_덱:カウンタDeck = 70003
+				カード枚数チェック:70003 ++
+			;無限泡影（3枚）
+			ELSEIF カード枚数チェック:90100 < 3
+				仮組_덱:カウンタDeck = 90100
+				カード枚数チェック:90100 ++
+			;羽帚（1枚）
+			ELSEIF カード枚数チェック:70004 < 1
+				仮組_덱:カウンタDeck = 70004
+				カード枚数チェック:70004 ++
+			ENDIF
 		ENDIF
-		;30枚になったら終了
-		SIF カウンタDeck > 29 ;改덱確認=729
-			BREAK
 	NEXT
 	;ここまでやっても덱が30枚にならないならさじを投げてNGを返す
 ;	SIF CFLAG:캐릭터番号:改덱確認 == 0
-	SIF 仮組_덱:29 <= 0
+	IF 仮組_덱:29 <= 0
+		PRINTFORMW 덱 장수 부족
 		RETURN 0
+	ENDIF
 ENDIF
 
 
@@ -551,16 +632,22 @@ FOR カード_ID,1000,100000
 	TRYCALLFORM CARD_{カード_ID}("トークン")
 	SIF RESULT == 1
 		CONTINUE
+	IF ERA플래그 == 0
+		;ERAカードはスキップ
+		TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
+		SIF MATCH(RESULTS,"E.R.A")
+			CONTINUE
+	ENDIF
 	IF 外部플래그 == 0
 		;外部カードはスキップ
 		TRYCALLFORM CARD_{カード_ID}("외부자")
 		SIF RESULT == 1
 			CONTINUE
 	ENDIF
-	IF ERA플래그 == 0
-		;ERAカードはスキップ
+	IF オリカ플래그 == 0
+		;オリカをOKしてない場合、オリカはスキップ
 		TRYCALLFORM CARDNAME_{カード_ID}("カテゴリ")
-		SIF MATCH(RESULTS,"E.R.A")
+		SIF MATCH(RESULTS,"게임 오리지널")
 			CONTINUE
 	ENDIF
 	;同じカテゴリを持たないカードはスキップ

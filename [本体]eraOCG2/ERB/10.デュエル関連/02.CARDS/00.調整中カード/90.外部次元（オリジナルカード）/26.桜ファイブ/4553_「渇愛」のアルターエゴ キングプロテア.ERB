@@ -1,0 +1,183 @@
+﻿@CARDNAME_4553,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 「갈애」의 얼터에고 킹프로테아
+	CASE "略称"
+		RESULTS = 킹프로테아
+	CASE "カテゴリ"
+		RESULTS:0 = 영령
+		RESULTS:1 = SE.RA.PH
+		RESULTS:2 = 얼터에고
+	CASE "出典作品"
+		RESULTS:0 = FATE
+ENDSELECT
+
+
+@CARD_4553(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 2300
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251225
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_4553(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 사이버스족レベル６モンスター×２
+CALLFORM CARD_ABLE(1,ターン開始時強制,バトル開始時強制,ターン終了時強制)
+PRINTL ①：자신・상대のスタンバイフェイズ・バトルフェイズ・エンドフェイズ開始時に발동する。
+PRINTL このカードの攻撃力・守備力は４００アップする。
+PRINTL その後、このカードの攻撃力または守備力が１００００以上の場合、
+PRINTL このカードの攻撃力・守備力を２３００にする。
+CALLFORM CARD_ABLE(2,지속효과)
+PRINTL ②：このカードがモンスターゾーンに存在する限り、
+PRINTL 상대はこのカード以外の자신モンスターゾーンのモンスターを攻撃・효과の대상にできず、
+PRINTL このカードはこのカードを대상にしない효과を受けない。
+CALLFORM CARD_ABLE(0,필드起動)
+PRINTL ③：자신・상대のバトルフェイズ中にこのカードのＸ素材を２つ取り除いて발동できる。
+PRINTL 상대の묘지からカードを３枚まで제외し、
+PRINTL ターン終了時まで、このカードの攻撃力・守備力をこのカードの攻撃力・守備力分アップする。
+
+
+@CARDSUMMON_4553(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 6
+素材条件종족 = 사이버스족
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,4553)
+	RETURN RESULT
+ENDIF
+
+
+@CARDSUMMON_AA_4553
+
+
+@CARDCAN_4553(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4553)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == ターン開始時強制 || 종류 == バトル開始時強制 || 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF バトルフェイズ != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대묘지 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4553(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 攻撃力
+#DIM DYNAMIC 守備力
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == ターン開始時強制 || 종류 == バトル開始時強制 || 종류 == ターン終了時強制
+	; ①：ターン開始／バトル開始／ターン終了時に攻守＋４００（１ターン）
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",400)
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",400)
+	; その後、攻または守が１００００以上なら両方を２３００にする
+	IF GETVAR(@"%듀얼리스트%_MZ_攻:場所") >= 10000 || GETVAR(@"%듀얼리스트%_MZ_守:場所") >= 10000
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",0,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",0,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一守",0,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永守",0,1)
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"攻",2400,1)
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	; ②：このカードが필드にいる限り、상대はこのカード以外を攻撃・대상にできず、
+	;     このカードは대상に取られない
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"無差耐")
+	CALL FULLRESET
+	효과条件他所 = 1
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"対耐")
+	CALL FULLRESET
+	효과条件他所 = 1
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"攻避")
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	; ③：バトルフェイズにＸ素材を２つ取り除き、상대묘지のカードを３枚まで제외し、
+	;     このターンこのカードの攻撃力を倍にする
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4553,0,X消費2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件複数 = 97
+		효과条件行先플래그 = 完全제외行き
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"상대묘지",ゾーン,場所)
+		IF RESULT == 1
+			攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:場所")
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一攻",攻撃力)
+			守備力 = GETVAR(@"%듀얼리스트%_MZ_守:場所")
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一守",守備力)
+		ENDIF
+	ENDIF
+ENDIF
+

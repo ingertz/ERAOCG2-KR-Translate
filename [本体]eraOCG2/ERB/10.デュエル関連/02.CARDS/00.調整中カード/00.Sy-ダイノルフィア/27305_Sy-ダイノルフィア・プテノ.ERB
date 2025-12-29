@@ -1,0 +1,203 @@
+﻿@CARDNAME_27305,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Sy-다이놀피어 프테노
+	CASE "略称"
+		RESULTS = Sy다이노 프테노
+	CASE "カテゴリ"
+		RESULTS:0 = 다이놀피어
+		RESULTS:1 = 게임 오리지널
+ENDSELECT
+
+
+@CARD_27305(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 250
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 251227
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_27305(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,손패起動)
+PRINTL ①：자신の場に「다이놀피어」モンスターが存在する場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+CALL CARD_ABLE(2,필드起動)
+PRINTL ②：자신メインフェイズに、フィールドのこのカードを破壊して발동できる。
+PRINTL 덱からこのカード名以外の「다이놀피어」モンスターと함정カード１枚ずつ破壊する。
+CALL CARD_ABLE(2,破壊→묘지,戦闘→묘지)
+PRINTL ③：このカードが효과で破壊された場合に발동できる。
+PRINTL 자신の묘지から守備力０の「다이놀피어」モンスター１体を選んで특수소환する。
+PRINTL このターンのエンドフェイズ時、묘지から함정カードを제외しない場合、자신はライフを半分失う。
+
+
+
+@CARDCAN_27305(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,27305)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,27305)
+		RETURN 0
+
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 다이놀피어
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(듀얼리스트,27305,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,27305)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 다이놀피어
+	효과条件固名前 = Sy-다이놀피어 프테노
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 다이놀피어
+	효과条件종류 = 함정全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 破壊→묘지
+	SIF 발동済_3(듀얼리스트,27305)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 다이놀피어
+	효과条件守備力 = 1
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == ターン終了時予約
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_27305(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択レベル
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27305,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27305,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 다이놀피어
+		효과条件固名前 = Sy-다이놀피어 프테노
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 다이놀피어
+		효과条件종류 = 함정全般
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)		
+	ENDIF
+
+ELSEIF 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,27305,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 다이놀피어
+		효과条件守備力 = 1
+		효과条件소환可 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
+		CALL CARD_RESERV(듀얼리스트,27305)
+	ENDIF
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 함정全般
+	효과条件任意 = 1
+	CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	IF RESULT != 1
+		SIF GETVAR(@"%듀얼리스트%_ぺギア") <= 0
+			CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",(GETVAR(@"ライフ_%듀얼리스트%")  / 2))
+	ENDIF
+ENDIF
+
+
+
