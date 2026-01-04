@@ -1,0 +1,207 @@
+﻿@CARDNAME_34309,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 베르스타몬Ｘ항체
+	CASE "略称"
+		RESULTS = 베르스타Ｘ
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = 삼총사
+		RESULTS:2 = Ｘ항체
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34309(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3300
+	CASE "守備力"
+		RETURN 2800
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 251230
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_34309(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 9
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,34309) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_34309(종류)
+#DIM DYNAMIC 종류
+
+PRINTL レベル９モンスター×２
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①②③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL ①：「Ｘ항체」を발동したターン、このカードは자신フィールドの「베르스타몬」の上に重ねてX소환する事もできる。
+CALLFORM CARD_ABLE(2,EX소환時,특수소환時)
+PRINTL ②：このカードが특수소환に成功した場合に발동することができる。
+PRINTL 자신の손패・덱・묘지から「디지몬」마법・함정カード１枚を자신フィールドにセットする。
+PRINTL この효과でセットした速攻마법・함정カードはこのターンに발동することができる。
+CALLFORM CARD_ABLE(3,필드起動,フリー誘発)
+PRINTL ③：このカードのX素材を１つ取り除いて발동することができる。
+PRINTL 상대フィールドのモンスターカードと마법・함정カードをそれぞれ１枚まで破壊する。
+PRINTL 
+
+@CARDCAN_34309(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34309)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,34309)
+		RETURN 0
+	SIF !발동済_1(듀얼리스트,34308)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,34309)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 베르스타몬
+	효과条件重ねてＸ = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,34309)
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 디지몬
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_3(듀얼리스트,34309)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34309(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード生成カード
+#DIMS DYNAMIC 選択カード生成カード名
+#DIM DYNAMIC 選択カード生成カード１
+#DIMS DYNAMIC 選択カード生成カード名１
+#DIM DYNAMIC 選択カード生成カード２
+#DIMS DYNAMIC 選択カード生成カード名２
+#DIM DYNAMIC 選択カード生成カード３
+#DIMS DYNAMIC 選択カード生成カード名３
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34309,1)
+	IF RESULT == 0
+		CALL RESETCONDITION_MAT
+		必要素材数 = 1
+		효과条件名前 = 베르스타몬
+		重ねてＸ = 1
+		TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+	ENDIF
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34309,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 디지몬
+		효과条件종류 = 마함全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"使化裏側표시")
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34309,3,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件任意 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+
+		CALL FULLRESET
+		효과範囲상대마함 = 1
+		효과条件任意 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ENDIF

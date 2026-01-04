@@ -33,15 +33,15 @@ SELECTCASE 参照先
 	CASE "종족"
 		RETURN 사이버스족
 	CASE "レベル"
-		RETURN 4
+		RETURN 6
 	CASE "攻撃力"
-		RETURN 1600
+		RETURN 2000
 	CASE "守備力"
-		RETURN 2100
+		RETURN 2500
 	CASE "성별"
 		RETURN 牝性
 	CASE "추가日"
-		RETURN 251207
+		RETURN 251225
 ENDSELECT
 RETURN 0
 
@@ -49,14 +49,13 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없으며、
-PRINTL 이 카드의 효과를 발동하는 턴、자신은 사이버스족 몬스터밖에 특수 소환할 수 없다。
 CALLFORM CARD_ABLE(1,손패起動)
 PRINTL ①：패의 이 카드를 상대에게 보여주고 발동할 수 있다。
 PRINTL 자신 / 상대 묘지의 몬스터 １장을 제외하고、이 카드를 특수 소환한다。
-;PRINTL 이 카드를 패에서 특수 소환한다。
+PRINTL 이 턴、자신은 "SE.RA.PH" 몬스터밖에 특수 소환할 수 없다。
 CALLFORM CARD_ABLE(2,소환時,특수소환時)
 PRINTL ②：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。
-PRINTL 자신의 패 / 덱에서 "「쾌락」의 얼터에고 멜트릴리스" 이외의 "얼터에고" 몬스터 １장을 묘지로 보낸다。
+PRINTL 자신의 패 / 덱에서 "「쾌락」의 얼터에고 멜트릴리스" 이외의 "영령" 몬스터 １장을 묘지로 보낸다。
 CALLFORM CARD_ABLE(3,バトル開始時)
 PRINTL ③：자신 / 상대의 배틀 페이즈 개시시에 발동할 수 있다。
 PRINTL 상대 필드의 몬스터 １장을 파괴하고 제외한다、상대 덱 위에서 카드를 ２장 제외한다。
@@ -72,13 +71,6 @@ PRINTL 상대 필드의 몬스터 １장을 파괴하고 제외한다、상대 �
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4551)
 SIF RESULT == 1
 	RETURN 0
-
-CALL FULLRESET
-CALL 효과条件종족_ADV(사이버스족, "以外")
-CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
-SIF RESULT != 0
-	RETURN 0
-
 
 IF 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,4551)
@@ -155,6 +147,8 @@ IF 종류 == 손패起動
 		IF RESULT == 1
 			CALL FULLRESET
 			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+			SIF RESULT == 1
+				CALL CARD_SS_RESTRICTION(듀얼리스트,"SE.RA.PH")
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時
@@ -163,7 +157,7 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 		CALL FULLRESET
 		효과範囲손패 = 1
 		효과範囲덱 = 1
-		효과条件カテゴリ = 얼터에고
+		효과条件カテゴリ = 영령
 		효과条件固名前 = 「쾌락」의 얼터에고 멜트릴리스
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
@@ -179,6 +173,4 @@ ELSEIF 종류 == バトル開始時
 	ENDIF
 ENDIF
 
-SS소환可能종족 = 사이버스족
-CALL CARD_SS_RESTRICTION(듀얼리스트)
 

@@ -1,0 +1,146 @@
+﻿@CARDNAME_93176,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 로드 오브 더 타키온갤럭시
+	CASE "略称"
+		RESULTS = LTGY
+	CASE "カテゴリ"
+		RESULTS:0 = 타키온
+		RESULTS:1 = 갤럭시
+ENDSELECT
+
+
+@CARD_93176(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_93176(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+PRINTL 자신フィールドに「타키온」Ｘモンスターが存在する場合、
+PRINTL このカードの발동は손패からもできる。
+CALLFORM CARD_ABLE(0,손패起動,마함起動,フリー誘発)
+PRINTL ①：자신・상대のバトルフェイズに、
+PRINTL 자신フィールドの「갤럭시」ＸモンスターのＸ素材を１つ取り除いて발동できる
+PRINTL （자신フィールドに「카오스」Ｘモンスターが存在する場合、このカードの발동に対して상대は효과を발동できない）。
+PRINTL 상대フィールドのモンスターを全て덱に戻す。
+
+
+@CARDCAN_93176(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93176)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,93176)
+		RETURN 0
+	SIF バトルフェイズ != 1
+		RETURN 0
+
+	IF ゾーン == "손패"
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 타키온
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 엑시즈
+	효과条件カテゴリ = 갤럭시
+	효과条件Ｘ素所持 = 999
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 엑시즈
+	효과条件カテゴリ = 카오스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_93176(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93176)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = 엑시즈
+		효과条件カテゴリ = 갤럭시
+		효과条件Ｘ素所持 = 999
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			選択カード = RESULT
+			CALL SET_FIELD_INFO(대상者（CS）,"필드",選択カード（CS）,"Ｘ",-1)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"덱")
+		ENDIF
+	ENDIF
+ENDIF
+

@@ -1,0 +1,208 @@
+﻿@CARDNAME_21019,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 갤럭시아이즈 타키온 프라이멀
+	CASE "略称"
+		RESULTS = 은하안의 시원룡
+	CASE "カテゴリ"
+		RESULTS:0 = 갤럭시
+		RESULTS:1 = 갤럭시아이즈
+		RESULTS:2 = 타키온
+ENDSELECT
+
+
+@CARD_21019(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2500
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_21019(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動,フリー誘発)
+PRINTL ①：자신・상대ターンに、フィールドに드래곤족Ｘモンスターが存在する場合に발동できる。
+PRINTL このカードを손패から자신か상대のフィールドに특수소환する。
+CALLFORM CARD_ABLE(2,소환時強制,특수소환時強制)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL このカードの元々の持ち主は、自身の덱から「타키온」마법・함정カード１枚を손패に加える。
+CALLFORM CARD_ABLE(3,발동誘発)
+PRINTL ③：자신・상대の드래곤족Ｘモンスターが효과を발동した時、フィールドの드래곤족Ｘモンスター１体を대상として발동できる。
+PRINTL このカードを묘지へ送り、そのモンスターのＸ素材を１つ増やす。
+PRINTL この효과で「Ｎｏ．１０７ 갤럭시아이즈 타키온 드래곤」を대상とした場合、さらにこのターン대상のモンスターの攻撃力は１０００アップし、２回攻撃できる。
+
+
+@CARDCAN_21019(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 所有者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21019)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,21019)
+		RETURN 0
+	IF モンスター数(듀얼리스트) >= 5
+		SIF モンスター数(対面者) >= 5
+			RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件종족 = 드래곤족
+	효과条件종류 = 엑시즈
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時強制 || 종류 == 특수소환時強制
+	SIF 발동済_2(듀얼리스트,21019)
+		RETURN 0
+	;参考：アーミタイル
+	IF 듀얼리스트 == "자신"
+		所有者 = 1
+	ELSEIF 듀얼리스트 == "상대"
+		所有者 = 2
+	ENDIF
+	CALL FULLRESET
+	IF GETVAR(@"%듀얼리스트%_MZ_所有:場所") == 所有者
+		효과範囲덱 = 1
+	ELSE
+		효과範囲상대덱 = 1
+	ENDIF
+	효과条件カテゴリ = 타키온
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件종족 = 드래곤족
+	효과条件종류 = 엑시즈
+	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件종족 = 드래곤족
+	효과条件종류 = 엑시즈
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_21019(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 所有者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21019,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		SIF 듀얼리스트 == "자신"
+			PRINTL 자신 필드에 특수 소환하시겠습니까？
+		CALL YN_CHOICE(듀얼리스트)
+		IF RESULT == 0
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		ELSE
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所,,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 소환時強制 || 종류 == 특수소환時強制
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21019,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		IF 듀얼리스트 == "자신"
+			所有者 = 1
+		ELSEIF 듀얼리스트 == "상대"
+			所有者 = 2
+		ENDIF
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 타키온
+		효과条件종류 = 마함全般
+		IF GETVAR(@"%듀얼리스트%_MZ_所有:場所") == 所有者
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ELSE
+			CALL CARD_ADD_ADV(対面者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21019)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件종족 = 드래곤족
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			選択カード_ID = RESULT:99
+			CALL CARD_SELECT(듀얼리스트,選択カード)
+			CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"Ｘ",1)
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+			選択カード名前 = %RESULTS%
+			IF 選択カード名前 == "No.107 갤럭시아이즈 타키온 드래곤"
+				CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"一攻",1000)
+				CALL SET_FIELD_INFO(대상者（CS）,参照先（CS）,選択カード（CS）,"戦",2,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

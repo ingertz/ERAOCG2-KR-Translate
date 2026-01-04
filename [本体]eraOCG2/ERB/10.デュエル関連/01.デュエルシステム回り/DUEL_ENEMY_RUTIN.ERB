@@ -562,6 +562,25 @@ SELECTCASE RESULTS
 		CALL CARD_CHECK_EXT("상대",0,"",場所,カードID)
 		SIF RESULT != 1
 			RETURN 1
+	CASE "트윈트위스터"
+		;상대フィールドに除去するカードが無ければ발동させない
+		CALL FULLRESET_EXT
+		濾過範囲상대마함 = 1
+		濾過条件除去種 = 묘지
+		濾過条件CNT = 1
+		CALL CARD_CHECK_EXT("상대",0,"",場所)
+		SIF RESULT < 2
+			RETURN 1
+	CASE "스타더스트 드래곤"
+		;상대フィールドに除去するカードが無ければ발동させない
+		IF 종류 == 발동誘発
+			CALL FULLRESET_EXT
+			濾過範囲마함 = 1
+			濾過条件名前 = 버스터 모드
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT == 1
+				RETURN 1
+		ENDIF
 ENDSELECT
 
 ;カテゴリチェック

@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 종언의 왕 데미스
+		RESULTS = 종언의 왕 데미스
 	CASE "略称"
-RESULTS = 데미스
+		RESULTS = 데미스
 	CASE "カテゴリ"
-RESULTS:0 = 종언과 파멸
+		RESULTS:0 = 종언과 파멸
 ENDSELECT
 
 
@@ -60,8 +60,9 @@ ENDIF
 #DIM DYNAMIC 종류
 
 PRINTL "엔드 오브 더 월드"에 의해 강림.
-CALLFORM CARD_ABLE(0,필드起動)
-PRINTL ①: 2000 LP를 지불하고 발동할 수 있다.
+PRINTL 이 카드명의 ①의 효과는 １턴에 １번밖에 사용할 수 없다.
+CALLFORM CARD_ABLE(1,필드起動,フリー誘発)
+PRINTL ①: 서로의 메인 페이즈에, 2000 LP를 지불하고 발동할 수 있다.
 PRINTL 필드의 다른 카드를 모두 파괴한다.
 PRINTL 
 
@@ -77,18 +78,18 @@ PRINTL
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54020)
 SIF RESULT == 1
 	RETURN 0
-IF 종류 == 필드起動
-	SIF メインフェイズ != 1
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,54020)
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF メインフェイズ != 1
 		RETURN 0
 	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 2000
 		RETURN 0
 	CALL FULLRESET
-	IF 듀얼리스트 == "자신"
-		효과範囲필드 = 1
-		효과範囲마함 = 1
-	ENDIF
+	효과範囲필드 = 1
+	효과範囲마함 = 1
 	효과範囲상대필드 = 1
 	효과範囲상대마함 = 1
 	효과条件他所 = 1
@@ -115,8 +116,8 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 필드起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54020)
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54020,1)
 	IF RESULT == 0
 		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",2000)
 		CALL FULLRESET

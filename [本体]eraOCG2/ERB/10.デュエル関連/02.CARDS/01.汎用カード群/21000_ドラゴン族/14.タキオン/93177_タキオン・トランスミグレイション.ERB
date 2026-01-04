@@ -1,0 +1,165 @@
+﻿@CARDNAME_93177,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 타키온 트랜스미그레이션
+	CASE "略称"
+		RESULTS = 시공전생
+	CASE "カテゴリ"
+		RESULTS:0 = 타키온
+	CASE "検索カテゴリ"
+		RESULTS:0 = 갤럭시
+ENDSELECT
+
+@CARD_93177(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93177(종류)
+#DIM DYNAMIC 종류
+PRINTL このカードの효과の발동に対して상대は효과を발동できない。
+PRINTL 자신フィールドに「타키온」Ｘモンスターが存在する場合、
+PRINTL このカードの발동は손패からもできる。
+CALLFORM CARD_ABLE(0,발동誘発)
+PRINTL ①：자신フィールドに「갤럭시」モンスターが存在し、마법・함정・モンスターの효과が발동した時に발동できる。
+PRINTL その발동を無効にし덱に戻す。その後、このターンに효과を발동した상대フィールドのカードを全て持ち主の덱に戻す。
+
+@CARDCAN_93177(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93177)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 발동誘発
+	SIF !GROUPMATCH(ゾーン,"손패","마함")
+		RETURN 0
+	IF ゾーン == "손패"
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 타키온
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 갤럭시
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_93177(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93177)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"덱")
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+				CONTINUE
+			SIF GETVAR(@"%対面者%_MZ_表:カウンタ") == 3
+				CONTINUE
+			選択カード_ID = GETVAR(@"%対面者%_필드:カウンタ")
+			CALL TRANSMIGRATION_CHECK(対面者,"필드",カウンタ,選択カード_ID)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",カウンタ,"덱")
+			ENDIF
+		NEXT
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%対面者%_마함:カウンタ") == -1
+				CONTINUE
+			SIF GETVAR(@"%対面者%_魔_表:カウンタ") == 3
+				CONTINUE
+			選択カード_ID = GETVAR(@"%対面者%_마함:カウンタ")
+			CALL TRANSMIGRATION_CHECK(対面者,"마함",カウンタ,選択カード_ID)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"魔自動処理",カウンタ,"덱")
+			ENDIF
+		NEXT
+	ENDIF
+ENDIF
+
+@TRANSMIGRATION_CHECK(듀얼리스트,ゾーン,場所,カード_ID)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カード_ID
+
+SIF 발동済_1(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 발동済_2(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 발동済_3(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 발동済_D1(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 발동済_D2(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 발동済_P1(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 발동済_P2(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 발동済_P3(듀얼리스트,カード_ID)
+	RETURN 1
+SIF 효과발동済(듀얼리스트,場所,ゾーン)
+	RETURN 1
+RETURN 0

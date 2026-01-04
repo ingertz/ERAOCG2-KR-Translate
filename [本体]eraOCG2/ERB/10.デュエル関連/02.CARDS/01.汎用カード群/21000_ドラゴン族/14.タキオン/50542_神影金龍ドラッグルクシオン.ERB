@@ -1,0 +1,190 @@
+﻿@CARDNAME_50542,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 신염금룡 드래글룩시온
+	CASE "略称"
+		RESULTS = 룩시온
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 갤럭시
+		RESULTS:1 = 타키온
+ENDSELECT
+
+
+@CARD_50542(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 3000
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_50542(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 8
+;추가효과用
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,50542) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50542(종류)
+#DIM DYNAMIC 종류
+
+PRINTL レベル８モンスター×２
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがＥＸ덱から특수소환した場合に발동できる。
+PRINTL 덱から「갤럭시」カードか「타키온」カード１枚を손패に加える。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：このカードのＸ素材を２つ取り除いて발동できる。
+PRINTL 드래곤족・ランク８・攻撃力３０００のＸモンスター１体を자신フィールドのこのカードの上に重ねてＸ소환扱いでＥＸ덱から특수소환する。
+PRINTL その後、ＥＸ덱から「갤럭시」モンスター１体を묘지へ送り、そのモンスターのＸ素材を１つ増やす事ができる。
+
+
+@CARDCAN_50542(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50542)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,50542)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ:0 = 갤럭시
+	효과条件カテゴリ:1 = 타키온
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,50542)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= 0
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종족 = 드래곤족
+	효과条件レベル = 8
+	효과条件固攻撃力 = 3000
+	효과条件종류 = 엑시즈
+	효과条件소환可 = 2
+	효과条件特不無視 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_50542(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50542,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ:0 = 갤럭시
+		효과条件カテゴリ:1 = 타키온
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50542,2,X消費2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종류 = 엑시즈
+		효과条件종족 = 드래곤족
+		효과条件レベル = 8
+		효과条件固攻撃力 = 3000
+		효과条件종류 = 엑시즈
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL RESETCONDITION_MAT(1)
+			必要素材数 = 1
+			重ねてＸ = 1
+			素材条件固定 = 場所
+			TRYCALLFORM XYZSUMMON(듀얼리스트,選択カード)
+
+			SIF 듀얼리스트 == "자신"
+				PRINTFORML ＥＸ덱から「갤럭시」モンスターを묘지へ送りますか？
+			CALL YN_CHOICE(듀얼리스트)
+
+			IF RESULT == はい
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				IF 듀얼리스트 == "상대"
+					효과条件名前 = 갤럭시・サテライト・ドラゴン
+					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+					IF RESULT == 1
+						CALL FULLRESET
+						효과範囲EX덱 = 1
+						효과条件名前 = 갤럭시・サテライト・ドラゴン
+					ENDIF
+				ENDIF
+				효과条件カテゴリ = 갤럭시
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"Ｘ",1)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

@@ -1,0 +1,154 @@
+﻿@CARDNAME_71682,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 겉잠의 수호자
+	CASE "略称"
+		RESULTS = 겉잠의 수호자
+	CASE "カテゴリ"
+		RESULTS:0 = 아르키테
+		RESULTS:1 = 괴수
+		RESULTS:2 = 파괴수
+		RESULTS:3 = 브랜트 게이트
+	CASE "出典作品"
+		RESULTS:0 = 뱅가드
+ENDSELECT
+
+
+@CARD_71682(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 지속마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71682(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名のカードは１ターンに１枚しか발동できず、③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：このカードの발동時の효과処理として、
+PRINTL 덱から「괴수」または「파괴수」モンスター１体を묘지に送ることができる。
+CALLFORM CARD_ABLE(0,소환強制誘発)
+PRINTL ②：자신フィールドにＥＸ덱から「괴수」または「파괴수」モンスターが특수소환されるたびに、
+PRINTL このカードに個別카운터を１つ置く。（最大５つ）
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ③：자신メインフェイズに、このカードに置かれた個別카운터を２つ取り除いて발동できる。
+PRINTL 묘지からこのカード名以外の「괴수」または「파괴수」カード１枚を손패に加える。
+
+@CARDCAN_71682(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71682)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,71682)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") < 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ:0 = 괴수
+	효과条件カテゴリ:1 = 파괴수
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
+		RETURN 0
+	SIF 最終소환決者 != 듀얼리스트
+		RETURN 0
+	SIF 最終소환타입 != "특수"
+		RETURN 0
+	CALL CAT_CHECK("괴수",듀얼리스트,最終소환場所)
+	SIF RESULT == 1
+		条件달성 = 1
+	CALL CAT_CHECK("파괴수",듀얼리스트,最終소환場所)
+	SIF RESULT == 1
+		条件달성 = 1
+	SIF 条件달성 == 0
+		RETURN 0
+	SIF GETVAR (@"%듀얼리스트%_MZ_召種:最終소환場所") != 召種EX덱
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") >= 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,71682)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_71682(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71682,2)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",-2)
+		PRINTFORML 겉잠의 수호자『{場所}』から個別카운터が２つ取り除かれました。
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ:0 = 괴수
+		효과条件カテゴリ:1 = 파괴수
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 소환強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71682,0)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",1)
+		PRINTFORML 겉잠의 수호자『{場所}』に個別카운터が１つ置かれました。
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71682,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ:0 = 괴수
+		효과条件カテゴリ:1 = 파괴수
+		효과条件종류 = モン全般
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

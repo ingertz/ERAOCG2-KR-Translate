@@ -1,17 +1,20 @@
 ﻿@CARD_EROTICS(カードID,듀얼리스트,듀얼外処理)
 #DIMS DYNAMIC 듀얼리스트
-#DIM DYNAMIC カードID
+#DIM DYNAMIC カードID,10
 #DIM DYNAMIC 確認カードID
-#DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC 캐릭터_ID,10
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 듀얼外処理
-VARSET RESULT
 
 VARSET 캐릭터_ID, -1
-
+VARSET RESULT
 TRYCALLFORM CARD_{カードID}("連動ID")
 SIF RESULT > 0
 	カードID = RESULT
+
+SIF RESULT:1 > 0
+	カードID:1 = RESULT:1
+
 
 SELECTCASE カードID
 	;謎のレウス헌터さん
@@ -45,14 +48,21 @@ SELECTCASE カードID
 		確認カードID = カードID
 ENDSELECT
 
+캐릭터_ID = -1
 ;캐릭터番号総当たりで、確認カードIDと同じ番号なら、その캐릭터IDを返す
 FOR カウンタ,1,CHARANUM
 	IF NO:カウンタ == 確認カードID
 		캐릭터_ID = カウンタ
-		RETURN 캐릭터_ID
 	ENDIF
 NEXT
-RETURN -1
+IF カードID:1 >= 1
+	IF NO:カウンタ == カードID:1
+		캐릭터_ID:1 = カウンタ
+	ENDIF
+ENDIF
+RESULT:1 = 캐릭터_ID:1
+RETURN 캐릭터_ID
+
 
 
 

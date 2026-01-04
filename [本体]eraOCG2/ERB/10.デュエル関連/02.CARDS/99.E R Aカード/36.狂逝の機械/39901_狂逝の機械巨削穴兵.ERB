@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 이쿠기어 드릴 바이브 골렘
 	CASE "略称"
-		RESULTS = 광서의거삭혈병
+		RESULTS = 광서의 거삭혈병
 	CASE "カテゴリ"
 		RESULTS:0 = 광서의 기계
 		RESULTS:1 = E.R.A
@@ -51,7 +51,7 @@ PRINTL ①：이 카드가 전투로 상대 몬스터를 파괴해 묘지로 보
 PRINTL 파괴한 몬스터를 상대 필드 위에 특수 소환하고、그 몬스터에게 미약카운터를 １개 놓는다。
 PRINTL 이 효과로 특수 소환한 몬스터의 공격력 / 수비력은 ０이 된다。
 CALLFORM CARD_ABLE(2,攻守変動)
-PRINTL ②：이 카드는 １번의 배틀 페이즈 중에 이 카드에 놓여있는 미약카운터의 수＋１번까지 몬스터에게 공격할 수 있다。
+PRINTL ②：이 카드는 １번의 배틀 페이즈 중에 이 카드에 놓여있는 미약카운터의 수＋１번까지 상대 몬스터에게 공격할 수 있다。
 CALLFORM CARD_ABLE(3,필드起動)
 PRINTL ③：１턴에 １번、자신 메인 페이즈에 이 카드에 놓여있는 미약카운터를 전부 제거하고 발동할 수 있다。
 PRINTL 제거한 수 만큼 상대 필드의 카드를 파괴한다。
@@ -59,10 +59,11 @@ PRINTL 그 후、이 카드에 미약카운터를 １개 놓는다。
 PRINTL
 SETCOLOR C_RED
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+CALLFORM CARD_ABLE(1,攻撃後誘発)
 PRINTL ④：이 카드가 암컷 몬스터를 파괴했을 때, 그 몬스터의 성기를 드릴 바이브로 파괴한 뒤에
 PRINTL 상대의 필드에 끌어내린다。
 CALL CARD_ABLE(4,ターン終了時強制)
-PRINTL ④：자신 / 상대 턴 종료시、거삭혈병에 끼워진 암컷은、
+PRINTL ⑤：자신 / 상대 턴 종료시、거삭혈병에 끼워진 암컷은、
 PRINTL 몸에 둘러진 외장으로부터 능욕을 받는다。
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー주의ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
 PRINTL
@@ -100,9 +101,6 @@ IF 종류 == 攻撃後誘発
 ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-
 	RETURN 1
 
 ELSEIF 종류 == 필드起動
@@ -179,11 +177,11 @@ IF 종류 == 攻撃後誘発
 					CASE 0 
 						CALL MADORGASM_DRILLVIBERAPE_TXT(1,0)
 						CALL MADORGASM_DRILLVIBERAPE_TXT(1,2)
-						CALL EROTIC_MOVE("前穴凌辱",조교대상,-1,50)
+						CALL EROTIC_MOVE("前穴凌辱",조교대상,-1,100)
 					CASE 1
 						CALL MADORGASM_DRILLVIBERAPE_TXT(1,1)
 						CALL MADORGASM_DRILLVIBERAPE_TXT(1,3)
-						CALL EROTIC_MOVE("後穴凌辱",조교대상,-1,50)
+						CALL EROTIC_MOVE("後穴凌辱",조교대상,-1,100)
 				ENDSELECT
 				NEXT
 				;ドリル바이브による性器破壊終了時の演出
@@ -254,7 +252,7 @@ IF 종류 == 攻撃後誘発
 
 
 ELSEIF 종류 == 攻守変動
-    攻撃횟수 = GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:場所") + 1
+    攻撃횟수 = GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:場所")
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",攻撃횟수)
     ELSEIF 종류 == 攻撃後強制誘発
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦",-99,1)

@@ -1,0 +1,121 @@
+﻿@CARDNAME_93175,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 타키온 갤럭시스파이럴
+	CASE "略称"
+		RESULTS = 시공은하와
+	CASE "カテゴリ"
+		RESULTS:0 = 타키온
+		RESULTS:1 = 갤럭시
+ENDSELECT
+
+@CARD_93175(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_93175(종류)
+#DIM DYNAMIC 종류
+PRINTL このカードの효과の발동に対して상대は효과を발동できない。
+PRINTL 자신フィールドに「타키온」Ｘモンスターが存在する場合、
+PRINTL このカードの발동は손패からもできる。
+CALLFORM CARD_ABLE(0,손패起動,마함起動,フリー誘発)
+PRINTL ①：자신フィールドの드래곤족の「갤럭시」モンスター１体を대상として발동できる。
+PRINTL その表側표시モンスターはターン終了時まで、戦闘では破壊されず、상대のカードの효과を受けない。
+
+
+@CARDCAN_93175(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93175)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,93175)
+		RETURN 0
+	IF ゾーン == "손패"
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 타키온
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		RETURN 0
+	ENDIF
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 엑시즈
+	효과条件カテゴリ = 갤럭시
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_93175(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93175)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = 엑시즈
+		효과条件カテゴリ = 갤럭시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"戦耐",1,1)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"モ耐",1,1)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"魔耐",1,1)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"함정耐",1,1)
+		ENDIF
+	ENDIF
+ENDIF

@@ -2,10 +2,13 @@
 ;청소
 ;-------------------------------------------------
 @COM410
-#DIM 캐릭터クター
-#DIM ぱんつ_元々の持ち主
-#DIM ぱんつ_종류
-#DIM 소환リスト_소환済,500
+#DIM DYNAMIC 캐릭터クター
+#DIM DYNAMIC ぱんつ_元々の持ち主
+#DIM DYNAMIC ぱんつ_종류
+#DIM DYNAMIC 소환リスト_소환済,500
+#DIM DYNAMIC 清掃値
+#DIM DYNAMIC カウンタ
+
 SELECTCASE FLAG:(1000 + CFLAG:MASTER:현재위치)
 	CASE IS < 500
 		TFLAG:194 = 0
@@ -35,9 +38,6 @@ IF TARGET <= 0 && CFLAG:MASTER:현재위치 <= 自宅部屋最大値
 		TSTR:3 = %CALLNAME:ぱんつ_元々の持ち主%{ぱんつ_종류}/
 		TSTR:2 = %PANTSNAME(ぱんつ_종류)%
 	ENDIF
-ELSEIF CFLAG:MASTER:현재위치 >= 50
-	SIF RAND:3 == 0
-		CALL CARD_PACK_SHORI(1,0,1,1)
 ENDIF
 
 ;一緒に청소
@@ -48,13 +48,26 @@ ELSE
 	TFLAG:SELECTCOM분기 = 0
 ENDIF
 IF TFLAG:SELECTCOM분기 && !CFLAG:수면
-	FLAG:(1000 + CFLAG:MASTER:현재위치) = FLAG:(1000 + CFLAG:MASTER:현재위치) / (3 + ABL:MASTER:청소기능 + ABL:청소기능)
+	清掃値 = FLAG:(1000 + CFLAG:MASTER:현재위치) / (3 + ABL:MASTER:청소기능 + ABL:청소기능)
+	FLAG:(1000 + CFLAG:MASTER:현재위치) = 清掃値
 ELSE
-	FLAG:(1000 + CFLAG:MASTER:현재위치) = FLAG:(1000 + CFLAG:MASTER:현재위치) / (2 + ABL:MASTER:청소기능)
+	清掃値 = FLAG:(1000 + CFLAG:MASTER:현재위치) / (2 + ABL:MASTER:청소기능)
+	FLAG:(1000 + CFLAG:MASTER:현재위치) = 清掃値
 ENDIF
-
-
-
+;PRINTFORML 清掃値：{清掃値} FLAG:{FLAG:(1000 + CFLAG:MASTER:현재위치)} 청소기능：{(2 + ABL:MASTER:청소기능)}
+IF 清掃値 >= 1 && CFLAG:MASTER:현재위치 >= 50
+	TIMES 清掃値, 0.003
+	IF 清掃値 >= 2
+;		PRINTFORML 通過、清掃値:{清掃値}
+		FOR カウンタ,0,清掃値
+			SIF RAND:3 == 0
+				CALL CARD_PACK_SHORI(1,0,1,1)
+		NEXT
+	ELSE
+		SIF RAND:3 == 0
+			CALL CARD_PACK_SHORI(1,0,1,1)
+	ENDIF
+ENDIF
 
 
 
@@ -88,12 +101,13 @@ SIF !TFLAG:100
 ;一括관리
 SIF GLOBAL_COMABLE(410)
 	RETURN RESULT
-;汚れてないとダメ
-SIF FLAG:(1000 + CFLAG:MASTER:현재위치) < 100
+;汚れてないとダメ　潔癖症でここは超える
+SIF FLAG:(1000 + CFLAG:MASTER:현재위치) < 100 && TALENT:MASTER:악취내성 != -2
 	RETURN 0
 ;기력0
 SIF BASE:MASTER:기력 <= 0
 	RETURN 0
 SIF CFLAG:우후후 == 2
 	RETURN 0
+
 RETURN 1

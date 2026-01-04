@@ -1,0 +1,149 @@
+﻿@CARDNAME_21014,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 무한룡 슈발츠실트
+	CASE "略称"
+		RESULTS = 슈발츠
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 타키온
+ENDSELECT
+
+
+@CARD_21014(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 0
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_21014(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の효과は１ターンに１度しか使用できず、
+PRINTL この효과を발동するターン、자신は드래곤족ＸモンスターしかＥＸ덱から특수소환できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신フィールドにモンスターが存在しない場合、
+PRINTL または상대フィールドに攻撃力２０００以上のモンスターが存在する場合に발동できる。
+PRINTL このカードを손패から특수소환し、
+PRINTL 덱から「무한룡 슈발츠실트」以外の光・어둠속성の드래곤족・レベル８モンスター１体を守備표시で특수소환する。
+PRINTL この효과で덱から특수소환したモンスターの효과は無効化される。
+
+
+@CARDCAN_21014(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21014)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,21014)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,21014,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 4
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件以攻撃力 = 2000
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT != 1
+		SIF モンスター数(듀얼리스트) != 0
+			RETURN 0
+	ENDIF
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件レベル = 8
+	효과条件종족 = 드래곤족
+	효과条件속성:0 = 어둠속성
+	효과条件속성:1 = 빛속성
+	효과条件固名前 = 무한룡 슈발츠실트
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과条件종류 = 엑시즈以外
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"EX이력")
+	SIF RESULT != 0
+		RETURN 0
+
+	CALL FULLRESET
+	CALLFORM 효과条件종족_ADV(드래곤족,"以外")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"EX이력")
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_21014(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21014,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所,"守備표시")
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件レベル = 8
+		효과条件종족 = 드래곤족
+		효과条件속성:0 = 어둠속성
+		효과条件속성:1 = 빛속성
+		효과条件固名前 = 무한룡 슈발츠실트
+		효과条件소환可 = 1
+		효과추가종류 = 効追無効
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+		CALL FULLRESET
+		EX소환可能종족 = 드래곤족
+		EX소환可能종류 = 엑시즈
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF

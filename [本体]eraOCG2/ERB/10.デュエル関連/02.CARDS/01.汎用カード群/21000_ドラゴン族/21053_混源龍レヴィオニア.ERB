@@ -1,0 +1,205 @@
+﻿@CARDNAME_21053,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혼원룡 레비오니아
+	CASE "略称"
+		RESULTS = 레비오니아
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索カテゴリ"
+		RESULTS:0 = 카오스
+ENDSELECT
+
+
+@CARD_21053(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2500
+	CASE "소환불가"
+		RETURN 1
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_21053(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは通常소환できない。
+CALLFORM CARD_ABLE(0,손패起動)
+PRINTL 자신の묘지から光・어둠속성モンスターを合計３体제외した場合のみ손패から특수소환できる。
+PRINTL このカード名の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ①：この方法でこのカードが특수소환に成功した時に발동できる。
+PRINTL その특수소환のために제외したモンスターの속성によって以下の효과を適用する。
+PRINTL このターン、このカードは攻撃できない。
+PRINTL ●光のみ：자신の묘지からモンスター１体を選んで守備표시で특수소환する。
+PRINTL ●闇のみ：상대の손패をランダムに１枚選んで덱に戻す。
+PRINTL ●光と闇：フィールドのカードを２枚まで選んで破壊する。
+
+
+@CARDCAN_21053(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 所有者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21053)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,21053,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성:0 = 빛속성
+	효과条件속성:1 = 어둠속성
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,21053)
+		RETURN 0
+	;光のみ
+	IF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") == 3
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	;闇のみ
+	ELSEIF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") == -3
+		SIF 손패数(対面者) <= 0
+			RETURN 0
+	ELSE
+		CALL FULLRESET
+		IF 듀얼리스트 == "자신"
+			효과範囲필드 = 1
+			효과範囲마함 = 1
+		ENDIF
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_21053(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 所有者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 選択カード名前
+#DIM DYNAMIC 適用효과
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21053,0)
+	IF RESULT == 0
+		FOR カウンタ,0,3
+			PRINTFORML 제외するモンスターを選んでください。残り{3 - カウンタ}体
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件속성:0 = 빛속성
+			효과条件속성:1 = 어둠속성
+			효과条件行先플래그 = 제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				選択カード_ID = RESULT:1
+				TRYCALLFORM CARD_{選択カード_ID}("속성")
+				IF RESULT == 빛속성
+					適用효과 ++
+				ELSEIF RESULT == 어둠속성
+					適用효과 --
+				ENDIF
+			ENDIF
+		NEXT
+
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		IF 適用효과 == 3
+			PRINTL レヴィオニアは「光」の力を得た！
+		ELSEIF 適用효과 == -3
+			PRINTL レヴィオニアは「闇」の力を得た！
+		ELSE
+			PRINTL レヴィオニアは「混沌」の力を得た！
+		ENDIF
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"汎数",適用효과,1)
+	ENDIF
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21053,1)
+	IF RESULT == 0
+		IF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") == 3
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종류 = モン全般
+			효과条件소환可 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ELSEIF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") == -3
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"손패破壊",場所,"덱")
+		ELSE
+			CALL FULLRESET
+			IF 듀얼리스트 == "자신"
+				효과範囲필드 = 1
+				효과範囲마함 = 1
+			ENDIF
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件複数 = 98
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"破壊")
+		ENDIF
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦無",1,1)
+	ENDIF
+ENDIF

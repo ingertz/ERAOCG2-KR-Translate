@@ -1,0 +1,275 @@
+﻿@CARDNAME_39912,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 이쿠기어 드러그 플랜트 박스
+	CASE "略称"
+		RESULTS = 광서의 음독제상
+	CASE "カテゴリ"
+		RESULTS:0 = 광서의 기계
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_39912(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 2400
+	CASE "성별"
+		RETURN 牝性
+	CASE "성별"
+		RETURN 260101
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_39912(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신フィールド上に「광서의 기계」カードが存在する時、손패から발동できる、
+PRINTL 자신の손패・덱、もしくは상대の덱から牝モンスターを묘지に送りこのカードを손패から특수소환できる、
+PRINTL その後フィールド上の성별を持つモンスター全てを発情させ媚薬카운터を１つ置く。
+PRINTL この효과で発情した「광서의 기계」モンスターは必ず攻撃できる。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신・상대メインフェイズに발동できる、このカードに媚薬카운터を１つ置く、
+PRINTL この時媚薬카운터が２つ以上あれば、媚薬카운터を全て取り除き덱から１枚カードをドローする。
+CALLFORM CARD_ABLE(3,효과後強制誘発)
+PRINTL ③：このカードがモンスターゾーンに存在する状態で、상대フィールド上に성별を持つモンスターが소환・특수소환された時、
+PRINTL そのモンスターを発情させ媚薬카운터を１つ乗せる。
+PRINTL
+SETCOLOR C_RED
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー警告ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+CALLFORM CARD_ABLE(4,ターン終了時強制)
+PRINTL ④：このカードに組み込まれた牝性モンスターは、자신・상대ターン終了時に淫毒製箱による조교を受ける。
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー注意ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+PRINTL
+RESETCOLOR
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_39912(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39912)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,39912)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,39912,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 광서의 기계
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과範囲상대덱 = 1
+	효과条件성별 = 牝性
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+    SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,39912)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般",1)
+	SIF RESULT != 1
+		RETURN 0
+	효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+	SIF GETVAR(@"%対面者%_MZ_モ耐:효과先") > 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF	GETVAR(@"%듀얼리스트%_MZ_汎数:場所") > 0
+		RETURN 1
+	SIF	GETVAR(@"%듀얼리스트%_MZ_変化元ID:場所") >= 0
+		RETURN 1
+	RETURN 1
+
+
+ENDIF
+
+@CARDEFFECT_39912(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39912,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과範囲상대덱 = 1
+		효과条件성별 = 牝性
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カードID = RESULT:1
+			CALL FULLRESET
+			효과추가종류 = 1000000 + 選択カードID
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+
+			CALL FULLRESET
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+				CONTINUE
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"薬Ｃ",1)
+			NEXT
+			FOR カウンタ,0,5
+			SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+				CONTINUE
+				CALL SET_FIELD_INFO(対面者,"필드",カウンタ,"薬Ｃ",1)
+			NEXT
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",1)
+			CALL FULLRESET
+			효과条件성별 = 성별在
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"発情",2)
+			CALL FULLRESET
+        	효과範囲필드 = 1
+    		효과条件종류 = モン全般
+			효과条件カテゴリ = 광서의 기계
+        	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発情",100)
+		ENDIF
+	ENDIF
+
+ELSEIF  종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39912,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"薬Ｃ",1)
+		IF GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:場所") >= 2
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"薬Ｃ",0,1)
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39912,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+		CALL FULLRESET
+		효과条件종류 = 융합
+		효과条件カテゴリ = 광서의 기계
+		효과条件소환可 = 2
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+			CALL FUSSUMMON(듀얼리스트,選択カード)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 효과後強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39912)
+	IF RESULT == 0
+		選択カード = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",選択カード,1)
+		IF RESULT != -1
+			조교대상 = RESULT
+			PRINTFORML 
+			SETCOLOR C_PINK 
+			PRINTFORML %NAME:조교대상%は淫毒製箱から噴き出て気化した淫毒を吸い、発情してしまう……
+			RESETCOLOR
+			CALL EROTIC_MOVE("媚毒汚染",조교대상,-1,500)
+		ENDIF
+		CALL STATCHANGE_EFFECT(対面者,"自身",選択カード,"発情",2)
+		CALL SET_FIELD_INFO(対面者,"필드",選択カード,"薬Ｃ",1)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時強制
+		CALL CARD_EROTICS(GETVAR(@"%듀얼리스트%_MZ_変化元ID:場所"))
+		IF RESULT != -1
+			조교대상 = RESULT
+			SETCOLOR C_PINK 
+			PRINTFORML
+			SELECTCASE RAND:3
+				CASE 0
+					CALL EROTIC_MOVE("Ｖ単発",조교대상,-1,200)
+					PRINTFORML %NAME:조교대상%は淫毒製箱に犯されている……
+				CASE 1
+					PRINTFORML %NAME:조교대상%は淫毒製箱から媚毒を生み出す穴として加工されていく……
+					CALL EROTIC_MOVE("Ⅽ単発",조교대상,-1,200)
+				CASE 2
+					PRINTFORML %NAME:조교대상%は淫毒製箱によって淫紋を刻まれていく……
+					CALL EROTIC_MOVE("淫紋の疼き",조교대상,-1,200)
+			ENDSELECT
+			PRINTFORMW
+		ENDIF
+ENDIF
+
+
+
+
+
+
+

@@ -24,6 +24,8 @@ VARSET RESULTS
 SELECTCASE 参照先
 	CASE "종류"
 		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 251130
 ENDSELECT
 
 RETURN 0
@@ -33,9 +35,13 @@ RETURN 0
 
 PRINTL 이 카드명의 카드는１턴에 １장밖에 발동할 수 없다。
 CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
-PRINTL ①：자신 필드에 앞면 표시인 "디지몬" 카드가 존재하는 경우、
+PRINTL ①：자신 필드에 앞면 표시인 레벨７ 이상의 빛속성 "디지몬" 몬스터 카드가 존재하는 경우、
 PRINTL 상대 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
-PRINTL 그 몬스터의 공격력 / 수비력은 ０이 되며、효과는 무효화된다。
+PRINTL 그 몬스터의 공격력 / 수비력은 ０이 되며、턴 종료시까지 효과는 무효화된다。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신 필드에 "엔젤우몬"이 존재하는 경우에 발동할 수 있다。
+PRINTL 이 카드를 묘지에서 패에 넣는다。
+PRINTL
 
 @CARDCAN_34310(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -64,6 +70,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	효과範囲필드 = 1
 	효과範囲마함 = 1
 	효과条件カテゴリ = 디지몬
+	효과条件속성 = 빛속성
+	CALL 효과条件レベル_ADV(7, "以上")
 	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
@@ -71,6 +79,24 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL FULLRESET
 	효과範囲상대필드 = 1
 	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,34310)
+		RETURN 0
+
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件名前 = 엔젤우몬
+	효과条件표시 = 表側표시
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -95,6 +121,12 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		CALL FULLRESET
 		효과条件표시 = 表側표시
 		효과추가종류:0 = 23
-		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"지속無効",99999)
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"無効",99999)
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34310,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,"묘지",場所,3)
 	ENDIF
 ENDIF

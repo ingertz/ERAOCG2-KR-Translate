@@ -1,0 +1,161 @@
+﻿@CARDNAME_21018,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 타키온 크라우드래곤
+	CASE "略称"
+		RESULTS = 시공의 운룡
+	CASE "カテゴリ"
+		RESULTS:0 = 타키온
+ENDSELECT
+
+
+@CARD_21018(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 300
+	CASE "守備力"
+		RETURN 250
+	CASE "추가日"
+		RETURN 260102
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_21018(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：このカードがドロー以外の方法で손패に加わった場合に발동できる。
+PRINTL このカードを특수소환する。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：このカードをリリースして발동できる。
+PRINTL 자신の덱・묘지から「타키온 크라우드래곤」以外の「타키온」モンスター１体を특수소환する。
+CALLFORM CARD_ABLE(3,손패起動,묘지起動)
+PRINTL ③：このカードが손패・묘지に存在する場合、자신フィールドの드래곤족Ｘモンスター１体を대상として발동できる。
+PRINTL このカードを덱に戻し、대상のモンスターのＸ素材を１つ増やす。
+
+
+@CARDCAN_21018(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21018)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,21018)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,21018,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件名前 = 타키온 크라우드래곤
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"손패취득")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,21018)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 타키온
+	효과条件固名前 = 타키온 크라우드래곤
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 손패起動 || 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,21018)
+		RETURN 0
+	SIF !GROUPMATCH(ゾーン,"손패","묘지")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 드래곤족
+	효과条件종류 = 엑시즈
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_21018(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21018,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트, "손패", 場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21018,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 타키온
+		효과条件固名前 = 타키온 크라우드래곤
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 손패起動 || 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21018,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+		CALL FULLRESET
+		효과条件종족 = 드래곤족
+		효과条件종류 = 엑시즈
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"Ｘ",1)
+		ENDIF
+	ENDIF
+ENDIF

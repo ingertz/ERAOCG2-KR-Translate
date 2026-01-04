@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 이쿠기어 실리콘 체인소우 골렘
 	CASE "略称"
-		RESULTS = 광서의거톱완병
+		RESULTS = 광서의 거톱완병
 	CASE "カテゴリ"
 		RESULTS:0 = 광서의 기계
 		RESULTS:1 = E.R.A
@@ -52,12 +52,13 @@ PRINTL 파괴한 몬스터를 상대 필드 위에 특수 소환하고、그 몬
 PRINTL 이 효과로 특수 소환한 몬스터의 효과는 무효화된다。
 CALLFORM CARD_ABLE(2,攻守変動)
 PRINTL ②：이 카드의 공격력은, 이 카드에 놓여있는 미약카운터의 수 × 1000 올리고,
-PRINTL １번의 배틀 페이즈 중에 이 카드의 미약카운터의 수＋１회까지 몬스터에게 공격할 수 있다。
+PRINTL １번의 배틀 페이즈 중에 이 카드의 미약카운터의 수＋１회까지 상대 몬스터에게 공격할 수 있다。
 CALLFORM CARD_ABLE(3,필드起動)
-PRINTL ③：１턴에 １번, 이 카드 이외의 자신 필드의 암컷 몬스터를 １장을 파괴하고 발동할 수 있다。
+PRINTL ③：１턴에 １번, 묘지의 암컷 몬스터를 제외하고 발동할 수 있다、
 PRINTL 이 카드에 미약카운터를 １개 놓는다。
 SETCOLOR C_RED
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+CALLFORM CARD_ABLE(1,攻撃後誘発)
 PRINTL ④：이 카드가 암컷 몬스터를 파괴했을 때、그 몬스터의 성기를 실리콘 체인소우로 깎아낸 후에
 PRINTL 상대의 필드에 끌어내린다。
 CALL CARD_ABLE(4,ターン終了時強制)
@@ -102,18 +103,20 @@ ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
 	RETURN 1
 
 ELSEIF 종류 == 필드起動
+	SIF ゾーン != "필드"
+		RETURN 0
 	SIF 발동済_3(듀얼리스트,39902)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") >= 1
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	CALL FULLRESET
-	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과範囲상대묘지 = 1
 	효과条件성별 = 牝性
-	효과条件他所 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -252,7 +255,7 @@ IF 종류 == 攻撃後誘発
 
 ELSEIF 종류 == 攻守変動
 	攻撃力修正 = GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:場所") * 1000
-    攻撃횟수 = GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:場所") + 1
+    攻撃횟수 = GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:場所")
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",攻撃횟수)
 	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
     ELSEIF 종류 == 攻撃後強制誘発
@@ -263,13 +266,14 @@ ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39902,3)
 		IF RESULT == 0
 			CALL FULLRESET
-			효과範囲필드 = 1
-			효과条件他所 = 1
-            효과条件行先플래그 = 破壊行き
+			효과範囲묘지 = 1
+			효과範囲상대묘지 = 1
+			효과条件성별 = 牝性
+            효과条件行先플래그 = 제외行き
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-			IF RESULT == 1
-			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"薬Ｃ",1)
-			ENDIF
+				IF RESULT == 1
+					CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"薬Ｃ",1)
+				ENDIF
 		ENDIF
 
 ELSEIF 종류 == ターン終了時強制

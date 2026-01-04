@@ -44,8 +44,6 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "성별"
 		RETURN 牝性
-	CASE "生成カード"
-		RETURN 34313
 	CASE "추가日"
 		RETURN 251130
 ENDSELECT
@@ -58,12 +56,12 @@ RETURN 0
 PRINTL "엔젤우몬"＋"레이디데블몬"
 CALLFORM CARD_ABLE(1,EX덱起動)
 PRINTL 이 카드는 융합 소환 및 이하의 방법으로만 특수 소환할 수 있다。
-PRINTL ●자신 필드의 위에 적힌 카드를 묘지로 보낸 경우에 EX덱에서 특수 소환할 수 있다。
+PRINTL ●자신 필드의 상기의 카드를 묘지로 보낸 경우에 EX덱에서 특수 소환할 수 있다。
 PRINTL 디지몬 카드는 사이버스족으로도 취급한다。
-PRINTL 이 카드명의 ②의 효과는 １턴에 １번밖에 사용할 수 없다。
+PRINTL 이 카드명의 ②③의 효과는 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ①：이 카드는 효과로는 파괴되지 않는다。
-CALL CARD_ABLE(2,필드起動)
+CALL CARD_ABLE(2,필드起動,フリー誘発)
 PRINTL ②：자신 / 상대의 메인 페이즈에 발동할 수 있다。
 PRINTL 묘지에서 레벨８ 이하의 빛 / 어둠속성인 "디지몬" 몬스터 １장을 특수 소환한다。
 CALLFORM CARD_ABLE(3,효과後誘発)
@@ -221,7 +219,7 @@ ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
-ELSEIF 종류 == 특수소환時
+ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4722,3)
 	IF RESULT == 0
 		CALL FULLRESET

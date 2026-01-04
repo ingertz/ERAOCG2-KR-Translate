@@ -44,13 +44,9 @@ RETURN 0
 @CARD_EXPLANATION_39896(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
-CALL CARD_ABLE(1,효과後誘発)
-PRINTL ①：상대가 몬스터를 특수 소환한 경우에、상대 필드의 몬스터 １장을 대상으로 하고 발동할 수 있다。
-PRINTL 패의 이 카드를 묘지로 보내고、턴 종료시까지、그 몬스터에게 효과 무효를 부여한다。
-PRINTL 이 효과를 발동한 턴과 다음 턴、자신은 "Ɽꓤ" 몬스터 이외의 몬스터를 특수 소환할 수 없다。
-CALL CARD_ABLE(2,발동誘発)
-PRINTL ②：상대가 마법 / 함정 카드의 효과를 발동한 경우에 발동할 수 있다。
+PRINTL 이 카드명의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALL CARD_ABLE(1,발동誘発)
+PRINTL ①：상대가 마법 / 함정 카드의 효과를 발동한 경우에 발동할 수 있다。
 PRINTL 패의 이 카드를 묘지로 보내고、자신의 마법＆함정 존의 "함락주박" 카드 １장을 주박하고、
 PRINTL 그 발동을 무효로 한다。
 
@@ -63,28 +59,7 @@ PRINTL 그 발동을 무효로 한다。
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39896)
 SIF RESULT == 1
 	RETURN 0
-IF 종류 == 효과後誘発
-	SIF 발동済_1(듀얼리스트,39896)
-		RETURN 0
-	SIF ゾーン != "손패"
-		RETURN 0
-	CALL FULLRESET
-	효과条件固カテゴリ = Ɽꓤ
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
-	SIF RESULT != 0
-		RETURN 0
-	CALL FULLRESET
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
-	SIF RESULT != 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲상대필드 = 1
-	효과条件除去種 = 無効
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 발동誘発
+IF 종류 == 발동誘発
 	SIF 발동済_2(듀얼리스트,39896)
 		RETURN 0
 	SIF ゾーン != "손패"
@@ -101,8 +76,6 @@ ELSEIF 종류 == 발동誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	RETURN 1
-ELSEIF 종류 == ターン開始時予約
 	RETURN 1
 ENDIF
 
@@ -121,19 +94,7 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 효과後誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39896,1)
-	IF RESULT == 0
-		CALL FULLRESET
-		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			CALL FULLRESET
-			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"無効")
-		ENDIF
-		CALL CARD_SS_RESTRICTION(듀얼리스트,"Ɽꓤ")
-		CALL CARD_RESERV(듀얼리스트,39896,スタン予約)
-	ENDIF
-ELSEIF 종류 == 발동誘発
+IF 종류 == 발동誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39896,2)
 	IF RESULT == 0
 		CALL FULLRESET
@@ -154,7 +115,4 @@ ELSEIF 종류 == 발동誘発
 			ENDIF
 		ENDIF
 	ENDIF
-ELSEIF 종류 == ターン開始時予約
-	CALL FULLRESET
-	CALL CARD_SS_RESTRICTION(듀얼리스트,"Ɽꓤ")
 ENDIF

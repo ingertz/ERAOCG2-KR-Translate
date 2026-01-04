@@ -1,0 +1,105 @@
+﻿@CARDNAME_31360,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 전지맨－버튼형
+	CASE "略称"
+		RESULTS = 버튼형
+	CASE "カテゴリ"
+		RESULTS:0 = 전지맨
+ENDSELECT
+
+
+@CARD_31360(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 100
+	CASE "守備力"
+		RETURN 100
+	CASE "성별"
+		RETURN 260101
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31360(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,소환時,リバース誘発)
+PRINTL ①：このカードが소환に成功した場合、またはこのカードがリバースした場合に발동できる。
+PRINTL 덱から「전지맨－버튼형」以外のレベル４以下の「전지맨」モンスター１体を특수소환する。
+CALLFORM CARD_ABLE(0,破壊→묘지,戦闘→묘지)
+PRINTL ②：このカードが戦闘・효과で破壊された場合に발동できる。
+PRINTL 덱からカードを１枚ドローする。
+
+@CARDCAN_31360(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31360)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == リバース誘発
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 전지맨
+	효과条件固名前 = 전지맨－버튼형
+	효과条件소환可 = 1
+	CALL 효과条件レベル_ADV(4, "以下")	
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31360(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+IF 종류 == 소환時 || 종류 == リバース誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31360)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 전지맨
+		효과条件固名前 = 전지맨－버튼형
+		CALL 효과条件レベル_ADV(4, "以下")	
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31360)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+	ENDIF
+ENDIF
+

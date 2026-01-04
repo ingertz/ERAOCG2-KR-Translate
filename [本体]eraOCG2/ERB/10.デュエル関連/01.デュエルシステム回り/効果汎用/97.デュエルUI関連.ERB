@@ -379,7 +379,7 @@ ENDIF
 
 
 
-@CARD_SUMINFO(듀얼리스트);필드에 표시されるカード情報
+@CARD_SUMINFO(듀얼리스트,使用モード,除去種);필드에 표시されるカード情報
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
 #DIMS DYNAMIC 듀얼리스트
@@ -394,6 +394,11 @@ ENDIF
 #DIMS DYNAMIC カード名
 #DIMS DYNAMIC カード実名
 #DIMS DYNAMIC カード略称
+;Anonym추가
+#DIMS DYNAMIC 使用モード
+#DIM DYNAMIC 攻撃誘導플래그
+#DIM DYNAMIC 処理中カード종류
+#DIMS DYNAMIC 除去種
 ;真ん中のカード
 SIF GETVAR(@"%듀얼리스트%_MZ_MAX成立:2") >= 1
 	MAX_M_存在 = 1
@@ -402,6 +407,16 @@ SIF GETVAR(@"%듀얼리스트%_MZ_MAX成立:1") >= 1
 SIF GETVAR(@"%듀얼리스트%_MZ_MAX成立:3") >= 1
 	MAX_R_存在 = 1
 
+;Anonym추가
+IF 使用モード == "バトル"
+	FOR カウンタ,0,5
+		SIF 상대_필드:カウンタ == -1
+			CONTINUE
+		SIF 상대_MZ_攻誘:カウンタ == 0
+			CONTINUE
+		攻撃誘導플래그 ++
+	NEXT
+ENDIF
 
 FOR カウンタB,0,10
 	IF ターンプレイヤー == "자신"
@@ -531,7 +546,6 @@ FOR カウンタB,0,10
 			ENDIF
 			RESETCOLOR
 		ELSEIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == 使用불가ゾーン
-
 			IF カウンタB == 0
 				PRINTFORM ┌────────────┐
 			ELSEIF カウンタB == 9
@@ -558,8 +572,6 @@ FOR カウンタB,0,10
 			ENDIF
 			RESETCOLOR
 
-
-
 		ELSEIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3 && 듀얼리스트 == "상대"
 			IF カウンタB == 0
 				SETCOLOR C_L_GRAY
@@ -568,8 +580,37 @@ FOR カウンタB,0,10
 				SETCOLOR C_L_GRAY
 				PRINTFORM └────────────┘
 			ELSEIF カウンタB == 1
+				カード略称 = %"UNKNOWN",19,LEFT%
 				FONTSTYLE 8
-				PRINTFORM %"UNKNOWN",20,LEFT%
+				;Anonym추가
+				IF 使用モード == "バトル" && 상대_MZ_攻誘:カウンタ == 0 && 攻撃誘導플래그 != 0
+					SETCOLOR C_L_GRAY
+					PRINTFORM %カード略称%
+					RESETCOLOR
+				ELSEIF 使用モード == "バトル" && 상대_MZ_攻避:カウンタ >= 1
+					SETCOLOR C_L_GRAY
+					PRINTFORM  %カード略称%
+					RESETCOLOR
+				ELSEIF 使用モード == "除去"
+					IF 효과条件複数 > 0 && MATCH(효과条件選択済, カウンタ + 2000)
+							SETCOLOR C_L_GRAY
+							PRINTFORM  %カード略称%
+							RESETCOLOR
+					ELSE
+						CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
+						IF RESULT == 0
+							SETCOLOR C_L_GRAY
+							PRINTFORM  %カード略称%
+							RESETCOLOR
+						ELSE
+							PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (5000 + カウンタ)
+						ENDIF
+					ENDIF
+				ELSE
+					FONTSTYLE 8
+					PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (5000 + カウンタ)
+					;PRINTFORM %"UNKNOWN",20,LEFT%
+				ENDIF
 				FONTSTYLE 0
 				PRINTFORM (%"？",2%)
 			ELSEIF カウンタB == 6
@@ -577,6 +618,91 @@ FOR カウンタB,0,10
 				PRINTFORM 뒷면수비표시
 				SETCOLOR C_GRAY
 				PRINTFORM 　／　／　／
+			;Anonym추가
+			ELSEIF カウンタB == 5 && 使用モード == "バトル"
+				SETCOLOR C_GRAY
+				IF 상대_MZ_攻誘:カウンタ >= 1
+					PRINTFORM ／　／
+					SETCOLOR C_RED
+					PRINTFORM 【공격유도】
+					SETCOLOR C_GRAY
+					PRINTFORM 　／　
+				ELSEIF 상대_MZ_攻誘:カウンタ == 0 && 攻撃誘導플래그 != 0
+					PRINTFORM ／　／
+					SETCOLOR C_RED
+					PRINTFORM 【공격불가】
+					SETCOLOR C_GRAY
+					PRINTFORM 　／　
+				ELSEIF 상대_MZ_攻避:カウンタ >= 1
+					PRINTFORM ／　／
+					SETCOLOR C_RED
+					PRINTFORM 【공격회피】
+					SETCOLOR C_GRAY
+					PRINTFORM 　／　
+				ENDIF
+			ELSEIF カウンタB == 5 && 使用モード == "除去"
+				SETCOLOR C_GRAY
+				IF 효과条件複数 > 0 && MATCH(효과条件選択済, カウンタ + 2010)
+					PRINTFORM ／　／
+					SETCOLOR C_RED
+					PRINTFORM 【선택됐음】
+					SETCOLOR C_GRAY
+					PRINTFORM 　／　
+				ELSE
+					TRYCALLFORM CARD_{処理中_효과ID}("종류")
+					処理中カード종류 = RESULT
+					IF 상대_魔_破耐:カウンタ >= 1 && 除去種 == "묘지"
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【파괴내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_魔_対耐:カウンタ >= 1
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【대상내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_魔_無効:カウンタ >= 1 && (除去種 == "無効" || 除去種 == "지속無効")
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【무효됐음】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_MZ_モ耐:カウンタ >= 1 && INRANGE(処理中カード종류, 0,15)
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【몬스내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_MZ_魔耐:カウンタ >= 1 && INRANGE(処理中カード종류,20,30)
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【마법내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_MZ_함정耐:カウンタ >= 1 && INRANGE(処理中カード종류,30,40)
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【함정내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_MZ_無効:カウンタ >= 1 && (除去種 == "無効" || 除去種 == "지속無効")
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【무효됐음】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_MZ_忠実:カウンタ >= 1 && 除去種 == "強奪"
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【탈취내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSE
+						PRINTFORM ／　／　／　／　／　／　
+					ENDIF
+				ENDIF
 			ELSEIF GROUPMATCH(カウンタB,3,5,7)
 				SETCOLOR C_GRAY
 				PRINTFORM ／　／　／　／　／　／　
@@ -663,15 +789,54 @@ FOR カウンタB,0,10
 							STRLENS カード名
 							IF RESULT >= 18
 								SUBSTRING カード名, 0, 16
-								カード名 = %RESULTS:0,16,LEFT%
-								HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
+								カード略称 = %RESULTS:0,16,LEFT%…
+								;HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
 							ELSE
 								SUBSTRING カード名, 0, 19
-								カード名 = %RESULTS:0,19,LEFT%
-								HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1 
+								カード略称 = %RESULTS:0,19,LEFT%
+								;HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1 
 							ENDIF
 						ELSE
 							カード略称 = %カード略称,19,LEFT%
+						ENDIF
+						;Anonym추가
+						TRYCALLFORM CARD_{処理中_효과ID}("종류")
+						処理中カード종류 = RESULT
+						IF 使用モード == "バトル" && 상대_MZ_攻誘:カウンタ == 0 && 攻撃誘導플래그 != 0
+							SETCOLOR C_L_GRAY
+							PRINTFORM  %カード略称%
+							RESETCOLOR
+						ELSEIF 使用モード == "バトル" && 상대_MZ_攻避:カウンタ >= 1
+							SETCOLOR C_L_GRAY
+							PRINTFORM  %カード略称%
+							RESETCOLOR
+						ELSEIF 使用モード == "除去"
+							IF 효과条件複数 > 0
+								IF MATCH(효과条件選択済, カウンタ + 2000)
+									SETCOLOR C_L_GRAY
+									PRINTFORM  %カード略称%
+									RESETCOLOR
+								ELSE
+									CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
+									IF RESULT == 0
+										SETCOLOR C_L_GRAY
+										PRINTFORM  %カード略称%
+										RESETCOLOR
+									ELSE
+										HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+									ENDIF
+								ENDIF
+							ELSE
+								CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
+								IF RESULT == 0
+									SETCOLOR C_L_GRAY
+									PRINTFORM  %カード略称%
+									RESETCOLOR
+								ELSE
+									HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+								ENDIF
+							ENDIF
+						ELSE
 							HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 						ENDIF
 					ENDIF
@@ -842,20 +1007,61 @@ FOR カウンタB,0,10
 				PRINTFORM 　　
 
 			ELSEIF カウンタB == 5
-				IF GETVAR(@"%듀얼리스트%_MZ_接可:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_性:カウンタ") == 牝性
+				;Anonym추가
+				IF 使用モード == "バトル" && 상대_MZ_攻誘:カウンタ >= 1
+					SETCOLOR C_RED
+					PRINTFORM 　　　【공격유도】　　　
+				ELSEIF 使用モード == "バトル" && 상대_MZ_攻誘:カウンタ == 0 && 攻撃誘導플래그 != 0
+					SETCOLOR C_RED
+					PRINTFORM 　　　【공격불가】　　　
+				ELSEIF 使用モード == "バトル" && 상대_MZ_攻避:カウンタ >= 1
+					SETCOLOR C_RED
+					PRINTFORM 　　　【공격회피】　　　
+				ELSEIF 使用モード == "除去"
+					IF 효과条件複数 > 0 && MATCH(효과条件選択済, カウンタ + 2000)
+							SETCOLOR C_RED
+							PRINTFORM 　　　【선택됐음】　　　
+					ELSE
+						IF 상대_MZ_破耐:カウンタ >= 1 && 除去種 == "묘지"
+							SETCOLOR C_RED
+							PRINTFORM 　　　【파괴내성】　　　
+						ELSEIF 상대_MZ_対耐:カウンタ >= 1
+							SETCOLOR C_RED
+							PRINTFORM 　　　【대상내성】　　　
+						ELSEIF 상대_MZ_モ耐:カウンタ >= 1 && INRANGE(処理中カード종류, 0,15)
+							SETCOLOR C_RED
+							PRINTFORM 　　　【몬스내성】　　　
+						ELSEIF 상대_MZ_魔耐:カウンタ >= 1 && INRANGE(処理中カード종류,20,30)
+							SETCOLOR C_RED
+							PRINTFORM 　　　【마법내성】　　　
+						ELSEIF 상대_MZ_함정耐:カウンタ >= 1 && INRANGE(処理中カード종류,30,40)
+							SETCOLOR C_RED
+							PRINTFORM 　　　【함정내성】　　　
+						ELSEIF 상대_MZ_無効:カウンタ >= 1 && (除去種 == "無効" || 除去種 == "지속無効")
+							SETCOLOR C_RED
+							PRINTFORM 　　　【무효됐음】　　　
+						ELSEIF 상대_MZ_忠実:カウンタ >= 1 && 除去種 == "強奪"
+							SETCOLOR C_RED
+							PRINTFORM 　　　【탈취내성】　　　
+						ELSE
+							PRINTFORM 　　　　　　　　　　　　
+						ENDIF
+					ENDIF
+				ELSEIF GETVAR(@"%듀얼리스트%_MZ_接可:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_性:カウンタ") == 牝性
 					SETCOLOR C_PINK
 					PRINTFORM 　　　❤접촉가능❤　　　
 				ELSEIF GETVAR(@"%듀얼리스트%_MZ_無効:カウンタ") >= 1
 					SETCOLOR C_CREAM
 					PRINTFORM 　　　【효과무효】　　　
-				ELSEIF GETVAR(@"%듀얼리스트%_MZ_不材:カウンタ") >= 1
+				ELSEIF GETVAR(@"%듀얼리스트%_MZ_発無:カウンタ") >= 1
 					SETCOLOR C_CREAM
-					PRINTFORM 　　　【소재불가】　　　
+					PRINTFORM 　　　【발동불가】　
+				; ELSEIF GETVAR(@"%듀얼리스트%_MZ_不材:カウンタ") >= 1
+				; 	SETCOLOR C_CREAM
+				; 	PRINTFORM 　　　【소재불가】　　　
 				ELSEIF GETVAR(@"%듀얼리스트%_MZ_戦狂:カウンタ") >= 1
 					SETCOLOR C_RED
 					PRINTFORM 　　　【전투광화】　　　
-
-
 				ELSE
 					PRINTFORM 　　　　　　　　　　　　
 				ENDIF
@@ -1017,8 +1223,9 @@ NEXT
 #DIMS DYNAMIC カード名
 #DIMS DYNAMIC カード実名
 #DIMS DYNAMIC カード略称
-
-
+;Anonym추가
+#DIMS DYNAMIC 使用モード
+#DIMS DYNAMIC 除去種
 FOR カウンタB,0,5
 	IF ターンプレイヤー == "자신"
 		SETCOLOR C_L_BLUE
@@ -1121,7 +1328,6 @@ FOR カウンタB,0,5
 
 		IF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
 			IF カウンタB == 0
-
 				PRINTFORM ┌────────────┐
 			ELSEIF カウンタB == 4
 				PRINTFORM └────────────┘
@@ -1141,10 +1347,61 @@ FOR カウンタB,0,5
 				SETCOLOR C_L_GRAY
 				PRINTFORM └────────────┘
 			ELSEIF カウンタB == 1
+				IF 使用モード == "除去"
+					カード略称 = %"UNKNOWN",19,LEFT%
 				FONTSTYLE 8
-				PRINTFORM %"UNKNOWN",20,LEFT%
-				FONTSTYLE 0
+				IF 효과条件複数 > 0 && MATCH(효과条件選択済, カウンタ + 2010)
+						SETCOLOR C_L_GRAY
+						PRINTFORM  %カード略称%
+						RESETCOLOR
+					ELSE
+						CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
+						IF RESULT == 0
+							SETCOLOR C_L_GRAY
+							PRINTFORM  %カード略称%
+							RESETCOLOR
+						ELSE
+							PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (6000 + カウンタ)
+						ENDIF
+					ENDIF
+					FONTSTYLE 0
+				ELSE
+					FONTSTYLE 8
+					PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (6000 + カウンタ)
+					FONTSTYLE 0
+				ENDIF
 				PRINTFORM (%"뒤",2%)
+			ELSEIF カウンタB == 3 && 使用モード == "除去"
+				SETCOLOR C_GRAY
+				IF 효과条件複数 > 0 && MATCH(효과条件選択済, カウンタ + 2010)
+					PRINTFORM ／　／
+					SETCOLOR C_RED
+					PRINTFORM 【선택됐음】
+					SETCOLOR C_GRAY
+					PRINTFORM 　／　
+				ELSE
+					IF 상대_魔_破耐:カウンタ >= 1 && 除去種 == "묘지"
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【파괴내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_魔_対耐:カウンタ >= 1
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【대상내성】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSEIF 상대_魔_無効:カウンタ >= 1 && (除去種 == "無効" || 除去種 == "지속無効")
+						PRINTFORM ／　／
+						SETCOLOR C_RED
+						PRINTFORM 【무효됐음】
+						SETCOLOR C_GRAY
+						PRINTFORM 　／　
+					ELSE
+						PRINTFORM ／　／　／　／　／　／　
+					ENDIF
+				ENDIF
 			ELSEIF GROUPMATCH(カウンタB,1,3)
 				SETCOLOR C_GRAY
 				PRINTFORM ／　／　／　／　／　／　
@@ -1194,26 +1451,50 @@ FOR カウンタB,0,5
 						HTML_PRINT @"<button value='{3000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 					ENDIF
 				ELSEIF 듀얼리스트 == "상대"
-					IF GETVAR(@"%듀얼리스트%_魔_表:カウンタ") >= 2
-						PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (6000 + カウンタ)
+					IF GETVARS(@"%듀얼리스트%_魔_改名:カウンタ")  != ""
+						SETCOLOR C_RED
+						カード名 = %GETVARS(@"%듀얼리스트%_魔_改名:カウンタ")%
+						STRLENS カード名
+						IF RESULT >= 18
+							SUBSTRING カード名, 0, 16
+							カード略称 = %RESULTS:0,16,LEFT%…
+							;HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
+						ELSE
+							SUBSTRING カード名, 0, 19
+							カード略称 = %RESULTS:0,19,LEFT%
+							;HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1	
+						ENDIF
 					ELSE
-						IF GETVARS(@"%듀얼리스트%_魔_改名:カウンタ")  != ""
-							SETCOLOR C_RED
-							カード名 = %GETVARS(@"%듀얼리스트%_魔_改名:カウンタ")%
-							STRLENS カード名
-							IF RESULT >= 18
-								SUBSTRING カード名, 0, 16
-								カード名 = %RESULTS:0,16,LEFT%
-								HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 16, LEFT%…</u></font></button>",1
+						カード略称 = %カード略称,19,LEFT%
+					ENDIF
+					IF 使用モード == "除去"
+						IF 효과条件複数 > 0
+							IF MATCH(효과条件選択済, カウンタ + 2010)
+								SETCOLOR C_L_GRAY
+								PRINTFORM  %カード略称%
+								RESETCOLOR
 							ELSE
-								SUBSTRING カード名, 0, 19
-								カード名 = %RESULTS:0,19,LEFT%
-								HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード名), 19, LEFT%</u></font></button>",1	
+								CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID,1)
+								IF RESULT == 0
+									SETCOLOR C_L_GRAY
+									PRINTFORM  %カード略称%
+									RESETCOLOR
+								ELSE
+									HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+								ENDIF
 							ENDIF
 						ELSE
-							カード略称 = %カード略称,19,LEFT%
-							HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+							CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID,1)
+							IF RESULT == 0
+								SETCOLOR C_L_GRAY
+								PRINTFORM  %カード略称%
+								RESETCOLOR
+							ELSE
+								HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+							ENDIF
 						ENDIF
+					ELSE
+						HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 					ENDIF
 				ENDIF
 				RESETCOLOR
@@ -1306,7 +1587,25 @@ FOR カウンタB,0,5
 				PRINTFORM %"　",4%
 				RESETCOLOR
 			ELSEIF カウンタB == 3
-				IF GETVAR(@"%듀얼리스트%_魔_無効:カウンタ") >= 1
+				IF 使用モード == "除去"
+					IF 효과条件複数 > 0 && MATCH(효과条件選択済, カウンタ + 2010)
+						SETCOLOR C_RED
+						PRINTFORM 　　　【선택됐음】　　　
+					ELSE
+						IF 상대_魔_破耐:カウンタ >= 1 && 除去種 == "묘지"
+							SETCOLOR C_RED
+							PRINTFORM 　　　【파괴내성】　　　
+						ELSEIF 상대_魔_対耐:カウンタ >= 1
+							SETCOLOR C_RED
+							PRINTFORM 　　　【대상내성】　　　
+						ELSEIF 상대_魔_無効:カウンタ >= 1 && (除去種 == "無効" || 除去種 == "지속無効")
+							SETCOLOR C_RED
+							PRINTFORM 　　　【무효됐음】　　　
+						ELSE
+							PRINTFORM 　　　　　　　　　　　　
+						ENDIF
+					ENDIF
+				ELSEIF GETVAR(@"%듀얼리스트%_魔_無効:カウンタ") >= 1
 					SETCOLOR C_CREAM
 					PRINTFORM 　　　【효과무효】　　　
 				ELSE
@@ -4674,57 +4973,80 @@ ELSE
 			CALL BATTLE_SETUP("자신",選択カード)
 			VARSET 攻撃誘導플래그
 			;攻撃モンスター選択
-			CUSTOMDRAWLINE —
-			PRINTFORML 「공격 몬스터 선택」
-			CUSTOMDRAWLINE —
+			;Anonym修正
 			PRINTL
-			FOR カウンタ,0,5
-				SIF 상대_필드:カウンタ == -1
-					CONTINUE
-				SIF 상대_MZ_攻誘:カウンタ == 0
-					CONTINUE
-				攻撃誘導플래그 ++
-			NEXT
+			PRINTL
+			CUSTOMDRAWLINE —
+			SETCOLOR C_L_BLUE
+			PRINTPLAIN 　┌────────────────────────────────
+			RESETCOLOR
+			PRINT 「ATTACK TARGET」
+			SETCOLOR C_L_BLUE
+			PRINTPLAIN ────────────────────────────────┐
+			PRINTL
+			RESETCOLOR
+			CALL CARD_SUMINFO("상대","バトル")
+			SETCOLOR C_L_BLUE
+			PRINTPLAIN 　└────────────────────────────────
+			RESETCOLOR
+			PRINT 「ATTACK TARGET」
+			SETCOLOR C_L_BLUE
+			PRINTPLAIN ────────────────────────────────┘
+			PRINTL
+			RESETCOLOR
 
-			IF 攻撃誘導플래그 == 0
-				FOR カウンタ,0,5
-					VARSET 裏側플래그
-					SIF 상대_필드:カウンタ == -1
-						CONTINUE
-					SIF 상대_필드:カウンタ == 使用불가ゾーン
-						CONTINUE
+			; CUSTOMDRAWLINE —
+			; PRINTFORML 「攻撃モンスター選択」
+			; CUSTOMDRAWLINE —
+			; PRINTL
+			; FOR カウンタ,0,5
+			; 	SIF 상대_필드:カウンタ == -1
+			; 		CONTINUE
+			; 	SIF 상대_MZ_攻誘:カウンタ == 0
+			; 		CONTINUE
+			; 	攻撃誘導플래그 ++
+			; NEXT
 
-					裏側플래그 = 상대_MZ_表:カウンタ
-					IF 상대_MZ_攻避:カウンタ >= 1
-						SETCOLOR C_GRAY
-						TRYCALLFORM CARDNAME_{상대_필드:カウンタ}("名前")
-						CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ,6)
-					ELSE
-						CALL CARD_SETCOLOR("상대","상대필드",カウンタ)
-						CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ)
-					ENDIF
-					RESETCOLOR
-				NEXT
-			ELSEIF 攻撃誘導플래그 == 1
-				FOR カウンタ,0,5
-					VARSET 裏側플래그
-					裏側플래그 = 상대_MZ_表:カウンタ
-					SIF 상대_필드:カウンタ == -1
-						CONTINUE
-					SIF 상대_필드:カウンタ == 使用불가ゾーン
-						CONTINUE
+			; IF 攻撃誘導플래그 == 0
+			; 	FOR カウンタ,0,5
+			; 		VARSET 裏側플래그
+			; 		SIF 상대_필드:カウンタ == -1
+			; 			CONTINUE
+			; 		SIF 상대_필드:カウンタ == 使用불가ゾーン
+			; 			CONTINUE
 
-					IF 상대_MZ_攻誘:カウンタ == 0 || 상대_MZ_攻避:カウンタ >= 1
-						SETCOLOR C_GRAY
-						CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ,6)
-					ELSE
-						SETCOLOR C_RED
-						CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ)
-						RESETCOLOR
-					ENDIF
-					RESETCOLOR
-				NEXT
-			ENDIF
+			; 		裏側플래그 = 상대_MZ_表:カウンタ
+			; 		IF 상대_MZ_攻避:カウンタ >= 1
+			; 			SETCOLOR C_GRAY
+			; 			TRYCALLFORM CARDNAME_{상대_필드:カウンタ}("名前")
+			; 			CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ,6)
+			; 		ELSE
+			; 			CALL CARD_SETCOLOR("상대","상대필드",カウンタ)
+			; 			CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ)
+			; 		ENDIF
+			; 		RESETCOLOR
+			; 	NEXT
+			; ELSEIF 攻撃誘導플래그 == 1
+			; 	FOR カウンタ,0,5
+			; 		VARSET 裏側플래그
+			; 		裏側플래그 = 상대_MZ_表:カウンタ
+			; 		SIF 상대_필드:カウンタ == -1
+			; 			CONTINUE
+			; 		SIF 상대_필드:カウンタ == 使用불가ゾーン
+			; 			CONTINUE
+
+			; 		IF 상대_MZ_攻誘:カウンタ == 0 || 상대_MZ_攻避:カウンタ >= 1
+			; 			SETCOLOR C_GRAY
+			; 			CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ,6)
+			; 		ELSE
+			; 			SETCOLOR C_RED
+			; 			CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,상대_필드:カウンタ)
+			; 			RESETCOLOR
+			; 		ENDIF
+			; 		RESETCOLOR
+			; 	NEXT
+			; ENDIF
+
 			CUSTOMDRAWLINE —
 			IF 자신_直接無効 >= 1
 				SETCOLOR C_GRAY
@@ -4756,8 +5078,11 @@ ELSE
 			IF RESULT == 9999
 				RETURN 0
 			ENDIF	
-			SIF INRANGE(RESULT,2000,2500)
+			IF INRANGE(RESULT,2000,2500)
 				RESULT -= 2000
+			ELSEIF INRANGE(RESULT,5000,5500)
+				RESULT -= 5000
+			ENDIF
 			CALL CARD_FIGHT("자신",選択カード,RESULT)
 			IF バトル強制終了 == 1
 				バトル強制終了 = 0

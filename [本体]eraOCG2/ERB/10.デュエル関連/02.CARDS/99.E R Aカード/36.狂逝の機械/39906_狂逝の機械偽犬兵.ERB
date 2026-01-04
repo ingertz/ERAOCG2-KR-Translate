@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 이쿠기어 웨어 독 골렘
 	CASE "略称"
-		RESULTS = 광서의위견병
+		RESULTS = 광서의 위견병
 	CASE "カテゴリ"
 		RESULTS:0 = 광서의 기계
 		RESULTS:1 = E.R.A
@@ -47,13 +47,11 @@ RETURN 0
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다.
 CALLFORM CARD_ABLE(1,효과後誘発)
-PRINTL ①：이 카드가 묘지에 존재하고, 상대가 몬스터를 특수 소환했을 경우,
-PRINTL 자신 필드의 암컷 몬스터 １장을 릴리스하고 발동할 수 있다.
-PRINTL 이 카드를 묘지에서 특수 소환한다.
+PRINTL ①：이 카드가 묘지에 존재하고, 상대가 몬스터를 특수 소환했을 때 발동할 수 있다,
 PRINTL 이 카드를 특수 소환한다. 이 효과로 특수 소환한 이 카드는, 소재 불가를 갖는다.
 CALLFORM CARD_ABLE(2,필드起動)
 PRINTL ②：자신 필드 위의 이 카드를 제외하고 발동할 수 있다.
-PRINTL 패 / 묘지에서 "광서의 기계 위견병" 이외의 "광서의 기계" 몬스터를 １체 특수 소환하고
+PRINTL 패 / 묘지에서 "광서의 기계 위견병" 이외의 "광서의 기계" 몬스터를 １장 특수 소환하고
 PRINTL 이 효과로 특수 소환한 몬스터는 발정하고, 미약카운터가 １개 놓인다.
 CALLFORM CARD_ABLE(3,攻撃後強制誘発)
 PRINTL ③：이 카드가 전투할 때 발동할 수 있다.
@@ -61,13 +59,14 @@ PRINTL 상대 필드의 모든 성별을 가진 몬스터를 발정시킨다.
 PRINTL
 SETCOLOR C_RED 
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
-PRINTL ④：이 카드의 ①의 효과로 특수 소환 될 때、
-PRINTL 상대의 덱 안에 암컷 몬스터가 위견병의 외장을 두르고 특수 소환된다。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ④：이 카드 ①의 효과로 특수 소환 될 때、
+PRINTL 상대의 덱 안에 암컷 몬스터가 묘지로 보내지고、위견병의 외장을 두르고 특수 소환된다。
 CALL CARD_ABLE(4,攻撃後誘発)
 PRINTL ⑤：이 카드가 공격으로 암컷 몬스터를 파괴한 경우에 발동할 수 있다。
 PRINTL 파괴한 몬스터를 말형 딜도로 계속 범한다。
 CALL CARD_ABLE(5,ターン終了時強制)
-PRINTL ④：자신 / 상대 턴 종료 시、위견병에 끼워넣어져있는 암컷은、
+PRINTL ⑥：자신 / 상대 턴 종료 시、위견병에 끼워넣어져있는 암컷은、
 PRINTL 몸에 둘러져있는 외장의 능욕을 받는다。
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー주의ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
 RESETCOLOR
@@ -97,7 +96,6 @@ IF 종류 == 효과後誘発
 		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-
 	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
 	SIF RESULT != 1
 		RETURN 0
@@ -185,12 +183,8 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39906,1)
 	IF RESULT == 0
-		효과範囲필드 = 1
-        효과条件성별 = 牝性
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
 			CALL FULLRESET
-			CALL CARD_SP_SUMMON(듀얼리스트, "묘지", 場所)
+			CALL CARD_SP_SUMMON(듀얼리스트,"묘지",場所)
 			;範囲지정は不要
 			IF RESULT == 1 ;一応「소환できた」を後続条件に
 		CALL FULLRESET
@@ -264,7 +258,6 @@ IF 종류 == 효과後誘発
 				ENDIF
 				CALL CARD_DISPOSE(対面者,"덱",捕縛場所B)
 			ENDIF
-		ENDIF
 	ENDIF
 ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39906,2)
