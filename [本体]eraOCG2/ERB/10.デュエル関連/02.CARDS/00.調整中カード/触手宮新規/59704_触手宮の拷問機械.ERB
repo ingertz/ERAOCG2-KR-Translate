@@ -1,0 +1,294 @@
+@CARDNAME_59704,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 촉수궁의 고문기계
+	CASE "略称"
+		RESULTS = 촉수궁의고문기계
+	CASE "カテゴリ"
+		RESULTS:0 = 촉수
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_59704(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 1000
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_59704(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件レベル = 6
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,59704) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_59704(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL レベル６モンスター×２
+CALL CARD_ABLE(1,EX덱起動)
+PRINTL このカードは１ターンに１度、자신フィールドの「촉수」엑시즈モンスター１体の上に重ねてエクストラ덱から엑시즈소환する事もできる。
+PRINTL このカード名の①③の효과はそれぞれ１ターンに１度使用できる。
+CALL CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ①：자신・상대ターンに발동できる。
+PRINTL 자신・상대の묘지から牝性モンスター１体を選び、持ち主の마법・함정ゾーンに表側표시で「묘상」として置く。
+CALL CARD_ABLE(0,지속효과)
+PRINTL ②：このカードは효과の대상にならない。
+PRINTL このカードがフィールドに表側표시で存在する限り、자신フィールドに他の「촉수」モンスターが存在する場合、
+PRINTL 자신フィールドの「촉수」モンスターが상대のメスモンスターを戦闘で破壊した場合、
+PRINTL 묘지へ送らず持ち主の마법＆함정ゾーンに「묘상」として置く事もできる。
+CALL CARD_ABLE(3,묘지起動)
+PRINTL ③：このカードが묘지に存在し、자신フィールドに表側표시の「촉수宮」が存在する場合に발동できる。
+PRINTL 자신の묘지・제외されている状態の「촉수」カード３枚を덱に戻す。その後、このカードを묘지から특수소환する。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_59704(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59704)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,59704)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,59704)
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 촉수
+    효과条件종류 = 엑시즈
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,59704)
+		RETURN 0
+
+    CALL FULLRESET
+    효과範囲묘지 = 1
+    효과範囲상대묘지 = 1
+    효과条件성별 = 牝性
+    효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,59704)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+
+    CALL FULLRESET
+    효과範囲마함 = 1
+    효과条件표시 = 表側표시
+    효과条件名前 = 촉수궁 -텐타클 팰리스-
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+    	RETURN 0
+
+    CALL FULLRESET
+    효과範囲묘지 = 1
+    효과範囲제외 = 1
+    효과条件カテゴリ = 촉수
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT <= 2
+    	RETURN 0
+    RETURN 1
+
+ELSEIF 종류 == 攻撃後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 3
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) == 5
+		RETURN 0
+	TRYCALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("カテゴリ")
+	SIF !MATCH(RESULTS,"촉수")
+		RETURN 0
+	CALLFORM CARD_{直前戦闘破壊ID(듀얼리스트,1)}("성별")
+	SIF RESULT != 牝性
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 촉수
+	효과条件固名前 = 촉수궁의 고문기계
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+    RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+    RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_59704(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 破坏怪兽名前
+#DIMS DYNAMIC 战斗怪兽名前
+#DIM DYNAMIC 조교대상
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59704,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL RESETCONDITION_MAT
+		必要素材数 = 1
+	    素材条件カテゴリ = 촉수
+		素材条件종류 = 엑시즈
+		重ねてＸ = 1
+		TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59704,2)
+	IF RESULT == 0
+        CALL FULLRESET
+        효과範囲묘지 = 1
+        효과範囲상대묘지 = 1
+        효과条件성별 = 牝性
+        효과条件종류 = モン全般
+        효과추가カテ = 묘상
+        CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",1)
+		IF RESULT == 1
+			조교대상 = RESULT:1
+			CALL CARD_EROTICS(조교대상)
+			IF RESULT != -1
+				조교대상 = RESULT
+				PRINTFORML 
+				PRINTFORML 패배した%CALLNAME:조교대상%は촉수怪獣に見つかり、拷問機械へと連れ去られ、묘상としての生涯を歩まされることとなった。
+				PRINTFORMW 拷問機械は%CALLNAME:조교대상%の四肢をしっかりと固定し、それと同時に、생체のような質感を持つ本物の촉수そっくりの機械촉수が、%CALLNAME:조교대상%の体を奔放に這い回り、삽입を繰り返し始めた。
+				CALL EROTIC_MOVE("생체파츠",조교대상,-1,50)
+			ENDIF
+		ENDIF
+    ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59704,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+        효과範囲제외 = 1
+		효과条件カテゴリ = 촉수
+		효과条件複数 = 3
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+        IF RESULT == 1
+            CALL FULLRESET
+            CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+        ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻撃後強制誘発
+	CALL FULLRESET
+	PRINTL 戦闘で破壊されたメスモンスターを、持ち主の마법＆함정ゾーンに「묘상」として置きますか？
+	PRINTL [1] - ★YEAH!★
+	PRINTL [2] - NO
+	BINPUT
+	IF RESULT == 1
+		;获取并储存对方刚刚被破坏怪兽的ID
+		CALL FULLRESET
+		조교대상 = 直前戦闘破壊ID(듀얼리스트,1)
+		;获取对方刚刚被破坏怪兽的名称用于确认目标
+		CALLFORM CARDNAME_{조교대상}("名前")
+		破坏怪兽名前 = %RESULTS%
+		;获取刚刚被破坏怪兽的位置
+		選択カード = GETVAR(@"%対面者%_直前戦闘破壊")
+		IF 選択カード != 9999
+			;获取自己刚刚进行战斗怪兽的名称
+			CALLFORM CARDNAME_{戦闘カードID(듀얼리스트)}("名前")
+			战斗怪兽名前 = %RESULTS%
+
+			CALL FULLRESET
+			효과範囲상대묘지 = 1
+			효과条件성별 = 牝性
+			효과条件종류 = モン全般
+			효과条件名前 = %破坏怪兽名前%
+			효과추가カテ = 묘상
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시",1)
+			IF RESULT == 1
+				CALL CARD_EROTICS(조교대상)
+				IF RESULT != -1
+					조교대상 = RESULT
+					PRINTFORML 
+					PRINTFORML 패배した%CALLNAME:조교대상%は%战斗怪兽名前%によって拷問機械へと連れ去られ、묘상としての生涯を歩まされることとなった。
+					PRINTFORMW 拷問機械は%CALLNAME:조교대상%の四肢をしっかりと固定し、それと同時に、생체のような質感を持つ本物の촉수そっくりの機械촉수が、%CALLNAME:조교대상%の体を奔放に這い回り、삽입を繰り返し始めた。
+					CALL EROTIC_MOVE("묘상捕縛",조교대상,-1,50)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+ENDIF

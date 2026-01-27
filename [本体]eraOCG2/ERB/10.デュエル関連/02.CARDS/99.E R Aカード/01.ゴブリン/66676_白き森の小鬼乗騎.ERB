@@ -11,10 +11,9 @@ SELECTCASE 参照先
 	CASE "略称"
 		RESULTS = 하얀숲의소귀승기
 	CASE "カテゴリ"
-		RESULTS:0 = 고블린라이더
-		RESULTS:1 = 고블린
-		RESULTS:2 = 하얀 숲
-		RESULTS:3 = E.R.A
+		RESULTS:0 = 고블린
+		RESULTS:1 = 하얀 숲
+		RESULTS:2 = E.R.A
 ENDSELECT
 
 
@@ -124,18 +123,17 @@ ENDIF
 @CARDEFFECT_66676(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
 #DIM DYNAMIC カウンタ
-#DIM DYNAMIC 無効カード
-#DIMS DYNAMIC 対面者
-#DIM DYNAMIC 条件달성
-#DIM DYNAMIC 攻撃力上昇値
-#DIM DYNAMIC 조교대상
-#DIM DYNAMIC レイプ횟수
-
-
-
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 取込カードID
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
@@ -150,6 +148,8 @@ IF 종류 == 소환時 || 종류 == 특수소환時
 		효과条件カテゴリ = 고블린
 		효과条件종류 = モン全般
 		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		PRINTFORML 「はーっ、はーっ……う、うぅっ……♡　おなか、へんだよぉ……♡」　ゴブリンらに捕まり、彼らの乗騎とされてしまったアステーリャが、よろめきながら現れた……♡
+		WAIT
 	ENDIF
 ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,66676,2)
@@ -158,6 +158,7 @@ ELSEIF 종류 == 필드起動
 		효과条件종족 = 마법사족
 		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
 		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"一星", 2,1) 
+		PRINTFORML 「ひ、ぎゅうぅっ♡！？」　無理やりに발동させられたアステーリャの魔術で、白き森が照らされ……次なる獲物の姿が浮かび上がる……！
 	ENDIF
 ELSEIF 종류 == S素材時효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,66676,3)
@@ -165,6 +166,7 @@ ELSEIF 종류 == S素材時효과
 		CALL FULLRESET
 		효과条件カテゴリ = 죄보
 		CALL CARD_ADD_BASIC(듀얼리스트,"덱",場所)
+		PRINTFORML 「い、いやぁああっ……♡　リゼぇええ～～～っ……♡」アステーリャはゴブリンの巣穴へと引きずり込まれていった……。
+		WAIT
 	ENDIF
 ENDIF
-

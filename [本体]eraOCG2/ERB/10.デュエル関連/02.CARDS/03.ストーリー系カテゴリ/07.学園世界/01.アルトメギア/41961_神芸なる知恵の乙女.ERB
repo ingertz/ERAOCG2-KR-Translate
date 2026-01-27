@@ -37,8 +37,8 @@ SELECTCASE 参照先
 	CASE "성별"
 		RETURN 牝性
 	CASE "連動ID"
-		RETURN 1960
-	CASE "특수制限"
+		RETURN 1961
+	CASE "특수불가"
 		RETURN 1
 	CASE "추가日"
 		RETURN 250426
@@ -90,9 +90,15 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX덱起動
-	CALL CARD_SS_CHECK(듀얼리스트,11884,"손패")
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+;	PRINTFORML ここまでOK１
+	CALL CARD_SS_CHECK(듀얼리스트,41961,"EX덱")
 	SIF RESULT == 1
 		RETURN 0
+;	PRINTFORML ここまでOK２
 	CALL FULLRESET
 	효과範囲손패 = 1
 	효과条件종류 = 마함全般

@@ -29,6 +29,7 @@
 #DIM DYNAMIC 상대지정カード
 #DIM DYNAMIC 現在最小攻撃力
 #DIM DYNAMIC 合計攻撃力
+#DIM DYNAMIC 合計속성数
 #DIM DYNAMIC 추가場所
 #DIM DYNAMIC 最大値
 #DIM DYNAMIC 消去カード
@@ -40,8 +41,14 @@
 #DIM DYNAMIC 一時제외場所
 #DIMS DYNAMIC 使用素材名前,99
 
+#DIM DYNAMIC 素材속성数起動
+#DIM DYNAMIC 속성数
+#DIM DYNAMIC 속성セット
+#DIM DYNAMIC 속성ビット
+
 #DIM DYNAMIC 素材数起動
 #DIM DYNAMIC 素材攻撃力起動
+
 #DIM DYNAMIC 효과추가종류보존,20
 #DIM DYNAMIC 素材ID起動 ;Anonym추가
 #DIM DYNAMIC 보존素材ID
@@ -55,6 +62,9 @@ SIF 素材条件素材数起動 >= 1
 	素材数起動 = 1
 SIF 素材条件素材攻撃力起動 >= 1
 	素材攻撃力起動 = 1
+
+SIF 素材条件속성数起動 >= 1
+	素材속성数起動 = 1
 SIF 素材条件素材ID起動 >= 1 ;Anonym추가
 	素材ID起動 = 素材条件素材ID起動
 
@@ -303,6 +313,17 @@ IF 素材数 == 必要素材数 || 素材数 == 代替素材数 || 選択カー�
 			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("攻撃力")
 			合計攻撃力 += RESULT
 		ENDIF
+
+		IF 素材속성数起動 == 1
+			TRYCALLFORM CARD_{選択カード_ID:カウンタ}("속성")
+			속성セット = RESULT
+			IF 속성セット >= 1
+				IF GETBIT(속성ビット,속성セット) == 0
+					SETBIT 속성ビット, 속성セット
+					合計속성数 ++
+				ENDIF
+			ENDIF
+		ENDIF
 	NEXT
 
 	FOR カウンタ,0,素材数
@@ -348,8 +369,11 @@ IF 素材数 == 必要素材数 || 素材数 == 代替素材数 || 選択カー�
 			SETVAR @"%듀얼리스트%_MZ_汎数:カード소환先", 素材数
 		ENDIF
 		IF 素材攻撃力起動 == 1
-			;PRINTFORML 合計攻撃力：{合計攻撃力}
 			SETVAR @"%듀얼리스트%_MZ_汎数:カード소환先", 合計攻撃力
+		ENDIF
+		IF 素材속성数起動 == 1
+			;PRINTFORML 合計속성数：{合計속성数}
+			SETVAR @"%듀얼리스트%_MZ_汎数:カード소환先", 合計속성数
 		ENDIF
 		IF 보존素材ID > 0 ;Anonym추가
 			SETVAR @"%듀얼리스트%_MZ_汎数:カード소환先", 보존素材ID
@@ -357,7 +381,7 @@ IF 素材数 == 必要素材数 || 素材数 == 代替素材数 || 選択カー�
 	ENDIF
 
 	IF 듀얼리스트 == "자신"
-		リザルト：FUS소환 = 1
+		リザルト：FUS소환 += 1
 	ENDIF
 	VARSET ALT条件
 	RETURN 1

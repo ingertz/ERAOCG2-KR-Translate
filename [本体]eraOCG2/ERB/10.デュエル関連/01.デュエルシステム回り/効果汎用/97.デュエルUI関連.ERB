@@ -598,18 +598,17 @@ FOR カウンタB,0,10
 							RESETCOLOR
 					ELSE
 						CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
-						IF RESULT == 0
+						IF RESULT == 1
+							HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+						ELSE
 							SETCOLOR C_L_GRAY
 							PRINTFORM  %カード略称%
 							RESETCOLOR
-						ELSE
-							PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (5000 + カウンタ)
 						ENDIF
 					ENDIF
 				ELSE
 					FONTSTYLE 8
 					PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (5000 + カウンタ)
-					;PRINTFORM %"UNKNOWN",20,LEFT%
 				ENDIF
 				FONTSTYLE 0
 				PRINTFORM (%"？",2%)
@@ -639,6 +638,8 @@ FOR カウンタB,0,10
 					PRINTFORM 【공격회피】
 					SETCOLOR C_GRAY
 					PRINTFORM 　／　
+				ELSE
+					PRINTFORM ／　／　／　／　／　／　
 				ENDIF
 			ELSEIF カウンタB == 5 && 使用モード == "除去"
 				SETCOLOR C_GRAY
@@ -743,10 +744,12 @@ FOR カウンタB,0,10
 					설정色３ = C_PINK
 					SETCOLOR 설정色３
 				ENDIF
-				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
-				IF RESULT == 1 && 듀얼리스트 == "자신"
-					설정色３ = C_G_YELLOW
-					SETCOLOR 설정色３
+				IF 使用モード == ""
+					TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
+					IF RESULT == 1 && 듀얼리스트 == "자신"
+						설정色３ = C_G_YELLOW
+						SETCOLOR 설정色３
+					ENDIF
 				ENDIF
 				;略称
 				IF GETVAR(@"%듀얼리스트%_MZ_変化元ID:カウンタ") >= 1
@@ -757,6 +760,11 @@ FOR カウンタB,0,10
 					TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("略称")
 				ENDIF
 				カード略称 = %RESULTS%
+				STRLENS カード略称 ;Anonym추가
+				IF RESULT >= 18
+					SUBSTRING カード略称, 0, 14
+					カード略称 = %RESULTS:0,14,LEFT%…
+				ENDIF
 				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("名前")
 				カード実名 = %RESULTS%
 				IF 듀얼리스트 == "자신"
@@ -818,22 +826,22 @@ FOR カウンタB,0,10
 									RESETCOLOR
 								ELSE
 									CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
-									IF RESULT == 0
+									IF RESULT == 1
+										HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+									ELSE
 										SETCOLOR C_L_GRAY
 										PRINTFORM  %カード略称%
 										RESETCOLOR
-									ELSE
-										HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 									ENDIF
 								ENDIF
 							ELSE
 								CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
-								IF RESULT == 0
+								IF RESULT == 1
+									HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+								ELSE
 									SETCOLOR C_L_GRAY
 									PRINTFORM  %カード略称%
 									RESETCOLOR
-								ELSE
-									HTML_PRINT @"<button value='{5000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 								ENDIF
 							ENDIF
 						ELSE
@@ -1118,9 +1126,11 @@ FOR カウンタB,0,10
 				SIF GETVAR(@"%듀얼리스트%_MZ_接可:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_性:カウンタ") == 牝性
 					SETCOLOR C_PINK
 
-				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
-				SIF RESULT == 1 && 듀얼리스트 == "자신"
-					SETCOLOR C_G_YELLOW
+				IF 使用モード == ""
+					TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
+					SIF RESULT == 1 && 듀얼리스트 == "자신"
+						SETCOLOR C_G_YELLOW
+				ENDIF
 
 				SETCOLOR 설정色２
 				;L파츠
@@ -1151,9 +1161,11 @@ FOR カウンタB,0,10
 			SIF GETVAR(@"%듀얼리스트%_MZ_接可:カウンタ") >= 1 && GETVAR(@"%듀얼리스트%_MZ_性:カウンタ") == 牝性
 				SETCOLOR C_PINK
 
-			TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
-			SIF RESULT == 1 && 듀얼리스트 == "자신"
-				SETCOLOR C_G_YELLOW
+			IF 使用モード == ""
+				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_MZ_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
+				SIF RESULT == 1 && 듀얼리스트 == "자신"
+					SETCOLOR C_G_YELLOW
+			ENDIF
 			SIF GROUPMATCH(カウンタB,1,2,3,4)
 				SETCOLOR 설정色
 			SIF GROUPMATCH(カウンタB,5,6,7,8)
@@ -1211,7 +1223,7 @@ NEXT
 
 
 ;마법情報────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-@CARD_MAGINFO(듀얼리스트)
+@CARD_MAGINFO(듀얼리스트,使用モード,除去種)
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC カウンタB
 #DIMS DYNAMIC 듀얼리스트
@@ -1356,12 +1368,12 @@ FOR カウンタB,0,5
 						RESETCOLOR
 					ELSE
 						CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID)
-						IF RESULT == 0
+						IF RESULT == 1
+							PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (6000 + カウンタ)
+						ELSE
 							SETCOLOR C_L_GRAY
 							PRINTFORM  %カード略称%
 							RESETCOLOR
-						ELSE
-							PRINTBUTTON @" %"UNKNOWN",19,LEFT%", (6000 + カウンタ)
 						ENDIF
 					ENDIF
 					FONTSTYLE 0
@@ -1418,15 +1430,22 @@ FOR カウンタB,0,5
 			ELSEIF カウンタB == 1
 				FONTSTYLE 8
 				VARSET RESULT
+				IF 使用モード == ""
 				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")}(듀얼리스트,마함起動,"마함",カウンタ)
-;				PRINTFORML GETVAR(@"%듀얼리스트%_魔_ID:{カウンタ}"):{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")} 마함起動:{RESULT}
-				IF RESULT == 1 && 듀얼리스트 == "자신"
-					설정色３ = C_G_YELLOW
-					SETCOLOR 설정色３
+	;				PRINTFORML GETVAR(@"%듀얼리스트%_魔_ID:{カウンタ}"):{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")} 마함起動:{RESULT}
+					IF RESULT == 1 && 듀얼리스트 == "자신"
+						설정色３ = C_G_YELLOW
+						SETCOLOR 설정色３
+					ENDIF
 				ENDIF
 				;略称		
 				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("略称")
 				カード略称 = %RESULTS%
+				STRLENS カード略称 ;Anonym추가
+				IF RESULT >= 18
+					SUBSTRING カード略称, 0, 14
+					カード略称 = %RESULTS:0,14,LEFT%…
+				ENDIF
 				TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}("名前")
 				カード実名 = %RESULTS%
 				IF 듀얼리스트 == "자신"
@@ -1475,22 +1494,22 @@ FOR カウンタB,0,5
 								RESETCOLOR
 							ELSE
 								CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID,1)
-								IF RESULT == 0
+								IF RESULT == 1
+									HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+								ELSE
 									SETCOLOR C_L_GRAY
 									PRINTFORM  %カード略称%
 									RESETCOLOR
-								ELSE
-									HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 								ENDIF
 							ENDIF
 						ELSE
 							CALL CARD_REMOVAL_ABLE("상대","자신","単体",カウンタ,除去種,処理中_효과ID,1)
-							IF RESULT == 0
+							IF RESULT == 1
+								HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
+							ELSE
 								SETCOLOR C_L_GRAY
 								PRINTFORM  %カード略称%
 								RESETCOLOR
-							ELSE
-								HTML_PRINT @"<button value='{6000 + カウンタ}' title='%HTML_ESCAPE(カード実名)%'><font color='#%TOSTR(설정色３,"X6")%'><u> %HTML_ESCAPE(カード略称), 19, LEFT%</u></font></button>",1
 							ENDIF
 						ENDIF
 					ELSE
@@ -1613,9 +1632,11 @@ FOR カウンタB,0,5
 				ENDIF
 			ELSEIF カウンタB == 4
 
-				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
-				SIF RESULT == 1 && 듀얼리스트 == "자신"
-					SETCOLOR C_G_YELLOW
+				IF 使用モード == ""
+					TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
+					SIF RESULT == 1 && 듀얼리스트 == "자신"
+						SETCOLOR C_G_YELLOW
+				ENDIF
 
 				SETCOLOR 설정色２
 				PRINTFORM └────────────┘
@@ -1623,9 +1644,11 @@ FOR カウンタB,0,5
 			ENDIF
 		ENDIF
 		IF !GROUPMATCH(カウンタB,0,4)
-			TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
-			SIF RESULT == 1 && 듀얼리스트 == "자신"
-				SETCOLOR C_G_YELLOW
+			IF 使用モード == ""
+				TRYCALLFORM CARDCAN_{GETVAR(@"%듀얼리스트%_魔_ID:カウンタ")}(듀얼리스트,필드起動,"필드",カウンタ)
+				SIF RESULT == 1 && 듀얼리스트 == "자신"
+					SETCOLOR C_G_YELLOW
+			ENDIF
 			SIF GROUPMATCH(カウンタB,1,2)
 				SETCOLOR 설정色
 			SIF GROUPMATCH(カウンタB,3)
@@ -1855,7 +1878,6 @@ ELSEIF 種別 == "효과"
 			ENDIF
 			SETVAR @"%対面者%_変動値_保" , 変動値
 			SETVAR @"%対面者%_被弾者_保" , 1
-
 		ELSE
 			IF デュエル타입 == 1 && 変動値 >= 1
 				変動値 = 変動値 / 2
@@ -1869,7 +1891,6 @@ ELSEIF 種別 == "효과"
 			IF 대상者 == "상대"
 				CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,10,変動値)
 			ENDIF
-
 			SETVAR @"%대상者%_変動値_保" , 変動値
 			SETVAR @"%대상者%_被弾者_保" , 1
 		ENDIF
@@ -1937,6 +1958,12 @@ IF GROUPMATCH(種別, "戦闘", "直接戦闘", "효과")
 		ダメージ受値 = 変動値
 		CALL CARD_DAMAGEEFFECT_FORCE(대상者)
 		CALL CARD_DAMAGEEFFECT_FORCE(対面者)
+		IF 変動値 > リザルト：最大ダメ && ダメージ受者 == "상대"
+			リザルト：最大ダメ = 変動値
+		ENDIF
+		IF ダメージ受者 == "자신"
+			VARSET リザルト：ノーダメ
+		ENDIF
 		VARSET ダメージ종류
 		VARSET ダメージ受者
 		VARSET ダメージ増減
@@ -4166,7 +4193,14 @@ FOR カウンタ,0,20
 			TRYCALLFORM CARDNAME_{설정_손패:実カウンタ}("名前")
 			カード名前 = %RESULTS%
 			TRYCALLFORM CARDNAME_{설정_손패:実カウンタ}("略称")
-			カード略称 = %RESULTS,16,LEFT%
+			カード略称 = %RESULTS%
+			STRLENS カード略称 ;Anonym추가
+			IF RESULT >= 18
+				SUBSTRING カード略称, 0, 14
+				カード略称 = %RESULTS:0,14,LEFT%…
+			ELSE
+				カード略称 = %カード略称,16,LEFT%
+			ENDIF
 			HTML_PRINT @"<button value='{설정_ボタン:実カウンタ}' title='%HTML_ESCAPE(カード名前)%'><font color='#%TOSTR(설정色,"X6")%'> [%HTML_ESCAPE(カード略称), 16, LEFT%]</font></button>",1
 			RESETCOLOR
 		ENDIF
@@ -4199,7 +4233,14 @@ FOR カウンタ,0,20
 			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}("名前")
 			カード名前 = %RESULTS%
 			TRYCALLFORM CARDNAME_{설정_묘지:実カウンタ}("略称")
-			カード略称 = %RESULTS,16,LEFT%
+			カード略称 = %RESULTS%
+			STRLENS カード略称 ;Anonym추가
+			IF RESULT >= 18
+				SUBSTRING カード略称, 0, 14
+				カード略称 = %RESULTS:0,14,LEFT%…
+			ELSE
+				カード略称 = %カード略称,16,LEFT%
+			ENDIF
 			HTML_PRINT @"<button value='{설정_ボタン:実カウンタ}' title='%HTML_ESCAPE(カード名前)%'><font color='#%TOSTR(설정色,"X6")%'> [%HTML_ESCAPE(カード略称), 16, LEFT%]</font></button>",1
 			RESETCOLOR
 		ENDIF
@@ -5329,7 +5370,7 @@ ELSE
 		PRINTFORML 라이딩 듀얼 사양：
 		PRINTFORML ・게임을 개시할 때、설정된 섀시, 엔진, 부스트가 적용된다。
 		PRINTFORML ・엔드 페이즈 시에、상대의 스피드 카운터는 １늘어난다。
-		PRINTFORML ・다이렉트 어택을 받은 플레이어의 스피드 카운터는 １줄어든다。
+		PRINTFORML ・직접공격(다이렉트 어택)을 받은 플레이어의 스피드 카운터는 １줄어든다。
 		CUSTOMDRAWLINE —
 		PRINTL
 		VARSET RESULT

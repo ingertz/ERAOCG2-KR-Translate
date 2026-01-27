@@ -40,12 +40,12 @@ CALLFORM CARD_ABLE(0,마함起動 ,손패起動 ,フリー誘発)
 PRINTL ●상대 묘지의 암컷 또는 수컷 카드를 １장 선택해서 발동할 수 있다。
 PRINTL 그 카드를 제외한다。이 효과로 제외한 같은 이름의 카드의 효과는 이 턴 무효화된다。
 CALLFORM CARD_ABLE(0,발동誘発)
-PRINTL ●자신의 카드의 효과에 체인해서、상대가 패의 암컷・수컷 카드의 효과를 발동할 때 발동할 수 있다。
+PRINTL ●자신의 카드의 효과에 체인해서、상대가 패의 암컷 / 수컷 카드의 효과를 발동할 때 발동할 수 있다。
 PRINTL 그 효과를 무효로하고 제외한다。이 효과로 제외한 같은 이름의 카드의 효과는 이 턴 무효화된다。
 
 PRINTL ②：자신 메인 페이즈에 발동할 수 있다。
 PRINTL 이 턴、이 카드로 제외한 카드를 묘지로 되돌리고、이 카드를 패로 되돌린다。
-PRINTL 이 듀얼중「엉덩이구멍의 지명자」의 대상은、이 효과로 묘지로 되돌린 카드밖에 대상으로 할 수없다。
+PRINTL 이 듀얼중 "엉덩이구멍의 지명자"의 대상은、이 효과로 묘지로 되돌린 카드밖에 대상으로 할 수없다。
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDCAN_79549(듀얼리스트,종류,ゾーン,場所)
@@ -146,9 +146,11 @@ ENDIF
 #DIM DYNAMIC カウンタ
 #DIM DYNAMIC 選択カード
 #DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名
 #DIM DYNAMIC 紋章場所
 #DIM DYNAMIC 紋章カードID = 79549
 #DIM DYNAMIC 효과플래그
+#DIM DYNAMIC 화상切替플래그
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -222,11 +224,38 @@ ELSEIF 종류 == 묘지起動
 		
 		IF GETBIT (효과플래그,4) == 0
 			TRYCALLFORM CARDNAME_{選択カードID}("略称")
+			選択カード名 = %RESULTS%
 			CUSTOMDRAWLINE ―
-			PRINTFORML "엉덩이구멍의 지명자"는 "%RESULTS%"의 엉덩이구멍에 흥미를 보인것같다…
-			PRINTFORML 이 듀얼중 "엉덩이구멍의 지명자"의 효과로는 "%RESULTS%" 이외를 지명할 수 없습니다。
+			PRINTFORML "엉덩이구멍의 지명자"는 "%選択カード名%"의 엉덩이구멍에 흥미를 보인것같다…
+			PRINTFORML 이 듀얼중 "엉덩이구멍의 지명자"의 효과로는 "%選択カード名%" 이외를 지명할 수 없습니다。
 			CUSTOMDRAWLINE ―
 			PRINTFORMW 
+			
+			SELECTCASE 選択カード名
+				CASE "うらら"
+					カード화상切り替え:79549 = 0
+					화상切替플래그 = 1
+				CASE "うさぎ"
+					カード화상切り替え:79549 = 1
+					화상切替플래그 = 1
+				CASE "さくら"
+					カード화상切り替え:79549 = 2
+					화상切替플래그 = 1
+				CASE "わらし"
+					カード화상切り替え:79549 = 3
+					화상切替플래그 = 1
+				CASE "しぐれ"
+					カード화상切り替え:79549 = 4
+					화상切替플래그 = 1
+				CASE "みずき"
+					カード화상切り替え:79549 = 5
+					화상切替플래그 = 1
+			ENDSELECT
+			
+			IF 화상切替플래그 == 1
+				TRYCALLFORM CARD_UI(79549);
+				PRINTFORMW 「엉덩이구멍의 지명자」는「%選択カード名%」의 엉덩이구멍을 가리키고 있다……
+			ENDIF
 		ELSE
 			TRYCALLFORM CARDNAME_{選択カードID}("略称")
 			CUSTOMDRAWLINE ―

@@ -35,9 +35,9 @@ SELECTCASE 参照先
 	CASE "レベル"
 		RETURN 7
 	CASE "攻撃力"
-		RETURN 3400
+		RETURN 3450
 	CASE "守備力"
-		RETURN 500
+		RETURN 1200
 	CASE "성별"
 		RETURN 牝性
 	CASE "分割"
@@ -140,9 +140,16 @@ ELSEIF 종류 == 소환強制誘発
 		RETURN 0
 	SIF 最終소환타입 == ""
 		RETURN 0
-	CALLFORM CARDNAME_{最終소환ID}("カテゴリ") 
-	SIF !MATCH(RESULTS, "커맨드")
-		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = D2W 와일드 스피드
+	효과条件条件달성 = 1 
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT != 1
+		CALLFORM CARDNAME_{最終소환ID}("カテゴリ") 
+		SIF !MATCH(RESULTS, "커맨드")
+			RETURN 0
+	ENDIF
 	CALLFORM CARD_{最終소환ID}("속성") 
 	SIF !MATCH(RESULT, 물속성)
 		RETURN 0

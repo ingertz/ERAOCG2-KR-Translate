@@ -1,0 +1,218 @@
+﻿@CARDNAME_57013,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = オメガモンＸ抗体
+	CASE "略称"
+		RESULTS = オメガモンＸ
+	CASE "カテゴリ"
+		RESULTS:0 = デジモン
+		RESULTS:1 = Ｘ抗体
+	CASE "出典作品"
+		RESULTS:0 = デジモン
+ENDSELECT
+
+
+@CARD_57013(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN エクシーズ
+	CASE "属性"
+		RESULT:1 = 炎属性
+		RESULT:2 = 水属性
+		RETURN 光属性
+	CASE "種族"
+		RESULT:1 = サイバース族
+		RETURN 戦士族
+	CASE "レベル"
+		RETURN 11
+	CASE "攻撃力"
+		RETURN 4000
+	CASE "守備力"
+		RETURN 4000
+	CASE "特殊制限"
+		RETURN 1
+	CASE "レア度"
+		RETURN ULR
+	CASE "追加日"
+		RETURN 260111
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_57013(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 「ウォーグレイモンＸ抗体」＋「メタルガルルモンＸ抗体」
+;エクシーズなのに素材の名称指定してるのは別にガバじゃなく意図
+PRINTL デジモンカードはサイバース族としても扱う。
+CALLFORM CARD_ABLE(1,EXデッキ起動)
+PRINTL 相手フィールドにコスト１０以上のモンスターが存在する場合、
+PRINTL このカードをEXデッキから特殊召喚できる。
+PRINTL この方法で特殊召喚したこのカードのＸ素材は２つ増え、次のエンドフェイズにEXデッキに戻る。
+PRINTL 自分は「オメガモンＸ抗体」を１ターンに１度しか特殊召喚できず、
+PRINTL このカード名の②の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ①：このカードは相手モンスター・魔法カードの効果を受けない。
+CALLFORM CARD_ABLE(2,発動誘発)
+PRINTL ②：相手がカードの効果を発動した時に、このカードのＸ素材を１つ取り除いて発動できる。
+PRINTL その発動を無効にし、除外する。
+CALLFORM CARD_ABLE(3,戦場起動,フリー誘発)
+PRINTL ③：自分・相手ターンに、このカードがＸ素材を持たないなら発動できる。
+PRINTL このカードのＸ素材を２つ増やし、相手フィールドのモンスターゾーンまたは魔法＆罠ゾーンのカードを全て除外する。
+PRINTL この効果は耐性で防げない。
+PRINTL その後、相手の墓地からカードを全て除外する。
+
+
+@CARDSUMMON_57013(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+なんでもＸ = 1
+素材条件名前:0 = ウォーグレイモンＸ抗体
+素材条件名前:1 = メタルガルルモンＸ抗体
+素材条件固名前起動 = 1
+
+IF EX参照 == 1
+	CALL XYZCAN(決闘者,召喚カード,57013) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARDCAN_57013(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件達成
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,57013)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_EX_CHECK(決闘者,57013)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	CALLFORM 効果条件レベル_ADV(10,"以上")
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 発動誘発
+	SIF 発動済_2(決闘者,57013)
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(決闘者,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") != -1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+
+@CARDEFFECT_57013(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 選択カード名前
+#DIM DYNAMIC 同名枚数
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,57013)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果追加種類:0 = 効追Ｘ素 + 2
+		効果追加種類:1 = 17
+		CALL CARD_SP_SUMMON(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 発動誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,57013,2,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(決闘者,"発動無効",場所,"除外")
+	ENDIF
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,57013)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(決闘者,ゾーン,場所,"Ｘ",2)
+		PRINTFORMW 「オールデリート！」
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果範囲相手魔罠 = 1
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			CALL CARD_SELECT(決闘者,選択カード)
+			IF 参照先（CS） == "魔罠"
+				CALL FULLRESET
+				CALL CARD_HYPER_DISPOSE(決闘者,"相手魔罠",除外行き)
+			ELSE
+				CALL FULLRESET
+				CALL CARD_HYPER_DISPOSE(決闘者,"相手戦場",除外行き)
+			ENDIF
+			CALL FULLRESET
+			CALL CARD_HYPER_DISPOSE(決闘者,"相手墓地",除外行き)
+			
+        ENDIF
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"モ耐")
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"魔耐")
+ENDIF

@@ -1,0 +1,214 @@
+﻿@CARDNAME_50002,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 사화요란의 령사
+	CASE "略称"
+		RESULTS = 사화요란의 령사
+	CASE "カテゴリ"
+		RESULTS:0 = 령사
+ENDSELECT
+
+
+@CARD_50002(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1850
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 260124
+	CASE "連動ID"
+		SELECTCASE RAND:4
+			CASE 0
+				RESULT:3 = 1253
+				RESULT:2 = 1252
+				RESULT:1 = 1251
+				RETURN 1250
+			CASE 1
+				RESULT:3 = 1253
+				RESULT:2 = 1252
+				RESULT:1 = 1250
+				RETURN 1251
+			CASE 2
+				RESULT:3 = 1253
+				RESULT:2 = 1250
+				RESULT:1 = 1251
+				RETURN 1252
+			CASE 3
+				RESULT:3 = 1250
+				RESULT:2 = 1252
+				RESULT:1 = 1251
+				RETURN 1253
+		ENDSELECT
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_50002(종류)
+#DIM DYNAMIC 종류
+
+PRINTL モンスター２体以上
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：このカードの攻撃力は、フィールドのモンスターの속성の종류×３００アップする。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：このカードが表側표시で存在する限り１度だけ、자신・상대のメインフェイズに발동できる。
+PRINTL 자신の묘지からモンスター１体と、そのモンスターと同じ속성で종족が異なるモンスターまたは、同じ종족で속성が異なるモンスター１体を選び、
+PRINTL その２体を특수소환する。
+PRINTL このカード及びこの효과で특수소환したモンスターはＡ・융합・Ｓ・Ｘ・Ｌ소환の素材にできない。
+
+
+@CARDSUMMON_50002(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 4
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,50002) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_50002(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50002)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 효과발동済(듀얼리스트,50002)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 4
+		RETURN 0
+	FOR カウンタ,1,8
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件소환可 = 1
+		효과条件속성 = カウンタ
+		;효과条件固종족起動 = 1
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT >= 2
+			RETURN 1
+	NEXT
+	FOR カウンタ,1,21
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件소환可 = 1
+		효과条件종족 = カウンタ
+		;효과条件固속성起動 = 1
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT >= 2
+			RETURN 1
+	NEXT
+	RETURN 0
+ENDIF
+
+@CARDEFFECT_50002(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード_A
+#DIM DYNAMIC 選択カード_B
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択カード_종족
+#DIM DYNAMIC 選択カード_속성
+
+
+
+IF 종류 == 攻守変動
+	FOR カウンタ,1,8
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件속성 = カウンタ
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT == 1
+			攻撃力修正 += 1
+	NEXT
+	攻撃力修正 = 攻撃力修正 * 300
+	IF 攻撃力修正 != 0
+		CALL FULLRESET
+		CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50002,11)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			選択カード_A = RESULT:50
+			選択カード_ID = RESULT:99
+			TRYCALLFORM CARD_{選択カード_ID}("종족")
+			選択カード_종족 = RESULT
+			TRYCALLFORM CARD_{選択カード_ID}("속성")
+			選択カード_속성 = RESULT
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件속성 = 選択カード_속성
+			CALLFORM 효과条件종족_ADV(選択カード_종족,"以外")
+			;CALLFORM 효과条件スーパー속성(選択カード_속성,"以外")
+			효과条件スーパー속성:0 = 9999
+			FOR カウンタ,1,7
+				SIF カウンタ == 選択カード_속성
+					CONTINUE
+				효과条件スーパー속성:カウンタ = カウンタ
+			NEXT
+			효과条件종족 = 選択カード_종족
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				選択カード_B = RESULT:50
+				CALL FULLRESET
+				효과추가종류 = 効追永材
+				CALL CARD_SP_SUMMON(듀얼리스트,"묘지",選択カード_A)
+				CALL CARD_SP_SUMMON(듀얼리스트,"묘지",選択カード_B)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"不材",2,1)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+

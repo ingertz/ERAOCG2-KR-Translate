@@ -1,0 +1,216 @@
+@CARDNAME_79925,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 코스프레 에리어.alc
+	CASE "略称"
+		RESULTS = 코스프레 에리어
+	CASE "カテゴリ"
+		RESULTS:0 = E.R.A
+		RESULTS:1 = 닷아르크
+ENDSELECT
+
+@CARD_79925(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 20260121
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_79925(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+RETURN 0
+
+@CARD_EXPLANATION_79925(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 자신フィールドは「코스프레 에리어」となる。
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,손패起動,마함起動)
+PRINTL ①：このカードの발동時の효과処理として、
+PRINTL 자신の덱から「.alc」마법カード１枚を손패に加える。
+CALL CARD_ABLE(2,효과後誘発)
+PRINTL ②：「E.R.A」装備마법カードが묘지へ送られた場合に발동できる。
+PRINTL 묘지の「E.R.A」装備마법カード１枚を選び、フィールドの牝性モンスター１体に装備する。
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ③：フィールドの表側표시モンスターは사이버스족・牝性になり、
+PRINTL 「.alc」モンスターの攻撃力・守備力は자신フィールドの「E.R.A」装備마법カードの数×２００アップし、
+PRINTL 「.alc」以外のモンスターの攻撃力・守備力は자신フィールドの「E.R.A」装備마법カードの数×２００ダウンする。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_79925(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79925)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,79925)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,79925)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = E.R.A
+	효과条件종류 = 装備마법
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"묘지送り全般+HD")
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = E.R.A
+	효과条件종류 = 装備마법
+	효과範囲묘지 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1	
+	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79925(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIMS DYNAMIC 選択カード名
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 条件Ａ
+#DIM DYNAMIC 条件Ｂ
+#DIM DYNAMIC 選択효과
+#DIM DYNAMIC 選択カード候補,VARSIZE("효과条件ID")
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79925,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 닷아르크
+		효과条件종류 = 마법全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 닷아르크
+			효과条件종류 = 마법全般
+			효과条件任意 = 1
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79925,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = E.R.A
+		효과条件종류 = 装備마법
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1
+			효과条件성별 = 牝性
+			효과条件표시 = 表側표시
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	CALL STATCHANGE_OTHER(듀얼리스트,"필드",場所,"種",사이버스족)
+	CALL FULLRESET
+	CALL STATCHANGE_OTHER(듀얼리스트,"필드",場所,"性",牝性)
+	CALL FULLRESET
+	CALL STATCHANGE_OTHER(듀얼리스트,"상대필드",場所,"種",사이버스족)
+	CALL FULLRESET
+	CALL STATCHANGE_OTHER(듀얼리스트,"상대필드",場所,"性",牝性)
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = E.R.A
+	효과条件종류 = 装備마법
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT > 0
+		カウンタ = RESULT
+		CALL FULLRESET
+		효과条件カテゴリ = 닷아르크
+		CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,200 * カウンタ,200 * カウンタ)
+		CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,200 * カウンタ,200 * カウンタ)
+		CALL FULLRESET
+		효과条件固カテゴリ = 닷아르크
+		CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,-200 * カウンタ,-200 * カウンタ)
+		CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-200 * カウンタ,-200 * カウンタ)
+
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"코스프레 에리어")
+ENDIF

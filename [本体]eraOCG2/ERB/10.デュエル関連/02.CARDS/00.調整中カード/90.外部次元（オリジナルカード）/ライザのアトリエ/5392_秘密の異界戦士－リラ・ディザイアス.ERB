@@ -1,0 +1,164 @@
+﻿@CARDNAME_5392,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 비밀의 이계전사－릴라 디자이어스
+	CASE "略称"
+		RESULTS = 이계전사 릴라
+	CASE "カテゴリ"
+		RESULTS:0 = 아틀리에
+		RESULTS:1 = 라이자의 아틀리에
+	CASE "出典作品"
+		RESULTS:0 = 라이자의 아틀리에
+ENDSELECT
+
+
+@CARD_5392(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 야수족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 260122
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5392(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動,フリー誘発)
+PRINTL ①：このカードと同名以外の「라이자의 아틀리에」モンスターが자신フィールドに存在する場合、자신・상대のメインフェイズに발동できる。
+PRINTL 자신フィールドのこのカードと同名以外の「라이자의 아틀리에」モンスター１体を손패に戻し、このカードを손패から특수소환する。
+PRINTL 자신フィールドにこのカードと同名以外の「라이자의 아틀리에」モンスターが２体以上存在する場合、
+PRINTL さらに상대フィールドのモンスター１体を덱に戻す事ができる。
+CALLFORM CARD_ABLE(0,攻守変動,지속효과)
+PRINTL ②：このカードの攻撃力・守備力は자신フィールドのこのカードと同名以外の
+PRINTL 「아틀리에」モンスターの数×３００ポイントアップし、
+PRINTL このカードの攻撃力が３０００ポイント以上である限り、このカードの攻撃횟수は１回増え貫通を得る。
+PRINTL 
+
+
+
+@CARDCAN_5392(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5392)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,5392)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,5392,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 라이자의 아틀리에
+	효과条件固名前 = 비밀의 이계전사－릴라 디자이어스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5392(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻守修正
+#DIM DYNAMIC 条件달성
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5392,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = 라이자의 아틀리에
+		효과条件固名前 = 비밀의 이계전사－릴라 디자이어스
+		효과条件行先플래그 = 손패行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件カテゴリ = 라이자의 아틀리에
+				효과条件종류 = モン全般
+				효과条件固名前 = 비밀의 이계전사－릴라 디자이어스
+				효과条件CNT = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT >= 2
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과条件任意 = 1
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")	
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 아틀리에
+	효과条件종류 = モン全般
+	효과条件固名前 = 비밀의 이계전사－릴라 디자이어스
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻守修正 = RESULT * 300
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻守修正,攻守修正)
+ELSEIF 종류 == 지속효과
+	IF GETVAR(@"%듀얼리스트%_MZ_攻:場所") >= 3000
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"追戦",1)
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"貫通")
+	ENDIF
+ENDIF

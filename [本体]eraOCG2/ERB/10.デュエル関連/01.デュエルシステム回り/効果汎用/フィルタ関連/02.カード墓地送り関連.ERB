@@ -611,6 +611,8 @@ VARSET 묘지送り종류
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
+
+
 SIF ゾーン == "효과処理"
 	RETURN 1
 SIF GETVAR(@"%듀얼리스트%_%ゾーン%:場所") == -1
@@ -738,7 +740,6 @@ IF ゾーン == "필드"
 			PRINTFORMW 대역효과가 %選択カード_名%를 지켰습니다。
 			RETURN 0
 		ENDIF
-
 	ENDIF
 
 	;――実除去処理――――――――――――――――――――――――――――――――――――――――――――――――
@@ -1138,6 +1139,8 @@ ELSEIF 行先플래그 == 덱行き || 行先플래그 == EX덱行き || 行先�
 	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과山送")
 	SIF ゾーン == "필드"
 		CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"필드山送")
+
+
 ELSEIF 行先플래그 == 손패行き
 	SETVAR @"%듀얼리스트%_手加数" , GETVAR(@"%듀얼리스트%_手加数") + 1
 	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"효과手送")
@@ -1165,6 +1168,8 @@ ELSEIF 行先플래그 == 戦闘破壊行き
 		ターン破壊数 += 1
 ELSEIF GROUPMATCH(行先플래그,完全묘지行き,完全제외行き,마함行き,소멸行き)
 	RETURN 1
+
+
 ELSE
 	IF ゾーン == "필드" || ゾーン == "마함"
 		CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"リリース")
@@ -1191,6 +1196,10 @@ ELSE
 	ENDIF
 
 ENDIF
+
+SIF EX덱送이동 >= 1
+	CALL CARD_FIN_ID_SET(듀얼리스트,選択カード_ID,"ＥＸ山送")
+
 CALL CARD_FIN_BIT_SET(듀얼리스트,ゾーン)
 RETURN 1
 

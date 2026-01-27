@@ -1,0 +1,678 @@
+﻿@CARDNAME_39912,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 이쿠기어 드러그 플랜트 박스
+	CASE "略称"
+		RESULTS = 광서의 음독제상
+	CASE "カテゴリ"
+		RESULTS:0 = 광서의 기계
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_39912(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 2400
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_39912(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신 필드 위에 "광서의 기계" 카드가 존재할 때、패에서 발동할 수 있다、
+PRINTL 자신의 패 / 덱、또는 상대의 덱에서 암컷 몬스터를 묘지로 보내고 이 카드를 패에서 특수 소환할 수 있다、
+PRINTL 그 후 필드 위의 성별을 가진 몬스터 모두를 발정시키고 미약 카운터를 １개 놓는다。
+PRINTL 이 효과로 발정한 "광서의 기계" 몬스터는 무조건 공격할 수 있다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신 / 상대 메인 페이즈에 발동할 수 있다、이 카드에 미약 카운터를 １개 놓고、
+PRINTL 이 때 미약 카운터가 ２개 이상이라면、미약 카운터를 전부 제거하고 덱에서 １장 카드를 드로우한다。
+CALLFORM CARD_ABLE(3,효과後強制誘発)
+PRINTL ③：이 카드가 몬스터 존에 존재하는 상태로、상대 필드 위에 성별을 가진 몬스터가 소환 / 특수 소환되었을 때、
+PRINTL 그 몬스터를 발정시켜 미약 카운터를 １개 놓는다。
+PRINTL
+SETCOLOR C_RED
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ④：①의 효과 사용시、묘지로 보낸 암컷 몬스터를 대상으로 발동한다、
+PRINTL 『상자』의 １개로서 구속되어 광서의 기계를 움직이기 위한 양식이 되기 위해 가공을 한다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ⑤：②의 효과 사용 시、암용독정제함이 관리하는『상자』에 대해 발동한다、
+PRINTL 강제절정광선을 쏜것에 의한 공격으로 패 증강을 행사하기 위한 에너지를 무수히 절정을 반복시켜 회수한다。
+CALLFORM CARD_ABLE(3,효과後強制誘発)
+PRINTL ⑥：③의 효과 사용시、암용독정제함이 관리하는 『상자』가 필드에 나타나 암컷 몬스터에 대해 발동한다、
+PRINTL 『상자』의 구멍에서 뿜어져나오는 미독이 섞인 애액을 맞게해、발정시킨다。
+CALLFORM CARD_ABLE(4,ターン終了時強制)
+PRINTL ④：이 카드에 끼워진 암컷 몬스터는、자신 / 상대턴 종료시에 음독제상에 의해 조교를 받는다。
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー주의ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+PRINTL
+RESETCOLOR
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_39912(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39912)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,39912)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,39912,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 광서의 기계
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲손패 = 1
+	효과範囲상대덱 = 1
+	효과条件성별 = 牝性
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+    SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,39912)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件성별 = 牝性
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般",1)
+	SIF RESULT != 1
+		RETURN 0
+	효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+	SIF GETVAR(@"%対面者%_MZ_モ耐:효과先") > 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF	GETVAR(@"%듀얼리스트%_MZ_汎数:場所") > 0
+		RETURN 1
+	SIF	GETVAR(@"%듀얼리스트%_MZ_変化元ID:場所") >= 0
+		RETURN 1
+	RETURN 1
+
+
+ENDIF
+
+@CARDEFFECT_39912(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 捕縛대상
+#DIM DYNAMIC 捕縛場所,紙束最大値
+#DIM DYNAMIC 捕縛場所B
+#DIM DYNAMIC 捕縛候補,紙束最大値
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 절정횟수
+#DIM DYNAMIC 묘지送り位置
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39912,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲덱 = 1
+		효과範囲상대덱 = 1
+		효과条件성별 = 牝性
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カードID = RESULT:1
+			CALL FULLRESET
+			효과추가종류 = 1000000 + 選択カードID
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+CALL CARD_EROTICS(選択カードID)
+			IF RESULT != -1
+				조교대상 = RESULT
+				SETCOLOR C_PINK
+				SELECTCASE RAND:3
+					CASE 0 
+					PRINTFORML
+					PRINTFORMW 引きずり出された%CALLNAME:조교대상%は、まんぐり返し체위で自身の肉体がぴったり隙間なく収まる『箱』に収納させられてしまう、
+					PRINTFORML 身をよじり、動かすことも一切できない『箱』に、尻と両穴だけを노출させられた姿で拘束された%CALLNAME:조교대상%は
+					PRINTFORML 閉じた『箱』を開かないようにする拘束具の役割を持つ外装に取り付けられた淫具による加工を受ける事となる……
+					PRINTFORMW 
+					CASE 1
+					PRINTFORML
+					PRINTFORML 捕らわれた%CALLNAME:조교대상%が目にした自身を収納しようとする『箱』の内側は牝を犯すためだけの物であった、
+					PRINTFORMW 媚毒を肉体に注入する針が無数にあり、肌が접촉する表面にはびっしりと蠢く肉肉しいヒダが貼られてもおり、
+					PRINTFORMW 胸・尻・おまんこは『箱』外部へ노출するようになっているが、『箱』を覆う外装に、노출した部位を犯すための淫具が供えられていた。
+					PRINTFORML %CALLNAME:조교대상%は抵抗も許されないまま、その『箱』に収納され、穴として扱われてしまう……
+					PRINTFORMW
+					CASE 2
+					PRINTFORML
+					PRINTFORMW 引きずり出された%CALLNAME:조교대상%は、광서의 기계たちが用意した『箱』に収められ、身動き１つとる事も出来なくなってしまった、
+					PRINTFORML 体の各所に刺された針から注入される淫毒によって、%CALLNAME:조교대상%の体液をその淫毒を造るための物へと変えていき
+					PRINTFORMW 全身を肉ヒダで擦られ淫毒を肌から吸収させながら肌に空気が触れるだけでイけるように加工していっている。
+					PRINTFORMW 口・おまんこ・尻穴には人には使うべきではないであろう형태や機構を持った淫具が삽입されピストン運動を繰り返す。
+					PRINTFORML それらの責め苦によって絶え間なく嬲られる%CALLNAME:조교대상%の声は外に漏れることなく、ただ愛液を垂れ流す『箱』の穴としての役割を果たさせられる……
+					PRINTFORMW
+				ENDSELECT
+				CALL MADORGASM_RAND_ROB_TXT(1,6)
+				CALL MADORGASM_RAND_ROB_TXT(1,4)
+				CALL EROTIC_MOVE("묘상捕縛",조교대상,-1,200)
+				SELECTCASE RAND:2
+					CASE 0 
+					SELECTCASE RAND:6
+						CASE 0 
+						PRINTFORML
+						PRINTFORML 馬並みの長さのディルドが『箱』の穴に根元まで삽입されては先端の膨らんだコブの部分まで抜かれるのを、
+						PRINTFORMW ずんっ”❤ずずっ……ずっ”……どぢゅっ”❤………と子宮を押しつぶしながら繰り返す。
+						CASE 1
+						PRINTFORML
+						PRINTFORML 表面が凹凸とイボまみれのディルドが『箱』の%TEXTR("牝穴/痴肉/愛液製造牝口/牝まんこ/無抵抗の加工用まんこ")%を%TEXTR("膣肉を削り取るかのように激しく/ぽっかりと穴の空いた淫らな蜜穴にしようと/愛液を垂れ流す淫穴に墜とすべく")%、
+						PRINTFORMW 『箱』に収められた牝穴の膣肉を耕し、雄のおちんぽ様を包み奉仕するためだけの穴に変えるべく犯しつづけている。
+						CASE 2
+						PRINTFORML
+						PRINTFORML 太く、長く、硬い。魔羅と形容し得るような牝の%TEXTR("牝穴/痴肉/愛液製造牝口/牝まんこ/無抵抗の加工用まんこ")%を犯して壊すためだけのディルドが、『箱』の穴に根元までねじこまれ、
+						PRINTFORMW %TEXTR("ずぐっ”❤ずずっ”❤ぶぢっ”❤ぶぢゅっ”❤/ごぢゅ”❤ごっ”❤どぢっ”❤どっ””❤どっ”❤ど”ぢ”ゅ”❤ど”っ❤/どぢゅ”❤どぢゅ”❤どっ”❤どぢ”ゅ❤/ずる～～～－－っ”❤ずっ”❤ずぢゅ”❤/ごづっ”❤ごっ”❤ごぢゅ”❤ごっ”❤")%と、『箱』の穴が子宮の奥まで衝撃を受け突き潰される音が鳴る中、
+						CASE 3
+						PRINTFORML
+						PRINTFORML 中央全体が横に回転する機構を持つ棘まみれのディルドが『箱』の%TEXTR("牝穴/痴肉/愛液製造牝口/牝まんこ/無抵抗の加工用まんこ")%にねじこまれ、
+						PRINTFORMW 膣肉にねじこまれたまま回転と振動の運動を『箱』の牝肉へ絶えず与え続け始める。
+						PRINTFORMW %TEXTR("ぎゅぶぶぶぶぶっ”❤ぎゅぶぶぶっ”❤/ぎゃるる”る”❤ゅる”❤ぎゅる”❤ぎゅっ”❤/ぢゅぞ”❤ぞっ”❤ぞるっ”❤ぞるるるるっ”❤")%と、機械の駆動音に加え『箱』の穴からは延々と音が鳴る、
+						CASE 4
+						PRINTFORML
+						PRINTFORML 鱗のような返しが表面にびっしりと張り付いたディルドが『箱の』%TEXTR("牝穴/痴肉/愛液製造牝口/牝まんこ/無抵抗の加工用まんこ")%の肉を捲り、膣肉のヒダを剥ぐかのように擦りながら犯し潰す、
+						PRINTFORMW %TEXTR("ぞりっ”❤じょり”❤ぞりっ”❤ぞりっ”❤/ぞるる”❤ぞる”❤ぞる”❤ぞっ”❤/ぢゅぞ”❤ぞっ”❤ぞるっ”❤ぞるるるるっ”❤")%と『箱』の穴の肉が擦られ、削られるかのように刺激され愛液をかきだされる音が鳴る、
+						CASE 5
+						PRINTFORML
+						PRINTFORML 各所に凹凸が有りピンク色の光の절정光線を放つ機構を持ったディルドが、『箱』の%TEXTR("牝穴/痴肉/愛液製造牝口/牝まんこ/無抵抗の加工用まんこ")%の奥深くにまで삽입され、作動する、
+						PRINTFORMW %TEXTR("ばぢっぢ”❤ばぢっ”❤/ぢっ”❤っっぢぢぢぢ”❤っ”❤ぢっ”/ぢ”－－－っ”❤ぢっ”❤ぢぢぢ”❤")%と、電流が放出されるような音が鳴るたびに『箱』の穴は痙攣を繰り返し절정しているかのような反応をしめす。
+					ENDSELECT
+					SELECTCASE RAND:5
+						CASE 0 
+						PRINTFORML 『箱』に収められた%TEXTR("牝穴/痴肉/愛液製造牝口/牝まんこ/無抵抗の加工用まんこ")%からは、
+						PRINTFORML %TEXTR("ずぐっ”❤ずずっ”❤ぶぢっ”❤ぶぢゅっ”❤/じゅぷっ”❤じゅるっ”❤じゅっ”❤/ずる～～～－－っ”❤ずっ”❤ずぢゅ”❤")%……と、ディルドによって穴を膣肉を耕され子宮を打ちのめされる音が鳴り続ける……。
+						PRINTFORMW
+						CASE 1
+						PRINTFORML %TEXTR("ずぐっ”❤ずずっ”❤ぶぢっ”❤ぶぢゅっ”❤/どぢゅ”❤どぢゅ”❤どっ”❤どぢ”ゅ❤/ずる～～～－－っ”❤ずっ”❤ずぢゅ”❤/ごづっ”❤ごっ”❤ごぢゅ”❤ごっ”❤")%……と、『箱』の穴からは擦られ愛液をまき散らす音ばかり鳴る……。
+						PRINTFORMW
+						CASE 2
+						PRINTFORML びぢゃ”❤びぢゃ”っ”っ…❤びぢゃぢゃ”❤……と、穴から壊れた蛇口のように愛液と潮がまき散らされ、『箱』の穴としての機能をこなし続ける……
+						PRINTFORMW
+						CASE 3
+						PRINTFORML %TEXTR("『箱』に収められた牝が必死に慈悲を乞うかのような/膣肉を締め付け必死に回転を止めていただこうと懇願する穴の嘆きの/「このままでは壊れてしまいます❤死んでしまいます❤」と宣言するかのような/굴복と패배を宣言するかのような愛液をまき散らし膣肉がぎゅっと締め付けられるような")%音を穴は鳴らしている……
+						PRINTFORMW
+						CASE 4
+						PRINTFORML 『箱』から出ている牝の穴と尻は%TEXTR("びくびくと痙攣を繰り返しながら愛液をまき散らしている/ディルドの動きに合わせ、震え、痙攣し、びくびくと揺れながら愛液を散らす/『お慈悲をください❤おゆるしください❤』と言いたいのかがくがくと痙攣をして震えている/『負けました❤굴복しました❤』と伝えたいのかびくびくと震えつづけている")%……。
+						PRINTFORMW
+					ENDSELECT
+					CALL MADORGASM_RAND_ROB_TXT(1,3)
+					CALL EROTIC_MOVE("前穴凌辱",조교대상,-1,100)
+					FOR カウンタ,0,2
+					SELECTCASE RAND:10
+						CASE 0 
+						PRINTFORML
+						PRINTFORML 『箱』の穴からは延々と愛液が噴出しており、『箱』を固定する台に設けられた受け皿はその液体を回収している……。
+						PRINTFORMW 
+						CASE 1
+						PRINTFORML
+						PRINTFORML 『箱』に収められた牝の唯一出ている部位である尻と、その両穴はディルドで責められる度に『びくっ”びくっ”っ”』と痙攣する。
+						PRINTFORMW
+						CASE 2
+						PRINTFORML
+						PRINTFORML 時折、『箱』はガタガタと揺れ動きながら、穴から体液と媚毒を噴き出させている。
+						PRINTFORMW
+						CASE 3
+						PRINTFORML
+						PRINTFORML 無数の형태が用意されているディルドをねじ込まれる度に『箱』は絶えず痙攣し、절정していることを示す潮吹きする姿を晒している。
+						PRINTFORMW
+						CASE 4
+						PRINTFORML
+						PRINTFORML 絶え間なく犯されぽっかりと穴が開いたかのようにひろがった『箱』のおまんこに、穴を埋めるかの如くディルドが根元まで捩じ込まれ続ける。
+						PRINTFORMW
+						CASE 5
+						PRINTFORML
+						PRINTFORML びぢゃ”❤びぢゃ”っ”っ…❤びぢゃぢゃ”❤……と、音を鳴らしながら『箱』の穴は愛液と潮を噴き出させ、媚毒の原料を献上している。
+						PRINTFORMW
+						CASE 6
+						PRINTFORML
+						PRINTFORML 『箱』の中身にされている穴は、箱の内側の機構によって穴としての機能に特化した淫肉へ加工もされている。
+						PRINTFORMW 
+						CASE 7
+						PRINTFORML
+						PRINTFORML 『箱』に収められた穴は、媚毒を作るための原料となる愛液を垂れ流し続けている。
+						PRINTFORMW
+						CASE 8
+						PRINTFORML
+						PRINTFORML 『箱』に収められた穴は、ただおまんこをディルドで犯され、喘ぎ声を出すことも出来ず、ただ愛液を流すための穴としてだけ使われる。
+						PRINTFORMW
+						CASE 9
+						PRINTFORML
+						PRINTFORML 『箱』に収められている穴は痙攣と潮吹きを繰り返すだけの穴らしい姿を晒し続ける。
+						PRINTFORMW
+					ENDSELECT
+					CALL EROTIC_MOVE("前穴凌辱",조교대상,-1,100)
+					NEXT
+
+				CASE 1
+					SELECTCASE RAND:6
+						CASE 0 
+						PRINTFORML
+						PRINTFORML 無数の球体が繋がった애널パールが『箱』の%TEXTR("牝尻穴/恥部肉穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工用ケツまんこ")%に無理やり詰め込まれては、引き抜かれ続ける。
+						PRINTFORMW 『ぎゅぽっ”❤ぎゅぽぽぽぽぽっ”❤』という音と共に大きさも형태も様々な球体が勢いよく抜かれてしまう度に、
+						CASE 1
+						PRINTFORML
+						PRINTFORML 長く太い、棘イボまみれな触手状の物体が『箱』に収められた牝の%TEXTR("牝尻穴/恥部肉穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工用ケツまんこ")%を埋めるよう根元まで無理やりねじ込まれては、引き抜かれる。
+						PRINTFORMW 『ずるるるるる”る”る”❤』と勢いよく抜かれては、また根元まで삽입されてしまうのを繰り返させられ
+						CASE 2
+						PRINTFORML
+						PRINTFORML 삽입部が太く、くびれの有る애널プラグが『箱』の%TEXTR("牝尻穴/恥部肉穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工用ケツまんこ")%に多量の媚毒ゼリーが流し込まれた後に栓代わりに삽입され、振動する。
+						PRINTFORMW 『ヴヴヴヴヴヴ”ヴ”❤ヴヴヴヴ”❤』と音が鳴り響き、箱から노출した尻は延々と痙攣し時折跳ねあがりながら愛液を散らしてしまう。
+						PRINTFORMW 媚毒ゼリーが『箱』に収められた穴が吸収し終えると、新しい媚毒ゼリーを流し込むために栓が『ぎゅぽんっ”っ”❤』と音を立てながら抜かれた、
+						CASE 3
+						PRINTFORML
+						PRINTFORML 触手の用に体全体が柔軟に蠢く、吸盤まみれのモノが『箱』の%TEXTR("牝尻穴/恥部肉穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工用ケツまんこ")%に삽입され激しく蠢き暴れまわる。
+						PRINTFORMW 触手は『箱』の穴を容赦なく犯し『ぎゅぼ❤ぎゅぼぼぼ”❤ぐゅっ”❤』と音を立てさせながら尻から愛液を吸い噴き出させてく、
+						CASE 4
+						PRINTFORML
+						PRINTFORML 中央全体が横に回転する機構を持つ棘まみれのディルドが『箱』の%TEXTR("牝尻穴/恥部肉穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工用ケツまんこ")%にねじこまれ、
+						PRINTFORMW 膣肉にねじこまれたまま回転と振動の運動を『箱』の牝肉へ絶えず与え続け始める。
+						PRINTFORMW %TEXTR("ぎゅぶぶぶぶぶっ”❤ぎゅぶぶぶっ”❤/ぎゃるる”る”❤ゅる”❤ぎゅる”❤ぎゅっ”❤/ぢゅぞ”❤ぞっ”❤ぞるっ”❤ぞるるるるっ”❤")%と、機械の駆動音に加え『箱』の穴からは延々と音が鳴る、
+						CASE 5
+						PRINTFORML
+						PRINTFORML 鱗のような返しが表面にびっしりと張り付いたディルドが『箱』の%TEXTR("牝尻穴/恥部肉穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工用ケツまんこ")%の肉を捲り、膣肉のヒダを剥ぐかのように擦りながら犯し潰す、
+						PRINTFORMW %TEXTR("ぞりっ”❤じょり”❤ぞりっ”❤ぞりっ”❤/ぞるる”❤ぞる”❤ぞる”❤ぞっ”❤/ぢゅぞ”❤ぞっ”❤ぞるっ”❤ぞるるるるっ”❤")%と『箱』の穴の肉が擦られ、削られるかのように刺激され愛液をかきだされる音が鳴る、
+					ENDSELECT
+					SELECTCASE RAND:6
+						CASE 0 
+						PRINTFORML 『箱』の尻穴は、ぐぱっ……❤ぐぱっ”❤と、次の責めを待ち望む淫売穴に堕ちたのを示すよう開閉を繰り返し、腸液で糸を伸ばしている……
+						PRINTFORMW
+						CASE 1
+						PRINTFORML 『箱』の尻穴はぽっかりと広がるだけでなく、ピンク色に充血しぐぱぐぱと開閉を繰り返すおねだり上手な穴に堕ちていく……
+						PRINTFORMW
+						CASE 2
+						PRINTFORML 『箱』の尻穴はぽっかりと広げられ、その口をぐぱぐぱと開閉しまるで次のおちんぽ様を求める淫肉であることをアピールするかのように動いている……
+						PRINTFORMW
+						CASE 3
+						PRINTFORML %TEXTR("『箱』に収められた牝が必死に慈悲を乞うかのような/膣肉を締め付け必死に回転を止めていただこうと懇願する穴の嘆きの/「このままでは壊れてしまいます❤死んでしまいます❤」と宣言するかのような/굴복と패배を宣言するかのような愛液をまき散らし膣肉がぎゅっと締め付けられるような")%音を穴は鳴らしている……
+						PRINTFORMW
+						CASE 4
+						PRINTFORML 『箱』から出ている牝の穴と尻は%TEXTR("びくびくと痙攣を繰り返しながら愛液をまき散らしている/ディルドの動きに合わせ、震え、痙攣し、びくびくと揺れながら愛液を散らす/『お慈悲をください❤おゆるしください❤』と言いたいのかがくがくと痙攣をして震えている/『負けました❤굴복しました❤』と伝えたいのかびくびくと震えつづけている")%……。
+						PRINTFORMW
+					ENDSELECT
+					CALL MADORGASM_RAND_ROB_TXT(1,3)
+					CALL EROTIC_MOVE("後穴凌辱",조교대상,-1,100)
+					FOR カウンタ,0,2
+					SELECTCASE RAND:10
+						CASE 0 
+						PRINTFORML
+						PRINTFORML 散々使われ続けている『箱』の尻穴は、삽입されている淫具が抜かれる度に『ぐぱぁ……❤』と愛液まみれの%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%を見せつけるように開閉する……
+						PRINTFORMW 
+						CASE 1
+						PRINTFORML
+						PRINTFORML 『箱』の%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%から垂れ流される愛液は、回収されあたらしい媚毒を造り出すための糧になる……
+						PRINTFORMW
+						CASE 2
+						PRINTFORML
+						PRINTFORML 『箱』に収められた%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%は、びくびくと痙攣し続けながら淫具による尻穴開発を受け続けている……
+						PRINTFORMW
+						CASE 3
+						PRINTFORML
+						PRINTFORML 淫具を抜かれる度に、『箱』の%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%から『びぢゃぢゃ”❤びぢゃっ”❤』と音を立て愛液が零れ落ちる……
+						PRINTFORMW
+						CASE 4
+						PRINTFORML
+						PRINTFORML 淫具に責められ続けている『箱』の%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%は、何も使われていないときはぐぱっ、ぐぱ❤と開閉を繰り返しおねだりをしてしまう……
+						PRINTFORMW
+						CASE 5
+						PRINTFORML
+						PRINTFORML 時折、『箱』はガタガタと揺れ動きながら、%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%から愛液を噴き出させて『箱』としての役割を果たしていく……
+						PRINTFORMW
+						CASE 6
+						PRINTFORML
+						PRINTFORML 『箱』の%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%はまるで削られたかのように広げられていく……
+						PRINTFORMW 
+						CASE 7
+						PRINTFORML
+						PRINTFORML 愛液が垂れ落ちる水音と、淫具で嬲られる『箱』の音だけが鳴り続ける……
+						PRINTFORMW
+						CASE 8
+						PRINTFORML
+						PRINTFORML 『箱』に収められた穴は、媚毒を作るための原料となる愛液を垂れ流し続けている。
+						PRINTFORMW
+						CASE 9
+						PRINTFORML
+						PRINTFORML 『箱』に収められている穴は痙攣と潮吹きを繰り返すだけの%TEXTR("牝尻穴/恥部肉穴/雄媚マゾ尻穴/媚毒ゼリー精製用腸肉口/牝尻まんこ/媚毒ゼリー排泄加工中ケツまんこ")%らしい姿を晒し続ける。
+						PRINTFORMW
+					ENDSELECT
+					CALL EROTIC_MOVE("後穴凌辱",조교대상,-1,100)
+					NEXT
+				ENDSELECT
+				RESETCOLOR
+			ENDIF
+			CALL FULLRESET
+			PRINTFORML
+			PRINTFORML 『箱』の穴たちが吐き出す愛液や媚毒ゼリーを牝溶毒精製箱は淫毒交じり霧に変えて場を満たしていく……
+			PRINTFORMW
+			FOR カウンタ,0,5
+				SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+				CONTINUE
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",カウンタ,"薬Ｃ",1)
+			NEXT
+			FOR カウンタ,0,5
+			SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+				CONTINUE
+				CALL SET_FIELD_INFO(対面者,"필드",カウンタ,"薬Ｃ",1)
+			NEXT
+			CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",1)
+			CALL FULLRESET
+			효과条件성별 = 성별在
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"両필드全体",場所,"発情",2)
+			CALL FULLRESET
+        	효과範囲필드 = 1
+    		효과条件종류 = モン全般
+			효과条件カテゴリ = 광서의 기계
+        	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発情",100)
+		ENDIF
+	ENDIF
+
+ELSEIF  종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39912,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_EROTICS(GETVAR(@"%듀얼리스트%_MZ_変化元ID:場所"))
+		IF RESULT != -1
+			조교대상 = RESULT
+			SETCOLOR C_PINK
+			SELECTCASE RAND:3
+				CASE 0 
+				PRINTFORML
+				PRINTFORML 牝が穴として性器だけを노출した状態で収納された『箱』は、檻のような外観をした台に置かれ
+				PRINTFORMW 『ガシャン”』と鉄と鉄がぶつかる音を鳴らしながら鉄格子のような外観の外装で包まれてしまう。
+				PRINTFORML そして、その鉄格子の外装の内側に備え付けられた『절정光線照射装置』が起動し、アクメビームが『箱』の牝を嬲り始める……
+				PRINTFORMW 
+				CASE 1
+				PRINTFORML
+				PRINTFORMW 『箱』を包むように鉄格子のような外装が取り付けられ、その外装から『箱』の中身の牝へアクメビームが照射される、
+				PRINTFORML 『箱』という密封された逃れる事も出来ない牝は、ただアクメし、外に노출した穴から
+				PRINTFORMW 愛液と共に半透明なピンク色のゼリーをも噴き出させてしまう。
+				PRINTFORML 『箱』に収められた牝の身に貯めこまれた力を、광서의 기계を動かすための動力となるゼリーと変換する加工が行われ始めてしまった……
+				PRINTFORMW
+				CASE 2
+				PRINTFORML
+				PRINTFORML 『箱』を包むように取り付けられた外装は『バヂッ、バヂヂッ』と電流が溢れ漏れ出る音を鳴らしながらアクメビームが照射される中、
+				PRINTFORMW 盛大に鳴る機械の駆動音が響く度に、『箱』の穴は愛液を噴き出させ、中に収められた牝が절정している事を伝えてくる。
+				PRINTFORMW 『もうイきたくありません❤』『犯さないでください❤』『もうアクメをさせないでください❤』
+				PRINTFORML ……そう伝えるかのように、『箱』の穴はぐぱぐぱと開閉を繰り返しながら潮を吹き続ける……
+				PRINTFORMW 
+			ENDSELECT
+			CALL MADORGASM_RAND_FALL_TXT(1,6)
+			CALL EROTIC_MOVE("절정光線",조교대상,-1,200)
+			PRINTFORML
+			CALL MADORGASM_LEWDPOISONBOX_TXT(1,0)
+			CALL MADORGASM_LEWDPOISONBOX_TXT(1,1)
+			CALL EROTIC_MOVE("절정光線",조교대상,-1,200)
+			RESETCOLOR
+		ENDIF
+PRINTFORML
+		PRINTFORML 牝溶毒精製箱に、媚毒が貯めこまれていく。
+		PRINTFORMW
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"薬Ｃ",1)
+		IF GETVAR(@"%듀얼리스트%_MZ_薬Ｃ:場所") >= 3
+			IF RESULT != -1
+				FOR カウンタ,0,現山札数(対面者)
+				捕縛대상 = GETVAR(@"%対面者%_덱:カウンタ") ;0→カウンタ
+				SIF 捕縛대상 == -1 ;念のため-1の場合は次へ
+					CONTINUE
+				CALLFORM CARD_{捕縛대상}("성별")
+				SIF RESULT == 無性 || RESULT == 雄性
+					CONTINUE
+					CALL CARD_EROTICS(捕縛대상)
+				SIF RESULT < 1 ;CSV持ち以外は제외
+					CONTINUE
+					捕縛候補:カウンタB = 捕縛대상 ;牝性を候補に格納
+					捕縛場所:カウンタB = カウンタ
+					カウンタB++ ;候補数加算
+				NEXT
+				SIF カウンタB < 1 ;カウンタが0以下=候補0
+					RETURN
+				묘지送り位置 = (RAND:カウンタB)
+				捕縛대상 = 捕縛候補:묘지送り位置 ;カウンタBまでの乱数で捕縛候補の中からランダムに捕縛대상を決定
+				CALL CARD_EROTICS(捕縛대상) ;必ずCARD_EROTICSを挟む
+				조교대상 = RESULT
+				FOR カウンタ,0,2
+					CALL MADORGASM_LEWDPOISONBOX_TXT(1,0)
+					CALL MADORGASM_LEWDPOISONBOX_TXT(1,1)
+					CALL EROTIC_MOVE("절정光線",조교대상,-1,200)
+				NEXT
+				SETCOLOR C_PINK
+				SELECTCASE RAND:3
+					CASE 0 
+					PRINTFORML
+					PRINTFORML 十分に動力の源となる物を排泄させられた『箱』の中に収められていた牝が箱が開きその姿を晒し出されてしまい、
+					PRINTFORMW 『箱』に収められていた穴の１つである%CALLNAME:조교대상%はぐったりと力なく、地面に転がされた。
+					PRINTFORML その体を機械の触手が掴み、回収し、%TEXTR("『修理用』と表記された箱に詰め持ち運ばれてしまう……/触手が詰め込まれた穴にゴミを捨てるかのように放り投げられてしまう……/たまたま近くにいた先ほどまで他の牝を使い潰した雄に渡してしまう……")%
+					PRINTFORMW 
+					CASE 1
+					PRINTFORML
+					PRINTFORMW 散々に使われた『箱』の穴が、『箱』の中から取り出されてしまう……
+					PRINTFORML 無数にある『箱』に収められていた穴の１つは%CALLNAME:조교대상%であった、
+					PRINTFORMW 全身を体液と媚毒まみれにし、呂律の回らない口で『ぁ”……❤っ”ぇ”❤…………ぁぁ”❤ぁ”……❤』と喘ぐ無様な穴らしい姿を晒してしまう。
+					PRINTFORML 力なくぐったりと地面に転がり、栓が壊れた水道のように愛液と潮を噴き出させている%CALLNAME:조교대상%を
+					PRINTFORML 機械の触手が掴み、%TEXTR("『修理用』と表記された箱に詰め持ち運ばれてしまう……/触手が詰め込まれた穴にゴミを捨てるかのように放り投げられてしまう……/たまたま近くにいた先ほどまで他の牝を使い潰した雄に渡してしまう……")%
+					PRINTFORMW
+					CASE 2
+					PRINTFORML
+					PRINTFORMW 穴として使い終えた牝……%CALLNAME:조교대상%が『箱』から取り出されてしまう、
+					PRINTFORML 全身に淫紋を刻まれた淫毒濡れの姿に、赤く腫れあがったクリトリスと乳首が痙攣する肉体の動きに合わせて揺れ、
+					PRINTFORMW 散々に嬲られていた両穴はぐぱっぐぱっ……と開閉を繰り返し、次の凌辱を待ち望んでいる淫穴に堕ちていた。
+					PRINTFORML 身をびくっびくっと跳ねさせ、喘ぐことしかできなくなった%CALLNAME:조교대상%は、
+					PRINTFORML 機械の触手によって回収され、%TEXTR("『修理用』と表記された箱に詰め持ち運ばれてしまう……/触手が詰め込まれた穴にゴミを捨てるかのように放り投げられてしまう……/たまたま近くにいた先ほどまで他の牝を使い潰した雄に渡してしまう……")%
+					PRINTFORMW 
+				ENDSELECT
+				CALL EROTIC_MOVE("절정光線",조교대상,-1,200)
+				RESETCOLOR
+			ENDIF
+			PRINTFORML
+			PRINTFORML 『箱』を１つ消費し、손패を１枚増強することができました。
+			PRINTFORMW
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"薬Ｃ",0,1)
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 효과後強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39912)
+	IF RESULT == 0
+		選択カード = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",選択カード,1)
+		IF RESULT != -1
+			조교대상 = RESULT
+			SETCOLOR C_PINK
+			IF MARK:조교대상:쾌락각인 + MARK:조교대상:고통각인 + MARK:조교대상:굴복각인 + MARK:조교대상:반발각인 < 7
+				SELECTCASE RAND:10
+					CASE 0 
+					PRINTFORML
+					PRINTFORML 牝溶毒製箱に収められた牝たちが噴き出す、媚毒と化した体液が%CALLNAME:조교대상%の体を蝕んでいく……
+					PRINTFORMW
+					CASE 1
+					PRINTFORML
+					PRINTFORML %CALLNAME:조교대상%は、周囲に漂う淫らな空気を吸って発情してしまう……
+					PRINTFORMW
+					CASE 2
+					PRINTFORML
+					PRINTFORML 吸えばむせ返りそうになる、粘つくような甘い空気が%CALLNAME:조교대상%を包み、淫毒を体に刻んでいく……
+					PRINTFORMW
+					CASE 3
+					PRINTFORML
+					PRINTFORML 牝溶毒製箱が噴き出す媚毒となった愛液を%CALLNAME:조교대상%は浴びてしまい、発情させられてしまう……
+					PRINTFORMW
+					CASE 4
+					PRINTFORML
+					PRINTFORML 媚毒が%CALLNAME:조교대상%の身を包み、淫らな穴に変えようとしていく……
+					PRINTFORMW
+					CASE 5
+					PRINTFORML
+					PRINTFORML 牝溶毒製箱が、場に現れた%CALLNAME:조교대상%へ淫毒となった『箱』の穴たちの愛液を浴びせ発情させる……
+					PRINTFORMW
+					CASE 6
+					PRINTFORML
+					PRINTFORML 場に出た%CALLNAME:조교대상%が周囲の空気を吸ってしまいその身に淫毒をため込んでしまう……
+					PRINTFORMW
+					CASE 7
+					PRINTFORML
+					PRINTFORML 淫毒まみれの空気となった場に現れた%CALLNAME:조교대상%は、否が応でも媚毒を吸わされ、発情させられてしまう……
+					PRINTFORMW
+					CASE 8
+					PRINTFORML
+					PRINTFORML 牝溶毒精製箱は場に出てきた%CALLNAME:조교대상%へ『箱』の穴から噴出する愛液を浴びせ媚毒を吸わせていく……
+					PRINTFORMW
+					CASE 9
+					PRINTFORML
+					PRINTFORML 牝溶毒製箱が관리する『箱』の穴たちが噴き出す、淫毒と化した愛液が%CALLNAME:조교대상%を発情させてしまう……
+					PRINTFORMW
+				ENDSELECT
+				CALL MADORGASM_LEWDPOISONBOX_TXT(1,2)
+			ELSE
+				SELECTCASE RAND:10
+					CASE 0 
+					PRINTFORML
+					PRINTFORML 噎せ返る甘い空気を%CALLNAME:조교대상%は無意識に深く吸い、体に媚毒を取り込んでいってしまう……
+					PRINTFORMW
+					CASE 1
+					PRINTFORML
+					PRINTFORML 既に堕ちた牝穴である%CALLNAME:조교대상%は場に出るだけで股から愛液を噴き出させ、犯されることを待ち望む牝となる……
+					PRINTFORMW
+					CASE 2
+					PRINTFORML
+					PRINTFORML 場に出た%CALLNAME:조교대상%は、場を満たす媚毒に負け、自ら牝穴を指で弄りだしてしまう……
+					PRINTFORMW
+					CALL EROTIC_MOVE("최면자위",조교대상,-1,100)
+					CASE 3
+					PRINTFORML
+					PRINTFORML 牝溶毒製箱が噴き出させる牝の愛液を浴びるだけで、%CALLNAME:조교대상%の肉体は犯されたがりのマゾらしく両穴を濡らしてしまう……
+					PRINTFORMW
+					CASE 4
+					PRINTFORML
+					PRINTFORML 「お”～～～……❤ぉ”っ”❤」と、媚毒の香りに負けた%CALLNAME:조교대상%はその場で자위を始めてしまう……
+					PRINTFORMW
+					CALL EROTIC_MOVE("최면자위",조교대상,-1,100)
+					CASE 5
+					PRINTFORML
+					PRINTFORML 媚毒を吸うだけで%CALLNAME:조교대상%は「お”ぴぉ”っっ”❤」と情けない声を出しながら愛液を服越しに噴き出してしまう……
+					PRINTFORMW
+					CALL EROTIC_MOVE("최면자위",조교대상,-1,100)
+					CASE 6
+					PRINTFORML
+					PRINTFORML 飼いならされた牝である%CALLNAME:조교대상%は、場を満たす淫らな毒を吸うだけでイきそうになってしまう……
+					PRINTFORMW
+					CASE 7
+					PRINTFORML
+					PRINTFORML 牝溶淫毒箱が浴びせてきた淫毒を%CALLNAME:조교대상%は悦に満ちた表情で受け止め、舌で掬って飲んでしまう……
+					PRINTFORMW
+					CASE 8
+					PRINTFORML
+					PRINTFORML 場を満たす淫毒を吸ってしまい、%CALLNAME:조교대상%は「お”っっ❤”」と声をあげながら潮を吹きイってしまう……
+					PRINTFORMW
+					CASE 9
+			PRINTFORML 
+			PRINTFORML 「びぢゃっ❤びぢゃぢゃ❤」と音を立てて、媚毒を吸った%CALLNAME:조교대상%の体は愛液を垂れ流しながらイってしまう……
+					PRINTFORMW
+				ENDSELECT
+				CALL MADORGASM_LEWDPOISONBOX_TXT(1,3)
+			ENDIF
+			CALL EROTIC_MOVE("媚毒汚染",조교대상,-1,200)
+			RESETCOLOR
+		ENDIF
+		CALL STATCHANGE_EFFECT(対面者,"自身",選択カード,"発情",2)
+		CALL SET_FIELD_INFO(対面者,"필드",選択カード,"薬Ｃ",1)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時強制
+		CALL CARD_EROTICS(GETVAR(@"%듀얼리스트%_MZ_変化元ID:場所"))
+		IF RESULT != -1
+			조교대상 = RESULT
+			SETCOLOR C_PINK 
+			PRINTFORML
+			SELECTCASE RAND:3
+				CASE 0
+					CALL EROTIC_MOVE("Ｖ単発",조교대상,-1,200)
+					PRINTFORML %NAME:조교대상%は淫毒製箱に犯されている……
+				CASE 1
+					PRINTFORML %NAME:조교대상%は淫毒製箱から媚毒を生み出す穴として加工されていく……
+					CALL EROTIC_MOVE("Ⅽ単発",조교대상,-1,200)
+				CASE 2
+					PRINTFORML %NAME:조교대상%は淫毒製箱によって淫紋を刻まれていく……
+					CALL EROTIC_MOVE("淫紋の疼き",조교대상,-1,200)
+			ENDSELECT
+			PRINTFORMW
+		ENDIF
+ENDIF
+
+
+
+
+
+
+

@@ -1,0 +1,124 @@
+@CARDNAME_93700,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 메이드의 선물
+	CASE "略称"
+		RESULTS = 메이드의 선물
+	CASE "カテゴリ"
+		RESULTS:0 = 가실장
+		RESULTS:1 = 네크메이드
+ENDSELECT
+
+
+@CARD_93700(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 通常함정
+	CASE "レア度"
+		RETURN CMN
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_93700(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードの①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,효과後誘発)
+PRINTL ①：자신フィールドのモンスターが破壊された場合に발동できる。
+PRINTL 자신は２枚ドローする。その後、자신の묘지の「네크메이드 나나」モンスター１体を選んで자신フィールドに表側표시で특수소환できる。
+PRINTL この효과で특수소환したモンスターは、このターン戦闘耐性を得る。
+CALLFORM CARD_ABLE(2,묘지起動,フリー誘発)
+PRINTL ②：자신フィールドに「네크메이드」리추얼モンスターが存在する場合に발동できる。
+PRINTL 묘지のこのカードをセットする。
+
+
+@CARDCAN_93700(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93700)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과後誘発
+	SIF 발동済_1(듀얼리스트,93700)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+	
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF 발동済_2(듀얼리스트,93700)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 네크메이드
+	효과条件종류 = 초차원
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+    RETURN 1
+ENDIF
+
+
+@CARDEFFECT_93700(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93700,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARDDRAW_BASIC(듀얼리스트,2)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 네크메이드 나나
+			효과추가종류:0 = 効追戦耐
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93700,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 메이드의 선물
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+	ENDIF
+ENDIF
+
+

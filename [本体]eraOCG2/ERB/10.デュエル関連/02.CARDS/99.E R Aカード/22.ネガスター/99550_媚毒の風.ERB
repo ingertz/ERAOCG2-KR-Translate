@@ -44,8 +44,8 @@ PRINTL 이미 발정해있는 경우、덱 밖에서 "MC" 카드를 랜덤으로
 PRINTL 상대 플레이어가 바람속성인 경우、랜덤하게 선택된 카드는 "마인드컨트롤－엉덩이 만지작"이 된다。
 CALLFORM CARD_ABLE(0,지속효과)
 PRINTL ②：상대 플레이어가 여성이며 바람속성인 경우、상대는 몬스터를 특수 소환할 수 없다。
-CALLFORM CARD_ABLE(0,발동誘発)
-PRINTL ③："마인드컨트롤－엉덩이 만지작"이 발동한 경우에 발동할 수 있다。
+CALLFORM CARD_ABLE(0,발동強制誘発)
+PRINTL ③："마인드컨트롤－엉덩이 만지작"이 발동한 경우에 발동한다。
 PRINTL 그 효과를 덮어씌운다。
 CALL TEXT_DECORATION("ROGUE")
 
@@ -83,7 +83,7 @@ ELSEIF 종류 == 지속효과
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == 발동誘発
+ELSEIF 종류 == 발동強制誘発
 	SIF ゾーン != "마함"
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") != 1
@@ -92,12 +92,10 @@ ELSEIF 종류 == 발동誘発
 	IF ターンプレイヤー == "자신"
 		효과範囲손패 = 1
 		효과条件ID = 79846
-		;효과条件종류 = 마함全般
-		CALL CARD_CHECK_START_DATA(듀얼리스트)
+		CALL CARD_CHECK_START_DATA_2(듀얼리스트)
 	ELSE 
 		효과範囲상대손패 = 1
 		효과条件ID = 79846
-		;효과条件종류 = 마함全般
 		CALL CARD_CHECK_START_DATA(듀얼리스트,1)
 	ENDIF
 	SIF RESULT != 1
@@ -209,7 +207,7 @@ IF 종류 == 지속효과 || 종류 == ターン開始時強制
 	ENDIF
 ENDIF
 
-IF 종류 == 발동誘発
+IF 종류 == 발동強制誘発
 	PRINTFORMW 
 	;CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99550)
 	CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
@@ -405,8 +403,9 @@ IF 종류 == 발동誘発
 		;발동強制誘発時、효과無効もタイミング的に適用できないみたい
 		;CALL CARD_EFFECT_PROHIB(対面者,79846,0,1)
 		;발동強制誘発時、발동無効は動作しないので「발동誘発」で実装
-		CALL CARD_REMOVAL_BASIC(対面者,"발동無効",場所,"묘지")
-		RETURN 1
+		;CALL CARD_REMOVAL_BASIC(対面者,"발동無効",場所,"묘지")
+		
+		;光と闇の竜타입の효과無効
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効2",場所,"無効")
 	ENDIF
-	RETURN 0
 ENDIF

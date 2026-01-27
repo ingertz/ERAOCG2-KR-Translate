@@ -1,0 +1,242 @@
+﻿@CARDNAME_57876,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트랜잠 어썰트라이나크
+	CASE "略称"
+		RESULTS = TRS A라이나크
+	CASE "カテゴリ"
+		RESULTS:0 = 트랜잠
+ENDSELECT
+
+
+@CARD_57876(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2600
+	CASE "守備力"
+		RETURN 1600
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 260109
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_57876(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 트랜잠 라이나크
+ELSEIF EX参照 >= 10
+	素材条件종족 = 미확인족
+	CALLFORM 素材条件レベル_ADV(4,"以下")
+ENDIF
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,57876) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_57876(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「트랜잠 라이나크」＋미확인족モンスター（レベル４以下）
+PRINTL 「트랜잠 어썰트라이나크」は１ターンに１度、자신フィールドの上記のカードを제외し、
+PRINTL ＥＸ덱から융합소환扱いで특수소환できる。
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：このカードは상대モンスター全てに１回ずつ攻撃できる。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ②：１ターンに１度、자신の묘지・제외状態のモンスター（미확인족）１体を덱に戻して발동できる。
+PRINTL このターン、상대フィールドのモンスターの攻撃力・守備力は８００ダウンする。
+PRINTL この효과の발동時に「트랜잠 라이카」を戻した場合、ターン終了時までこのカードが상대に与える戦闘ダメージは倍になる。
+CALLFORM CARD_ABLE(3,戦破壊→묘지)
+PRINTL ③：융합소환したこのカードが戦闘・효과で破壊された場合に발동できる。
+PRINTL 자신の덱・묘지・제외状態の通常モンスター（미확인족・빛속성）１体を특수소환する。
+
+@CARDCAN_57876(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,57876)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,57876)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件名前 = 트랜잠 어썰트라이나크
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件종족 = 미확인족
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF 발동済_3(듀얼리스트,57876)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種EX덱
+		RETURN 0
+	SIF !GROUPMATCH(묘지送り종류,"破壊","戦闘破壊")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件속성 = 빛속성
+	효과条件종족 = 미확인족
+	효과条件종류 = 通常モン
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻紋章起動
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+	
+ELSEIF 종류 == 攻撃時強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") <= 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_57876(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57876,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 트랜잠 라이나크
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件종족 = 미확인족
+			CALLFORM 素材条件レベル_ADV(4,"以下")
+			효과条件行先플래그 = 제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_EX_SUMMON(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57876,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件종족 = 미확인족
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			CALL CARD_RESERV(듀얼리스트,57876,攻紋章予約)
+			TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+			SIF RESULTS == "트랜잠 라이카"
+				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"条達",1,1)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57876,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件속성 = 빛속성
+		효과条件종족 = 미확인족
+		효과条件종류 = 通常モン
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 攻紋章起動
+	CALL FULLRESET
+	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,800,800)
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"連戦")
+
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL SET_PLAYER_INFO(듀얼리스트,"ダメージ倍化",3,1)
+ENDIF

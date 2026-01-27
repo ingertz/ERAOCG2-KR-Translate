@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 얼터가이스트 혼데드록
 	CASE "略称"
-		RESULTS = ＯＧ혼데드
+		RESULTS = Og혼데드
 	CASE "カテゴリ"
 		RESULTS:0 = 얼터가이스트
 ENDSELECT
@@ -53,20 +53,11 @@ SIF RESULT == 1
 	RETURN 0
 
 
-IF 종류 == 마함起動 
-	SIF 발동済_1(듀얼리스트,92054)
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-		RETURN 0
-	CALL FULLRESET
-	효과範囲손패 = 1
-	효과条件カテゴリ = 얼터가이스트
-	효과条件종류 = モン全般
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 1
-		RETURN 1
+IF 종류 == 마함起動  || 종류 == フリー誘発
 	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1	
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,92054)
 		RETURN 0
 
 	RETURN 1
@@ -88,8 +79,18 @@ ELSEIF 종류 == 발동誘発
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == 상황確認
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 얼터가이스트
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
 ENDIF
-
 @CARDEFFECT_92054(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
 #DIMS DYNAMIC ゾーン
@@ -122,5 +123,8 @@ ELSEIF 종류 == 발동誘発
 		ENDIF
 		RETURN 0
 	ENDIF
+ELSEIF 종류 == 상황確認
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"発可")
 ENDIF
 

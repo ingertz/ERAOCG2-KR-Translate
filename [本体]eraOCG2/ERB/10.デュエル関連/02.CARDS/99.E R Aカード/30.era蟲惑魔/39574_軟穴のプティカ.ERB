@@ -52,9 +52,9 @@ CALLFORM CARD_ABLE(1,소환時)
 PRINTL ①：이 카드가 소환에 성공했을 때 발동할 수 있다。덱에서"충혹마" 마법 / 함정 카드 １장을 패에 넣는다。
 CALLFORM CARD_ABLE(2,특수소환時)
 PRINTL ②：이 카드가 특수 소환에 성공했을 경우、발동할 수 있다。상대 필드의 특수 소환된 몬스터 １장을 패로 되돌린다。
-PRINTL 자신의 묘지에 "홀" 융합 몬스터가 존재하는 경우、상대 필드의 특수 소환된 몬스터 전부를 패로 되돌린다。
-CALLFORM CARD_ABLE(0,지속효과,攻守変動)
-PRINTL ③：이 카드는 함정내성을 갖는다。자신의 필드에 "플렉시블 홀－푸티카"를 제외한 "충혹마" 몬스터의 공격력을 ３００ 올린다。
+PRINTL 자신의 묘지에 "충혹마" 융합 몬스터가 존재하는 경우、상대 필드의 특수 소환된 몬스터 전부를 패로 되돌린다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드는 함정내성을 갖는다。
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDSUMMON_AA_39574
@@ -77,7 +77,7 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39574)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 지속효과 || 종류 == 攻守変動
+IF 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
@@ -91,8 +91,7 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -148,6 +147,10 @@ ELSEIF 종류 == ターン終了時強制
     SIF RESULT < 2
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_39574(듀얼리스트,종류,ゾーン,場所)
@@ -164,18 +167,16 @@ ENDIF
 #DIM DYNAMIC 戦闘カード
 #DIM DYNAMIC 효과先
 
+#DIM DYNAMIC 조교대상캐릭터ID
+
+
+
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
-ELSEIF 종류 == 攻守変動
-	CALL FULLRESET
-	효과条件カテゴリ = 충혹마
-	효과条件固名前 = 플렉시블 홀－푸티카
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300)
-
 ELSEIF 종류 == 소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39574,1)
 	IF RESULT == 0
@@ -216,10 +217,11 @@ ELSEIF 종류 == ターン終了時強制
 			조교대상 = RESULT
 			SIF 조교대상 == NO_TO_CHARANUM(1373)
 				CONTINUE
+			PRINTL
 			SETCOLOR C_PINK 
-			PRINTFORMW 푸티카는 %NAME:조교대상%에게 꿀을 빨리고 있다…
+			PRINTFORMW 푸티카는 %NAME:조교대상%と%TEXTR("イチャイチャしながら/じゃれあいながら/指を絡ませながら/키스で/ちゅっちゅと唇を合わせて/ちゅっちゅと舌を絡ませて")%蜜を分けあっている……。
 			RESETCOLOR
-			CALL EROTIC_MOVE("全身애무",NO_TO_CHARANUM(1373),조교대상,50)
+;			CALL EROTIC_MOVE("全身애무",NO_TO_CHARANUM(1373),조교대상,50)
 		ENDIF
 	NEXT
 ELSEIF 종류 == 攻撃時誘発
@@ -227,11 +229,20 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39574)
 	IF RESULT == 0
 		;通常마법汎用処理
-		PRINTFORMW 푸티카는 시트리스의 큰 구멍으로 유도했다…
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
 		CALL FULLRESET
 		효과추가종류 = 6
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;地中に捕虫器官を持つウツボカズラの仲間なので……たくさんの穴で行動を妨害する感じ？
+			PRINTFORML 攻撃の瞬間、プティカは%NAME:조교대상%の足元を崩して穴だらけにした！
+			PRINTFORMW %TEXTR("躱そうとして体勢を崩した/回避に気を取られた/突然のことに怯んだ")%%NAME:조교대상%はたたらを踏み、シトリスの仕掛けた함정にかかって動きを封じられてしまった！
+		ELSE
+			PRINTFORMW 푸티카는 시트리스의 큰 구멍으로 유도했다…
+		ENDIF
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘カード,"永攻DOWN")
 	ENDIF
 
@@ -239,10 +250,36 @@ ELSEIF 종류 == 효과後誘発
 	;フレシア묘지효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39574)
 	IF RESULT == 0
-		PRINTFORMW 푸티카는 플레시아의 큰 구멍으로 유도했다…
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
+		CALL FULLRESET
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;フレシアはモチーフがラフレシア。
+		;ラフレシアが小虫に送粉を手伝わせるために腐臭を漂わせるように、フレシアは人を誘うために甘くいい香りをさせている……はず！
+			PRINTFORML 立ちこめる甘く濃厚な媚香に%CALLNAME:조교대상%が気を取られた隙をついて、
+			PRINTFORMW プティカは%CALLNAME:조교대상%をフレシアが待ち構える大穴に引きずり込んだ！
+			CALL PREDATION_RAFFLESIA(듀얼리스트,종류,ゾーン,場所,조교대상)
+		ELSE
+			PRINTFORMW 푸티카는 플레시아의 큰 구멍으로 유도했다…
+		ENDIF
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+	ENDIF
+ELSEIF 종류 == リアクション효과
+	SETCOLOR C_PINK
+	PRINTFORML 
+	PRINTFORMW ”穴”として설치されたプティカは%CALLNAME:MASTER%に%TEXTR("柔らかな/弾力のある")%穴を向けて誘惑している…
+	PRINTFORMW 誘惑に堪えきれず、%CALLNAME:MASTER%はプティカの穴に욕망のまま情欲をぶつけた…
+	RESETCOLOR
+	CALL EROTIC_MOVE("충혹마의 착정",NO_TO_CHARANUM(1381),MASTER,100)
+	IF RESULT:2 >= 1
+		SETCOLOR C_PINK
+		PRINTFORML 
+		PRINTFORMW プティカは%CALLNAME:MASTER%から搾り取った精気を巣穴に溜め込んだ…
+		RESETCOLOR
+		CALL CARD_GENERATE_GY(듀얼리스트,99823)
 	ENDIF
 ENDIF

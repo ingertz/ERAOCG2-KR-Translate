@@ -37,6 +37,9 @@
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 複数カウンタ
 #DIM DYNAMIC 耐性종류
+;Anonym추가
+#DIM DYNAMIC 選択カード보존
+#DIM DYNAMIC ターンカラー
 
 VARSET 효과추가종류除去보존
 VARSET 효과추가カテ보존
@@ -162,9 +165,147 @@ SELECTCASE 효과範囲
 				효과条件選択済:カウンタ = 選択カード:カウンタ 
 			NEXT
 		ENDIF
+				IF ターンプレイヤー == "자신"
+			ターンカラー = C_L_BLUE
+		ELSE
+			ターンカラー = C_L_RED
+		ENDIF
+			
+
+		IF 효과範囲상대마함 == 1
+			FOR カウンタ,0,5
+				IF 효과条件複数 > 0
+					SIF MATCH(효과条件選択済, カウンタ + 2010)
+						CONTINUE
+				ENDIF
+				CALL CARD_REMOVAL_ABLE(対面者,듀얼리스트,"単体",カウンタ,除去種,カードID,1)
+				IF RESULT == 0 
+					CONTINUE
+				ELSEIF RESULT == 2 && 듀얼리스트 == "상대"
+					CONTINUE
+				ELSEIF RESULT == 1
+					条件달성 += 1
+				ENDIF
+				IF 듀얼리스트 == "상대"
+					TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_마함:カウンタ")}("名前")
+					選択カード:複数カウンタ = カウンタ + 2010
+				ENDIF
+			NEXT
+			IF 듀얼리스트 == "자신"
+				SETCOLOR ターンカラー
+				PRINTPLAIN ┌─────────────────────────────────
+				RESETCOLOR
+				PRINT 「REMOVE TARGET」
+				SETCOLOR ターンカラー
+				PRINTPLAIN ─────────────────────────────────●
+				PRINTL
+				RESETCOLOR
+				CALL CARD_MAGINFO("상대","除去",除去種)
+				IF 효과範囲상대필드 == 1
+					SETCOLOR ターンカラー
+					PRINTPLAIN └┬─────────────────────────────────>
+					SETCOLOR C_MAGIC_G
+					PRINT MAGIC
+					RESETCOLOR
+					PRINT  / 
+					SETCOLOR C_TRAP_PUR
+					PRINT TRAPS
+					SETCOLOR ターンカラー
+					PRINTPLAIN <────────────────────────────────┬┘
+					PRINTL
+					RESETCOLOR
+				ELSE
+					SETCOLOR ターンカラー
+					PRINTPLAIN └─────────────────────────────────
+					RESETCOLOR
+					PRINT 「REMOVE TARGET」
+					SETCOLOR ターンカラー
+					PRINTPLAIN ─────────────────────────────────┘
+					PRINTL
+					RESETCOLOR
+				ENDIF
+			ENDIF
+		ENDIF
+		IF 효과範囲상대필드 == 1
+			FOR カウンタ,0,5
+				IF 효과条件複数 > 0
+					SIF MATCH(효과条件選択済, カウンタ + 2000)
+						CONTINUE
+				ENDIF
+				CALL CARD_REMOVAL_ABLE(対面者,듀얼리스트,"単体",カウンタ,除去種,カードID)
+				IF RESULT == 0 
+					CONTINUE
+				ELSEIF RESULT == 2 && 듀얼리스트 == "상대"
+					CONTINUE
+				ELSEIF RESULT == 1
+					条件달성 += 1
+				ENDIF
+				IF 듀얼리스트 == "상대"
+					IF  GETVAR(@"%対面者%_MZ_攻:カウンタ") + 9999 > 現在最大攻撃力
+						現在最大攻撃力 =  GETVAR(@"%対面者%_MZ_攻:カウンタ") + 9999
+						選択カード:複数カウンタ = カウンタ  + 2000
+					ENDIF
+				ENDIF
+			NEXT
+			IF 듀얼리스트 == "자신"
+				IF 효과範囲상대마함 == 0
+					SETCOLOR ターンカラー
+					PRINTPLAIN 　┌────────────────────────────────
+					RESETCOLOR
+					PRINT 「REMOVE TARGET」
+					SETCOLOR ターンカラー
+					PRINTPLAIN ────────────────────────────────┐
+					PRINTL
+					RESETCOLOR
+				ENDIF
+				CALL CARD_SUMINFO("상대","除去",除去種)
+				SETCOLOR ターンカラー
+				PRINTPLAIN 　└────────────────────────────────
+				RESETCOLOR
+				PRINT 「REMOVE TARGET」
+				SETCOLOR ターンカラー
+				PRINTPLAIN ────────────────────────────────┘
+				PRINTL
+				RESETCOLOR
+			ENDIF
+		ENDIF
+		IF (효과範囲상대필드 == 1 || 효과範囲상대마함 == 1) && (효과範囲필드 == 1 || 효과範囲마함 == 1 || 효과範囲묘지 == 1 || 효과範囲상대묘지 == 1) && 듀얼리스트 == "자신"
+			PRINTFORML 
+			CUSTOMDRAWLINE —
+		ENDIF
+		IF 효과範囲필드 == 1
+			FOR カウンタ,0,5
+				IF 효과条件他所 > 0
+					SIF カウンタ == 場所
+						CONTINUE
+				ENDIF
+				IF 효과条件複数 > 0
+					SIF MATCH(효과条件選択済, カウンタ)
+						CONTINUE
+				ENDIF
+				CALL CARD_REMOVAL_ABLE(듀얼리스트,듀얼리스트,"単体",カウンタ,除去種,カードID)
+				IF RESULT == 0 
+					CONTINUE
+				ELSEIF RESULT == 2 && 듀얼리스트 == "상대"
+					CONTINUE
+				ELSEIF RESULT == 1
+					条件달성 += 1
+				ENDIF
+				IF 듀얼리스트 == "자신"
+					VARSET 대상カード名
+					VARSET 대상カードID
+					대상カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+					CALL CARD_SETCOLOR("자신","필드",カウンタ)
+					CALLFORM CARD_KANPRINT("필드",カウンタ,대상カードID)
+				ELSEIF 듀얼리스트 == "상대"
+					IF  GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ") > 現在最大攻撃力
+						現在最大攻撃力 =  GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ")
+						選択カード:複数カウンタ = カウンタ			
+					ENDIF
+				ENDIF
+			NEXT
+		ENDIF
 		
-
-
 		IF 효과範囲마함 == 1
 			FOR カウンタ,0,5
 				IF 효과条件他所 > 0
@@ -190,46 +331,6 @@ SELECTCASE 효과範囲
 					CALLFORM CARD_KANPRINT("마함",カウンタ + 10,대상カードID)
 				ELSEIF 듀얼리스트 == "상대"
 					選択カード:複数カウンタ = カウンタ + 10
-				ENDIF
-			NEXT
-		ENDIF
-		IF 효과範囲상대마함 == 1
-			FOR カウンタ,0,5
-				IF 효과条件複数 > 0
-					SIF MATCH(효과条件選択済, カウンタ + 2010)
-						CONTINUE
-				ENDIF
-				CALL CARD_REMOVAL_ABLE(対面者,듀얼리스트,"単体",カウンタ,除去種,カードID,1)
-				IF RESULT == 0 
-					CONTINUE
-				ELSEIF RESULT == 2 && 듀얼리스트 == "상대"
-					CONTINUE
-				ELSEIF RESULT == 1
-					条件달성 += 1
-				ENDIF
-				IF 듀얼리스트 == "자신"
-					VARSET 대상カードID
-					VARSET 裏側플래그
-					SIF GETVAR(@"%対面者%_魔_表:カウンタ") != 1
-						裏側플래그 = 3
-					대상カードID = GETVAR(@"%対面者%_마함:カウンタ")
-					;자신が듀얼리스트である場合
-
-					VARSET 耐性종류
-					IF 対面者 != 듀얼리스트
-						IF GETVAR(@"%対面者%_魔_破耐:カウンタ") >= 1 && 除去種 == "묘지"
-							耐性종류 = 1
-						ELSEIF GETVAR(@"%対面者%_魔_対耐:カウンタ") >= 1
-							耐性종류 = 2
-						ENDIF
-					ENDIF
-					CALL CARD_SETCOLOR("상대","상대마함",カウンタ,耐性종류)
-					CALLFORM CARD_KANPRINT("상대마함",カウンタ + 2010,대상カードID,耐性종류)
-
-					RESETCOLOR
-				ELSEIF 듀얼리스트 == "상대"
-					TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_마함:カウンタ")}("名前")
-					選択カード:複数カウンタ = カウンタ + 2010
 				ENDIF
 			NEXT
 		ENDIF
@@ -274,90 +375,6 @@ SELECTCASE 효과範囲
 			NEXT
 		ENDIF
 
-
-
-		IF 효과範囲필드 == 1
-			FOR カウンタ,0,5
-				IF 효과条件他所 > 0
-					SIF カウンタ == 場所
-						CONTINUE
-				ENDIF
-				IF 효과条件複数 > 0
-					SIF MATCH(효과条件選択済, カウンタ)
-						CONTINUE
-				ENDIF
-				CALL CARD_REMOVAL_ABLE(듀얼리스트,듀얼리스트,"単体",カウンタ,除去種,カードID)
-				IF RESULT == 0 
-					CONTINUE
-				ELSEIF RESULT == 2 && 듀얼리스트 == "상대"
-					CONTINUE
-				ELSEIF RESULT == 1
-					条件달성 += 1
-				ENDIF
-				IF 듀얼리스트 == "자신"
-					VARSET 대상カード名
-					VARSET 대상カードID
-					대상カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
-					CALL CARD_SETCOLOR("자신","필드",カウンタ)
-					CALLFORM CARD_KANPRINT("필드",カウンタ,대상カードID)
-				ELSEIF 듀얼리스트 == "상대"
-					IF  GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ") > 現在最大攻撃力
-						現在最大攻撃力 =  GETVAR(@"%듀얼리스트%_MZ_攻:カウンタ")
-						選択カード:複数カウンタ = カウンタ			
-					ENDIF
-				ENDIF
-			NEXT
-		ENDIF
-		IF 효과範囲상대필드 == 1
-			FOR カウンタ,0,5
-				IF 효과条件複数 > 0
-					SIF MATCH(효과条件選択済, カウンタ + 2000)
-						CONTINUE
-				ENDIF
-				CALL CARD_REMOVAL_ABLE(対面者,듀얼리스트,"単体",カウンタ,除去種,カードID)
-				IF RESULT == 0 
-					CONTINUE
-				ELSEIF RESULT == 2 && 듀얼리스트 == "상대"
-					CONTINUE
-				ELSEIF RESULT == 1
-					条件달성 += 1
-				ENDIF
-
-				IF 듀얼리스트 == "자신"
-					VARSET 대상カードID
-					VARSET 裏側플래그
-					VARSET 耐性종류
-					裏側플래그 = GETVAR(@"%対面者%_MZ_表:カウンタ") 
-					대상カードID = GETVAR(@"%対面者%_필드:カウンタ")
-					IF 対面者 != 듀얼리스트
-						IF GETVAR(@"%対面者%_MZ_破耐:カウンタ") >= 1 && 除去種 == "묘지"
-							耐性종류 = 1
-						ELSEIF GETVAR(@"%対面者%_MZ_対耐:カウンタ") >= 1
-							耐性종류 = 2
-						ELSE
-							TRYCALLFORM CARD_{カードID}("종류")
-							IF GETVAR(@"%対面者%_MZ_モ耐:カウンタ") >= 1 && INRANGE(RESULT, 0,15)
-								耐性종류 = 3
-							ELSEIF GETVAR(@"%対面者%_MZ_魔耐:カウンタ") >= 1 && INRANGE(RESULT, 20,30)
-								耐性종류 = 4
-							ELSEIF GETVAR(@"%対面者%_MZ_함정耐:カウンタ") >= 1 && INRANGE(RESULT, 30,40)
-								耐性종류 = 5
-							ELSE
-							ENDIF
-						ENDIF
-					ENDIF
-					CALL CARD_SETCOLOR("상대","필드",カウンタ,耐性종류)
-					CALLFORM CARD_KANPRINT("상대필드",カウンタ + 2000,대상カードID,耐性종류)
-					RESETCOLOR
-				ELSEIF 듀얼리스트 == "상대"
-					IF  GETVAR(@"%対面者%_MZ_攻:カウンタ") + 9999 > 現在最大攻撃力
-						現在最大攻撃力 =  GETVAR(@"%対面者%_MZ_攻:カウンタ") + 9999
-						選択カード:複数カウンタ = カウンタ  + 2000
-					ENDIF
-				ENDIF
-			NEXT
-		ENDIF
-
 		RESETCOLOR
 		IF 条件달성 == 0 && 複数カウンタ == 0 && 효과条件複数 == 0
 			SETCOLOR C_W_RED
@@ -377,11 +394,20 @@ SELECTCASE 효과範囲
 				SETCOLOR C_GRAY
 				PRINTL 　(9999) - 돌아간다(선택할 수 있는 카드가 없습니다)
 				RESETCOLOR
+				PRINTL 
+				SETCOLOR C_BLACK
+				PRINTFORML 　　　　　　　　　　　　　　　　　　　　[9999] - 緊急離脱(不具合回避用)
+				RESETCOLOR
 			ELSE
 				PRINTL 　[9999] - 돌아간다
 			ENDIF
 			PRINTL
 			BINPUT
+			IF INRANGE(RESULT,5000,5999)
+				RESULT -= 3000
+			ELSEIF INRANGE(RESULT,6000,6999)
+				RESULT -= 3990
+			ENDIF
 			選択カード:複数カウンタ = RESULT
 			IF 選択カード:複数カウンタ == 8888
 				PRINTL 이 이상 고를 수 없습니다。
@@ -413,7 +439,13 @@ SELECTCASE 효과範囲
 			GOTO INPUT_SKIP
 		ELSEIF 選択カード:複数カウンタ != 9999
 			CALL CARD_SELECT(듀얼리스트,選択カード:複数カウンタ)
-			選択カード_ID = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{選択カード（CS）}")
+			IF 参照先（CS） == "필드" && GETVAR(@"%대상者（CS）%_MZ_表:{選択カード（CS）}") == 3
+				選択カード_ID = 999990
+			ELSEIF 参照先（CS） == "마함" && GETVAR(@"%대상者（CS）%_魔_表:{選択カード（CS）}") >= 2
+				選択カード_ID = 999990
+			ELSE
+				選択カード_ID = GETVAR(@"%대상者（CS）%_%参照先（CS）%:{選択カード（CS）}")
+			ENDIF
 			CALL SELECT_UI_SET(듀얼리스트,選択カード_ID,12,選択カード:複数カウンタ)
 			IF RESULT == 1
 				GOTO CHOICE_LOOP
@@ -465,6 +497,7 @@ SELECTCASE 효과範囲
 			SIF RESULT != 1
 				RETURN 0
 		ENDIF
+		RESULT:10 = 選択カード
 		RESULT:2 = 選択カード_ID
 		RETURN 1
 ENDSELECT

@@ -47,23 +47,23 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL
 PRINTL "광서의 기계" 몬스터 ＋ 암컷 몬스터 １장
 PRINTL 이 카드는 융합 소환 및 이하의 방법으로 EX덱에서 특수 소환할 수 있다。
-CALLFORM CARD_ABLE(0,EX덱起動)
+CALLFORM CARD_ABLE(1,EX덱起動)
 PRINTL 자신 필드의 "광서의 기계" 몬스터 １장과 、기계족 / 암컷 몬스터 １장을 릴리스했을 때、이 카드를 EX덱에서 수비 표시로 특수 소환할 수 있다。
 PRINTL 이 카드명의 ②③의 효과는 １턴에 어느쪽인가 １번밖에 사용할 수 없다。
-CALLFORM CARD_ABLE(1,지속효과)
+CALLFORM CARD_ABLE(2,지속효과)
 PRINTL ①：앞면 수비 표시의 이 카드는 공격 유도를 가지며、１턴에 １번 전투 / 효과로 파괴되지 않는다。
 PRINTL    또한、이 카드는 앞면 수비 표시인채로 공격할 수 있다。
 PRINTL    그 경우、이 카드는 수비력을 공격력으로 취급해 데미지 계산을 한다。
-CALLFORM CARD_ABLE(2,攻撃時誘発)
+CALLFORM CARD_ABLE(3,攻撃時誘発)
 PRINTL ②：상대 몬스터의 공격 선언시에、자신의 묘지에서 기계족 / 암컷 몬스터를 제외하고 발동할 수 있다。
 PRINTL    그 공격을 무효로 하고、수비 표시로 한다。
-CALLFORM CARD_ABLE(3,발동誘発)
+CALLFORM CARD_ABLE(4,발동誘発)
 PRINTL ③：상대가 마법 / 함정 카드를 발동했을 때에 패에서 "광서의 기계" 카드를 묘지로 보내고 발동할 수 있다。
 PRINTL    그 발동을 무효로 한다。
 PRINTL
 SETCOLOR C_RED
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
-CALLFORM CARD_ABLE(1,지속효과)
+CALLFORM CARD_ABLE(5,지속효과)
 PRINTL ⑤：융합 소환한 이 카드에는、２장째 소재로 사용한 암컷 몬스터 １장이 끼워진다。
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー주의ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
 PRINTL
@@ -104,6 +104,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,39908)
+		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
@@ -132,8 +134,6 @@ ELSEIF 종류 == 지속효과
 	RETURN 1
 
 ELSEIF 종류 == 攻撃時誘発
-	SIF 발동済_2(듀얼리스트,39908)
-		RETURN 0
 	SIF 발동済_3(듀얼리스트,39908)
 		RETURN 0
 	SIF ゾーン != "필드"
@@ -151,9 +151,7 @@ ELSEIF 종류 == 攻撃時誘発
 	RETURN 1
 
 ELSEIF 종류 == 발동誘発
-	SIF 발동済_2(듀얼리스트,39908)
-		RETURN 0
-	SIF 발동済_3(듀얼리스트,39908)
+	SIF 발동済_4(듀얼리스트,39908)
 		RETURN 0
     SIF ゾーン != "필드"
 	 	RETURN 0
@@ -195,7 +193,7 @@ CALL 対面者판정(듀얼리스트)
 
 
 IF 종류 == EX덱起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39908)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39908,1)
 		IF RESULT == 0
 		CALL FULLRESET
 		효과範囲필드 = 1
@@ -305,7 +303,7 @@ ELSEIF 종류 == 지속효과
 	ENDIF
 
 ELSEIF 종류 == 攻撃後誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39908,2)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39908,3)
 		IF RESULT == 0
 			CALL FULLRESET
 			효과範囲묘지 = 1
@@ -322,7 +320,7 @@ ELSEIF 종류 == 攻撃後誘発
         ENDIF
 
 ELSEIF 종류 == 발동誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39908,3)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39908,4)
     	IF RESULT == 0
 			CALL FULLRESET
 			효과条件カテゴリ = 광서의 기계

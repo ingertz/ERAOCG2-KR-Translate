@@ -67,7 +67,7 @@ SIF RESULT == 1
 	RETURN 0
 
 
-IF 종류 == 마함起動 
+IF 종류 == 마함起動 || 종류 == フリー誘発
 	SIF 발동済_1(듀얼리스트,1623)
 		RETURN 0
 	CALL CARD_SS_CHECK(듀얼리스트,1623,"마함")
@@ -97,21 +97,20 @@ ENDIF
 #DIM DYNAMIC 場所
 #DIM DYNAMIC 選択カード
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+IF 종류 == 마함起動 || 종류 == フリー誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1623,1)
 	IF RESULT == 0
-		CALL FULLRESET
-		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
-		IF RESULT == 1
+		IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			CALL FULLRESET
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				CALL CARD_SP_SUMMON(듀얼리스트, "마함", 場所,"守備표시")
+			ENDIF
+		ELSE
 			CALL FULLRESET
 			CALL CARD_SP_SUMMON(듀얼리스트, "마함", 場所,"守備표시")
 		ENDIF
-	ENDIF
-ELSEIF 종류 == 마함起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1623,1)
-	IF RESULT == 0
-		CALL FULLRESET		
-		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所, "守備표시")
 	ENDIF
 ELSEIF 종류 == 상황確認
 	CALL FULLRESET

@@ -1,0 +1,132 @@
+﻿@CARDNAME_22807,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 네크메이드 클리너
+	CASE "略称"
+		RESULTS = NM 클리너
+	CASE "カテゴリ"
+		RESULTS:0 = 가실장
+		RESULTS:0 = 네크메이드
+ENDSELECT
+
+
+@CARD_22807(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	;어둠속성/빛속성/땅속성/물속성/화염속성/바람속성
+	CASE "속성"
+		RETURN 빛속성
+
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 700
+	;牝性/雄性があるよ
+	CASE "レア度"
+		RETURN CMN
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_22807(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードの①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードの소환・특수소환に成功した場合に、자신の덱の上からカード２枚を묘지へ送って발동できる。
+PRINTL 상대フィールドの마법・함정ゾーンのカード１枚を選んで破壊し、상대は自身の묘지の마법・함정カード１枚を選びセットする。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：このカードがフィールドから묘지へ送られた場合に발동できる。
+PRINTL 자신の덱の上からカードを５枚めくる。
+PRINTL その中に「네크메이드」カードがあった場合、その内の１枚を選んで손패に加え、残りのカードは全て묘지へ送る。
+PRINTL 無かった場合、めくったカードを全て덱に戻す。
+PRINTL このターン、자신はモンスター（언데드족）しか특수소환できない。
+
+@CARDCAN_22807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,22807)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,22807)
+		RETURN 0
+	CALL FULLRESET
+		효과範囲상대마함 = 1
+		효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드→묘지
+	SIF 발동済_2(듀얼리스트,22807)
+		RETURN 0
+	SIF 現山札数(듀얼리스트) < 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_22807(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22807,1)
+	IF RESULT == 0
+		CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",2)
+		CALL FULLRESET
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"마함単体",場所,"묘지")
+		CALL FULLRESET
+		효과条件종류 = 마함全般
+		CALL CARD_SET_BASIC(対面者,"묘지",ゾーン,場所,"裏側표시")
+	ENDIF
+ELSEIF 종류 == 필드→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22807,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 네크메이드
+		효과条件山切り無し = 1
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所,5)
+		IF RESULT == 1
+			CALL CARD_DECK_DISPOSE(듀얼리스트,"덱",4)
+		ENDIF
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		SS소환可能종족 = 언데드족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF

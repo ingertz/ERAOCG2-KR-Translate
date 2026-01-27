@@ -229,6 +229,10 @@ SIF !タゲ確認
 	TFLAG:104 = 0
 
 
+FOR カウンタ,1,10
+;	PRINTFORMW TARGET:{カウンタ} = {TARGET:カウンタ}
+NEXT
+
 IF 朝襲われ == 1
 	朝襲われ = 0
 	FOR カウンタ,1,TARGETNUM
@@ -418,55 +422,61 @@ IF TARGET
 			IF TFLAG:COMABLE관리 != 3
 				PRINTL
 				IF PRIVATE_AREA(CFLAG:MASTER:현재위치)
-					;お酒パワーがあると容赦なくやって来る
-					IF (TALENT:TARGET:반응 == -1 || TALENT:TARGET:성적흥미 == -1 || TALENT:TARGET:패배버릇 >= 1) && TCVAR:TARGET:만취 != 1
-						CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 4)
-						PRINTFORMW %CALLNAME:TARGET%는 부끄러운 듯이、연인과의 스킨십을 원하고 있다。
-						CALL YN_CHOICE_STR()
-						IF RESULT == はい
-							PRINTFORMW %CALLNAME:MASTER%은 발정해 %CALLNAME:TARGET%을 안아、마음대로 해도 좋다고 귓가에 속삭였다。
-							CFLAG:TARGET:조르기허가 = 1
-
+					;정조無い奴はどこでもヤろうとする。（정조無しOR포식자）   ある子はベッドエリアのみ
+					IF (TALENT:TARGET:정조 <= -1 || TALENT:TARGET:포식자) || (TALENT:TARGET:정조 >= 0 && BEDROOM(CFLAG:MASTER:현재위치))
+						;お酒パワーがあると容赦なくやって来る
+						IF (TALENT:TARGET:반응 == -1 || TALENT:TARGET:성적흥미 == -1 || TALENT:TARGET:패배버릇 >= 1) && TCVAR:TARGET:만취 != 1
+							CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 4)
+							PRINTFORMW %CALLNAME:TARGET%는 부끄러운 듯이、연인과의 스킨십을 원하고 있다。
+							CALL YN_CHOICE_STR()
+							IF RESULT == はい
+								PRINTFORMW %CALLNAME:MASTER%은 발정해 %CALLNAME:TARGET%을 안아、마음대로 해도 좋다고 귓가에 속삭였다。
+								CFLAG:TARGET:조르기허가 = 1
+							ELSE
+								PRINTFORMW 대담한 제한을 하며 %CALLNAME:TARGET%는 부끄러운 듯이 얼굴을 붉히고、자기 얼굴을 손으로 가렸다。
+								PRINTFORMW 오늘은 더이상 조르러 오지 않을듯 하다。
+								CFLAG:TARGET:조르기허가 = 1
+								GOTO SKIP_HATSUJO
+							ENDIF
 						ELSE
-							PRINTFORMW 대담한 제한을 하며 %CALLNAME:TARGET%는 부끄러운 듯이 얼굴을 붉히고、자기 얼굴을 손으로 가렸다。
-							CFLAG:TARGET:조르기허가 = 1
-							GOTO SKIP_HATSUJO
+							PRINTFORMW %CALLNAME:MASTER%은 발정해 %CALLNAME:TARGET%에 밀려 넘어졌다！
+							IF CFLAG:TARGET:변기화 == 1
+								PRINTFORMW 구속은！？　어느새 빠져 있었던 것 같다……。
+								CFLAG:TARGET:변기화 = 0
+								TEQUIP:TARGET:볼개그 = 0
+								TEQUIP:TARGET:애널바이브 = 0
+								TEQUIP:TARGET:아이마스크 = 0
+								TEQUIP:TARGET:바이브 = 0
+								TEQUIP:TARGET:밧줄 = 0
+							ENDIF
 						ENDIF
-					ELSE
-						PRINTFORMW %CALLNAME:MASTER%은 발정해 %CALLNAME:TARGET%에 밀려 넘어졌다！
-						IF CFLAG:TARGET:변기화 == 1
-							PRINTFORMW 구속은！？　어느새 빠져 있었던 것 같다……。
-							CFLAG:TARGET:변기화 = 0
-							TEQUIP:TARGET:볼개그 = 0
-							TEQUIP:TARGET:애널바이브 = 0
-							TEQUIP:TARGET:아이마스크 = 0
-							TEQUIP:TARGET:바이브 = 0
-							TEQUIP:TARGET:밧줄 = 0
-						ENDIF
+						RESETCOLOR
+						CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 1)
 					ENDIF
-					RESETCOLOR
-					CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 1)
 				ELSE 
-					IF TALENT:TARGET:반응 == -1 || TALENT:TARGET:성적흥미 == -1
-						PRINTFORMW %CALLNAME:TARGET%는 부끄러운 듯이、조금 남의 눈에 띄지 않는 곳으로 가지 않겠느냐고 권했다。
-						CALL YN_CHOICE_STR()
-						IF RESULT == はい
-							PRINTFORMW %CALLNAME:MASTER%은 발정해 %CALLNAME:TARGET%을 남의 눈에 띄지 않는 곳까지 데리고 가서 그 몸을 맡겼다。
-							CFLAG:TARGET:조르기허가 = 1
+					;정조無い奴はどこでもヤろうとする。（정조無しOR포식자）   ある子はベッドエリアのみ
+					IF (TALENT:TARGET:정조 <= -1 || TALENT:TARGET:포식자) || (TALENT:TARGET:정조 >= 0 && BEDROOM(CFLAG:MASTER:현재위치))
+						IF TALENT:TARGET:반응 == -1 || TALENT:TARGET:성적흥미 == -1
+							PRINTFORMW %CALLNAME:TARGET%는 부끄러운 듯이、조금 남의 눈에 띄지 않는 곳으로 가지 않겠느냐고 권했다。
+							CALL YN_CHOICE_STR()
+							IF RESULT == はい
+								PRINTFORMW %CALLNAME:MASTER%은 발정해 %CALLNAME:TARGET%을 남의 눈에 띄지 않는 곳까지 데리고 가서 그 몸을 맡겼다。
+								CFLAG:TARGET:조르기허가 = 1
+								人祓いモード = 1
+								CFLAG:TARGET:데이트중 = 1
+							ELSE
+								PRINTFORMW 용기를 낸 %CALLNAME:TARGET%는 부끄러운 듯이 얼굴을 붉히고、자기 얼굴을 손으로 가렸다。
+								CFLAG:TARGET:조르기허가 = 1
+								GOTO SKIP_HATSUJO
+							ENDIF
+						ELSE
+							PRINTFORMW %CALLNAME:MASTER%은 남의 눈에 띄지 않는 곳까지 끌려가、발정한 %CALLNAME:TARGET%에게 습격당했다。
 							人祓いモード = 1
 							CFLAG:TARGET:데이트중 = 1
-						ELSE
-							PRINTFORMW 용기를 낸 %CALLNAME:TARGET%는 부끄러운 듯이 얼굴을 붉히고、자기 얼굴을 손으로 가렸다。
-							CFLAG:TARGET:조르기허가 = 1
-							GOTO SKIP_HATSUJO
 						ENDIF
-					ELSE
-						PRINTFORMW %CALLNAME:MASTER%은 남의 눈에 띄지 않는 곳까지 끌려가、발정한 %CALLNAME:TARGET%에게 습격당했다。
-						人祓いモード = 1
-						CFLAG:TARGET:데이트중 = 1
 					ENDIF
+					CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 1, 3)
 				ENDIF
-				CALL KOJO_MESSAGE_SEND("EVENT", TARGET, 10, 1, 3)
 			ENDIF			
 			FOR カウンタ,1,TARGETNUM
 				CFLAG:(TARGET:カウンタ):우후후 = 2
@@ -498,143 +508,188 @@ ENDIF
 ;TARGET情報とモード切り替え
 ;-------------------------------------------------
 
-IF TARGET:2
-	SIF GET_TARGETNUM() < 6
-		PORTRAIT_같은방開始 = 0
-
-	VARSET ターゲット보존, -1
-	FOR カウンタ,1,CHARANUM
-		SIF TARGET:0 == TARGET:カウンタ
-			CONTINUE
-		ターゲット보존:カウンタB = TARGET:カウンタ
-		カウンタB ++
-		SIF カウンタ >= 20
-			BREAK
-	NEXT
+; 区切り線を独立させる
 	IF PORTRAIT_화상표시 == 1 && PORTRAIT_簡易표시 == 0
 		SPACEWIDTH = 31
 	ELSE
 		SPACEWIDTH = 0
 	ENDIF
+
 	SIF CFLAG:MASTER:우후후 >= 1
 		SETCOLOR  C_Ne_PINK	
-
+;PRINTFORM 部位표시：{CFLAG:MASTER:우후후}
+IF CFLAG:MASTER:우후후 >= 1 && PORTRAIT_部位표시 == 1
+	PRINTFORM %"",SPACEWIDTH%
+	PRINTFORM —— BODY ：
+	IF TARGET:2
+		PRINTBUTTON "[같은방표시]",2023
+		PRINTFORM —
+	ELSE
+		PRINTFORM ————————————
+	ENDIF		
+	PRINTBUTTON "[부위표시]",2023
+	PRINTFORM ——————————————————————————————————————————————————————————―————————————————————————————
+	PRINTL
+ELSEIF TARGET:2
 	PRINTFORM %"",SPACEWIDTH%
 	PRINTFORM ——동실자：
-	PRINTBUTTON "[표시 전환]",2020
+	PRINTBUTTON "[표시전환]",2020
 	PRINTFORM ——
-	PRINTBUTTON "(<<)", 2021
-	PRINTFORM —————————————————————————————————————————
+	IF CFLAG:MASTER:우후후 >= 1
+		PRINTBUTTON "[부위표시]",2023
+		PRINTFORM ——
+		PRINTBUTTON "(<<)", 2021
+		PRINTFORM —————————————————————————————
+	ELSE
+		PRINTBUTTON "(<<)", 2021
+		PRINTFORM —————————————————————————————————————————
+	ENDIF
 	PRINTBUTTON "(>>)", 2022
 	PRINTFORM ————————————————————————————————————————————————―
 	IF PORTRAIT_화상표시 == 1 && PORTRAIT_簡易표시 == 1
 		PRINTFORM ———————————————————————————————
 	ENDIF
 	PRINTL
-	RESETCOLOR
+ELSEIF CFLAG:MASTER:우후후 >= 1 && PORTRAIT_部位표시 == 0
 	PRINTFORM %"",SPACEWIDTH%
-	IF PORTRAIT_같은방표시 == 0
-		FOR カウンタ, 0, CHARANUM
-			SIF TARGET:カウンタ == TARGET
-				CONTINUE
-			SIF TARGET:カウンタ <= 0
-				CONTINUE
-			IF カウンタ != 0
-				SIF TARGET:0 == TARGET:カウンタ
-					CONTINUE
-			ENDIF
-			SIF CFLAG:(TARGET:カウンタ):동행 || CFLAG:(TARGET:カウンタ):데이트중
-				SETCOLOR C_PINK
-			SIF TARGET == TARGET:カウンタ
-				SETCOLOR C_AQUA
-			PRINTBUTTON "[" + CALLNAME:(TARGET:カウンタ) + "]", (1000 + TARGET:カウンタ)
+	PRINTFORM ——동실자：
+	PRINTBUTTON "[표시전환]",2023
+	PRINTFORM ——————————————————————————————————————————————————————————————————————―————————————————————————————―
+	PRINTL
+ENDIF
+	RESETCOLOR
 
-			IF CFLAG:(TARGET:カウンタ):수면
-				PRINT （수면중）
-			ELSEIF CFLAG:(TARGET:カウンタ):데이트중
-				PRINTFORM 【데이트】
-			ELSEIF CFLAG:(TARGET:カウンタ):동행
-				PRINTFORM 【동행중】
-			ENDIF
 
-			RESETCOLOR
-			SIF カウンタ < GET_TARGETNUM()
-				PRINT 　
-		NEXT
+IF CFLAG:MASTER:우후후 >= 1 && PORTRAIT_部位표시 == 1
+	; PARTS
+	; 元の TARGET NAME の行のために1行空ける
+	PRINTL
+	PRINTFORM %"",SPACEWIDTH%
+	CALL DISPLAY_PARTS_PORTRAIT, TARGET
+	PRINTL
+	FOR LOCAL,0,7
 		PRINTL
-		IF PORTRAIT_簡易표시 == 0
-			FOR LOCAL,0,8
+	NEXT
+ELSE
+	; 같은방TARGET
+	IF TARGET:2
+		SIF GET_TARGETNUM() < 6
+			PORTRAIT_같은방開始 = 0
+
+		VARSET ターゲット보존, -1
+		FOR カウンタ,1,CHARANUM
+			SIF TARGET:0 == TARGET:カウンタ
+				CONTINUE
+			ターゲット보존:カウンタB = TARGET:カウンタ
+			カウンタB ++
+			SIF カウンタ >= 20
+				BREAK
+		NEXT
+		PRINTFORM %"",SPACEWIDTH%
+		IF PORTRAIT_같은방표시 == 0
+			FOR カウンタ, 0, CHARANUM
+				SIF TARGET:カウンタ == TARGET
+					CONTINUE
+				SIF TARGET:カウンタ <= 0
+					CONTINUE
+				IF カウンタ != 0
+					SIF TARGET:0 == TARGET:カウンタ
+						CONTINUE
+				ENDIF
+				SIF CFLAG:(TARGET:カウンタ):동행 || CFLAG:(TARGET:カウンタ):데이트중
+					SETCOLOR C_PINK
+				SIF TARGET == TARGET:カウンタ
+					SETCOLOR C_AQUA
+				PRINTBUTTON "[" + CALLNAME:(TARGET:カウンタ) + "]", (10000 + TARGET:カウンタ)
+
+				IF CFLAG:(TARGET:カウンタ):수면
+					PRINT （수면중）
+				ELSEIF CFLAG:(TARGET:カウンタ):데이트중
+					PRINTFORM 【데이트】
+				ELSEIF CFLAG:(TARGET:カウンタ):동행
+					PRINTFORM 【동행중】
+				ENDIF
+
+				RESETCOLOR
+				SIF カウンタ < GET_TARGETNUM()
+					PRINT 　
+			NEXT
+			PRINTL
+			IF PORTRAIT_簡易표시 == 0
+				FOR LOCAL,0,8
+					PRINTL
+				NEXT
+			ENDIF
+		ELSEIF PORTRAIT_같은방표시 == 1
+			IF PORTRAIT_簡易표시 == 1
+				PORTRAIT_같은방数 = 6
+			ELSE
+				PORTRAIT_같은방数 = 4
+			ENDIF
+			FOR カウンタ, PORTRAIT_같은방開始, (PORTRAIT_같은방開始 + 6)
+				SIF ターゲット보존:カウンタ <= 0
+					CONTINUE
+				SIF CFLAG:(ターゲット보존:カウンタ):동행 || CFLAG:(ターゲット보존:カウンタ):데이트중
+					SETCOLOR C_PINK
+				SIF TARGET == ターゲット보존:カウンタ
+					SETCOLOR C_AQUA
+				SUBSTRING CALLNAME:(ターゲット보존:カウンタ), 0, 16
+				名前설정 = %"[" + RESULTS + "]",18,LEFT%
+				PRINTBUTTON @"%名前설정%", (10000 + ターゲット보존:カウンタ)
+
+				IF CFLAG:(ターゲット보존:カウンタ):수면
+					PRINT （잠）
+				ELSEIF CFLAG:(ターゲット보존:カウンタ):데이트중
+					PRINTFORM 【데】
+				ELSEIF CFLAG:(ターゲット보존:カウンタ):동행
+					PRINTFORM 【동】
+				ELSE
+					PRINTFORM %"",6%
+				ENDIF
+				RESETCOLOR
+
+				SIF カウンタ < GET_TARGETNUM()
+					PRINTFORM %"",1%
+			NEXT
+			PRINTL
+			PRINTFORM %"",SPACEWIDTH%
+
+			FOR カウンタ,PORTRAIT_같은방開始, (PORTRAIT_같은방開始 + 6)
+				SIF ターゲット보존:カウンタ <= 0
+					CONTINUE
+				GDI値 = 1100 + GDI보존
+				GDI보존 ++
+				IF GDI보존 >= 20
+					GDI보존 = 0
+				ENDIF
+				CALL SHOW_GRAPHICS(ターゲット보존:カウンタ,GDI値,3)
+				IF SPRITECREATED(@"{GDI値}_WINDOW")
+					LOCALS = <div height='{(PORTRAIT_표시サイズ)*60 +200}' width='{(PORTRAIT_표시サイズ)*100 +200}' border='15' margin='35' padding='2px,2px,2px,0' xpos='{(カウンタ-PORTRAIT_같은방開始)*(PORTRAIT_표시サイズ+2)*100}'><button value='{10000 + ターゲット보존:カウンタ}'><shape type='space' param='50'><img src='{GDI値}_WINDOW' srcb='' height='{(PORTRAIT_표시サイズ)*60}' width='{(PORTRAIT_표시サイズ)*100}' ypos='7px'></button></div>
+					HTML_PRINT LOCALS,30
+				ENDIF
+				SIF カウンタ < GET_TARGETNUM()
+					PRINTFORM %"",1%
+			NEXT
+			PRINTL
+			FOR LOCAL,0,7
 				PRINTL
 			NEXT
 		ENDIF
-	ELSEIF PORTRAIT_같은방표시 == 1
-		IF PORTRAIT_簡易표시 == 1
-			PORTRAIT_같은방数 = 6
-		ELSE
-			PORTRAIT_같은방数 = 4
+	ELSE
+		IF PORTRAIT_화상표시 == 1 && PORTRAIT_簡易표시 == 0 && TARGET
+			FOR LOCAL,0,10
+				PRINTL
+			NEXT
 		ENDIF
-		FOR カウンタ, PORTRAIT_같은방開始, (PORTRAIT_같은방開始 + 6)
-			SIF ターゲット보존:カウンタ <= 0
-				CONTINUE
-			SIF CFLAG:(ターゲット보존:カウンタ):동행 || CFLAG:(ターゲット보존:カウンタ):데이트중
-				SETCOLOR C_PINK
-			SIF TARGET == ターゲット보존:カウンタ
-				SETCOLOR C_AQUA
-			SUBSTRING CALLNAME:(ターゲット보존:カウンタ), 0, 16
-			名前설정 = %"[" + RESULTS + "]",18,LEFT%
-			PRINTBUTTON @"%名前설정%", (1000 + ターゲット보존:カウンタ)
+	ENDIF
 
-			IF CFLAG:(ターゲット보존:カウンタ):수면
-				PRINT （잠）
-			ELSEIF CFLAG:(ターゲット보존:カウンタ):데이트중
-				PRINTFORM 【데】
-			ELSEIF CFLAG:(ターゲット보존:カウンタ):동행
-				PRINTFORM 【동】
-			ELSE
-				PRINTFORM %"",6%
-			ENDIF
-			RESETCOLOR
-
-			SIF カウンタ < GET_TARGETNUM()
-				PRINTFORM %"",1%
-		NEXT
-		PRINTL
-		PRINTFORM %"",SPACEWIDTH%
-
-		FOR カウンタ,PORTRAIT_같은방開始, (PORTRAIT_같은방開始 + 6)
-			SIF ターゲット보존:カウンタ <= 0
-				CONTINUE
-			GDI値 = 1100 + GDI보존
-			GDI보존 ++
-			IF GDI보존 >= 20
-				GDI보존 = 0
-			ENDIF
-			CALL SHOW_GRAPHICS(ターゲット보존:カウンタ,GDI値,3)
-			IF SPRITECREATED(@"{GDI値}_WINDOW")
-				LOCALS = <div height='{(PORTRAIT_표시サイズ)*60 +200}' width='{(PORTRAIT_표시サイズ)*100 +200}' border='15' margin='35' padding='2px,2px,2px,0' xpos='{(カウンタ-PORTRAIT_같은방開始)*(PORTRAIT_표시サイズ+2)*100}'><button value='{1000 + ターゲット보존:カウンタ}'><shape type='space' param='50'><img src='{GDI値}_WINDOW' srcb='' height='{(PORTRAIT_표시サイズ)*60}' width='{(PORTRAIT_표시サイズ)*100}' ypos='7px'></button></div>
-				HTML_PRINT LOCALS,30
-			ENDIF
-			SIF カウンタ < GET_TARGETNUM()
-				PRINTFORM %"",1%
-		NEXT
-		PRINTL
-		FOR LOCAL,0,7
-			PRINTL
+	IF TARGET == 0
+		TFLAG:COMABLE관리 = 0
+		FOR カウンタ,0,CHARANUM
+			CFLAG:カウンタ:우후후 = 0
 		NEXT
 	ENDIF
-ELSE
-	IF PORTRAIT_화상표시 == 1 && PORTRAIT_簡易표시 == 0 && TARGET
-		FOR LOCAL,0,10
-			PRINTL
-		NEXT
-	ENDIF
-ENDIF
 
-IF TARGET == 0
-	TFLAG:COMABLE관리 = 0
-	FOR カウンタ,0,CHARANUM
-		CFLAG:カウンタ:우후후 = 0
-	NEXT
 ENDIF
 
 

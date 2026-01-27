@@ -1,0 +1,528 @@
+﻿@CARDNAME_50939,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = Ｘ프로그램
+	CASE "略称"
+		RESULTS = Ｘ프로그램
+
+	CASE "要塞名"
+		RESULTS = Ｘ프로그램
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = Ｘ항체
+		RESULTS:2 = 포트리스
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_50939(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 12
+	CASE "コスト"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "生成カード"
+		RETURN 1050939
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50939(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+RETURN 0
+
+@CARD_EXPLANATION_50939(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,EX덱起動)
+PRINTL 자신フィールドに포트리스が存在しない場合、손패の「Ｘ항체」１枚を捨てることで、
+PRINTL このカードを자신の마법＆함정ゾーンに表側표시で置ける。
+PRINTL （このカードはカードの효과でのみEX덱からフィールドに특수소환・마함ゾーンに置くことができる）
+CALL TEXT_DECORATION("D_HEART_F")
+PRINTL 포트리스側　《Ｘ프로그램》 コスト：１０
+PRINTL このカード名の포트리스の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：자신フィールドに「Ｘ항체」モンスターが存在する場合、このカードは대상耐性・破壊耐性を持つ。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ②：자신・상대ターンに발동できる。
+PRINTL 자신フィールドの「Ｘ항체」モンスター１体を破壊する。その後、ターンプレイヤーが자신なら、以下の효과を適用できる。
+PRINTL ●덱から「Ｘ항체」カード１枚を손패に加える。
+PRINTL この효과を발동するターン、자신は「Ｘ항체」モンスターしか특수소환できない。
+CALLFORM CARD_ABLE(0,효과後誘発)
+PRINTL ③：자신の언데드족ではないレベル６以上の「Ｘ항체」モンスターが戦闘・효과で破壊された場合に발동できる。
+PRINTL そのモンスターを묘지から특수소환する。
+PRINTL この효과で특수소환したモンスターは언데드족の「デクス」モンスターとなり、ターン終了時まで戦闘耐性を得る。
+PRINTL その後、상대フィールドのカード１枚を選んで破壊できる。
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ④：元々のレベルが１０の「デクス」モンスターが戦闘・효과でフィールドを離れる場合、
+PRINTL 代わりにこのカードをモンスターとして、そのモンスターの上に重ねてフィールドに특수소환し、
+PRINTL ターン終了時まで戦闘耐性・破壊耐性を得る。
+CALL TEXT_DECORATION("D_HEART_2")
+
+
+@CARDCAN_50939(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50939)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 포트리스
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件名前 = Ｘ항체
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = Ｘ항체
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,50939)
+		RETURN 0
+	CALL FULLRESET
+	효과条件固カテゴリ = Ｘ항체
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+	SIF RESULT != 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = Ｘ항체
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,0,"묘지")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = Ｘ항체
+	CALL 효과条件종족_ADV(언데드족,"以外")
+	CALL 효과条件レベル_ADV(6,"以上")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	TRYCALLFORM CARDNAME_{破壊대상ID}("カテゴリ")
+	SIF !MATCH(RESULTS,"デクス")
+		RETURN 0
+	TRYCALLFORM CARD_{破壊대상ID}("レベル")
+	SIF !GROUPMATCH(RESULT,10)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1050939,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_50939(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID, 15
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50939,0)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件名前 = Ｘ항체
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+    		CALL FULLRESET
+	    	효과範囲EX덱 = 1
+		    효과条件名前 = Ｘ프로그램
+    		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"破耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"魔自身",場所,"対耐")
+
+ELSEIF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50939,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件カテゴリ = Ｘ항체
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+
+		IF ターンプレイヤー == 듀얼리스트
+			CALL FULLRESET
+			효과条件カテゴリ = Ｘ항체
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50939,0)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = Ｘ항체
+		효과条件固カテゴリ = デクス
+		CALL 효과条件종족_ADV(언데드족,"以外")
+		CALL 효과条件レベル_ADV(6,"以上")
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"破壊全般",0,1)
+		FOR カウンタ,1,10
+			選択カード_ID:カウンタ = RESULT:カウンタ
+		NEXT
+
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		FOR カウンタ,0,10
+			효과条件ID:カウンタ = 選択カード_ID:(カウンタ + 1)
+		NEXT
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		SIF 選択カード == 9999
+			RETURN
+		CALL CARD_SELECT(듀얼리스트,選択カード)
+		選択カード = RESULT
+		選択カード_ID = GETVAR(@"%듀얼리스트%_묘지:選択カード")
+		SELECTCASE 選択カード_ID
+			CASE 34082
+				CALL CARD_RECONSTRUCT(듀얼리스트,"묘지",選択カード,134082)
+				PRINTFORML
+				SETCOLOR C_RED
+				PRINTFORMW 死んでもなお存在し続けようとする願いが도루가몬の存在を書き換える！
+				PRINTFORML
+				PRINTFORML                   Death-X-Evolution
+				RESETCOLOR
+				PRINTFORML
+
+			CASE 34083
+				CALL CARD_RECONSTRUCT(듀얼리스트,"묘지",選択カード,134083)
+				PRINTFORML
+				SETCOLOR C_RED
+				PRINTFORMW 死んでもなお存在し続けようとする願いが도루그레몬の存在を書き換える！
+				PRINTFORML
+				PRINTFORML                   Death-X-Evolution
+				RESETCOLOR
+				PRINTFORML
+
+			CASE 34084
+				CALL CARD_RECONSTRUCT(듀얼리스트,"묘지",選択カード,134084)
+				PRINTFORML
+				SETCOLOR C_RED
+				PRINTFORMW 死んでもなお存在し続けようとする願いが도루고라몬の存在を書き換える！
+				PRINTFORML
+				PRINTFORML                   Death-X-Evolution
+				RESETCOLOR
+				PRINTFORML
+		ENDSELECT
+		CALL CARD_SP_SUMMON(듀얼리스트,"묘지",選択カード)
+	ENDIF
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50939)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件固定 = 破壊대상場所
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			PRINTFORML
+			SETCOLOR C_RED
+			PRINTFORMW     ここに、「死」が一つの形をとる。
+			PRINTFORML
+			PRINTFORML           Death-X-Evolution
+			RESETCOLOR
+			PRINTFORML
+			CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,1050939)
+
+			CALL RESETCONDITION
+			효과추가종류 = 効追Ｘ素
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		RETURN 1
+    	ENDIF
+	ENDIF
+	RETURN 0
+ENDIF
+
+
+
+;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@CARDNAME_1050939,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데크스몬
+	CASE "略称"
+		RESULTS = 데크스몬
+
+	CASE "要塞名"
+		RESULTS = Ｘ프로그램
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = Ｘ항체
+		RESULTS:2 = 포트리스
+		RESULTS:3 = 데크스
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+@CARD_1050939(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 12
+	CASE "コスト"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "生成カード"
+		RETURN 50939
+ENDSELECT
+
+
+
+@CARD_EXPLANATION_1050939(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("D_HEART_C")
+PRINTL このカード名のモンスターの③④の효과はそれぞれ１ターンに１度しか使用できない。
+PRINTL 상대はこのカード名のモンスターの특수소환・효과の발동に対して효과を발동できない。
+CALLFORM CARD_ABLE(0,EX소환時強制,특수소환時強制)
+PRINTL ①：『Ｘライフ』
+PRINTL このカードはＸ素材を持つことができ、Ｘ素材を１つ持った状態で특수소환される。
+PRINTL このカードがモンスターゾーンを離れる場合、代わりにこのＸ素材を取り除く。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：このカードの攻撃力・守備力はお互いの제외状態のカードの数×５００アップし、
+PRINTL このカードは대상耐性・마법耐性・攻撃阻害を持ち、상대は제외状態のカードの효과を발동できない。
+CALLFORM CARD_ABLE(1,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに발동できる。
+PRINTL 상대は自身のモンスターゾーン・마법＆함정ゾーン・묘지からそれぞれ１枚ずつカードを제외しなければならない。
+CALLFORM CARD_ABLE(2,발동誘発)
+PRINTL ④：상대が마법・함정・モンスターの효과を발동した時、묘지の「Ｘ항체」カード１枚を제외して발동できる。
+PRINTL その발동を無効にし제외する。
+CALL TEXT_DECORATION("D_HEART_2")
+
+
+@CARDCAN_1050939(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1050939)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,1050939)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_2(듀얼리스트,1050939)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = Ｘ항체
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == EX소환時強制 || 종류 == 특수소환時強制
+
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	SIF 破壊대상場所 != 場所
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_1050939(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"魔耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦阻")
+	CALL FULLRESET
+	CALL SET_PLAYER_INFO(듀얼리스트,"제외_無効",3,1)
+
+ELSEIF 종류 == 攻守変動
+	攻撃力修正 = 500 * (제외数(듀얼리스트) + 제외数(対面者))
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正,攻撃力修正)
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1050939,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(対面者,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(対面者,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(対面者,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1050939,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = Ｘ항체
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"제외")
+			RETURN 1
+		ENDIF
+	ENDIF
+	RETURN 0
+ELSEIF 종류 == EX소환時強制 || 종류 == 특수소환時強制
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"戦耐",1,1)
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"破耐",1,1)
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"Ｘ",1)
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1050939,0,X消費1)
+	IF RESULT == 0
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF

@@ -1,0 +1,163 @@
+﻿@CARDNAME_28464,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 파워 바이스 드래곤
+	CASE "略称"
+		RESULTS = 파워 바이스
+	CASE "カテゴリ"
+		RESULTS:0 = 레드 데몬
+ENDSELECT
+
+
+@CARD_28464(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 2400
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28464(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신フィールドのモンスターが、存在しない場合または어둠속성Sモンスターのみの場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,특수소환時)
+PRINTL ②：このカードが특수소환した場合に발동できる。
+PRINTL 덱から「레조네이터」モンスター１体を손패に加える。
+PRINTL このターン、자신は어둠속성SモンスターしかEX덱から특수소환できない。
+CALLFORM CARD_ABLE(0,S素材時효과)
+PRINTL ③：このカードがS素材として묘지に送られた場合、발동できる。
+PRINTL 자신フィールドの「레드 데몬즈 드래곤」１体に戦闘破壊耐性を与える。
+
+
+
+@CARDCAN_28464(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件カード数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28464)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,28464)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,28464,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	CALLFORM 효과条件속성_ADV(어둠속성, "以外")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 싱크로以外
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 특수소환時
+    SIF 발동済_2(듀얼리스트,28464)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 레조네이터
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1	
+
+ELSEIF 종류 == S素材時효과
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 레드 데몬즈 드래곤
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_28464(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28464,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 특수소환時
+    CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28464,2)
+    IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 레조네이터
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+
+		EX소환可能종류 = 싱크로
+		EX소환可能속성 = 어둠속성
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == S素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28464,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 레드 데몬즈 드래곤
+		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"戦耐",2)
+	ENDIF	
+ENDIF

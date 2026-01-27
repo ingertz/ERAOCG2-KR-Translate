@@ -493,6 +493,7 @@ IF RESULT == 1
 			PRINTFORML [5] 5장 - 포텐셜 포인트４소비
 			BINPUT
 			カスタム효과①複数選択:カスタムカード = RESULT
+			カスタムポテンシャル += RESULT - 1
 		ENDIF
 	ENDIF
 	
@@ -571,6 +572,12 @@ IF カスタムポテンシャル > 最大ポテンシャル
 	ELSEIF INRANGE(カスタムポテンシャル,最大ポテンシャル+6,最大ポテンシャル+10)
 		PRINTFORML 이 카드는 제한 카드가 됩니다。
 		カスタム制限:カスタムカード = 制限
+	ELSEIF カスタムポテンシャル > 最大ポテンシャル+10
+		PRINTFORML 이 카드는 작성할 수 없습니다。
+		PRINTFORMW 카테고리 입력부터 커스터마이즈를 다시 해주세요。
+		カスタムポテンシャル = 0
+		CALL CARDCUSTOM_RESET(カスタムカード,1)
+		GOTO KATE_INPUTLOOP
 	ENDIF
 	PRINTFORML 커스터마이즈를 다시 하시겠습니까？
 	PRINTFORML [1] - 다시한다
@@ -610,7 +617,7 @@ RETURN 1
 #DIM DYNAMIC カウンタC
 #DIM DYNAMIC カウンタD
 #DIM DYNAMIC カスタムポテンシャル
-#DIM CONST 最大ポテンシャル = 20
+#DIM CONST 最大ポテンシャル = 17
 
 VARSET カウンタ
 

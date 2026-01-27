@@ -1,0 +1,159 @@
+﻿@CARDNAME_21231,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 할로바렛 드래곤
+	CASE "略称"
+		RESULTS = 할로 Ｂ
+	CASE "カテゴリ"
+		RESULTS:0 = 바렛
+ENDSELECT
+
+
+@CARD_21231(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2400
+	CASE "守備力"
+		RETURN 1600
+	CASE "추가日"
+		RETURN 260119
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_21231(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：Ｌモンスターの효과が발동した時に발동できる。
+PRINTL このカードを破壊する。
+PRINTL その後、상대の덱の上からカードを６枚までめくり、その中から１枚を選んで제외し、残りを元の順番で덱の上に戻す。
+CALLFORM CARD_ABLE(2,戦闘→묘지,破壊→묘지)
+PRINTL ②：このカードが戦闘・효과で破壊され묘지へ送られた場合に발동できる。
+PRINTL このターンのエンドフェイズに、덱から「할로바렛 드래곤」以外の「바렛」モンスター１体を특수소환する。
+
+@CARDCAN_21231(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,21231)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,21231)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = 링크
+	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	SIF 발동済_2(듀얼리스트,21231)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 바렛
+	효과条件固名前 = 할로바렛 드래곤
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_21231(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC めくり数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21231,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+		SIF 現山札数(対面者) == 0
+			RETURN 0
+		IF 듀얼리스트 == "자신"
+			PRINTL 【めくる枚数を選択してください】
+			PRINTL
+			PRINT [1]　
+			SIF 現山札数(対面者) >= 2
+				PRINT [2]　
+			SIF 現山札数(対面者) >= 3
+				PRINT [3]　
+			SIF 現山札数(対面者) >= 4
+				PRINT [4]　
+			SIF 現山札数(対面者) >= 5
+				PRINT [5]　
+			SIF 現山札数(対面者) >= 6
+				PRINT [6]
+			BINPUT
+		ELSE
+			FOR カウンタ,1,6
+				SIF 現山札数(対面者) >= カウンタ
+					RESULT = カウンタ
+			NEXT
+		ENDIF
+		めくり数 = RESULT
+		CALL FULLRESET
+		효과条件行先플래그 = 제외行き
+		효과条件山切り無し = 1
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"상대덱",ゾーン,場所,めくり数)
+	ENDIF
+
+ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21231,2)
+	IF RESULT == 0
+		CALL CARD_RESERV(듀얼리스트,21231)
+	ENDIF
+
+ELSEIF 종류 == ターン終了時予約
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 바렛
+	효과条件固名前 = 할로바렛 드래곤
+	CALL CARD_SP_SUMMON_ADV(듀얼리스트,場所)
+ENDIF
+
+
+

@@ -1,0 +1,134 @@
+﻿@CARDNAME_34096,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 추추몬
+	CASE "略称"
+		RESULTS = 추추몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34096(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1000
+	CASE "レア度"
+		RETURN CMN
+	CASE "추가日"
+		RETURN 260117
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34096(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL レベル５・바람속성の「디지몬」１体を덱から손패に加える。
+CALLFORM CARD_ABLE(2,손패→묘지)
+PRINTL ②：このカードが손패から묘지へ送られた場合に발동できる。
+PRINTL 덱から「디지몬」마법・함정カード１枚を손패に加える。
+
+
+@CARDCAN_34096(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34096)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,34096)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件レベル = 5
+	효과条件속성 = 바람속성
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패→묘지
+	SIF 발동済_2(듀얼리스트,34096)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종류 = 마함全般
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34096(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34096,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件レベル = 5
+		효과条件속성 = 바람속성
+		효과条件カテゴリ = 디지몬
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 손패→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34096,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = 마함全般
+		효과条件カテゴリ = 디지몬
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

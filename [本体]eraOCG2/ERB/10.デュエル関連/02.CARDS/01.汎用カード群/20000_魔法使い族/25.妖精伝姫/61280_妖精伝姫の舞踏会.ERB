@@ -1,0 +1,156 @@
+﻿@CARDNAME_61280,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 페어리테일의 무도회
+	CASE "略称"
+		RESULTS = 페어리테일무도회
+	CASE "カテゴリ"
+		RESULTS:0 = 페어리테일
+ENDSELECT
+
+
+@CARD_61280(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_61280(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドは「요정대공간」になる。
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：このカードの발동時の효과処理として、
+PRINTL 자신の덱・제외状態の「페어리테일」モンスター１体か「페어리테일」１枚を손패に加える事ができる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：자신の「페어리테일」モンスターは直接攻撃できる。
+CALLFORM CARD_ABLE(10,효과後誘発)
+PRINTL ③：１ターンに１度、상대がモンスターを특수소환した場合、
+PRINTL 자신フィールドに「페어리테일」モンスターが存在していれば、상대フィールドの효과モンスター１体を대상として발동できる。
+PRINTL そのモンスターの효과は無効化され、カード名を「요정 왕자님」として扱う。
+
+
+@CARDCAN_61280(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,61280)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,61280)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 페어리테일
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 = 효과全般
+	효과条件표시 = 表側표시
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_61280(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61280,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 페어리테일
+		효과条件종류 = モン全般
+		효과条件スーパー名前 = 페어리테일
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,61280,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件종류 = 효과全般
+		효과条件표시 = 表側표시
+		효과条件除去種 = 無効
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT == 1
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			選択カード = RESULT
+			CALL SET_FIELD_INFO(対面者,"필드",選択カード,"無効",2,1)
+			CALL CARD_SET_RENAME(対面者,"필드",選択カード,"요정 왕자님")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트, "요정대공간")
+	CALL FULLRESET
+	효과条件カテゴリ = 페어리테일
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"直攻")
+ENDIF

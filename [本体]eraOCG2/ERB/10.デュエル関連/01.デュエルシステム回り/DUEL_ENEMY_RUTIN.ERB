@@ -572,13 +572,35 @@ SELECTCASE RESULTS
 		SIF RESULT < 2
 			RETURN 1
 	CASE "스타더스트 드래곤"
-		;상대 필드에 除去する카드가 無ければ발동させない
+		;バスターモードがあれば발동させない。
 		IF 종류 == 발동誘発
 			CALL FULLRESET_EXT
 			濾過範囲마함 = 1
 			濾過条件名前 = 버스터 모드
 			CALL CARD_CHECK_EXT("상대",0,"",場所)
 			SIF RESULT == 1
+				RETURN 1
+		ENDIF
+	CASE "이나리불"
+		;상대フィールドにカードが無ければ발동させない
+		IF 종류 == 필드起動
+			CALL FULLRESET_EXT
+			濾過範囲필드 = 1
+			濾過条件표시 = 10
+			濾過条件除去種 = 選択
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT != 1
+				RETURN 1
+		ENDIF
+	CASE "란류"
+		;상대フィールドにカードが無ければ발동させない
+		IF 종류 == 필드起動
+			CALL FULLRESET_EXT
+			濾過範囲필드 = 1
+			濾過範囲마함 = 1
+			濾過条件除去種 = 손패
+			CALL CARD_CHECK_EXT("상대",0,"",場所)
+			SIF RESULT != 1
 				RETURN 1
 		ENDIF
 ENDSELECT
@@ -1278,6 +1300,8 @@ ELSE ;その他、묘지に送る、제외するなどの処理の분기
 		CASE "레브섀도르 퓨전"
 			SIF 발동済_3("상대",1831) == 0
 				효과条件優先名前 = 엘섀도르 아프카로네
+		CASE "페어리 댄스페어"
+			효과条件大小反転 = 1
 		CASEELSE ;汎用指名
 			효과条件劣後名前:0 = 네크로파데스의 용사
 ENDSELECT
@@ -1487,6 +1511,7 @@ RETURN 0
 #DIM DYNAMIC 場所
 #DIM DYNAMIC 条件달성
 #DIM DYNAMIC 손패플래그
+#DIM DYNAMIC 修正値
 
 SIF カードID <= 0
 	RETURN 0
@@ -1712,6 +1737,78 @@ SELECTCASE RESULTS
 		RETURN 1000
 	CASE "리섀도르 웬디크루프"
 		RETURN 2400
+	CASE "붉은 용"
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲상대필드 = 1
+		濾過条件종류 = 싱크로
+		濾過条件レベル:1 = 11
+		濾過条件レベル:2 = 12
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			RETURN -10000
+	CASE "파이어월 드래곤 다크플루드"
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 의식
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 융합
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 싱크로
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 엑시즈
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		SIF 修正値 != 0
+			RETURN 修正値
+	CASE "파이어월 드래곤 싱귤래리티"
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 의식
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 융합
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 싱크로
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		CALL FULLRESET_EXT
+		濾過範囲필드 = 1
+		濾過範囲묘지 = 1
+		濾過条件종류 = 엑시즈
+		CALL CARD_CHECK_EXT("상대",0,"",0)
+		SIF RESULT != 1
+			修正値 -= -500
+		SIF 修正値 != 0
+			RETURN 修正値
 	CASEELSE
 		IF 손패플래그
 			TRYCALLFORM CARDCAN_{カードID}("상대",소환時,"필드")
@@ -1724,6 +1821,30 @@ ENDSELECT
 
 RETURN 0
 
+;素材数が自由な時、複数素材ある時の지정
+@ENEMY_RUTIN_SOZAINUM(소환カード,素材数,選択肢)
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC 選択肢
+#DIM DYNAMIC 素材数
+
+;素材数が2つ以下はNG（1体だけだとダメ）
+SIF 素材数 < 2
+	RETURN 0
+;選択肢が9999(Null)の場合、NG(1)を返す
+SIF 選択肢 == 9999
+	RETURN 1
+
+SIF 소환カード <= 0
+	RETURN 0
+CALLFORM CARDNAME_{소환カード}("名前")
+SELECTCASE RESULTS
+
+CASEELSE	
+	;ここで설정されたいなかったら、2枚以上の時はNGを返す
+	SIF 素材数 >= 2
+		RETURN 1
+ENDSELECT
+RETURN 0
 
 ;카드를 サーチ、효과での특수 소환한다時の優先度ボーナスはここで설정
 @ENEMY_PRIORITY_FILTER(カードID,参照先,場所,발동カードID)
@@ -2054,6 +2175,8 @@ SELECTCASE RESULTS
 	CASE "스프라이트 스타터"
 		;ライフより低い攻撃力のモンスターだけを出すようにする
 		효과条件攻撃力 = ライフ_상대 - 100
+	CASE "바르모니카 인비타레"
+		효과条件優先名前 = 셀레트리체 바르모니카
 ENDSELECT
 
 
@@ -2064,6 +2187,10 @@ ENDSELECT
 SIF 상대_MZ_攻:場所 <= 1500
 	RETURN 0
 RETURN 1
+
+
+
+
 
 ;メインフェイズ１でセットする마법 / 함정はここで指名
 @ENEMY_RUTIN_SET_CARD(場所)

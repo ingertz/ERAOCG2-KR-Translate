@@ -13,7 +13,7 @@ SELECTCASE 参照先
 	CASE "カテゴリ"
 		RESULTS:0 = 감옥신
 	CASE "検索カテゴリ"
-		RESULTS:0 = 메디우스
+		RESULTS:0 = 아르토메기아
 ENDSELECT
 
 
@@ -51,7 +51,7 @@ RETURN 0
 PRINTL "아르토메기아" 몬스터 x 3
 PRINTL 자신은 "창감옥신 네르바"를 1턴에 1번밖에 특수 소환할 수 없다.
 PRINTL 이 카드는 융합 소환 및 이하의 방법으로만 EX덱에서 특수 소환할 수 있다.
-PRINTL ● 이름이 다른 자신 필드의 몬스터 3장을 릴리스했을 경우에 수비 표시로 특수 소환할 수 있다.
+PRINTL ●종족이 다른 자신 필드의 몬스터 3장을 릴리스했을 경우에 수비 표시로 융합 소환할 수 있다.
 CALLFORM CARD_ABLE(1,지속효과)
 PRINTL ①: 필드에 필드 마법 카드가 존재하는 한, 이 카드는 효과로 파괴되지 않는다.
 CALLFORM CARD_ABLE(10,발동誘発)
@@ -68,8 +68,11 @@ PRINTL 그 발동을 무효로 하고, 상대 필드의 카드를 전부 파괴�
 
 CALL RESETCONDITION_MAT
 必要素材数 = 3
-素材条件カテゴリ = 아르토메기아
-
+IF ALT条件 == 0
+	素材条件カテゴリ = 아르토메기아
+ELSEIF ALT条件 == 1
+	素材条件R종족 = 1
+ENDIF
 
 IF EX参照 == 1
 	CALL FUSCAN(듀얼리스트,소환カード,57900) 
@@ -95,12 +98,7 @@ IF 종류 == EX덱起動
 	CALL CARD_EX_CHECK(듀얼리스트,57900)
 	SIF RESULT == 1
 		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件표시 = 0
-	효과条件固名前起動 = 1
-	효과条件CNT = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	CALL FIELD_INFO_COUNT(듀얼리스트,"種")
 	SIF RESULT < 3
 		RETURN 0
 	RETURN 1
@@ -147,16 +145,9 @@ CALL 対面者판정(듀얼리스트)
 IF 종류 == EX덱起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57900)
 	IF RESULT == 0
-		CALL FULLRESET
-		효과範囲필드 = 1
-		효과条件표시 = 0
-		효과条件固名前選択 = 1
-		효과条件複数 = 3
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			CALL FULLRESET
-			CALL CARD_EX_SUMMON(듀얼리스트,ゾーン,場所,"守備표시")
-		ENDIF
+		ALT条件 = 1
+		TRYCALLFORM CARDSUMMON_57900(듀얼리스트,場所)
+		TRYCALLFORM FUSSUMMON(듀얼리스트,場所)
 	ENDIF
 ELSEIF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")

@@ -1,0 +1,171 @@
+﻿@CARDNAME_73656,参照先
+;ココで지정カードの名前、略称を返す予定6
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트랜잠 네뷸라 퓨전
+	CASE "略称"
+		RESULTS = 성운 융합
+	CASE "カテゴリ"
+		RESULTS:0 = 트랜잠
+		RESULTS:1 = 융합
+ENDSELECT
+
+
+@CARD_73656(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 260109
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_73656(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：자신の손패・フィールドのモンスターを융합素材として、융합モンスター（미확인족・빛속성）１体をＥＸ덱から융합소환する。
+PRINTL このターン中、このカードの②の효과を使用している場合、代わりに以下の효과を適用する。
+PRINTL ●자신の묘지・제외状態のモンスターを융합素材として덱に戻し、융합モンスター（미확인족）１体をＥＸ덱から융합소환する。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신の묘지の융합モンスター１体を제외して발동できる。
+PRINTL 묘지のこのカードを손패に加える。
+
+@CARDCAN_73656(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73656)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	IF 발동済_2(듀얼리스트,73656)
+		CALL RESETAREA_MAT
+		素材範囲묘지 = 1
+		素材範囲제외 = 1
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종류 = 융합
+		효과条件종족 = 미확인족
+		효과条件소환可 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		CALL RESETAREA_MAT
+		素材範囲필드 = 1
+		素材範囲손패 = 1
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종류 = 융합
+		효과条件속성 = 빛속성
+		효과条件종족 = 미확인족
+		효과条件소환可 = 2
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트, 73656)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_73656(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 選択カード_ID
+#DIMS DYNAMIC 選択カード名前
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73656)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF 발동済_2(듀얼리스트,73656)
+			CALL RESETAREA_MAT
+			素材範囲묘지 = 1
+			素材範囲제외 = 1
+			CALL FULLRESET
+			효과条件종류 = 융합
+			효과条件종족 = 미확인족
+			효과条件소환可 = 1
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			IF 選択カード != 9999
+				選択カード = RESULT
+				TRYCALLFORM CARDSUMMON_{RESULT:99}(듀얼리스트,選択カード)
+				CALL FUSSUMMON(듀얼리스트,選択カード,덱行き)
+			ENDIF
+		ELSE
+			CALL RESETAREA_MAT
+			素材範囲필드 = 1
+			素材範囲손패 = 1
+			CALL FULLRESET
+			효과条件종류 = 융합
+			효과条件속성 = 빛속성
+			효과条件종족 = 미확인족
+			효과条件소환可 = 2
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			IF 選択カード != 9999
+				選択カード = RESULT
+				TRYCALLFORM CARDSUMMON_{RESULT:99}(듀얼리스트,選択カード)
+				CALL FUSSUMMON(듀얼리스트,選択カード)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73656,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = 융합
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 트랜잠 네뷸라 퓨전
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

@@ -14,8 +14,6 @@ SELECTCASE 参照先
 	CASE "カテゴリ"
 		RESULTS:0 = 벽람항로
 		RESULTS:1 = 로열(AL)
-	CASE "出典作品"
-		RESULTS:0 = 벽람항로
 ENDSELECT
 
 
@@ -133,66 +131,68 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84870,1)
-	IF RESULT == 0
-		CALL FULLRESET
-		효과範囲필드 = 1
-		효과条件名前 = 전함 퀸 엘리자베스
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT != 9999
-			陛下攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:RESULT")
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84870,1)
+		IF RESULT == 0
 			CALL FULLRESET
-			효과範囲상대필드 = 1
-			효과条件攻撃力 = 陛下攻撃力
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			SIF RESULT == 1
-				条件Ａ = 1
-			CALL FULLRESET
-			효과範囲상대필드 = 1
-			효과条件以攻撃力 = 陛下攻撃力 + 1
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			IF RESULT == 1
-				CALL FULLRESET
-				효과範囲필드 = 1
-				효과範囲마함 = 1
-				효과条件固名前 = 전함 퀸 엘리자베스
-				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-				SIF RESULT == 1
-					条件Ｂ = 1
-			ENDIF
-			IF 条件Ａ == 1 && 条件Ｂ == 1
-				CALL YN_CHOICE(듀얼리스트,"●상대 필드의、대상의 카드보다 공격력이 낮은 몬스터 １장을 내성 무시로 묘지보내기","●자신 필드의 대상의 카드 이외의 카드 １장을 패로 되돌리고、대상의 카드보다 공격력이 높은상대 필드의 몬스터 １장의 공격력을 턴 종료시까지 절반으로한다")
-				選択효과 = RESULT
-			ELSEIF 条件Ｂ == 1 && 条件Ａ == 1
-				選択효과 = いいえ
-			ELSEIF 条件Ａ == 1 && 条件Ｂ == 1
-				選択효과 = はい
-			ENDIF
-			IF 選択효과 == はい
+			효과範囲필드 = 1
+			효과条件名前 = 전함 퀸 엘리자베스
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				陛下攻撃力 = GETVAR(@"%듀얼리스트%_MZ_攻:RESULT")
 				CALL FULLRESET
 				효과範囲상대필드 = 1
 				효과条件攻撃力 = 陛下攻撃力
-				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-			ELSEIF 選択효과 == いいえ
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+					条件Ａ = 1
 				CALL FULLRESET
-				효과範囲필드 = 1
-				효과範囲마함 = 1
-				효과条件固名前 = 전함 퀸 엘리자베스
-				CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+				효과範囲상대필드 = 1
+				효과条件以攻撃力 = 陛下攻撃力 + 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 				IF RESULT == 1
 					CALL FULLRESET
+					효과範囲필드 = 1
+					효과範囲마함 = 1
+					효과条件固名前 = 전함 퀸 엘리자베스
+					CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+					SIF RESULT == 1
+						条件Ｂ = 1
+				ENDIF
+				IF 条件Ａ == 1 && 条件Ｂ == 1
+					CALL YN_CHOICE(듀얼리스트,"●상대 필드의、대상의 카드보다 공격력이 낮은 몬스터 １장을 내성 무시로 묘지보내기","●자신 필드의 대상의 카드 이외의 카드 １장을 패로 되돌리고、대상의 카드보다 공격력이 높은상대 필드의 몬스터 １장의 공격력을 턴 종료시까지 절반으로한다")
+					選択효과 = RESULT
+				ELSEIF 条件Ｂ == 1 && 条件Ａ == 1
+					選択효과 = いいえ
+				ELSEIF 条件Ａ == 1 && 条件Ｂ == 1
+					選択효과 = はい
+				ENDIF
+				IF 選択효과 == はい
+					CALL FULLRESET
 					효과範囲상대필드 = 1
-					효과条件以攻撃力 = 陛下攻撃力 + 1
-					효과추가종류 = 2
-					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"一攻DOWN")
+					효과条件攻撃力 = 陛下攻撃力
+					CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+				ELSEIF 選択효과 == いいえ
+					CALL FULLRESET
+					효과範囲필드 = 1
+					효과範囲마함 = 1
+					효과条件固名前 = 전함 퀸 엘리자베스
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+					IF RESULT == 1
+						CALL FULLRESET
+						효과範囲상대필드 = 1
+						효과条件以攻撃力 = 陛下攻撃力 + 1
+						효과추가종류 = 2
+						CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"一攻DOWN")
+					ENDIF
 				ENDIF
 			ENDIF
 		ENDIF
-	ENDIF
-ELSEIF 종류 == 마함起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84870)
-	IF RESULT == 0
+	ELSE
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84870)
+		IF RESULT == 0
+		ENDIF
 	ENDIF
 ELSEIF 종류 == 攻守変動
 	CALL FULLRESET

@@ -1,0 +1,195 @@
+﻿@CARDNAME_34073,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ブリッツグレイモン
+	CASE "略称"
+		RESULTS = BLITZグレイモン
+	CASE "カテゴリ"
+		RESULTS:0 = デジモン
+	CASE "出典作品"
+		RESULTS:0 = デジモン
+ENDSELECT
+
+
+@CARD_34073(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 炎属性
+	CASE "種族"
+		RESULT:2 = サイバース族
+		RESULT:1 = 機械族
+		RETURN 鱗獣族
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2200
+	CASE "守備力"
+		RETURN 3000
+	CASE "レア度"
+		RETURN SPR
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34073(種類)
+#DIM DYNAMIC 種類
+
+PRINTL デジモンカードはサイバース族としても扱い、
+PRINTL このカードは機械族としても扱う。
+PRINTL このカード名の①②③の効果はぞれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：手札のこのカードを相手に見せて発動できる。
+PRINTL デッキからレベル５～８の鱗獣族か機械族の「デジモン」モンスターを２体まで手札に加え、（同名カードは１枚まで）
+PRINTL ２体加えた場合、自分の手札１枚を選んで捨てる。
+CALLFORM CARD_ABLE(2,特殊召喚時)
+PRINTL ②：このカードが特殊召喚した場合に発動できる。
+PRINTL 自分の墓地・除外状態の鱗獣族か機械族の「デジモン」モンスターの数×３００ダメージを相手に与える。
+CALLFORM CARD_ABLE(3,戦場起動)
+PRINTL ③：自分・相手ターンに発動することができる。
+PRINTL 自分の墓地から鱗獣族か機械族の「デジモン」モンスター２体を除外し、
+PRINTL このカードの①の効果を適用する。
+
+
+@CARDCAN_34073(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件達成
+#DIM DYNAMIC 発動不可,2
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,34073)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,34073)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件種族:0 = 鱗獣族
+	効果条件種族:1 = 機械族
+	効果条件レベル:0 = 5
+	効果条件レベル:1 = 6
+	効果条件レベル:2 = 7
+	効果条件レベル:3 = 8
+	効果条件カテゴリ = デジモン
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 特殊召喚時
+	SIF 発動済_2(決闘者,34073)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果範囲除外 = 1
+	効果条件種族:0 = 鱗獣族
+	効果条件種族:1 = 機械族
+	効果条件カテゴリ = デジモン
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF 発動済_3(決闘者,34073)
+		RETURN 0
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件種族:0 = 鱗獣族
+	効果条件種族:1 = 機械族
+	効果条件カテゴリ = デジモン
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_34073(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 破壊回数
+#DIM DYNAMIC 発動不可,2
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34073,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件種族:0 = 鱗獣族
+		効果条件種族:1 = 機械族
+		効果条件レベル:0 = 5
+		効果条件レベル:1 = 6
+		効果条件レベル:2 = 7
+		効果条件レベル:3 = 8
+		効果条件カテゴリ = デジモン
+		効果条件固名前選択 = 1
+		効果条件複数 = 2
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲手札 = 1
+			CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34073,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果範囲除外 = 1
+		効果条件種族:0 = 鱗獣族
+		効果条件種族:1 = 機械族
+		効果条件カテゴリ = デジモン
+		効果条件CNT = 1
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		カウンタ = RESULT
+		CALL LIFE_CHANGE(決闘者,"減少","効果",カウンタ*300,1)
+	ENDIF
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34073,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件種族:0 = 鱗獣族
+		効果条件種族:1 = 機械族
+		効果条件カテゴリ = デジモン
+		効果条件行先フラグ = 除外行き
+		効果条件複数 = 2
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			TRYCALLFORM CARDEFFECT_34073(決闘者,特殊召喚時,"効果処理")
+		ENDIF
+	ENDIF
+ENDIF
+

@@ -5,9 +5,21 @@
 ;LOCALの대신에 소환リスト機能の下で표시캐릭터を지정
 #DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC 소환_ページ送り
+#DIM DYNAMIC カウンタ
 #DIM DYNAMIC リスト_カウンタ
 #DIM DYNAMIC リストスタート
 #DIM DYNAMIC 캐릭터選択数
+#DIM DYNAMIC 条件달성
+
+
+FOR カウンタ,1,CHARANUM
+	SIF カウンタ != 소환_最終소환
+		CONTINUE
+	条件달성 = 1
+NEXT
+SIF 条件달성 != 1
+	VARSET 소환_最終소환
+
 
 $INPUT_LOOP
 
@@ -823,6 +835,7 @@ ELSEIF CFLAG:캐릭터_ID:현재위치 != CFLAG:MASTER:현재위치
 	ENDIF
 	CFLAG:캐릭터_ID:현재위치 = CFLAG:MASTER:현재위치
 	TFLAG:104 = 캐릭터_ID
+	TARGET = 캐릭터_ID
 	SIF TALENT:캐릭터_ID:듀얼리스트 != 1
 		소환_最終소환 = 캐릭터_ID
 

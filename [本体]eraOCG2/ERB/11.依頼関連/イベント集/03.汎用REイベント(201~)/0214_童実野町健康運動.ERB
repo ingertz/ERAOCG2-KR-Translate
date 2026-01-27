@@ -1,0 +1,83 @@
+﻿@IRAI_EVENT_214(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE  "名前"
+		;표시するタイトル
+		RESULTS = (CP7)도미노시티 건강 운동(반복수주 가능)
+	CASE "이벤트種"
+		RETURN 이벤트_施設
+	CASE "依頼先"
+		RETURN 場所_公園
+	CASE "詳細"
+		PRINTL ネオ童実野シティでは皆様の健康的な生活を推進するため、ラジオ体操を開催しております。
+		PRINTL 毎日参加して、健康な肉体を手に入れよう！
+		PRINTL
+		PRINTL
+		PRINTL 時間：午前６時３０～午前７時３０
+	CASE "条件"
+		;６：３０～７：３０
+		SIF TIME < KANTAN_TIME(06,30) || TIME > KANTAN_TIME(07,30)
+			RETURN 0
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_214(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主
+
+
+PRINTFORMW 到着して少しすると、ラジオ体操が始まった。
+PRINTFORML
+PRINTFORML
+SETCOLOR C_YELLOW
+PRINTDATA
+	DATAFORM 『ドミノ体操第一！』
+	DATAFORM 『ドミノ体操第二！』
+	DATAFORM 『덱からカードをドローする運動！』
+	DATAFORM 『カードを遠くへ投げる運動！』
+	DATAFORM 『デュエルの衝撃でひっくり返る運動！』
+	DATAFORM 『腕を伸ばして、大きく深呼吸！』
+	DATAFORM 『カリスマデュエリストを見てときめく運動！』
+	DATAFORM 『カードを洗濯機に入れてうなだれる運動！』
+	DATAFORM 『床に落ちたカードをかき集める運動！』
+ENDDATA
+RESETCOLOR
+
+CFLAG:MASTER:지방 -= 1
+IF オプション_체력기력상승 == 1
+	CFLAG:MASTER:체력기력AWS += 1
+	SIF TALENT:MASTER:근육성질
+		CFLAG:MASTER:체력기력AWS += 1
+	IF CFLAG:MASTER:지방 >= 50
+		CFLAG:MASTER:체력기력AWS += 1
+	ENDIF
+ENDIF
+CALL EVENT_TIMER(10)
+PRINTFORML
+PRINTFORMW
+依頼_進行보존:214 ++
+PRINTFORMW ラジオ体操カードにハンコを押してもらった。（現在{依頼_進行보존:214}個）
+PRINTFORML
+IF 依頼_進行보존:214 == 120
+	PRINTFORMW スタンプを全て埋め尽くしたので、景品としてマスターパックを１０個もらった！
+	CALL CARD_PACK_SHORI(10)
+	PRINTFORML
+	PRINTFORML 使い終わったラジオ体操カードは回収され、新しいカードをもらった。
+	PRINTFORMW また１からがんばろう！
+	依頼_進行보존:214 = 0
+ELSEIF GROUPMATCH(依頼_進行보존:214,30,60,90)
+	PRINTFORMW スタンプが一ヶ月分溜まったので、景品としてマスターパックを５個もらった！
+	CALL CARD_PACK_SHORI(5)
+ELSEIF 依頼_進行보존:214 % 10 == 0
+	PRINTFORMW スタンプが１０個溜まったので、景品としてマスターパックをもらった！
+	CALL CARD_PACK_SHORI(1)
+ENDIF
+
+RETURN 2

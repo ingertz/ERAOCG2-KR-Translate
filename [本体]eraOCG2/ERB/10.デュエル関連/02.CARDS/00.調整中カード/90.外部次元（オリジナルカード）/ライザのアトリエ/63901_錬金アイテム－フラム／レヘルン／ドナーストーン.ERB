@@ -1,0 +1,242 @@
+﻿@CARDNAME_63901,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 연금 아이템－프람／레헤른／도나 스톤
+	CASE "略称"
+		RESULTS = 연금염빙뇌
+	CASE "カテゴリ"
+		RESULTS:0 = 아틀리에
+		RESULTS:1 = 연금 아이템
+	CASE "出典作品"
+		RESULTS:0 = 라이자의 아틀리에
+ENDSELECT
+
+
+@CARD_63901(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 260122
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_63901(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과は１ターンに１度しか使用できない。
+PRINTL ①：以下の효과から１つを選択して발동できる（このカード名の以下の효과はそれぞれ１ターンに１度しか選択できない）。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ●자신フィールドに「아틀리에」モンスターが存在する場合、상대フィールドのモンスター１体を대상として발동できる。
+PRINTL そのカードを破壊する。
+CALLFORM CARD_ABLE(2,마함起動,손패起動,フリー誘発)
+PRINTL ●자신フィールドに「아틀리에」モンスターが存在する場合、상대フィールドのモンスター１体を대상として발동できる。
+PRINTL そのモンスターの효과は無効化される。
+CALLFORM CARD_ABLE(3,마함起動,손패起動,フリー誘発)
+PRINTL ●자신フィールドに「아틀리에」モンスターが存在する場合に발동できる。
+PRINTL 자신・상대のEX덱からカードを１枚묘지へ送る。
+PRINTL 
+
+
+@CARDCAN_63901(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 발동불가,3
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,63901)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,63901)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,63901)
+		발동불가:1 = 1
+	SIF 발동済_3(듀얼리스트,63901)
+		발동불가:2 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 아틀리에
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 아틀리에
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 아틀리에
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:2 = 1
+
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과範囲상대EX덱 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:2 = 1
+
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1 && 발동불가:2 == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_63901(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 발동불가,3
+#DIM DYNAMIC 選択肢
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,63901)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,63901)
+		발동불가:1 = 1
+	SIF 발동済_3(듀얼리스트,63901)
+		발동불가:2 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 아틀리에
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 아틀리에
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 아틀리에
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:2 = 1
+
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과範囲상대EX덱 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:2 = 1
+
+	IF 듀얼리스트 == "자신"
+		PRINTL 효과を選択してください。
+		SIF 발동불가:0 != 1
+			PRINTL [0] 상대モンスター１体を破壊する
+		SIF 발동불가:1 != 1
+			PRINTL [1] 상대モンスター１体の효과を無効化する
+		SIF 발동불가:2 != 1
+			PRINTL [2] EX덱からカードを묘지へ送る
+		BINPUT
+		選択肢 = RESULT
+	ELSE
+		SIF 발동불가:0 != 1
+			選択肢 = 0
+		SIF 발동불가:1 != 1
+			選択肢 = 1
+		SIF 발동불가:2 != 1
+			選択肢 = 1
+	ENDIF
+
+	IF 選択肢 == 0
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,63901,1)
+		IF RESULT == 0
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+
+	ELSEIF 選択肢 == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,63901,2)
+		IF RESULT == 0
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과条件표시 = 表側표시
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"無効")
+		ENDIF
+
+	ELSEIF 選択肢 == 2
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,63901,3)
+		IF RESULT == 0
+			CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과範囲상대EX덱 = 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

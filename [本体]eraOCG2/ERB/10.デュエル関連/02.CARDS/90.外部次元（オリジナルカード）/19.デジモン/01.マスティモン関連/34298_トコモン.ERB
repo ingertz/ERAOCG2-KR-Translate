@@ -1,0 +1,199 @@
+﻿@CARDNAME_34298,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 토코몬
+	CASE "略称"
+		RESULTS = 토코몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = 디지몬알
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34298(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 500
+	CASE "守備力"
+		RETURN 500
+	CASE "추가日"
+		RETURN 251130
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34298(종류)
+#DIM DYNAMIC 종류
+PRINTL 이 카드는 L소환할 수 없다。
+PRINTL 디지몬 카드는 사이버스족으로도 취급한다。
+PRINTL 디지몬알 카드는 카드의 효과로만 EX덱에서 특수 소환할 수 있다。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL 이 카드는 특수 소환의 소재로 할 수 없다。
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL ①：자신의 패에서 빛속성인 "디지몬" 몬스터 １장을 덱으로 되돌리고 발동할 수 있다。
+PRINTL 이 카드를 특수 소환한다。이 턴、자신은 "디지몬알" 몬스터의 ①의 효과를 발동할 수 없다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신 / 상대턴에 발동할 수 있다。
+PRINTL 이 카드를 소멸시키고、패 / 덱에서 레벨３ 또는 ４인 빛속성 "디지몬" 몬스터 １장을 특수 소환한다。
+PRINTL 
+
+
+@CARDSUMMON_34298(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 1
+素材条件カテゴリ = 디지몬
+素材条件종류 = 링크以外
+RETURN 0
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,34298) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_34298(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34298)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,34298)
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,34299)
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,34060)
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,34061)
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,34080)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+
+	CALL CARD_EX_CHECK(듀얼리스트,34298)
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件속성 = 빛속성
+	효과条件カテゴリ= 디지몬
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,34298)
+		RETURN 0
+
+	SIF ゾーン != "필드"
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과条件속성 = 빛속성
+	효과条件カテゴリ= 디지몬
+	효과条件종류 = モン全般
+	효과条件レベル:0 = 3
+	효과条件レベル:1 = 4
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34298(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34298,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件속성 = 빛속성
+		효과条件カテゴリ= 디지몬
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 덱行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트, "EX덱", 場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34298,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			효과条件속성 = 빛속성
+			효과条件カテゴリ= 디지몬
+			효과条件종류 = モン全般
+			효과条件レベル:0 = 3
+			효과条件レベル:1 = 4
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"不材")
+ENDIF
+

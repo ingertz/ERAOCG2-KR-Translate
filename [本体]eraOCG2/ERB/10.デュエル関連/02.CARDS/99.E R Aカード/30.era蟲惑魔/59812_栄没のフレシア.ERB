@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 글로리 홀－플레시아
 	CASE "略称"
-		RESULTS = 영몰의 프레시아
+		RESULTS = 영몰의 플레시아
 	CASE "カテゴリ"
 		RESULTS:0 = 함정 속으로
 		RESULTS:1 = 충혹마
@@ -54,10 +54,10 @@ SIF ゾーン == "묘지"
 PRINTL ①：이 카드가 묘지에 존재하는 동안, 마법 & 함정 존의 앞면 표시의 "함정 속으로" 몬스터는,
 PRINTL "상대가 몬스터의 일반 일반 소환 / 특수 소환에 성공했을 때 발동할 수 있다. 자신과 그 몬스터를 파괴한다.” 효과를 가진다.
 CALLFORM CARD_ABLE(1,필드起動,묘지起動);"ホ-ル"カテゴリで９種。
-PRINTL ②：서로의 묘지의 "충혹마" 몬스터의 종류가 20종류 이상일 때 발동할 수 있다. 상대 플레이어는 포식당한다.
+PRINTL ②：서로의 묘지의 "충혹마" 몬스터의 종류가 ２８종류 이상일 때 발동할 수 있다. 상대 플레이어는 포식당한다.
 SIF ゾーン == "필드"
 	CALL CARD_ABLE(3,지속효과)
-PRINTL ③：이 카드는 함정 내성을 가진다.
+PRINTL ③：이 카드는 함정 내성을 갖는다.
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDSUMMON_59812(듀얼리스트,소환カード,EX参照)
@@ -129,7 +129,13 @@ ELSEIF 종류 == 필드起動 || 종류 == 묘지起動
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		충혹마수 = RESULT
 	ENDIF
-	SIF 충혹마수 < 20
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件名前 = 트랩트릭 스퀴즈허니
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	충혹마수 = 충혹마수 + RESULT
+	SIF 충혹마수 < 28
 		RETURN 0
 	RETURN 1
 ELSEIF 종류 == 攻撃時誘発
@@ -142,8 +148,7 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -165,7 +170,10 @@ ELSEIF 종류 == 효과後誘発
 	SIF FINAL_SUMMON_TARGET(듀얼리스트,1) == 5 
 		RETURN 0
 	RETURN 1
-
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_59812(듀얼리스트,종류,ゾーン,場所)
@@ -183,6 +191,10 @@ ENDIF
 #DIM DYNAMIC 戦闘カード
 #DIM DYNAMIC 효과先
 
+#DIM DYNAMIC 조교대상캐릭터ID
+
+
+
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
@@ -193,11 +205,21 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59812)
 	IF RESULT == 0
 		;通常마법汎用処理
-		PRINTFORMW 플레시아는 시트리스의 큰 구멍으로 유도했다…
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
 		CALL FULLRESET
 		효과추가종류 = 6
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;ラフレシアは「食虫植物ではない」、ある種異例の충혹마。
+			PRINTFORML 攻撃の瞬間、フレシアは%NAME:조교대상%に大量の花粉を吹きかけた！
+			PRINTFORML 媚毒を含んだ甘ったるい花粉を吸い込んでしまった%NAME:조교대상%は
+			PRINTFORMW 動きが鈍ったところでシトリスの仕掛けた함정にかかり、動きを封じられてしまった！
+		ELSE
+			PRINTFORMW 플레시아는 시트리스의 큰 구멍으로 유도했다…
+		ENDIF
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘カード,"永攻DOWN")
 	ENDIF
 
@@ -205,10 +227,22 @@ ELSEIF 종류 == 효과後誘発
 	;フレシア묘지효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59812)
 	IF RESULT == 0
-		PRINTFORMW 플레시아는 플레시아의 큰 구멍으로…
-		PRINTFORMW ！？
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		CALL FULLRESET
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:효과先")
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+			PRINTFORML 立ちこめる甘く濃厚な媚香に%CALLNAME:조교대상%が気を取られた隙をついて、
+			PRINTFORMW フレシアは%CALLNAME:조교대상%を自身の巣穴に引きずり込んだ！
+			PRINTL
+			PRINTFORMW 悲鳴をあげながら逃れようともがく상대モンスターを腕の中に抱えて、フレシアは嗜虐的な笑みを浮かべながら巣の奥へと潜っていった……
+			CALL PREDATION_RAFFLESIA(듀얼리스트,종류,ゾーン,場所,조교대상)
+		ELSE
+			PRINTFORMW 플레시아는 플레시아의 큰 구멍으로…
+			PRINTFORMW ！？
+		ENDIF
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
 	ENDIF
@@ -218,15 +252,25 @@ ELSEIF 종류 == 필드起動 || 종류 == 묘지起動
 		CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
 		IF RESULT != -1
 			조교대상 = RESULT
-
-			PRINTFORML 어느새 %CALLNAME:조교대상%의 주변에는 무수한 충혹마들이 몰려들고 있었다.
-			PRINTFORMW 완전히 빠져든 %CALLNAME:조교대상%을 보며 프레시아는 미소를 짓고는,
+			PRINTL
+			PRINTFORMW 多くの糧を得て力を増した충혹마たちにとって、このデュエルフィールドはもはやその全域が彼女たちのテリトリーとなった。
+			PRINTL
+			PRINTFORML %CALLNAME:조교대상%の足元から根が飛び出し、ツタが体に絡みついていく。
+			PRINTFORMW 慌てふためく%CALLNAME:조교대상%の周囲には、いつの間にか無数の충혹마たちが忍び寄っていた……。
+			PRINTL
+			PRINTFORML 완전히 빠져든 %CALLNAME:조교대상%을 보며 플레시아는 미소를 짓고는,
 			PRINTFORMW 주변의 충혹마들과 함께 일제히 달려들어 %CALLNAME:조교대상%을 구멍 깊숙이 몰아넣었다……
+			PRINTL
 			PRINTFORMW ………
+			PRINTL
 			PRINTFORMW ……
+			PRINTL
 			PRINTFORMW …
+			PRINTL
 			SETCOLOR C_PINK 
-			PRINTFORMW 잠시 후, 구멍 안쪽에서 충혹마들과 %CALLNAME:조교대상%의 헐떡이는 신음이 들려왔다…
+			PRINTL
+			PRINTFORMW 잠시 후, 구멍 안쪽에서 충혹마들의 웃음소리와 %CALLNAME:조교대상%의 헐떡이는 신음이 들려왔다…
+			PRINTL
 			PRINTFORMW ……♡……♡♡
 			RESETCOLOR
 
@@ -241,17 +285,37 @@ ELSEIF 종류 == 필드起動 || 종류 == 묘지起動
 			ダメージ = RESULT * 100
 			CALL EROTIC_MOVE("全身애무",조교대상,-1,ダメージ)
 		ELSE
+			PRINTL
 			PRINTFORML 어느새 상대 플레이어의 주변에는 무수한 충혹마들이 몰려들고 있었다.
 			PRINTFORMW 주변의 충혹마들과 한꺼번에 달려들어 상대 플레이어를 구멍 깊숙이 몰아넣었다…….
+			PRINTL
 			PRINTFORMW ………
+			PRINTL
 			PRINTFORMW ……
+			PRINTL
 			PRINTFORMW …
+			PRINTL
 			PRINTFORMW 잠시 후, 구멍 안쪽에서 충혹마들의 웃음소리가 들려왔다…
+			PRINTL
 		ENDIF
 		CALL SET_PLAYER_INFO(듀얼리스트,"듀얼패배플래그",4,1)
 		SETCOLOR C_RED
 		PRINTFORML 
 		PRINTFORMW 상대 플레이어가 포식당했습니다.
 		RESETCOLOR
+	ENDIF
+ELSEIF 종류 == リアクション효과
+	SETCOLOR C_PINK
+	PRINTFORML 
+	PRINTFORMW ”穴”として설치されたフレシアは%CALLNAME:MASTER%に%TEXTR("包み込むような/ふかふかの")%穴を向けて誘惑している…
+	PRINTFORMW 誘惑に堪えきれず、%CALLNAME:MASTER%はフレシアの穴に욕망のまま情欲をぶつけた…
+	RESETCOLOR
+	CALL EROTIC_MOVE("충혹마의 착정",NO_TO_CHARANUM(1371),MASTER,100)
+	IF RESULT:2 >= 1
+		SETCOLOR C_PINK
+		PRINTFORML 
+		PRINTFORMW フレシアは%CALLNAME:MASTER%から搾り取った精気を巣穴に溜め込んだ…
+		RESETCOLOR
+		CALL CARD_GENERATE_GY(듀얼리스트,99823)
 	ENDIF
 ENDIF

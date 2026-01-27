@@ -1,0 +1,225 @@
+@CARDNAME_34072,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ブラックウォーグレイモン
+	CASE "略称"
+		RESULTS = Bウォ-グレイモン
+	CASE "カテゴリ"
+		RESULTS:0 = デジモン
+	CASE "出典作品"
+		RESULTS:0 = デジモン
+ENDSELECT
+
+
+@CARD_34072(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN エクシーズ
+	CASE "属性"
+		RESULT:1 = 闇属性
+		RETURN 炎属性
+	CASE "種族"
+		RESULT:1 = サイバース族
+		RETURN 鱗獣族
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3200
+	CASE "守備力"
+		RETURN 2000
+	CASE "レア度"
+		RETURN ULR
+	CASE "追加日"
+		RETURN 260111
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_34072(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件種族 = 鱗獣族
+素材条件レベル = 9
+
+IF EX参照 == 1
+	CALL XYZCAN(決闘者,召喚カード,34072) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_34072(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 鱗獣族レベル９モンスター×２
+PRINTL デジモンカードはサイバース族としても扱い、
+PRINTL このカードは闇属性としても扱う。
+CALLFORM CARD_ABLE(0,EXデッキ起動)
+PRINTL このカードは自分の墓地のサイバース族・闇属性のモンスターを４体除外してＸ召喚できる。
+PRINTL この方法でＸ召喚したこのカードのＸ素材は４つ増える。
+CALLFORM CARD_ABLE(1,戦場起動 ,フリー誘発)
+PRINTL ①：自分・相手ターンに、このカードのX素材を２つ取り除いて発動できる。
+PRINTL このカードの攻撃力以下の攻撃力を持つ相手モンスター１体を破壊し、
+PRINTL その元々の攻撃力分のダメージを相手に与える。
+CALLFORM CARD_ABLE(0,攻撃時強制誘発)
+PRINTL ②：このカードがドラゴンと戦闘を行う場合に発動する。
+PRINTL このターン中、このカードはもう１度攻撃でき、攻撃力は倍になる。
+
+
+@CARDCAN_34072(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件達成
+
+
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,34072)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_SS_CHECK(決闘者,34072,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_除外NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件種族 = サイバース族
+	効果条件属性 = 闇属性
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 5
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_1(決闘者,34072)
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") <= 0
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	効果条件攻撃力 = GETVAR(@"%決闘者%_MZ_攻:場所")
+	効果条件除去種 = 墓地
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 攻撃時強制誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	SIF 戦闘場所(決闘者,1) == 5
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_34072(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備魔法数
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 判定
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34072,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件種族 = サイバース族
+		効果条件属性 = 闇属性
+		効果条件複数 = 5
+		効果条件行先フラグ = 除外行き
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果追加種類 = 効追Ｘ素 + 4
+			CALL CARD_EX_SUMMON(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34072,1,X消費2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件攻撃力 = GETVAR(@"%決闘者%_MZ_攻:場所")
+		効果追加種類 = 1
+		CALL CARD_REMOVAL_ADV(決闘者,"単体除去",場所,"墓地")
+	ENDIF
+ELSEIF 種類 == 攻撃時強制誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34072)
+	IF RESULT == 0
+		選択カード = 戦闘場所(決闘者,1)
+		IF GETVAR(@"%決闘者%_MZ_種:選択カード") == ドラゴン族
+			判定 = 1
+			GOTO SKIPHANTEI
+		ENDIF
+		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_戦場:選択カード")}("名前")
+		IF STRFIND(RESULTS, "ドラゴン")  != -1
+			判定 = 1
+			GOTO SKIPHANTEI
+		ENDIF
+		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_戦場:選択カード")}("名前")
+		IF STRFIND(RESULTS, "ドラモン")  != -1
+			判定 = 1
+			GOTO SKIPHANTEI
+		ENDIF
+		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_戦場:選択カード")}("名前")
+		IF STRFIND(RESULTS, "龍")  != -1
+			判定 = 1
+			GOTO SKIPHANTEI
+		ENDIF
+		TRYCALLFORM CARDNAME_{GETVAR(@"%対面者%_戦場:選択カード")}("名前")
+		IF STRFIND(RESULTS, "竜")  != -1
+			判定 = 1
+			GOTO SKIPHANTEI
+		ENDIF
+
+		$SKIPHANTEI
+		IF 判定 == 1
+			PRINTFORMW 「ブレイブトルネード！」
+			CALL FULLRESET
+			CALL SET_FIELD_INFO(決闘者,"戦場",場所,"戦",1)
+			CALL SET_FIELD_INFO(決闘者,"戦場",場所,"一攻",GETVAR(@"%決闘者%_MZ_攻:場所"))
+		ENDIF
+	ENDIF
+ENDIF
+

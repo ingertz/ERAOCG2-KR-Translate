@@ -54,9 +54,8 @@ PRINTL 자신의 덱 / 묘지에서 "함정 속으로" 몬스터 1장씩을 앞�
 CALLFORM  CARD_ABLE(2,필드→묘지)
 PRINTL ②：이 카드가 필드에서 묘지로 보내졌을 경우에 발동할 수 있다.
 PRINTL 덱에서 "융합" 카드 또는 "함정 속으로" 몬스터 1장을 패에 넣는다.
-CALLFORM CARD_ABLE(0,지속효과,攻守変動)
-PRINTL ③：이 카드는 함정 내성을 가진다.
-PRINTL 자신 필드의 이 카드를 제외한 “충혹마” 몬스터의 공격력은 300 올린다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드는 함정 내성을 갖는다.
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDSUMMON_AA_39573
@@ -79,7 +78,7 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39573)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 지속효과 || 종류 == 攻守変動
+IF 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
@@ -93,8 +92,7 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -125,18 +123,11 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件カテゴリ = 함정 속으로
-	효과条件セット = 2
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF 마함数(듀얼리스트) >= 4
 		RETURN 0
-
 	CALL FULLRESET
 	효과範囲묘지 = 1
 	효과条件カテゴリ = 함정 속으로
-	효과条件セット = 2
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -151,7 +142,6 @@ ELSEIF 종류 == 필드→묘지 || 종류 ==  破壊→묘지
 	효과条件スーパーカテゴリ = 융합
 	효과条件カテゴリ = 함정 속으로
 	효과条件종류 = モン全般
-	
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -169,6 +159,10 @@ ELSEIF 종류 == ターン終了時強制
     SIF RESULT < 2
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_39573(듀얼리스트,종류,ゾーン,場所)
@@ -183,17 +177,15 @@ ENDIF
 #DIM DYNAMIC 戦闘カード
 #DIM DYNAMIC 효과先
 
+#DIM DYNAMIC 조교대상캐릭터ID
+
+
+
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
-ELSEIF 종류 == 攻守変動
-	CALL FULLRESET
-	효과条件カテゴリ = 충혹마
-	효과条件固名前 = 그루미 홀－리세
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300)
-
 ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39573,1)
 	IF RESULT == 0
@@ -230,10 +222,11 @@ ELSEIF 종류 == ターン終了時強制
 			조교대상 = RESULT
 			SIF 조교대상 == NO_TO_CHARANUM(1373)
 				CONTINUE
+			PRINTL
 			SETCOLOR C_PINK 
 			PRINTFORMW 리세는 %NAME:조교대상%에게 꿀을 빨리고 있다…
 			RESETCOLOR
-			CALL EROTIC_MOVE("全身애무",NO_TO_CHARANUM(1373),조교대상,50)
+;			CALL EROTIC_MOVE("全身애무",NO_TO_CHARANUM(1373),조교대상,50)
 		ENDIF
 	NEXT
 ELSEIF 종류 == 攻撃時誘発
@@ -241,11 +234,21 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39573)
 	IF RESULT == 0
 		;通常마법汎用処理
-		PRINTFORMW 리세는 시트리스의 큰 구멍으로 유도했다…
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
 		CALL FULLRESET
 		효과추가종류 = 6
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;地中に捕虫器があるらしい。構造によって微生物を誘導して消化器官に取り込むとか
+			PRINTFORML 攻撃の瞬間、リセは地中から根を飛び出させ、%NAME:조교대상%の進路を妨害した！
+			PRINTFORML %TEXTR("躱そうとして体勢を崩した/回避に気を取られた/突然のことに怯んだ")%%NAME:조교대상%はリセによって巧みに動きを誘導され、
+			PRINTFORMW 仕掛けられていたシトリスの함정を踏まされて動きを封じられてしまった！
+		ELSE
+			PRINTFORMW 리세는 시트리스의 큰 구멍으로 유도했다…
+		ENDIF
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘カード,"永攻DOWN")
 	ENDIF
 
@@ -253,10 +256,36 @@ ELSEIF 종류 == 효과後誘発
 	;フレシア묘지효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39573)
 	IF RESULT == 0
-		PRINTFORMW 리세는 플레시아의 큰 구멍으로 유도했다…
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
+		CALL FULLRESET
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;フレシアはモチーフがラフレシア。
+		;ラフレシアが小虫に送粉を手伝わせるために腐臭を漂わせるように、フレシアは人を誘うために甘くいい香りをさせている……はず！
+			PRINTFORML 立ちこめる甘く濃厚な媚香に%CALLNAME:조교대상%が気を取られた隙をついて、
+			PRINTFORMW リセは%CALLNAME:조교대상%をフレシアが待ち構える大穴に引きずり込んだ！
+			CALL PREDATION_RAFFLESIA(듀얼리스트,종류,ゾーン,場所,조교대상)
+		ELSE
+			PRINTFORMW 리세는 플레시아의 큰 구멍으로 유도했다…
+		ENDIF
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+	ENDIF
+ELSEIF 종류 == リアクション효과
+	SETCOLOR C_PINK
+	PRINTFORML 
+	PRINTFORMW ”穴”として설치されたリセは%CALLNAME:MASTER%に%TEXTR("深そうな/ぽっかりと空いた")%穴を向けて誘惑している…
+	PRINTFORMW 誘惑に堪えきれず、%CALLNAME:MASTER%はリセの穴に욕망のまま情欲をぶつけた…
+	RESETCOLOR
+	CALL EROTIC_MOVE("충혹마의 착정",NO_TO_CHARANUM(1378),MASTER,100)
+	IF RESULT:2 >= 1
+		SETCOLOR C_PINK
+		PRINTFORML 
+		PRINTFORMW リセは%CALLNAME:MASTER%から搾り取った精気を巣穴に溜め込んだ…
+		RESETCOLOR
+		CALL CARD_GENERATE_GY(듀얼리스트,99823)
 	ENDIF
 ENDIF

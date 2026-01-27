@@ -1,0 +1,161 @@
+﻿@CARDNAME_34097,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 스팅몬
+	CASE "略称"
+		RESULTS = 스팅몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34097(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2200
+	CASE "守備力"
+		RETURN 1200
+	CASE "レア度"
+		RETURN RARE
+	CASE "추가日"
+		RETURN 260117
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34097(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,손패起動,フリー誘発)
+PRINTL ①：자신・상대ターンに발동できる。
+PRINTL 자신フィールドの「추추몬」１体を손패に戻し、このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,특수소환時)
+PRINTL ②：このカードが특수소환した場合に발동できる。
+PRINTL 자신の손패１枚を묘지へ送り、상대に５００ダメージを与え、상대のモンスターゾーンのカードを１枚まで덱に戻す。
+CALLFORM CARD_ABLE(3,손패→묘지)
+PRINTL ③：このカードが손패から묘지へ送られた場合に발동できる。
+PRINTL 상대の마법＆함정ゾーンのカードを全て손패に戻す。
+
+
+@CARDCAN_34097(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34097)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,34097)
+		RETURN 0
+	SIF ゾーン != "손패"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,34097,ゾーン,1)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件名前 = 추추몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,34097)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 손패→묘지
+	SIF 발동済_3(듀얼리스트,34097)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대마함 = 1
+	효과条件除去種 = 손패
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34097(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34097,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件名前 = 추추몬
+		효과条件行先플래그 = 손패行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34097,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",800,1)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 손패→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34097,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"손패")
+	ENDIF
+ENDIF
+

@@ -1,0 +1,214 @@
+﻿@CARDNAME_91530,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 크라운 클랜『스와레』
+	CASE "略称"
+		RESULTS = 『스와레』
+	CASE "カテゴリ"
+		RESULTS:0 = 크라운 클랜
+ENDSELECT
+
+
+@CARD_91530(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_91530(종류)
+#DIM DYNAMIC 종류
+
+PRINTL ①：以下の효과から１つを選択して발동できる（このカード名の以下の효과はそれぞれ１ターンに１度しか選択できない）。
+PRINTL このカードの발동後、次のターンの終了時まで자신は덱・ＥＸ덱から특수소환されたモンスターの효과を발동できない。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ●덱・ＥＸ덱から「크라운 클랜」モンスターを２体まで소환条件を無視して특수소환する。
+CALLFORM CARD_ABLE(2,마함起動,フリー誘発)
+PRINTL ●덱から「크라운 클랜」モンスター１体を손패に加える。
+CALLFORM CARD_ABLE(0,묘지起動,フリー誘発)
+PRINTL ②：자신・상대のメインフェイズに、묘지のこのカードを제외し、
+PRINTL 손패のレベル５以上の「크라운 클랜」モンスター１体を상대に見せて발동できる。
+PRINTL 可能であれば、そのモンスターのＡ소환を行う。
+
+
+@CARDCAN_91530(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91530)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
+	;ゾーン処理も설정済み
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,91530)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,91530)
+		발동불가:1 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 크라운 클랜
+	효과条件소환可 = 1
+	효과条件特不無視 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 크라운 클랜
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 크라운 클랜
+	CALL 효과条件レベル_ADV(5,"以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 短紋章起動 || 종류 == ターン開始時予約
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_91530(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91530)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		SIF 발동済_1(듀얼리스트,91530)
+			발동불가:0 = 1
+		SIF 발동済_2(듀얼리스트,91530)
+			발동불가:1 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 크라운 클랜
+		효과条件소환可 = 1
+		효과条件特不無視 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 크라운 클랜
+		효과条件종류 = モン全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+		
+		IF 발동불가:0 != 1 && 발동불가:1 != 1
+			CALL YN_CHOICE(듀얼리스트,"●덱・ＥＸ덱から「크라운 클랜」モンスターを２体まで특수소환する。","●덱から「크라운 클랜」モンスター１体を손패に加える。")
+		ELSEIF 발동불가:0 != 1
+			RESULT = 0
+		ELSEIF 발동불가:1 != 1
+			RESULT = 1
+		ENDIF
+
+		IF RESULT == 0
+			CALL CARD_EFFECT_USE(듀얼리스트,91530,1)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲EX덱 = 1
+			효과条件カテゴリ = 크라운 클랜
+			효과条件特不無視 = 1
+			효과条件複数 = 98
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ELSEIF RESULT == 1
+			CALL CARD_EFFECT_USE(듀얼리스트,91530,1)
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 크라운 클랜
+			효과条件종류 = モン全般
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL CARD_RESERV(듀얼리스트,91530,短紋章予約)
+		CALL CARD_RESERV(듀얼리스트,91530,スタン予約)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91530)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = 크라운 클랜
+		CALL 효과条件レベル_ADV(5,"以上")
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			選択カード_ID = RESULT:99
+			
+			TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,효과소환,"손패",選択カード)
+			IF RESULT == 1
+				TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+				SIF 듀얼리스트 == "자신"
+					PRINTFORML 「%RESULTS%」の효과で소환しますか？
+				CALL YN_CHOICE(듀얼리스트)
+				SIF RESULT == いいえ
+					GOTO NOMAL_ADVANCE
+				TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,효과소환,"손패",選択カード)
+				SIF RESULT == 1
+					CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",1)
+			ELSE
+				$NOMAL_ADVANCE
+				CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",5)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과条件召種 = 召種덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発無")
+	효과条件召種 = 召種EX덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発無")
+
+ELSEIF 종류 == ターン開始時予約
+	CALL CARD_RESERV(듀얼리스트,91530,短紋章予約)
+ENDIF
+

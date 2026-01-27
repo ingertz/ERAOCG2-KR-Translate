@@ -1,0 +1,263 @@
+﻿@CARDNAME_79921,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 메이드복.alc
+	CASE "略称"
+		RESULTS = 메이드복
+	CASE "カテゴリ"
+		RESULTS:0 = E.R.A
+		RESULTS:1 = 닷아르크
+		RESULTS:2 = 드래곤메이드
+ENDSELECT
+
+
+@CARD_79921(参照先)
+;名前専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "추가日"
+		RETURN 20260121
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79921(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL CARD_ABLE(0,마함起動,손패起動)
+PRINTL 牝性モンスターにのみ装備可能。
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,バトル開始時)
+PRINTL ①：バトルフェイズ開始時に발동できる。
+PRINTL 装備モンスターのコントロールをエンドフェイズまで得る。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL 덱から「.alc」か「드래곤메이드」마법カード１枚を손패に加える。
+PRINTL その後、손패を１枚捨てる。
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：このカードが묘지に存在する場合に발동できる。
+PRINTL 자신の마법＆함정ゾーンの「E.R.A」装備마법カード１枚を손패に戻す。
+PRINTL その後、묘지のこのカードをフィールドの牝性モンスター１体に装備できる。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_79921(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 選択カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79921)
+SIF RESULT == 1
+	RETURN 0
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79921)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 && (GETVAR(@"%듀얼리스트%_필드:装備先") != -1 || GETVAR(@"%対面者%_필드:装備先") != -1)
+	SIF 발동済_2(듀얼리스트,79921)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ:0 = 닷아르크
+	효과条件カテゴリ:1 = 드래곤메이드
+	효과条件종류 = 마법全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1	
+	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == バトル開始時
+	SIF ゾーン != "마함"
+		RETURN 0
+	;装備先が상대フィールドのモンスター出なければ발동しない
+	SIF 装備者 == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+;	효과範囲상대필드 = 1
+;	효과条件固定 = 装備先
+;	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+;	SIF RESULT != 1
+;		RETURN 0
+;	SIF GETVAR(@"%対面者%_필드:装備先") != -1
+;		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 발동済_3(듀얼리스트,79921)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1	
+	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = E.R.A
+	효과条件종류 = 装備마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79921(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 조교대상
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && (GETVAR(@"%듀얼리스트%_필드:装備先") != -1 || GETVAR(@"%対面者%_필드:装備先") != -1)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79921,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ:0 = 닷아르크
+		효과条件カテゴリ:1 = 드래곤메이드
+		효과条件종류 = 마법全般
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79921)
+	IF RESULT == 0
+		;손패から발동後、마법トラップゾーンにカード이동
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件성별 = 牝性 
+		효과条件표시 = 表側표시
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+		IF RESULT != 9999
+			조교대상 = RESULT:1
+			選択カード_ID = RESULT:1
+			CALL CARD_EROTICS(조교대상)
+			IF RESULT != -1
+				조교대상 = RESULT
+				TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+				SETCOLOR C_PINK
+				IF MATCH(RESULTS,"드래곤메이드") || MATCH(RESULTS,"닷아르크")
+					PRINTFORML 
+					PRINTFORML %CALLNAME:조교대상%は메이드복を着こなしている！
+					PRINTFORML 
+					CALL EROTIC_MOVE("晒しもの",조교대상,-1,50)
+				ELSE
+					PRINTFORML 
+					PRINTFORMW %CALLNAME:조교대상%は메이드복を着せられてしまった！
+					PRINTFORML ミニスカ메이드복に%CALLNAME:조교대상%は顔を赤くしてしまう……
+					PRINTFORML 
+					CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
+				ENDIF
+				RESETCOLOR
+			ENDIF
+		ENDIF
+
+	ENDIF
+ELSEIF 종류 == バトル開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79921)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과추가종류 = 返却行き
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",装備先,"強奪")
+		IF RESULT == 1
+			조교대상 = RESULT:2
+			CALL CARD_EROTICS(조교대상)
+			IF RESULT != -1
+				조교대상 = RESULT
+				SETCOLOR C_PINK
+				PRINTFORML
+				PRINTFORMW 메이드복を着用した%CALLNAME:조교대상%に"ご主人様"への奉仕精神が宿る……
+				PRINTFORML
+				RESETCOLOR
+				CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79921,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = E.R.A
+		효과条件종류 = 装備마법
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1	
+			효과条件성별 = 牝性 
+			효과条件표시 = 表側표시
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,"묘지")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	;ノーパンや全裸などの亜種として仮置き。服装関連のアプデがデュエルにも反映されたら？
+	;4=메이드복にする97.デュエルUI関連
+	;CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"服状",4)
+ENDIF
+

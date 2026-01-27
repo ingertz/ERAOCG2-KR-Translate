@@ -1,0 +1,151 @@
+﻿@CARDNAME_41630,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 天威龍－ヴィシヴァ
+	CASE "略称"
+		RESULTS = ヴィシヴァ
+	CASE "カテゴリ"
+		RESULTS:0 = 天威
+		RESULTS:1 = 勇者一行
+		RESULTS:2 = ゲームオリジナル
+ENDSELECT
+
+
+@CARD_41630(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN シンクロ
+	CASE "属性"
+		RETURN 炎属性
+	CASE "種族"
+		RETURN ドラゴン族
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 2500
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_41630(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 8
+IF EX参照 == 0 || EX参照 == 1
+	素材条件チューナー = 1
+ELSEIF EX参照 >= 10
+	素材条件チューナー = -1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(決闘者,召喚カード,41630) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_41630(種類)
+#DIM DYNAMIC 種類
+
+PRINTL チューナー＋チューナー以外のモンスター１体以上
+PRINTL このカード名の①の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX召喚時)
+PRINTL ①：このカードがS召喚した場合に発動できる。
+PRINTL 墓地の効果以外のモンスター１体を特殊召喚する。
+PRINTL そうした場合、墓地または除外除外されているコスト３以下のモンスター1体を特殊召喚してもよい。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ②：相手フィールドのカードを１枚
+PRINTL （自分フィールドに効果以外のモンスターが存在する場合、お互いのターンに発動できる。）
+PRINTL そのカードの効果を無効にする。
+
+@CARDCAN_41630(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,41630)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EX召喚時
+	SIF 発動済_1(決闘者,41630)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果範囲除外 = 1
+	効果条件種類 = ドラゴン族
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件種類 = フィールド
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件種類 = 効果無し全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_41630(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM 選択カード
+
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EX召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,41630,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲デッキ = 1
+		効果条件種類 = フィールド
+		CALL CARD_ADD_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"破耐",3)
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"対耐",3)
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"追戦",1)
+ENDIF

@@ -1,0 +1,313 @@
+﻿@CARDNAME_79920,参照先
+;ココ79920で지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 촉수복.alc
+	CASE "略称"
+		RESULTS = 촉수복
+	CASE "カテゴリ"
+		RESULTS:0 = E.R.A
+		RESULTS:1 = 닷아르크
+		RESULTS:2 = 촉수
+ENDSELECT
+
+
+@CARD_79920(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "추가日"
+		RETURN 20260121
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79920(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL CARD_ABLE(0,마함起動,손패起動)
+PRINTL 牝性モンスターにのみ装備可能。
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(1,효과後強制誘発)
+PRINTL ①：상대がカードの효과を발동するたびに발동する、装備モンスターの攻撃力は５００ダウンする。
+PRINTL 「.alc」か「촉수」モンスターの場合は代わりに攻撃力が５００アップする。
+CALL CARD_ABLE(2,상황確認)
+PRINTL ②：装備モンスターの攻撃力が０以下である場合、
+PRINTL 装備モンスターを「묘상」として持ち主の마법＆함정ゾーンに表側표시で置く。
+CALL CARD_ABLE(3,효과後誘発)
+PRINTL ③：자신フィールドに「.alc」か「촉수」モンスターが存在し、상대がモンスターを특수소환した際に발동できる。
+PRINTL 묘지のこのカードをフィールドの牝性モンスター１体に装備する。
+CALL TEXT_DECORATION("ROGUE")
+
+
+
+@CARDCAN_79920(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79920)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1	
+	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,79920)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 마함数(듀얼리스트) == 5
+		RETURN 0
+	CALL FULLRESET
+	;.alcか촉수がいるか
+	효과範囲필드 = 1
+	효과条件カテゴリ:0 = 닷아르크
+	효과条件カテゴリ:1 = 촉수
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	;상대が특수소환したか
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	;装備できる牝性がいるか
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1	
+	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 상황確認
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%装備者%_MZ_攻:装備先") > 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79920(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 装備者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 装備先
+#DIM DYNAMIC 조교대상
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+;PRINTFORML 装備者:%装備者%　装備先:{装備先}
+
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79920)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件성별 = 牝性 
+		효과条件표시 = 表側표시
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+		IF RESULT != 9999
+			조교대상 = RESULT:1
+			選択カード_ID = RESULT:1
+			CALL CARD_EROTICS(조교대상)
+			IF RESULT != -1
+				조교대상 = RESULT
+				TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+				SETCOLOR C_PINK
+				IF MATCH(RESULTS,"촉수") || MATCH(RESULTS,"닷아르크")
+					PRINTFORML
+					PRINTFORML %CALLNAME:조교대상%は촉수복を着こなしている！
+					PRINTFORML
+					CALL EROTIC_MOVE("晒しもの",조교대상,-1,50)
+				ELSE
+					PRINTFORML
+					PRINTFORMW %CALLNAME:조교대상%は촉수복を着せられてしまった！
+					PRINTFORML 卑猥な衣装とその内側からの촉수の愛撫に%CALLNAME:조교대상%は顔を赤くしてしまう……
+					PRINTFORML
+					CALL EROTIC_MOVE("全身愛撫",조교대상,-1,50)
+					CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
+				ENDIF
+				RESETCOLOR
+			ENDIF
+		ENDIF
+
+	ENDIF
+ELSEIF 종류 == 효과後強制誘発
+	CALL FULLRESET
+	選択カード_ID = GETVAR(@"%装備者%_필드:装備先")
+	TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+	IF MATCH(RESULTS,"촉수") || MATCH(RESULTS,"닷아르크")
+		;닷아르크か촉수が装備すればバフ
+		TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("名前")
+		SETCOLOR C_PINK
+		PRINTFORML
+		PRINTFORML %RESULTS%は촉수복を活性化させて攻撃力を強化した！
+		PRINTFORML
+		RESETCOLOR
+		CALL SET_FIELD_INFO(装備者,"필드",装備先,"永攻",500)
+		CALL CARD_EROTICS_FIELD(装備者,"필드",装備先)
+		IF RESULT != -1
+			조교대상 = RESULT
+			;CALL EROTIC_MOVE("晒しもの",조교대상,-1,50)
+		ENDIF
+	ELSE
+		;それ以外ならデバフで0になったら묘상
+		TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("名前")
+		SETCOLOR C_PINK
+		PRINTFORML
+		PRINTFORML %RESULTS%を촉수복がくまなく愛撫する……
+		PRINTFORML
+		RESETCOLOR
+		CALL SET_FIELD_INFO(装備者,"필드",装備先,"永攻",-500)
+		CALL CARD_EROTICS_FIELD(装備者,"필드",装備先)
+		IF RESULT != -1
+			조교대상 = RESULT
+			CALL EROTIC_MOVE("全身愛撫",조교대상,-1,50)
+
+		ENDIF
+	ENDIF
+
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79920,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件名前 = 촉수복.alc
+		CALL CARD_CHOOSE_BASIC(듀얼리스트, "묘지",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1	
+			효과条件성별 = 牝性 
+			효과条件표시 = 表側표시
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+			IF RESULT != 9999
+				조교대상 = RESULT:1
+				選択カード_ID = RESULT:1
+				CALL CARD_EROTICS(조교대상)
+				IF RESULT != -1
+					조교대상 = RESULT
+					CALL FULLRESET
+					TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+					IF MATCH(RESULTS,"촉수") || MATCH(RESULTS,"닷아르크")
+						SETCOLOR C_PINK
+						PRINTFORML
+						PRINTFORML %CALLNAME:조교대상%は촉수の断片を再活性化させて身に纏った！
+						PRINTFORML
+						RESETCOLOR
+						CALL EROTIC_MOVE("晒しもの",조교대상,-1,100)
+					ELSE
+						SETCOLOR C_PINK
+						PRINTFORML
+						PRINTFORMW 필드に降り立った%CALLNAME:조교대상%は足元に潜む촉수に気付かなかった！
+						PRINTFORML %CALLNAME:조교대상%は一瞬の隙を突かれ촉수복に着替えさせられてしまった……
+						PRINTFORML
+						RESETCOLOR
+						CALL EROTIC_MOVE("全身愛撫",조교대상,-1,50)
+						CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
+					ENDIF
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	;ノーパンや全裸などの亜種として仮置き。服装関連のアプデがデュエルにも反映されたら？
+	;8=촉수복にする97.デュエルUI関連
+	;CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"服状",8)
+ELSEIF 종류 == 상황確認
+	CALL FULLRESET
+	IF 装備者 == 듀얼리스트
+		효과範囲필드 = 1
+	ELSE
+		효과範囲상대필드 = 1
+	ENDIF
+	효과추가カテ = 묘상
+	효과条件固定 = 装備先
+	CALL CARD_SET_ADV(듀얼리스트,ゾーン,装備先,"表側표시",1)
+	IF RESULT == 1
+		조교대상 = RESULT:1
+		CALL CARD_EROTICS(조교대상)
+		IF RESULT != -1
+			조교대상 = RESULT
+			SETCOLOR C_PINK
+			PRINTFORML
+			PRINTFORMW 쾌락に抗う事が出来なくなった%CALLNAME:조교대상%に촉수が殺到する！
+			PRINTFORML %CALLNAME:조교대상%は촉수の묘상にされてしまった…！
+			PRINTFORML
+			RESETCOLOR
+			CALL EROTIC_MOVE("묘상捕縛",조교대상, -1, 500)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+
+

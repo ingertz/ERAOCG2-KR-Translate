@@ -1,0 +1,188 @@
+﻿@CARDNAME_42272,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 킬러튠 크래클
+	CASE "略称"
+		RESULTS = 크래클
+	CASE "カテゴリ"
+		RESULTS:0 = 킬러튠
+		RESULTS:5 = 튜너소재가능
+ENDSELECT
+
+
+@CARD_42272(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 싱크로
+	CASE "속성"
+		RESULT:1 = 빛속성
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 牝性
+	CASE "튜너"
+		RETURN 1
+	CASE "連動ID"
+		RETURN 2272
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_42272(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 5
+IF EX参照 == 0 || EX参照 == 1
+	素材条件名前 = 킬러튠 클립
+ELSEIF EX参照 >= 10
+	素材条件튜너 = 1
+ENDIF
+
+IF EX参照 == 1
+	CALL SYNCAN(듀얼리스트,소환カード,42272) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_42272(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「킬러튠 클립」＋튜너１体以上
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがＳ소환した場合に발동できる。
+PRINTL 상대のＥＸ덱を確認し、その内の１枚をエンドフェイズまで제외する。
+PRINTL その後、このカードの攻撃力を제외したモンスターの攻撃力分アップできる。
+CALLFORM CARD_ABLE(2,戦破壊→묘지)
+PRINTL ②：Ｓ소환したこのカードが묘지へ送られた場合に발동できる。
+PRINTL このカードを특수소환する。
+PRINTL その後、以下の효과を適用できる。
+PRINTL ●상대のＥＸ덱を確認し、その内の２枚をエンドフェイズまで제외する。
+
+
+@CARDCAN_42272(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,42272)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,42272)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대EX덱 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 戦破壊→묘지
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,42272)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種EX덱
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,42771,"묘지",1)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_42272(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC EX選択カード
+#DIM DYNAMIC EXカードID,50
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,42272,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대EX덱 = 1
+		효과条件行先플래그 = 제외行き
+		효과条件추가플래그 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			SIF 듀얼리스트 == "자신"
+				PRINTL 攻撃力をアップしますか？
+			CALL YN_CHOICE(듀얼리스트)
+			IF RESULT == 1
+				TRYCALLFORM CARD_{選択カード_ID},"攻撃力"
+				CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"永攻",RESULT)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 戦破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,42272,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대EX덱 = 1
+		효과条件行先플래그 = 제외行き
+		효과条件추가플래그 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+				RETURN 0
+			SIF 듀얼리스트 == "자신"
+				PRINTL ＥＸ덱のカードを제외しますか？
+			CALL YN_CHOICE(듀얼리스트)
+			SIF RESULT == いいえ
+				RETURN 0
+			CALL FULLRESET
+			효과範囲상대EX덱 = 1
+			효과条件複数 = 2
+			효과条件行先플래그 = 제외行き
+			효과条件추가플래그 = 2
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

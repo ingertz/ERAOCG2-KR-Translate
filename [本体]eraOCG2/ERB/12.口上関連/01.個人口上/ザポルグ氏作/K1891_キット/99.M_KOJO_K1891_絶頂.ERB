@@ -1,0 +1,794 @@
+﻿;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;분기作りに有用そうな変数などのメモ
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;NOWEX:절정
+;4以上で昇天、3で超強절정、2で強절정、1で절정
+
+;NOWEX:Ｃ절정 NOWEX:Ｖ절정 NOWEX:Ｂ절정 NOWEX:Ａ절정 NOWEX:Ｍ절정
+;各部位の절정
+
+;NOWEX:二重절정、NOWEX:三重절정、NOWEX:四重절정、NOWEX:五重절정
+;同時に절정した時の状態
+;上記五つに加えてNOWEX:Ｅ절정でも판정
+
+;TOTALEX
+;地の文の판정に使われているもの
+;5以上で潮を吹き、4以下で背中を反らせて절정する
+;詳しくはEVENT_MESSAAGE_ORGASMを参照
+
+;TEQUIP:50
+;Ｖに誰の竿が入ってるか。TEQUIP:50 = MASTERであなたが삽입中となる。
+;TEQUIP:51
+;Ａに誰の竿が入ってるか。TEQUIP:51 = MASTERであなたが삽입中となる。
+
+;NOWEX:사정
+;사정量、最大3。たとえばIF NOWEX:MASTER:사정 > 1だと、あなたが大量사정以上した場合となる。
+
+;==================================================
+;절정時の구상
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_B_K1891(ARG)
+#DIM TOTALEX
+#DIM DYNAMIC 호감도修正
+CALL PALAM_MESSAGE_B(ARG)
+TOTALEX =  NOWEX:ARG:Ｃ절정 + NOWEX:ARG:Ｖ절정 + NOWEX:ARG:Ａ절정 + NOWEX:ARG:Ｂ절정+ NOWEX:ARG:Ｍ절정 + NOWEX:ARG:Ｅ절정 + NOWEX:ARG:분유 + NOWEX:ARG:사정
+SIF !(TOTALEX + NOWEX:ARG:방뇨)
+	RETURN 0
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;-------------------------------------------------
+	;小분기
+	;-------------------------------------------------
+	;분유
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:1 = 1
+	;-------------------------------------------------
+	IF LOCAL:1 && NOWEX:ARG:분유 && NOWEX:ARG:절정 <= 2 && !TCVAR:ARG:전턴절정
+		PRINTFORMW 「あっ❤　イっ❤　ああっ❤　でるぅっ❤❤」
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;사정した
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:2 = 0
+	;-------------------------------------------------
+	IF LOCAL:2 && NOWEX:ARG:사정 && NOWEX:ARG:절정 <= 2
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+	;-------------------------------------------------
+	;방뇨
+	;記入チェック（=0, 非표시、1, 표시）
+	LOCAL:3 = 0
+	;-------------------------------------------------
+	IF LOCAL:3 && NOWEX:ARG:방뇨
+		PRINTFORMW 
+		RETURN 1
+	ENDIF
+
+	;구상の色の변경　この状態だとピンク色　必要ない場合はこことRESETCOLORを消す
+	SETCOLOR C_H_PINK
+	;基本セット
+	;限界突破조교中
+	IF BASE:ARG:체력 < 300
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「あぁっ！？❤　ぁ……ぁぁぁ……❤❤❤」
+			CASE 1
+				PRINTFORMW 「ぃ……っ❤　ぃっ……ぐぅっ❤❤❤」
+			CASE 2
+				PRINTFORMW 「ぁ゛……？　ぁぁ……❤　お゛ぁ゛……っ❤❤❤」
+		ENDSELECT
+	;通常
+	ELSE
+		SELECTCASE NOWEX:ARG:절정
+			;절정
+			CASE 1
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「あっ❤　イっ、イクっ❤」
+					CASE 1
+						PRINTFORMW 「んっ❤　んんんんっ❤　──はぁぁっ❤❤❤」
+					CASE 2
+						PRINTFORMW 「イっ❤　イっ、イイっ……イクっ❤❤❤」
+				ENDSELECT
+			;強절정,超強절정
+			CASE 2,3
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「はっ❤　あっ❤　あああっ❤」
+					CASE 1
+						PRINTFORMW 「ふぁっ❤　あっ❤❤❤　イグっっ❤❤❤」
+					CASE 2
+						PRINTFORMW 「ふぉっ❤　う゛っ❤　ああああっ❤　あ゛っっっ❤❤❤」
+				ENDSELECT
+			;昇天
+			CASE IS >= 4
+				PRINTFORMW 「だめっ❤❤❤　これだめっ❤❤❤　トぶっ──❤❤❤❤❤」
+		ENDSELECT
+	ENDIF
+	RESETCOLOR
+ENDIF
+RETURN 1
+
+
+;==================================================
+;あなたが사정したときに関する구상の표시
+;一時的にTARGETを구상主に설정している
+;==================================================
+
+;==================================================
+;TARGETの手による사정で、사정대상が非TARGET
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_00(ARG)
+#DIM DYNAMIC 사정대상
+CALL PALAM_MESSAGE_A
+사정대상 = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 0
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 
+	RETURN 1
+ENDIF
+RETURN 1
+
+;==================================================
+;사정場所
+;==================================================
+
+;==================================================
+;콘돔（ペニスから引き抜いて見せつけ）
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_0(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE NOWEX:TARGET:사정
+		;一般
+		CASE 1
+			PRINTFORMW 「へー、大体このくらいかぁ……❤　私はまだ大丈夫だけど、どうする？❤」
+		;大量
+		CASE 2
+			PRINTFORMW 「ひゃー……❤　ゴム着けてなかったら、絶対임신してたよ……❤」
+		;大量を超えた大量
+		CASE 3
+			PRINTFORMW 「うっわぁ……❤　こんなの出されたら、お腹バクハツしちゃうよぉ……❤」
+	ENDSELECT
+	RETURN 1
+ENDIF
+RETURN 1
+
+;==================================================
+;질내
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_1(ARG)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 사정人物箇所
+IF MASTER_POSE(6, 1, 1) > 0
+	사정人物箇所 = MASTER_POSE(6, 1, 1)
+ENDIF
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;同時절정
+	IF NOWEX:TARGET:절정
+		PRINTFORMW 「んぁぁっ❤　ナカにっ❤　出てるぅっ❤」
+	;それ以外
+	ELSE
+		SELECTCASE NOWEX:MASTER:사정
+			;一般
+			CASE 1
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「ん……もしかして、イった？❤」
+					CASE 1
+						PRINTFORMW 「んんっ……ナカでビクビクしてる……❤」
+				ENDSELECT
+			;大量
+			CASE 2
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「んんっ❤　やー、いっぱい出てるねぇ❤」
+					CASE 1
+						PRINTFORMW 「あー……❤　こりゃ、赤ちゃん出来ちゃうかもなぁ……❤」
+					CASE 2
+						PRINTFORMW 「ふぅ……❤　お腹いっぱいだぁ……❤」
+				ENDSELECT
+			;大量を超えた大量
+			CASE 3
+				SELECTCASE RAND:3
+					CASE 0
+						PRINTFORMW 「は、ああっ！？❤　な、なに……この量……❤」
+					CASE 1
+						PRINTFORMW 「ちょ……出しすぎっ❤　そんなに入らないよぉっ❤」
+					CASE 2
+						PRINTFORMW 「んん……まだ出る？　そっかぁ……❤」
+				ENDSELECT
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;애널
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_2(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;同時절정
+	IF NOWEX:TARGET:절정
+		PRINTFORMW 「お゛お゛っ❤　お゛なか゛っ❤　あ゛っつ゛うっ❤❤❤」
+	;それ以外
+	ELSE
+		SELECTCASE NOWEX:MASTER:사정
+			;一般
+			CASE 1
+				PRINTFORMW 「うわ……あっつ……❤」
+			;大量
+			CASE 2
+				PRINTFORMW 「あっつぅ……！？❤　ちょっ、多いっ❤　多いってぇっ❤」
+			;大量を超えた大量
+			CASE 3
+				PRINTFORMW 「な、にっ……❤　このっ、量……っ❤❤❤」
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;特定行動中
+;==================================================
+
+;==================================================
+;수음
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_3(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORMW 「わっ……すっごい量……❤」
+		CASE 1
+			PRINTFORMW 「んっ……鼻にまとわりつく臭い……❤」
+		CASE 2
+			PRINTFORMW 「うぇー……身体じゅう%CALLNAME:MASTER%まみれだよぉ……❤」
+	ENDSELECT
+	RETURN 1
+ENDIF
+RETURN 1
+
+
+;==================================================
+;펠라치오
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_4(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;ごっくん
+	IF EXP_UP(15) == NOWEX:MASTER:사정 * 3
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「んっ❤　んんんっ……・ごくん❤　ふー……❤」
+			CASE 1
+				PRINTFORMW 「ぐちゅ……ぎちゅ……ごくんっ❤　はー……❤」
+		ENDSELECT
+	;吐き出す
+	ELSEIF EXP:TARGET:정음경험 <= 20
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「うぇぇぇ……なまぐさい……」
+			CASE 1
+				PRINTFORMW 「んんっ！？　けほっ！ごほっ！」
+		ENDSELECT
+	;手のひらに吐き出す
+	ELSE
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「んん……んべー❤　いやー、出たねえ❤」
+			CASE 1
+				PRINTFORMW 「んー……ぺっ！❤　相変わらず、変な味だぁ……❤」
+			CASE 2
+				PRINTFORMW 「すんすん……❤　あー……臭いのに、クセになるぅー……❤」
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;파이즈리
+;TALENT:TARGET:가슴사이즈(1以上=谷間に溜まる 0未満=顔まで飛ぶ)
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_5(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF BUST_SIZE(TARGET) > 0
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「んっ……あっつぅ……❤」
+			CASE 1
+				PRINTFORMW 「ほらほら～❤　残ってるの、全部だしちゃいな～❤」
+			CASE 2
+				PRINTFORMW 「どんどん溢れてくるねー❤　ぎゅー……❤」
+		ENDSELECT
+	ELSE
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「きゃっ！？　もー❤　出すなら出すって言ってよー……❤」
+			CASE 1
+				PRINTFORMW 「うわっ……すごい勢い……❤　コーフンし過ぎじゃない？❤」
+			CASE 2
+				PRINTFORMW 「んっ……ぺろ……❤　悪くない、かも……❤」
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;스마타
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_6(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「ほら❤　ぎゅーってしてあげるから、太ももに全部出しちゃえ❤」
+ENDIF
+RETURN 1
+
+;==================================================
+;풋잡
+;TALENT:TAGET:새드(冷たい目)
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_7(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF TALENT:TARGET:새드
+		PRINTFORMW 「うわ……足なんかでイクんだ……❤」
+	ELSE
+		PRINTFORMW 「わぁ……❤　足の裏でビクビクしてるー❤」
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;泡踊り
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_8(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「もー❤　また洗いなおさなきゃいけないじゃーん❤」
+ENDIF
+RETURN 1
+
+;==================================================
+;애널奉仕
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_9(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「んっ……❤　お尻、キュンキュンしてるね❤」
+ENDIF
+RETURN 1
+
+;==================================================
+;수음펠라
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_20(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;ごっくん
+	IF EXP_UP(15) == NOWEX:MASTER:사정 * 3
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「んっ❤　んんんっ……・ごくん❤　ふー……❤」
+			CASE 1
+				PRINTFORMW 「ぐちゅ……ぎちゅ……ごくんっ❤　はー……❤」
+		ENDSELECT
+	;吐き出す
+	ELSEIF EXP:TARGET:정음경험 <= 20
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「うぇぇぇ……なまぐさい……」
+			CASE 1
+				PRINTFORMW 「んんっ！？　けほっ！ごほっ！」
+		ENDSELECT
+	;手のひらに吐き出す
+	ELSE
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「んん……んべー❤　いやー、出たねえ❤」
+			CASE 1
+				PRINTFORMW 「んー……ぺっ！❤　相変わらず、変な味だぁ……❤」
+			CASE 2
+				PRINTFORMW 「すんすん……❤　あー……臭いのに、クセになるぅー……❤」
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;파이즈리펠라
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_21(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;ごっくん
+	IF EXP_UP(15) == NOWEX:MASTER:사정 * 3
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「んっ❤　んんんっ……・ごくん❤　ふー……❤」
+			CASE 1
+				PRINTFORMW 「ぐちゅ……ぎちゅ……ごくんっ❤　はー……❤」
+		ENDSELECT
+	;吐き出す
+	ELSEIF EXP:TARGET:정음경험 <= 20
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「うぇぇぇ……なまぐさい……」
+			CASE 1
+				PRINTFORMW 「んんっ！？　けほっ！ごほっ！」
+		ENDSELECT
+	;手のひらに吐き出す
+	ELSE
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「んん……んべー❤　いやー、出たねえ❤」
+			CASE 1
+				PRINTFORMW 「んー……ぺっ！❤　相変わらず、変な味だぁ……❤」
+			CASE 2
+				PRINTFORMW 「すんすん……❤　あー……臭いのに、クセになるぅー……❤」
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;식스나인
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_22(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;ごっくん
+	IF EXP_UP(15) == NOWEX:MASTER:사정 * 3
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「んっ❤　んんんっ……・ごくん❤　ふー……❤」
+			CASE 1
+				PRINTFORMW 「ぐちゅ……ぎちゅ……ごくんっ❤　はー……❤」
+		ENDSELECT
+	;吐き出す
+	ELSEIF EXP:TARGET:정음경험 <= 20
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「うぇぇぇ……なまぐさい……」
+			CASE 1
+				PRINTFORMW 「んんっ！？　けほっ！ごほっ！」
+		ENDSELECT
+	;手のひらに吐き出す
+	ELSE
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「んん……んべー❤　いやー、出たねえ❤」
+			CASE 1
+				PRINTFORMW 「んー……ぺっ！❤　相変わらず、変な味だぁ……❤」
+			CASE 2
+				PRINTFORMW 「すんすん……❤　あー……臭いのに、クセになるぅー……❤」
+		ENDSELECT
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;イラマチオ
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_23(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「んっ！？❤　んんんんんっ❤❤❤」
+ENDIF
+RETURN 1
+
+;==================================================
+;授乳プレイ
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_26(ARG)
+CALL PALAM_MESSAGE_A
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「んんっ❤　好きなだけ甘えていいからねー❤」
+ENDIF
+RETURN 1
+
+;==================================================
+;複数人プレイ
+;==================================================
+
+;==================================================
+;9,ダブル펠라
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_30(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(4,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K1891_30_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(4,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_30_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+;조교대상２ に캐릭터IDが入っているので、それで差分を作れる
+;（例）ブラックマジシャンガール
+;IF 조교대상２ == 1000
+;	PRINTFORMW （ここに구상）
+;ENDIF
+
+;一人目구상
+;TARGETが先に喋る時の구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_30_1(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;基本セット
+	;ごっくん成功
+	IF EXP_UP(15,TARGET) == NOWEX:MASTER:사정 * 3
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「んっ❤　んんんっ……・ごくん❤　ふー……❤」
+			CASE 1
+				PRINTFORMW 「ぐちゅ……ぎちゅ……ごくんっ❤　はー……❤」
+		ENDSELECT
+	;顔射
+	ELSEIF !EXP_UP(15,TARGET) == NOWEX:MASTER:사정 * 3
+		PRINTFORMW 「あっ……もったいないなぁ……」
+	ENDIF
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_30_2(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;基本セット
+	;ごっくん成功
+	IF EXP_UP(15,TARGET) == NOWEX:MASTER:사정 * 3
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW 「んっ❤　んんんっ……・ごくん❤　ふー……❤」
+			CASE 1
+				PRINTFORMW 「ぐちゅ……ぎちゅ……ごくんっ❤　はー……❤」
+		ENDSELECT
+	;顔射
+	ELSEIF !EXP_UP(15,TARGET) == NOWEX:MASTER:사정 * 3
+		PRINTFORMW 「あっ……もったいないなぁ……」
+	ENDIF
+ENDIF
+RETURN 1
+
+;==================================================
+;10,ダブル스마타
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_31(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(2,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K1891_31_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(2,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_31_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+
+;一人目구상
+;TARGETが先に喋る時の구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_31_1(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「わ……噴水みたいだぁ……❤」
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_31_2(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「わ……噴水みたいだぁ……❤」
+ENDIF
+RETURN 1
+
+
+;==================================================
+;11,ダブル파이즈리
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_32(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(5,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K1891_32_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(5,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_32_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+;一人目구상
+;TARGETが先に喋る時の구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_32_1(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「んっ❤　私と%CALLNAME:ARG%のおっぱい、気持ちよかったでしょー❤」
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_32_2(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「んっ❤　私と%CALLNAME:ARG%のおっぱい、気持ちよかったでしょー❤」
+ENDIF
+RETURN 1
+
+;==================================================
+;13,交互삽입
+;書く部分が２つあるが、先に流れるか後に流れるかの違いだけなので、同じ物を書いてもよい
+;==================================================
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_33(ARG)
+CALL PALAM_MESSAGE_A
+
+;TARGETが구상主である場合
+LOCAL =  MASTER_POSE(6,1,1)
+CALL M_KOJO_MESSAGE_PALAMCNG_A_K1891_33_1(LOCAL)
+;戻り値とTARGETを보존、TARGETを二人目に一時的に交代して二人目구상を呼び出した後、TARGETをもどして보존した戻り値でRETURNする
+;二人目はいらない場合はここで処理
+;二人目
+LOCAL = MASTER_POSE(6,1,1)
+LOCAL:1 = RESULT
+LOCAL:2 = TARGET
+TARGET = LOCAL
+TRYCALLFORM M_KOJO_MESSAGE_PALAMCNG_A_K{NO:TARGET}_33_2(LOCAL:2)
+TARGET = LOCAL:2
+RETURN LOCAL:1
+
+
+;一人目구상
+;TARGETが先に喋る時の구상
+;ARGは二人目
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_33_1(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「はぁ……はぁ……❤　ホント、欲張りだなぁ……❤」
+ENDIF
+RETURN 1
+
+;二人目구상
+;TARGETが一人目の次に喋る구상
+@M_KOJO_MESSAGE_PALAMCNG_A_K1891_33_2(ARG)
+#DIM DYNAMIC 조교대상２
+조교대상２ = NO:ARG
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「えへへ……ちゅっ❤　好きだよ、%CALLNAME:MASTER%❤」
+ENDIF
+RETURN 1

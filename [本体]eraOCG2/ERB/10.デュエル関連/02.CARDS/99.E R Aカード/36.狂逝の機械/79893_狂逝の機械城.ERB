@@ -51,7 +51,7 @@ PRINTL 이 효과로 발정한 "광서의 기계"몬스터는 반드시 공격�
 PRINTL
 SETCOLOR C_RED
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
-CALLFORM CARD_ABLE(5,攻撃時誘発)
+CALLFORM CARD_ABLE(5,攻撃時強制誘発)
 PRINTL ⑤: 이 카드가 필드에 존재할 때, 상대 몬스터가 공격한 후에 발동한다。
 PRINTL 기계성의 다양한 시설과 광서의 기계, 그리고 함정이 상대 몬스터를 능욕한다。
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー주의ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
@@ -70,6 +70,8 @@ CALL TEXT_DECORATION("ROGUE")
 #DIM DYNAMIC 조교대상
 #DIM DYNAMIC 효과条件플래그 = 0
 
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79893)
 SIF RESULT == 1
@@ -172,7 +174,7 @@ ELSEIF 종류 == 마함起動 || 종류 == 손패起動
 		효과条件行先플래그 = 제외行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			TRYCALLFORM CARD_{RESULT:1}("レベル")
+			CALLFORM CARD_{RESULT:1}("レベル")
 			選択カードレベル = RESULT
 			CALL SET_FIELD_INFO(듀얼리스트,"마함",場所,"個Ｃ",選択カードレベル)
 		ENDIF
@@ -219,44 +221,33 @@ ELSEIF 종류 == 효과後誘発
 	ENDIF
 
 ELSEIF 종류 == 攻撃時強制誘発
-	IF 戦闘場所(듀얼리스트,1) != 5
-		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",戦闘場所(듀얼리스트,1),1)
-		IF RESULT != -1
+	조교대상 = GETVAR(@"%対面者%_필드:戦闘場所(対面者)")
+		CALL CARD_EROTICS(조교대상)
+		IF 조교대상 > 0
 			조교대상 = RESULT
-		ENDIF
-	ELSE
-		CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
-		IF RESULT != -1
-			조교대상 = RESULT
-		ENDIF
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORML %CALLNAME:조교대상%의 두 다리가 기계의 촉수에 휘감겨 움직일 수 없게 된다.
+					CALL MADORGASM_MACHINE_VIOLATE_TXT(1,0)
+					CALL MADORGASM_RAND_ROB_TXT(1,1)
+				CASE 1
+					PRINTFORML %CALLNAME:조교대상%에게 조준을 맞추고, 강제로 쾌락을 주입해 절정시키는 광선이 발사된다. %CALLNAME:조교대상%는
+					PRINTFORML …그것을 받은 %CALLNAME:조교대상%는,
+					CALL MADORGASM_MACHINE_VIOLATE_TXT(1,1)
+					CALL MADORGASM_RAND_ROB_TXT(1,4)
+				CASE 2
+					PRINTFORML %CALLNAME:조교대상%는 갑자기 몸의 움직임을 멈춘다.
+					PRINTFORML 그리고 어느새 멍한 눈이 되어버린 %CALLNAME:조교대상%는,
+					CALL MADORGASM_MACHINE_VIOLATE_TXT(1,2)
+					CALL MADORGASM_HYPNOSIS_OPERATION_TXT(1,0)
+			ENDSELECT
+			PRINTFORML ……
+			PRINTFORML …………
+			PRINTFORML ………………그 후, %CALLNAME:조교대상%는 겨우 함정에서 벗어날 수 있었다.
+			PRINTFORML 광서의 기계들이 돌아다니고, 음란한 함정이 계속 움직이는 기계성,
+			PRINTFORMW 가득 찬 공기마저도 미독이 섞여 있어, %CALLNAME:조교대상%는 그것을 무의식적으로 들이마신다…
+			CALL EROTIC_MOVE("媚毒汚染",조교대상,-1,300)
 	ENDIF
-
-	IF 조교대상 > -1
-		SELECTCASE RAND:3
-			CASE 0
-				PRINTFORML %CALLNAME:조교대상%의 두 다리가 기계의 촉수에 휘감겨 움직일 수 없게 된다.
-				CALL MADORGASM_MACHINE_VIOLATE_TXT(1,0)
-				CALL MADORGASM_RAND_ROB_TXT(1,1)
-			CASE 1
-				PRINTFORML %CALLNAME:조교대상%에게 조준을 맞추고, 강제로 쾌락을 주입해 절정시키는 광선이 발사된다. %CALLNAME:조교대상%는
-				PRINTFORML …그것을 받은 %CALLNAME:조교대상%는,
-				CALL MADORGASM_MACHINE_VIOLATE_TXT(1,1)
-				CALL MADORGASM_RAND_ROB_TXT(1,4)
-			CASE 2
-				PRINTFORML %CALLNAME:조교대상%는 갑자기 몸의 움직임을 멈춘다.
-				PRINTFORML 그리고 어느새 멍한 눈이 되어버린 %CALLNAME:조교대상%는,
-				CALL MADORGASM_MACHINE_VIOLATE_TXT(1,2)
-				CALL MADORGASM_HYPNOSIS_OPERATION_TXT(1,0)
-		ENDSELECT
-		PRINTFORML ……
-		PRINTFORML …………
-		PRINTFORML ………………그 후, %CALLNAME:조교대상%는 겨우 함정에서 벗어날 수 있었다.
-		PRINTFORML 광서의 기계들이 돌아다니고, 음란한 함정이 계속 움직이는 기계성,
-		PRINTFORMW 가득 찬 공기마저도 미독이 섞여 있어, %CALLNAME:조교대상%는 그것을 무의식적으로 들이마신다…
-		CALL EROTIC_MOVE("媚毒汚染",조교대상,-1,300)
-
-	ENDIF
-
 ENDIF
 
 

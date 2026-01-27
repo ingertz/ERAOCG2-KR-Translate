@@ -1,0 +1,154 @@
+﻿@CARDNAME_50727,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 브리치바렐 드래곤
+	CASE "略称"
+		RESULTS = 브리치Ｂ
+	CASE "カテゴリ"
+		RESULTS:0 = 바렐
+ENDSELECT
+
+
+@CARD_50727(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 1000
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50727(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+素材条件종족 = 드래곤족
+素材条件속성 = 어둠속성
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 바렛
+ENDIF
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,50727) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50727(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「바렛」モンスターを含む드래곤족・어둠속성モンスター２体
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがＬ소환に成功した場合に발동できる。
+PRINTL 덱から「바렐」마법・함정カード１枚を손패に加える。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신・상대ターンに、자신フィールドの어둠속성モンスター１体を대상として발동できる。
+PRINTL そのモンスターの攻撃力は５００アップする。
+PRINTL この효과に対して「바렛」モンスターの효과が발동している場合、
+PRINTL さらに덱から「바렛」モンスター１体を守備표시で특수소환できる。
+
+
+@CARDCAN_50727(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50727)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,50727)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 바렐
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,50727)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_50727(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50727,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 바렐
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50727,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件속성 = 어둠속성
+		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"永攻",500)
+
+		TRYCALLFORM CARDNAME_{効後_효과ID:(処理中番号 + 1)},"カテゴリ"
+		IF MATCH(RESULTS,"바렛")
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 바렛
+			효과条件任意 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+		ENDIF
+	ENDIF
+ENDIF
+

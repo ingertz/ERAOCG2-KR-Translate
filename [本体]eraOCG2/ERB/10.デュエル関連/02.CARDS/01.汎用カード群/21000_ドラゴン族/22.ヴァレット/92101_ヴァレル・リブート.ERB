@@ -1,0 +1,124 @@
+﻿@CARDNAME_92101,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 바렐 리부트
+	CASE "略称"
+		RESULTS = Ｂ 리부트
+	CASE "カテゴリ"
+		RESULTS:0 = 바렐
+ENDSELECT
+
+
+@CARD_92101(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 260119
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_92101(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,발동誘発)
+PRINTL このカードはLPを半分払って손패から발동する事もできる。
+PRINTL ①：자신フィールドに「바렛」モンスターか「바렐」モンスターが存在し、
+PRINTL 상대が마법・함정カードを발동した時に발동できる。
+PRINTL その발동を無効にし、そのカードをそのままセットする。
+PRINTL この효과でセットしたカードはこのターン발동できない。
+
+
+@CARDCAN_92101(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92101)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	IF ゾーン == "마함"
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSEIF ゾーン == "손패"
+	ELSE
+		RETURN 0
+	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ:0 = 바렛
+	효과条件カテゴリ:1 = 바렐
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲마함 = 1
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_92101(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 묘지送カード,5
+
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92101)
+	IF RESULT == 0
+		SIF ゾーン == "손패"
+			CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",(GETVAR(@"ライフ_%듀얼리스트%") / 2))
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		IF 効後_ゾーン:(処理中番号 - 1) == "손패"
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"無効")
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件ID = 効後_효과ID:(処理中番号 - 1)
+			CALL CARD_SET_ADV(対面者,ゾーン,場所,"使用불가")
+		ELSE
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"裏戻")
+			CALL SET_FIELD_INFO(対面者,"마함",効後_設場所:(処理中番号 - 1),"発無",2,1)
+		ENDIF
+		RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF
+

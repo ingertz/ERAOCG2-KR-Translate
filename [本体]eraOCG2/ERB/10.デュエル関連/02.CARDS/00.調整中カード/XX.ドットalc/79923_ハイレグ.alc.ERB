@@ -1,0 +1,200 @@
+﻿@CARDNAME_79923,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 하이레그.alc
+	CASE "略称"
+		RESULTS = 하이레그
+	CASE "カテゴリ"
+		RESULTS:0 = E.R.A
+		RESULTS:1 = 닷아르크
+		RESULTS:2 = Alive♡Twin
+ENDSELECT
+
+
+@CARD_79923(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "추가日"
+		RETURN 20260121
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79923(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL CARD_ABLE(0,마함起動,손패起動)
+PRINTL 牝性モンスターにのみ装備可能。
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：자신のEX덱・묘지からサイバース・牝性モンスター１体を選んで특수소환し、このカードを装備する。
+PRINTL EX덱から특수소환した場合、특수소환したモンスターの링크数×１０００ＬＰを失う。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：装備モンスターは특수소환の素材にできない。
+PRINTL 装備モンスターが「E.R.A」でない場合、효과は無効化される。
+CALLFORM CARD_ABLE(2,バトル開始時)
+PRINTL ③：バトルフェイズ開始時に발동できる。
+PRINTL 자신の마법＆함정ゾーンの「E.R.A」カードの数×２００だけ상대はＬＰを失い、同じ値だけ자신はＬＰを회복する。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_79923(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79923)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,79923)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 사이버스족
+	효과条件성별 = 牝性
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT != 1
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종족 = 사이버스족
+		효과条件성별 = 牝性
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == バトル開始時
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79923(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 조교대상
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79923,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲EX덱 = 1
+		효과条件종족 = 사이버스족
+		효과条件성별 = 牝性
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件固定 = カード소환先
+			효과条件召種 = 召種EX덱
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				TRYCALLFORM CARD_{選択カード_ID}("レベル")
+				CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",RESULT * 1000)
+			ENDIF
+
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件固定 = カード소환先
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+			IF RESULT != 9999
+				조교대상 = RESULT:1
+				選択カード_ID = RESULT:1
+				CALL CARD_EROTICS(조교대상)
+				IF RESULT != -1
+					조교대상 = RESULT
+					TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+					SETCOLOR C_PINK
+					IF MATCH(RESULTS,"Alive♡Twin") || MATCH(RESULTS,"닷아르크")
+						PRINTFORML
+						PRINTFORML %CALLNAME:조교대상%は하이레그を着こなしている！
+						PRINTFORML
+						CALL EROTIC_MOVE("晒しもの",조교대상,-1,50)
+					ELSE
+						PRINTFORML
+						PRINTFORMW %CALLNAME:조교대상%は하이레그を着せられてしまった！
+						PRINTFORML 覚悟の決まった角度の切れ込みに%CALLNAME:조교대상%は顔を赤くしてしまう……
+						PRINTFORML
+						CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
+					ENDIF
+					RESETCOLOR
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == バトル開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79923)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = E.R.A
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		カウンタ = RESULT
+		SETCOLOR C_PINK
+		PRINTL
+		PRINTL .alcチャンネルの視聴料が徴収される！
+		PRINTL
+		RESETCOLOR
+		CALL LIFE_CHANGE(対面者,"減少","コスト",カウンタ * 200)
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",カウンタ * 200)
+
+	ENDIF
+ELSEIF 종류 == 지속효과
+	;ノーパンや全裸などの亜種として仮置き。服装関連のアプデがデュエルにも反映されたら？
+	;6=하이레그にする97.デュエルUI関連
+	;CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"服状",6)
+	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"不材")
+	TRYCALLFORM CARDNAME_{GETVAR(@"%装備者%_필드:装備先")}("カテゴリ")
+	SIF !MATCH(RESULTS,"E.R.A")
+		CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"無効")
+
+ENDIF

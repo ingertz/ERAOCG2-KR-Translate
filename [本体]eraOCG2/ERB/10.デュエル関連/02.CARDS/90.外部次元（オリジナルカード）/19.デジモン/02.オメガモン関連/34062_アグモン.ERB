@@ -1,0 +1,157 @@
+﻿@CARDNAME_34062,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 아구몬
+	CASE "略称"
+		RESULTS = 아구몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_34062(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 화염속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 800
+	CASE "レア度"
+		RETURN CMN
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_34062(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬 카드는 사이버스족으로도 취급한다。
+PRINTL 이 카드명의 ①②의 효과는 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환된 경우에 발동할 수 있다。
+PRINTL 덱에서 "아구몬" 이외의 비늘야수족 "디지몬" 몬스터를 １장을 패에 넣는다。
+PRINTL 자신은 이렇게 패에 넣은 몬스터의 레벨×２００ 데미지를 받는다。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신 / 상대 턴에 발동할 수 있다。
+PRINTL 이 카드를 묘지로 보내고、패에서 레벨５ / ６인 비늘야수족 "디지몬" 몬스터 １장을 특수 소환한다。
+PRINTL 
+
+@CARDCAN_34062(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,34062)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,34062)
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 비늘야수족
+	효과条件カテゴリ= 디지몬
+	효과条件固名前 = 아구몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,34062)
+		RETURN 0
+
+	SIF ゾーン != "필드"
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ= 디지몬
+	효과条件종류 = モン全般
+	효과条件종족 = 비늘야수족
+	효과条件レベル:0 = 5
+	효과条件レベル:1 = 6
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_34062(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 被弾ダメージ
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34062,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종족 = 비늘야수족
+		효과条件カテゴリ= 디지몬
+		효과条件固名前 = 아구몬
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT
+			CALLFORM CARD_{RESULT:1}("レベル")
+			被弾ダメージ = RESULT * 200 
+			CALL LIFE_CHANGE(듀얼리스트,"減少","효과",被弾ダメージ)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,34062,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件カテゴリ= 디지몬
+			효과条件종류 = モン全般
+			효과条件종족 = 비늘야수족
+			효과条件レベル:0 = 5
+			효과条件レベル:1 = 6
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF
+

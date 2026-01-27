@@ -21,6 +21,8 @@ VARSET 素材条件종류, -1
 VARSET 素材条件종족起動
 VARSET 素材条件素材数起動
 VARSET 素材条件素材攻撃力起動
+VARSET 素材条件속성数起動
+
 VARSET 素材条件素材ID起動
 VARSET 素材条件속성
 VARSET 素材条件종족
@@ -407,9 +409,11 @@ ENDIF
 IF 듀얼리스트 == "자신" 
 	TRYCALLFORM CARD_{カードID}("종류")
 	IF INRANGE(RESULT,20,30)
-		リザルト：마법발동 = 1
+		リザルト：마법발동 += 1
 	ELSEIF INRANGE(RESULT, 30, 39) 
-		リザルト：함정발동 = 1
+		リザルト：함정발동 += 1
+	ELSEIF INRANGE(RESULT, 1, 10)
+		リザルト：モン발동 += 1
 	ENDIF
 ENDIF
 
@@ -732,7 +736,8 @@ ELSEIF 듀얼리스트 == "상대"
 	対面者 = 자신
 ENDIF
 
-
+SIF 종류 == 付与효과 || 종류 == 필드起動付与 || 종류 == 상대起動付与 || 종류 == 맥시멈条件 || 종류 == チェーン可否
+	RETURN 0
 
 IF 듀얼리스트 == "상대" && 발동処理中 != 1
 	CALL ENEMY_RUTIN_EFFECT(종류,ゾーン,場所,カードID)
@@ -744,6 +749,27 @@ IF 듀얼리스트 == "상대" && 발동処理中 != 1
 	ELSEIF ゾーン == "마함"
 		SIF 상대_魔_効発:場所 >= 10
 		RETURN 1
+	ENDIF
+ENDIF
+
+
+;ライオホープ
+SIF カードID == 58242
+	RETURN 0
+;ゼーロン
+SIF カードID == 150974
+	RETURN 0
+
+IF 듀얼리스트 == "상대" && 발동処理中 != 1
+	CALL ENEMY_RUTIN_EFFECT(종류,ゾーン,場所,カードID)
+	SIF RESULT == 1
+		RETURN 1
+	IF ゾーン == "필드"
+		SIF 상대_MZ_効発:場所 >= 10
+			RETURN 1
+	ELSEIF ゾーン == "마함"
+		SIF 상대_魔_効発:場所 >= 10
+			RETURN 1
 	ENDIF
 ENDIF
 
@@ -772,27 +798,6 @@ CASE "상대"
 		RETURN 1
 ENDSELECT
 
-;ライオホープ
-SIF カードID == 58242
-	RETURN 0
-;ゼーロン
-SIF カードID == 150974
-	RETURN 0
-SIF 종류 == 付与효과 || 종류 == 필드起動付与 || 종류 == 상대起動付与 || 종류 == 맥시멈条件 || 종류 == チェーン可否
-	RETURN 0
-
-IF 듀얼리스트 == "상대" && 발동処理中 != 1
-	CALL ENEMY_RUTIN_EFFECT(종류,ゾーン,場所,カードID)
-	SIF RESULT == 1
-		RETURN 1
-	IF ゾーン == "필드"
-		SIF 상대_MZ_効発:場所 >= 10
-			RETURN 1
-	ELSEIF ゾーン == "마함"
-		SIF 상대_魔_効発:場所 >= 10
-			RETURN 1
-	ENDIF
-ENDIF
 
 IF !GROUPMATCH(종류, 攻守変動, 지속효과, 攻紋章起動, 短紋章起動, 永紋章起動, 永攻紋章起動, 時限紋章起動,効後紋章起動)
 	IF GETVAR(@"%듀얼리스트%_마함無効") >= 1
@@ -1633,16 +1638,18 @@ IF ループ防止 == 0
 	ENDIF
 ENDIF
 
+
 SIF GETVAR(@"%듀얼리스트%_EX制限") >= 2 || GETVAR(@"%듀얼리스트%_一時EX制限") >= 1 || GETVAR(@"%듀얼리스트%_SS소환禁止EX덱") >= 1
 	RETURN 1
 
+;	PRINTFORML ここまでOK２a！
 IF カードID > 0
 	CALLFORM CARD_{カードID}("종류")
 	IF GETVAR(@"%듀얼리스트%_EX可종류番号:{RESULT}") == 0
 		;PRINTL 종류NG
 		RETURN 1
 	ENDIF
-
+;	PRINTFORML ここまでOK２b！
 	CALLFORM CARD_{カードID}("속성")
 	IF GETVAR(@"%듀얼리스트%_EX可속성番号:{RESULT}") == 0
 		;PRINTL 속성NG
@@ -1662,8 +1669,11 @@ IF カードID > 0
 	ENDIF
 
 
+
 	CALLFORM CARD_{カードID}("종류")
+;	PRINTFORML ここまでOK２c！RESULT:{RESULT}/カードID:{カードID}
 	IF GETVAR(@"%듀얼리스트%_一時EX可종류番号:{RESULT}") == 0
+;		PRINTFORML 一종류NG/{GETVAR(@"%듀얼리스트%_一時EX可종류番号:{RESULT}")}
 		RETURN 1
 	ENDIF
 
@@ -1671,11 +1681,13 @@ IF カードID > 0
 	IF GETVAR(@"%듀얼리스트%_一時EX可종류番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
+;	PRINTFORML ここまでOK２d！
 
 	CALLFORM CARD_{カードID}("속성")
 	IF GETVAR(@"%듀얼리스트%_一時EX可속성番号:{RESULT}") == 0
 		RETURN 1
 	ENDIF
+;	PRINTFORML ここまでOK２e！
 
 
 	IF GETVARS(@"%듀얼리스트%_EX可カテゴリ") != ""
@@ -1690,6 +1702,7 @@ IF カードID > 0
 			RETURN 1
 		ENDIF
 	ENDIF
+;	PRINTFORML ここまでOK２z！
 	IF GETVARS(@"%듀얼리스트%_一時EXカテゴリ制限") != ""
 		CALLFORM CARDNAME_{カードID}("カテゴリ")
 		FOR カウンタB,0,5
@@ -1899,12 +1912,18 @@ IF ゾーン == "덱"
 	SIF GETVAR(@"%듀얼리스트%_SS소환禁止덱") >= 1
 		RETURN 1
 ENDIF
+
+;PRINTFORML ここまでOK１！ゾーン:%ゾーン%
 IF ゾーン == "EX덱"
+
 	SIF GETVAR(@"%듀얼리스트%_SS소환禁止EX덱") >= 1
 		RETURN 1
+;	PRINTFORML ここまでOK２！ゾーン:%ゾーン%
 	CALL CARD_EX_CHECK(듀얼리스트,カードID,1)
 	SIF RESULT == 1
 		RETURN 1
+
+;	PRINTFORML ここまでOK３！ゾーン:%ゾーン%
 ENDIF
 
 IF ゾーン == "제외"
@@ -1912,9 +1931,8 @@ IF ゾーン == "제외"
 		RETURN 1
 ENDIF
 
-
 IF カードID > 0
-	;PRINTFORML GETVAR(@"%듀얼리스트%_アルトメギア制限")：{GETVAR(@"%듀얼리스트%_アルトメギア制限")}
+;	PRINTFORML GETVAR(@"%듀얼리스트%_아르토메기아制限")：{GETVAR(@"%듀얼리스트%_아르토메기아制限")}
 	IF GETVAR(@"%듀얼리스트%_아르토메기아制限") >= 1
 		;PRINTFORML ここまでOK１！ゾーン:%ゾーン%
 		;ゾーンがEX덱なら条件パス
@@ -2017,6 +2035,8 @@ IF カードID > 0
 		ENDIF
 	ENDIF
 ENDIF
+
+;PRINTFORML ここまでOKEND！ゾーン:%ゾーン%
 RETURN 0
 
 ;――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
@@ -3013,7 +3033,7 @@ ELSEIF 설정타입 == 1
 		SETVAR @"%듀얼리스트%_%효과種%", GETVAR(@"%듀얼리스트%_%효과種%") + 효과修正
 		SETVAR @"%対面者%_%효과種%", GETVAR(@"%対面者%_%효과種%") + 효과修正
 	ENDIF
-	IF システム플래그 == 0
+	IF システム플래그 == 0 && 효과種 != "듀얼패배플래그"
 		IF 효과修正 <= -1
 		ABS 효과修正
 			PRINTFORMW %대상名%의 『%효과種%』가 {효과修正}개 감소했습니다。
@@ -3307,6 +3327,34 @@ IF 상대_듀얼패배플래그 >= 1
 		획득DP += 500
 		PRINTFORML %"노 데미지",30,LEFT%: +500
 	ENDIF
+	IF ライフ_상대 == 0
+		획득DP += 500
+		PRINTFORML %"저스트 킬",30,LEFT%: +500
+	ENDIF
+	IF リザルト：最大ダメ >= 10000
+		획득DP += 800
+		PRINTFORML %"데미지10000오버！",30,LEFT%: +800
+	ELSEIF リザルト：最大ダメ >= 5000
+		획득DP += 300
+		PRINTFORML %"데미지5000오버！",30,LEFT%: +300
+	ENDIF
+	IF ライフ_자신 <= 100
+		획득DP += 800
+		PRINTFORML %"LP초 아슬아슬",30,LEFT%: +800
+	ELSEIF ライフ_자신 <= 1000
+		획득DP += 300
+		PRINTFORML %"LP아슬아슬",30,LEFT%: +300
+	ELSEIF ライフ_자신 >= 20000
+		획득DP += 300
+		PRINTFORML %"LP20000오버",30,LEFT%: +300
+	ENDIF
+	IF 現山札数("자신") == 0
+		획득DP += 800
+		PRINTFORML %"덱 초 아슬아슬",30,LEFT%: +800
+	ELSEIF 現山札数("자신") <= 5
+		획득DP += 300
+		PRINTFORML %"덱 아슬아슬",30,LEFT%: +300
+	ENDIF
 	FLAG:듀얼보너스 += 5
 ENDIF
 
@@ -3321,35 +3369,67 @@ IF ターン数 == 1
 ENDIF
 
 
-IF リザルト：FUS소환 == 1
-	획득DP += 200
-	PRINTFORML %"융합소환",30,LEFT%: +200
+IF リザルト：FUS소환 >= 1
+		SIF リザルト：FUS소환 >= 9
+		リザルト：FUS소환 = 8
+	획득DP += 50 * リザルト：FUS소환
+	PRINTFORML %"융합소환",30,LEFT%: +{50 * リザルト：FUS소환}
 ENDIF
-IF リザルト：RIT소환 == 1
-	획득DP += 200
-	PRINTFORML %"의식소환",30,LEFT%: +200
+IF リザルト：RIT소환 >= 1
+	SIF リザルト：RIT소환 >= 9
+		リザルト：RIT소환 = 8
+	획득DP += 50 * リザルト：RIT소환
+	PRINTFORML %"의식소환",30,LEFT%: +{50 * リザルト：RIT소환}
 ENDIF
-IF リザルト：SYN소환 == 1
-	획득DP += 200
-	PRINTFORML %"싱크로소환",30,LEFT%: +200
+IF リザルト：SYN소환 >= 1
+	SIF リザルト：SYN소환 >= 9
+		リザルト：SYN소환 = 8
+	획득DP += 50 * リザルト：SYN소환
+	PRINTFORML %"싱크로소환",30,LEFT%: +{50 * リザルト：SYN소환}
 ENDIF
-IF リザルト：XYZ소환 == 1
-	획득DP += 200
-	PRINTFORML %"엑시즈소환",30,LEFT%: +200
+IF リザルト：XYZ소환 >= 1
+	SIF リザルト：XYZ소환 >= 9
+		リザルト：XYZ소환 = 8
+	획득DP += 50 * リザルト：XYZ소환
+	PRINTFORML %"엑시즈소환",30,LEFT%: +{50 * リザルト：XYZ소환}
+ENDIF
+IF リザルト：LIN소환 >= 1
+	SIF リザルト：LIN소환 >= 9
+		リザルト：LIN소환 = 8
+	획득DP += 50 * リザルト：LIN소환
+	PRINTFORML %"링크소환",30,LEFT%: +{50 * リザルト：LIN소환}
+ENDIF
+IF リザルト：PSY소환 >= 1
+	SIF リザルト：PSY소환 >= 9
+		リザルト：PSY소환 = 8
+	획득DP += 50 * リザルト：PSY소환
+	PRINTFORML %"초차원소원",30,LEFT%: +{50 * リザルト：PSY소환}
+ENDIF
+IF リザルト：MAX소환 >= 1
+	SIF リザルト：MAX소환 >= 11
+		リザルト：MAX소환 = 10
+	획득DP += 100 * リザルト：MAX소환
+	PRINTFORML %"맥시멈소환",30,LEFT%: +{100 * リザルト：MAX소환}
 ENDIF
 
-IF リザルト：LIN소환 == 1
+IF リザルト：함정발동 >= 1
+	SIF リザルト：함정발동 >= 9
+		リザルト：함정발동 = 8
+	획득DP += 50 * リザルト：함정발동
+	PRINTFORML %"함정발동",30,LEFT%: +{50 * リザルト：함정발동}
+ENDIF
+IF リザルト：마법발동 >= 1
+	SIF リザルト：마법발동 >= 11
+		リザルト：마법발동 = 10
+	획득DP += 20 * リザルト：마법발동
+	PRINTFORML %"마법발동",30,LEFT%: +{20 * リザルト：마법발동}
+ELSEIF リザルト：마법발동 == 0
 	획득DP += 200
-	PRINTFORML %"링크소환",30,LEFT%: +200
+	PRINTFORML %"마법 미발동",30,LEFT%: +200
 ENDIF
-IF リザルト：함정발동 == 1
-	획득DP += 50
-	PRINTFORML %"함정발동",30,LEFT%: +50
-ENDIF
-
-IF リザルト：마법발동 == 1
-	획득DP += 50
-	PRINTFORML %"마법발동",30,LEFT%: +50
+IF リザルト：モン발동 == 0
+	획득DP += 200
+	PRINTFORML %"몬스터효과 미발동",30,LEFT%: +200
 ENDIF
 
 IF 이벤트플래그 == 2
@@ -3358,8 +3438,10 @@ IF 이벤트플래그 == 2
 ENDIF
 
 IF 依頼_見返し中 >= 1
-	획득DP = 0
-	PRINTFORML %"연습시합",30,LEFT%: x0
+	TIMES 획득DP,0.10
+	PRINTFORML %"연습시합",30,LEFT%: /10
+		; 획득DP = 0
+	; PRINTFORML %"練習試合",30,LEFT%: x0
 ENDIF
 
 $SKIP_RESULT
@@ -3743,6 +3825,8 @@ IF 효과種 == "属"
 		FOR カウンタB,0,5
 			SIF GETVAR(@"%대상者%_필드:カウンタB") == -1
 				CONTINUE
+			SIF GETVAR(@"%대상者%_MZ_表:カウンタB") == 3
+				CONTINUE
 			IF GETVAR(@"%대상者%_MZ_属:カウンタB") == カウンタ
 				カウント数 += 1
 				BREAK
@@ -3754,6 +3838,8 @@ ELSEIF 효과種 == "種"
 		FOR カウンタB,0,5
 			SIF GETVAR(@"%대상者%_필드:カウンタB") == -1
 				CONTINUE
+			SIF GETVAR(@"%대상者%_MZ_表:カウンタB") == 3
+				CONTINUE
 			IF GETVAR(@"%대상者%_MZ_種:カウンタB") == カウンタ
 				カウント数 += 1
 				BREAK
@@ -3764,6 +3850,8 @@ ELSEIF 효과種 == "レベル"
 	FOR カウンタ,1,20
 		FOR カウンタB,0,5
 			SIF GETVAR(@"%대상者%_필드:カウンタB") == -1
+				CONTINUE
+			SIF GETVAR(@"%대상者%_MZ_表:カウンタB") == 3
 				CONTINUE
 			IF GETVAR(@"%대상者%_MZ_星:カウンタB") == カウンタ
 				カウント数 += 1
@@ -3873,7 +3961,7 @@ ENDIF
 
 VARSET 상대_손패,-1
 
-
+상대_손패:0 = 84870
 
 
 @CARD_KANPRINT(元参照先,場所,カードID,설정플래그,使用機能)
@@ -5206,3 +5294,144 @@ ELSE
 ENDIF
 
 RETURN 運命보존
+
+
+
+@CARD_ELEMENT_SELECT(듀얼리스트,대상ゾーン,대상カード,反転플래그)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 대상ゾーン
+#DIM DYNAMIC 대상カード
+#DIM DYNAMIC 反転플래그
+#DIM DYNAMIC 選択カード속성
+#DIM DYNAMIC 選択속성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 대상ゾーン == "필드" && 대상カード != 5
+	IF 反転플래그 == 1
+		選択カード속성 = GETVAR(@"%対面者%_MZ_属:대상カード")
+	ELSE
+		選択カード속성 = GETVAR(@"%듀얼리스트%_MZ_属:대상カード")
+	ENDIF
+ENDIF
+
+IF 듀얼리스트 == "자신"
+	PRINTL 【속성을 선택해주세요】
+	PRINTL
+	SIF 選択カード속성 != 빛속성
+		PRINT [1] - 빛속성　
+	SIF 選択カード속성 != 어둠속성
+		PRINT [2] - 어둠속성　
+	SIF 選択カード속성 != 땅속성
+		PRINTL [3] - 땅속성
+	SIF 選択カード속성 != 물속성
+		PRINT [4] - 물속성　
+	SIF 選択カード속성 != 화염속성
+		PRINT [5] - 화염속성　
+	SIF 選択カード속성 != 바람속성
+		PRINTL [6] - 바람속성
+	SIF 選択カード속성 != 신속성
+		PRINTL [7] - 신속성　　　
+	BINPUT
+	選択カード속성 = RESULT
+ELSE
+	$INPUT_LOOP
+	選択カード속성 = RAND:7 + 1
+	SIF 選択カード속성 == RESULT
+		GOTO INPUT_LOOP
+ENDIF
+
+IF 選択カード속성 == 1
+	RESULTS =（빛）
+ELSEIF 選択カード속성 == 2
+	RESULTS =（어둠）
+ELSEIF 選択カード속성 == 3
+	RESULTS =（땅）
+ELSEIF 選択カード속성 == 4
+	RESULTS =（물）
+ELSEIF 選択カード속성 == 5
+	RESULTS =（화염）
+ELSEIF 選択カード속성 == 6
+	RESULTS =（바람）
+ELSEIF 選択カード속성 == 7
+	RESULTS =（신）
+ENDIF
+PRINTFORMW %RESULTS%속성이 선택되었습니다。
+
+RETURN 選択カード속성
+
+
+
+@CARD_TYPE_SELECT(듀얼리스트,대상ゾーン,대상カード,反転플래그)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC 대상ゾーン
+#DIM DYNAMIC 대상カード
+#DIM DYNAMIC 反転플래그
+#DIM DYNAMIC 選択カード종족
+#DIM DYNAMIC 選択속성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 대상ゾーン == "필드" && 대상カード != 5
+	IF 反転플래그 == 1
+		選択カード종족 = GETVAR(@"%対面者%_MZ_種:대상カード")
+	ELSE
+		選択カード종족 = GETVAR(@"%듀얼리스트%_MZ_種:대상カード")
+	ENDIF
+ENDIF
+
+IF 듀얼리스트 == "자신"
+	PRINTL 【종족을 선택해주세요】
+	PRINTL
+	SIF 選択カード종족 != 마법사족
+		PRINT [01] - 마법사족　
+	SIF 選択カード종족 != 드래곤족
+		PRINT [02] - 드래곤족　
+	SIF 選択カード종족 != 언데드족
+		PRINTL [03] - 언데드족
+	SIF 選択カード종족 != 전사족
+		PRINT [04] - 전사족　　　
+	SIF 選択カード종족 != 기계족
+		PRINT [05] - 기계족　　　
+	SIF 選択カード종족 != 야수족
+		PRINTL [06] - 야수족
+	SIF 選択カード종족 != 비행야수족
+		PRINT [07] - 비행야수족　　　
+	SIF 選択カード종족 != 비늘야수족
+		PRINT [08] - 비늘야수족　　　
+	SIF 選択カード종족 != 악마족
+		PRINTL [09] - 악마족
+	SIF 選択カード종족 != 천사족
+		PRINT [10] - 천사족　　　
+	SIF 選択カード종족 != 곤충족
+		PRINT [11] - 곤충족　　　
+	SIF 選択カード종족 != 원소정령족
+		PRINTL [12] - 원소정령족
+	SIF 選択カード종족 != 식물족
+		PRINT [13] - 식물족　　　
+	SIF 選択カード종족 != 사이킥족
+		PRINT [14] - 사이킥족
+	SIF 選択カード종족 != 사이버스족
+		PRINTL [15] - 사이버스족
+	SIF 選択カード종족 != 바다생물족
+		PRINT [16] - 바다생물족　　　
+	SIF 選択カード종족 != 미확인족
+		PRINT [17] - 미확인족　　
+	SIF 選択カード종족 != 환신야수족
+		PRINTL [20] - 환신야수족
+	BINPUT
+	選択カード종족 = RESULT
+ELSE
+	$INPUT_LOOP
+	選択カード종족 = RAND:20 + 1
+	SIF 選択カード종족 == RESULT || GROUPMATCH(選択カード종족,18,19)
+		GOTO INPUT_LOOP
+ENDIF
+
+PRINTFORMW %GET_TALENTNAME(191,選択カード종족)%이 선택되었습니다。
+
+RETURN 選択カード종족

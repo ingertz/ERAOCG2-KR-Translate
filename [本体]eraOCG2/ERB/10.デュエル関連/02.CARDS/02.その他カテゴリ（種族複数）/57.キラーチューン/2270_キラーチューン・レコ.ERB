@@ -237,6 +237,22 @@ FOR カウンタ,0,現EX山札数(듀얼리스트)
 					素材条件달성 = 1
 				ENDIF
 			ENDIF
+		CASE 42272
+			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:場所")}("名前")
+			SIF RESULTS == "킬러튠 클립"
+				素材条件달성 = 1
+			IF 素材条件달성 != 1 && GETVAR(@"%듀얼리스트%_MZ_星:場所") == 3
+				CALL FULLRESET
+				효과範囲손패 = 1
+				효과条件名前 = 킬러튠 클립
+				CALL CARD_CHECK_ADV(듀얼리스트,0,"",場所)
+				IF RESULT == 1
+					素材条件달성 = 1
+				ENDIF
+			ENDIF
+		;B2B
+		CASE 52182
+			CONTINUE
 		CASE 41949
 			SIF GETVAR(@"%듀얼리스트%_MZ_属:場所") == 빛속성
 				素材条件달성 = 1
@@ -318,6 +334,10 @@ SELECTCASE GETVAR(@"%듀얼리스트%_EX덱:選択カード")
 		TRYCALLFORM CARDNAME_{起動カードID}("名前")
 		SIF RESULTS != "킬러튠 믹스"
 			必要素材名前 = 킬러튠 믹스
+	CASE 42272
+		TRYCALLFORM CARDNAME_{起動カードID}("名前")
+		SIF RESULTS != "킬러튠 클립"
+			必要素材名前 = 킬러튠 클립
 	;アムリターラ
 	CASE 41949
 		SIF GETVAR(@"%듀얼리스트%_MZ_属:場所") != 빛속성
@@ -341,6 +361,6 @@ CALLFORM CARD_STANBY(起動カードID,듀얼리스트,S素材時효과,"묘지"
 
 CALL FULLRESET
 CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",選択カード)
-リザルト：SYN소환 = 1
+リザルト：SYN소환 += 1
 
 RETURN 1

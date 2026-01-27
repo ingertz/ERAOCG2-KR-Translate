@@ -1,0 +1,174 @@
+﻿@CARDNAME_62442,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 네크메이드 리사이즈
+	CASE "略称"
+		RESULTS = NM 리사이즈
+	CASE "カテゴリ"
+		RESULTS:0 = 가실장
+		RESULTS:1 = 네크메이드
+		RESULTS:2 = 의식 마법
+ENDSELECT
+
+
+@CARD_62442(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "レア度"
+		RETURN SPR
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_62442(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：자신フィールドのモンスターを素材としてリリースし、「네크메이드」モンスター１体をＥＸ덱から의식소환する。
+PRINTL このターン、자신はモンスター（언데드족）でしか攻撃できない。
+CALLFORM CARD_ABLE(2,묘지起動,フリー誘発)
+PRINTL ②：자신・상대ターンに묘지のこのカードを덱に戻して발동できる。
+PRINTL フィールドの表側モンスター（언데드족）１体を選び、덱・エクストラ덱から「네크메이드」モンスターを묘지へ送る。
+PRINTL 대상のモンスターはこのターン자신の묘지のモンスター（언데드족）の数×２００アップし、貫通攻撃を得る。
+
+
+
+@CARDCAN_62442(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 選択カード名前
+#DIMS DYNAMIC 条件달성カード名,10
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성数 = 0
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,62442)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,62442)
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 네크메이드
+	효과条件종류 = 초차원
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+	
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF 발동済_2(듀얼리스트,62442)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲EX덱 = 1
+	효과条件종류 = モン全般
+	효과条件カテゴリ = 네크메이드
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	효과範囲필드 = 1
+	효과条件종족 = 언데드족
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+	
+@CARDEFFECT_62442(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIMS DYNAMIC 選択カード名前
+#DIMS DYNAMIC 条件달성カード名,10
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성数 = 0
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62442,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件カテゴリ = 네크메이드
+		효과条件종류 = 초차원
+		효과条件소환可 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			選択カード_ID = RESULT:99
+
+			CALL RESETAREA_MAT
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:選択カード")}(듀얼리스트,選択カード)
+			素材範囲필드 = 1
+			TRYCALLFORM RITSUMMON(듀얼리스트, 選択カード,"EX덱")
+		攻撃可能종족 = 언데드족
+		CALL CARD_ATK_RESTRICTION(듀얼리스트)
+		ENDIF
+	ENDIF
+	
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,62442,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,덱行き)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲EX덱 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 네크메이드
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件종족 = 언데드족
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			攻撃力修正 = RESULT * 200
+			
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과条件종족 = 언데드족
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT != 9999
+				選択カード = RESULT
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一攻",攻撃力修正)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"貫通",1)
+				ENDIF
+			ENDIF
+	ENDIF
+ENDIF

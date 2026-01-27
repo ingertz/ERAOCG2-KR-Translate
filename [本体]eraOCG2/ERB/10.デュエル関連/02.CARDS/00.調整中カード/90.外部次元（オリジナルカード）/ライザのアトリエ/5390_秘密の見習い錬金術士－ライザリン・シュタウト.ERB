@@ -1,0 +1,174 @@
+﻿@CARDNAME_5390,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 비밀의 견습 연금술사－라이잘린 슈타우트
+	CASE "略称"
+		RESULTS = 견습 라이자
+	CASE "カテゴリ"
+		RESULTS:0 = 아틀리에
+		RESULTS:1 = 라이자의 아틀리에
+	CASE "出典作品"
+		RESULTS:0 = 라이자의 아틀리에
+ENDSELECT
+
+
+@CARD_5390(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1800
+	CASE "守備力"
+		RETURN 1500
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 260122
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_5390(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신フィールドにこのカードと同名以外の「라이자의 아틀리에」カードが存在する場合に발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환に成功した時に발동できる。
+PRINTL 자신の덱・묘지から「비밀의 아틀리에」１枚をセットする。
+PRINTL 「비밀의 아틀리에」が既にフィールドに存在する場合、
+PRINTL 代わりに덱からこのカードと同名以外の「라이자의 아틀리에」カード１枚を손패に加える。
+PRINTL 
+
+@CARDCAN_5390(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,5390)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,5390)
+		RETURN 0
+
+	CALL FULLRESET
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(듀얼리스트,5390,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 라이자의 아틀리에
+	효과条件固名前 = 비밀의 견습 연금술사－라이잘린 슈타우트
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,5390)
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件名前 = 비밀의 아틀리에
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT != 1
+		SIF 마함数(듀얼리스트) >= 5
+			RETURN 0
+
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件名前 = 비밀의 아틀리에
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 라이자의 아틀리에
+		효과条件固名前 = 비밀의 견습 연금술사－라이잘린 슈타우트
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_5390(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5390,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,5390,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件名前 = 비밀의 아틀리에
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT != 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과範囲묘지 = 1
+			효과条件名前 = 비밀의 아틀리에
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		ELSE
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 라이자의 아틀리에
+			효과条件固名前 = 비밀의 견습 연금술사－라이잘린 슈타우트
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

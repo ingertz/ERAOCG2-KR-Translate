@@ -1,0 +1,234 @@
+﻿@CARDNAME_71532,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 크라운 클랜『마티네』
+	CASE "略称"
+		RESULTS = 『마티네』
+	CASE "カテゴリ"
+		RESULTS:0 = 크라운 클랜
+ENDSELECT
+
+
+@CARD_71532(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_71532(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 덱・ＥＸ덱から「크라운 클랜」モンスター１体を소환条件を無視して특수소환する。
+PRINTL この효과の발동後、次のターンの終了時まで자신は덱・ＥＸ덱から특수소환されたモンスターの효과を발동できない。
+CALLFORM CARD_ABLE(0,효과後強制誘発)
+PRINTL ②：フィールドの의식・융합・Ｓ・Ｘ・Ｌモンスターがリリースされた時、このカードにマチネ카운터を１つ置く（同じ종류では１つまで）。
+PRINTL この효과で置いた開演카운터は자신スタンバイフェイズに０になる。
+CALLFORM CARD_ABLE(3,ターン終了時)
+PRINTL ③：자신・상대のエンドフェイズに발동できる。
+PRINTL このカードのマチネ카운터の数だけ자신はドローする。
+PRINTL その後、손패から마법・함정カード１枚をセットできる。
+
+
+@CARDCAN_71532(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC EX条件달성
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71532)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_1(듀얼리스트,71532)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 크라운 클랜
+	효과条件소환可 = 1
+	효과条件特不無視 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류:0 = 의식
+	효과条件종류:1 = 융합
+	효과条件종류:2 = 싱크로
+	효과条件종류:3 = 엑시즈
+	효과条件종류:4 = 링크
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース",2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時
+	SIF 발동済_3(듀얼리스트,71532)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所") <= 0
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == ターン開始時強制
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 短紋章起動 || 종류 == ターン開始時予約
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_71532(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC ドロー数
+#DIM DYNAMIC 종류セットビット
+;융합소환
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,"마함",場所,71532,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲EX덱 = 1
+		효과条件カテゴリ = 크라운 클랜
+		효과条件特不無視 = 1
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		CALL CARD_RESERV(듀얼리스트,62124,短紋章予約)
+		CALL CARD_RESERV(듀얼리스트,62124,スタン予約)
+	ENDIF
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71532)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+
+ELSEIF 종류 == 효과後強制誘発
+	CALL FULLRESET
+	효과条件종류 = 의식
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース",2)
+	IF RESULT == 1 && GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),0) != 1
+		SETBIT 종류セットビット, 0
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",1)
+	ENDIF
+		
+	CALL FULLRESET
+	효과条件종류 = 융합
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース",2)
+	IF RESULT == 1 && GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),1) != 1
+		SETBIT 종류セットビット, 1
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",1)
+	ENDIF
+
+	CALL FULLRESET
+	효과条件종류 = 싱크로
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース",2)
+	IF RESULT == 1 && GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),2) != 1
+		SETBIT 종류セットビット, 2
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",1)
+	ENDIF
+
+	CALL FULLRESET
+	효과条件종류 = 엑시즈
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース",2)
+	IF RESULT == 1 && GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),3) != 1
+		SETBIT 종류セットビット, 3
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",1)
+	ENDIF
+
+	CALL FULLRESET
+	효과条件종류 = 링크
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース",2)
+	IF RESULT == 1 && GETBIT(GETVAR(@"%듀얼리스트%_魔_T1汎数:場所"),4) != 1
+		SETBIT 종류セットビット, 4
+		CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",1)
+	ENDIF
+
+	CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"T1汎数",종류セットビット)
+
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,"마함",場所,71532,3)
+	IF RESULT == 0
+		ドロー数 = GETVAR(@"%듀얼리스트%_魔_個Ｃ:場所")
+		CALL CARDDRAW_BASIC(듀얼리스트,ドロー数)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件종류 = 마함全般
+			효과条件任意 = 1
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == ターン開始時強制
+	CALL SET_FIELD_INFO(듀얼리스트,ゾーン,場所,"個Ｃ",0,1)
+
+ELSEIF 종류 == 短紋章起動
+	CALL FULLRESET
+	효과条件召種 = 召種덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発無")
+	효과条件召種 = 召種EX덱
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"発無")
+
+ELSEIF 종류 == ターン開始時予約
+	CALL CARD_RESERV(듀얼리스트,71532,短紋章予約)
+ENDIF

@@ -1,0 +1,185 @@
+﻿@CARDNAME_51513,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = レベルマイスター
+	CASE "略称"
+		RESULTS = レベルマイスター
+	CASE "カテゴリ"
+		RESULTS:0 = なし
+		RESULTS:4 = ゲームオリジナル
+ENDSELECT
+
+
+@CARD_51513(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN リンク
+	CASE "属性"
+		RETURN 風属性
+	CASE "種族"
+		RETURN 戦士族
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1900
+	CASE "守備力"
+		RETURN 2300
+	CASE "性別"
+		RETURN 260101
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_51513(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要リンク数 = 2
+
+IF EX参照 == 1
+	CALL LINCAN(決闘者,召喚カード,51513) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_51513(種類)
+#DIM DYNAMIC 種類
+
+PRINTL モンスター２体
+PRINTL このカード名の②③の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ①：このカードは素材不可を持ち、
+PRINTL 自分フィールドに「Ｌｖ」モンスターが存在する場合、このカードは攻撃回避と対象耐性を得、
+PRINTL 自分の「Ｌｖ」モンスターは素材不可と破壊耐性を得る。
+CALLFORM CARD_ABLE(1,EX召喚時)
+PRINTL ①：このカードがリンク召喚に成功した場合に発動できる。
+PRINTL 自分の墓地から「Ｌｖ」モンスター１体を選んで特殊召喚する。
+CALLFORM CARD_ABLE(2,戦場起動)
+PRINTL ②：手札を１枚捨てて発動できる。
+PRINTL デッキから「Ｌｖ」魔法・罠カード１枚を手札に加える。
+
+
+@CARDCAN_51513(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,51513)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 種類 == EX召喚時
+	SIF 発動済_1(決闘者,51513)
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果条件カテゴリ = Lv
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 戦場起動
+	SIF 発動済_2(決闘者,51513)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = Lv
+	効果条件種類 = 魔罠全般
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 永続効果
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_表:場所") == 3
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_51513(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EX召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,51513,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果条件カテゴリ = Lv
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+	ENDIF
+ELSEIF 種類 == 戦場起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,51513,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲手札 = 1
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果条件カテゴリ = Lv
+			効果条件種類 = 魔罠全般
+			CALL CARD_ADD_BASIC(決闘者,"デッキ",ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"不材")
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件カテゴリ = Lv
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	IF RESULT == 1
+		CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"攻避")
+		CALL STATCHANGE_EFFECT(決闘者,"自身",場所,"対耐")
+
+		CALL FULLRESET
+		効果条件カテゴリ = Lv
+		CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"不材")
+
+		CALL FULLRESET
+		効果条件カテゴリ = Lv
+		CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"破耐")
+	ENDIF
+ENDIF
+ 

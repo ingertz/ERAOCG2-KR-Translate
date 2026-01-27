@@ -1,0 +1,184 @@
+﻿@CARDNAME_20414,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 정령술의 사역마
+	CASE "略称"
+		RESULTS = 정령술의 사역마
+	CASE "カテゴリ"
+		RESULTS:0 = 사역마
+ENDSELECT
+
+
+@CARD_20414(参照先)
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 비늘야수족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 200
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+RETURN 0
+
+
+@CARD_EXPLANATION_20414(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,소환時,특수소환時)
+PRINTL ①：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「령사」마법・함정カード１枚を손패に加える。
+CALLFORM CARD_ABLE(3,필드起動)
+PRINTL ②：종족と속성を１つずつ宣言して발동できる。
+PRINTL このカードはターン終了時まで宣言した종족・속성になる。
+CALLFORM CARD_ABLE(0,破壊→묘지,戦闘→묘지)
+PRINTL ③：このカードが戦闘・효과で破壊された場合に발동できる。
+PRINTL 자신の덱・묘지から守備力１５００の마법사족モンスター１体を특수소환する。
+
+
+@CARDCAN_20414(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,20414)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,20414)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 령사
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,20414)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件종족 = 마법사족
+	효과条件固守備力 = 1500
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_20414(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20414,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 령사
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20414,2)
+	IF RESULT == 0
+		IF 듀얼리스트 == "자신"
+			PRINTL
+			PRINTL 종족を選択してください
+			PRINTL
+			PRINT [01] - 마법사족　
+			PRINT [02] - 드래곤족　
+			PRINTL [03] - 언데드족
+			PRINT [04] - 전사족　　　
+			PRINT [05] - 기계족　　　
+			PRINTL [06] - 야수족
+			PRINT [07] - 비행야수족　　　
+			PRINT [08] - 비늘야수족　　　
+			PRINTL [09] - 악마족
+			PRINT [10] - 천사족　　　
+			PRINT [11] - 곤충족　　　
+			PRINTL [12] - 원소정령족
+			PRINT [13] - 식물족　　　
+			PRINT [14] - 사이킥족
+			PRINTL [15] - 사이버스족
+			PRINT [16] - 바다생물족　　　
+			PRINT [17] - 미확인족　　
+			PRINTL [20] - 환신야수족
+			BINPUT
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永種",RESULT,1)
+			PRINTL
+			PRINTL
+			PRINTL 속성を選択してください
+			PRINTL
+			PRINT [01] - 빛속성　　　
+			PRINT [02] - 어둠속성　　　
+			PRINTL [03] - 땅속성
+			PRINT [04] - 물속성　　　
+			PRINT [05] - 화염속성　　　
+			PRINTL [06] - 바람속성
+			PRINTL [07] - 신속성　　　
+			BINPUT
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永属",RESULT,1)
+		ELSE
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永種",마법사족,1)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永属",빛속성,1)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 破壊→묘지 || 종류 == 戦闘→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,20414,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件종족 = 마법사족
+		효과条件固守備力 = 1500
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

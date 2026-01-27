@@ -1,0 +1,361 @@
+﻿@CARDNAME_39913,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 이쿠기어 슬레이브 플레이 하우스 필드
+	CASE "略称"
+		RESULTS = 광서의 암타극장
+	CASE "カテゴリ"
+		RESULTS:0 = 광서의 기계
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_39913(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 3500
+	CASE "성별"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_39913(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL
+PRINTL "광서의 기계" 몬스터＋암컷 몬스터 2장。
+PRINTL 이 카드는 융합 소환 및 이하의 방법으로도 EX덱에서 특수 소환할 수 있다。
+CALLFORM CARD_ABLE(0,EX덱起動)
+PRINTL 자신 / 상대의 묘지 / 제외 되어있는 암컷 몬스터를 ３장 덱으로 되돌리고、EX덱에서 특수 소환할 수 있다。
+PRINTL 이 효과로 이 카드를 특수 소환된 후、자신은 "광서의 기계" 몬스터 이외를 특수 소환할 수 없다。
+CALLFORM CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ①：이 카드가 특수 소환되었을 때에 발동할 수 있다、
+PRINTL 자신의 덱에서 "광서의 기계" 지속 마법 / 지속 함정 카드 １장을 마법 / 함정 존에 앞면 표시로 놓는다。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：１턴에 １번、자신 턴중에 상대의 ＬＰ가 １０００ 이하일 때에 발동할 수 있다。
+PRINTL 상대 필드에 상대 플레이어를 특수 소환한다。
+PRINTL 이 효과는、대상인 상대 플레이어에 따라 실패할 경우가 있다。
+CALLFORM CARD_ABLE(3,攻撃時強制誘発)
+PRINTL ③：상대 몬스터의 공격 선언시、그 몬스터에게 미약 카운터를 １개 놓는다。
+PRINTL 이 때、미약 카운터가 ３개 이상 놓여있다면 그 공격을 무효로 한다。
+CALLFORM CARD_ABLE(4,攻守変動)
+PRINTL ④：자신 필드 위에 공격력 ５０００이상인 "광서의 기계" 몬스터가 존재할 때、
+PRINTL 자신의 앞면 표시의 "광서의 기계" 마법 / 함정 카드는 파괴되지 않는다。
+PRINTL
+SETCOLOR C_RED
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+CALLFORM CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ⑤：①의 효과 발동시、상대의 덱에서 무작위로 １장 암컷 몬스터를 묘지로 보내고、암미음무무대에 세운다。
+CALLFORM CARD_ABLE(2,효과後強制誘発)
+PRINTL ⑥：②의 효과로 특수 소환된 상대 플레이어는 이하의 효과가 적용된다。
+PRINTL ・상대 플레이어는 소재로 할 수 없다。
+PRINTL ・상대 플레이어의 효과는 무효화된다。
+PRINTL ・상대 플레이어의 공격력 / 수비력은 ０이 된다。
+PRINTL ・상대 플레이어는 전라가 되며、발정하고、접촉 가능해진다
+CALLFORM CARD_ABLE(3,攻撃時強制誘発)
+PRINTL ⑦：③의 효과로 미약 카운터를 ３개 이상 끼워넣어진 암컷 몬스터는、최면을 받아
+PRINTL 수컷에게 아첨하는 무대를 피로하기 시작해버린다。
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー주의ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+PRINTL
+RESETCOLOR
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDSUMMON_39913(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件素材ID起動 = 2
+
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 광서의 기계
+ELSEIF EX参照 >= 10
+    素材条件성별 = 牝性
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,39913) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_39913(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 조교대상
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39913)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+    효과範囲제외 = 1
+    효과範囲상대제외 = 1
+	효과条件성별 = 牝性
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,39913)
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 광서의 기계
+	효과条件종류:0 = 지속마법
+	효과条件종류:1 = 지속함정
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,39913)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%対面者%") > 1000
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃時強制誘発
+    SIF ゾーン != "필드"
+	 	RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件以攻撃力 = 5000
+	효과条件カテゴリ = 광서의 기계
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時強制
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF	GETVAR(@"%듀얼리스트%_MZ_汎数:場所") > 0
+		RETURN 1
+	SIF	GETVAR(@"%듀얼리스트%_MZ_変化元ID:場所") >= 0
+		RETURN 1
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_39913(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC コピー대상
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 戦闘カード
+#DIM DYNAMIC 残り횟수
+#DIMS DYNAMIC 変身カード名
+#DIM DYNAMIC 捕縛대상
+#DIM DYNAMIC 捕縛場所,紙束最大値
+#DIM DYNAMIC 捕縛場所B
+#DIM DYNAMIC 捕縛候補,紙束最大値
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 절정횟수
+#DIM DYNAMIC 묘지送り位置
+#DIM DYNAMIC 효과先
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39913)
+	IF RESULT == 0
+		CALL FULLRESET
+    	효과範囲제외 = 1
+    	효과範囲상대제외 = 1
+		효과条件성별 = 牝性
+		효과条件複数 = 3
+		효과条件行先플래그 = 덱行き
+        CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所)
+		ENDIF
+		효과条件固カテゴリ = 광서의 기계
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39913,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = 광서의 기계
+		효과条件종류:0 = 지속마법
+		효과条件종류:1 = 지속함정
+		효과範囲덱 = 1
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+					IF RESULT == 1
+						FOR カウンタ,0,現山札数(対面者)
+						捕縛대상 = GETVAR(@"%対面者%_덱:カウンタ") ;0→カウンタ
+						SIF 捕縛대상 == -1 ;念のため-1の場合は次へ
+							CONTINUE
+						CALLFORM CARD_{捕縛대상}("성별")
+						SIF RESULT == 無性 || RESULT == 雄性
+							CONTINUE
+							CALL CARD_EROTICS(捕縛대상)
+						SIF RESULT < 1 ;CSV持ち以外は제외
+							CONTINUE
+							捕縛候補:カウンタB = 捕縛대상 ;牝性を候補に格納
+							捕縛場所:カウンタB = カウンタ
+							カウンタB++ ;候補数加算
+						NEXT
+						SIF カウンタB < 1 ;カウンタが0以下=候補0
+							RETURN
+						묘지送り位置 = (RAND:カウンタB)
+						捕縛대상 = 捕縛候補:묘지送り位置 ;カウンタBまでの乱数で捕縛候補の中からランダムに捕縛대상を決定
+						捕縛場所B = 捕縛場所:묘지送り位置
+						CALL CARD_EROTICS(捕縛대상) ;必ずCARD_EROTICSを挟む
+						조교대상 = RESULT
+						IF 조교대상 > 0 ;조교대상条件はあなたを想定しないなら>0で
+							SELECTCASE RAND:4
+								CASE 0
+									PRINTFORML
+									PRINTFORML 強大な機械を動かすための糧を得るべく、牝穴たちは加工され尽くされた肉体を犯され続けている、
+									PRINTFORML 捕らえられている%CALLNAME:조교대상%も気づけばその１つとされていた。
+									PRINTFORMW 機械城の施設の１つである密閉され媚薬が詰め込まれたカプセルの中で、%CALLNAME:조교대상%は凌辱され続けている……
+								CASE 1
+									PRINTFORML
+									PRINTFORML 大型の광서의 기계を動かすためのエネルギーを得るべく、%CALLNAME:조교대상%を含めた牝肉は犯され続けていた
+									PRINTFORML 절정と発狂を繰り返し、精神が壊れそうになれば無理矢理に補強され正気を保たされ続ける。
+									PRINTFORMW %CALLNAME:조교대상%は、終わる事のない性的蹂躙に절정と喘ぎ声を返し、광서의 기계に捧げている……
+								CASE 2
+									PRINTFORML
+									PRINTFORML %CALLNAME:조교대상%は大型の광서의 기계を作動させるためのエネルギー源を生み出すために、
+									PRINTFORML 四肢を切断され、機械城の施設の中で延々と犯されるための牝穴として組み込まれてしまっていた。
+									PRINTFORMW %CALLNAME:조교대상%を含めた無数の牝穴たちの喘ぎ声が機械城に響き渡る……
+								CASE 3
+									PRINTFORML
+									PRINTFORML 既に捕縛されていた牝の１つが牝墜公演劇場の舞台で踊らされていた
+									PRINTFORML 手足を切断され代わりの義手義足を付け腰を振り、唯一残った肉体を雄に使ってもらうためだけの牝
+									PRINTFORMW %CALLNAME:조교대상%は公演劇場の踊り子に堕ちてしまっている……
+							ENDSELECT
+							FOR カウンタ,0,4
+								PRINTFORML 
+								CALL MADORGASM_RAND_ROB_TXT(1,0)
+								CALL MADORGASM_RAND_ROB_TXT(1,3)
+								PRINTFORML
+								CALL EROTIC_MOVE("全身凌辱",조교대상,MASTER,500)
+							NEXT
+							CALL MADORGASM_RAND_ROB_TXT(1,5);うるさい鳴き声
+							PRINTFORML %CALLNAME:조교대상%は洗脳され、公演劇場の踊り子として踊り続けている、
+							PRINTFORMW 절정と쾌락を対価に得た力は、無事광서의 기계を動かしているようだ
+						ENDIF
+					CALL CARD_DISPOSE(対面者,"덱",捕縛場所B)
+					ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39913,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_EROTICS(상대プレイヤー,듀얼리스트)
+		조교대상 = RESULT
+		コピー대상 = NO:RESULT
+		SIF コピー대상 == 0
+			コピー대상 = 99999
+		VARSET RESULTS
+		TRYCALLFORM CARDNAME_{コピー대상}("名前")
+		変身カード名 = %RESULTS%
+		IF 変身カード名 != ""
+			CALL FULLRESET
+			효과추가종류:0 = 効追全裸
+			효과추가종류:1 = 効追접촉
+			효과추가종류:2 = 効追永材
+			효과추가종류:3 = 効追攻守０
+			CALL CARD_GENERATE(対面者,コピー대상)
+			PRINTFORMW %変身カード名%は虚ろな瞳で牝を墜とすためだけの舞台に自ら昇ってしまう……
+			CALL EROTIC_MOVE("媚毒汚染",조교대상, -1,200)
+		ELSE
+			PRINTFORMW %変身カード名%は場に出る事ができない……
+		ENDIF
+	ENDIF
+	
+ELSEIF 종류 == 攻撃時強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39913)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL SET_FIELD_INFO(対面者,"필드",戦闘場所(対面者),"薬Ｃ",1)
+		カウンタ = GETVAR(@"%対面者%_MZ_薬Ｃ:選択カード")
+		IF カウンタ >= 4
+			CALL EVADE_ATTACK(듀얼리스트)
+		ENDIF
+	ENDIF
+
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件표시 = 表側표시
+	효과条件カテゴリ = 광서의 기계
+	CALL STATCHANGE_EFFECT(듀얼리스트,"마함",場所,"破耐")
+
+ENDIF
+
+
+
+
+
+

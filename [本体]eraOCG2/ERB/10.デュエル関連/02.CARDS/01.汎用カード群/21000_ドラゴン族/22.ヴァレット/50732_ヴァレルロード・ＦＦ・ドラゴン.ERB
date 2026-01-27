@@ -1,0 +1,180 @@
+﻿@CARDNAME_50732,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 바렐로드 페이탈플레어 드래곤
+	CASE "略称"
+		RESULTS = ＢＬ ＦＦ
+	CASE "カテゴリ"
+		RESULTS:0 = 바렐
+ENDSELECT
+
+
+@CARD_50732(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족 
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2000
+	CASE "추가日"
+		RETURN 260119
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_50732(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 어둠속성Ｌモンスター＋어둠속성モンスター
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードが융합소환した場合に발동できる。
+PRINTL 덱から「바렛」モンスター１体を손패に加える。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신フィールドの어둠속성モンスター１体を대상として발동できる。
+PRINTL そのモンスターの攻撃力を５００アップさせ、자신の묘지・제외状態の어둠속성Ｌモンスター１体を대상のモンスターに装備する。
+CALLFORM CARD_ABLE(3,L素材時효과)
+PRINTL ③：このカードがＬ素材となった場合に발동できる。
+PRINTL フィールドのカード１枚を破壊する。
+
+
+@CARDSUMMON_50732(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+素材条件속성 = 어둠속성
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件종류 = 링크
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,50732) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_50732(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50732)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,50732)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 바렛
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,50732)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件종류 = 링크
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == L素材時효과
+	SIF 발동済_3(듀얼리스트,50732)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_50732(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50732,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 바렛
+		효과条件종류 = モン全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50732,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件속성 = 어둠속성
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"永攻",500)
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과範囲제외 = 1
+			효과条件종류 = 링크
+			CALL CARD_EQUIP_MONSTER_ADV(듀얼리스트,"필드",選択カード)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == L素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50732,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+ENDIF

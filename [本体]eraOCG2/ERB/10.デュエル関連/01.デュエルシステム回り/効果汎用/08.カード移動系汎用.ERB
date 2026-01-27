@@ -18,6 +18,9 @@
 #DIM DYNAMIC LRESULT
 LRESULT = RESULT
 
+;もうこれでしかいけまへんので…
+VARSET EX덱送이동
+
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
@@ -96,7 +99,7 @@ IF 표시形式 != "完全묘지"
 	;EX덱送り
 	IF 実行出処 == "필드" || 実行出処 == "마함"
 		CALLFORM CARD_{GETVAR(@"%保有者%_%実行出処%:選択カード")}("分割")
-		IF RESULT == 지속마법 && 추가場所 == "묘지"
+		IF RESULT == 펜듈럼 && 추가場所 == "묘지"
 			추가場所 = EX덱
 		ENDIF
 	ENDIF
@@ -328,10 +331,14 @@ IF 出処 == "필드" && GETVAR(@"%듀얼리스트%_最召場所") == 選択カ�
 	SETVAR @"%듀얼리스트%_最召場所", -1
 ENDIF
 
+
 PRINTFORMW
 ;0から4のまでの필드를 확인하고、ステータス変動を確認する
 CALL CARD_LOADUP
 
+
+SIF 추가場所 == "EX덱" 
+	EX덱送이동 = 1
 
 RESULT = LRESULT
 
@@ -638,6 +645,8 @@ IF カードID
 	TRYCALLFORM CARD_FINISHER(듀얼리스트,カードID)
 	IF 듀얼리스트 == "상대"
 		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,2,カードID,소환出処)
+	ELSE
+		CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,8,カードID)
 	ENDIF
 	IF チェーン불가 == 2
 		PRINTFORML %듀얼리스트%는 %実行出処%에서 『{選択カード}』%이동カード名%를 되돌렸습니다。
@@ -688,7 +697,7 @@ IF カードID
 		RETURN 0
 	ENDIF
 ENDIF
-PRINTFORMW
+;PRINTFORMW
 RETURN 1
 
 RESULT = LRESULT
@@ -853,6 +862,8 @@ TRYCALLFORM CARD_FINISHER(듀얼리스트,カードID)
 
 IF 듀얼리스트 == "상대"
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,3,カードID)
+ELSE
+	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,8,カードID)
 ENDIF
 
 
@@ -981,6 +992,8 @@ SETVAR @"%듀얼리스트%_필드:소환先 ", カードID
 
 IF 듀얼리스트 == "상대"
 	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,2,カードID,10)
+ELSE
+	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,8,カードID)
 ENDIF
 CALLFORM CARDNAME_{カードID}("名前")
 PRINTFORML %듀얼리스트%는 %RESULTS%를 특수 소환 했습니다。
@@ -1068,10 +1081,6 @@ SIF 装備先 != -1
 	SETVAR @"%듀얼리스트%_魔_装:カード설치先", 装備先
 SETVAR @"%듀얼리스트%_魔_表:カード설치先", 표시形式
 SETVAR @"%듀얼리스트%_마함:カード설치先",カードID
-IF 듀얼리스트 == "상대"
-	CALL KOJO_MESSAGE_SEND("DUEL",OPPOSER,2,カードID,10)
-ENDIF
-
 
 
 RESULT = LRESULT

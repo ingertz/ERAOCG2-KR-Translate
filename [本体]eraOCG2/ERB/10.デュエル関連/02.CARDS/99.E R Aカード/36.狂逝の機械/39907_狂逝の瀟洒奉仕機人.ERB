@@ -45,20 +45,20 @@ RETURN 0
 
 CALL TEXT_DECORATION("ROGUE")
 PRINTL
-PRINTL 레벨８ 이상의 "광서의 기계" 몬스터 ＋ 기계족 / 암컷몬스터 2체.
-PRINTL 이 카드는 융합 소환 및 이하의 방법으로도 EX덱에서 특수 소환할 수 있다.
-CALLFORM CARD_ABLE(0,EX덱起動)
-PRINTL 자신 필드의 레벨８의 "광서의 기계" 몬스터 １장과, 기계족 / 암컷몬스터 2체를 릴리스했을 때, 이 카드를 EX덱에서 특수 소환할 수 있다.
-CALLFORM CARD_ABLE(1,攻守変動)
-PRINTL ①：이 카드의 공격력은 자신의 묘지에 있는 기계족 / 암컷몬스터 1체당 300 올린다.
-PRINTL 공격력이 ５０００ 이상일 때, 이 카드는 효과 파괴 내성을 얻는다.
-CALLFORM CARD_ABLE(2,攻撃時強制誘発)
-PRINTL ②：이 카드가 전투를 실행할 경우,
+PRINTL 레벨８ 이상의 "광서의 기계" 몬스터 ＋ 기계족 / 암컷몬스터 2장.
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL "이쿠기어 라크쉬리 메이드노이드"는 １턴에 １번、이하의 방법으로도 EX덱에서 특수 소환할 수 있다。
+PRINTL 자신 필드의 레벨８인 "광서의 기계" 몬스터 １장과、기계족 / 암컷 몬스터 ２장을 릴리스했을 때、이 카드를 EX덱에서 특수 소환할 수 있다。
+PRINTL 이 카드명의 ③④의 효과는 １턴에 １번밖에 발동할 수 없다。
+CALLFORM CARD_ABLE(2,攻守変動)
+PRINTL ①：자신 필드 위의 융합 몬스터 이외의 "광서의 기계" 몬스터의 공격력은, 자신 묘지에 있는 암컷 몬스터 １장마다 ３００오른다。
+CALLFORM CARD_ABLE(5,지속효과)
+PRINTL ②：자신 필드 위의 융합 몬스터 이외의 "광서의 기계" 몬스터가 공격할 때,
 PRINTL 상대는 데미지 스텝 종료 시까지 카드의 효과를 발동할 수 없다.
-CALLFORM CARD_ABLE(3,攻撃後誘発)
+CALLFORM CARD_ABLE(4,攻撃後誘発)
 PRINTL ③：이 카드가 전투로 상대 몬스터를 파괴했을 경우, 자신 묘지의 "광서의 기계" 몬스터 1체를 대상으로 하고 발동할 수 있다.
 PRINTL 묘지에 존재하는 "광서의 기계" 몬스터를 특수 소환한다.
-CALLFORM CARD_ABLE(4,발동誘発)
+CALLFORM CARD_ABLE(3,발동誘発)
 PRINTL ④：1턴에 １번, 상대가 몬스터 효과를 발동했을 경우, 자신 / 상대 묘지에서 암컷 몬스터를 제외하고 발동할 수 있다.
 PRINTL 그 발동을 무효로 하고 제외한다. 그 후 자신 필드에 "광서의 기계잡병" 토큰(기계족 / 땅 / 레벨２ / 공/수１５００)을 1체 특수 소환한다.
 PRINTL
@@ -88,8 +88,8 @@ CALL RESETCONDITION_MAT
 
 
 IF EX参照 == 0 || EX参照 == 1
+	CALLFORM 素材条件レベル_ADV(8, "以上")
 	素材条件カテゴリ = 광서의 기계
-	素材条件レベル = 8
 ELSEIF EX参照 >= 10
     素材条件성별 = 牝性
 ENDIF
@@ -113,6 +113,8 @@ SIF RESULT == 1
 	RETURN 0
 
 IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,39907)
+		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
@@ -128,7 +130,7 @@ IF 종류 == EX덱起動
 	CALL FULLRESET
     효과範囲필드 = 1
 	효과条件カテゴリ = 광서의 기계
-	효과条件レベル = 8
+	CALL 효과条件レベル_ADV(8, "以上")
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -140,6 +142,8 @@ ELSEIF 종류 == 攻守変動
 	RETURN 1
 
 ELSEIF 종류 == 攻撃後誘発
+	SIF 발동済_4(듀얼리스트,39907)
+		RETURN 0
 	SIF ゾーン != "필드"
 		RETURN 0
 	SIF 戦闘場所(듀얼리스트) != 場所
@@ -151,12 +155,12 @@ ELSEIF 종류 == 攻撃後誘発
     효과条件カテゴリ = 광서의 기계
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 0
+	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
 ELSEIF 종류 == 발동誘発
-	SIF 발동済_4(듀얼리스트,39907)
+	SIF 발동済_3(듀얼리스트,39907)
 		RETURN 0
     SIF ゾーン != "필드"
 	 	RETURN 0
@@ -214,12 +218,12 @@ CALL 対面者판정(듀얼리스트)
 
 
 IF 종류 == EX덱起動
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39907)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39907,1)
 		IF RESULT == 0
 		CALL FULLRESET
 		효과範囲필드 = 1
 		효과条件カテゴリ = 광서의 기계
-		효과条件レベル = 8
+		CALL 효과条件レベル_ADV(8, "以上")
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
         CALL FULLRESET
 		효과範囲필드 = 1
@@ -241,14 +245,13 @@ ELSEIF 종류 == 攻守変動
 	효과条件CNT = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	攻撃力修正 = RESULT * 300
-	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)	
-	SIF GETVAR(@"%듀얼리스트%_MZ_攻:場所") >= 5000
-		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
-	SIF ターンプレイヤー == 듀얼리스트
-	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦阻")
+	CALL FULLRESET
+	효과条件カテゴリ = 광서의 기계
+	효과条件종류 = 융합以外	
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)
 
 ELSEIF 종류 == 攻撃後誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39907)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39907,4)
 	IF RESULT == 0
 		CALL FULLRESET
 		CALL CARD_EROTICS(直前戦闘破壊ID(듀얼리스트,1))
@@ -593,11 +596,10 @@ ELSEIF 종류 == 攻撃後誘発
 		효과範囲묘지 = 1
 		효과条件カテゴリ = 광서의 기계
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-
 	ENDIF
 
 ELSEIF 종류 == 발동誘発
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39907,4)
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39907,3)
     	IF RESULT == 0
 			CALL FULLRESET
 			효과範囲묘지 = 1
@@ -788,6 +790,11 @@ ELSEIF 종류 == 지속효과
 		SIF GETVAR(@"%듀얼리스트%_MZ_汎数:場所") >= 1000
 			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"汎数",0,上書きモード)
 	ENDIF
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 광서의 기계
+	효과条件종류 = 융합以外	
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"戦阻")
 
 ELSEIF 종류 == ターン終了時強制
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39907)

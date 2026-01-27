@@ -1,0 +1,1138 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;DUEL用구상
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;カードID == (カードの番号)　でそのカード専用の구상が流せる
+;カード番号は 10.デュエル関連/02.CARDS 内に入っているため、必要に応じて参照するように
+;例：
+;		IF カードID == 1000
+;			PRINTFORMW 「ブラックマジシャンガールを소환！」
+;		ENDIF
+
+;==================================================
+;0,デュエルスタート！
+;==================================================
+@M_KOJO_DUEL_K1891_0(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「ふっふっふっ、キットちゃんの卓越したデュエルタクティクスをご覧あれ！」
+		CASE 2
+			PRINTFORMW 「よーしデュエルだ！　負けないからね！」
+		CASE 3
+			PRINTFORMW 「手加減なし！　最初から全力で行くよー！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;1,モンスター소환
+;例：%カード名%を소환！
+;==================================================
+@M_KOJO_DUEL_K1891_1(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF GROUPMATCH(カードID,1891,11891,16891)
+		PRINTFORMW 「私を소환だー！」
+	ELSEIF GROUPMATCH(カードID,1880,11880)
+		PRINTFORMW 「いっけーエクレシアー！」
+	ELSEIF GROUPMATCH(カードID,1884,11884,16884)
+		PRINTFORMW 「おらっ！　行ってこいアルバス！」
+	ELSEIF カードID == 26520
+		PRINTFORMW 「フラクトールを소환！」
+	ELSEIF カードID == 26521
+		PRINTFORMW 「ナーベルを소환！」
+	ELSEIF カードID == 26522
+		PRINTFORMW 「ケラスを소환！」
+	ELSEIF カードID == 26893
+		PRINTFORMW 「行ってこいメルクーリエ！」
+	ELSEIF カードID == 24700
+		PRINTFORMW 「ロッキーを소환！」
+	ELSEIF カードID == 24701
+		PRINTFORMW 「ピードを소환！」
+	ELSEIF カードID == 24702
+		PRINTFORMW 「カモン！　ブラザーズ！」
+	ELSEIF カードID == 24703
+		PRINTFORMW 「バンカーを소환！」
+	ELSEIF カードID == 24704
+		PRINTFORMW 「うおー！行けー！　おかしらー！」
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「%カード名%を소환！」
+			CASE 2
+				PRINTFORMW 「行っけー！　%カード名%を소환！」
+			CASE 3
+				PRINTFORMW 「お願い通って！　%カード名%を소환！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;2,モンスター특수소환
+;==================================================
+@M_KOJO_DUEL_K1891_2(カードID,소환出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 소환出処
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF GROUPMATCH(カードID,1880,11880)
+		PRINTFORMW 「いっけーエクレシアー！」
+	ELSEIF GROUPMATCH(カードID,1884,11884,16884)
+		PRINTFORMW 「おらっ！　行ってこいアルバス！」
+	ELSEIF カードID == 24700
+		PRINTFORMW 「ロッキーを특수소환！」
+	ELSEIF カードID == 24701
+		PRINTFORMW 「ピードを특수소환！」
+	ELSEIF カードID == 24702
+		PRINTFORMW 「カモン！　ブラザーズ！」
+	ELSEIF カードID == 24703
+		PRINTFORMW 「バンカーを특수소환！」
+	ELSEIF カードID == 24704
+		PRINTFORMW 「うおー！行けー！　おかしらー！」
+	ELSE
+		SELECTCASE 소환出処
+			;EX덱から
+			CASE 召種EX덱
+				IF カードID == 1890
+					PRINTFORMW 「仲間の補佐はおまかせ！　링크２、リズ姉！」
+				ELSEIF カードID == 11890
+					PRINTFORMW 「システム・スプライト搭載！　링크２、%カード名%！」
+				ELSEIF カードID == 53100
+					PRINTFORMW 「鋼の翼、響く銃砲、頭上羽ばたくは不吉の怪鳥！」
+					PRINTFORMW 「全員まとめて吹っ飛ばせー！　링크４、%カード名%！」
+				ELSEIF カードID == 53101
+					PRINTFORMW 「黒鋼の大翼、轟く鎧砲、前を征くは不死身の吉鳥！」
+					PRINTFORMW 「スプライトパワー全力全開！　링크５、%カード名%！」
+				ELSEIF カードID == 53102
+					PRINTFORMW 「ナメてたら痛い見るぜ！　링크３、%カード名%！」
+				ELSEIF カードID == 53102
+					PRINTFORMW 「行くぞ行くぞー！　링크２、ベアブルム！　発進！」
+				ELSEIF カードID == 52400
+					PRINTFORMW 「イヤッホー！　%カード名%！」
+				ELSEIF カードID == 52401
+					PRINTFORMW 「%カード名%！　発艦！」
+				ELSE
+					SELECTCASE RAND:3 + 1
+						CASE 1
+							PRINTFORMW 「%カード名%を특수소환！」
+						CASE 2
+							PRINTFORMW 「行っけー！　%カード名%を소환！」
+						CASE 3
+							PRINTFORMW 「カモーン！　%カード名%を특수소환！」
+					ENDSELECT
+				ENDIF
+			;それ以外
+			CASEELSE
+				TRYCALLFORM CARDNAME_{カードID},"カテゴリ"
+				IF MATCH(RESULTS,"鉄獣")
+					CALL M_KOJO_DUEL_K1891_TRIBRIGADE(カードID,소환出処)
+				ELSE
+					SELECTCASE RAND:3 + 1
+						CASE 1
+							PRINTFORMW 「%カード名%を특수소환！」
+						CASE 2
+							PRINTFORMW 「行っけー！　%カード名%を소환！」
+						CASE 3
+							PRINTFORMW 「カモーン！　%カード名%を특수소환！」
+					ENDSELECT
+				ENDIF
+		ENDSELECT
+	ENDIF
+ENDIF
+
+;==================================================
+;3,특수モンスター소환
+;==================================================
+@M_KOJO_DUEL_K1891_3(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC カード種
+#DIMS DYNAMIC 全角レベル
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+
+TRYCALLFORM CARD_{カードID}("종류")
+カード種 = RESULT
+
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE カード種
+		CASE 의식
+			PRINTFORMW 「%カード名%を의식소환！」
+		CASE 융합
+			CALL CARD_EROTICS(カードID)
+			IF NO:RESULT == 1884 || 処理中_효과ID == 1884
+				PRINTFORMW 「これぞアルバスの本領！　융합소환！%カード名%！」
+			ELSE
+				PRINTFORMW 「%カード名%を융합소환！」
+			ENDIF
+		CASE 싱크로
+			PRINTFORMW 「싱크로소환！　%カード名%！」
+		CASE 엑시즈
+			IF カードID == 52400
+				PRINTFORMW 「レベル４モンスター２体でオーバーレイネットワークを構築！」
+				PRINTFORMW 「엑시즈소환！　イヤッホー！　%カード名%だ！」
+			ELSEIF カードID == 52401
+				PRINTFORMW 「レベル８モンスター２体でオーバーレイネットワークを構築！」
+				PRINTFORMW 「엑시즈소환！　発艦準備完了！　%カード名%！」
+			ELSEIF カードID == 52402
+				IF 処理中_효과ID == 52402
+					PRINTFORMW 「『スプリガンズ』モンスター１体でオーバーレイネットワークを再構築！」
+				ELSE
+					PRINTFORMW 「レベル８モンスター２体でオーバーレイネットワークを構築！」
+				ENDIF
+				PRINTFORMW 「엑시즈소환！　これがセリオンズ・リングの“チャンピオン”だ！　%カード名%！」
+			ELSE
+				PRINTFORMW 「オーバーレイネットワークを構築！　엑시즈소환！%カード名%！」
+			ENDIF
+		CASE 링크
+			IF カードID == 1890
+				PRINTFORMW 「링크소환！　仲間の補佐はおまかせ！　링크２、リズ姉！」
+			ELSEIF カードID == 11890
+				PRINTFORMW 「링크소환！　システム・スプライト搭載！　링크２、%カード名%！」
+			ELSEIF カードID == 53100
+				PRINTFORMW 「鋼の翼、響く銃砲、頭上羽ばたくは不吉の怪鳥！」
+				PRINTFORMW 「링크소환！　全員まとめて吹っ飛ばせー！　링크４、%カード名%！」
+			ELSEIF カードID == 53101
+				PRINTFORMW 「黒鋼の大翼、轟く鎧砲、前を征くは不死身の吉鳥！」
+				PRINTFORMW 「링크소환！　スプライトパワー全力全開！　링크５、%カード名%！」
+			ELSEIF カードID == 53102
+				PRINTFORMW 「링크소환！　ナメてたら痛い見るぜ！　링크３、%カード名%！」
+			ELSEIF カードID == 53102
+				PRINTFORMW 「링크소환！　링크２、ベアブルム！　発進！」
+			ELSE
+				TRYCALLFORM CARD_{カードID},"レベル"
+				SELECTCASE RESULT
+					CASE 1
+						全角レベル = １
+					CASE 2
+						全角レベル = ２
+					CASE 3
+						全角レベル = ３
+					CASE 4
+						全角レベル = ４
+					CASE 5
+						全角レベル = ５
+					CASE 6
+						全角レベル = ６
+					CASE 7
+						全角レベル = ７
+					CASE 8
+						全角レベル = ８
+				ENDSELECT
+				PRINTFORMW 「링크소환！　링크%全角レベル%！　%カード名%！」
+			ENDIF
+		;초차원モンスター（デュエマ）
+		CASE 초차원
+			TRYCALLFORM CARDNAME_{処理中_효과ID},"カテゴリ"
+			IF MATCH(RESULTS,"초차원呪文")
+				PRINTFORMW 「초차원ホールに接続！　出てこい！　%カード名%」
+			ELSE
+				PRINTFORMW 「초차원소환！　出てこい！　%カード名%！」
+			ENDIF
+	ENDSELECT
+ENDIF
+
+;==================================================
+;4,효과使用宣言
+;==================================================
+@M_KOJO_DUEL_K1891_4(カードID,발동出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 발동出処
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF GROUPMATCH(カードID,1880,11880)
+		PRINTFORMW 「エクレシアの효과발동！」
+	ELSEIF GROUPMATCH(カードID,1884,11884,16884)
+		PRINTFORMW 「アルバスの효과を발동！」
+	ELSEIF カードID == 24700
+		PRINTFORMW 「ロッキーの효과발동！」
+	ELSEIF カードID == 24701
+		PRINTFORMW 「ピードの효과발동！」
+	ELSEIF カードID == 24702
+		PRINTFORMW 「ブラザーズの효과발동！」
+	ELSEIF カードID == 24703
+		PRINTFORMW 「バンカーの효과발동！」
+	ELSEIF カードID == 24703
+		PRINTFORMW 「おかしらの효과발동！」
+	ELSEIF GROUPMATCH(カードID,1890,11890)
+		PRINTFORMW 「リズ姉の효과발동！」
+	ELSEIF GROUPMATCH(カードID,11891,16891)
+		PRINTFORMW 「私の효과！」
+	ELSEIF カードID == 53102
+		PRINTFORMW 「ルガルの효과を발동！」
+	ELSE
+		SELECTCASE 발동出処
+			CASE 1
+				;손패발동
+				IF カードID == 26520
+					PRINTFORMW 「손패のフラクトールの효과발동！」
+				ELSEIF カードID == 26522
+					PRINTFORMW 「손패のケラスの효과발동！」
+				ELSEIF カードID == 26893
+					PRINTFORMW 「読んでたよ！　メルクーリエの효과！」
+				ELSE
+					TRYCALLFORM CARD_{カードID},"종류"
+					IF RESULT == 通常마법
+						PRINTFORMW 「마법발동！　%カード名%！」
+					ELSEIF RESULT == 速攻마법
+						PRINTFORMW 「速攻마법발동！　%カード名%！」
+					ELSEIF RESULT == 지속마법
+						PRINTFORMW 「지속마법、%カード名%を발동！」
+					ELSEIF RESULT == フィールド
+						PRINTFORMW 「フィールド마법、%カード名%を발동！」
+					ELSEIF RESULT == 速攻마법
+						PRINTFORMW 「装備마법、%カード名%を발동！」
+					ELSE
+						PRINTFORMW 「손패の%カード名%の효과を발동するよ！」
+					ENDIF
+				ENDIF
+			CASE 2
+				;필드발동
+				IF カードID == 1891
+					PRINTFORMW 「覚悟はよろしいかな？　私の효과！」
+				ELSEIF カードID == 26520
+					PRINTFORMW 「リソースは十分！　フラクトールの효과발동！」
+				ELSEIF カードID == 26521
+					PRINTFORMW 「行くぞ行くぞー！　ナーベルの효과발동！」
+				ELSEIF カードID == 26522
+					PRINTFORMW 「これがトライブリゲードの戦い方！　ケラスの효과발동！」
+				ELSEIF カードID == 53100
+					PRINTFORMW 「いっけー！　シュー兄の효과！」
+				ELSEIF カードID == 53101
+					PRINTFORMW 「モンスターが攻撃した時！　“BucephalusⅡ”が起動する！」
+				ELSEIF カードID == 53101
+					PRINTFORMW 「“チャンピオン”の효과발동！」
+				ELSE
+					PRINTFORMW 「%カード名%の효과を발동するよ！」
+				ENDIF
+			CASE 3
+				;마함발동
+				IF カードID == 81890
+					PRINTFORMW 「トライブリゲード最強カードの力、とくと見よ！　リバースカードオープン！　%カード名%！」
+				ELSE
+					TRYCALLFORM CARD_{カードID},"종류"
+					IF GROUPMATCH(RESULT,지속마법,フィールド,지속함정)
+						PRINTFORMW 「%カード名%の효과を발동！」
+					ELSEIF RESULT == 通常함정
+						PRINTFORMW 「ここだ！　リバースカードオープン！　%カード名%！」
+					ELSE
+						PRINTFORMW 「마법＆함정ゾーンの%カード名%の효과を발동するよ！」
+					ENDIF
+				ENDIF
+			CASE 4
+				;묘지발동
+				IF カードID == 1891
+					PRINTFORMW 「묘지に送られた私の효과！」
+				ELSEIF カードID == 26521
+					PRINTFORMW 「묘지に送られたナーベルの효과！」
+				ELSEIF カードID == 53100 || カードID == 53101
+					PRINTFORMW 「タダでは終わらんよ！　묘지に送られたシュー兄の효과！」
+				ELSE
+					PRINTFORMW 「묘지の%カード名%の효과발동！」
+				ENDIF
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;5,효과발동
+;==================================================
+@M_KOJO_DUEL_K1891_5(カードID,효과종류)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 효과종류
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;無効にされた場合
+	IF 효과종류 == -1
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORMW 「なっ、なにーっ！？」
+			CASE 1
+				PRINTFORMW 「ぐえー！　やっぱりダメだった！」
+			CASE 2
+				PRINTFORMW 「ちょっとは大目に見てよー！」
+		ENDSELECT
+	;それ以外
+	ELSE
+		IF カードID == 1891
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「何にしようかなー……よし、コレだー！」
+			ELSE
+				PRINTFORMW 「덱から『トライブリゲード』カードを묘지へ送る！」
+			ENDIF
+		ELSEIF カードID == 11891
+			IF 효과종류 == 손패起動
+				PRINTFORMW 「융합状態のアルバスがいる時、손패から특수소환できる！」
+			ELSE
+				PRINTFORMW 「덱から『烙印』마법・함정カードを손패に加える！」
+			ENDIF
+		ELSEIF カードID == 16891
+			IF 효과종류 == 손패起動
+				PRINTFORMW 「『トライブリゲード』か『スプリガンズ』がいる時、손패から특수소환できる！」
+			ELSE
+				PRINTFORMW 「묘지の『トライブリゲード』か『スプリガンズ』か『アルバス』を守備표시で특수소환する！」
+			ENDIF
+		ELSEIF カードID == 1890
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「손패からレベル４以下の獣か비행야수족を특수소환する！」
+			ELSE
+				PRINTFORMW 「덱から１枚引いて、１枚戻す！　頼むよリズ姉ー……！」
+			ENDIF
+		ELSEIF カードID == 11890
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「덱とＥＸ덱からカード名の異なる『トライブリゲード』２枚を묘지へ送る！」
+			ELSE
+				PRINTFORMW 「상대フィールドのモンスター１体を裏側표시にする！」
+			ENDIF
+		ELSEIF カードID == 26520
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「묘지のモンスターを素材にして링크소환する！」
+			ELSE
+				PRINTFORMW 「덱からレベル３以下の獣か비행야수족を묘지へ送る！」
+			ENDIF
+		ELSEIF カードID == 26521
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「묘지のモンスターで링크소환するよ！」
+			ELSE
+				PRINTFORMW 「덱から『トライブリゲード』モンスターを손패に加える！」
+			ENDIF
+		ELSEIF カードID == 26522
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「묘지の야수족・비행야수족モンスターを제외して링크モンスターを특수소환する！」
+			ELSE
+				PRINTFORMW 「손패の獣か비행야수족を捨てて、このカードを특수소환する！」
+			ENDIF
+		ELSEIF カードID == 26893
+			IF 효과종류 == 발동誘発
+				PRINTFORMW 「융합状態のアルバスがいる時、손패から捨てることでモンスター효과を無効にする！」
+			ELSE
+				PRINTFORMW 「덱からアルバスか、アルバスの名前が書かれたモンスターを손패に加える！」
+			ENDIF
+		ELSEIF カードID == 53100
+			IF 효과종류 == 효과後誘発
+				PRINTFORMW 「상대フィールドのカード１枚を제외する！」
+			ELSE
+				PRINTFORMW 「덱から獣か비행야수족モンスター１体を손패に加える！」
+			ENDIF
+		ELSEIF カードID == 53101
+			IF 효과종류 == 攻撃時誘発
+				PRINTFORMW 「このカードと상대フィールドのカードを全て제외する！　うおおおおお！」
+			ELSE
+				PRINTFORMW 「ＥＸ덱から獣か비행야수족モンスター１体を묘지に送る！」
+			ENDIF
+		ELSEIF カードID == 53102
+			IF 효과종류 == 필드起動 || 효과종류 == フリー誘発
+				PRINTFORMW 「손패か묘지から、レベル４以下の야수족・비행야수족１体を효과を無効にして특수소환する！！」
+			ELSE
+				PRINTFORMW 「묘지に送られた時、자신フィールドのモンスターの종족の종류分、상대の攻撃力をダウンさせる！」
+			ENDIF
+		ELSEIF カードID == 53103
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「손패を２枚捨てて、제외状態の獣か비행야수족を특수소환するよ！」
+			ELSE
+				PRINTFORMW 「덱から『トライブリゲード』마법・함정カード１枚を손패に加える！」
+			ENDIF
+		ELSEIF カードID == 61890
+			PRINTFORMW 「덱かＥＸ덱から『トライブリゲード』を묘지へ送って、何らかの良からぬ事をするよ！」
+		ELSEIF カードID == 61891
+			PRINTFORML 「덱から『トライブリゲード』마법함정を손패に加えるか、묘지を제외して『トライブリゲード』を링크소환するよ！
+			PRINTFORMW 　私が選ぶのは──！」
+		ELSEIF カードID == 61892
+			IF 효과종류 == 효과後誘発
+				PRINTFORMW 「제외状態の『トライブリゲード』モンスターを손패に加える！」
+			ELSEIF 효과종류 == 攻撃後誘発
+				PRINTFORMW 「『トライブリゲード』と戦闘を行ったモンスターを손패に戻す！」
+			ELSE
+				;마함설치
+			ENDIF
+		ELSEIF カードID == 81890
+			PRINTFORMW 「묘지・제외状態の『トライブリゲード』を특수소환！　そのまま링크소환するよ！」
+		ELSEIF カードID == 81891
+			IF 효과종류 == 발동誘発
+				PRINTFORMW 「상대の마법・함정カードの발동を無効にする！」
+			ELSE
+				PRINTFORMW 「손패か묘지から、자신の링크モンスターとは종족が異なる야수족・비행야수족モンスター１体を특수소환するよ！」
+			ENDIF
+			
+		ELSEIF カードID == 24700
+			IF 효과종류 == 소환時 || 효과종류 == 특수소환時
+				PRINTFORMW 「묘지から『スプリガンズ』か《ゴルゴンダ》を回収！」
+			ELSE
+				PRINTFORMW 「スプリガンズＸモンスターに乗り込む！」
+			ENDIF
+		ELSEIF カードID == 24701
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「このカードをリリースして、묘지から『スプリガンズ』を특수소환する！」
+			ELSE
+				PRINTFORMW 「スプリガンズＸモンスターに乗り込む！」
+			ENDIF
+		ELSEIF カードID == 24702
+			IF 효과종류 == 손패→묘지 || 효과종류 == 덱→묘지
+				PRINTFORMW 「묘지から『スプリガンズ』を특수소환する！」
+			ELSE
+				PRINTFORMW 「スプリガンズＸモンスターに乗り込む！」
+			ENDIF
+		ELSEIF カードID == 24703
+			PRINTFORMW 「スプリガンズＸモンスターに乗り込む！」
+		ELSEIF カードID == 24704
+			IF 효과종류 == 필드起動 && ターンプレイヤー == "자신"
+				PRINTFORMW 「자신フィールドのオーバーレイユニットを１つ使って、상대の表側のカード１枚を破壊する！」
+			ELSE
+				PRINTFORMW 「スプリガンズＸモンスターに乗り込んで、パワーアップ！」
+			ENDIF
+		ELSEIF カードID == 52400
+			IF 효과종류 == EX소환時
+				PRINTFORMW 「덱から『スプリガンズ』モンスター１体を묘지へ送る！」
+			ELSE
+				PRINTFORMW 「このカードをエンドフェイズまで제외する！」
+			ENDIF
+		ELSEIF カードID == 52401
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「オーバーレイユニットを１つ使い、상대フィールドのカード１枚を破壊する！」
+			ELSE
+				PRINTFORMW 「エクスプローラー！　潜航開始！」
+			ENDIF
+		ELSEIF カードID == 52410
+			IF 효과종류 == 필드起動
+				PRINTFORMW 「덱から『スプリガンズ』か『セリオンズ』１枚を손패に加える！」
+			ELSEIF 효과종류 == 효과後誘発
+				PRINTFORMW 「엑시즈モンスターの효과が발동した場合に、상대のカード１枚を破壊するか、손패に戻す！」
+			ENDIF
+		ELSE
+			SELECTCASE RAND:3 + 1
+				CASE 1
+					PRINTFORMW 「何もないなら遠慮なくいくよー！」
+				CASE 2			
+					PRINTFORMW 「よし、通った！」
+				CASE 3
+					PRINTFORMW 「ふんふん、それじゃあ処理するね！」
+			ENDSELECT
+		ENDIF
+	ENDIF
+ENDIF
+
+;==================================================
+;6,カードセット
+;==================================================
+@M_KOJO_DUEL_K1891_6(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	TRYCALLFORM CARD_{カードID},"종류"
+	IF RESULT < モン全般
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「も、モンスターをセット！」
+			CASE 2
+				PRINTFORMW 「うぎぎ……モンスターを伏せるよ！」
+			CASE 3
+				PRINTFORMW 「……ふっふっふっ、モンスターをセットォ！」
+		ENDSELECT
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「カードをセット！」
+			CASE 2			
+				PRINTFORMW 「カードを伏せるよ！」
+			CASE 3
+				PRINTFORMW 「さあ怯えるがいい！　カードをセット！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;7,カードドロー
+;==================================================
+@M_KOJO_DUEL_K1891_7(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF ライフ_상대 < 2000
+		PRINTFORMW 「いいカード来てくれー！　ドローっ！！！！！」
+	ELSE
+		PRINTFORMW 「ドロー！」
+	ENDIF
+ENDIF
+
+;==================================================
+;10,ダメージ反応！（ダメージ）
+;==================================================
+@M_KOJO_DUEL_K1891_10(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE ダメージ量
+		;ダメージなし
+		CASE 0
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW 「効かないねえ！」
+				CASE 1
+					PRINTFORMW 「わーははは！　ムダムダぁ！」
+			ENDSELECT
+		;１～１９９９の時、小ダメージ
+		CASE 1 TO 1999
+			IF ライフ_상대 <= 0
+				PRINTFORMW 「何とか……何とか……！」
+				PRINTFORMW 「何ともならないや！　ぐわーっ！！！」
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「くうっ……！　このくらい、全然へっちゃらだもんね！」
+					CASE 1
+						PRINTFORMW 「うわあっ！　イテテテ……まだまだやれるよ！」
+				ENDSELECT
+			ENDIF
+		;２０００～３９９９の時、結構なダメージ
+		CASE 2000 TO 3999
+			IF ライフ_상대 <= 0
+				PRINTFORMW 「んー……ダメだこりゃ！　ぐわーっ！！！」
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「うわあああっ！　ま、まだ、やれる……！」
+					CASE 1
+						PRINTFORMW 「ぎゃああっ！？　結構クるなあ……！」
+				ENDSELECT
+			ENDIF
+		;４０００～７９９９の時、超大ダメージ
+		CASE 4000 TO 7999
+			IF ライフ_상대 <= 0
+				PRINTFORMW 「あ、待ってやばっ……！　あばーっ！！！」
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「ぐわーっ！！！　せ、セーフ……っ！」
+					CASE 1
+						PRINTFORMW 「ぎゃあああああっ！？！？　や、やっばぁ……！」
+				ENDSELECT
+			ENDIF
+		;８０００以上、基本即死
+		CASEELSE
+			IF ライフ_상대 <= 0
+				PRINTFORMW 「すーっ……さらばっ！　　のわーっ！！！！！」
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「む、ムリム……ぎゃあああああああ！！！！！」
+					CASE 1
+						PRINTFORMW 「待って！ストップ！し、死ぬ……っ！　どわーっ！！！！！」
+				ENDSELECT
+				SELECTCASE RAND:2
+					CASE 0
+						PRINTFORMW 「お、おおお……い、生きてる……」
+					CASE 1
+						PRINTFORMW 「おごご……し、死ぬ……っ！」
+				ENDSELECT
+			ENDIF
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;11,ダメージ反応！(회복)
+;==================================================
+@M_KOJO_DUEL_K1891_11(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	PRINTFORMW 「ふーっ！　生き返るーっ！」
+ENDIF
+
+
+;==================================================
+;50,モンスター攻撃
+;==================================================
+@M_KOJO_DUEL_K1891_50(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	IF GROUPMATCH(カードID,1880,11880)
+		PRINTFORMW 「エクレシアで攻撃！」
+	ELSEIF GROUPMATCH(カードID,1884,11884,16884)
+		PRINTFORMW 「アルバスで攻撃！」
+	ELSEIF カードID == 24700
+		PRINTFORMW 「ロッキーで攻撃！」
+	ELSEIF カードID == 24701
+		PRINTFORMW 「ピードで攻撃！」
+	ELSEIF カードID == 24702
+		PRINTFORMW 「ブラザーズで攻撃！」
+	ELSEIF カードID == 24703
+		PRINTFORMW 「バンカーで攻撃！」
+	ELSEIF カードID == 24703 || カードID == 52410
+		PRINTFORMW 「キャプテンで攻撃！」
+	ELSEIF カードID == 52400
+		PRINTFORMW 「メリーメイカー発射ー！」
+	ELSEIF カードID == 52401
+		PRINTFORMW 「エクスブロウラー、とつげきーっ！」
+	ELSEIF GROUPMATCH(カードID,1890,11890)
+		PRINTFORMW 「リズ姉で攻撃！」
+	ELSEIF GROUPMATCH(カードID,1891,11891,16891)
+		PRINTFORMW 「私で攻撃するぞーっ！」
+	ELSEIF カードID == 26250
+		PRINTFORMW 「フラクトールで攻撃！」
+	ELSEIF カードID == 26251
+		PRINTFORMW 「ええい仕方ない！　ナーベルで攻撃！」
+	ELSEIF カードID == 26252
+		PRINTFORMW 「ケラスで攻撃！」
+	ELSEIF カードID == 26893
+		PRINTFORMW 「メルクーリエ！　いっけぇーっ！」
+	ELSEIF カードID == 53100
+		PRINTFORMW 「シュー兄で攻撃！」
+	ELSEIF カードID == 53101
+		PRINTFORMW 「“BucephalusⅡ”正常動作確認！　シュー兄、いっけぇーっ！」
+	ELSEIF カードID == 53102
+		PRINTFORMW 「ルガルで攻撃！」
+	ELSEIF カードID == 53103
+		PRINTFORMW 「ベアブルムで攻撃ーっ！」
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORMW 「%カード名%で攻撃！」
+			CASE 2
+				PRINTFORMW 「いっけー！　%カード名%で攻撃！」
+			CASE 3
+				PRINTFORMW 「%カード名%で攻撃だーっ！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;51,モンスター攻撃結果
+;==================================================
+@M_KOJO_DUEL_K1891_51(상황판정,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 상황판정
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;トドメ
+	IF ARG:1 == 1
+		PRINTFORMW 「これで、終わりだーっ！」
+		RETURN 1
+	ENDIF
+
+	SELECTCASE 상황판정
+		;상대モンスター撃破
+		CASE 1
+			PRINTFORMW 「よーし！　モンスター撃破！」
+		;자신にダメージ
+		CASE 2
+			PRINTFORMW 「ぐわーっ！？　や、やられた……っ！」
+		;相打ち
+		CASE 3
+			PRINTFORMW 「ありがとう……キミの尽力は絶対に忘れないよ……！」
+		;효과で戦闘前に除去
+		CASE 4
+			PRINTFORMW 「ふ、ふん！このくらい想定内だもんね！　次はー……ええっとぉ……」
+		;ダイレクトアタック
+		CASE 5
+			PRINTFORMW 「遮蔽物なーし！　そのまま当たってけーっ！」
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;100,メインフェイズ移行
+;==================================================
+@M_KOJO_DUEL_K1891_100(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	PRINTFORMW 「メインフェイズに入るよ！」
+ENDIF
+
+
+;==================================================
+;101,ターン終了
+;==================================================
+@M_KOJO_DUEL_K1891_101(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		IF ライフ_자신 <= 2000
+			PRINTFORMW 「ふっふっふっ、次のターンで終わらせてあげよう！　ターンエンド！」
+		ELSE
+			PRINTFORMW 「そこそこ削られたなあ……ターンエンド！」
+		ENDIF
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		PRINTFORMW 「ど、どうにかして凌がないと……！　ターンエンド！」
+	;それ以外
+	ELSE
+		IF ライフ_자신 <= 2000
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW 「なんだ全然らくしょーじゃん！　ターンエンド！」
+				CASE 1
+					PRINTFORMW 「そろそろ本気だした方がいいよー？　ターンエンド！」
+			ENDSELECT
+		ELSE
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「このターンはこんなもんかなー、ターンエンド！」
+				CASE 1
+					PRINTFORMW 「出来ることは大体やったよ！　ターンエンド！」
+				CASE 2
+					PRINTFORMW 「ターンエンド！　さあ、%CALLNAME:MASTER%のターンだよ！」
+			ENDSELECT
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;102,メインフェイズ２に移行（バトル終了）
+;==================================================
+@M_KOJO_DUEL_K1891_102(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	PRINTFORMW 「バトルフェイズを終わらせるよ！」
+ENDIF
+
+
+;==================================================
+;103,バトルフェイズに移行
+;==================================================
+@M_KOJO_DUEL_K1891_103(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	PRINTFORMW 「行っくよー！　バトル！」
+ENDIF
+
+
+;==================================================
+;104,ターン開始時
+;==================================================
+@M_KOJO_DUEL_K1891_104(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		IF ライフ_자신 <= 2000
+			PRINTFORMW 「結構がんばってたけど、ここまでだね！　私のターン！」
+		ELSE
+			PRINTFORMW 「盛り上がって来たね！　私のターン！」
+		ENDIF
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		IF ライフ_자신 <= 2000
+			PRINTFORMW 「よーしよしよし！このターンで終わらせるからね！　私のターン！」
+		ELSE
+			PRINTFORMW 「このターンで逆転するからね！　私のターン！」
+		ENDIF
+	;それ以外
+	ELSE
+		IF ライフ_자신 <= 2000
+			PRINTFORMW 「私のターン！　全然歯ごたえ無いねー、このターンで終わっちゃうよ？」
+		ELSE
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「ふむふむ……とりあえず、ドローしてから考えよっと！　私のターン！」
+				CASE 1
+					PRINTFORMW 「よーし回ってきた！　私のターン！」
+				CASE 2
+					PRINTFORMW 「私のターン！　さてさて、どうしてくれようか……」
+			ENDSELECT
+		ENDIF
+	ENDIF
+ENDIF
+
+;==================================================
+;999,EROTICS関連
+;実行コマンドは数が多いのでテンプレートにはよく使われてそうな物だけ書いておきます
+;추가したい場合は ERB/10.デュエル関連/01.デュエルシステム回り/효과汎用/エロ行動関連/02.カード조교
+;を参照してください
+;==================================================
+@M_KOJO_DUEL_K1891_999(절정횟수,ARG:1,実行コマンド)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 절정횟수
+#DIMS DYNAMIC 実行コマンド
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+SIF LOCAL == 1
+	PRINTFORML >>——MESSAGE:——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————>>>
+IF LOCAL
+	SELECTCASE 実行コマンド
+		CASE "Ｃ単発"
+			PRINTFORMW 「くっ❤　ふんっ❤　なんでっ❤　そんなねちっこいのさっ❤」
+			PRINTFORMW 「」
+		CASE "묘상捕縛"
+			PRINTFORMW 
+		CASE "全身愛撫"
+			PRINTFORMW 「んんんんっ❤　やめっ❤　ふぁっ❤　んああっ❤」
+		CASE "前穴凌辱"
+			IF 処理中_효과ID == 39634
+				PRINTFORMW 「あっ❤はっ❤　もっとっ❤　もっとずぼずぼっ❤　あああっ❤❤❤」
+			ELSE
+				PRINTFORMW 「ぐうっ！　いっ❤　やぁっ❤　やめっ❤」
+			ENDIF
+		CASE "後穴凌辱"
+			IF ABL:TARGET:Ａ감각 >= 3
+				PRINTFORMW 「あっ❤　は゛あ゛っ❤　い゛っ❤　い゛い゛っ❤んん゛っ❤❤❤」
+			ELSE
+				PRINTFORMW 「そっちはちがっ──う゛っ！　ぐあっ❤　い゛っ！？❤」
+			ENDIF
+		CASE "両穴凌辱"
+			IF 절정횟수 >= 1
+				PRINTFORMW 「あっ❤　やばっ❤　だめっ❤　イっ──❤❤❤」
+			ELSE
+				PRINTFORMW 「うっ❤　ふぎゅっ❤　まってっ❤　いったんっ、とめてっ❤」
+			ENDIF
+		CASE "全身凌辱"
+			IF 절정횟수 >= 1
+				PRINTFORMW 「んぶっ❤　んんんっ❤　んぐぅっ──❤❤❤」
+			ELSE
+				PRINTFORMW 「うっ❤　んんっ❤　ふーっ、ふーっ！　んぶっ❤」
+			ENDIF
+		CASE "ぶっかけ"
+			IF ABL:TARGET:정액중독 >= 3
+				PRINTFORML 「ん……❤」
+				PRINTFORMW %CALLNAME:TARGET%はリラックスしたように目を閉じ、鼻をひくひくとさせている。
+			ELSE
+				PRINTFORMW 「うえ……何これー……」
+			ENDIF
+		CASE "펠라치오","최면펠라","최면自発펠라"
+			PRINTFORMW 「ちゅ❤じゅるっ❤　んぷ……んぶ……❤　じゅるるるっ❤」
+		CASE "최면自発スロート","최면自発파이즈리スロート"
+			PRINTFORMW 「じゅるるるっ❤❤❤　ふーっ……❤　じゅるっ❤るるるるっ❤❤❤❤❤」
+		CASE "수음","최면수음"
+			PRINTFORMW 「ほらほら～、ガマンしないで出しちゃいな～❤」
+		CASE "풋잡","최면풋잡"
+			PRINTFORMW 「うりうり～、雑に踏まれるのがイイんでしょ～❤」
+		CASE "딥키스"
+			PRINTFORMW 「んっ！？❤　んんん～～～っ❤！？！？　ぷはぁっ❤」
+		CASE "스쿼트"
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW 「ふっ……ふっ……！　あー、キッツ！！！」
+				CASE 1
+					PRINTFORMW 「ひぃ～っ！　足がドリスさんみたいになっちゃう～！」
+			ENDSELECT
+		CASE "자위","麻薬자위","최면자위","최면Ｃ자위","최면Ｂ자위","최면Ａ자위","최면Ｖ자위","최면自発자위"
+			SELECTCASE RAND:3
+				CASE 0
+					PRINTFORMW 「ふっ……ふっ……❤　んんんっ❤」
+				CASE 1
+					PRINTFORMW 「見られてるっ……のにっ……とまらないっ……❤」
+				CASE 2
+					PRINTFORMW 「はあっ❤　はあっ……・んんっ❤」
+			ENDSELECT
+		CASE "정음","최면정음"
+			IF ABL:TARGET:정액중독 >= 3
+				PRINTFORMW 「ん……ごくっ……❤　……ぷはぁっ❤ふー……❤」
+			ELSE
+				PRINTFORMW 「うぇぇ……まっっっず……」
+			ENDIF
+		CASE "기승위","최면自発기승위"
+			PRINTFORMW 「あっ❤　イイっ❤　もっとっ❤　奥にっ❤❤❤」
+		CASE "애널解し"
+			IF ABL:TARGET:Ａ감각 >= 3
+				PRINTFORMW 「はっ❤　ああっ❤　あっ❤　もっとぉっ❤」
+			ELSE
+				PRINTFORMW 「うに゛ゃあっ！？　は、早く離れてっ！」
+			ENDIF
+		CASE "최면晒しもの"
+			IF 処理中_효과ID == 79841
+				IF ABL:TARGET:욕망 >= 3
+					PRINTFORMW 「はっ❤ふっ❤　%CALLNAME:MASTER%っ❤　えっちっ❤　えっちしよっ❤」
+				ELSE
+					PRINTFORMW 「ふっ……ふっ……ちょっとキツくなってきた……❤」
+				ENDIF
+			ENDIF
+		CASE "최면陰部嗅ぎ"
+			IF ABL:TARGET:욕망 >= 3
+				PRINTFORMW 「すーっ……くっさ❤　こんなの嗅ぎ続けたら、頭おかしくなっちゃうよー❤」
+			ELSE
+				PRINTFORMW 「うっ……くっさ……❤　鼻が曲がりそう……❤」
+			ENDIF
+		CASE "疑似출산"
+			PRINTFORMW 「はあ゛っ！？　あっ❤　あ゛あ゛あ゛あ゛あ゛っ❤❤❤❤❤」
+	ENDSELECT
+ENDIF
+
+
+@M_KOJO_DUEL_K1891_TRIBRIGADE(カードID,소환出処)
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 소환出処
+
+;抗戦で특수소환する時
+IF GROUPMATCH(소환出処,召種묘지,召種제외) && 処理中_효과ID == 81890
+	IF GROUPMATCH(カードID,1891,11891,26521)
+		PRINTFORMW 「私！」
+	ELSEIF カードID == 26520
+		PRINTFORMW 「フラクトール！」
+	ELSEIF カードID == 26521
+		PRINTFORMW 「ナーベル！」
+	ELSEIF カードID == 26522
+		PRINTFORMW 「ケラス！」
+	ELSEIF カードID == 26893
+		PRINTFORMW 「メルクーリエ！」
+	ELSEIF カードID == 53100 || カードID == 53101
+		PRINTFORMW 「シュー兄！」
+	ELSEIF カードID == 1890 || カードID == 11890
+		PRINTFORMW 「リズ姉！」
+	ELSEIF カードID == 53102
+		PRINTFORMW 「ルガル！」
+	ELSEIF カードID == 53103
+		PRINTFORMW 「ベアブルム！」
+	ENDIF
+ELSE
+	IF GROUPMATCH(カードID,1891,11891,26521)
+		PRINTFORMW 「私を특수소환！」
+	ELSEIF カードID == 26520
+		PRINTFORMW 「フラクトールを특수소환！」
+	ELSEIF カードID == 26521
+		PRINTFORMW 「ナーベルを특수소환！」
+	ELSEIF カードID == 26522
+		PRINTFORMW 「ケラスを특수소환！」
+	ELSEIF カードID == 26893
+		PRINTFORMW 「メルクーリエ！　飛んでけー！」
+	ELSEIF カードID == 53100 || カードID == 53101
+		PRINTFORMW 「シュー兄を특수소환！」
+	ELSEIF カードID == 1890 || カードID == 11890
+		PRINTFORMW 「リズ姉を특수소환！」
+	ELSEIF カードID == 53102
+		PRINTFORMW 「ルガルを특수소환！」
+	ELSEIF カードID == 53103
+		PRINTFORMW 「ベアブルム復活！」
+	ENDIF
+ENDIF
+
+RETURN 1

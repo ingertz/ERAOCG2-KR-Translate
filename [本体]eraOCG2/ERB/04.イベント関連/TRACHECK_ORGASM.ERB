@@ -210,6 +210,7 @@ RETURN 1
 
 @MESSAGE_PALAMCNG_B2(캐릭터_ID)
 #DIM DYNAMIC 캐릭터_ID
+#DIM DYNAMIC 환락강도
 IF NOWEX:캐릭터_ID:절정 > 3
 	IF !GETBIT(CFLAG:캐릭터_ID:3,2)
 		EXP:이상경험 ++
@@ -248,122 +249,122 @@ ENDIF
 ;-------------------------------------------------
 ;조교대상의 분유チェック
 ;-------------------------------------------------
-@TARGET_MILK_CHECK(대상者)
-#DIM DYNAMIC 대상者
+@TARGET_MILK_CHECK(캐릭터_ID)
+#DIM DYNAMIC 캐릭터_ID
 #DIM DYNAMIC 환락강도
 #DIM DYNAMIC 굴종강도
 #DIM DYNAMIC 노출강도
 #DIM DYNAMIC 불결강도
 
-SIF MILK_CAN(대상者) == 0
+SIF MILK_CAN(캐릭터_ID) == 0
 	RETURN 0
 
 
-LOCAL = CUP:대상者:쾌Ｃ / 10 + CUP:대상者:쾌Ｖ / 10 + CUP:대상者:쾌Ａ / 10 + CUP:대상者:쾌Ｂ * 3
-SIF LOCAL == 0
+환락강도 = CUP:캐릭터_ID:쾌Ｃ / 10 + CUP:캐릭터_ID:쾌Ｖ / 10 + CUP:캐릭터_ID:쾌Ａ / 10 + CUP:캐릭터_ID:쾌Ｂ * 3
+SIF 환락강도 == 0
 	RETURN 0
 ;자제심
-SIF TALENT:대상者:자제심
-	LOCAL /= 2
+SIF TALENT:캐릭터_ID:자제심
+	환락강도 /= 2
 
 ;쾌락に素直
-SIF TALENT:대상者:쾌감반응 > 0
-	TIMES LOCAL , 1.20
+SIF TALENT:캐릭터_ID:쾌감반응 > 0
+	TIMES 환락강도 , 1.20
 
 ;쾌락에 부정（음란、쾌락광で無効）
-SIF TALENT:대상者:쾌감반응 < 0 && !TALENT:대상者:음란
-	TIMES LOCAL , 0.80
+SIF TALENT:캐릭터_ID:쾌감반응 < 0 && !TALENT:캐릭터_ID:음란
+	TIMES 환락강도 , 0.80
 
 ;B敏感
-SIF TALENT:대상者:Ｂ감도 > 0
-	TIMES LOCAL , 1.20
+SIF TALENT:캐릭터_ID:Ｂ감도 > 0
+	TIMES 환락강도 , 1.20
 
 ;미약
-SIF TEQUIP:대상者:미약
-	LOCAL *= 2
+SIF TEQUIP:캐릭터_ID:미약
+	환락강도 *= 2
 
 ;이뇨제
-SIF TEQUIP:대상者:이뇨제
-	LOCAL /= 2
+SIF TEQUIP:캐릭터_ID:이뇨제
+	환락강도 /= 2
 
 ;조교者が幼児退行
 SIF TALENT:MASTER:유아／유아퇴행
-	TIMES LOCAL , 1.20
+	TIMES 환락강도 , 1.20
 
 ;조교者が유치
 SIF TALENT:MASTER:유치
-	TIMES LOCAL , 1.20
+	TIMES 환락강도 , 1.20
 
 ;貧乳
-SIF TALENT:대상者:가슴사이즈 < 0
-	TIMES LOCAL , 0.50
+SIF TALENT:캐릭터_ID:가슴사이즈 < 0
+	TIMES 환락강도 , 0.50
 
 ;가슴사이즈보정
-SIF BUST_SIZE(대상者) >= 0
-	LOCAL += BUST_SIZE(대상者)
+SIF BUST_SIZE(캐릭터_ID) >= 0
+	환락강도 += BUST_SIZE(캐릭터_ID)
 
 
-LOCAL = 500 + LOCAL / 2
-BASE:대상者:모유 += LOCAL
+환락강도 = 500 + 환락강도 / 2
+BASE:캐릭터_ID:모유 += 환락강도
 
-IF  BASE:대상者:모유 > MAXBASE:대상者:모유 * 2
-	LOCAL = 1
-ELSEIF BASE:대상者:모유 > MAXBASE:대상者:모유
-	LOCAL = 0
+IF  BASE:캐릭터_ID:모유 > MAXBASE:캐릭터_ID:모유 * 2
+	환락강도 = 1
+ELSEIF BASE:캐릭터_ID:모유 > MAXBASE:캐릭터_ID:모유
+	환락강도 = 0
 ELSE
 	RETURN 0
 ENDIF
-LOCAL ++
-DOWNBASE:대상者:체력 += 20 * LOCAL
-DOWNBASE:대상者:기력 += 100 * (LOCAL - 1)
-IF EXP:대상者:분유경험 < EXPLV:1
-	노출강도 += 5000 * LOCAL
-	굴종강도 += 2500 * LOCAL
-	불결강도 += 1000 * LOCAL
-ELSEIF EXP:대상者:분유경험 < EXPLV:2
-	노출강도 += 2500 * LOCAL
-	굴종강도 += 1500 * LOCAL
-	불결강도 += 750 * LOCAL
-ELSEIF EXP:대상者:분유경험 < EXPLV:3
-	노출강도 += 1500 * LOCAL
-	굴종강도 += 750 * LOCAL
-	불결강도 += 500 * LOCAL
-ELSEIF EXP:대상者:분유경험 < EXPLV:4
-	노출강도 += 750 * LOCAL
-	굴종강도 += 400 * LOCAL
-	불결강도 += 350 * LOCAL
-ELSEIF EXP:대상者:분유경험 < EXPLV:5
-	노출강도 += 500 * LOCAL
-	굴종강도 += 250 * LOCAL
-	불결강도 += 200 * LOCAL
+환락강도 ++
+DOWNBASE:캐릭터_ID:체력 += 20 * 환락강도
+DOWNBASE:캐릭터_ID:기력 += 100 * (환락강도 - 1)
+IF EXP:캐릭터_ID:분유경험 < EXPLV:1
+	노출강도 += 5000 * 환락강도
+	굴종강도 += 2500 * 환락강도
+	불결강도 += 1000 * 환락강도
+ELSEIF EXP:캐릭터_ID:분유경험 < EXPLV:2
+	노출강도 += 2500 * 환락강도
+	굴종강도 += 1500 * 환락강도
+	불결강도 += 750 * 환락강도
+ELSEIF EXP:캐릭터_ID:분유경험 < EXPLV:3
+	노출강도 += 1500 * 환락강도
+	굴종강도 += 750 * 환락강도
+	불결강도 += 500 * 환락강도
+ELSEIF EXP:캐릭터_ID:분유경험 < EXPLV:4
+	노출강도 += 750 * 환락강도
+	굴종강도 += 400 * 환락강도
+	불결강도 += 350 * 환락강도
+ELSEIF EXP:캐릭터_ID:분유경험 < EXPLV:5
+	노출강도 += 500 * 환락강도
+	굴종강도 += 250 * 환락강도
+	불결강도 += 200 * 환락강도
 ELSE
-	노출강도 += 250 * LOCAL
-	굴종강도 += 150 * LOCAL
+	노출강도 += 250 * 환락강도
+	굴종강도 += 150 * 환락강도
 ENDIF
 
 ;가슴사이즈보정
-SIF BUST_SIZE(대상者) >= 0
-	LOCAL += BUST_SIZE(대상者)
+SIF BUST_SIZE(캐릭터_ID) >= 0
+	환락강도 += BUST_SIZE(캐릭터_ID)
 
-IF EXP:대상者:분유경험 == 0
-	EXP:대상者:이상경험 ++
+IF EXP:캐릭터_ID:분유경험 == 0
+	EXP:캐릭터_ID:이상경험 ++
 ENDIF
-CALL SOURCE_CALC_노출(대상者, MASTER, 노출강도)
-CALL SOURCE_CALC_굴종(대상者, MASTER, 굴종강도)
-CALL SOURCE_CALC_불결(대상者, MASTER, 불결강도)
+CALL SOURCE_CALC_노출(캐릭터_ID, MASTER, 노출강도)
+CALL SOURCE_CALC_굴종(캐릭터_ID, MASTER, 굴종강도)
+CALL SOURCE_CALC_불결(캐릭터_ID, MASTER, 불결강도)
 
-EXP:대상者:분유경험 += LOCAL
+EXP:캐릭터_ID:분유경험 += 환락강도
 
 ;Ｂに모유汚れ
-STAIN:대상者:5 |= 16
-	BASE:대상者:모유 -= MAXBASE:대상者:모유 * LOCAL
-SIF BASE:대상者:모유 >= MAXBASE:대상者:모유
-	BASE:대상者:모유 = MAXBASE:대상者:모유 - 1
+STAIN:캐릭터_ID:5 |= 16
+	BASE:캐릭터_ID:모유 -= MAXBASE:캐릭터_ID:모유 * 환락강도
+SIF BASE:캐릭터_ID:모유 >= MAXBASE:캐릭터_ID:모유
+	BASE:캐릭터_ID:모유 = MAXBASE:캐릭터_ID:모유 - 1
 
 
 
-NOWEX:대상者:분유 += LOCAL
-EX:대상者:분유 += LOCAL
+NOWEX:캐릭터_ID:분유 += 환락강도
+EX:캐릭터_ID:분유 += 환락강도
 
 
 

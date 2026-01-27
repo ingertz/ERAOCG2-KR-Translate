@@ -1,0 +1,271 @@
+﻿@CARDNAME_58640,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 서브테러마리스의 요마
+	CASE "略称"
+		RESULTS = SBM요마
+	CASE "カテゴリ"
+		RESULTS:0 = 서브테러
+		RESULTS:1 = 서브테러마리스
+ENDSELECT
+
+
+@CARD_58640(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 500
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 2026
+	CASE "추가日"
+		RETURN 260119
+ENDSELECT
+
+RETURN 0
+@CARDSUMMON_58640(듀얼리스트, 소환カード, EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+素材条件カテゴリ = リバース
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트, 소환カード, 58640) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_58640(종류)
+#DIM DYNAMIC 종류
+
+PRINTL リバースモンスター２体
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALL CARD_ABLE(0, EX덱起動)
+PRINTL ①：자신フィールドの、リバースモンスター、またはレベル４以上の「서브테러」モンスターを合計２体묘지へ送って발동できる。
+PRINTL このカードをＥＸ덱からＬ소환扱いで특수소환する。
+PRINTL この효과で특수소환したこのカードの攻撃力は、この효과で묘지へ送った「서브테러」モンスターの元々のレベルの合計×１００アップする。
+CALL CARD_ABLE(2, 필드起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL 덱からリバースモンスター、またはレベル４以上の「서브테러」モンスター１体を묘지へ送り、손패からモンスター１体を裏側守備표시で특수소환する。
+CALL CARD_ABLE(10, 효과後誘発)
+PRINTL ③：１ターンに１度、자신フィールドにリバースモンスター、またはレベル４以上の「서브테러」モンスターが存在する状態で、
+PRINTL 자신のリバースモンスター、またはレベル４以上の「서브테러」モンスターの효과が발동した場合に발동できる。
+PRINTL 자신の덱・묘지から、リバースモンスター、またはレベル４以上の「서브테러」モンスター１体を손패に加える。
+
+
+@CARDCAN_58640(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+CALL CARD_NEGATE(듀얼리스트, 종류, ゾーン, 場所, 58640)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트, 58640)
+	SIF RESULT == 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件종류 = レベル持ち
+	효과条件カテゴリ = 서브테러
+	CALL 효과条件レベル_ADV(4, "以上")
+	효과条件スーパー표시 = 表側표시
+	효과条件スーパー종류 = モン全般
+	효과条件スーパーカテゴリ = リバース
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT < 2
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트, 58640)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종류 = レベル持ち
+	효과条件カテゴリ = 서브테러
+	CALL 효과条件レベル_ADV(4, "以上")
+	효과条件スーパー종류 = モン全般
+	효과条件スーパーカテゴリ = リバース
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 효과발동済(듀얼리스트, 場所, ゾーン)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	효과条件종류 = レベル持ち
+	효과条件カテゴリ = 서브테러
+	CALL 효과条件レベル_ADV(4, "以上")
+	효과条件スーパー표시 = 表側표시
+	효과条件スーパー종류 = モン全般
+	효과条件スーパーカテゴリ = リバース
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과条件종류 = レベル持ち
+	효과条件カテゴリ = 서브테러
+	CALL 효과条件レベル_ADV(4, "以上")
+	효과条件スーパー종류 = モン全般
+	효과条件スーパーカテゴリ = リバース
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트, "효과발동")
+	SIF RESULT != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件종류 = レベル持ち
+	효과条件カテゴリ = 서브테러
+	CALL 효과条件レベル_ADV(4, "以上")
+	효과条件スーパー종류 = モン全般
+	효과条件スーパーカテゴリ = リバース
+	CALL CARD_CHECK_ADV(듀얼리스트, 종류, ゾーン, 場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_58640(듀얼리스트, 종류, ゾーン, 場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正 = 0
+#DIM DYNAMIC 選択カード群,10
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードID
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 58640, 1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		효과条件종류 = レベル持ち
+		효과条件カテゴリ = 서브테러
+		CALL 효과条件レベル_ADV(4, "以上")
+		효과条件スーパー표시 = 表側표시
+		효과条件スーパー종류 = モン全般
+		효과条件スーパーカテゴリ = リバース
+		효과条件複数 = 2
+		CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드", ゾーン, 場所)
+		IF RESULT != 9999
+			FOR カウンタ, 0, 10
+				選択カード群:カウンタ = RESULT:カウンタ
+			NEXT
+			FOR カウンタ, 0, 2
+				選択カード = 選択カード群:カウンタ
+				選択カードID = GETVAR(@"%듀얼리스트%_필드:選択カード")
+				TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+				IF MATCH(RESULTS, "서브테러")
+					TRYCALLFORM CARD_{選択カードID}("レベル")
+					IF RESULT > 0
+						攻撃力修正 += RESULT * 100
+					ENDIF
+				ENDIF
+				
+				CALL CARD_DISPOSE(듀얼리스트, "필드", 選択カード)
+			NEXT
+			
+			CALL FULLRESET
+			효과추가종류 = 効追永攻 + 攻撃力修正
+			CALL CARD_EX_SUMMON(듀얼리스트, "EX덱", 場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 58640, 2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = レベル持ち
+		효과条件カテゴリ = 서브테러
+		CALL 효과条件レベル_ADV(4, "以上")
+		효과条件スーパー종류 = モン全般
+		효과条件スーパーカテゴリ = リバース
+		CALL CARD_ADD_GY_ADV(듀얼리스트, ゾーン, 場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件종류 = モン全般
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트, ゾーン, 場所, "裏側守備표시")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트, 종류, ゾーン, 場所, 58640, 10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件종류 = レベル持ち
+		효과条件カテゴリ = 서브테러
+		CALL 효과条件レベル_ADV(4, "以上")
+		효과条件スーパー종류 = モン全般
+		효과条件スーパーカテゴリ = リバース
+		CALL CARD_ADD_ADV(듀얼리스트, ゾーン, 場所)
+	ENDIF
+ENDIF
+
+

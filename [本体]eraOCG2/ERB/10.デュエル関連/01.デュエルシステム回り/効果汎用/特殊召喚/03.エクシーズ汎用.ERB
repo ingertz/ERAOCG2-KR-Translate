@@ -25,7 +25,8 @@
 #DIMS DYNAMIC 使用素材名前,99
 #DIM DYNAMIC 素材条件レベル설정,99
 #DIM DYNAMIC 検出종류,99
-
+#DIMS DYNAMIC 素材条件固名前설정,99
+#DIM DYNAMIC 固名前CNT
 
 #DIM DYNAMIC 素材数起動
 #DIM DYNAMIC 효과추가종류보존,20
@@ -51,6 +52,12 @@ VARSET 使用素材名前
 
 $CHOICE_LOOP
 VARSET 条件完全달성
+
+IF 素材条件固名前起動 == 1
+	FOR カウンタ,0,固名前CNT
+		素材条件固名前:カウンタ = %素材条件固名前설정:カウンタ%
+	NEXT
+ENDIF
 
 IF 素材条件同レベル起動 >= 1 && 素材数 == 0
 	CALL SETSAME_INFO(듀얼리스트,"レベル",素材条件同レベル起動,1)
@@ -97,8 +104,12 @@ IF 듀얼리스트 == "자신"
 	選択カード:素材数 = RESULT
 ELSE
 	選択カード:素材数 = RESULT
-	SIF 素材条件数自由 == 1 && 素材数 >= 2 && 選択カード:素材数 == 9999
+	IF 素材条件数自由 == 1
+		CALL ENEMY_RUTIN_SOZAINUM(소환カード_ID,素材数,選択カード:素材数)
+		IF RESULT == 1
 		選択カード:素材数 = 8888
+		ENDIF
+	ENDIF
 ENDIF
 
 IF 選択カード:素材数 == 9999
@@ -129,6 +140,12 @@ ELSEIF INRANGE (選択カード:素材数, 0, 5)
 	IF 素材条件同レベル起動 >= 1
 		CALL CARD_SELECT(듀얼리스트,選択カード:素材数)
 		素材条件レベル설정 = GETVAR(@"%대상者（CS）%_MZ_星:RESULT")
+	ENDIF
+
+	IF 素材条件固名前起動 == 1
+		TRYCALLFORM CARDNAME_{選択カード_ID_保}("名前")
+		素材条件固名前설정:固名前CNT = %RESULTS%
+		固名前CNT ++
 	ENDIF
 
 	IF 必要素材数 >= 3
@@ -229,7 +246,7 @@ IF 素材数 >= 必要素材数 || (素材数 >= 代替素材数 && 代替素材
 	CALL CARD_EX_SUMMON(듀얼리스트, "EX덱", 소환カード,표시形式)
 	TRYCALLFORM CARDSUMMON_AA_{소환カード_ID}
 	IF 듀얼리스트 == "자신"
-		リザルト：XYZ소환 = 1
+		リザルト：XYZ소환 += 1
 	ENDIF
 	VARSET ALT条件
 	RETURN 1
@@ -247,6 +264,9 @@ ENDIF
 #DIM DYNAMIC 素材数
 #DIM DYNAMIC 選択カード,99
 #DIM DYNAMIC 選択カード_ID,99
+#DIMS DYNAMIC 素材条件固名前설정,99
+#DIM DYNAMIC 固名前CNT
+
 
 VARSET 選択カード, -1
 
@@ -258,16 +278,28 @@ $CHOICE_LOOP
 IF 素材条件同レベル起動 >= 1
 	CALL SETSAME_INFO(듀얼리스트,"レベル",素材条件同レベル起動,1)
 ENDIF
+IF 素材条件固名前起動 == 1
+	FOR カウンタ,0,固名前CNT
+		素材条件固名前:カウンタ = %素材条件固名前설정:カウンタ%
+	NEXT
+ENDIF
+
 
 CALL CARD_FILTER_EXSS(듀얼리스트,소환カード,엑시즈,選択カード,"EX덱",素材数,1)
 IF INRANGE(RESULT,1,3) 
-	選択カード:素材数 = RESULT:1
+	選択カード_ID = RESULT:1
+	選択カード:素材数 = 選択カード_ID
 	素材数 += RESULT
 	IF 素材数 >= 必要素材数
 		RETURN 1
 	ELSEIF 素材数 >= 2 && 素材条件数自由
 		RETURN 1
 	ELSE
+		IF 素材条件固名前起動 == 1
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+			素材条件固名前설정:固名前CNT = %RESULTS%
+			固名前CNT ++
+		ENDIF
 		GOTO CHOICE_LOOP
 	ENDIF
 ELSEIF RESULT == 0 || RESULT == 9999

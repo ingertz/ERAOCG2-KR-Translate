@@ -1,0 +1,239 @@
+﻿@CARDNAME_79926,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 알몸환복.alc
+	CASE "略称"
+		RESULTS = 알몸환복
+	CASE "カテゴリ"
+		RESULTS:0 = E.R.A
+		RESULTS:1 = 닷아르크
+ENDSELECT
+
+
+@CARD_79926(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 20260121
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79926(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動,フリー誘発)
+PRINTL ①：덱から「.alc」装備마법カード１枚を손패に加える。
+PRINTL その後、以下の효과を適用できる。
+PRINTL ●자신の손패・フィールドから「E.R.A」装備마법カードを任意の数だけ묘지に送る。
+PRINTL その数と同じ링크数を持つ「.alc」Lモンスター１体をEX덱から특수소환する。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL 상대がモンスターを특수소환した場合に묘지のこのカードを제외して발동できる。
+PRINTL 자신の묘지の「E.R.A」装備カード１枚を상대フィールドのモンスター１体に装備する。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_79926(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79926)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,79926)
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 닷아르크
+	효과条件종류 = 装備마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,79926)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF 마함数(듀얼리스트) == 5
+		RETURN 0
+	CALL FULLRESET
+	;상대が특수소환したか
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	;装備できる牝性がいるか
+	효과範囲상대필드 = 1	
+	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	;装備できるera마법があるか
+	효과範囲묘지 = 1
+	효과条件カテゴリ = E.R.A
+	효과条件종류 = 装備마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_79926(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 最大링크
+#DIM DYNAMIC 選択링크値
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード2
+#DIM DYNAMIC 조교대상
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79926,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 닷아르크
+		효과条件종류 = 装備마법
+		CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲마함 = 1
+			효과条件カテゴリ = E.R.A
+			효과条件종류 = 装備마법
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			最大링크 = RESULT
+
+			CALL FULLRESET
+			효과条件カテゴリ = 닷아르크
+			효과条件종류 = 링크
+			CALL 효과条件レベル_ADV(最大링크, "以下")
+			CALL CARD_CHOOSE_BASIC(듀얼리스트, "EX덱",ゾーン,場所)	
+			選択カード = RESULT
+			IF 選択カード != 9999
+				CALLFORM CARD_{GETVAR(@"%듀얼리스트%_EX덱:選択カード")}("レベル")
+				選択링크値 = RESULT
+
+				CALL FULLRESET
+				효과条件종류 = 装備마법
+				효과範囲손패 = 1
+				효과範囲마함 = 1
+				효과条件カテゴリ = E.R.A
+				효과条件複数 = 選択링크値
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲EX덱 = 1
+					효과条件固定 = 選択カード
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+					IF RESULT == 1
+						選択カード = RESULT:1
+						TRYCALLFORM CARDNAME_{選択カード}("名前")
+						SETCOLOR C_PINK
+						PRINTFORML 
+						PRINTFORML 桃色の幕の中から%RESULTS%が現れた！
+						PRINTFORML 
+						RESETCOLOR
+						
+					ENDIF
+				ENDIF
+			ENDIF
+
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79926,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件종류 = 装備마법
+		효과条件カテゴリ = E.R.A
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件성별 = 牝性
+			효과条件표시 = 表側표시
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+			IF RESULT != 9999
+				조교대상 = RESULT:1
+				CALL CARD_EROTICS(조교대상)
+				IF RESULT != -1
+					조교대상 = RESULT
+					SETCOLOR C_PINK
+					PRINTFORML 
+					PRINTFORML 生着替えチャレンジ！！
+					PRINTFORML %CALLNAME:조교대상%の周囲に桃色の幕で覆われ、衣服が剝ぎ取られる！
+					PRINTFORML 30、29、28……慌てる%CALLNAME:조교대상%をよそにカウントは無情に進んで行く。
+					PRINTFORML %CALLNAME:조교대상%は渋々着替え始めた……
+					PRINTFORML 
+					PRINTFORML 3、2、1……0！
+					PRINTFORML カウントダウンと共に桃幕が取り払われる！
+					PRINTFORML 
+
+					SELECTCASE RAND:3
+						CASE 0
+						PRINTFORML %CALLNAME:조교대상%は無事に着替える事に成功した！
+						PRINTFORML 着替えのシルエットを見られた%CALLNAME:조교대상%は恥ずかしそうにしている……
+						CALL EROTIC_MOVE("晒しもの",조교대상,-1,100)
+						CASE 1
+						PRINTFORML %CALLNAME:조교대상%は無事に着替える事に成功した……？
+						PRINTFORML ああっと！　衣服がずれてポロリしてしまった！
+						PRINTFORML 柔肌を見られた%CALLNAME:조교대상%は顔を真っ赤にしている……
+						CALL EROTIC_MOVE("晒しもの",조교대상,-1,200)
+						CASE 2
+						PRINTFORML %CALLNAME:조교대상%は生着替えに間に合わなかった！
+						PRINTFORML %CALLNAME:조교대상%は顔を真っ赤にしながら衆人環視の中着替えた……
+						CALL EROTIC_MOVE("晒しもの",조교대상,-1,300)
+					ENDSELECT
+					PRINTFORML 
+					RESETCOLOR
+				ENDIF
+			ENDIF
+
+		ENDIF
+	ENDIF
+ENDIF

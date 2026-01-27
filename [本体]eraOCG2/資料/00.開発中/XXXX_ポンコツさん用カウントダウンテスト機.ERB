@@ -1,0 +1,131 @@
+﻿@CARDNAME_44063,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ポンコツさん用カウントダウンテスト機
+	CASE "略称"
+		RESULTS = タイム魔・ジーン
+	CASE "カテゴリ"
+		RESULTS:0 = テスト
+ENDSELECT
+
+
+@CARD_44063(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RETURN 機械族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1700
+	CASE "守備力"
+		RETURN 1700
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_44063(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,召喚時 ,特殊召喚時,攻撃時誘発)
+PRINTL ①：このカードが召喚・特殊召喚した場合、またはこのカードの攻撃宣言時に発動できる。
+PRINTL 破滅カウントを１つ進める。
+PRINTL 破滅カウント１２以上である場合。自分はゲームに勝利する。
+PRINTL また、破滅カウントはお互いのスタンバイフェイズ時に１進む。
+
+
+@CARDCAN_44063(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,44063)
+SIF RESULT == 1
+	RETURN 0
+
+
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時
+	RETURN 1
+
+ELSEIF 種類 == 攻撃時誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_44063(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC リピート回数
+#DIM DYNAMIC 宣言レベル
+#DIM DYNAMIC 最多モンスター数
+#DIM DYNAMIC 紋章位置
+
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == 召喚時 || 種類 == 特殊召喚時 || 種類 == 攻撃時誘発
+	;カード発動確認
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,44063)
+	IF RESULT == 0
+		;ここで、ID[44063]の紋章（エンブレム）が存在しているかを確認する。
+		;ここでは、何番目に作られた紋章なのかの番号を取得して返してくれる
+		CALL CARD_GET_EMBLEM_VALUES(決闘者,44063)
+		;このデュエル中、この紋章が存在しない場合：
+		IF RESULT == -1
+			;新しくID[44063]の紋章（エンブレム）に数値を刻む
+			;何をしているかというと、決闘者（プレイヤー）の紋章から、-1（この関数では最新の設定位置）の。
+			;汎用数１に、1を足しているという命令を出している
+			CALL CARD_ENG_EMBLEM(決闘者,-1,1,1)
+			;新しくID[44063]の紋章を作成する。
+			CALL CARD_RESERV(決闘者,44063,永紋章予約)
+		;存在する場合は：
+		ELSE
+			紋章位置 = RESULT
+			;既にあるID[44063]の紋章に数値を足す
+			;何をしているかというと、決闘者（プレイヤー）の紋章で、見つかったID[44063]の紋章がある位置の、
+			;汎用数１に、1を足しているという命令を出している
+			CALL CARD_ENG_EMBLEM(決闘者,紋章位置,1,1)
+		ENDIF
+
+		;特殊勝利のためにもっかい見る
+		CALL CARD_GET_EMBLEM_VALUES(決闘者,44063)
+		;汎用数１に設定されてる数値が１以上である
+		IF RESULT:1 >= 12
+			;勝ちです（特殊勝利フラグ）
+			CALL SET_PLAYER_INFO(決闘者,"決闘敗北フラグ",4,1)
+		ENDIF
+	ENDIF
+ENDIF

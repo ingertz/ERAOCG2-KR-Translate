@@ -1,0 +1,208 @@
+﻿@CARDNAME_79922,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 젖소비키니.alc
+	CASE "略称"
+		RESULTS = 젖소비키니
+	CASE "カテゴリ"
+		RESULTS:0 = E.R.A
+		RESULTS:1 = 닷아르크
+		RESULTS:2 = 호루스타인
+ENDSELECT
+
+
+@CARD_79922(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "추가日"
+		RETURN 20260121
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_79922(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL CARD_ABLE(0,마함起動,손패起動)
+PRINTL 牝性モンスターにのみ装備可能。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：装備モンスターの효과は無効化され、必ず攻撃をしなければならない。
+CALLFORM CARD_ABLE(1,バトル開始時)
+PRINTL ②：バトルフェイズ開始時に발동できる。
+PRINTL フィールドのモンスター１体を発情状態にする事ができる。
+PRINTL この時の発情の강도は자신の마법＆함정ゾーンの「E.R.A」カードの数に依存する。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ③：フィールドのモンスターの攻撃が中断された場合に발동できる。
+PRINTL 자신は덱からカードを１枚ドローし、ＬＰを１０００회복する。
+CALL TEXT_DECORATION("ROGUE")
+
+
+@CARDCAN_79922(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,79922)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1	
+	효과条件성별 = 牝性 
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == バトル開始時
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_攻撃無効") == 1
+		条件달성 = 1
+	SIF GETVAR(@"%対面者%_攻撃無効") == 1
+		条件달성 = 1
+	SIF 条件달성 != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_79922(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 選択カード_ID
+ 
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79922)
+	IF RESULT == 0
+		;손패から발동後、마법トラップゾーンにカード이동
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		효과条件성별 = 牝性 
+		효과条件표시 = 表側표시
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+		IF RESULT != 9999
+			조교대상 = RESULT:1
+			選択カード_ID = RESULT:1
+			CALL CARD_EROTICS(조교대상)
+			IF RESULT != -1
+				조교대상 = RESULT
+				TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+				SETCOLOR C_PINK
+				IF MATCH(RESULTS,"호루스타인") || MATCH(RESULTS,"닷아르크")
+					PRINTFORML
+					PRINTFORML %CALLNAME:조교대상%は젖소비키니を着こなしている！
+					PRINTFORML
+					CALL EROTIC_MOVE("晒しもの",조교대상,-1,50)
+				ELSE
+					PRINTFORML
+					PRINTFORMW %CALLNAME:조교대상%は젖소비키니を着せられてしまった！
+					PRINTFORML 노출の激しい젖소비키니に%CALLNAME:조교대상%は顔を赤くしてしまう……
+					PRINTFORML
+					CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
+				ENDIF
+				RESETCOLOR
+			ENDIF
+		ENDIF
+
+	ENDIF
+ELSEIF 종류 == バトル開始時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79922)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = E.R.A
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		カウンタ = RESULT
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲필드 = 1
+		효과条件任意 = 1
+		CALL CARD_GRANT_ADV(듀얼리스트,ゾーン,場所,"発情",150+カウンタ*10)
+		IF RESULT == 1
+			조교대상 = RESULT:1
+			CALL CARD_EROTICS(조교대상)
+			IF RESULT != -1
+				조교대상 = RESULT
+				SETCOLOR C_PINK
+				PRINTFORML
+				PRINTFORMW 젖소비키니から香る濃厚なミルクの匂いに%CALLNAME:조교대상%は発情してしまった！
+				PRINTFORML
+				RESETCOLOR
+				CALL EROTIC_MOVE("バスト조교",조교대상,-1,150)
+			ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"無効")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"戦狂")
+	;ノーパンや全裸などの亜種として仮置き。服装関連のアプデがデュエルにも反映されたら？
+	;5=젖소비키니にする97.デュエルUI関連
+	;CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"服状",5)
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,79922)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+		조교대상 = GETVAR(@"%装備者%_필드:装備先")
+		CALL CARD_EROTICS(조교대상)
+		IF RESULT != -1
+			조교대상 = RESULT
+			SETCOLOR C_PINK
+			PRINTFORML
+			PRINTFORMW 젖소비키니に身を包んだ%CALLNAME:조교대상%からミルクを絞り飲む……
+			PRINTFORML
+			RESETCOLOR
+			CALL EROTIC_MOVE("バスト조교",조교대상,-1,150)
+		ENDIF
+	ENDIF
+ENDIF

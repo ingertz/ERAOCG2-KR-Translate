@@ -1,0 +1,176 @@
+@IRAI_EVENT_476(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 대상캐릭터
+
+VARSET RESULT
+VARSET RESULTS
+
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = (CP-TTH1)충혹마의 구멍
+	CASE "이벤트種"
+		RETURN 이벤트_通常
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL 通信販売で購入した오나홀のレビューを見ていると、不穏なものがあった。
+		PRINTL 
+		PRINTL 『충혹마に搾り取られるようで、もう出ないのに吸いつくされて今は病院のベッドの上です。　★★★★☆　』
+		PRINTL 『ムスコが絞り尽くされた。まるで生きているように蠢いているようで気持ち悪い。　　　　　★☆☆☆☆　』
+		PRINTL 『不気味な声が聞こえますが、최면音声みたいでいつも以上に気持ちよくヌケました。　　　　★★★★★　』
+		PRINTL 
+		PRINTL 購入したものの中に、曰くつきのものが混ざっていたようだ……。
+		PRINTL 耳を澄ますと、오나홀のパッケージから声が聞こえてくる。
+		SETCOLOR C_RED
+		PRINTFORML 《注意》충혹마캐릭터に変化が起こります。
+		RESETCOLOR
+	CASE "条件"
+		SIF 依頼_完了횟수:1 == 0 && FLAG:게임모드 == 1
+			RETURN 0
+		SIF !ITEM:3
+			RETURN 0
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@IRAI_ACT_476(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 이벤트主,20
+#DIMS DYNAMIC セラ二人称
+
+IF TALENT:MASTER:성별 == 2
+	セラ二人称 = 오빠
+ELSE
+	セラ二人称 = 언니
+ENDIF
+
+이벤트主:0 = NO_TO_CHARANUM(1370);セラ
+이벤트主:1 = NO_TO_CHARANUM(1371);フレシア
+이벤트主:2 = NO_TO_CHARANUM(1372);トリオン
+이벤트主:3 = NO_TO_CHARANUM(1373);カズーラ
+이벤트主:4 = NO_TO_CHARANUM(1374);アトラ
+이벤트主:5 = NO_TO_CHARANUM(1375);ティオ
+이벤트主:6 = NO_TO_CHARANUM(1376);ランカ
+이벤트主:7 = NO_TO_CHARANUM(1377);アロメルス
+이벤트主:8 = NO_TO_CHARANUM(1378);リセ
+이벤트主:9 = NO_TO_CHARANUM(1379);ジーナ
+이벤트主:10 = NO_TO_CHARANUM(1380);クラリア
+이벤트主:11 = NO_TO_CHARANUM(1381);プティカ
+이벤트主:12 = NO_TO_CHARANUM(1382);キノ
+이벤트主:13 = NO_TO_CHARANUM(1383);ホールティア
+이벤트主:14 = NO_TO_CHARANUM(1384);アティプス
+이벤트主:15 = NO_TO_CHARANUM(1385);シトリス
+
+IF 依頼_달성상황 == 0
+	PRINTFORMW 件の오나홀を開封してみると、弱弱しく呼吸しているカードが見えた。
+	PRINTFORMW %CALLNAME:(이벤트主:0)%だろうか…
+	PRINTL
+	SETCOLOR C_L_GREEN
+	PRINTFORMW 「%セラ二人称%……助けて……。セラたち、もう消えちゃいそうなの……」
+	RESETCOLOR
+	PRINTL
+	PRINTFORMW いまにも消えそうな%CALLNAME:(이벤트主:0)%の影には、同じく薄れかけている他の충혹마の姿が見える。
+	PRINTFORMW 
+	;ここまで来て手を差し出さないわけないだろうし
+	PRINTFORMW 弱っている%CALLNAME:(이벤트主:0)%に手を差し出すと、
+	PRINTFORMW 
+	PRINTFORML 弱っていたとは思えない力強さで手を引かれ、体勢を崩したところを押し倒され、馬乗りにされる。
+	PRINTFORMW 
+	PRINTFORMW %CALLNAME:(이벤트主:0)%の影からは蠱惑的な笑みを浮かべた충혹마の少女たちが次々と出てきて、%CALLNAME:MASTER%を組み敷いていく。
+	PRINTFORMW 
+	PRINTFORMW まさか、함정にかけられたのか？
+	PRINTFORMW %CALLNAME:(이벤트主:0)%は呆然としている%CALLNAME:MASTER%の股間を刺激していく……。
+	PRINTFORMW 
+	SETCOLOR C_L_GREEN
+	PRINTFORMW 「ありがとう、%セラ二人称%」
+	PRINTFORMW 
+	SETCOLOR C_PINK
+	PRINTFORMW 「セラたちとってもおなかがぺこぺこだったの……」
+	PRINTL
+	PRINTFORMW 「%セラ二人称%、知っててセラたちを買ったんだよね？だから、これは　ゴ　ー　イ　の　う　え　だ　よ　ね　❤」
+	PRINTFORMW
+	PRINTL
+	SETCOLOR C_RED
+	PRINTFORMW 「い　た　だ　き　ま　ぁ　す　❤」
+	PRINTL
+	RESETCOLOR
+	PRINTFORMW 
+	;충혹마たちが만족するまで16連デュエル（섹스）…省略
+
+	SETCOLOR C_PINK
+	PRINTFORMW ❤
+	PRINTFORMW 　❤
+	PRINTFORMW 　　❤
+	PRINTFORMW 　　　❤
+	RESETCOLOR
+	PRINTFORMW …
+	BASE:MASTER:체력 -= 8000
+	BASE:MASTER:기력 -= 8000
+	IF BASE:MASTER:체력 < 500
+		PRINTFORMW %CALLNAME:MASTER%は충혹마に吸いつくされた……。
+		PRINTFORMW 
+		SETCOLOR C_L_GREEN
+		PRINTFORMW 「%セラ二人称%、もう出せないの？　セラたち、まだおなかぺこぺこだよ……」
+		RESETCOLOR
+		RETURN 0
+	ENDIF
+	PRINTFORMW
+	PRINTFORMW 長く苦しい戦いに승리したあなたの足元には、충혹마の少女たちが倒れている。
+	PRINTFORMW 戦う前とは違い、消えかかっていた輪郭ははっきりとしており、どの少女たちも恍惚した笑みを浮かべていた。
+
+;충혹마たちが（性的に）大幅にパワーアップ。
+	CALL CHAR_CHANGE_476(이벤트主:1)
+	CALL CHAR_CHANGE_476(이벤트主:2)
+	CALL CHAR_CHANGE_476(이벤트主:3)
+	CALL CHAR_CHANGE_476(이벤트主:4)
+	CALL CHAR_CHANGE_476(이벤트主:5)
+	CALL CHAR_CHANGE_476(이벤트主:6)
+	CALL CHAR_CHANGE_476(이벤트主:7)
+	CALL CHAR_CHANGE_476(이벤트主:8)
+	CALL CHAR_CHANGE_476(이벤트主:9)
+	CALL CHAR_CHANGE_476(이벤트主:10)
+	CALL CHAR_CHANGE_476(이벤트主:11)
+	CALL CHAR_CHANGE_476(이벤트主:12)
+	CALL CHAR_CHANGE_476(이벤트主:13)
+	CALL CHAR_CHANGE_476(이벤트主:14)
+	CALL CHAR_CHANGE_476(이벤트主:15)
+
+	PRINTFORMW 만족した충혹마の少女たちをカード化していくと、見知った姿とは別のカードになっていることに気づいた。
+	PRINTFORMW 
+	CALL CARD_GET_SINGLE(39570,0,3)
+	CALL CARD_GET_SINGLE(39571,0,3)
+	CALL CARD_GET_SINGLE(39572,0,3)
+	CALL CARD_GET_SINGLE(39573,0,3)
+	CALL CARD_GET_SINGLE(39574,0,3)
+	CALL CARD_GET_SINGLE(59810,0,3)
+	CALL CARD_GET_SINGLE(59811,0,3)
+	CALL CARD_GET_SINGLE(59812,0,3)
+	CALL CARD_GET_SINGLE(59813,0,3)
+	CALL CARD_GET_SINGLE(99820,0,3)
+	CALL CARD_GET_SINGLE(99821,0,3)
+	CALL CARD_GET_SINGLE(99823,0,3)
+
+	CALL EVENT_TIMER(480)
+
+	RETURN 2
+ENDIF
+
+@CHAR_CHANGE_476(캐릭터_ID)
+#DIM DYNAMIC 캐릭터_ID
+
+MARK:캐릭터_ID:쾌락각인 = 3
+MARK:캐릭터_ID:굴복각인 = 3
+MARK:캐릭터_ID:반발각인 = 0
+ABL:캐릭터_ID:욕망 += 5
+ABL:캐릭터_ID:친밀 += 5
+ABL:캐릭터_ID:순종 += 5
+ABL:캐릭터_ID:기교 += 5
+ABL:캐릭터_ID:Ｖ감각 += 5
+ABL:캐릭터_ID:손가락 += 5
+ABL:캐릭터_ID:혀 += 5
+ABL:캐릭터_ID:허리 += 5
+ABL:캐릭터_ID:봉사정신 += 5
+ABL:캐릭터_ID:정액중독 += 5
+ABL:캐릭터_ID:노출증 += 5

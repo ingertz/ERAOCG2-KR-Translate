@@ -56,7 +56,7 @@ PRINTL ①：자신 필드에 몬스터가 존재하지 않는 경우、또는 �
 PRINTL 이 카드를 패에서 특수 소환한다。
 CALL CARD_ABLE(2,소환時 ,특수소환時)
 PRINTL ②：이 카드가 소환 / 특수 소환에 성공했을 때 발동할 수 있다。
-PRINTL 자신의 덱의 이 카드명 이외의 레벨３ 이하의 악마족 몬스터 １장을 공개한다。
+PRINTL 자신의 덱의 이 카드명 이외의 레벨３인 악마족 몬스터 １장을 제외한다。
 PRINTL 그 카드의 소환 성공시의 효과를 발동한다。
 
 @CARDCAN_11310(듀얼리스트,종류,ゾーン,場所)
@@ -64,7 +64,7 @@ PRINTL 그 카드의 소환 성공시의 효과를 발동한다。
 #DIMS DYNAMIC ゾーン
 #DIM DYNAMIC 종류
 #DIM DYNAMIC 場所
-#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 효과발동불가,3
 
 CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,11310)
 SIF RESULT == 1
@@ -82,20 +82,28 @@ IF 종류 == 손패起動
 	CALL CARD_SS_CHECK(듀얼리스트,11310,"손패")
 	SIF RESULT == 1
 		RETURN 0
+
+	;やりたいこと：
+	;フィールドにモンスターがいない：OK
+	;フィールド효과無しがいる　　　：OK
+	;フィールド효과ありのみ　　　　：NG
 	CALL FULLRESET
 	효과範囲필드 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 0
-		条件달성 = 1
+	SIF RESULT != 0
+	;フィールドにモンスターがいる場合
+		효과발동불가:0 = 1
 
 	CALL FULLRESET
 	효과範囲필드 = 1
 	효과条件종류 = 효과無し全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT == 0
-		条件달성 = 1
-	SIF 条件달성 == 0
+	;효과なしが1体もいない場合
+	SIF RESULT != 1
+		효과발동불가:1 = 1
+	SIF 효과발동불가:0 == 1 && 효과발동불가:1 == 1
 		RETURN 0
+
 	RETURN 1
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	SIF 발동済_2(듀얼리스트,11310)
@@ -105,7 +113,8 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	CALL FULLRESET
 	효과範囲덱 = 1
 	효과条件종족 = 악마족
-	CALLFORM 효과条件レベル_ADV(3, "以下")	
+	효과条件レベル = 3
+	효과条件固名前 = 마계발 차원여행 버스
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -131,10 +140,12 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 		CALL FULLRESET
 		효과範囲덱 = 1
 		효과条件종족 = 악마족
-		CALLFORM 효과条件レベル_ADV(3, "以下")
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 9999
-			CALLFORM CARDEFFECT_{RESULT:99}(듀얼리스트,소환時,"효과処理")
+		효과条件レベル = 3
+		효과条件固名前 = 마계발 차원여행 버스
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALLFORM CARDEFFECT_{RESULT:1}(듀얼리스트,소환時,"효과処理")
 		ENDIF
 	ENDIF
 ENDIF

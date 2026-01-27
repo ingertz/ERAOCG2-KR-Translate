@@ -1,0 +1,154 @@
+﻿@CARDNAME_92846,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 패자의 명동
+	CASE "略称"
+		RESULTS = 패자의 명동
+	CASE "カテゴリ"
+		RESULTS:0 = 레드 데몬
+ENDSELECT
+
+
+@CARD_92846(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_92846(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できず、
+PRINTL 상대が１０体以上のモンスターを소환・특수소환したターン、このカードの발동に対して효과は발동できない。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：このターンに상대が소환・특수소환したモンスターの数によって、以下の효과をそれぞれ適用する。
+PRINTL ●１体以上：자신の묘지・제외状態の어둠속성Sモンスター１体を특수소환する。
+PRINTL ●３体以上：次の자신ターン開始時までの間、
+PRINTL 자신のモンスターゾーンの「레드 데몬즈 드래곤」は상대が발동した효과を受けない。
+PRINTL ●５体以上：상대フィールドのモンスターを全て裏側守備표시にする。
+
+@CARDCAN_92846(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92846)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+    SIF 발동済_1(듀얼리스트,92846)
+		RETURN 0
+	SIF GETVAR(@"%対面者%_モン出現数") < 1
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == チェーン可否
+	SIF GETVAR(@"%対面者%_モン出現数") < 10
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+
+
+@CARDEFFECT_92846(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92846,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		SIF GETVAR(@"%対面者%_モン出現数") >= 1
+			条件달성 ++
+		SIF GETVAR(@"%対面者%_モン出現数") >= 3
+			条件달성 ++
+		SIF GETVAR(@"%対面者%_モン出現数") >= 5
+			条件달성 ++
+
+
+		IF 条件달성 >= 1
+		    CALL FULLRESET
+			효과範囲묘지 = 1
+		    효과範囲제외 = 1
+		    효과条件속성 = 어둠속성
+		    효과条件종류 = 싱크로
+		    효과条件소환可 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+			    CALL FULLRESET
+				효과範囲묘지 = 1
+		        효과範囲제외 = 1
+		        효과条件속성 = 어둠속성
+		        효과条件종류 = 싱크로
+		        CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		ENDIF
+		
+		IF 条件달성 >= 2
+		    CALL FULLRESET
+			효과範囲필드 = 1
+		    효과条件名前 = 레드 데몬즈 드래곤
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+			    CALL FULLRESET
+			    효과範囲필드 = 1
+		        효과条件名前 = 레드 데몬즈 드래곤
+			    CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"モ耐",4)
+			    CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"魔耐",4)
+			    CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"함정耐",4)
+			ENDIF
+		ENDIF
+
+		IF 条件달성 >= 3
+		    CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件표시 = 表側표시
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+			    CALL FULLRESET
+				효과条件표시 = 表側표시
+			    CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"표시변경")
+			ENDIF
+		ENDIF
+		
+	ENDIF
+ENDIF
+

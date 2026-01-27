@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = CNo.107 네오 갤럭시아이즈 타키온 드래곤
 	CASE "略称"
-		RESULTS = C#H7 초은하안
+		RESULTS = C#H7 초은하안룡
 	CASE "カテゴリ"
 		RESULTS:0 = 넘버즈
 		RESULTS:1 = 오버 헌드레드
@@ -52,7 +52,7 @@ RETURN 0
 CALL RESETCONDITION_MAT
 必要素材数 = 3
 素材条件レベル = 9
-
+지정素材名前 = No.107 갤럭시아이즈 타키온 드래곤
 IF EX参照 == 1
 	CALL XYZCAN(듀얼리스트,소환カード,58207) 
 	RETURN RESULT
@@ -93,6 +93,8 @@ IF 종류 == 필드起動
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
 		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 短紋章起動
 	RETURN 1
 ELSEIF 종류 == 지속효과
 	SIF ゾーン != "필드"
@@ -135,8 +137,12 @@ IF 종류 == 필드起動
 	ENDIF
 ELSEIF 종류 == 短紋章起動
 	CALL FULLRESET
+	효과条件표시 = 0
 	CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"発無",3)
+	CALL FULLRESET
+	효과条件표시 = 0
+	CALL STATCHANGE_EFFECT(듀얼리스트,"상대마함",場所,"発無",3)
 ELSEIF 종류 == 지속효과
 	CALL FULLRESET
-	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"戦",3,1)
+	CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"追戦",2,1)
 ENDIF

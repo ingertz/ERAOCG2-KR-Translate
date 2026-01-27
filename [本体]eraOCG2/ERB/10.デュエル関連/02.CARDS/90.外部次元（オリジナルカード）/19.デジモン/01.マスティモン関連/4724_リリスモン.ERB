@@ -1,0 +1,199 @@
+﻿@CARDNAME_4724,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 리리스몬
+	CASE "略称"
+		RESULTS = 리리스몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_4724(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 2900
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 260120
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4724(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：손패のこのカードを상대に見せて발동できる。
+PRINTL 以下から１つ選んで適用し、このカードを특수소환する。
+PRINTL （묘지に「디지몬」カードが５枚以上存在する場合、選ばなくてもよい）
+PRINTL ●자신フィールドのコスト７以上の빛속성・어둠속성モンスター１体をリリースする。
+PRINTL ●상대は손패・덱からモンスター１体を특수소환する。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신・상대のメインフェイズに발동できる。
+PRINTL 상대フィールドに存在するコスト８以下のモンスター１体の효과をターン終了時まで無効にし、そのコントロールを得る。
+CALLFORM CARD_ABLE(3,발동誘発)
+PRINTL ③：상대がモンスター효과を발동した時に발동できる。
+PRINTL 자신フィールドに存在する元々の持ち主が상대であるモンスター１体をリリースし、
+PRINTL 상대フィールドのカード１枚を破壊する。
+
+@CARDCAN_4724(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4724)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動 
+	SIF 발동済_1(듀얼리스트,4724)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 対面者
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(듀얼리스트,4724,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,4724)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALLFORM 효과条件レベル_ADV(8,"以下")
+	효과条件除去種 = 強奪
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件所有 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4724(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4724,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 디지몬
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		IF RESULT >= 5
+			PRINTFORML 묘지に디지몬カードが５枚以上あります。どちらの条件も無視しますか？
+			CALL YN_CHOICE(듀얼리스트)
+			IF RESULT == 0
+				CALL FULLRESET
+				CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+				RETURN 1
+			ENDIF
+		ENDIF
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件속성:0 = 빛속성
+		효과条件속성:1 = 어둠속성
+		CALLFORM 효과条件レベル_ADV(7,"以上")
+		효과条件任意 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		SIF RESULT == 1
+			条件달성 = 1
+
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,"손패",場所)
+		IF 条件달성 < 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4724,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALLFORM 효과条件レベル_ADV(8,"以下")
+		효과추가종류:0 = 返却行き
+		효과추가종류:1 = 22
+		효과추가종류:2 = 26
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"強奪")
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4724,0)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件所有 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+		ENDIF
+	ENDIF
+ENDIF

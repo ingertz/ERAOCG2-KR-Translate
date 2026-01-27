@@ -1,0 +1,131 @@
+﻿@CARDNAME_93655,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트랜잠 얼라이브
+	CASE "略称"
+		RESULTS = TRS 얼라이브
+	CASE "カテゴリ"
+		RESULTS:0 = 트랜잠
+ENDSELECT
+
+
+@CARD_93655(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 通常함정
+	CASE "추가日"
+		RETURN 260109
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_93655(종류)
+#DIM DYNAMIC 종류
+PRINTL このカード名のカードは１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,フリー誘発)
+PRINTL ①：자신の묘지のモンスター（미확인족）１体を대상として발동できる。
+PRINTL そのモンスターを특수소환する。
+PRINTL この효과で通常モンスターを특수소환した場合、そのモンスターの攻撃力はターン終了時まで倍になる。
+CALLFORM CARD_ABLE(0,身代효과)
+PRINTL ②：자신フィールドの通常モンスター（미확인족）が破壊される場合、
+PRINTL 代わりに묘지のこのカードを제외できる。
+
+
+@CARDCAN_93655(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,93655)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,93655)
+		RETURN 0
+	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 미확인족
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 身代효과
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF !GROUPMATCH(破壊종류,"효과","戦闘")
+		RETURN 0
+	SIF 破壊대상ゾーン != "필드"
+		RETURN 0
+	TRYCALLFORM CARD_{破壊대상ID}("종류")
+	SIF RESULT != 通常モン
+		RETURN 0
+	TRYCALLFORM CARD_{破壊대상ID}("종족")
+	SIF RESULT != 미확인족
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_93655(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93655,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 미확인족
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード = カード소환先
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARD_{選択カード_ID},"종류"
+			SIF RESULT != 通常モン
+				RETURN 0
+			TRYCALLFORM CARD_{選択カード_ID},"攻撃力"
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一攻",RESULT)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 身代효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,93655)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		RETURN 1
+	ENDIF
+ENDIF

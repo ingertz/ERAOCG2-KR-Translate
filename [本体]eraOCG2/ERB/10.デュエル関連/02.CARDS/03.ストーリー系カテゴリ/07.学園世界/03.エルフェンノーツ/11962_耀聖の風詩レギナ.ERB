@@ -1,0 +1,160 @@
+﻿@CARDNAME_11962,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 엘펜노츠 레기나
+	CASE "略称"
+		RESULTS = 엘펜노츠 레기나
+	CASE "カテゴリ"
+		RESULTS:0 = 엘펜노츠
+ENDSELECT
+
+
+@CARD_11962(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2000
+	CASE "守備力"
+		RETURN 1800
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1962
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_11962(종류)
+#DIM DYNAMIC 종류
+
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：자신・상대ターンに、자신の손패・フィールド（表側표시）から
+PRINTL このカード以外の「엘펜노츠」カード１枚を묘지へ送って발동できる。
+PRINTL このカードを손패から특수소환する。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが中央のメインモンスターゾーンに소환・특수소환した場合に발동できる。
+PRINTL 덱から「엘펜노츠 레기나」以外の「엘펜노츠」モンスター１体を특수소환する。
+CALLFORM CARD_ABLE(3,S素材時효과)
+PRINTL ③：このカードがＳ素材として묘지へ送られた場合に발동できる。
+PRINTL このカードを손패に加える。
+
+
+@CARDCAN_11962(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,11962)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	SIF ゾーン != "손패"
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,11962)
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,11962,"손패",1)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과条件カテゴリ = 엘펜노츠
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,11962)
+		RETURN 0
+	SIF 場所 != 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件固名前 = 엘펜노츠 레기나
+	효과条件カテゴリ = 엘펜노츠
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == S素材時효과
+	SIF 발동済_3(듀얼리스트,11962)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 場所 == 2
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_필드:2") == -1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_11962(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 戦闘カード
+
+IF 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,11962,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件カテゴリ = 엘펜노츠
+		효과条件他所 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,11962,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件固名前 = 엘펜노츠 레기나
+		효과条件カテゴリ = 엘펜노츠
+		효과条件종류 = モン全般
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == S素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,11962,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 엘펜노츠 레기나
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

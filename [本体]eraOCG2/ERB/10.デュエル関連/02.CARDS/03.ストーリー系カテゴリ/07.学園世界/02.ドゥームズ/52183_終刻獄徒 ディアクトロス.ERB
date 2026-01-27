@@ -9,7 +9,7 @@ SELECTCASE 参照先
 	CASE "名前"
 		RESULTS = 둠즈 브레이크 디아크트로스
 	CASE "略称"
-		RESULTS = 둠즈 브레이크
+		RESULTS = 둠즈 디아크
 	CASE "カテゴリ"
 		RESULTS:0 = 둠즈
 ENDSELECT
@@ -72,7 +72,8 @@ PRINTL 그 후、필드의 몬스터 １장을 파괴할 수 있다。
 CALLFORM CARD_ABLE(2,破壊→묘지)
 PRINTL ②：자신 묘지에 "둠즈" 몬스터 또는 "무구한 자 메디우스"가 존재하고、
 PRINTL 이 카드가 효과로 파괴된 경우에 발동할 수 있다。
-PRINTL 덱에서 장착 마법 카드 １장을 선택하여, 패에 넣거나 묘지로 보낸다。
+PRINTL 덱에서 장착 마법 카드 １장을 패에 넣을 수 있다。
+PRINTL 패에 넣지 않았을 경우、 덱에서 장착 마법 카드 １장을 묘지로 보낸다。
 
 
 @CARDCAN_52183(듀얼리스트,종류,ゾーン,場所)
@@ -172,15 +173,12 @@ ELSEIF 종류 == 破壊→묘지
 		CALL FULLRESET
 		효과範囲덱 = 1
 		효과条件종류 = 装備마법
-		IF 듀얼리스트 == "자신"
-			PRINTL 장착 마법을 패에 넣으시겠습니까？
-			CALL YN_CHOICE(듀얼리스트)
-			選択結果 = RESULT
-		ENDIF
-		;상대가 使う時は絶対サーチ
-		IF 選択結果 == 0
-			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-		ELSE
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件종류 = 装備마법
 			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF

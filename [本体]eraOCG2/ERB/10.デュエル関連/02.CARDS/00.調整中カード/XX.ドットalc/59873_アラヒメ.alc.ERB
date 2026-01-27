@@ -1,0 +1,217 @@
+﻿@CARDNAME_59873,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 아라히메.alc
+	CASE "略称"
+		RESULTS = 아라히메.alc
+	CASE "カテゴリ"
+		RESULTS:0 = E.R.A
+		RESULTS:1 = 닷아르크
+ENDSELECT
+
+
+@CARD_59873(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 3
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 2124
+	CASE "추가日"
+		RETURN 20260121
+ENDSELECT
+
+
+RETURN 0
+
+
+@CARD_EXPLANATION_59873(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 「E.R.A」モンスターを含むモンスター２体以上
+PRINTL 자신の마법＆함정ゾーンに「E.R.A」装備마법カードが存在しない場合、このカードはL소환できない。
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない
+CALL CARD_ABLE(1,EX소환時,특수소환時)
+PRINTL ①：このカードが특수소환した場合に발동できる。
+PRINTL 자신の덱から「.alc」カード１枚を묘지に送る。
+CALL CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ②：자신・상대ターンに발동できる。
+PRINTL 자신の묘지の「E.R.A」装備마법カード１枚をフィールドの牝性モンスター１体に装備する。
+CALL CARD_ABLE(0,攻守変動)
+PRINTL ③：このカードの攻撃力・守備力は자신の마법＆함정ゾーンの「E.R.A」カードの数×６００アップする。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDSUMMON_59873(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 3
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = E.R.A
+ELSE
+	PRINT
+ENDIF
+
+CALL FULLRESET
+효과範囲마함 = 1
+효과条件종류 = 装備마법
+효과条件カテゴリ = E.R.A
+CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+SIF RESULT != 1
+	RETURN 0
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,59873) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARDCAN_59873(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59873)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,59873)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 닷아르크
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,59873)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = E.R.A
+	효과条件종류 = 装備마법
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_59873(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 필드単体
+#DIM DYNAMIC 조교대상
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59873,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 닷아르크
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59873,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件カテゴリ = E.R.A
+		효과条件종류 = 装備마법
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"묘지",ゾーン,場所)	
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL FULLRESET
+			효과範囲필드 = 1
+			효과範囲상대필드 = 1
+			효과条件성별 = 牝性
+			효과条件표시 = 表側표시
+			CALLFORM CARD_EQUIP_ADV(듀얼리스트,選択カード,"묘지")
+			IF RESULT != 9999
+				조교대상 = RESULT:1
+				CALL CARD_EROTICS(조교대상)
+				IF RESULT != -1
+					조교대상 = RESULT
+					SETCOLOR C_PINK
+					PRINTFORML 
+					PRINTFORML %CALLNAME:조교대상%はアラヒメに憑依されて卑猥な衣装を着せられてしまった！
+					PRINTFORML 
+					RESETCOLOR
+					CALL EROTIC_MOVE("晒しもの",조교대상,-1,150)
+				ENDIF
+			ENDIF
+
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = E.R.A
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT > 0
+		CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,RESULT * 600,RESULT * 600)
+	ENDIF
+ENDIF
+
+

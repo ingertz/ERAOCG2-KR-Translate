@@ -1,0 +1,897 @@
+﻿@CARDNAME_28800,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 알카디몬 성장기
+	CASE "略称"
+		RESULTS = 알카디 성장기
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = Lv
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_28800(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1700
+	CASE "守備力"
+		RETURN 1400
+	CASE "生成カード"
+		RESULT:3 = 428800
+		RESULT:2 = 328800
+		RESULT:1 = 228800
+		RETURN 128800
+	CASE "추가日"
+		RETURN 
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28800(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の②の효과は１ターンに１度しか使用できず、
+PRINTL 「알카디몬」の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ①：このカードが戦闘でモンスターを破壊した場合に발동できる。
+PRINTL 자신は덱からカードを１枚ドローし、このカードは成長する。
+CALLFORM CARD_ABLE(3,필드→묘지 ,손패→묘지 ,덱→묘지 ,破壊→묘지)
+PRINTL ②：このカードが「디지몬」モンスターの효과で묘지へ送られた場合に발동できる。
+PRINTL 덱から「디지몬」モンスター１体を손패に加える。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに、손패・フィールドから他の「디지몬」カード１枚を묘지へ送って발동できる。
+PRINTL このカードは成長する。
+
+
+@CARDCAN_28800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28800)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 攻撃後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,28800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,128800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,328800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,228800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,428800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件他所 = 1
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지
+	SIF 발동済_3(듀얼리스트,28800)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	TRYCALLFORM CARDNAME_{処理中_효과ID}("カテゴリ")
+	SIF !MATCH(RESULTS,"디지몬")
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28800)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+		CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,128800)
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28800,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과範囲마함 = 1
+		효과条件他所 = 1
+		효과条件カテゴリ = 디지몬
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,128800)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지 || 종류 == 덱→묘지 || 종류 == 破壊→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28800,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 디지몬
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
+;--------------------------------------------------------------------------------------
+
+@CARDNAME_128800,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 알카디몬 성숙기
+	CASE "略称"
+		RESULTS = 알카디 성숙기
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = Lv
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_128800(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 6
+	CASE "攻撃力"
+		RETURN 2300
+	CASE "守備力"
+		RETURN 2000
+	CASE "生成カード"
+		RESULT:2 = 428800
+		RESULT:1 = 328800
+		RETURN 228800
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_128800(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①の효과は１ターンに１度しか使用できず、
+PRINTL 「알카디몬」の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ①：このカードが특수소환された場合に발동できる。
+PRINTL 상대フィールドのモンスター１体を選んで破壊する。
+PRINTL この효과で빛속성モンスターを破壊した場合、자신の묘지から「디지몬」カード１枚を選んで손패に加える。
+CALLFORM CARD_ABLE(0,攻撃後誘発)
+PRINTL ②：このカードが戦闘でモンスターを破壊した場合に발동できる。
+PRINTL 자신はカードを１枚ドローし、このカードは成長する。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに、손패から「디지몬」モンスター１体を묘지へ送って발동できる。
+PRINTL 以下の효과をそれぞれ適用する。
+PRINTL ●상대フィールドのモンスター１体を選んで破壊できる。
+PRINTL ●このカードは成長する。
+
+@CARDCAN_128800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,128800)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,128800)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 攻撃後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	SIF 直前戦闘破壊ID(듀얼리스트,1) == 0
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,28800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,128800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,328800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,228800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,428800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 디지몬
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_128800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード攻撃力
+
+IF 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,128800,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+		IF RESULT == 1
+			TRYCALLFORM CARD_{他参照選択カードID}("속성")
+			SIF RESULT != 빛속성
+				RETURN 0
+
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件カテゴリ = 디지몬
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,128800)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+		CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,228800)
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,128800,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件カテゴリ = 디지몬
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드単体",場所,"묘지")
+			CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,228800)
+		ENDIF
+	ENDIF
+ENDIF
+
+;--------------------------------------------------------------------------------------
+
+@CARDNAME_228800,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 알카디몬 완전체
+	CASE "略称"
+		RESULTS = 알카디 완전체
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = Lv
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_228800(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2900
+	CASE "守備力"
+		RETURN 2600
+	CASE "生成カード"
+		RESULT:1 = 428800
+		RETURN 328800
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_228800(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①の효과は１ターンに１度しか使用できず、
+PRINTL 「알카디몬」の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：このカードは대상耐性を持つ。
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：상대がモンスターの효과を발동した場合、손패を１枚捨てて발동できる。
+PRINTL その발동を無効にして破壊する。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに、손패から어둠속성の「디지몬」モンスター１体を묘지へ送って발동できる。
+PRINTL 以下の효과をそれぞれ適用する。
+PRINTL ●상대フィールドのカード１枚を選んで破壊できる。
+PRINTL ●このカードは成長する。
+
+@CARDCAN_228800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,228800)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,228800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,28800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,128800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,328800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,228800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,428800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件속성 = 어둠속성
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_228800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード攻撃力
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,228800,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+			RETURN 1
+		ENDIF
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,228800,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件속성 = 어둠속성
+		효과条件カテゴリ = 디지몬
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"묘지")
+			CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,328800)
+		ENDIF
+	ENDIF
+ENDIF
+
+;--------------------------------------------------------------------------------------
+
+@CARDNAME_328800,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 알카디몬 궁극체
+	CASE "略称"
+		RESULTS = 알카디 궁극체
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = Lv
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_328800(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3500
+	CASE "守備力"
+		RETURN 3200
+	CASE "生成カード"
+		RETURN 428800
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_328800(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+PRINTL 「알카디몬」の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：このカードは대상耐性を持ち、상대フィールドにレベル・ランク９以上のモンスターが存在しない場合、モンスター耐性を得る。
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：상대がモンスターの효과を발동した場合、손패を１枚捨てて발동できる。
+PRINTL その발동を無効にして破壊し、このカードの攻撃力を５００アップする。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに발동できる。
+PRINTL 자신の손패を１枚選んで捨てる。
+PRINTL 捨てたカードに応じて以下の효과をそれぞれ適用する。
+PRINTL ●モンスター：상대フィールドのレベル・ランク８以下のモンスターを全て破壊し、このカードの攻撃力を破壊した数×５００アップする。
+PRINTL ●마법・함정　：상대フィールドの마법・함정カードを全て破壊する。
+PRINTL ●「캡슐」カードまたは악마족の「디지몬」モンスター：このカードは成長する。
+PRINTL 
+
+
+@CARDCAN_328800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,328800)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,328800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,28800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,128800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,328800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,228800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,428800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_328800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード攻撃力
+#DIM DYNAMIC 효과条件BIT
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 条件달성
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	CALLFORM 효과条件レベル_ADV(9,"以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT != 1
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
+	ENDIF
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,328800,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",500)
+			RETURN 1
+		ENDIF
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,328800,2)
+	IF RESULT == 0
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			選択カードID = RESULT:1
+			CALLFORM CARD_{選択カードID}("종류")
+			IF RESULT <= モン全般
+				CALL FULLRESET
+				효과条件표시 = 表側표시
+				효과条件종류 = 링크以外
+				CALLFORM 효과条件レベル_ADV(8,"以下")
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"필드全体",場所,"묘지")
+				SIF RESULT == 1
+					攻撃力修正 = RESULT:1
+				攻撃力修正 = 攻撃力修正 * 500
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",攻撃力修正)
+			ELSEIF RESULT >= 20
+				CALL FULLRESET
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"마함全体",場所,"묘지")
+				SIF RESULT == 1
+					攻撃力修正 = RESULT:1
+				攻撃力修正 = 攻撃力修正 * 500
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",攻撃力修正)
+			ENDIF
+
+			TRYCALLFORM CARDNAME_{選択カードID}("カテゴリ")
+			IF MATCH(RESULTS,"캡슐")
+				条件달성 = 1
+			ELSEIF MATCH(RESULTS,"디지몬")
+				CALLFORM CARD_{選択カードID}("종족")
+				SIF RESULT == 악마족
+				条件달성 = 1
+			ENDIF
+			IF 条件달성 == 1
+				CALL CARD_RECONSTRUCT(듀얼리스트,ゾーン,場所,428800)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+;--------------------------------------------------------------------------------------
+
+
+@CARDNAME_428800,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 알카디몬 초궁극체
+	CASE "略称"
+		RESULTS = 알카디 초궁극체
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = Lv
+		RESULTS:2 = 궁극체
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_428800(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 4100
+	CASE "守備力"
+		RETURN 3800
+	CASE "トークン"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_428800(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の②の효과は１ターンに１度しか使用できず、
+PRINTL 「알카디몬」の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,특수소환時)
+PRINTL ①：このカードは대상耐性・モンスター耐性・戦闘阻害を持つ。
+CALLFORM CARD_ABLE(1,발동誘発)
+PRINTL ①：상대がモンスターの효과を발동した場合に발동できる。
+PRINTL その발동を無効にして破壊し、このカードの攻撃力を１０００アップする。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신・상대ターンに손패を１枚捨てて발동できる。
+PRINTL 상대フィールドのカードを全て破壊し、このカードの攻撃力を破壊した数×５００アップする。
+PRINTL 
+
+
+@CARDCAN_428800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,428800)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_1(듀얼리스트,428800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,28800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,128800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,328800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,228800)
+		RETURN 0
+	SIF 발동済_2(듀얼리스트,428800)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_428800(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード攻撃力
+#DIM DYNAMIC 효과条件BIT
+#DIM DYNAMIC 攻撃力修正
+
+IF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦阻")
+
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,428800,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",1000)
+		RETURN 1
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,428800,2)
+	IF RESULT == 0
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場全体",場所,"묘지")
+			SIF RESULT == 1
+				攻撃力修正 = RESULT:1
+			攻撃力修正 = 攻撃力修正 * 500
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永攻",攻撃力修正)
+		ENDIF
+	ENDIF
+ENDIF
+
+;--------------------------------------------------------------------------------------

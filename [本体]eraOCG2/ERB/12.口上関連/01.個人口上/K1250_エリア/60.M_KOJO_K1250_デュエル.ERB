@@ -1,0 +1,2613 @@
+﻿;※※※※※※※※※※※※※※※※※※※※※※※※※
+;DUEL用구상
+;※※※※※※※※※※※※※※※※※※※※※※※※※
+;カードID == (カードの番号)　でそのカード専用の구상が流せる
+;カード番号は 10.デュエル関連/02.CARDS 内に入っているため、必要に応じて参照するように
+;例：
+;		IF カードID == 1000
+;			PRINTFORMW 「ブラックマジシャンガールを소환！」
+;		ENDIF
+
+;==================================================
+;0,デュエルスタート！
+;==================================================
+@M_KOJO_DUEL_K1250_0(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:3 + 1
+		CASE 1
+			PRINTFORMW 「行こう、皆……デュエル！」
+		CASE 2
+			PRINTFORMW 「精霊よ……私に力を貸して」
+		CASE 3
+			PRINTFORMW 「よーし、負けないよ～！　듀얼！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;1,モンスター소환
+;例：%カード名%を소환！
+;==================================================
+@M_KOJO_DUEL_K1250_1(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;憑依装着エリア
+	IF カードID == 1250
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「これが私の本気だよ！
+				PRINTFORMW 　憑依装着－エリア、소환！」
+			CASE 2
+				PRINTFORML 「精霊の力をこの身に宿して……
+				PRINTFORMW 　憑依装着－エリアを소환！」
+		ENDSELECT
+	;水령사エリア
+	ELSEIF カードID == 11250
+		SELECTCASE RAND: 2 + 1
+			CASE 1
+				PRINTFORML 「いつも通りにやれば大丈夫……
+				PRINTFORMW 　水령사エリアを소환するね」
+			CASE 2 
+				PRINTFORMW 「いっくよ～、水령사エリアを소환！」
+		ENDSELECT
+	;水霊媒師エリア
+	ELSEIF カードID == 20400
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「逆巻く激流、命の奔流……
+				PRINTFORMW 　これが私の新しい力……水霊媒師エリアを소환！」
+			CASE 2
+				PRINTFORML 「精霊たちが今までより身近に感じる……
+				PRINTFORMW 　水霊媒師エリアを소환するね」
+		ENDSELECT
+	;憑依装着ウィン
+	ELSEIF カードID == 1251
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+				PRINTFORM 　一緒に頑張ろうね！　
+				SETCOLOR 0x00FF7A
+				PRINTFORM 憑依装着－ウィン
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「舞い踊る風の精霊の力をその身に宿して……
+				PRINTFORM 　よろしくね、
+				SETCOLOR 0x00FF7A
+				PRINTFORM 憑依装着－ウィン
+				RESETCOLOR
+				PRINTFORMW ！」
+		ENDSELECT
+	;風령사ウィン
+	ELSEIF カードID == 11251
+		SELECTCASE RAND: 2 + 1
+			CASE 1
+				PRINTFORML 「風と戯れ、風と舞う
+				PRINTFORM 　
+				SETCOLOR 0x00FF7A
+				PRINTFORM 風령사ウィン
+				RESETCOLOR
+				PRINTFORMW を소환するよ！」
+			CASE 2 
+				PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+				SETCOLOR 0x00FF7A
+				PRINTFORM 風령사ウィン
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;風霊媒師ウィン
+	ELSEIF カードID == 20401
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORM 「これが彼女の新しい力……
+				SETCOLOR 0x00FF7A
+				PRINTFORM 風霊媒師ウィン
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「吹き抜ける新緑の風、手にしたるは新たなる力！
+				PRINTFORMW 　お願い、ウィン！
+				PRINTFORM 　
+				SETCOLOR 0x00FF7A
+				PRINTFORM 風霊媒師ウィン
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;憑依装着ヒータ
+	ELSEIF カードID == 1252
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+				PRINTFORM 　私たちは最強だよ！　
+				SETCOLOR 0xFF3B3D
+				PRINTFORM 憑依装着－ヒータ
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「熱き焔、火の精霊の力をその身に宿して……
+				PRINTFORM 　よろしくね、
+				SETCOLOR 0xFF3B3D
+				PRINTFORM 憑依装着－ヒータ
+				RESETCOLOR
+				PRINTFORMW ！」
+		ENDSELECT
+	;火령사ヒータ
+	ELSEIF カードID == 11252
+		SELECTCASE RAND: 2 + 1
+			CASE 1
+				PRINTFORML 「優しき温もり、暖かな火を灯して……
+				PRINTFORM 　
+				SETCOLOR 0xFF3B3D
+				PRINTFORM 火령사ヒータ
+				RESETCOLOR 
+				PRINTFORMW を소환するよ！」
+			CASE 2 
+				PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+				SETCOLOR 0xFF3B3D
+				PRINTFORM 火령사ヒータ
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;火霊媒師ヒータ
+	ELSEIF カードID == 20402
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORM 「これが彼女の新しい力……
+				SETCOLOR 0xFF3B3D
+				PRINTFORM 火霊媒師ヒータ
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「燃え盛る情熱の炎、手にしたるは新たなる力！
+				PRINTFORMW 　お願い、ヒータ！
+				PRINTFORM 　
+				SETCOLOR 0xFF3B3D
+				PRINTFORM 火霊媒師ヒータ
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;憑依装着アウス
+	ELSEIF カードID == 1253
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+				PRINTFORM 　一緒に頑張ろうね
+				SETCOLOR 0x8b4513
+				PRINTFORM 憑依装着－アウス
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「雄大な自然、大地の精霊の力をその身に宿して……
+				PRINTFORM 　よろしくね、
+				SETCOLOR 0x8b4513
+				PRINTFORM 憑依装着－アウス
+				RESETCOLOR
+				PRINTFORMW ！」
+		ENDSELECT
+	;地령사アウス
+	ELSEIF カードID == 11253
+		SELECTCASE RAND: 2 + 1
+			CASE 1
+				PRINTFORML 「地に根を下ろし、自然と共に……
+				PRINTFORM 　
+				SETCOLOR 0x8b4513
+				PRINTFORM 地령사アウス
+				RESETCOLOR
+				PRINTFORMW を소환するよ！」
+			CASE 2 
+				PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+				SETCOLOR 0x8b4513
+				PRINTFORM 地령사アウス
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;地霊媒師アウス
+	ELSEIF カードID == 20403
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORM 「これが彼女の新しい力……
+				SETCOLOR 0x8b4513
+				PRINTFORM 地霊媒師アウス
+				RESETCOLOR 
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「荒ぶる大地、手にしたるは新たなる力！
+				PRINTFORMW 　お願い、アウス！
+				PRINTFORM 　
+				SETCOLOR 0x8b4513
+				PRINTFORM 地霊媒師アウス
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;憑依装着ライナ
+	ELSEIF カードID == 1254
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+				PRINTFORM 　一緒に頑張ろうね！
+				SETCOLOR 0xFFFF71
+				PRINTFORM 憑依装着－ライナ
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「輝ける栄光の導き、光の精霊の力をその身に宿して……
+				PRINTFORM 　よろしくね、
+				SETCOLOR 0xFFFF71
+				PRINTFORM 憑依装着－ライナ
+				RESETCOLOR
+				PRINTFORMW ！」
+		ENDSELECT
+	;光령사ライナ
+	ELSEIF カードID == 11254
+		SELECTCASE RAND: 2 + 1
+			CASE 1
+				PRINTFORML 「祝福の光、運命を照らす……
+				PRINTFORM 　
+				SETCOLOR 0xFFFF71
+				PRINTFORM 光령사ライナ
+				RESETCOLOR
+				PRINTFORMW を소환するよ！」
+			CASE 2 
+				PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+				SETCOLOR 0xFFFF71
+				PRINTFORM 光령사ライナ
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;光霊媒師ライナ
+	ELSEIF カードID == 20404
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORM 「これが彼女の新しい力……
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「魔を祓う極光、手にしたるは新たなる力！
+				PRINTFORMW 　お願い、ライナ！
+				PRINTFORM 　
+				SETCOLOR 0xFFFF71
+				PRINTFORM 光霊媒師ライナ
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;憑依装着ダルク
+	ELSEIF カードID == 1255
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+				PRINTFORMW 　一緒に頑張ろうね！
+				SETCOLOR 0x663299
+				PRINTFORM 憑依装着－ダルク
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「安らぎの静寂、闇の精霊の力をその身に宿して……
+				PRINTFORM 　よろしくね、
+				SETCOLOR 0x663299
+				PRINTFORM 憑依装着－ダルク
+				RESETCOLOR
+				PRINTFORMW ！」
+		ENDSELECT
+	;闇령사ダルク
+	ELSEIF カードID == 11255
+		SELECTCASE RAND: 2 + 1
+			CASE 1
+				PRINTFORML 「宵闇に佇む孤独の影、一つ……
+				PRINTFORMW 　
+				SETCOLOR 0x663299
+				PRINTFORM 闇령사ダルク
+				RESETCOLOR
+				PRINTFORMW を소환するよ！」
+			CASE 2 
+				PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+				SETCOLOR 0x663299
+				PRINTFORM 闇령사ダルク
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	;闇霊媒師ダルク
+	ELSEIF カードID == 20404
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORM 「これが彼の新しい力……
+				SETCOLOR 0x663299
+				PRINTFORM 闇霊媒師ダルク
+				RESETCOLOR
+				PRINTFORMW を소환！」
+			CASE 2
+				PRINTFORML 「百鬼を降し夜行を征する漆黒の闇、手にしたるは新たなる力！
+				PRINTFORMW 　お願い、ダルク！
+				PRINTFORM 　
+				SETCOLOR 0x663299
+				PRINTFORM 闇霊媒師ダルク
+				RESETCOLOR
+				PRINTFORMW を소환！」
+		ENDSELECT
+	ELSEIF カードID == 20410
+		SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORML 「私たちのコンビネーション、見せてやろうね！
+				PRINTFORMW 　ジゴバイトを소환！」
+			CASE 2
+				PRINTFORML 「勝てたら今夜はごちそうだよ～！
+				PRINTFORMW 　ジゴバイトを소환するね！」
+		ENDSELECT
+	ELSEIF カードID == 27553
+		PRINTFORML 「今は歩く道は違うけど……また力を貸してね
+		PRINTFORMW 　ガガギゴを소환！」
+	ELSEIF カードID == 27545
+		PRINTFORML 「…………ごめんね、助けてあげられなくて
+		PRINTFORMW 　ギガ・ガガギゴ、소환！」
+	ELSEIF カードID == 27535
+		PRINTFORML 「きっと目を覚ますって、信じてるよ
+		PRINTFORML 　だから、ごめんね
+		PRINTFORMW 　もう少しだけ力を貸して！　ゴギガ・ガガギゴ、소환！」
+	ELSE
+		SELECTCASE RAND:3 + 1
+			CASE 1
+				PRINTFORML 「キミの力を貸して欲しいの
+				PRINTFORMW 　行って、%カード名%を소환！」
+			CASE 2
+				PRINTFORML 「大丈夫、私たちならきっと出来るよ
+				PRINTFORMW 　%カード名%を소환！　よろしくね～」
+			CASE 3
+				PRINTFORML 「私の契約精霊は強いよ～？
+				PRINTFORMW 　おいで、%カード名%！」 
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;2,モンスター특수소환
+;==================================================
+@M_KOJO_DUEL_K1250_2(カードID,소환出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 소환出処
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE 소환出処
+		;손패から
+		CASE 召種손패
+			;憑依装着エリア
+			IF カードID == 1250
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「これが私の本気だよ！
+						PRINTFORMW 　손패から、憑依装着－エリアを특수소환！」
+					CASE 2
+						PRINTFORML 「精霊の力をこの身に宿して……
+						PRINTFORMW 　憑依装着－エリアを손패から특수소환！」
+				ENDSELECT
+			;水령사エリア
+			ELSEIF カードID == 11250
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「いつも通りにやれば大丈夫……
+						PRINTFORMW 　水령사エリアを손패から특수소환するね」
+					CASE 2 
+						PRINTFORMW 「いっくよ～！　손패から、水령사エリアを특수소환！」
+				ENDSELECT
+			;水霊媒師エリア
+			ELSEIF カードID == 20400
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「逆巻く激流、命の奔流……
+						PRINTFORMW 　これが私の新しい力……水霊媒師エリアを손패から특수소환！」
+					CASE 2
+						PRINTFORML 「精霊たちが今までより身近に感じる……
+						PRINTFORMW 　손패から、水霊媒師エリアを특수소환するね」
+				ENDSELECT
+			;憑依装着ウィン
+			ELSEIF カードID == 1251
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　손패から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「舞い踊る風の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;風령사ウィン
+			ELSEIF カードID == 11251
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「風と戯れ、風と舞う
+						PRINTFORM 　손패から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;風霊媒師ウィン
+			ELSEIF カードID == 20401
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……손패から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「吹き抜ける新緑の風、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ウィン！
+						PRINTFORM 　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;憑依装着ヒータ
+			ELSEIF カードID == 1252
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　손패から、
+						SETCOLOR 0xFF3B3D
+					PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「熱き焔、火の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;火령사ヒータ
+			ELSEIF カードID == 11252
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「優しき温もり、暖かな火を灯して……
+						PRINTFORM 　손패から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR 
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;火霊媒師ヒータ
+			ELSEIF カードID == 20402
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……손패から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「燃え盛る情熱の炎、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ヒータ！
+						PRINTFORM 　손패から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+				ENDSELECT
+			;憑依装着アウス
+			ELSEIF カードID == 1253
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　손패から、
+					SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「雄大な自然、大地の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;地령사アウス
+			ELSEIF カードID == 11253
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「地に根を下ろし、自然と共に……
+						PRINTFORM 　손패から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を손패から소환！」
+				ENDSELECT
+			;地霊媒師アウス
+			ELSEIF カードID == 20403
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……손패から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR 
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「荒ぶる大地、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、アウス！
+						PRINTFORM 　
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR
+						PRINTFORMW を손패から소환！」
+				ENDSELECT
+			;憑依装着ライナ
+			ELSEIF カードID == 1254
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　손패から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「輝ける栄光の導き、光の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;光령사ライナ
+			ELSEIF カードID == 11254
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「祝福の光、運命を照らす……
+						PRINTFORM 　손패から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;光霊媒師ライナ
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……손패から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「魔を祓う極光、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ライナ！
+						PRINTFORM 　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;憑依装着ダルク
+			ELSEIF カードID == 1255
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORMW 　一緒に頑張ろうね！　손패から、
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「安らぎの静寂、闇の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			;闇령사ダルク
+			ELSEIF カードID == 11255
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「宵闇に佇む孤独の影、一つ……
+						PRINTFORMW 　손패から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を손패から소환！」
+				ENDSELECT
+			;闇霊媒師ダルク
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼の新しい力……손패から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルクを소환
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「百鬼を降し夜行を征する漆黒の闇、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ダルク！
+						PRINTFORM 　
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルク
+						RESETCOLOR
+						PRINTFORMW を손패から특수소환！」
+				ENDSELECT
+			ELSEIF カードID == 20410
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちのコンビネーション、見せてやろうね！
+						PRINTFORMW 　손패から、ジゴバイトを특수소환！」
+					CASE 2
+						PRINTFORML 「勝てたら今夜はごちそうだよ～！
+						PRINTFORMW 　ジゴバイトを손패から특수소환するね！」
+					ENDSELECT
+			ELSEIF カードID == 27553
+				PRINTFORML 「今は歩く道は違うけど……また力を貸してね
+				PRINTFORMW 　ガガギゴを손패から특수소환！」
+			ELSEIF カードID == 27545
+				PRINTFORML 「…………ごめんね、助けてあげられなくて
+				PRINTFORMW 　ギガ・ガガギゴ、손패から특수소환！」
+			ELSEIF カードID == 27535
+				PRINTFORML 「きっと目を覚ますって、信じてるよ
+				PRINTFORML 　だから、ごめんね
+				PRINTFORMW 　もう少しだけ力を貸して！　손패から、ゴギガ・ガガギゴ、특수소환！」
+			ELSEIF カードID == 40002
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「精霊は歌う。　大いなる力、すべての万物を司らん
+						PRINTFORMW 　その命
+						PRINTFORMW 　その魂
+						PRINTFORMW 　そしてその骸でさえも！
+						PRINTFORMW 　降臨せよ、ラーの翼神竜！」
+					CASE 2
+						PRINTFORMW 「イウ アーク イル フェスイ ウレル ペフティー イル ヘクア セトゥ
+						PRINTFORMW 　ネプ ケティ ネウ アンク ネウ プア ヘヌア ネフェリ トゥ エル ネウ クアトウ
+						PRINTFORML 　荘厳なる大翼、その姿を我らに！
+						PRINTFORMW 　ラーの翼神竜！」
+				ENDSELECT
+			ELSEIF カードID == 40001
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「その者、光臨せしむれば、灼熱の疾風台地に吹き荒れ、生きとし生ける者すべて屍とならん
+						PRINTFORMW 　降臨せよ、オベリスクの巨神兵！」
+					CASE 2
+						PRINTFORMW 「我らが絶対の守護者となりて、我が領域に降臨せよ！
+						PRINTFORMW 　天地を揺るがす全能たる力を持って、我らに승리を！
+						PRINTFORMW 　オベリスクの巨神兵！」
+				ENDSELECT
+			ELSEIF カードID == 40000
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「天空に雷鳴とどろく混沌の時
+						PRINTFORMW 　連なる鎖の中に古の마도서を束ね、その力無限の限りを誇らん
+						PRINTFORMW 　降臨せよ、オシリスの天空竜！」
+					CASE 2
+						PRINTFORMW 「天空を統べる大いなる支配者、闇を裂く雷鳴を纏いて舞い降りよ！
+						PRINTFORMW 　승리の栄光への道筋を照らせ！
+						PRINTFORMW 　オシリスの天空竜！」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:3 + 1
+					CASE 1
+						PRINTFORML 「キミの力を貸して欲しいの
+						PRINTFORMW 　行って、%カード名%を손패から특수소환！」
+					CASE 2
+						PRINTFORML 「大丈夫、私たちならきっと出来るよ
+						PRINTFORMW 　손패から%カード名%を특수소환！　よろしくね～」
+					CASE 3
+						PRINTFORML 「私の契約精霊は強いよ～？
+						PRINTFORMW 　おいで、%カード名%！　손패から특수소환だ！」 
+				ENDSELECT
+			ENDIF
+		;마법함정ゾーンから。　キリ番・シェイプシスターなどを出す場合
+		CASE 召種마함
+			SELECTCASE RAND:2 + 1
+				CASE 1
+					PRINTFORMW 「마함ゾーンから、モンスターを특수소환！」
+				CASE 2
+					PRINTFORML 「奇襲しちゃうぞ～
+					PRINTFORMW 　마함ゾーンから、%カード名%を특수소환！」
+			ENDSELECT
+		;덱から
+		CASE 召種덱
+			;憑依装着エリア
+			IF カードID == 1250
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「これが私の本気だよ！
+						PRINTFORMW 　덱から、憑依装着－エリアを특수소환！」
+					CASE 2
+						PRINTFORML 「精霊の力をこの身に宿して……
+						PRINTFORMW 　憑依装着－エリアを덱から특수소환！」
+				ENDSELECT
+			;水령사エリア
+			ELSEIF カードID == 11250
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「いつも通りにやれば大丈夫……
+						PRINTFORMW 　水령사エリアを덱から특수소환するね」
+					CASE 2 
+						PRINTFORMW 「いっくよ～！　덱から、水령사エリアを특수소환！」
+				ENDSELECT
+			;水霊媒師エリア
+			ELSEIF カードID == 20400
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「逆巻く激流、命の奔流……
+						PRINTFORMW 　これが私の新しい力……水霊媒師エリアを덱から특수소환！」
+					CASE 2
+						PRINTFORML 「精霊たちが今までより身近に感じる……
+						PRINTFORMW 　덱から、水霊媒師エリアを특수소환するね」
+				ENDSELECT
+			;憑依装着ウィン
+			ELSEIF カードID == 1251
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　덱から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「舞い踊る風の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;風령사ウィン
+			ELSEIF カードID == 11251
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「風と戯れ、風と舞う
+						PRINTFORM 　덱から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;風霊媒師ウィン
+			ELSEIF カードID == 20401
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……덱から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「吹き抜ける新緑の風、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ウィン！
+						PRINTFORM 　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;憑依装着ヒータ
+			ELSEIF カードID == 1252
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　덱から、
+						SETCOLOR 0xFF3B3D
+					PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「熱き焔、火の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;火령사ヒータ
+			ELSEIF カードID == 11252
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「優しき温もり、暖かな火を灯して……
+						PRINTFORM 　덱から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR 
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;火霊媒師ヒータ
+			ELSEIF カードID == 20402
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……덱から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「燃え盛る情熱の炎、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ヒータ！
+						PRINTFORM 　덱から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+				ENDSELECT
+			;憑依装着アウス
+			ELSEIF カードID == 1253
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　덱から、
+					SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「雄大な自然、大地の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;地령사アウス
+			ELSEIF カードID == 11253
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「地に根を下ろし、自然と共に……
+						PRINTFORM 　덱から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を덱から소환！」
+				ENDSELECT
+			;地霊媒師アウス
+			ELSEIF カードID == 20403
+				SELECTCASE RAND:2  
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……덱から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR 
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「荒ぶる大地、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、アウス！」
+						PRINTFORM 　
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR
+						PRINTFORMW を덱から소환！」
+				ENDSELECT
+			;憑依装着ライナ
+			ELSEIF カードID == 1254
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORM 　一緒に頑張ろうね！　덱から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「輝ける栄光の導き、光の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;光령사ライナ
+			ELSEIF カードID == 11254
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「祝福の光、運命を照らす……
+						PRINTFORM 　덱から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;光霊媒師ライナ
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼女の新しい力……덱から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「魔を祓う極光、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ライナ！
+						PRINTFORM 　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;憑依装着ダルク
+			ELSEIF カードID == 1255
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「こうなったら頼もしいけどちょっと怖いよ～？
+						PRINTFORMW 　一緒に頑張ろうね！　덱から、
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「安らぎの静寂、闇の精霊の力をその身に宿して……
+						PRINTFORM 　よろしくね、
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;闇령사ダルク
+			ELSEIF カードID == 11255
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「宵闇に佇む孤独の影、一つ……
+						PRINTFORMW 　덱から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「私たちの修行の成果見せてやろうね！　……
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を덱から소환！」
+				ENDSELECT
+			;闇霊媒師ダルク
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORM 「これが彼の新しい力……덱から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルクを소환
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「百鬼を降し夜行を征する漆黒の闇、手にしたるは新たなる力！
+						PRINTFORMW 　お願い、ダルク！
+						PRINTFORM 　
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルク
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			ELSEIF カードID == 20410
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちのコンビネーション、見せてやろうね！
+						PRINTFORMW 　덱から、ジゴバイトを특수소환！」
+					CASE 2
+						PRINTFORML 「勝てたら今夜はごちそうだよ～！
+						PRINTFORMW 　ジゴバイトを덱から특수소환するね！」
+					ENDSELECT
+			ELSEIF カードID == 27553
+				PRINTFORML 「今は歩く道は違うけど……また力を貸してね
+				PRINTFORMW 　ガガギゴを덱から특수소환！」
+			ELSEIF カードID == 27545
+				PRINTFORML 「…………ごめんね、助けてあげられなくて
+				PRINTFORMW 　ギガ・ガガギゴ、덱から특수소환！」
+			ELSEIF カードID == 27535
+				PRINTFORML 「きっと目を覚ますって、信じてるよ
+				PRINTFORML 　だから、ごめんね
+				PRINTFORMW 　もう少しだけ力を貸して！　덱から、ゴギガ・ガガギゴ、특수소환！」
+			ELSEIF カードID == 40002
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「精霊は歌う。　大いなる力、すべての万物を司らん
+						PRINTFORMW 　その命
+						PRINTFORMW 　その魂
+						PRINTFORMW 　そしてその骸でさえも！
+						PRINTFORMW 　降臨せよ、ラーの翼神竜！」
+					CASE 2
+						PRINTFORMW 「イウ アーク イル フェスイ ウレル ペフティー イル ヘクア セトゥ
+						PRINTFORMW 　ネプ ケティ ネウ アンク ネウ プア ヘヌア ネフェリ トゥ エル ネウ クアトウ
+						PRINTFORML 　荘厳なる大翼、その姿を我らに！
+						PRINTFORMW 　ラーの翼神竜！」
+				ENDSELECT
+			ELSEIF カードID == 40001
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「その者、光臨せしむれば、灼熱の疾風台地に吹き荒れ、生きとし生ける者すべて屍とならん
+						PRINTFORMW 　降臨せよ、オベリスクの巨神兵！」
+					CASE 2
+						PRINTFORMW 「我らが絶対の守護者となりて、我が領域に降臨せよ！
+						PRINTFORMW 　天地を揺るがす全能たる力を持って、我らに승리を！
+						PRINTFORMW 　オベリスクの巨神兵！」
+				ENDSELECT
+			ELSEIF カードID == 40000
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「天空に雷鳴とどろく混沌の時
+						PRINTFORMW 　連なる鎖の中に古の마도서を束ね、その力無限の限りを誇らん
+						PRINTFORMW 　降臨せよ、オシリスの天空竜！」
+					CASE 2
+						PRINTFORMW 「天空を統べる大いなる支配者、闇を裂く雷鳴を纏いて舞い降りよ！
+						PRINTFORMW 　승리の栄光への道筋を照らせ！
+						PRINTFORMW 　オシリスの天空竜！」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:3 + 1
+					CASE 1
+						PRINTFORML 「キミの力を貸して欲しいの
+						PRINTFORMW 　行って、%カード名%を덱から특수소환！」
+					CASE 2
+						PRINTFORML 「大丈夫、私たちならきっと出来るよ
+						PRINTFORMW 　덱から%カード名%を특수소환！　よろしくね～」
+					CASE 3
+						PRINTFORML 「私の契約精霊は強いよ～？
+						PRINTFORMW 　おいで、%カード名%！　덱から특수소환だ！」 
+				ENDSELECT
+			ENDIF
+		;EX덱から
+		CASE 召種EX덱
+				PRINTFORMW 「よ～し、EX덱から특수소환するね！」
+		;묘지から
+		CASE 召種묘지
+			;憑依装着エリア
+			IF カードID == 1250
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「まだだ、まだ私は諦めない！
+						PRINTFORMW 　묘지から、憑依装着－エリアを특수소환！」
+					CASE 2
+						PRINTFORML 「精霊よ、もう一度私に力を貸して……
+						PRINTFORMW 　憑依装着－エリアを묘지から특수소환！」
+				ENDSELECT
+			;水령사エリア
+			ELSEIF カードID == 11250
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、まだ立ち上がれるよ……
+						PRINTFORMW 　水령사エリアを묘지から특수소환するね」
+					CASE 2 
+						PRINTFORMW 「こんじょお～！　묘지から、水령사エリアを특수소환！」
+				ENDSELECT
+			;水霊媒師エリア
+			ELSEIF カードID == 20400
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「逆巻く激流、命の奔流……
+						PRINTFORMW 　私は、負けない……水霊媒師エリアを묘지から특수소환！」
+					CASE 2
+						PRINTFORML 「精霊たち、無理させてごめんね……もう少しだけ頑張って
+						PRINTFORMW 　묘지から、水霊媒師エリアを특수소환するね」
+				ENDSELECT
+			;清冽エリア
+			ELSEIF カードID == 41251
+						PRINTFORMW 「今一度、舞うよ一輪！
+						PRINTFORMW 　묘지から、 清冽の水령사エリアを특수소환！」
+			;憑依装着ウィン
+			ELSEIF カードID == 1251
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　묘지から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「舞い踊る風の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;風령사ウィン
+			ELSEIF カードID == 11251
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;風霊媒師ウィン
+			ELSEIF カードID == 20401
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「もう一度だけ、頑張ろう？
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「吹き抜ける新緑の風、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ウィン！
+						PRINTFORM 　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;蒼翠ウィン
+			ELSEIF カードID == 41251
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 蒼翠の風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着ヒータ
+			ELSEIF カードID == 1252
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　묘지から、
+						SETCOLOR 0xFF3B3D
+					PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「熱き焔、火の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;火령사ヒータ
+			ELSEIF カードID == 11252
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　묘지から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR 
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;火霊媒師ヒータ
+			ELSEIF カードID == 20402
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 　묘지から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「燃え盛る情熱の炎、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ヒータ！
+						PRINTFORM 　묘지から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+				ENDSELECT
+			;灼熱ヒータ
+			ELSEIF カードID == 41252
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 灼熱の火령사ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着アウス
+			ELSEIF カードID == 1253
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　묘지から、
+					SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「雄大な自然、大地の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;地령사アウス
+			ELSEIF カードID == 11253
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を묘지から소환！」
+				ENDSELECT
+			;地霊媒師アウス
+			ELSEIF カードID == 20403
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR 
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「荒ぶる大地、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、アウス！
+						PRINTFORM 　
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR
+						PRINTFORMW を묘지から소환！」
+				ENDSELECT
+			;崔嵬アウス
+			ELSEIF カードID == 41253
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 崔嵬の地령사アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着ライナ
+			ELSEIF カードID == 1254
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　묘지から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「輝ける栄光の導き、光の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;光령사ライナ
+			ELSEIF カードID == 11254
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　묘지から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;光霊媒師ライナ
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 　묘지から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「魔を祓う極光、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ライナ！
+						PRINTFORM 　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;照耀ライナ
+			ELSEIF カードID == 41254
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　묘지から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 照耀の光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着ダルク
+			ELSEIF カードID == 1255
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　묘지から、
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「安らぎの静寂、闇の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;闇령사ダルク
+			ELSEIF カードID == 11255
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORMW 　묘지から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を덱から소환！」
+				ENDSELECT
+			;闇霊媒師ダルク
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルクを소환
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「百鬼を降し夜行を征する漆黒の闇、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ダルク！
+						PRINTFORM 　
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルク
+						RESETCOLOR
+						PRINTFORMW を묘지から특수소환！」
+				ENDSELECT
+			;暗影ダルク
+			ELSEIF カードID == 41255
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　묘지から、
+						SETCOLOR 0x663299
+						PRINTFORM 暗影の闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			ELSEIF カードID == 20410
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちのコンビネーション、もう一度見せてやろうね！
+						PRINTFORMW 　묘지から、ジゴバイトを특수소환！」
+					CASE 2
+						PRINTFORML 「お願い、もう一度私に力を貸して！
+						PRINTFORMW 　ジゴバイトを덱から특수소환するね！」
+					ENDSELECT
+			ELSEIF カードID == 27553
+				PRINTFORML 「今は歩く道は違うけど……また力を貸してね
+				PRINTFORMW 　ガガギゴを묘지から특수소환！」
+			ELSEIF カードID == 27545
+				PRINTFORML 「…………ごめんね、助けてあげられなくて
+				PRINTFORMW 　ギガ・ガガギゴ、묘지から특수소환！」
+			ELSEIF カードID == 27535
+				PRINTFORML 「きっと目を覚ますって、信じてるよ
+				PRINTFORML 　だから、ごめんね
+				PRINTFORMW 　もう少しだけ力を貸して！　묘지から、ゴギガ・ガガギゴ、특수소환！」
+			ELSEIF カードID == 40002
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「精霊は歌う。　大いなる力、すべての万物を司らん
+						PRINTFORMW 　その命
+						PRINTFORMW 　その魂
+						PRINTFORMW 　そしてその骸でさえも！
+						PRINTFORMW 　再臨せよ、ラーの翼神竜！」
+					CASE 2
+						PRINTFORMW 「イウ アーク イル フェスイ ウレル ペフティー イル ヘクア セトゥ
+						PRINTFORMW 　ネプ ケティ ネウ アンク ネウ プア ヘヌア ネフェリ トゥ エル ネウ クアトウ
+						PRINTFORML 　偉大なる大翼、その姿を今一度！
+						PRINTFORMW 　ラーの翼神竜！」
+				ENDSELECT
+			ELSEIF カードID == 40001
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「その者、光臨せしむれば、灼熱の疾風台地に吹き荒れ、生きとし生ける者すべて屍とならん
+						PRINTFORMW 　再臨せよ、オベリスクの巨神兵！」
+					CASE 2
+						PRINTFORMW 「我らが絶対の守護者となりて、我が領域に今一度降臨せよ！
+						PRINTFORMW 　天地を揺るがす全能たる力を持って、我らに승리を！
+						PRINTFORMW 　オベリスクの巨神兵！」
+				ENDSELECT
+			ELSEIF カードID == 40000
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「天空に雷鳴とどろく混沌の時
+						PRINTFORMW 　連なる鎖の中に古の마도서を束ね、その力無限の限りを誇らん
+						PRINTFORMW 　再臨せよ、オシリスの天空竜！」
+					CASE 2
+						PRINTFORMW 「天空を統べる大いなる支配者、闇を裂く雷鳴を纏いて舞い降りよ！
+						PRINTFORMW 　今一度、승리の栄光への道筋を照らせ！
+						PRINTFORMW 　オシリスの天空竜！」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:3 + 1
+					CASE 1
+						PRINTFORML 「キミの力を貸して欲しいの
+						PRINTFORMW 　来て！　%カード名%を묘지から특수소환！」
+					CASE 2
+						PRINTFORML 「大丈夫、私たちならきっと出来るよ
+						PRINTFORMW 　묘지から%カード名%を특수소환！　よろしくね～」
+					CASE 3
+						PRINTFORML 「私の契約精霊はしつこいよ～？
+						PRINTFORMW 　おいで、%カード名%！　묘지から특수소환だ！」 
+				ENDSELECT
+			ENDIF
+		;제외状態から
+		CASE 召種제외
+			;憑依装着エリア
+			IF カードID == 1250
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「まだだ、まだ私は諦めない！
+						PRINTFORMW 　제외から、憑依装着－エリアを특수소환！」
+					CASE 2
+						PRINTFORML 「精霊よ、もう一度私に力を貸して……
+						PRINTFORMW 　憑依装着－エリアを제외から특수소환！」
+				ENDSELECT
+			;水령사エリア
+			ELSEIF カードID == 11250
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、まだ立ち上がれるよ……
+						PRINTFORMW 　水령사エリアを제외から특수소환するね」
+					CASE 2 
+						PRINTFORMW 「こんじょお～！　제외から、水령사エリアを특수소환！」
+				ENDSELECT
+			;水霊媒師エリア
+			ELSEIF カードID == 20400
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「逆巻く激流、命の奔流……
+						PRINTFORMW 　私は、負けない……水霊媒師エリアを제외から특수소환！」
+					CASE 2
+						PRINTFORML 「精霊たち、無理させてごめんね……もう少しだけ頑張って
+						PRINTFORMW 　제외から、水霊媒師エリアを특수소환するね」
+				ENDSELECT
+			;清冽エリア
+			ELSEIF カードID == 41251
+						PRINTFORMW 「今一度、舞うよ一輪！
+						PRINTFORMW 　제외から、 清冽の水령사エリアを특수소환！」
+			;憑依装着ウィン
+			ELSEIF カードID == 1251
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　제외から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「舞い踊る風の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 憑依装着－ウィン
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;風령사ウィン
+			ELSEIF カードID == 11251
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　제외から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;風霊媒師ウィン
+			ELSEIF カードID == 20401
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「もう一度だけ、頑張ろう？
+						PRINTFORM 　제외から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「吹き抜ける新緑の風、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ウィン！
+						PRINTFORM 　
+						SETCOLOR 0x00FF7A
+						PRINTFORM 風霊媒師ウィン
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;蒼翠ウィン
+			ELSEIF カードID == 41251
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　제외から、
+						SETCOLOR 0x00FF7A
+						PRINTFORM 蒼翠の風령사ウィン
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着ヒータ
+			ELSEIF カードID == 1252
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　제외から、
+						SETCOLOR 0xFF3B3D
+					PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「熱き焔、火の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 憑依装着－ヒータ
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;火령사ヒータ
+			ELSEIF カードID == 11252
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　제외から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR 
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火령사ヒータ
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;火霊媒師ヒータ
+			ELSEIF カードID == 20402
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 　제외から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「燃え盛る情熱の炎、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ヒータ！
+						PRINTFORM 　제외から、
+						SETCOLOR 0xFF3B3D
+						PRINTFORM 火霊媒師ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+				ENDSELECT
+			;灼熱ヒータ
+			ELSEIF カードID == 41252
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　제외から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 灼熱の火령사ヒータ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着アウス
+			ELSEIF カードID == 1253
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　제외から、
+					SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「雄大な自然、大地の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0x8b4513
+						PRINTFORM 憑依装着－アウス
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;地령사アウス
+			ELSEIF カードID == 11253
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　제외から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0x8b4513
+						PRINTFORM 地령사アウス
+						RESETCOLOR
+						PRINTFORMW を제외から소환！」
+				ENDSELECT
+			;地霊媒師アウス
+			ELSEIF カードID == 20403
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 　제외から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR 
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「荒ぶる大地、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、アウス！
+						PRINTFORM 　
+						SETCOLOR 0x8b4513
+						PRINTFORM 地霊媒師アウス
+						RESETCOLOR
+						PRINTFORMW を제외から소환！」
+				ENDSELECT
+			;崔嵬アウス
+			ELSEIF カードID == 41253
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　제외から、
+						SETCOLOR 0x8b4513
+						PRINTFORM 崔嵬の地령사アウス
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着ライナ
+			ELSEIF カードID == 1254
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　제외から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「輝ける栄光の導き、光の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 憑依装着－ライナ
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;光령사ライナ
+			ELSEIF カードID == 11254
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　제외から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を덱から특수소환！」
+				ENDSELECT
+			;光霊媒師ライナ
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 　제외から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「魔を祓う極光、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ライナ！
+						PRINTFORM 　
+						SETCOLOR 0xFFFF71
+						PRINTFORM 光霊媒師ライナ
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;照耀ライナ
+			ELSEIF カードID == 41254
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　제외から、
+						SETCOLOR 0xFFFF71
+						PRINTFORM 照耀の光령사ライナ
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			;憑依装着ダルク
+			ELSEIF カードID == 1255
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちは何度でも立ち上がるよ！
+						PRINTFORM 　一緒に頑張ろうね！　제외から、
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「安らぎの静寂、闇の精霊の力をその身に宿して……
+						PRINTFORM 　正念場だよ、頑張って！　
+						SETCOLOR 0x663299
+						PRINTFORM 憑依装着－ダルク
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;闇령사ダルク
+			ELSEIF カードID == 11255
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORML 「大丈夫、私たちならまだやれるよ
+						PRINTFORM 　제외から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환するよ！」
+					CASE 2 
+						PRINTFORM 「絶対に、絶対に諦めないよ！　
+						SETCOLOR 0x663299
+						PRINTFORM 闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を덱から소환！」
+				ENDSELECT
+			;闇霊媒師ダルク
+			ELSEIF カードID == 20404
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORMW 「もう一度だけ、頑張ろう？
+						PRINTFORM 제외から、
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルクを소환
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+					CASE 2
+						PRINTFORML 「百鬼を降し夜行を征する漆黒の闇、手にしたるは新たなる力！
+						PRINTFORMW 　頑張って、ダルク！
+						PRINTFORM 　
+						SETCOLOR 0x663299
+						PRINTFORM 闇霊媒師ダルク
+						RESETCOLOR
+						PRINTFORMW を제외から특수소환！」
+				ENDSELECT
+			;暗影ダルク
+			ELSEIF カードID == 41255
+						PRINTFORMW 「今一度、舞えよ一輪！
+						PRINTFORM 　제외から、
+						SETCOLOR 0x663299
+						PRINTFORM 暗影の闇령사ダルク
+						RESETCOLOR
+						PRINTFORMW を특수소환！」
+			ELSEIF カードID == 20410
+				SELECTCASE RAND:2 + 1
+					CASE 1
+						PRINTFORML 「私たちのコンビネーション、もう一度見せてやろうね！
+						PRINTFORMW 　제외から、ジゴバイトを특수소환！」
+					CASE 2
+						PRINTFORML 「お願い、もう一度私に力を貸して！
+						PRINTFORMW ジゴバイトを덱から특수소환するね！」
+					ENDSELECT
+			ELSEIF カードID == 27553
+				PRINTFORML 「今は歩く道は違うけど……また力を貸してね
+				PRINTFORMW 　ガガギゴを제외から특수소환！」
+			ELSEIF カードID == 27545
+				PRINTFORML 「…………ごめんね、助けてあげられなくて
+				PRINTFORMW 　ギガ・ガガギゴ、제외から특수소환！」
+			ELSEIF カードID == 27535
+				PRINTFORML 「きっと目を覚ますって、信じてるよ
+				PRINTFORML 　だから、ごめんね
+				PRINTFORMW 　もう少しだけ力を貸して！　제외から、ゴギガ・ガガギゴ、특수소환！」
+			ELSEIF カードID == 40002
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「精霊は歌う。　大いなる力、すべての万物を司らん
+						PRINTFORMW 　その命
+						PRINTFORMW 　その魂
+						PRINTFORMW 　そしてその骸でさえも！
+						PRINTFORMW 　再臨せよ、ラーの翼神竜！」
+					CASE 2
+						PRINTFORMW 「イウ アーク イル フェスイ ウレル ペフティー イル ヘクア セトゥ
+						PRINTFORMW 　ネプ ケティ ネウ アンク ネウ プア ヘヌア ネフェリ トゥ エル ネウ クアトウ
+						PRINTFORML 　偉大なる大翼、その姿を今一度！
+						PRINTFORMW 　ラーの翼神竜！」
+				ENDSELECT
+			ELSEIF カードID == 40001
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「その者、光臨せしむれば、灼熱の疾風台地に吹き荒れ、生きとし生ける者すべて屍とならん
+						PRINTFORMW 　再臨せよ、オベリスクの巨神兵！」
+					CASE 2
+						PRINTFORMW 「我らが絶対の守護者となりて、我が領域に今一度降臨せよ！
+						PRINTFORMW 　天地を揺るがす全能たる力を持って、我らに승리を！
+						PRINTFORMW 　オベリスクの巨神兵！」
+				ENDSELECT
+			ELSEIF カードID == 40000
+				SELECTCASE RAND: 2 + 1
+					CASE 1
+						PRINTFORMW 「天空に雷鳴とどろく混沌の時
+						PRINTFORMW 　連なる鎖の中に古の마도서を束ね、その力無限の限りを誇らん
+						PRINTFORMW 　再臨せよ、オシリスの天空竜！」
+					CASE 2
+						PRINTFORMW 「天空を統べる大いなる支配者、闇を裂く雷鳴を纏いて舞い降りよ！
+						PRINTFORMW 　今一度、승리の栄光への道筋を照らせ！
+						PRINTFORMW 　オシリスの天空竜！」
+				ENDSELECT
+			ELSE
+				SELECTCASE RAND:3 + 1
+					CASE 1
+						PRINTFORML 「キミの力を貸して欲しいの
+						PRINTFORMW 　来て！　%カード名%を제외から특수소환！」
+					CASE 2
+						PRINTFORML 「大丈夫、私たちならきっと出来るよ
+						PRINTFORMW 　제외から%カード名%を특수소환！　よろしくね～」
+					CASE 3
+						PRINTFORML 「私の契約精霊はしつこいよ～？
+						PRINTFORMW 　おいで、%カード名%！　제외から특수소환だ！」 
+				ENDSELECT
+			ENDIF
+		;主にトークン生成
+		CASE 10
+			IF カードID == 120410
+				PRINTFORML 「行くよ、ジゴバイト！　憑依……解放！
+				PRINTFORMW 　憑依각성－ガギゴバイト！」
+			ELSE
+				PRINTFORMW 「%カード名%を특수소환するね」
+			ENDIF
+	ENDSELECT
+ENDIF
+
+;==================================================
+;3,특수モンスター소환
+;==================================================
+@M_KOJO_DUEL_K1250_3(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC カード種
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+
+TRYCALLFORM CARD_{カードID}("종류")
+カード種 = RESULT
+
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE カード種
+		CASE 의식
+			PRINTFORML 「我、贄を捧げその名を高らかに讃えよう
+			PRINTFORMW 　의식소환！　降臨せよ、%カード名%！」
+		CASE 융합
+			PRINTFORML 「形混ざりて万物転変……
+			PRINTFORMW 　융합소환！　現れよ、%カード名%！」
+		CASE 싱크로
+			PRINTFORML 「集いし精霊が、自然と繋ぐ力になる！
+			PRINTFORMW 　싱크로소환！　%カード名%！」
+		CASE 엑시즈
+			PRINTFORML 「手と手を重ねて紡ぐ未来
+			PRINTFORML 　%カード名%を엑시즈소환！
+			PRINTFORMW 　なんてね、えへへっ」
+		CASE 링크
+			PRINTFORMW 「行くよ！　アローヘッド確認、サーキットコンバイン！
+				;清冽エリア
+				IF カードID == 41250
+					PRINTFORML 　소환条件は물속성モンスターを含むモンスター２体！
+					PRINTFORML 　精霊と共に、舞えよ一輪！　清涼の彩を添えて！
+					PRINTFORMW 　링크소환！　清冽の水령사エリア！」
+				;蒼翠ウィン
+				ELSEIF カードID == 41251
+					PRINTFORML 　소환条件は바람속성モンスターを含むモンスター２体！
+					PRINTFORML 　精霊と共に、舞えよ一輪！　光風の彩を添えて！
+					PRINTFORM 　링크소환！　
+					SETCOLOR 0x00FF7A
+					PRINTFORM 蒼翠の風령사ウィン
+					RESETCOLOR
+					PRINTFORMW ！」
+				;灼熱ヒータ
+				ELSEIF カードID == 41252
+					PRINTFORML 　소환条件は화염속성モンスターを含むモンスター２体！
+					PRINTFORML 　精霊と共に、舞えよ一輪！　閃火の彩を添えて！
+					PRINTFORM 　링크소환！　
+					SETCOLOR 0xFF3B3D
+					PRINTFORM 灼熱の火령사ヒータ
+					RESETCOLOR
+					PRINTFORMW ！」
+				;崔嵬アウス
+				ELSEIF カードID == 41253
+					PRINTFORML 　소환条件は땅속성モンスターを含むモンスター２体！
+					PRINTFORML 　精霊と共に、舞えよ一輪！　豊穣の彩を添えて！
+					PRINTFORM 　링크소환！　
+					SETCOLOR 0x8b4513
+					PRINTFORM 崔嵬の地령사アウス
+					RESETCOLOR
+					PRINTFORMW ！」
+				;照耀ライナ
+				ELSEIF カードID == 41254
+					PRINTFORML 　소환条件は빛속성モンスターを含むモンスター２体！
+					PRINTFORML 　精霊と共に、舞えよ一輪！　晨光の彩を添えて！
+					PRINTFORM 　링크소환！　
+					SETCOLOR 0xFFFF71
+					PRINTFORM 照耀の光령사ライナ
+					RESETCOLOR
+					PRINTFORMW ！」
+				;暗影ダルク
+				ELSEIF カードID == 41255
+					PRINTFORML 「소환条件は어둠속성モンスターを含むモンスター２体！
+					PRINTFORML 　精霊と共に、舞えよ一輪！　月華の彩を添えて！
+					PRINTFORM 　링크소환！　
+					SETCOLOR 0x663299
+					PRINTFORM 暗影の闇령사ダルク
+					RESETCOLOR
+					PRINTFORMW ！」
+				;その他
+				ELSE
+					PRINTFORML 「소환条件、確認！
+					PRINTFORMW 　%カード名%を링크소환！」
+				ENDIF
+		;초차원モンスター（デュエマ）
+		CASE 초차원
+			PRINTFORML 「초차원の来訪者よ、我が呼びかけに応えよ！
+			PRINTFORMW 　顕現せよ、%カード名%！」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;4,효과使用宣言
+;==================================================
+@M_KOJO_DUEL_K1250_4(カードID,발동出処)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 발동出処
+#DIM DYNAMIC カード種
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE 발동出処
+		CASE 1
+			;손패발동
+			SELECTCASE RAND:2 + 1
+			CASE 1
+				PRINTFORMW 「손패から、%カード名%の효과を발동するよ～」
+			CASE 2
+				PRINTFORMW 「%カード名%の효과を손패から발동！」
+			ENDSELECT
+		CASE 2
+			;필드발동
+			IF カードID == 11250 || カードID == 41250 || カードID == 11251 || カードID == 41251 || カードID == 11252 || カードID == 41252 || カードID == 11253 || カードID == 41253 || カードID == 11254 || カードID == 41254 || カードID == 11255 || カードID == 41255
+				PRINTFORMW 「령사の力、見せちゃうよ！」
+			ELSEIF カードID == 40000 || カードID == 40001 || カードID == 40002
+				PRINTFORMW 「三幻神の一柱よ、その力の一端を今こそ！」
+			ELSE
+				PRINTFORMW 「お願い、キミの力が必要なの！
+ 				PRINTFORMW 　%カード名%の효과、발동！」
+			ENDIF
+		CASE 3
+			;마함발동
+			IF カード種 == 速攻마법
+				PRINTFORMW 「速攻마법、行くよ～！
+					IF カードID == 61250
+						PRINTFORML 　これが私たちの精霊術だっ！
+						PRINTFORMW 　精霊術の使い手、발동！」
+					ELSE
+						PRINTFORMW 　%カード名%、발동！」
+					ENDIF
+			ELSEIF カード種 == 지속마법
+				PRINTFORMW 「場を支配する魔術の粋……지속마법！
+					IF カードID == 61251
+						PRINTFORML 　精霊よ、自然を司る偉大なる力を我らに！
+						PRINTFORMW 　憑依각성、발동！」
+					ELSE
+						PRINTFORMW 　%カード名%、발동するよ！」
+					ENDIF
+			ELSEIF カード種 == フィールド
+				IF カードID == 61253
+					PRINTFORML 「これが仲間と紡ぐ精霊術の極み……
+					PRINTFORMW 　大霊術－「一輪」！」
+				ELSE
+					PRINTFORML 「概念さえも書き換える、これなるは魔術の頂の一つ
+					PRINTFORMW 　フィールド마법、발동するよ！」
+				ENDIF
+			ELSEIF カード種 == 通常함정
+				PRINTFORMW 「やらせない！
+					IF カードID == 81250
+						PRINTFORML 　これが私たちの連携戦術！
+						PRINTFORMW 　憑依連携、발동！」
+					ELSE
+						PRINTFORML 「リバースカード、オープン！
+						PRINTFORMW 　%カード名%、발동！」
+					ENDIF
+			ELSEIF カード種 == 지속함정
+				PRINTFORMW 「ここで仕掛けるよ！
+					IF カードID == 81251
+						PRINTFORML 　精霊達よ、真の力を解放せよ！
+						PRINTFORMW 　憑依解放、발동！」
+					ELSE
+						PRINTFORMW 　%カード名%、발동するよ！」
+					ENDIF
+			ELSE
+				PRINTFORMW 「%カード名%の효과を발동するね」
+			ENDIF
+		CASE 4
+			;묘지발동
+			IF カードID == 81250
+				PRINTFORML 「一度で終わりじゃないんだよ？
+				PRINTFORMW 　묘지から、憑依連携の효과を발동！」
+			ELSE
+				PRINTFORMW 「묘지から、%カード名%の효과を발동するよ！」
+			ENDIF
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;5,효과발동
+;==================================================
+@M_KOJO_DUEL_K1250_5(カードID,효과종류)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 효과종류
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;無効にされた場合
+	IF 효과종류 == -1
+		PRINTFORMW 「そんな……！？」
+	;それ以外
+	ELSE
+		;エリア
+		IF カードID == 11250
+			PRINTFORMW 「これが私の精霊術！
+			PRINTFORMW 　水령사エリア、효과발동！」
+		ELSEIF カードID == 41250
+			PRINTFORMW 「水底に沈む精霊よ、再びその力を呼び覚ませ
+			PRINTFORMW 　清冽の水령사エリア、효과발동！」
+		;ウィン
+		ELSEIF カードID == 11251
+			PRINTFORMW 「任せたよ、ウィン！
+			PRINTFORM 　
+			SETCOLOR 0x00FF7A
+			PRINTFORM 風령사ウィン
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		ELSEIF カードID == 41251
+			PRINTFORMW 「暴風に散った精霊よ、再びその力を呼び覚ませ
+			PRINTFORM 　
+			SETCOLOR 0x00FF7A
+			PRINTFORM 蒼翠の風령사ウィン
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		;ヒータ
+		ELSEIF カードID == 11252
+			PRINTFORMW 「任せたよ、ヒータ！
+			PRINTFORM 　
+			SETCOLOR 0xFF3B3D
+			PRINTFORM 火령사ヒータ
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		ELSEIF カードID == 41251
+			PRINTFORMW 「煙と失せた精霊よ、再びその力を呼び覚ませ
+			PRINTFORM 　
+			SETCOLOR 0xFF3B3D
+			PRINTFORM 灼熱の火령사ヒータ
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		;アウス
+		ELSEIF カードID == 11253
+			PRINTFORMW 「任せたよ、アウス！
+			PRINTFORM 　
+			SETCOLOR 0x8b4513
+			PRINTFORM 地령사アウス
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		ELSEIF カードID == 41253
+			PRINTFORMW 「土に還った精霊よ、再びその力を呼び覚ませ
+			PRINTFORM 　
+			SETCOLOR 0x8b4513
+			PRINTFORM 崔嵬の地령사アウス
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		;ライナ
+		ELSEIF カードID == 11254
+			PRINTFORMW 「任せたよ、ライナ！
+			PRINTFORM 　
+			SETCOLOR 0xFFFF71
+			PRINTFORM 光령사ライナ
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		ELSEIF カードID == 41254
+			PRINTFORMW 「光に消えた精霊よ、再びその力を呼び覚ませ
+			PRINTFORM 　
+			SETCOLOR 0xFFFF71
+			PRINTFORM 照耀の光령사ライナ
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		;ダルク
+		ELSEIF カードID == 11255
+			PRINTFORMW 「任せたよ、ダルク！
+			PRINTFORM 　
+			SETCOLOR 0xFFFF71
+			PRINTFORM 闇령사ダルク
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		ELSEIF カードID == 41255
+			PRINTFORMW 「闇に呑まれた精霊よ、再びその力を呼び覚ませ
+			PRINTFORM 　
+			SETCOLOR 0x663299
+			PRINTFORM 暗影の闇령사ダルク
+			RESETCOLOR
+			PRINTFORMW 、효과발동！」
+		ELSE
+			PRINTFORMW 「この효과を발동するね」
+		ENDIF
+	ENDIF
+ENDIF
+
+;==================================================
+;6,カードセット
+;==================================================
+@M_KOJO_DUEL_K1250_6(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:2 + 1
+		CASE 1
+			PRINTFORMW 「カードをセット」
+		CASE 2			
+			PRINTFORMW 「カードを伏せるね」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;7,カードドロー
+;==================================================
+@M_KOJO_DUEL_K1250_7(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:2 + 1
+		CASE 1
+			PRINTFORMW 「ドロー！」
+		CASE 2			
+			PRINTFORMW 「カードをドローするね」
+	ENDSELECT
+ENDIF
+
+;==================================================
+;10,ダメージ反応！（ダメージ）
+;==================================================
+@M_KOJO_DUEL_K1250_10(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+#DIM DYNAMIC 상대ライフ
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	IF 상대ライフ <= 0
+		PRINTFORMW 「きゃぁぁぁぁ！！」
+	ELSE
+		SELECTCASE ダメージ量
+			;ダメージなし
+				CASE 0
+					PRINTFORMW 「くぅっ……なんとか無傷……！」	
+				;１～１９９９の時、小ダメージ
+				CASE 1 TO 1999
+					PRINTFORMW 「うぁ！　いったたた……やったな～！」
+				;２０００～３９９９の時、結構なダメージ
+				CASE 2000 TO 3999
+					PRINTFORMW 「ぐぅ……！？　まだやれるよ！」
+				;４０００～７９９９の時、超大ダメージ
+				CASE 4000 TO 7999
+					PRINTFORMW 「ぐ……あぁ……！？　こ、こんな……」
+				;８０００以上、基本即死
+				CASEELSE
+					PRINTFORMW 「いや……いやぁぁぁぁぁぁぁぁ！！！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+;==================================================
+;11,ダメージ反応！(회복)
+;==================================================
+@M_KOJO_DUEL_K1250_11(ダメージ量,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC ダメージ量
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	PRINTFORMW 「あぁ、癒されるぅ～……」
+ENDIF
+
+
+;==================================================
+;50,モンスター攻撃
+;==================================================
+@M_KOJO_DUEL_K1250_50(カードID,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC カードID
+#DIMS DYNAMIC カード名
+TRYCALLFORM CARDNAME_{カードID}("名前")
+カード名 = %RESULTS%
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;エリア
+	IF カードID == 11250 || カードID == 41250 || カードID == 1250
+		PRINTFORML 「령사の力、見せてあげる！
+		PRINTFORMW 　%カード名%で攻撃！」
+	;ウィン
+	ELSEIF カードID == 11251 || カードID == 41251 || カードID == 1251
+		PRINTFORML 「령사の力、見せてあげて！
+		PRINTFORM 　
+		SETCOLOR 0x00FF7A
+		PRINTFORM %カード名%
+		RESETCOLOR
+		PRINTFORMW で攻撃！」
+	;ヒータ
+	ELSEIF カードID == 11252 || カードID == 41252 || カードID == 1252
+		PRINTFORML 「령사の力、見せてあげて！
+		PRINTFORM 　
+		SETCOLOR 0xFF3B3D
+		PRINTFORM %カード名%
+		RESETCOLOR
+		PRINTFORMW で攻撃！」
+	;アウス
+	ELSEIF カードID == 11253 || カードID == 41253 || カードID == 1253
+		PRINTFORML 「령사の力、見せてあげて！
+		PRINTFORM 　
+		SETCOLOR 0x8b4513
+		PRINTFORM %カード名%
+		RESETCOLOR
+		PRINTFORMW で攻撃！」
+	;ライナ
+	ELSEIF カードID == 11254 || カードID == 41254 || カードID == 1254
+		PRINTFORML 「령사の力、見せてあげて！
+		PRINTFORM 　
+		SETCOLOR 0xFFFF71
+		PRINTFORM %カード名%
+		RESETCOLOR
+		PRINTFORMW で攻撃！」
+	;ダルク
+	ELSEIF カードID == 11255 || カードID == 41255 || カードID == 1255
+		PRINTFORML 「령사の力、見せてあげて！
+		PRINTFORM 　
+		SETCOLOR 0x663299
+		PRINTFORM %カード名%
+		RESETCOLOR
+		PRINTFORMW で攻撃！」
+	ELSEIF カードID == 40000 || カードID == 40001 || カードID == 40002
+		PRINTFORMW 「三幻神の一柱よ、その力を持って我が敵を滅せ！」
+	ELSE
+		SELECTCASE RAND: 2 + 1
+			CASE 1
+				PRINTFORMW 「モンスターで攻撃！」
+			CASE 2
+				PRINTFORMW 「やっちゃえ、%カード名%！」
+		ENDSELECT
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;51,モンスター攻撃結果
+;==================================================
+@M_KOJO_DUEL_K1250_51(상황판정,ARG:1)
+#DIM DYNAMIC 호감도修正
+#DIM DYNAMIC 상황판정
+#DIMS DYNAMIC カード名
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;トドメ
+	SIF ARG:1 == 1
+		PRINTFORMW 「これで終わりだぁ～！」
+	SELECTCASE 상황판정
+		;상대モンスター撃破
+		CASE 1
+			PRINTFORMW 「やった、このまま押し切る！」
+		;자신にダメージ
+		CASE 2
+			PRINTFORMW 「しまった……！？」
+		;相打ち
+		CASE 3
+			PRINTFORMW 「ごめんね……でも無駄にはしないよ」
+		;효과で戦闘前に除去
+		CASE 4
+			PRINTFORMW 「そ、そんな！」
+		;ダイレクトアタック
+		CASE 5
+			PRINTFORMW 「これは痛いよ～？」
+	ENDSELECT
+ENDIF
+
+
+
+;==================================================
+;100,メインフェイズ移行
+;==================================================
+@M_KOJO_DUEL_K1250_100(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND:2 + 1
+		CASE 1
+			PRINTFORMW 「メインフェイズに入るね」
+		CASE 2
+			PRINTFORMW 「メインフェイズ！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;101,ターン終了
+;==================================================
+@M_KOJO_DUEL_K1250_101(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		PRINTFORML 「まだまだ始まったばかりだね
+		PRINTFORMW 　ターン終了」
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		PRINTFORML 「まだ突破口はあるはず……
+		PRINTFORMW 　ターン、エンド」
+	;それ以外
+	ELSE
+		PRINTFORM 「これでターン終了するね
+		SIF ライフ_자신 <= 1000
+			PRINTFORM 。　ふふっ、もうちょっとで終わりだね？
+		PRINTFORMW 」
+	ENDIF
+ENDIF
+
+
+
+;==================================================
+;102,メインフェイズ２に移行（バトル終了）
+;==================================================
+@M_KOJO_DUEL_K1250_102(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND: 2 + 1
+		CASE 1
+			PRINTFORMW 「メイン２に入るね」
+		CASE 2
+			PRINTFORMW 「バトルフェイズを終了するね」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;103,バトルフェイズに移行
+;==================================================
+@M_KOJO_DUEL_K1250_103(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE RAND: 2 + 1
+		CASE 1
+			PRINTFORMW 「バトルフェイズ！」
+		CASE 2
+			PRINTFORMW 「バトルするよ！」
+	ENDSELECT
+ENDIF
+
+
+;==================================================
+;104,ターン開始時
+;==================================================
+@M_KOJO_DUEL_K1250_104(ARG,ARG:1)
+#DIM DYNAMIC 호감도修正
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	;LP４０００～６０００間
+	IF INRANGE(ライフ_상대,4000,6000)
+		PRINTFORML 「勝負はまだこれからだよ
+		PRINTFORMW 　私のターン！」
+	;LP２０００以下
+	ELSEIF ライフ_상대 <= 2000
+		PRINTFORML 「突破口を見つけないと……！
+		PRINTFORMW 　私の……ターン！」
+	;それ以外
+	ELSE
+		PRINTFORM 「いくよー、私のターンだ！
+		SIF ライフ_자신 <= 1000
+			PRINTFORM 　このまま一気に押し切るよ！
+		PRINTFORMW 」
+	ENDIF
+ENDIF
+
+;==================================================
+;999,EROTICS関連
+;実行コマンドは数が多いのでテンプレートにはよく使われてそうな物だけ書いておきます
+;추가したい場合は ERB/10.デュエル関連/01.デュエルシステム回り/효과汎用/エロ行動関連/02.カード조교
+;を参照してください
+;==================================================
+@M_KOJO_DUEL_K1250_999(ARG,ARG:1,実行コマンド)
+#DIM DYNAMIC 호감도修正
+#DIMS DYNAMIC 実行コマンド
+;-------------------------------------------------
+;記入チェック（=0, 非표시、1, 표시）
+LOCAL = 1
+;-------------------------------------------------
+IF LOCAL
+	SELECTCASE 実行コマンド
+		CASE "Ｃ単発"
+			PRINTFORMW 
+		CASE "묘상捕縛"
+			PRINTFORMW 
+		CASE "全身愛撫"
+			PRINTFORMW 
+		CASE "前穴凌辱"
+			PRINTFORMW 
+		CASE "全身凌辱"
+			PRINTFORMW 
+		CASE "疑似출산"
+			PRINTFORMW 
+		;その他全部
+		CASEELSE
+			PRINTFORMW 
+	ENDSELECT
+ENDIF

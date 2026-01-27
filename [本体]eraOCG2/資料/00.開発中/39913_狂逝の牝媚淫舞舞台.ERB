@@ -1,0 +1,389 @@
+﻿@CARDNAME_39913,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ィークギア・スレイヴプレイハウスフィールド
+	CASE "略称"
+		RESULTS = 狂逝の牝堕劇場
+	CASE "カテゴリ"
+		RESULTS:0 = 狂逝の機械
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_39913(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 融合
+	CASE "属性"
+		RETURN 地属性
+	CASE "種族"
+		RETURN 機械族
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 1200
+	CASE "守備力"
+		RETURN 3500
+	CASE "性別"
+		RETURN 牝性
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_39913(種類)
+#DIM DYNAMIC 種類
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL
+PRINTL 「狂逝の機械」モンスター＋牝性モンスター2体。
+PRINTL このカードは融合召喚及び以下の方法でもEXデッキから特殊召喚できる。
+CALLFORM CARD_ABLE(0,EXデッキ起動)
+PRINTL 自分・相手の墓地・除外された牝モンスターを３体デッキに戻し、EXデッキから特殊召喚できる。
+PRINTL この効果でこのカードを特殊召喚した後、自分は「狂逝の機械」モンスター以外を特殊召喚できない。
+CALLFORM CARD_ABLE(1,EX召喚時,特殊召喚時)
+PRINTL ①：このカードが特殊召喚された時に発動できる、
+PRINTL 自分のデッキから「狂逝の機械」永続魔法・永続罠カード１枚を魔法・罠ゾーンに表側表示で置く。
+CALLFORM CARD_ABLE(2,効果後強制誘発)
+PRINTL ②：自分バトルフェイズ中に相手の場にモンスターが特殊召喚された時発動する、
+PRINTL 相手プレイヤーに媚薬カウンターを１つ乗せる。
+PRINTL この時、相手プレイヤーに乗っているカウンターが４つ以上の時、
+PRINTL 相手の場に相手プレイヤーを特殊召喚する。
+CALLFORM CARD_ABLE(3,攻撃時強制誘発)
+PRINTL ③：相手モンスターの攻撃宣言時、そのモンスターに媚薬カウンターを１つ乗せる。
+PRINTL この時、媚薬カウンターが３つ以上乗っていればその攻撃を無効にする。
+CALLFORM CARD_ABLE(4,攻守変動)
+PRINTL ④：自分フィールド上に攻撃力５０００以上の「狂逝の機械」モンスターが存在する時、
+PRINTL 自分の表側表示の「狂逝の機械」魔法・罠カードは破壊されない。
+PRINTL
+SETCOLOR C_RED
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー警告ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+CALLFORM CARD_ABLE(1,EX召喚時,特殊召喚時)
+PRINTL ⑤：①の効果発動時、相手のデッキからランダムに１体牝モンスターを墓地に送り、牝媚淫舞舞台に登らせる。
+CALLFORM CARD_ABLE(2,効果後強制誘発)
+PRINTL ⑥：②の効果で特殊召喚された相手プレイヤーは以下の効果が適用される。
+PRINTL ・相手プレイヤーを素材にできない。
+PRINTL ・相手プレイヤーの効果は無効化される。
+PRINTL ・相手プレイヤーは全裸となり、発情し、接触可能となる
+CALLFORM CARD_ABLE(3,攻撃時強制誘発)
+PRINTL ⑦：③の効果で媚薬カウンターを３つ以上撃ち込まれた牝モンスターは、催眠を受け
+PRINTL 雄に媚びる舞を披露し始めてしまう。
+PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー注意ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+PRINTL
+RESETCOLOR
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDSUMMON_39913(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件素材ID起動 = 2
+
+
+IF EX参照 == 0 || EX参照 == 1
+	素材条件カテゴリ = 狂逝の機械
+ELSEIF EX参照 >= 10
+    素材条件性別 = 牝性
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(決闘者,召喚カード,39913) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_39913(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 調教対象
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,39913)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+    効果範囲除外 = 1
+    効果範囲相手除外 = 1
+	効果条件性別 = 牝性
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == EX召喚時 || 種類 == 特殊召喚時
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF 発動済_1(決闘者,39913)
+		RETURN 0
+	SIF 魔罠数(決闘者) >= 5
+		RETURN 0
+	CALL FULLRESET
+	効果範囲デッキ = 1
+	効果条件カテゴリ = 狂逝の機械
+	効果条件種類:0 = 永続魔法
+	効果条件種類:1 = 永続罠
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 効果後強制誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲相手戦場 = 1
+	CALL CARD_CHECK_FIN_DATA(決闘者,"特殊召喚",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 攻撃時強制誘発
+    SIF ゾーン != "戦場"
+	 	RETURN 0
+	SIF 戦闘場所(決闘者) != 場所
+		RETURN 0
+	SIF 戦闘場所(決闘者,1) == 5
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == 攻守変動
+	SIF ゾーン != "戦場"
+		RETURN 0
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件以攻撃力 = 5000
+	効果条件カテゴリ = 狂逝の機械
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT <= 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 種類 == ターン終了時強制
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF	GETVAR(@"%決闘者%_MZ_汎数:場所") > 0
+		RETURN 1
+	SIF	GETVAR(@"%決闘者%_MZ_変化元ID:場所") >= 0
+		RETURN 1
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_39913(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 調教対象
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 戦闘カード
+#DIM DYNAMIC 取込カードID
+#DIM DYNAMIC 破壊カードID
+#DIMS DYNAMIC 除外カード名
+#DIM DYNAMIC 残り回数
+#DIMS DYNAMIC 牝墜対象
+#DIM DYNAMIC 捕縛対象
+#DIM DYNAMIC 捕縛場所,紙束最大値
+#DIM DYNAMIC 捕縛場所B
+#DIM DYNAMIC 捕縛候補,紙束最大値
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 絶頂回数
+#DIM DYNAMIC 墓地送り位置
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,39913)
+	IF RESULT == 0
+		CALL FULLRESET
+    	効果範囲除外 = 1
+    	効果範囲相手除外 = 1
+		効果条件性別 = 牝性
+		効果条件複数 = 3
+		効果条件行先フラグ = デッキ行き
+        CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_EX_SUMMON(決闘者,"EXデッキ",場所)
+		ENDIF
+		効果条件固カテゴリ = 狂逝の機械
+		CALL CARD_SS_RESTRICTION(決闘者)
+	ENDIF
+
+ELSEIF 種類 == EX召喚時 || 種類 == 特殊召喚時
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,39913,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果条件カテゴリ = 狂逝の機械
+		効果条件種類:0 = 永続魔法
+		効果条件種類:1 = 永続罠
+		効果範囲デッキ = 1
+		CALL CARD_SET_ADV(決闘者,ゾーン,場所,"表側表示")
+					IF RESULT == 1
+						FOR カウンタ,0,現山札数(対面者)
+						捕縛対象 = GETVAR(@"%対面者%_デッキ:カウンタ") ;0→カウンタ
+						SIF 捕縛対象 == -1 ;念のため-1の場合は次へ
+							CONTINUE
+						CALLFORM CARD_{捕縛対象}("性別")
+						SIF RESULT == 無性 || RESULT == 雄性
+							CONTINUE
+							CALL CARD_EROTICS(捕縛対象)
+						SIF RESULT < 1 ;CSV持ち以外は除外
+							CONTINUE
+							捕縛候補:カウンタB = 捕縛対象 ;牝性を候補に格納
+							捕縛場所:カウンタB = カウンタ
+							カウンタB++ ;候補数加算
+						NEXT
+						SIF カウンタB < 1 ;カウンタが0以下=候補0
+							RETURN
+						墓地送り位置 = (RAND:カウンタB)
+						捕縛対象 = 捕縛候補:墓地送り位置 ;カウンタBまでの乱数で捕縛候補の中からランダムに捕縛対象を決定
+						捕縛場所B = 捕縛場所:墓地送り位置
+						CALL CARD_EROTICS(捕縛対象) ;必ずCARD_EROTICSを挟む
+						調教対象 = RESULT
+						IF 調教対象 > 0 ;調教対象条件はあなたを想定しないなら>0で
+							SELECTCASE RAND:4
+								CASE 0
+									PRINTFORML
+									PRINTFORML 強大な機械を動かすための糧を得るべく、牝穴たちは加工され尽くされた肉体を犯され続けている、
+									PRINTFORML 捕らえられている%CALLNAME:調教対象%も気づけばその１つとされていた。
+									PRINTFORMW 機械城の施設の１つである密閉され媚薬が詰め込まれたカプセルの中で、%CALLNAME:調教対象%は凌辱され続けている……
+								CASE 1
+									PRINTFORML
+									PRINTFORML 大型の狂逝の機械を動かすためのエネルギーを得るべく、%CALLNAME:調教対象%を含めた牝肉は犯され続けていた
+									PRINTFORML 絶頂と発狂を繰り返し、精神が壊れそうになれば無理矢理に補強され正気を保たされ続ける。
+									PRINTFORMW %CALLNAME:調教対象%は、終わる事のない性的蹂躙に絶頂と喘ぎ声を返し、狂逝の機械に捧げている……
+								CASE 2
+									PRINTFORML
+									PRINTFORML %CALLNAME:調教対象%は大型の狂逝の機械を作動させるためのエネルギー源を生み出すために、
+									PRINTFORML 四肢を切断され、機械城の施設の中で延々と犯されるための牝穴として組み込まれてしまっていた。
+									PRINTFORMW %CALLNAME:調教対象%を含めた無数の牝穴たちの喘ぎ声が機械城に響き渡る……
+
+								CASE 3
+									PRINTFORML
+									PRINTFORML 既に捕縛されていた牝の１つが牝墜公演劇場の舞台で踊らされていた
+									PRINTFORML 手足を切断され代わりの義手義足を付け腰を振り、唯一残った肉体を雄に使ってもらうためだけの牝
+									PRINTFORMW %CALLNAME:調教対象%は公演劇場の踊り子に堕ちてしまっている……
+							ENDSELECT
+							FOR カウンタ,0,4
+								PRINTFORML 
+								CALL MADORGASM_RAND_ROB_TXT(1,0)
+								CALL MADORGASM_RAND_ROB_TXT(1,3)
+								PRINTFORML
+								CALL EROTIC_MOVE("全身凌辱",調教対象,MASTER,500)
+							NEXT
+							CALL MADORGASM_RAND_ROB_TXT(1,5);うるさい鳴き声
+							PRINTFORML %CALLNAME:調教対象%は洗脳され、公演劇場の踊り子として踊り続けている、
+							PRINTFORMW 絶頂と快楽を対価に得た力は、無事狂逝の機械を動かしているようだ
+								
+						ENDIF
+					CALL CARD_DISPOSE(対面者,"デッキ",捕縛場所B)
+					ENDIF
+	ENDIF
+
+ELSEIF 種類 == 効果後強制誘発
+	PRINTFORML
+	PRINTFORML 『牝墜公演劇場』の効果により相手プレイヤーに媚薬カウンターが乗ります。
+	PRINTFORML
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,39913)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲相手戦場 = 1
+		効果条件ID = 調教対象
+		CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+		IF RESULT == 0
+			CALL FULLRESET
+			IF GETVAR(@"%対面者%_MZ_薬Ｃ") >= 4
+				CALL FULLRESET
+				CALL CARD_EROTICS(相手プレイヤー,決闘者)
+				IF RESULT >= 0
+					調教対象 = NO:RESULT
+					SIF 調教対象 == 0
+						調教対象 = 99999
+					VARSET RESULTS
+					TRYCALLFORM CARDNAME_{調教対象}("名前")
+					牝墜対象 = %RESULTS%
+					IF 牝墜対象 != ""
+						CALL FULLRESET
+						効果追加種類 = 効追無効
+						効果追加種類 = 効追永材
+						効果追加種類 = 効追攻０
+						効果追加種類 = 効追接触
+						効果追加種類 = 効追全裸
+						CALL CARD_GENERATE(対面者,調教対象)
+						PRINTFORMW %牝墜対象%は虚ろな瞳で牝を墜とすためだけの舞台に自ら昇ってしまう……
+						CALL EROTIC_MOVE("媚毒汚染",調教対象,-1,100)
+					ENDIF
+				ENDIF
+			ELSE
+				CALL CARD_EROTICS(相手プレイヤー,決闘者)
+				IF RESULT != -1
+					調教対象 = RESULT
+					PRINTFORML
+					SETCOLOR C_PINK 
+					PRINTFORMW %NAME:調教対象%は淫らな舞台を包む淫らな空気を吸い、媚毒を身に貯めてしまう……
+					RESETCOLOR
+					PRINTFORML
+					CALL EROTIC_MOVE("媚毒汚染",調教対象,-1,100)
+				ENDIF
+			CALL SET_PLAYER_INFO(決闘者,"薬Ｃ",1,1,1)
+			ENDIF
+		ENDIF
+	ELSEIF RESULT == 1
+		CALL SET_FIELD_INFO(対面者,"戦場",効果条件ID,"薬Ｃ",1)
+	ENDIF
+
+ELSEIF 種類 == 攻撃時強制誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,39913)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL SET_FIELD_INFO(対面者,"戦場",戦闘場所(対面者),"薬Ｃ",1)
+		カウンタ = GETVAR(@"%対面者%_MZ_薬Ｃ:選択カード")
+		IF カウンタ >= 4
+			CALL EVADE_ATTACK(決闘者)
+		ENDIF
+	ENDIF
+
+
+ELSEIF 種類 == 攻守変動
+	CALL FULLRESET
+	効果条件表示 = 表側表示
+	効果条件カテゴリ = 狂逝の機械
+	CALL STATCHANGE_EFFECT(決闘者,"魔罠",場所,"破耐")
+
+ENDIF
+
+
+
+
+
+

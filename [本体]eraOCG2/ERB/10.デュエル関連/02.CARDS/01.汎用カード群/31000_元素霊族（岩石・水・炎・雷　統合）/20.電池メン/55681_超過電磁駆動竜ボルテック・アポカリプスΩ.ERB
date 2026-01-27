@@ -1,0 +1,215 @@
+﻿@CARDNAME_55681,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 초과전자구동룡 볼테크 아포칼립스Ω
+	CASE "略称"
+		RESULTS = Ｖ Ａ Ω
+	CASE "カテゴリ"
+		RESULTS:0 = 전지맨
+		RESULTS:3 = 게임 오리지널
+ENDSELECT
+
+
+@CARD_55681(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 3400
+	CASE "守備力"
+		RETURN 2000
+	CASE "성별"
+		RETURN 260101
+ENDSELECT
+
+RETURN 0
+@CARDSUMMON_55681(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要링크数 = 1
+素材条件名前 = 초전자가동 볼테크 드래곤
+素材条件以攻撃力 = 5000
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,55681) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_55681(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 공격력 ５０００이상인 "초전자가동 볼테크 드래곤" １장
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：자신 필드의 빛속성 / 원소정령족 몬스터의 공격력 / 수비력은 １０００오르고、
+PRINTL 이 카드의 공격력 / 수비력은 자신 묘지의 빛속성 / 원소정령족 몬스터 １장마다 ３００오른다。
+PRINTL ②：이 카드는 일시 파괴 내성을 갖는다
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드는 자신의 필드 / 묘지의 "전지맨" 몬스터의 종류에 따라라 이하의 효과를 얻는다。
+PRINTL ●３종류이상：１턴에 １번、상대가 마법 / 함정 / 몬스터의 효과를 발동했을 때에 발동할 수 있다。
+PRINTL 　　　　　　　그 발동을 무효로 하고 파괴한다。
+PRINTL ●６종류이상：이 카드는 연속 공격을 갖는다。
+PRINTL ●９종류이상：자신 / 상대 엔드 페이즈에 발동할 수 있다。
+PRINTL 　　　　　　　덱 / 묘지에서 "전지맨" 마법 / 함정 카드 １장을 세트한다。
+
+
+@CARDCAN_55681(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55681)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 발동誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 전지맨
+	효과条件종류 = モン全般
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 3
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == ターン終了時
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 전지맨
+	효과条件종류 = モン全般
+	효과条件固名前起動 = 1;CARDCHECK_ADV専用
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 9
+		RETURN 0
+	SIF 마함数(듀얼리스트) >= 5
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 전지맨
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_55681(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID 
+#DIMS DYNAMIC 選択カード名前 
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55681,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+		RETURN 1
+	ENDIF
+	RETURN 0
+
+ELSEIF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55681)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 전지맨
+		효과条件종류 = 마함全般
+		CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件속성 = 빛속성
+	효과条件종족 = 원소정령족
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 300
+	CALL STATCHANGE_BASIC(듀얼리스트,"自身",場所,攻撃力修正)	
+
+	CALL FULLRESET
+	효과条件속성 = 빛속성
+	효과条件종족 = 원소정령족
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,1000,1000)
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"一破")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"対耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦阻")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"貫通")
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 전지맨
+	효과条件종류 = モン全般
+	효과条件固名前起動 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	IF RESULT >= 6
+		CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"連戦")
+	ENDIF
+ENDIF

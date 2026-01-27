@@ -1,0 +1,250 @@
+﻿@CARDNAME_4749,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 이그드라실
+	CASE "略称"
+		RESULTS = 이그드라실
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+		RESULTS:1 = 디지몬테이머
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_4749(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 지속마법
+	CASE "성별"
+		RETURN 牝性
+	;CASE "生産불가"
+	;	RETURN 1
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 260131
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4749(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：자신フィールドのコスト９以上の전사족「디지몬」モンスターの攻撃力・守備力は、
+PRINTL 상대フィールド（表側표시）のモンスターの合計コスト×１００アップする。（コストはレベル・ランク・링크を指す）
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：자신メインフェイズにＥＸ덱の「디지몬알」モンスター１体を상대に見せて발동できる。
+PRINTL 자신の손패を１枚捨てて、見せたモンスターと同じ속성の「디지몬」モンスター１体を덱から손패に加える。
+PRINTL この효과の발동後、ターン終了時まで자신はＥＸ덱から「디지몬」モンスターしか특수소환できない。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ③：자신フィールドにコスト９以上の「디지몬」モンスターが소환・특수소환した場合に、
+PRINTL 상대フィールド（表側표시）のカード１枚を대상にして발동できる。そのカードの효과を無効にする。
+
+;デジタルワールドを維持관리する運営プログラム。「ロイヤルナイツ」の主。「タイスト」での金髪ロリータ美少女の姿でお越し頂いた。
+
+;②の初動サーチはかなり汎用的で、各속성の디지몬알を入れておけば殆どの디지몬をサーチできて初動展開が安定する。EX디지몬縛りがつく。
+;名称ターン１のテーマ内サーチはコスト不要なのが現代水準なんだけど、ほぼ全디지몬を引っ張れる汎用サーチにしてるので現代水準より重めにコスト설정。
+;特定の디지몬に寄りそったサポートをする人間のテイマーはコストや縛りを軽くして、専用덱ならそちらが採用されるのがバランス的にはよいだろう。
+
+;이그드라실というプログラムはテイマーではないけど、子どもアバターは「選ばれし子どもたち」の模倣と解釈しテイマーのカテゴリを持つ。
+;지속・효과後誘発はロイヤルナイツ全体サポートを意識しつつ、궁극체クラスの大型モンスターの汎用サポートとしても一部使える효과になっている。
+;「ロイヤルナイツ」サポートに特化しない理由は、彼らは揃わないのが伝統。なので、ゆるーい恩寵の与え方になっている。あの子たちは自由だからね。
+;攻守変動の数値は상대フィールドの大型モンスターに依存しており、強敵が出ないと本気を出さない（出せない？）感じが이그드라실的。
+
+
+@CARDCAN_4749(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 複数속성, 8
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,4749)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,4749)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 손패数(듀얼리스트) <= 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 디지몬알
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	
+	;자신EX덱の「디지몬알」の속성を確認して「複数속성」の変数に설정を格納。下の효과条件속성_複数にて利用。
+	CALL FULLRESET
+	효과条件カテゴリ = 디지몬알
+	CALL ELEMENTS_KIND_BASIC(듀얼리스트,"EX덱",複数속성)
+	
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 디지몬
+	효과条件종류 = モン全般
+	CALL 효과条件속성_複数(複数속성)
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_3(듀얼리스트,4749)
+		RETURN 0
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	
+	CALL FULLRESET
+	효과条件カテゴリ = 디지몬
+	효과条件종류 = モン全般
+	CALLFORM 효과条件レベル_ADV(9, "以上")
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般")
+	SIF RESULT != 1
+		RETURN 0
+	
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4749(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択カードID
+#DIM DYNAMIC 選択カード속성
+#DIM DYNAMIC 상대合計コスト
+#DIM DYNAMIC 攻守修正値
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 複数속성, 8
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4749,2)
+	IF RESULT == 0
+		
+		CALL URARA_CHANCE(듀얼리스트,4749,"덱")
+		IF RESULT == 0
+			;손패１枚コスト
+			CALL FULLRESET
+			CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			IF RESULT == 1
+				;덱内の속성チェック処理を先にやって、存在している속성の디지몬알のみ選択できる。（きわめて丁寧な処理）
+				CALL FULLRESET
+				효과条件カテゴリ = 디지몬
+				CALL ELEMENTS_KIND_BASIC(듀얼리스트,"덱",複数속성)
+				;디지몬알選択
+				CALL FULLRESET
+				효과範囲EX덱 = 1
+				효과条件カテゴリ = 디지몬알
+				효과条件종류 = モン全般
+				CALL 효과条件속성_複数(複数속성)
+				CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT != 9999
+					;選択した디지몬알と同じ속성の디지몬サーチ（複数속성の디지몬알はない想定）
+					選択カードID = RESULT:99
+					TRYCALLFORM CARD_{選択カードID}, "속성"
+					選択カード속성 = RESULT
+					CALL FULLRESET
+					효과範囲덱 = 1
+					효과条件カテゴリ = 디지몬
+					효과条件종류 = モン全般
+					효과条件속성 = 選択カード속성
+					CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+				ENDIF
+			ENDIF
+		ENDIF
+		;EX縛り（디지몬縛り）
+		CALL CARD_EX_RESTRICTION(듀얼리스트,"디지몬")
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆설치まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4749)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+ELSEIF 종류 == 攻守変動
+	
+	;마함に張ってるときはこっそりイチャイチャ可能に。（[親愛]または[굴복됨]+호감도5000以上の条件）
+	;캐릭터クターのCSV番号を취득して利用している。カードIDは캐릭터で固定なので「CARD_EROTICS」関数じゃなくても「NO_TO_CHARANUM(カードID)」で十分。
+	;ありがちな캐릭터CSV番号の취득ミスでエラー落ちしないよう、念のためCSV番号が1以上じゃないと後の処理を行わない実装にしているのよ。（E.R.Aカードまめちしき）
+	조교대상 = NO_TO_CHARANUM(4749)
+	IF 조교대상 >= 1
+		IF TALENT:조교대상:연모 >= 2 || (TALENT:조교대상:굴복됨 && CFLAG:조교대상:호감도 >= 5000)
+			CALL FULLRESET
+			CALL STATCHANGE_EFFECT(듀얼리스트, "魔自身", 場所, "接可",3)
+		ENDIF
+	ENDIF
+	;상대モンスターの合計コストをチェック（コストなので링크含んだレベル合計）
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻守修正値 =  RESULT:2 * 100
+	
+	CALL FULLRESET
+	효과条件カテゴリ = 디지몬
+	효과条件종족 = 전사족
+	효과条件종류 = モン全般
+	CALLFORM 효과条件レベル_ADV(9, "以上")
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻守修正値,攻守修正値)
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,4749,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"全場単体",場所,"지속無効")
+	ENDIF
+ENDIF

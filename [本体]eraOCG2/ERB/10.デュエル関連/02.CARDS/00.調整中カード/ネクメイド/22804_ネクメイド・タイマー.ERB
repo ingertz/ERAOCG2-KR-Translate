@@ -1,0 +1,153 @@
+﻿@CARDNAME_22804,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 네크메이드 타이머
+	CASE "略称"
+		RESULTS = NM 타이머
+	CASE "カテゴリ"
+		RESULTS:0 = 가실장
+		RESULTS:1 = 네크메이드
+ENDSELECT
+
+
+@CARD_22804(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 효과モン
+	;어둠속성/빛속성/땅속성/물속성/화염속성/바람속성
+	CASE "속성"
+		RETURN 빛속성
+
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1100
+	CASE "守備力"
+		RETURN 700
+	CASE "レア度"
+		RETURN RARE
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_22804(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードの①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動 ,손패起動 ,フリー誘発)
+PRINTL ①：자신・상대のメインフェイズに、손패・フィールドのこのカードを묘지へ送り、
+PRINTL 손패・フィールドの「네크메이드 타이머」以外のレベル４以下のモンスター１体を묘지に送って발동できる。
+PRINTL 자신の묘지のモンスター（빛속성／언데드족）１体を選び、자신フィールドに表側표시で특수소환する。
+PRINTL この효과で묘지に送ったモンスターが「네크메이드 타이머」以外の「네크메이드」モンスターだった場合、덱からも특수소환できる。
+PRINTL このターン、자신はモンスター（언데드족）しかＥＸ덱から특수소환できない。
+
+
+@CARDCAN_22804(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,22804)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	SIF !GROUPMATCH(ゾーン,"손패","필드")
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,22804)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件종류 = モン全般
+		CALL 효과条件レベル_ADV(4, "以下")
+		효과条件固名前 = 네크메이드 타이머
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲덱 = 1
+		효과条件속성 = 빛속성
+		효과条件종족 = 언데드족
+		효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+@CARDEFFECT_22804(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 묘지送カード,10
+#DIM DYNAMIC 손패묘지送カード,10
+#DIM DYNAMIC 素材数
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択済カード
+#DIMS DYNAMIC 選択名前
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 条件달성
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,22804,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲필드 = 1
+		효과条件종류 = モン全般
+		효과条件固名前 = 네크메이드 타이머
+		CALL 효과条件レベル_ADV(4, "以下")
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARDNAME_{選択カード_ID}("カテゴリ")
+				IF MATCH(RESULTS,"네크메이드")
+					条件달성 = 1
+				ENDIF
+			CALL FULLRESET
+			IF 条件달성 == 1
+				효과範囲묘지 = 1
+				효과範囲덱 = 1
+				효과条件속성 = 빛속성
+				효과条件종족 = 언데드족
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ELSEIF 条件달성 == 0
+				효과範囲묘지 = 1
+				효과条件속성 = 빛속성
+				효과条件종족 = 언데드족
+				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			ENDIF
+		EX소환可能종족 = 언데드족
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+		ENDIF
+	ENDIF
+ENDIF
+
+

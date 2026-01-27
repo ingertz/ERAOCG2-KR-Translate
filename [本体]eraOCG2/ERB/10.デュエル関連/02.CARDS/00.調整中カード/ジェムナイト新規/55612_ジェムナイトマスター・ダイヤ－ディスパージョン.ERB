@@ -1,0 +1,181 @@
+﻿@CARDNAME_55612,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 젬나이트마스터 다이아－디스퍼전
+	CASE "略称"
+		RESULTS = GemKＭ DD
+	CASE "カテゴリ"
+		RESULTS:0 = 젬나이트
+ENDSELECT
+
+
+@CARD_55612(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 원소정령족 
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3000
+	CASE "守備力"
+		RETURN 2600
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 250107
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_55612(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「젬나이트」モンスター×３
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動,フリー誘発)
+PRINTL ①：자신・상대のメインフェイズに、フィールドのこのカードを묘지へ送って발동できる。
+PRINTL 자신のEX덱・묘지から「젬나이트마스터 다이아－디스퍼전」以外の
+PRINTL 「젬나이트」モンスターを３体まで소환条件を無視して특수소환する。
+PRINTL このターン、자신は융합モンスターしかEX덱から특수소환できない。
+CALLFORM CARD_ABLE(2,攻撃後誘発)
+PRINTL ②：このカードが묘지に存在する状態で、자신の「젬나이트」융합モンスターが戦闘で破壊された時に발동できる。
+PRINTL このカードを특수소환する。
+PRINTL
+
+@CARDSUMMON_55612(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件カテゴリ = 젬나이트
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,55612) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_55612(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과使用불가,10
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55612)
+SIF RESULT == 1
+	RETURN 0
+
+
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_1(듀얼리스트,55612)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲EX덱 = 1
+	효과条件カテゴリ = 젬나이트
+	효과条件소환可 = 1
+	효과条件特不無視 = 1
+	효과条件固名前 = 젬나이트마스터 다이아－디스퍼전
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 攻撃後誘発
+	SIF 발동済_2(듀얼리스트,55612)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,55612,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	TRYCALLFORM CARDNAME_{直前戦闘破壊ID(듀얼리스트)}("カテゴリ")
+	SIF RESULTS != "젬나이트"
+		RETURN 0
+
+	CALL FULLRESET
+	TRYCALLFORM CARD_{直前戦闘破壊ID(듀얼리스트)}("종류")
+	SIF RESULT != 융합
+		RETURN 0
+
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_55612(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力上昇
+#DIM DYNAMIC 戦闘カード
+#DIM DYNAMIC ダメージ量
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 효과使用불가,10
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55612,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과範囲EX덱 = 1
+			효과条件カテゴリ = 젬나이트
+			효과条件소환可 = 1
+			효과条件特不無視 = 1
+			효과条件複数 = 97
+			효과条件固名前 = 젬나이트마스터 다이아－디스퍼전
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+
+			CALL FULLRESET
+			EX소환可能종류 = 융합
+			CALL CARD_EX_RESTRICTION(듀얼리스트)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 攻撃後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55612,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件名前 = 젬나이트마스터 다이아－디스퍼전
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

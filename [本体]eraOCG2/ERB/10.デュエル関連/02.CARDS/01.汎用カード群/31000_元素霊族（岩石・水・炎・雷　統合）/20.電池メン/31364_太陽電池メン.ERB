@@ -1,0 +1,219 @@
+﻿@CARDNAME_31364,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 태양전지맨
+	CASE "略称"
+		RESULTS = 태양전지맨
+	CASE "カテゴリ"
+		RESULTS:0 = 전지맨
+ENDSELECT
+
+
+@CARD_31364(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1500
+	CASE "守備力"
+		RETURN 1500
+	CASE "生成カード"
+		RETURN 131364
+	CASE "성별"
+		RETURN 260101
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_31364(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 이 카드명의 ①②③의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(1,소환時 ,특수소환時)
+PRINTL ①：이 카드가 소환 / 특수 소환에 성공한 경우에 발동할 수 있다。
+PRINTL 덱에서 빛속성 몬스터 １장을 묘지로 보낸다。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：이 카드가 이미 몬스터 존에 존재하는 상태로、
+PRINTL "태양전지맨" 이외의 빛속성 몬스터가 소환 / 특수 소환된 경우에 발동한다。
+PRINTL 게임 밖에서 "부유전력" １장을 특수 소환한다。
+CALLFORM CARD_ABLE(3,소환時 ,특수소환時)
+PRINTL ③：자신의 필드 / 묘지의 빛속성 / 원소정령족 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 엔드 페이즈까지、이 카드는 그와 같은 이름의 카드로 취급한다。
+
+@CARDCAN_31364(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,31364)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_1(듀얼리스트,31364)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 빛속성
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,31364)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_最召場所") == 場所
+		RETURN 0
+	CALL FULLRESET
+	효과条件속성 = 빛속성
+	효과条件他所 = 1
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般",2)
+	SIF RESULT != 1
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_3(듀얼리스트,31364)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件속성 = 빛속성
+	효과条件종족 = 원소정령족
+	효과条件固名前 = 태양전지맨
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_31364(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 守備力修正
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 選択カード名前
+#DIM DYNAMIC 選択カード_ID
+
+IF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31364,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件속성 = 빛속성
+		효과条件종류 = モン全般
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31364,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_GENERATE(듀얼리스트,131364)
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,31364,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲묘지 = 1
+		효과条件속성 = 빛속성
+		효과条件종족 = 원소정령족
+		효과条件固名前 = 태양전지맨
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		選択カード_ID = RESULT:99
+		IF 選択カード != 9999
+			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
+			選択カード名前 = %RESULTS%
+			CALL FULLRESET
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"変化元ID",選択カード_ID,上書きモード)
+		ENDIF
+	ENDIF
+ENDIF
+
+@CARDNAME_131364,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 부유전력
+	CASE "略称"
+		RESULTS = 부유전력
+	CASE "カテゴリ"
+		RESULTS:0 = 전지맨
+ENDSELECT
+
+
+@CARD_131364(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常モン
+	CASE "トークン"
+		RETURN 1
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "自動소멸"
+		RETURN 1
+ENDSELECT
+
+@CARD_EXPLANATION_131364(종류)
+#DIM DYNAMIC 종류
+
+;共通戦破耐性
+PRINTL 이 카드가 몬스터 존을 벗어날 경우、이 카드는 소멸한다（게임에서 제거된다）
+
+@CARDCAN_131364(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+RETURN 0

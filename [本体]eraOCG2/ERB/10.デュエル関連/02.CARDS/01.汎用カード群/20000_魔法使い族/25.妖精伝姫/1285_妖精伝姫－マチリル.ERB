@@ -1,0 +1,181 @@
+﻿@CARDNAME_1285,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 페어리테일－매치릴
+	CASE "略称"
+		RESULTS = 매치릴
+	CASE "カテゴリ"
+		RESULTS:0 = 페어리테일
+ENDSELECT
+
+
+@CARD_1285(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 마법사족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1850
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_1285(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動,묘지起動)
+PRINTL ①：フィールドに元々の攻撃力が１８５０の마법사족モンスターが存在する場合に발동できる。
+PRINTL このカードを손패・묘지から특수소환する。
+PRINTL このターン、자신は마법사족モンスターしか특수소환できない。
+CALLFORM CARD_ABLE(2,소환時,특수소환時)
+PRINTL ②：このカードが소환・특수소환した場合に발동できる。
+PRINTL 덱から「페어리테일」마법・함정カード１枚を손패に加える。
+CALLFORM CARD_ABLE(3,필드起動)
+PRINTL ③：５００ＬＰを払って발동できる。
+PRINTL 상대フィールドの효과モンスター１体のカード名を「요정 왕자님」として扱う。
+
+
+@CARDSUMMON_AA_1285
+
+
+@CARDCAN_1285(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1285)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	SIF 발동済_1(듀얼리스트,1285)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1285,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+			CONTINUE
+		TRYCALLFORM CARD_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("攻撃力")
+		SIF RESULT != 1850
+			CONTINUE
+		条件달성 = 1
+		BREAK
+	NEXT
+	SIF 条件달성 != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	SIF 발동済_2(듀얼리스트,1285)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 페어리테일
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動
+	SIF 발동済_3(듀얼리스트,1285)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 500
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件종류 = 효과全般
+	효과条件표시 = 表側표시
+	효과条件除去種 = 選択
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_1285(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動 || 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1285,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		SS소환可能종족 = 마법사족
+		CALL CARD_SS_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == 소환時 || 종류 == 특수소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1285)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 페어리테일
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1285,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",500)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件종류 = 효과全般
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"選択")
+		IF RESULT != 9999
+			CALL CARD_SELECT(듀얼리스트,RESULT:1)
+			CALL CARD_SET_RENAME(対面者,"필드",RESULT,"요정 왕자님")
+		ENDIF
+	ENDIF
+ENDIF
+
+

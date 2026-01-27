@@ -53,29 +53,32 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
 	SIF ゾーン != "마함"
 		RETURN 0
-	SIF 발동済_1(듀얼리스트,82040)
-		RETURN 0
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		SIF 발동済_1(듀얼리스트,82040)
+			RETURN 0
 
-	;戻すべき마법사족がいるかチェック
-	CALL FULLRESET
-	효과範囲묘지 = 1
-	효과範囲제외 = 1
-	효과条件종족 = 마법사족
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+		;戻すべき마법사족がいるかチェック
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件종족 = 마법사족
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
 
-	;추가로 덱に위치크래프트마법카드가 あることをチェック
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件종류 = 마법全般
-	효과条件カテゴリ = 위치크래프트
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
+		;추가로 덱に위치크래프트마법카드가 あることをチェック
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종류 = 마법全般
+		효과条件カテゴリ = 위치크래프트
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ELSE
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
 	RETURN 1
 
 ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
@@ -115,25 +118,30 @@ ENDIF
 
 ;①의 효과
 IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82040,1)
-	IF RESULT == 0
-		;몬스터를 덱に戻す処理
-		CALL FULLRESET
-		효과範囲묘지 = 1
-		효과範囲제외 = 1
-		효과条件종족 = 마법사족
-		PRINTL 덱으로 되돌릴 몬스터를 선택해 주세요
-		효과条件行先플래그 = 덱行き
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82040,1)
+		IF RESULT == 0
+			;몬스터를 덱に戻す処理
 			CALL FULLRESET
-			효과条件종류 = 마법全般
-			효과条件カテゴリ = 위치크래프트
-			CALL CARD_ADD_BASIC(듀얼리스트,"덱",場所)
+			효과範囲묘지 = 1
+			효과範囲제외 = 1
+			효과条件종족 = 마법사족
+			PRINTL 덱으로 되돌릴 몬스터를 선택해 주세요
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+
+				CALL FULLRESET
+				효과条件종류 = 마법全般
+				효과条件カテゴリ = 위치크래프트
+				CALL CARD_ADD_BASIC(듀얼리스트,"덱",場所)
+			ENDIF
+		ENDIF
+	ELSE
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,84870)
+		IF RESULT == 0
 		ENDIF
 	ENDIF
-
 ;②의 효과
 ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,82040,2)

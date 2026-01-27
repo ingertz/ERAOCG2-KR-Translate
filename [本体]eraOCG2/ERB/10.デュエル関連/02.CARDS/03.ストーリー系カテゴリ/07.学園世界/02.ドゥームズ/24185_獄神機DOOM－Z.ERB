@@ -7,12 +7,14 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-		RESULTS = 감옥신기 DOOM－Z
+		RESULTS = 감옥신기 Doom－Z
 	CASE "略称"
-		RESULTS = 감옥신기 DOOM－Z
+		RESULTS = 감옥신기 Doom－Z
 	CASE "カテゴリ"
 		RESULTS:0 = 둠즈
 		RESULTS:1 = 감옥신
+	CASE "検索カテゴリ"
+		RESULTS:0 = 메디우스
 ENDSELECT
 
 
@@ -134,6 +136,7 @@ ENDIF
 #DIM DYNAMIC 選択カード_ID
 #DIMS DYNAMIC 選択カード名前
 #DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カードC
 
 
 CALL 対面者판정(듀얼리스트)
@@ -174,31 +177,17 @@ ELSEIF 종류 == 필드起動
 		選択カード = RESULT
 		選択カード_ID = RESULT:99
 		IF 選択カード != 9999
+			CALL RESETCONDITION_MAT
 			CALL FULLRESET
-			TRYCALLFORM CARDNAME_{選択カード_ID}("名前")
-			選択カード名前 = %RESULTS%
 			TRYCALLFORM CARD_{選択カード_ID}("レベル")
 			효과条件レベル = RESULT
+			必要素材数 = 1
 			효과条件종류 = レベル持ち
-			효과条件他所 = 1
-			CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
-			選択カードB = RESULT
-			IF 選択カードB != 9999
-				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
-				CALL RESETCONDITION_MAT(1)
-				代替素材数 = 1
-				重ねてＸ = 1
-				素材条件固定 = 選択カードB
-				TRYCALLFORM XYZSUMMON(듀얼리스트,選択カード)
-				;装備
-				SETCOLOR C_YELLOW
-				PRINTL 【DOOM-Z를 장착할 몬스터를 골라주십시오】
-				RESETCOLOR
+			重ねてＸ = 1
+			TRYCALLFORM XYZSUMMON(듀얼리스트,選択カード)
+			IF RESULT == 1
 				CALL FULLRESET
-				효과条件名前 = %選択カード名前%
-				CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
-				選択カード = RESULT
-				CALL CARD_EQUIP_MONSTER(듀얼리스트,選択カードB,"필드",場所)
+				CALL CARD_EQUIP_MONSTER(듀얼리스트,カード소환先,"필드",場所)
 			ENDIF
 		ENDIF
 	ENDIF

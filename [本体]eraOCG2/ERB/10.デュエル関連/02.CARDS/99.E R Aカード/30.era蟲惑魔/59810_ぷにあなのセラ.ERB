@@ -68,15 +68,15 @@ ENDIF
 CALL TEXT_DECORATION("ROGUE")
 PRINTL 링크 이외의 “충혹마” 몬스터 1장
 PRINTL 이 카드의 ②의 효과는 1턴에 1번밖에 사용할 수 없다.
-CALLFORM CARD_ABLE(0,발동強制誘発)
-PRINTL ①：자신의 마법 / 묘지에서 "함정 속으로" 카드의 효과를 발동했을 경우에 발동할 수 있다.
-PRINTL 자신은 서로의 묘지의 "충혹마" 몬스터의 종류 × 200LP를 회복한다.
-CALLFORM CARD_ABLE(1,필드起動)
+CALLFORM CARD_ABLE(1,특수소환時)
+PRINTL ①：이 카드가 특수 소환에 성공했을 때에 발동할 수 있다.
+PRINTL 자신은 서로의 묘지의 "충혹마" 몬스터의 종류 × ５００LP 회복한다.
+CALLFORM CARD_ABLE(2,필드起動)
 PRINTL ②：자신의 메인 페이즈에 자신의 묘지에 "충혹마" 융합 몬스터가 존재할 경우에 발동할 수 있다.
 PRINTL 덱에서 "충혹마" 카드를 묘지로 보낸다.
 CALLFORM CARD_ABLE(0,지속효과,攻守変動)
 PRINTL ③：이 카드는 함정 내성과 공격 유도를 가지고,
-PRINTL 상대 필드 몬스터의 공격력 / 수비력은 서로의 묘지의 "충혹마" 몬스터의 종류 × 200 내린다.
+PRINTL 상대 필드 몬스터의 공격력 / 수비력은 서로의 묘지의 "충혹마" 몬스터의 종류 ×２００ 내린다.
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDCAN_59810(듀얼리스트,종류,ゾーン,場所)
@@ -94,15 +94,14 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,59810)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 발동強制誘発
-	SIF ゾーン != "필드"
+IF 종류 == 특수소환時 || 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,59810)
 		RETURN 0
 	CALL FULLRESET
 	효과範囲묘지 = 1
-	효과範囲마함 = 1
-	효과条件カテゴリ = 함정 속으로
-	효과条件他所 = 1
-	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	효과条件カテゴリ = 충혹마
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -139,8 +138,7 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -166,6 +164,10 @@ ELSEIF 종류 == 攻守変動 || 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0	
 	RETURN 1
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 
@@ -187,42 +189,51 @@ ENDIF
 #DIM DYNAMIC 효과先
 #DIM DYNAMIC 회복量
 
+#DIM DYNAMIC 조교대상캐릭터ID
+
+
+
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 발동強制誘発
-	CALL FULLRESET
-	효과範囲묘지 = 1
-	효과条件名前 = 트랩트릭 네스트홀
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT != 1
-		CALL FULLRESET
-		효과条件カテゴリ = 충혹마
-		효과範囲묘지 = 1
-		효과範囲상대묘지 = 1
-		효과条件固名前起動 = 1
-		효과条件종류 = モン全般
-		효과条件CNT = 1
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		회복量 = RESULT * 200
-	ELSE
+IF 종류 == 특수소환時 || 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59810,1)
+	IF RESULT == 0
 		CALL FULLRESET
 		효과範囲묘지 = 1
-		효과範囲상대묘지 = 1
-		효과条件固名前起動 = 1
-		효과条件종류 = モン全般
-		효과条件CNT = 1
+		효과条件名前 = 트랩트릭 네스트홀
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		회복量 = RESULT * 200
+		IF RESULT != 1
+			CALL FULLRESET
+			효과条件カテゴリ = 충혹마
+			효과範囲묘지 = 1
+			효과範囲상대묘지 = 1
+			효과条件固名前起動 = 1
+			효과条件종류 = モン全般
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			회복量 = RESULT * 500
+		ELSE
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과範囲상대묘지 = 1
+			효과条件固名前起動 = 1
+			효과条件종류 = モン全般
+			효과条件CNT = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			회복量 = RESULT * 500
+		ENDIF
+		PRINTFORML 
+		CALL LIFE_CHANGE(듀얼리스트,"増加","효과",회복量)
+		PRINTFORML
+		SETCOLOR C_PINK 
+		PRINTFORM 세라는 %CALLNAME:MASTER%%TEXTR("に擦り寄ると/に抱きつくと/の腕に抱きつくと/にナデナデを要求しながら/の手を取ると、イタズラっぽい笑みを浮かべながら胸を触らせ誘惑しながら/の腕を取って자신を抱きしめさせながら")%、
+		PRINTFORML %TEXTR("충혹마たちが集めた蜜を口移しで/背伸びした키스で충혹마たちが集めた蜜を")%飲ませてくれた。
+		PRINTL
+		PRINTFORML 「%TEXTR("……ちゅ♡/んちゅ……♡/んむ、っ……は♡/ちゅ……れる……♡")% ぇへへ♡ %TEXTR("ど～お？ 甘いでしょ♡/もっといる？/おいしいでしょ♡/げんきでた？/ね、もっと♡ もっとちゅ～しよ♡♡/いっぱい飲んでね♡")%」 
+		RESETCOLOR
+		CALL EROTIC_MOVE("딥키스",NO_TO_CHARANUM(1370),MASTER,50)
 	ENDIF
-	PRINTFORML 
-	CALL LIFE_CHANGE(듀얼리스트,"増加","효과",회복量)
-	PRINTFORML
-	SETCOLOR C_PINK 
-	PRINTFORML 세라가 묘지에 숨어있는 충혹마들의 꿀을 모아 입에 넣어 마시게 했다.
-	RESETCOLOR
-	CALL EROTIC_MOVE("딥키스",NO_TO_CHARANUM(1370),MASTER,50)
-
 ELSEIF 종류 == 필드起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59810,2)
 	IF RESULT == 0
@@ -263,6 +274,8 @@ ELSEIF 종류 == 攻守変動
 ELSEIF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"攻誘")
+	SIF バトルフェイズ == 1 && ターンプレイヤー != 듀얼리스트
+		CALL STATCHANGE_EFFECT(듀얼리스트,"상대필드",場所,"戦狂")
 ELSEIF 종류 == 攻撃時誘発
 	;シトリス묘지효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59810)
@@ -272,6 +285,16 @@ ELSEIF 종류 == 攻撃時誘発
 		戦闘カード = 戦闘場所(듀얼리스트,1)
 		CALL FULLRESET
 		효과추가종류 = 6
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:효과先")
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;セラはモウセンゴケ。べたつく粘液を纏った毛をばら撒いて動きを足止めするらしい。ストラク付属の資料にも書かれている
+			PRINTFORML 攻撃の瞬間、セラは%NAME:조교대상%に粘液付きの毛を吹きつけた！
+			PRINTFORMW %TEXTR("躱そうとして体勢を崩した/回避に気を取られた/突然のことに怯んだ")%%NAME:조교대상%は広範囲に撒かれた粘液に足を取られ、シトリスの仕掛けた함정にかかって動きを封じられてしまった！
+		ELSE
+			PRINTFORMW セラはシトリスの大穴に誘導した…
+		ENDIF
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘カード,"永攻DOWN")
 	ENDIF
 
@@ -280,9 +303,38 @@ ELSEIF 종류 == 효과後誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,59810)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
-		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
+		CALL FULLRESET
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;フレシアはモチーフがラフレシア。
+		;ラフレシアが小虫に送粉を手伝わせるために腐臭を漂わせるように、フレシアは人を誘うために甘くいい香りをさせている……はず！
+			PRINTFORML 立ちこめる甘く濃厚な媚香に%CALLNAME:조교대상%が気を取られた隙をついて、
+			PRINTFORMW セラは%CALLNAME:조교대상%をフレシアが待ち構える大穴に引きずり込んだ！
+			PRINTL
+			PRINTFORMW 悲鳴をあげながら落ちていく상대モンスターを眺めて、セラは「ばいば～い♡」と嘲笑いながらひらひらと手を振った……
+			CALL PREDATION_RAFFLESIA(듀얼리스트,종류,ゾーン,場所,조교대상)
+		ELSE
+			PRINTFORMW セラはフレシアの大穴に誘導した…
+		ENDIF
 		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+	ENDIF
+ELSEIF 종류 == リアクション효과
+	SETCOLOR C_PINK
+	PRINTFORML 
+	PRINTFORMW ”穴”として설치されたセラは%CALLNAME:MASTER%に%TEXTR("幼げな/ぷにぷにの")%穴を向けて誘惑している…
+	PRINTFORMW 誘惑に堪えきれず、%CALLNAME:MASTER%はセラの穴に욕망のまま情欲をぶつけた…
+	RESETCOLOR
+	CALL EROTIC_MOVE("충혹마의 착정",NO_TO_CHARANUM(1370),MASTER,100)
+	IF RESULT:2 >= 1
+		SETCOLOR C_PINK
+		PRINTFORML 
+		PRINTFORMW セラは%CALLNAME:MASTER%から搾り取った精気を巣穴に溜め込んだ…
+		RESETCOLOR
+		CALL CARD_GENERATE_GY(듀얼리스트,99823)
 	ENDIF
 ENDIF
 

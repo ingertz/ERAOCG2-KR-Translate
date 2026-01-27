@@ -1,0 +1,227 @@
+﻿@CARDNAME_1530,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 크라운 클랜　화이트페이스
+	CASE "略称"
+		RESULTS = 화이트페이스
+	CASE "カテゴリ"
+		RESULTS:0 = 크라운 클랜
+ENDSELECT
+
+
+@CARD_1530(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2500
+	CASE "守備力"
+		RETURN 2500
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_1530(종류)
+#DIM DYNAMIC 종류
+
+;펜듈럼は分割で別カテゴリなため・・・
+PRINTL このカードは의식・융합・Ｓ・Ｘ・Ｌモンスター１体をリリースして表側표시でＡ소환できる。
+CALLFORM CARD_ABLE(0,소환時)
+PRINTL ①：このカードがＡ소환した場合、以下の효과から１つを選択して발동できる
+PRINTL （このカード名の以下の효과はそれぞれ１ターンに１度しか選択できない）。
+PRINTL ●このカードのＡ소환のためにリリースしたモンスターの数だけ、
+PRINTL 　상대フィールドの表側표시カードの효과を無効にする。
+PRINTL ●このカードのＡ소환のためにリリースしたモンスターの数だけ、자신はドローする。
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ②：１ターンに１度、상대メインフェイズに손패のレベル５以上のモンスター１体を상대に見せて발동できる。
+PRINTL 可能であれば、そのモンスター１体のＡ소환を行う。
+
+
+@CARDCAN_1530(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1530)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 효과소환
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류:0 = 의식
+	효과条件종류:1 = 융합
+	효과条件종류:2 = 싱크로
+	효과条件종류:3 = 엑시즈
+	효과条件종류:4 = 링크
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース")
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,1530)
+		발동불가:0 = 1
+	SIF 발동済_2(듀얼리스트,1530)
+		발동불가:1 = 1
+	
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件종류 = 의식以外
+	CALLFORM 효과条件レベル_ADV(5,"以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_1530(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC リリース数
+#DIM DYNAMIC 발동불가,2
+
+IF 종류 == 효과소환
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류:0 = 의식
+	효과条件종류:1 = 융합
+	효과条件종류:2 = 싱크로
+	효과条件종류:3 = 엑시즈
+	효과条件종류:4 = 링크
+	CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1530)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件CNT = 1
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"リリース")
+		リリース数 = RESULT
+
+		SIF 발동済_1(듀얼리스트,1530)
+			발동불가:0 = 1
+		SIF 발동済_2(듀얼리스트,1530)
+			발동불가:1 = 1
+		
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件除去種 = 無効
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+		
+		IF 발동불가:0 != 1 && 발동불가:1 != 1
+			CALL YN_CHOICE(듀얼리스트,"●リリースした数だけドローする","●リリースした数まで상대フィールドのカードの효과を無効にする")
+		ELSEIF 발동불가:0 != 1
+			RESULT = 0
+		ELSEIF 발동불가:1 != 1
+			RESULT = 1
+		ENDIF
+
+		IF RESULT == 0
+			CALL CARD_EFFECT_USE(듀얼리스트,1530,1)
+			CALL CARDDRAW_BASIC(듀얼리스트,リリース数)
+		ELSEIF RESULT == 1
+			CALL CARD_EFFECT_USE(듀얼리스트,1530,2)
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件複数 = 100 - リリース数
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"지속無効")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1530,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件종류 = 의식以外
+		CALLFORM 효과条件レベル_ADV(5,"以上")
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			選択カード_ID = RESULT:99
+
+			TRYCALLFORM CARDCAN_{選択カード_ID}(듀얼리스트,효과소환,"손패",選択カード)
+			IF RESULT == 1
+				TRYCALLFORM CARDNAME_{選択カード_ID},"名前"
+				SIF 듀얼리스트 == "자신"
+					PRINTFORML 「%RESULTS%」の효과で소환しますか？
+				CALL YN_CHOICE(듀얼리스트)
+				SIF RESULT == いいえ
+					GOTO NOMAL_ADVANCE
+				TRYCALLFORM CARDEFFECT_{選択カード_ID}(듀얼리스트,효과소환,"손패",選択カード)
+				SIF RESULT == 1
+					CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",1)
+			ELSE
+				$NOMAL_ADVANCE
+				CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",5)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

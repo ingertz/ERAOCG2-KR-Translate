@@ -1,0 +1,703 @@
+﻿@IRAI_EVENT_50(参照先)
+#DIMS DYNAMIC 参照先
+#DIM DYNAMIC 対象キャラ
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE  "名前"
+		RESULTS = (ST6-2)戦士の帰還
+	CASE "イベント種"
+		RETURN イベント_物語
+	CASE "依頼先"
+		RETURN 即時開始
+	CASE "詳細"
+		PRINTL 勇者の討伐に成功したが、手に入れたのは裏側のカード同士がくっついたカード。
+		PRINTL 水遣いがKCの施設を借りて勇者を取り戻す方法を探るが上手く行かない。
+		PRINTL 
+		PRINTL 
+	CASE "条件"
+		SIF 依頼_完了回数:60 == 0
+			RETURN 0
+		RETURN 1
+	CASE "回想可"
+		RETURN 1
+ENDSELECT
+
+RETURN 0
+
+
+
+@IRAI_ACT_50(参照)
+#DIM DYNAMIC 参照
+#DIM DYNAMIC 獲得モンスター
+#DIM DYNAMIC イベント主
+#DIM DYNAMIC ガイドさん
+#DIM DYNAMIC 龍仙女
+#DIM DYNAMIC 水遣い
+#DIM DYNAMIC アリアンナ
+#DIM DYNAMIC ウィッチちゃん
+#DIM DYNAMIC 魔術師様
+
+ガイドさん = NO_TO_CHARANUM(1310)
+龍仙女 = NO_TO_CHARANUM(1630)
+水遣い = NO_TO_CHARANUM(2241)
+アリアンナ = NO_TO_CHARANUM(2111)
+ウィッチちゃん = NO_TO_CHARANUM(1194)
+魔術師様 = NO_TO_CHARANUM(2201)
+
+IF 依頼_達成状況 == 0
+	CALL EVENT_MOVE(MASTER,場所_KCビル)
+	CALL EVENT_MOVE_MUL(MAS位置,ガイドさん,水遣い,ウィッチちゃん)
+	PRINTFORML 蟲惑魔騒ぎで大きなダメージを受けてしまった拠点であるKCビルだが、
+	PRINTFORMW 幸い地下の研究施設は無事であった。
+	PRINTFORMW マスターはそこで水遣い達と隔離された部屋にいた。
+	PRINTFORMW 「では、よろしくお願いいたします……３、２、１――」
+	PRINTFORMW 水遣いに指示されるまま隔離された別の部屋にて「勇者のカード」を千年ディスクに叩きつけた。
+	PRINTFORML 
+	PRINTFORMW 『ERROR ERROR カードが読み込めません、複数のカードが重なっています』
+	PRINTFORML 「だめそーデスね」
+	PRINTFORML 「……千年ディスクでも読めないとなると、ただカードがくっついているだけというわけではなく、
+	PRINTFORMW 　魔法か呪いか、何かで強力な保護がかけられていますね……ハァ」
+	PRINTFORML
+	PRINTFORML [0] - きっと何かあるはずだ
+	PRINTFORML [1] - ちょっとうんざりしてきた
+	BINPUT
+	IF RESULT == 1
+		PRINTFORMW 「そうですね、ちょっとしつこいですよ～勇者様～……いい加減にしてください～」
+		PRINTFORMW と水遣いは疲れた感じで、悲しそうな目で眺める。
+	ENDIF
+	PRINTFORMW その後、テストは打ち切り。マスター達は水遣い達と合流する。
+	PRINTFORMW 白衣姿の水遣いに「乙女さんから差し入れです」とクッキーを差し出された。
+	PRINTFORMW ここに来てからそれなりに時間がたったが、未だにモンスター達はこの世界の甘未には目が無いとのことだ。
+	PRINTFORMW ガイドさんはもう口いっぱいに含んでいる。
+	PRINTFORML
+	PRINTFORMW 「うめぇ～♪　それで、これからどうするデース？」
+	PRINTFORMW 「とりあえず、勇者様に関してはあと一つだけ方法を試した後は千年アイテムと同じく安全な場所で保管を続けましょう」
+	PRINTFORMW 　その後は最後の刺客の捜索と千年リングの捜索を――」
+	PRINTFORMW と水遣いが終わる前に、部屋の外からどたどたと音が響いた。
+	PRINTFORML 
+	PRINTFORML 「おっはよー！　あなたの近所の世直しサークル！　シグナルをよろしく～！　
+	PRINTFORML 　ところで、ビルすっごいことになってたかけど大丈夫……？」
+	PRINTFORMW ペンデュラム・ウィッチだ。
+	PRINTFORMW 「噂をすれば……今日はよろしくお願いしますね？」
+	PRINTFORMW 「おっ、ウィッチちゃんデース！　元気そうデスネー！」
+	PRINTFORMW 「水遣いさん、ガイドさんおはよー。うわっ！　クッキー！！　いいなぁ……おいしそう」
+	PRINTFORMW マスターのケーキを見つめている……
+	PRINTFORML
+	PRINTFORML [0] - あげる
+	PRINTFORML [1] - あげない
+	BINPUT
+	IF RESULT == 0
+		PRINTFORMW 「いえーい！　なげてみて、なげてみて」
+		PRINTFORMW 言われた通りひょいっと手に持ったクッキーを投げると、ウィッチは「よっ！」と頭で弾いてさらに上空にあげた後、
+		PRINTFORMW 綺麗に口でキャッチしておいしそうに食べる。さすが曲芸師と言うべきか……行儀悪いと叱るべきか。
+		PRINTFORMW ガイドさんは「おー」と結構関心しているようだ。
+	ELSEIF RESULT == 1
+		PRINTFORMW ひょいっと手に持ったクッキーを投げ、口に入れるマスター。
+		PRINTFORMW 「えーっ、ケチ～。私ケガ人なんだし労わらないとダメだよ！」
+		PRINTFORMW 「まぁまぁどうぞどうぞ、たくさんあるので」
+		PRINTFORMW 「水遣いさんさすが～」
+	ENDIF
+	PRINTFORMW マリア・アンから回復したとは聞いてはいたがさすがモンスターと言うべきだろう。とっても元気そうだ。
+	PRINTFORML 
+	PRINTFORMW 「では少し時間を置いたらすぐに最後の実験に取り掛かりましょうか？」
+	PRINTFORMW 「まっかせて！　この前のこともあるし、力になれることならどんな実験でも歓迎だよ！」
+	PRINTFORML 
+	依頼_達成状況 += 1
+	CALL EVENT_TIMER(60)
+	RETURN 1
+ELSEIF 依頼_達成状況 == 1
+	PRINTFORMW ……………
+	PRINTFORMW ………
+	PRINTFORMW ……
+	PRINTFORML 
+	PRINTFORMW 「まって！　聞いてない！　聞いてない！　なんで私拘束されてるの！？」
+	PRINTFORMW 別室にて隔離されたウィッチ。
+	PRINTFORMW 彼女は目隠しもされ、固定椅子でがっちりと身動きをとれないようにされ、KCの怪しい実験道具として完成した。
+	PRINTFORMW 彼女の目の前には硬いアクリルケースに入れられた勇者のカード。
+	PRINTFORML 
+	PRINTFORML 「ちょっと千年アイテムの管理が非常に厳しくなってしまいまして、万が一暴走しても問題ないようにしています」
+	PRINTFORMW 「ひぃ～……KCが怪しい実験してるって本当だったんだ！　あっ何か頭に被らされた！？」
+	PRINTFORMW 必要な実験であることはその通りだが、あまりに淡々と進むのを見るに……
+	PRINTFORMW 「水遣いサン、KCの適正あるデスね……」
+	PRINTFORMW 表現は違うが大体ガイドさんが言う通りだった。
+	PRINTFORMW 先ほど同じようにマスター達も拘束された状態で実験された。
+	PRINTFORML 
+	PRINTFORML 「私達ではダメでしたが、精霊と親和性を持つウィッチさんは直接カードの声を聴けるかもしれません
+	PRINTFORMW 　ウィッチさん何か聞こえますか？」
+	PRINTFORMW 「ひぃ～怖いよぉ……でも、精霊の声を聴く感じでいいんだよね……あっえーっと、カードさん？　聞こえる？」
+	PRINTFORMW ウィッチがそう聞くが、何らかの反応を確認する機器にもカードにも変化はない。また失敗かと肩を落とす中。
+	PRINTFORML 
+	PRINTFORMW 「あっ、聞こえるかも、勇者……さん？」
+	PRINTFORMW 希望が見え、水遣いは冷静に対応を進める。
+	PRINTFORMW 何も知らされていないウィッチの口からは確かに「勇者」と出たとなると……実験は成功だ。
+	PRINTFORML 「成功ですねそのカードは今、何らかの方法でくっつけられている状態ですその封印を解くためにどうすれば良いか、
+	PRINTFORMW 　カードの人物は何かを知っているか、対話を試みてください。いいですか、唆されないように気を付けてください」
+	PRINTFORMW 「封印とか非科学的でアヤシー感じー……とりあえずやってみるね？　えーっと聞こえる？　私、ペンデュラムウィッチって言うんだ」
+	PRINTFORML 
+	PRINTFORML 身も心も落ち着いているようにみえるが、内心は心躍っていた水遣い。
+	PRINTFORMW 手に汗を握っていた中、ようやく拳の力が緩んで背もたれについた。
+	PRINTFORMW 「よかったデスねっ！」
+	PRINTFORMW 「まだ、油断はできませんよあのゾークの事です、この状態でも勇者様を蝕んでいる可能性だってあります
+	PRINTFORMW 　ただそれでも大きな進歩です」
+	PRINTFORML
+	PRINTFORML [0] - 終わりも見えてきたことを悟る。
+	PRINTFORML [1] - その割には笑っていることを指摘する。
+	BINPUT
+	IF RESULT == 0
+		PRINTFORMW 「そうですね、もう少しで、真に平和は戻りますね！」
+	ELSEIF RESULT == 1
+		PRINTFORMW 「すみません、こういうときが一番危ないのに、それでもちょっとうれしくて」
+	ENDIF
+	PRINTFORML
+	PRINTFORMW 表情がさらに緩み、優しい笑顔を取り戻す水遣い。
+	PRINTFORMW 「この戦いももう少しで終わりカー。長かったような、短かったような」
+	PRINTFORMW その間もウィッチと勇者の門答は続く。
+	PRINTFORML 「へぇ～『ディアボロス』をここで開放させるとダメなんだ」
+	PRINTFORML 「そうですね、でも……コレを戦いというのは少し寂しい気がします、
+	PRINTFORMW 　私にとって、この世界での出来事も立派な冒険………
+	PRINTFORMW 　――今誰か『ディアボロス』って言いました？」
+
+	依頼_達成状況 += 1
+	CALL EVENT_TIMER(10)
+	RETURN 1
+ELSEIF 依頼_達成状況 == 1
+	PRINTFORML 	
+	PRINTFORMW 「……ディアボロス？　……ディアボロス？？」
+	PRINTFORMW 「なんかいい事言ってた水遣いサンが壊れた機械みたいに……」
+
+	PRINTFORML
+	PRINTFORML [0] - 水遣いの世界を襲った魔王……
+	PRINTFORML [1] - だっけ……？
+	BINPUT
+	PRINTFORML 「デース。突然現れて、水遣いさんの世界に巨大なホールを破って混乱させた魔王
+	PRINTFORML 　うちらの世界に続く穴をぽこじゃか明けて結構迷惑していたデース。
+	PRINTFORMW 　でも勇者サンに討伐されたって」
+	PRINTFORMW 勇者が真の勇者として呼ばれるようになった所以。水遣い最初の旅で最高の功績。
+	PRINTFORMW その名が今なぜここに、と気持ちを落ち着け……水遣いはもう一度問う。
+	PRINTFORML 
+	PRINTFORMW 「――、そうですねディアボロスは討伐され、私も彼の消滅を目撃しました
+	PRINTFORMW 　ウィッチさん、勇者様は確かに悪魔が憑いていますが……それは『ゾーク』であってディアボロスではありません」
+	PRINTFORMW 水遣いはマイク越しであろうと、感情を抑圧しているのが丸わかりな声を出していた。
+	PRINTFORML 
+	PRINTFORML 「えっでも、確かに勇者さんが、『ディアボロス』って。えっコレ水遣いさんに聞かれちゃダメな奴？
+	PRINTFORML 　ごめんなんでも無ーい！　私の聞き間違いだよ～！」
+	PRINTFORMW ……水遣いは杖を手に隔離施設部屋へと向かう。
+	PRINTFORMW ガイドさんとマスターは今動いたらやばいという漠然とした『脈』を察してか動かなかった。
+	PRINTFORML 
+	PRINTFORMW 水遣いが部屋に入っても、何やらウィッチはお話に夢中だった。
+	PRINTFORMW 「えーっ、隠してって言われても私も縛られちゃってるしー。あー、そうそう！　今怪しい実験されててね！
+	PRINTFORMW 　椅子に括り付けられて『なんでもコントローラ』頭につけられちゃってるんだ、ひどくない？
+	PRINTFORMW 　ここまで警戒されてるのも勇者さんの仲間のせいだよ！　まったくも――」
+	PRINTFORML 
+	PRINTFORMW 「……はあああ！！」
+	PRINTFORMW 「わああああ！？！？」
+	PRINTFORMW 水遣いは杖で思いっきり勇者のカードの入ったカードケースを叩き潰した。
+	PRINTFORMW ガラスと悲鳴が舞い、混沌に陥る。なお、勇者のカードは破壊不能であることがコレの前の実験で明らかとなって居る。
+	PRINTFORML 
+	;勇者様のカードを投げて降りる水遣い
+	PRINTFORMW 龍仙女は壊れた残骸から勇者のカードを拾い上げ、
+	PRINTFORMW 「ふんっっ！！」
+	PRINTFORMW 思いっきり床にたたきつけた。
+	PRINTFORMW 「やだよー！　怖いよー！！　アンちゃーん！　騎士さーん！！」
+	PRINTFORML 
+	PRINTFORMW 再び拾い上げ、ウィッチの涙目の前にカードを掲げる。
+	PRINTFORMW 「どうしてここで“ディアボロス”が出るんですかっ、また隠し事していますよね！？」
+	PRINTFORMW 「私に怒鳴らないで～！　えーっと、勇者さんでいいんだよね？　ディアボロスってなんなのって水遣いさんが聞いてるよ？
+	PRINTFORMW 　……ふん――うん――怒らないって約束したら伝えていいって……」
+	PRINTFORMW 少し深呼吸をして、水遣いは真顔に戻る。
+	PRINTFORMW 「……怒りません約束です」
+	PRINTFORML 
+	PRINTFORMW 「詳しく説明したら殺されるから詳しく言えないって」
+	PRINTFORMW 「その減らず口を撃ち抜いてあげましょうか」
+	PRINTFORMW 「やだー！！」
+	PRINTFORMW 水遣いはそう言うと杖に魔力を込め始め、ウィッチは命からがらと叫ぶ。
+	PRINTFORMW さすがに危なそうなので、ガイドさんは複数の担当セキュリティと共に、水遣いを取り押さえた。
+	PRINTFORMW そこからしばらくウィッチも水遣いも落ち着ける時間を置き、何とか場は収まった。
+	;水遣いを落ち着ける周りの人たち
+	PRINTFORML 
+	PRINTFORMW 「すみません、ちょっと……興奮しすぎました」
+	PRINTFORMW 「クッキーいっぱいありがと～！　アンちゃんたちと一緒に食べるねー！」
+	PRINTFORMW ウィッチはそう言うとクッキーを箱ごと貰って帰って行った。
+	PRINTFORMW 単純で素直なおかげでクッキーで今回の事は水に流すこととなった。
+	PRINTFORMW 結局それ以上勇者との会話はできず、水遣いも深く反省するも彼女を責めるものはいなかった。
+	PRINTFORML 
+	PRINTFORMW 「それで、これからどうしまショーかネ～」
+	PRINTFORMW 「……こうなったら一度行くしかありませんね、“廃城ウートガルザ”へ」
+
+	CALL EVENT_DOUKOU(ガイドさん)
+	CALL EVENT_DOUKOU(水遣い)
+	依頼_達成状況 += 1
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア１,1,"飛竜艇－ファンドラ")
+	CALL EVENT_TIMER(10)
+	RETURN 1
+
+ELSEIF 依頼_達成状況 == 2
+	PRINTFORML 	
+	PRINTFORMW 中継地点（スモールワールド）経由で水遣いの世界『ルーン世界』へとたどり着いたマスター達。
+	PRINTFORMW その中で獣人の冒険家である空牙団の船、『飛竜艇－ファンドラ』に乗せてもらった。
+	PRINTFORMW 気持ちのいい風が体にダイレクトに辺り、決闘世界でなら寒いはずがむしろ心地よさがあった。
+	PRINTFORML 
+	PRINTFORMW 「この世界は魔力や神秘な豊富な分、生物にとってはかなり過ごしやすい環境ですからね。……ふぅ～！」
+	PRINTFORMW そう言って気持ちよさそうに空気を吸う水遣い。
+	PRINTFORMW 水遣いによると神秘や魔力が豊富なほど、人間にとって都合がよくなるとのことだ。
+	PRINTFORMW 川で組んだ水も消毒せずともそのまま飲むことができ、軽装でも気温の低い環境で過ごすことができる。
+
+	PRINTFORMW 「ウヒー、空気本当においしーデース……でも現代病でスマホが震えている気がするデース……」
+	PRINTFORMW 「良い機会ですし、たまにはデジタル離れしましょう？　ふふっ」
+	PRINTFORMW 水遣いと龍仙女、どちらもアウトドア気質なのはこの世界の影響もありそうだった。
+	PRINTFORML 
+	PRINTFORMW 「観光地いろいろあるのに、ウートガルザにまで行きたいだなんて物好きだねぇお姉さん達」
+	PRINTFORMW そう言って『空牙団』のクルーの一人が話しかけてきた。
+	PRINTFORMW その見た目に水遣いは少し微笑む。
+	PRINTFORML
+	PRINTFORML [0] - 水遣いのデッキに入ってあるカードだ
+	PRINTFORML [1] - 《流離のグリフォンライダー》
+	PRINTFORML [2] - お世話になって居ます
+	BINPUT
+	IF RESULT == 2
+		PRINTFORMW 「えっ？　なっなんだよいきなり頭下げて」
+		PRINTFORMW 「そうですね、私もいつもお世話になって居ます……」
+		PRINTFORMW 「変な客人乗せちゃったなぁ……」
+	ENDIF
+	PRINTFORML
+	PRINTFORMW 「まっ高い金払ってもらったからには不自由はさせないよ！　ゆっくりしてって！」
+	PRINTFORMW 勇者の旅路に付き合わなくとも、ちゃんと因果は回るようだ。
+	PRINTFORMW 「本当に、不思議ですね」
+	PRINTFORMW 不思議な縁に浸り、水遣いは微笑むとガイドさんは声をかける。
+	PRINTFORMW 「どうせデスしー、この世界の事いろいろ紹介してくださいヨー！」
+	PRINTFORMW 楽しくなってきた水遣いは、そう言われると今までで一番明るい笑顔で振り向き。
+	PRINTFORML 「そっそれじゃあ少しだけ、えっと。あそこの森が切り開いた場所にあるのがマルデル光王が率いる妖精国があります。
+	PRINTFORML 　その近くに、あっ！　見てください聖殿（実家）が見えます！　うわ～ちょっとにぎわってますね観光地になっちゃってますね！
+	PRINTFORMW 　レーヴァテイン山脈は、見えるかな？　この世界で一番大きな火山でして……」
+	PRINTFORMW 
+	PRINTFORMW その後はゆっくり目的地まで水遣いにこの世界の事を紹介してもらいながら、目的地へとたどり着いた。
+
+	依頼_達成状況 += 1
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア２,1,"廃城ウートガルザ")
+	CALL EVENT_TIMER(120)
+ELSEIF 依頼_達成状況 == 4
+	PRINTFORMW 美しい巨大な城が目の前に広がる。
+	PRINTFORMW 長期放置されていたとは思えないほど綺麗だが、触れようとするとあるような無いような、不思議な感覚が襲う。
+	PRINTFORMW 「水遣いサンの説明だと、大半の部分が幻影で、本体は遺跡らしいデースね」
+	
+	;↓ややこしくなるので別の依頼行き
+	[SKIPSTART]
+	PRINTFORML 	
+	PRINTFORMW 水遣いは、この近くに眠る仲間の墓へ、決闘世界の菓子を手向けに向かっていった。
+	PRINTFORMW ガイドさんと軽く話していて数分後、少し満足気な表情で水遣いは戻り。
+	PRINTFORMW 「すみません、お待たせしました」
+	PRINTFORMW 「おう、旅の最中で亡くなった人デス？」
+	PRINTFORMW 「いいえ、お墓を荒らされた誇り高い幽霊さんです」
+	PRINTFORMW カードのストーリーとはまた別の物語を紡いだ水遣い……彼女はそう言うと、遺跡へと歩き始めた。
+	PRINTFORML 	
+	PRINTFORMW ………………
+	PRINTFORMW …………
+	PRINTFORMW ……
+	PRINTFORML 	
+	[SKIPEND]
+	PRINTFORMW この城、ウートガルザはディアボロスとの決戦の場であった。現在ガイドさんの故郷である『魔界』とつながっているホールが存在する。
+	PRINTFORMW 魔界につながったホールからは濃い魔力に釣られた『魔物』が出てくることがあり、それは見境なしに人を襲う。
+	PRINTFORMW ディアボロスは魔法によって『ルーン世界』のあらゆる場所に魔界につながるホールを開き、そのたびに魔物が周囲にあふれ出た。
+	PRINTFORMW 時によっては人の住む拠点なども襲い、その魔力を吸い上げてホールを開くこともあった。
+	PRINTFORMW どうしてディアボロスは魔界への扉を開け続けたのか、そして開けた後になぜ何もしなかったのか、
+	PRINTFORMW それの真意を知るものは誰も居なかった。
+	PRINTFORML 	
+	PRINTFORMW 唯一存在する事実として、勇者がソレを討伐し……この世界に平和が戻った。
+	;ウートガルザにたどり着いて探索を始める一行、近くの炭鉱山の人たちが遺跡を管理していて、そのなかに本来の勇者の仲間がいたりした
+	PRINTFORMW 「……懐かしいなぁ、たった３年前の出来事なのに、もうだいぶ昔の事みたいな気持ちです」
+	PRINTFORML
+	PRINTFORML [0] - 自分達と過ごした時間も短いか？　と聞く
+	PRINTFORML [1] - 今とどっちの方が楽しいか？　と聞く
+	PRINTFORML [2] - 昔あんなに強かったカードも、気づいたら無規制に……
+	BINPUT
+	IF RESULT == 1
+
+		PRINTFORMW 「え～、選ばせるのやめてくださいよー……」
+	ELSEIF RESULT == 2
+		PRINTFORMW 「マスターさんは100年後も変わらなそうですね、ふふっ」
+	ENDIF
+
+	;自分達との出会いも立った数か月の話なんだろうか？/今とどっちが楽しいかをと聞ける
+	PRINTFORMW 「とにかく、私からしたら全部が全部大切な時間ですよ……私はほかの人たちよりそれを詰め込める機会が多いだけです」
+	PRINTFORMW 寿命差の捕らえ方はいろいろだが、ガイドさんは水遣いの考え方に関心する。
+	PRINTFORMW しかし水遣いはその時間を振り返り、少し気分が落ちていく。
+	PRINTFORMW 「だから、ディアボロスのことも昨日のことのように思い出せて……この世界がどれほど被害受けたかも思い出せて
+	PRINTFORMW 　――だから、なぜ勇者様がなぜ今、あの魔王の名を出したのかもわからなくて、はぁ」
+	PRINTFORMW 先ほどまであんなにも楽しそうだったと言うのに水遣いは完全に落ち込んでしまう。
+
+	;気分が落ち始める水遣い
+	PRINTFORML
+	PRINTFORMW さすがに不味いと考えたか、ガイドさんはあたりを見回して話題を変える。
+	PRINTFORMW 「ところで魔物とか大丈夫なんデース？　ワタシたちの世界といえど普通に魔物は怖ェーゼ」
+	PRINTFORMW 「そこは大丈夫だと思います、ここにいた魔物は全て討伐済みですので」
+	PRINTFORMW あたりを見回すと確かに激しい戦闘の跡やが遺跡のところどころに残っており、だいぶ激しい戦闘があったように見える。
+	PRINTFORMW 中でもよく知ってるレーザーが通ったかのような切り口が壁に目立つ……。
+	PRINTFORMW 「……ゆっ、勇者様や拳僧君もかなり暴れていましたよ！　ほら！　早く行きましょう！」
+	PRINTFORMW 照れ隠しするかのように水遣いは先を進み始めた。
+
+	依頼_達成状況 += 1
+	CALL EVENT_MOVE(MASTER,場所_依頼用エリア３,1,"廃城ウートガルザ-決戦の場-")
+	CALL EVENT_TIMER(20)
+	RETURN 1
+ELSEIF 依頼_達成状況 == 6
+	PRINTFORMW 遺跡の一番奥にたどり着くと、その部屋には巨大な玉座と謎の文字と線が書きだされた部屋があった。
+	PRINTFORMW ここも激しい戦闘の跡があり、あたりに瓦礫が散らばったままであった。
+	PRINTFORMW 「……来ました、ここが私たちの決戦の場です」
+	PRINTFORMW そしてその後ろには魔界とつながる『ホール』があり、次元の裂け目のように不自然にとどまっていた。
+	PRINTFORMW 「うへぇ、ホールが生のまま放置とかヤベー……コレどこつながってるデース？」	
+	PRINTFORMW 「朽ち捨てられた教会ですけれど、ちゃんとあちらからは入れないように処理はしています
+	PRINTFORMW 　私達の世界の住民はまだまだ排他的で異世界の存在を受け入れられていませんからね」
+	PRINTFORMW ディアボロスとの戦いの後、水遣いは聖殿の民はホールに一方通行になるように結界をかけた様だ。
+	PRINTFORML
+	PRINTFORML [0] - 中継地点から出たホールは整備されていたと思い出す。
+	PRINTFORML [1] - ……排他的の割にかなり歓迎していたような気がする……。
+	BINPUT
+	IF RESULT == 0
+		PRINTFORMW 「人工的に作ったホールの方が安全デースからネー」
+		PRINTFORMW 「脅威は取り除いたものの、人里からは離れていますからね……」
+	ELSEIF RESULT == 1
+		PRINTFORMW 「貿易の中心になる方はいつも得するデース」
+		PRINTFORMW 「新しいものは大好きですからね」
+	ENDIF
+	PRINTFORML 
+	PRINTFORMW 「何はともあれ……調査、しましょうか！」
+	PRINTFORMW 「おーっ！」
+	PRINTFORML 
+	PRINTFORMW ……………
+	PRINTFORMW ………
+	PRINTFORMW ……
+	PRINTFORML 
+	PRINTFORMW 水遣いは調査を始める。手にはメモが握られており、部屋の模様を描き連ねる。
+	PRINTFORML その間マスターとガイドさんは瓦礫の掃除を続けていた。
+	PRINTFORMW なかなかに体力が必要な仕事にお互いひぃひぃと言いながら水遣いの助けを続ける。
+	PRINTFORML 
+	;始まる捜査、特に何も見つからず瓦礫や掃除を進めていく
+	PRINTFORMW 「瓦礫おっも……！　龍仙女サンもこの世界にいますし呼べないですかネー……」
+	PRINTFORMW 「もう少しで最後の修行が終わるらしいですから、それまで邪魔はしてはいけませんね」
+	PRINTFORML
+	PRINTFORML [0] - 居なかったおかげで結構不安な場面も多かった……。
+	PRINTFORML [1] - 早く会いたい
+	BINPUT
+	;居ないせいで結構不安な場面も多かったな……/早く帰って来てほしい
+	PRINTFORML 「帰ってきたら盛大なパーティ開いてやるデース」
+	PRINTFORML 「そうですね、ふふっ」
+	PRINTFORMW 水遣いは笑みを返すと、再びメモに模様を書き続ける。
+	PRINTFORML 
+	;水遣いは壁の模様などをノートに書き込み
+	PRINTFORML 「ていうか、フー！　モー無理、とりあえず休憩！　マスターさん、お茶欲しいデース！」
+	PRINTFORML ガイドさんの方はそう言って瓦礫の上に座り込んだ。
+	PRINTFORMW マスターは水筒を取り出して暖かいお茶を注ぎ始めると、水遣いも休憩の気分になった。
+	PRINTFORML 
+	PRINTFORML 「ていうか、何書いてるデース？」
+	PRINTFORML 「壁に描かれた魔法陣（ルーン）を書き留めています、これでディアボロスのことも少し分かるかもしれません」
+	PRINTFORMW いくらかほど魔法陣（ルーン）は見たことあるが、これほど巨大に作れるものなのだろうか。
+	PRINTFORML
+	PRINTFORML 「まぁ、魔法は基本の資格しか持ってないから水遣いサンに任せるしかネー」
+	PRINTFORML 「ガイドさん一般人自称してますけど、普通以上に勤勉ですよね……
+	PRINTFORML 　メモにまとめたので、ガイドさんたちも休憩がてら見てみてください、何かあるかもしれませんし」
+	PRINTFORMW そう言って水遣いはガイドさんに目もを手渡し、自分も休憩がてらお茶を飲み始める。
+	PRINTFORML
+	;水遣いは壁の模様などをノートに書き込み
+	PRINTFORML 「へいへい、どれどれ……へー、これが魔王の魔法陣、結構複雑な形してるんですネー………ん？
+	PRINTFORML 　えっ、あっあらあれ？　いやそんなはずは！」
+	PRINTFORMW メモを見たガイドさんは、慌ててカバンからスマホを取り出し急いで確認する。
+
+	PRINTFORML 「ガイドさん、どうかしましたか？」
+	PRINTFORML 「……これ！！」
+	PRINTFORMW 表示されたのは海馬コーポレーションの、デュエルディスクの資料だった。
+
+	PRINTFORML 
+	PRINTFORMW どうして突然こんなものを？　と言わんばかりの水遣いはスマホを眺める。
+	PRINTFORML 「ワタシ最近、もうちょっと給料欲しいナー、って乙女さんに相談したんデスよ……
+	PRINTFORML 　そうしたらこの本を渡されて社内資格を取れば――ってそれはイイデスよね！」
+	PRINTFORMW ガイドさんは特定の部分にまでページをめくり、水遣い達に突き付けた。
+	PRINTFORML 
+	PRINTFORML 「問題はコレ、デュエルディスクの読み取り部分の基盤デス、
+	PRINTFORML 　コレは最初に作られたディスクから大きく形は変わってないのデスが水遣いサンの書いたメモと比べると……」
+	PRINTFORMW 大まかだが、内容が一致していた。
+	PRINTFORML 
+	PRINTFORMW 「そんな！？　この部屋自体が、巨大なデュエルディスク――」
+	PRINTFORMW 水遣いが結論に達した時、ホールの先から、何かが飛び出してきた。
+	依頼_達成状況 += 1
+	CALL EVENT_TIMER(30)
+	RETURN 1
+ELSEIF 依頼_達成状況 == 7
+	;ホールから飛び出たのはスキエルインフィニティ、
+	PRINTFORMW 青い鳥のような巨大なロボットがホールの結界を破壊して飛び出してきて、下部の砲台を光らせる。
+	PRINTFORML 「――くっ、油断――なんてしていませんよ！！」
+	PRINTFORMW そう言って水遣いは水の障壁を作り出し、ロボットの攻撃を防ぎきる。
+	PRINTFORML ガイドさんは既に水遣いの後ろにしがみつき、待機していた。
+	PRINTFORMW 「何かそろそろ来るかと思ってたデース！」
+	PRINTFORML 
+	PRINTFORML 「見つけたよ！　勇者様を返して！！」
+	PRINTFORMW ロボットの上から顔を出したのはヒュプノシスターであり、そのままロボットで攻撃を乱射し始めた。
+	;砲撃で攻撃を行うシスター
+	PRINTFORML 
+	PRINTFORML 「うひゃぁ！？　狭い部屋で何するデース？」
+	PRINTFORML 「残念ながら勇者様はここにはいません！　それよりもどうやって私達の居場所を？」
+	PRINTFORMW 水の障壁は固く、ヒュプノシスターの攻撃では貫けないでいた。
+	PRINTFORML それどころか、この世界では水遣いは本来の力を取り戻しているようで、
+	PRINTFORML 「はぁッ！！」
+	PRINTFORMW 反撃さえも容易に出来てしまっていた。
+	PRINTFORML	
+	PRINTFORML 水のビームがシスターの顔をかすめる。当てるつもりはない威嚇射撃で恐怖を煽ったが……。
+	PRINTFORML 今のシスターからすると、怒りを買っただけであった。
+	PRINTFORMW 「私の質問は答えないのに、答えるわけないでしょ！」
+	PRINTFORML 
+	PRINTFORML そう言ってシスターは第三の目を光らせる。
+	PRINTFORML 「うおっ催眠撃ってきた！　けどワタシたちは平気デース」
+	PRINTFORML 「対策のルーンはあらかじめ皆さんにかけておきましたので大丈――っ！？」
+	PRINTFORMW 突如、ホールの先からアザレアたちのよう、真っ黒なタイツと装備を纏った少女たちが――
+	PRINTFORMW デュエルディスクを構えて飛び出してきた。
+	PRINTFORML 
+	;閃刀姫隊が大量に出てきてディスクを構える
+	PRINTFORMW 「スペクトラの閃刀姫達……？」
+	PRINTFORML 彼女達の目は赤く光っており、『デュエル……デュエル……』とうわごとのように呟いていた。
+	PRINTFORML 「皆にデュエル教えたけど全然下手なの。だからこうして、私が操って教えてあげれば！」
+	PRINTFORML ヒュプノが赤い目を光らせると、閃刀姫達はそれぞれガイドさんと水遣いを狙い、
+	PRINTFORMW ディスクから手錠を手錠を発射してこちらのディスクと繋げられた！
+	PRINTFORML 
+	PRINTFORML 「なっ！？」
+	PRINTFORML 「うわっ体が光ったデース！？」
+	PRINTFORMW ガイドさんと水遣いは、まるでマスターに触れられた時のよう体が光り、無理にでも決闘に応じることとなった。
+	PRINTFORML 普通のデュエルディスクならば絶対に不可能なことだったが……
+	PRINTFORMW 勇者が確保した千年ディスク（ミレニアム）から再現が出来てしまったようだ。
+	PRINTFORML 
+	PRINTFORMW そしてマスターの手にも手錠が嵌められてしまい、強制的に戦闘が始まる。
+	PRINTFORMW 「救世主の%シスター二人称%は私が相手してあげる！
+	PRINTFORMW 　怪我したカメリアお姉ちゃんの為にも、死んじゃったアザレアの為にも！　絶対に倒してあげる！」
+	CALL CHOICE_DUEL_TYPE(51)
+	IF RESULT != 1
+
+		PRINTL 
+		PRINTFORMW あっ……負けてしまっ――
+		PRINTFORML 「しまっ……もう守りが！？　きゃああっ！？」
+		PRINTFORML 「水遣いサーン！？　ってワタシもヤバーぎゃー！？」
+		PRINTFORMW ……二人ともカードにされてしまいヒュプノたちの手に渡った。
+		PRINTFORMW しかしまだ戦える！　自分一人になっても！　と意気込んだはいいものの。
+		PRINTFORML 
+		PRINTFORMW 「%シスター二人称%♪　はいっ――」
+		PRINTFORMW 『洗脳ブレインコントロール』を間近で受けてしまい……。
+		PRINTFORMW 「大丈夫、みんなみ～んな、一緒だからね？　きゃはははははっ！」
+		PRINTFORMW その後、意識は無いが『皆で幸せ』に生きたような気がした……。
+		PRINTFORMW 心地よく、何も心配もなくただただ深い不快眠りの下で、優しく、甘い時を最後まで過ごした気がした…。
+		PRINTL 
+		PRINTFORMW …………
+		PRINTFORMW ……
+		PRINTFORMW …
+		PRINTFORMW 
+		PRINTL 
+		RETURN 6
+	ENDIF
+	PRINTFORML 「うっ……！　でも！　やーい！　やーい！　飛んでみてよ救世主！！」
+	PRINTFORMW 決闘が終わった後はさらに上空に逃げられてしまった。
+	PRINTFORMW 最近カード化の力がなかなか活躍してない気がする……。
+
+
+	;まだ決闘できるぞ！/最近大人しくカードにされない人多いな…
+	;この間にも水遣い達は追い詰められて行く
+	PRINTFORML 
+	PRINTFORML 「くっ、勝っても次から次へと……！　接触もされないように立ち振る舞われています！！」
+	PRINTFORMW こうしている間にも戦況は少しづつ悪くなっていき、ついに――
+	PRINTFORML 「うお～！！　派手に手札事故起こしちまったァー！！　手札に妨害しか来ねぇ～！！」
+	PRINTFORML 『えっ、あっ……サイバーダーク・ホーンでダイレクトアタック！』
+	PRINTFORML 「ぎゃぁ～～～！！！」
+	PRINTFORMW ガイドさんは敗北し、体が光り始めた。
+	PRINTFORML 
+	PRINTFORMW 「ガイドさん！　体が！」
+	;カードに変えられて行くガイドさん
+	PRINTFORML 「うわうわっ、やべっ！！　うぎゃああああああ～～～！！」
+	PRINTFORML 「ガイドさん！！」
+	PRINTFORMW カードにされてしまったガイドさんは、勝利に微笑む閃刀姫の手に渡った。
+	PRINTFORML 
+	PRINTFORML 『あっ、いっいいなぁ！！　えっと、リボルバードラゴンの効果発動！』
+	PRINTFORML 「くっ！　グリフォンをデッキに戻して無効にして破壊！」
+	PRINTFORMW 水遣いも閃刀姫達の対処に紙一重となって居た。このまま戦闘が続けば――いや違う、
+	PRINTFORML 「やった！　終わり終わり！　みんなもう帰るよ！」
+	PRINTFORMW 一人さえ負けてしまえば終わりだ、シスターたちの目的は『勇者』の為の人質を手に入れる事だったのだ。
+	PRINTFORML 
+	PRINTFORML 「そっちが勇者様を奪うなら、同じ気持ちを味合わせてあげる、大切な人、一人一人全員！！」
+	PRINTFORML シスターが怒りを露わにそう叫ぶと、龍の口が閃刀姫達を飲み込む。
+	PRINTFORMW 「……えっ、何？」
+	PRINTFORML 
+	PRINTFORML 「コォォォォォォ……はああッ！！」
+	PRINTFORML さらに一撃、ガイドさんのカードを握った閃刀姫のみぞおちを狙い。
+	PRINTFORMW 『やだっ！？　あっ……！！』
+	PRINTFORML 一撃、戦士の手からはカードが落ちてそれを目にもとまらぬ速さで謎の人物は回収し……
+	PRINTFORML 展開したディスクに叩きつける。
+	PRINTFORML 
+	;飲み込まれて行く戦闘員たち、中心には龍仙女がいて、手にはガイドさんのカード
+	;ガイドさんを召喚して腕の中に
+	PRINTFORML ディスクの光と共にガイドさんが解放され……謎の人物の腕の中にガイドさんが抱えられる。
+	PRINTFORMW 「ごめん――遅くなっちゃったわね！！」
+	PRINTFORMW 「はっ、あっ龍仙女サーン！！」
+	PRINTFORMW 龍仙女の帰還に、ガイドさんは乙女のように声を上げた。
+
+	PRINTFORML 「くっ、このっ！　さっきまでいなかったくせに！　こうなったら、『ワイゼル』、『グランエル』で……」
+	PRINTFORMW 『ヒュプノ！』
+	PRINTFORML 音声が響く、カメリアがヒュプノに連絡してきたようだ。
+	PRINTFORML 「っカメリアお姉ちゃん……大丈夫！　皆ここでまとめて倒すから！」
+	PRINTFORMW 『撤退したほうがいいとの指示が出た……今は引くんだ』
+	PRINTFORMW 「……でも！」
+	PRINTFORML 
+	PRINTFORML 『次こそはちゃんと勇者を取り戻そう、私も一緒に行けるから』
+	PRINTFORML 「……うん」
+	PRINTFORML 落ち着いたヒュプノは銃口をマスター達に向けたまま、閃刀姫達に指示を出す。
+	PRINTFORMW 全員が名残惜しそうに、ガイドさんに勝利したものはディスクとデッキを大事そうに握りしめ……
+	PRINTFORML ホールの先へ消えて行き、水遣いは再び結界を作ってホールの上に張り直した。
+	PRINTFORML 
+	PRINTFORMW 「――龍仙女さん！！」
+	PRINTFORMW 「ほんっと久しぶりネー！　一回りたくましくなったデース？」
+	PRINTFORMW 「もう、そんな褒めなくてもいいわよ……マスター……」
+	PRINTFORML
+	PRINTFORML [0] - おかえり
+	PRINTFORML [1] - 効果見せて
+	BINPUT
+	IF RESULT == 0
+		;おかえり/どんな能力になった？
+		PRINTFORMW 「そうね、ただいま、ふふっ！」
+
+	ELSEIF RESULT == 1
+		PRINTFORMW 「えっち……♪」
+		PRINTFORMW 「おー、いい対応デスネー」
+		PRINTFORMW 「私もそう聞かれたら試してみましょうかね」
+	ENDIF
+	CALL CARD_GET_SINGLE(21306,,3)
+
+	PRINTFORML 
+	PRINTFORMW 軽く談笑した後、龍仙女は大きく微笑み宣言する。
+	PRINTFORMW 「よーし！　修行で得た力で、絶対に勇者さんを倒すわよ！」
+	PRINTFORML ……龍仙女がそう言うと、少し微妙な空気が流れてしまう。
+	PRINTFORML 「頼もしいのは山々なんですけど」
+	PRINTFORMW 「実はそのネー……」
+	PRINTFORMW ガイドさんはその後、ゆっくりとここ数日で起こったことを説明し始める。
+	依頼_達成状況 += 1
+	CALL EVENT_TIMER(30)
+	RETURN 1
+ELSEIF 依頼_達成状況 == 8
+	PRINTFORML 
+	PRINTFORMW 「そんな、私の修行は……何のために……」
+	PRINTFORMW 「いっいえ！　まだまだ問題は山積みですから！」
+	PRINTFORMW 「ソーデスよ！　カメリアとかめちゃくちゃやって来るデースし……」
+	PRINTFORMW 「はぁ、まぁでもだいぶ話は進んでいるって事ね。でもちょっと凹むわ、
+	PRINTFORML 　修行中はもう絶対勇者さんを撃ちとる事だけを考えて、せっかくトラウマも乗り越えたのに――
+	PRINTFORMW 　それに、私がいない間に仲間も、もう一人もできちゃって……」
+	PRINTFORML 
+	;もう一人？/あっ、ここに来る間ドラゴン
+	PRINTFORMW 「……えっ？　だって、そこにいるじゃない」
+	;千年スマホがノイズを出す
+	PRINTFORMW 龍仙女がそう言った瞬間、場は静まり返り――
+	PRINTFORMW 千年スマホがノイズを鳴らし始める。
+	PRINTFORMW 脈から状況を理解した龍仙女は見えない場所に向かって手を伸ばすが『ソレ』は接触をすり抜け。
+	PRINTFORMW すぐさま逃げられそうだった所を、マスターが手を伸ばすことで『何か』に触れた。
+	PRINTFORML 
+	PRINTFORMW 「ひゃっ！」
+	PRINTFORMW 息をのむほど柔らかい感触に戸惑いながらもその手は離さなかった。
+	PRINTFORMW 少しづつそれは光と共に姿を現していき、一瞬――
+	PRINTFORMW 緑髪の何者かが映り。
+	PRINTFORMW 「きゃああ！？」
+	PRINTFORMW 一瞬姿を現した、緑色の髪の女性はそのままカードへと変えられた……。
+
+	PRINTL
+	CALL CARD_GET_CHARA(魔術師様)
+	SETCOLOR C_YELLOW
+	PRINTFORMW アラメシアの効果が変質し、
+	PRINTFORMW 《神碑の魔術師》を召喚できるようになりました！
+	RESETCOLOR
+
+	RETURN 2
+ENDIF
+
+@IRAI_REWARD_61
+CALL CARD_PACK_RELEASE(52)
+CALL CARD_PACK_RELEASE(53)
+
+
+;カメリア戦（60）――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+@IRAI_DUEL_INTRO_60
+CALLFORM ANIME_TEST("　　三ツ眼の催眠術師　　","揺れる眼のヒュプノシスター","Hypnosister",0,3)
+PRINTFORMW 「行くよ――
+PRINTFORMW 　　　　　　『機皇帝スキエル インフィニティ』！！」
+
+PRINTFORML 
+PRINTFORMW 　　　　　　　　　「マキシマム召喚！！」
+
+CALL CARD_GENERATE("相手",124230)
+CALL CARD_GENERATE("相手",124231)
+CALL CARD_GENERATE("相手",124232)
+PRINTFORML 
+PRINTFORMW 「またあの厄介な召喚方！？」
+PRINTFORMW 「この軍事国家カードゲームにマジになりすぎデース！！」
+PRINTFORML 
+PRINTFORMW 「デッキも新しくしたもんねっ！　いくよっ！」
+
+
+
+@IRAI_DECK_61(決闘者)
+#DIMS DYNAMIC 決闘者
+
+SIF 決闘者 == "相手"
+	RETURN 20063
+RETURN 0
+
+
+
+@DUELDECK_20062(決闘者)
+#DIMS DYNAMIC 決闘者
+
+RESULTS = ヘカトンケイル
+SIF 決闘者 == "存在確認"
+   RETURN 1
+
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(1)",  24175
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  24175
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  24175
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25160
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25160
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25160
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25161
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25161
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25161
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25162
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25162
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25162
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25163
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25163
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25163
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25164
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  25165
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72580
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72580
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72580
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72581
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72581
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72581
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72582
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72582
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  72582
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  75172
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  75172
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  75172
+SETVAR @"%決闘者%_デッキ:POOL_COUNT(0)",  92580
+
+
+
+
+
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(1)", 52560
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52560
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52560
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52561
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52561
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52561
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52562
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52562
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52562
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52563
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52563
+SETVAR @"%決闘者%_EXデッキ:POOL_COUNT(0)", 52563
+

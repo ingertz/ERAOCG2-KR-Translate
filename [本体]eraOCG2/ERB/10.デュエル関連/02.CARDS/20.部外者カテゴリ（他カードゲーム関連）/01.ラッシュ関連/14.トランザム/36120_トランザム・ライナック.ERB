@@ -1,0 +1,145 @@
+﻿@CARDNAME_36120,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트랜잠 라이나크
+	CASE "略称"
+		RESULTS = TRS 라이나크
+	CASE "カテゴリ"
+		RESULTS:0 = 트랜잠
+ENDSELECT
+
+
+@CARD_36120(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 0
+	CASE "종류"
+		RETURN 通常モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 0
+	CASE "성별"
+		RETURN 雄性
+	CASE "分割"
+		RETURN デュアル
+	CASE "추가日"
+		RETURN 260109
+	CASE "レア度"
+		RETURN SPR
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_36120(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは通常モンスターである。
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：このカードが表側표시で存在する限り자신メインフェイズに１度だけ、このカードは「각성」できる。
+PRINTL （「각성」は１ターンに１度しか行えない。）
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：このカードは각성状態の場合、상대の마법・함정カードの효과を受けず、효과では破壊されない。
+CALLFORM CARD_ABLE(3,필드起動)
+PRINTL ③：このカードが각성状態の場合、자신メインフェイズに발동できる。
+PRINTL 덱から「트랜잠 라이나크」以外のモンスター（미확인족・빛속성）１体を손패に加える。
+
+
+@CARDCAN_36120(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,36120)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動 && GETVAR(@"%듀얼리스트%_MZ_条達:場所") == 0
+	SIF 발동済_1(듀얼리스트,각성발동)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_条達:場所") == 0
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드起動 && GETVAR(@"%듀얼리스트%_MZ_条達:場所") >= 1
+	SIF 발동済_3(듀얼리스트,36120)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件속성 = 빛속성
+	효과条件종족 = 미확인족
+	효과条件固名前 = 트랜잠 라이나크
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_36120(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 && GETVAR(@"%듀얼리스트%_MZ_条達:場所") == 0
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,각성발동,1)
+	IF RESULT == 0
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"条達",2,1)
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"魔耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"破耐")
+
+ELSEIF 종류 == 필드起動 && GETVAR(@"%듀얼리스트%_MZ_条達:場所") >= 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,36120,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件속성 = 빛속성
+		효과条件종족 = 미확인족
+		효과条件固名前 = 트랜잠 라이나크
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+

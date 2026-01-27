@@ -229,6 +229,9 @@ ELSEIF RESULT == 1
 	;ここまで
 	PRINTFORMW 초차원 홀 접속！！　%生物名%！！
 	CALL CARD_EX_SUMMON(듀얼리스트, "EX덱", 選択カード,"")
+	IF 듀얼리스트 == "자신"
+		リザルト：PSY소환 += 1
+	ENDIF
 
 ELSEIF RESULT == 2
 	PRINTFORMW 초차원 홀 접속！！　포트리스、%要塞名%！！
@@ -347,7 +350,6 @@ CALL 対面者판정(듀얼리스트)
 CALL FULLRESET
 효과範囲손패 = 1
 효과条件종류 = モン全般
-효과条件行先플래그 = 제외行き
 CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 IF RESULT == 1
 	CALL FULLRESET
@@ -366,6 +368,9 @@ IF RESULT == 1
 		CALL FULLRESET
 		CALL CARD_EX_SUMMON(듀얼리스트,"EX덱",場所,"攻撃표시")
 		SETVAR @"%듀얼리스트%_MZ_変化元ID:カード소환先", 選択カードID
+		IF 듀얼리스트 == "자신"
+			リザルト：PSY소환 += 1
+		ENDIF
 	ELSE
 		RETURN 0
 	ENDIF

@@ -396,11 +396,12 @@ CALL RESET_SUMACT
 CALL CARD_LOADUP
 
 ;몬스터를 出した듀얼리스트が특수阻害中止状態だったら、SUMACT全般が起動しない
-SIF GETVAR(@"%듀얼리스트%_특수阻害中止") == 0 || 맥시멈中 == 1
+SIF GETVAR(@"%듀얼리스트%_특수阻害中止") == 0 && 맥시멈中 == 0
 	CALL CARD_SUMEFFECT_FORCE(対面者)
 CALL CARD_SUMEFFECT_FORCE(듀얼리스트)
-SIF GETVAR(@"%듀얼리스트%_특수阻害中止") == 0 || 맥시멈中 == 1
+SIF GETVAR(@"%듀얼리스트%_특수阻害中止") == 0 && 맥시멈中 == 0
 	CALL CARD_SUMEFFECT(対面者)
+
 CALL CARD_SUMEFFECT(듀얼리스트)
 
 
@@ -671,8 +672,9 @@ FOR カウンタ,0,紙束最大値
 	ENDIF
 NEXT
 IF 효과在り == 1 && 듀얼리스트 == "자신"
+	CUSTOMDRAWLINE —
 	PRINTL
-	PRINTFORML [1000] 발동하지 않는다
+	PRINTFORML 　[1000] 발동하지 않는다
 	BINPUT
 	選択カード = RESULT
 	IF 選択カード != 1000

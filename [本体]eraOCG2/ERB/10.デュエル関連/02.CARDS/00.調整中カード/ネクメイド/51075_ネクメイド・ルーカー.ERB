@@ -1,0 +1,253 @@
+﻿@CARDNAME_51075,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 네크메이드 루커
+	CASE "略称"
+		RESULTS = NM 루커
+	CASE "カテゴリ"
+		RESULTS:0 = 가실장
+		RESULTS:1 = 네크메이드
+		RESULTS:2 = 네크메이드 나나
+		RESULTS:3 = 리추얼
+ENDSELECT
+
+
+@CARD_51075(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 초차원
+	;어둠속성/빛속성/땅속성/물속성/화염속성/바람속성
+	CASE "속성"
+		RETURN 빛속성
+
+	CASE "종족"
+		RETURN 언데드족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 1100
+	CASE "守備力"
+		RETURN 2600
+	;牝性/雄性があるよ
+	CASE "성별"
+		RETURN 牝性
+	CASE "レア度"
+		RETURN ULR
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_51075(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「네크메이드」의식 마법カードにより降臨。
+PRINTL このカード名の②の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(10,필드起動,フリー誘発)
+PRINTL ①：자신・상대ターンに１度、자신の묘지の리추얼モンスター１体
+PRINTL またはモンスター（언데드족）３体を덱に戻して발동できる。
+PRINTL 상대フィールドのカード１枚を選んで破壊し、상대に７００ダメージを与える。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ②：このカードが리추얼소환に成功した場合に、손패を１枚묘지に送って발동できる。
+PRINTL 상대モンスターゾーン１つを使用불가にする。
+
+
+@CARDSUMMON_51075(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 7
+
+
+IF EX参照 == 1
+	CALL RITCAN(듀얼리스트,소환カード,51075) 
+	RETURN RESULT
+ENDIF
+
+@CARDCAN_51075(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성A
+#DIM DYNAMIC 条件달성B
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,51075)
+SIF RESULT == 1
+	RETURN 0
+	
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 리추얼
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				条件달성A = 1
+			ENDIF
+			
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 언데드족
+		효과条件종류 = モン全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT >= 3
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+			条件달성B = 1
+			ENDIF
+			
+			SIF 条件달성A == 0 && 条件달성B == 0
+				RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,51075)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_51075(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC 条件달성A
+#DIM DYNAMIC 条件달성B
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51075,10)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종류 = モン全般
+		효과条件カテゴリ = 리추얼
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT == 1
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과範囲상대마함 = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+				条件달성A = 1
+			ENDIF
+			
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 언데드족
+		효과条件종류 = モン全般
+		효과条件CNT = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			IF RESULT >= 3
+				CALL FULLRESET
+				효과範囲상대필드 = 1
+				효과範囲상대마함 = 1
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				SIF RESULT == 1
+				条件달성B = 1
+			ENDIF
+			
+		IF 条件달성A == 1 && 条件달성B == 1
+			PRINTFORML
+			PRINTFORML どちらでコストを払いますか？
+			PRINTFORML
+			PRINTFORML [1] - 자신の묘지の리추얼モンスター１体。
+			PRINTFORML [2] - 자신の묘지のモンスター（언데드족）３体。
+			BINPUT
+		ELSEIF 条件달성A == 1 && 条件달성B == 0
+			RESULT = 1
+		ELSEIF 条件달성A == 0 && 条件달성B == 1
+			RESULT = 2
+		ENDIF
+
+		IF RESULT == 1
+			CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件종류 = モン全般
+				효과条件カテゴリ = 리추얼
+				효과条件行先플래그 = 덱行き
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과範囲상대마함 = 1
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+					SIF RESULT == 1
+					CALL LIFE_CHANGE(듀얼리스트,"減少","효과",700,1)
+				ENDIF
+				
+		ELSEIF RESULT == 2
+			CALL FULLRESET
+				효과範囲묘지 = 1
+				효과条件종류 = モン全般
+				효과条件종족 = 언데드족
+				효과条件行先플래그 = 덱行き
+				효과条件複数 = 3
+				CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+				IF RESULT == 1
+					CALL FULLRESET
+					효과範囲상대필드 = 1
+					효과範囲상대마함 = 1
+					CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+					SIF RESULT == 1
+					CALL LIFE_CHANGE(듀얼리스트,"減少","효과",700,1)
+				ENDIF
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,51075,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT == 1
+			CALL RESRICT_FIELD(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ENDIF

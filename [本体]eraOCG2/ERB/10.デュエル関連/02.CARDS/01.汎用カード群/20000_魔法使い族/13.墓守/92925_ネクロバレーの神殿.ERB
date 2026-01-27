@@ -63,38 +63,46 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,92925)
 SIF RESULT == 1
 	RETURN 0
 
-IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-	SIF 발동済_2(듀얼리스트,92925)
+IF 종류 == 마함起動 || 종류 == フリー誘発
+	SIF ゾーン != "마함"
 		RETURN 0
-	;효과の使用条件のチェック
-	CALL FULLRESET
-	효과範囲마함 = 1
-	효과条件名前 = 왕가의 골짜기－네크로밸리
-	효과条件표시 = 表側표시
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	IF RESULT != 1
-		SIF 마함数(듀얼리스트) >= 5
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		SIF 발동済_2(듀얼리스트,92925)
 			RETURN 0
+		;효과の使用条件のチェック
 		CALL FULLRESET
 		효과範囲마함 = 1
-		효과条件종류 = フィールド
+		효과条件名前 = 왕가의 골짜기－네크로밸리
 		효과条件표시 = 表側표시
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT == 1
-			RETURN 0
-		CALL FULLRESET
-		효과範囲손패 = 1
-		효과範囲묘지 = 1
-		효과条件名前 = 왕가의 골짜기－네크로밸리
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		SIF RESULT != 1
-			RETURN 0
+		IF RESULT != 1
+			SIF 마함数(듀얼리스트) >= 5
+				RETURN 0
+			CALL FULLRESET
+			효과範囲마함 = 1
+			효과条件종류 = フィールド
+			효과条件표시 = 表側표시
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT == 1
+				RETURN 0
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件名前 = 왕가의 골짜기－네크로밸리
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				RETURN 0
+		ELSE
+			;상대 필드의 효과몬스터의 存在を確認
+			CALL FULLRESET
+			효과範囲상대필드 = 1
+			효과条件종류 = 효과全般
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				RETURN 0
+		ENDIF
 	ELSE
-		;상대 필드의 효과몬스터의 存在を確認
-		CALL FULLRESET
-		효과範囲상대필드 = 1
-		효과条件종류 = 효과全般
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
 		SIF RESULT != 1
 			RETURN 0
 	ENDIF
@@ -128,12 +136,6 @@ ELSEIF 종류 == 攻守変動
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
-ELSEIF 종류 == 마함起動
-	;지속함정の起動（表側にする処理）として의 발동条件
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
 ENDIF
 
 
@@ -152,43 +154,51 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF (종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")) && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92925,2)
-	IF RESULT == 0
-		CALL FULLRESET
-		효과範囲마함 = 1
-		효과条件名前 = 왕가의 골짜기－네크로밸리
-		효과条件표시 = 表側표시
-		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-		IF RESULT == 1
-			;네크로밸리が存在する場合は、상대 필드의 효과 몬스터 １장을 효과無効に
-			CALL FULLRESET
-			효과条件종류 = 효과全般
-			효과条件표시 = 表側표시
-			CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
-			選択カード = RESULT
-			;PRINTFORMW 選択カード：{選択カード}
-			SIF 選択カード != 9999
-				CALL SET_FIELD_INFO(対面者,"필드",選択カード,"無効",1,1)
-		ELSE
-			SIF 마함数(듀얼리스트) >= 5
-				RETURN 0
-			;バグりそうだから자신 필드에 既存フィールド마법がないか念のため確認してから置く処理を行う
+IF 종류 == 마함起動 || 종류 == フリー誘発
+
+	IF GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92925,2)
+		IF RESULT == 0
 			CALL FULLRESET
 			효과範囲마함 = 1
-			효과条件종류 = フィールド
+			효과条件名前 = 왕가의 골짜기－네크로밸리
 			효과条件표시 = 表側표시
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			IF RESULT != 1
-				;置く処理
+			IF RESULT == 1
+				;네크로밸리が存在する場合は、상대 필드의 효과 몬스터 １장을 효과無効に
 				CALL FULLRESET
-				효과範囲손패 = 1
-				효과範囲묘지 = 1
-				효과条件名前 = 왕가의 골짜기－네크로밸리
-				CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+				효과条件종류 = 효과全般
+				효과条件표시 = 表側표시
+				CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+				選択カード = RESULT
+				;PRINTFORMW 選択カード：{選択カード}
+				SIF 選択カード != 9999
+					CALL SET_FIELD_INFO(対面者,"필드",選択カード,"無効",1,1)
 			ELSE
-				;PRINTL ここに処理が来ている
+				SIF 마함数(듀얼리스트) >= 5
+					RETURN 0
+				;バグりそうだから자신 필드에 既存フィールド마법がないか念のため確認してから置く処理を行う
+				CALL FULLRESET
+				효과範囲마함 = 1
+				효과条件종류 = フィールド
+				효과条件표시 = 表側표시
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT != 1
+					;置く処理
+					CALL FULLRESET
+					효과範囲손패 = 1
+					효과範囲묘지 = 1
+					효과条件名前 = 왕가의 골짜기－네크로밸리
+					CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"表側표시")
+				ELSE
+					;PRINTL ここに処理が来ている
+				ENDIF
 			ENDIF
+		ENDIF
+	ELSE
+		;カード발동＆설치まで
+		CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92925)
+		IF RESULT == 0
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 破壊→묘지
@@ -209,9 +219,4 @@ ELSEIF 종류 == 攻守変動
 	;条件確認
 	CALL FULLRESET
 	CALL STATCHANGE_BASIC(듀얼리스트,"상대필드",場所,-500,-500)
-ELSEIF 종류 == 마함起動
-	;カード발동＆설치まで
-	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,92925)
-	IF RESULT == 0
-	ENDIF
 ENDIF

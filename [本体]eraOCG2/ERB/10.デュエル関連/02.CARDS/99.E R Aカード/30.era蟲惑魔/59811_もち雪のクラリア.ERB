@@ -160,8 +160,7 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -196,6 +195,10 @@ ELSEIF 종류 == ターン終了時強制
     SIF RESULT < 2
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_59811(듀얼리스트,종류,ゾーン,場所)
@@ -212,6 +215,10 @@ ENDIF
 #DIM DYNAMIC 戦闘カード
 #DIM DYNAMIC 攻撃力修正
 #DIM DYNAMIC 효과先
+
+#DIM DYNAMIC 조교대상캐릭터ID
+
+
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
@@ -234,7 +241,8 @@ ELSEIF 종류 == 필드起動
 		효과条件名前 = 트랩트릭 네스트홀
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
-			PRINTFORMW 묘지에서 몬스터 4장을 제외하고 충혹마 융합 몬스터를 소환한다！
+			PRINTFORML 소굴의 ４장의 충혹마가、동료의 힘을 불어넣는다！
+			PRINTFORMW 융합 소환！
 			CALL FULLRESET
 			효과範囲묘지 = 1
 			효과範囲상대묘지 = 1
@@ -299,7 +307,7 @@ ELSEIF 종류 == ターン終了時強制
 	FOR カウンタ,0,5
 		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
 			CONTINUE
-		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}("カテゴリ")
+		TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_필드:カウンタ")}, "カテゴリ"
 			SIF !MATCH(RESULTS, "충혹마")
 				CONTINUE
 		CALL CARD_EROTICS_FIELD(듀얼리스트,"필드",カウンタ)
@@ -308,9 +316,9 @@ ELSEIF 종류 == ターン終了時強制
 			SIF 조교대상 == NO_TO_CHARANUM(1380)
 				CONTINUE
 			SETCOLOR C_PINK 
-			PRINTFORMW 클라리아는 %NAME:조교대상%을 돌보고 있다...
+			PRINTFORMW %NAME:조교대상%はクラリア%TEXTR("の「お世話」を受けている/に優しく「お世話」されている")%…
 			RESETCOLOR
-			CALL EROTIC_MOVE("全身애무",조교대상,NO_TO_CHARANUM(1380),100)
+;			CALL EROTIC_MOVE("全身애무",조교대상,NO_TO_CHARANUM(1380),100)
 		ENDIF
 	NEXT
 ELSEIF 종류 == 지속효과
@@ -322,8 +330,20 @@ ELSEIF 종류 == 攻撃時誘発
 		;通常마법汎用処理
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
 		CALL FULLRESET
 		효과추가종류 = 6
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;ウサギゴケは地下茎で捕虫する타입だけど……一番の特徴はめっちゃ可愛い花だと思うの
+		;カードイラストにはウサギの形をした水玉がたくさん描かれてるので、ウサギ媚毒粘液ボムみたいな感じかもしれない
+			PRINTFORML 攻撃の瞬間、クラリアが手をかざすと%NAME:조교대상%に向かってウサギの形をした数多の水球が襲いかかる！
+			PRINTFORML %TEXTR("躱そうとして体勢を崩した/回避に気を取られた/突然のことに怯んだ")%%NAME:조교대상%は弾けた水球のしぶきを浴び、
+			PRINTFORMW 媚毒で動きが鈍ったところでシトリスの仕掛けた함정にかかり、動きを封じられてしまった！
+		ELSE
+			PRINTFORMW セラはシトリスの大穴に誘導した…
+		ENDIF
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘カード,"永攻DOWN")
 	ENDIF
 
@@ -334,7 +354,36 @@ ELSEIF 종류 == 효과後誘発
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
 		CALL FULLRESET
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:효과先")
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;フレシアはモチーフがラフレシア。
+		;ラフレシアが小虫に送粉を手伝わせるために腐臭を漂わせるように、フレシアは人を誘うために甘くいい香りをさせている……はず！
+			PRINTFORML 立ちこめる甘く濃厚な媚香に%CALLNAME:조교대상%が気を取られた隙をついて、
+			PRINTFORMW クラリアは%CALLNAME:조교대상%をフレシアが待ち構える大穴に引きずり込んだ！
+			PRINTL
+			PRINTFORMW 悲鳴をあげながら落ちていく상대モンスターを眺めて、クラリアはくすくすと笑みを浮かべた……
+			CALL PREDATION_RAFFLESIA(듀얼리스트,종류,ゾーン,場所,조교대상)
+		ELSE
+			PRINTFORMW クラリアはフレシアの大穴に誘導した…
+		ENDIF
+		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+	ENDIF
+ELSEIF 종류 == リアクション효과
+	SETCOLOR C_PINK
+	PRINTFORML 
+	PRINTFORMW ”穴”として설치されたクラリアは%CALLNAME:MASTER%に%TEXTR("ふわふわした/もちもちの")%穴を向けて誘惑している…
+	PRINTFORMW 誘惑に堪えきれず、%CALLNAME:MASTER%はクラリアの穴に욕망のまま情欲をぶつけた…
+	RESETCOLOR
+	CALL EROTIC_MOVE("충혹마의 착정",NO_TO_CHARANUM(1380),MASTER,100)
+	IF RESULT:2 >= 1
+		SETCOLOR C_PINK
+		PRINTFORML 
+		PRINTFORMW クラリアは%CALLNAME:MASTER%から搾り取った精気を巣穴に溜め込んだ…
+		RESETCOLOR
+		CALL CARD_GENERATE_GY(듀얼리스트,99823)
 	ENDIF
 ENDIF
 

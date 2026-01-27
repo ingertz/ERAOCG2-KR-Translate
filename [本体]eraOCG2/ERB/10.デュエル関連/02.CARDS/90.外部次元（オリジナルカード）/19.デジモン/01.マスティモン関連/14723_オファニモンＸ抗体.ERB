@@ -1,0 +1,156 @@
+﻿@CARDNAME_14723,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 오파니몬Ｘ항체
+	CASE "略称"
+		RESULTS = 오파니몬Ｘ
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_14723(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 천사족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 3400
+	CASE "성별"
+		RETURN 牝性
+	CASE "추가日"
+		RETURN 260120
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_14723(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカードは「Ｘ항체」の효과でしか특수소환できない。
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカード名の③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,지속효과)
+PRINTL ①：このカードがＸ素材を持つ限り、자신フィールドのモンスターはコントロールが변경されず、
+PRINTL 自身を대상としないカードの효과を受けない。
+CALLFORM CARD_ABLE(0,발동誘発)
+PRINTL ②：상대が효과を발동する度に발동する。
+PRINTL 자신は１０００ＬＰ회복する。
+CALLFORM CARD_ABLE(2,필드起動,フリー誘発)
+PRINTL ③：자신のＬＰが상대より多い場合、
+PRINTL 자신・상대のメインフェイズに１０００ＬＰを支払って발동できる。
+PRINTL 상대フィールドの表側표시カード１体を효과無効にし、
+PRINTL 상대フィールドの表側표시モンスター１体を攻撃불가にし、
+PRINTL 상대フィールドの表側표시モンスター１体を素材불가にする。
+
+@CARDCAN_14723(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,14723)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 지속효과 
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA_2(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_3(듀얼리스트,14723)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= GETVAR(@"ライフ_%対面者%") 
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 1000
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 無効
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_14723(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"忠実")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"無差耐")
+ELSEIF 종류 == 발동強制誘発
+	CALL LIFE_CHANGE(듀얼리스트,"増加","효과",1000)
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,14723,3)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",2000)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"지속無効")
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"戦無効")
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"不材")
+	ENDIF
+ENDIF

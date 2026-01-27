@@ -1,0 +1,188 @@
+﻿@CARDNAME_4723,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ウェヌスモン
+	CASE "略称"
+		RESULTS = ウェヌスモン
+	CASE "カテゴリ"
+		RESULTS:0 = デジモン
+	CASE "出典作品"
+		RESULTS:0 = デジモン
+ENDSELECT
+
+
+@CARD_4723(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RESULT:1 = サイバース族
+		RETURN 未確認族
+	CASE "レベル"
+		RETURN 8
+	CASE "攻撃力"
+		RETURN 2800
+	CASE "守備力"
+		RETURN 2500
+	CASE "性別"
+		RETURN 牝性
+	CASE "追加日"
+		RETURN 251130
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_4723(種類)
+#DIM DYNAMIC 種類
+
+PRINTL デジモンカードはサイバース族としても扱う。
+PRINTL このカード名の①②③の効果は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：手札に存在するこのカードを相手に見せて発動することができる。
+PRINTL このカードを自分の魔法＆罠ゾーンに表側表示で置く。
+PRINTL その後、EXデッキから光属性の「デジタマ」モンスター１体を特殊召喚する。
+CALLFORM CARD_ABLE(0,永続効果)
+PRINTL ②：このカードが表側表示で存在する限り、
+PRINTL 自分フィールドのレベル８以下の「デジモン」モンスターは効果では破壊されない。
+CALLFORM CARD_ABLE(3,効果後誘発)
+PRINTL ③：相手がモンスターを召喚・特殊召喚した場合に発動できる。
+PRINTL 自分フィールドのレベル７・８の「デジモン」モンスター１体を墓地に送り、このカードを特殊召喚する。
+PRINTL その後、相手フィールドの表側表示モンスターを全て裏側守備表示にする。
+PRINTL 
+
+@CARDCAN_4723(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件達成
+
+
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,4723)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,4723)
+		RETURN 0
+
+	CALL FULLRESET
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+
+	SIF 魔罠数(決闘者) >= 5
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件種類 = 超次元
+	効果条件カテゴリ = デジタマ
+	効果条件属性 = 光属性
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 永続効果
+	SIF !GROUPMATCH(ゾーン,"戦場","魔罠")
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 効果後誘発
+	SIF 発動済_3(決闘者,4723)
+		RETURN 0
+	SIF ゾーン != "魔罠"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_魔_表:場所") != 1
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(決闘者,"召喚全般",1)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	効果範囲戦場 = 1
+	効果条件レベル:0 = 7
+	効果条件レベル:1 = 8
+	効果条件カテゴリ = デジモン
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	CALL FULLRESET
+	CALL CARD_SS_CHECK(決闘者,4723,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_4723(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,4723,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_DISPOSE(決闘者,ゾーン,場所,魔罠行き)
+		IF RESULT == 1
+			CALL FULLRESET
+			効果範囲EXデッキ = 1
+			効果条件種類 = 超次元
+			効果条件カテゴリ = デジタマ
+			効果条件属性 = 光属性
+			CALL DIMSUMMON(決闘者,ゾーン,場所,8)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 永続効果
+	CALL FULLRESET
+	効果条件カテゴリ = デジモン
+	CALL 効果条件レベル_ADV(8, "以下")
+	CALL STATCHANGE_EFFECT(決闘者,"戦場",場所,"破耐")
+ELSEIF 種類 == 効果後誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,4723,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果条件レベル:0 = 7
+		効果条件レベル:1 = 8
+		効果条件カテゴリ = デジモン
+		CALL CARD_ADD_GY_ADV(決闘者,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(決闘者,ゾーン, 場所)
+			IF RESULT == 1
+				CALL FULLRESET
+			効果条件表示 = 1
+			効果追加種類 = 1
+			CALL CARD_REMOVAL_BASIC(決闘者,"戦場全体",場所,"表示変更")
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

@@ -1,0 +1,164 @@
+﻿@CARDNAME_28465,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데먼 피스 골렘
+	CASE "略称"
+		RESULTS = D P 골렘
+	CASE "カテゴリ"
+		RESULTS:0 = 레드 데몬
+ENDSELECT
+
+
+@CARD_28465(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 5
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 0
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_28465(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：このカードが손패に存在し、자신フィールドに악마족튜너が存在する場合に발동できる。
+PRINTL このカードを특수소환する。
+CALLFORM CARD_ABLE(2,특수소환時)
+PRINTL ②：このカードが특수소환した場合に발동できる。
+PRINTL このカードのレベルを２つまで下げる。
+CALLFORM CARD_ABLE(3,S素材時효과)
+PRINTL ③：자신フィールドに「레드 데몬」Sモンスターが存在し、このカードがS素材として묘지へ送られた場合、
+PRINTL 자신の묘지のレベル４以下の악마족モンスター１体を대상として발동できる。
+PRINTL そのモンスターを守備표시で특수소환する。
+
+
+
+@CARDCAN_28465(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件カード数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28465)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,28465)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,28465,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종족 = 악마족
+	효과条件튜너 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 특수소환時
+    SIF 발동済_2(듀얼리스트,28465)
+		RETURN 0
+	RETURN 1	
+
+ELSEIF 종류 == S素材時효과
+    SIF 발동済_3(듀얼리스트,28465)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 레드 데몬
+	효과条件종류 = 싱크로
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 악마족
+	효과条件종류 = モン全般
+	CALL 효과条件レベル_ADV(4,"以下")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_28465(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28465,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+ELSEIF 종류 == 특수소환時
+    CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28465,2)
+    IF RESULT == 0
+		CALL YN_CHOICE(듀얼리스트,"このカードのレベルを１つ下げる","このカードのレベルを２つ下げる")
+		IF RESULT == 0
+			CALL FULLRESET
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",-1)
+		ELSE
+			CALL FULLRESET
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"永星",-2)
+		ENDIF
+	ENDIF
+
+
+ELSEIF 종류 == S素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28465,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 악마족
+		효과条件종류 = モン全般
+	    CALL 효과条件レベル_ADV(4,"以下")
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+	ENDIF	
+ENDIF

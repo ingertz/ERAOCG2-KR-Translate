@@ -48,6 +48,9 @@ PRINTL 이 효과를 발동한 후, 턴 종료시까지 자신은 "광서의 기
 PRINTL
 SETCOLOR C_RED
 PRINTL ＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊ーー경고ーー＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ④：①의 효과로 암컷 몬스터를 제외했을 때、미독정제의 원재료인 암컷구멍의 체액을 채집하기 위해、
+PRINTL 제외할 암컷 몬스터에 대해 기계에 의한 능욕을 한 뒤에 제외한다。
 CALLFORM CARD_ABLE(4,ターン終了時)
 PRINTL ④: 자신의 엔드 페이즈시에 발동할 수 있다.
 PRINTL 기계성에 붙잡혀 있는 암컷 구멍들을 범해, 기계를 계속 활성화시키며,
@@ -151,6 +154,7 @@ ENDIF
 #DIM DYNAMIC 攻撃力修正
 #DIM DYNAMIC 조교대상
 #DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
 #DIM DYNAMIC 戦闘カードID
 #DIM DYNAMIC 효과条件플래그 = 0
 
@@ -167,9 +171,10 @@ IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
 		효과条件行先플래그 = 제외行き
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			조교대상 = RESULT:1
-			CALL CARD_EROTICS(조교대상)
+			選択カード_ID = RESULT:1
+			CALL CARD_EROTICS(選択カード_ID)
 			IF RESULT != -1
+				조교대상 = RESULT
 				PRINTFORML
 				PRINTFORML %CALLNAME:조교대상%는 광서의 기계에 이끌려、미독을 만들기 위한 "상자"로 가공되어버린다……
 				PRINTFORMW
@@ -196,7 +201,7 @@ ELSEIF 종류 == 攻撃時誘発
 			PRINTFORML 
 			SETCOLOR C_PINK 
 			PRINTFORML
-			PRINTFORML %NAME:조교대상%는 미독이 쑤셔박아져、육체를 절정과 발광을 반복시켜 강제적으로 활성화시킨다……
+			PRINTFORML %CALLNAME:조교대상%는 미독이 쑤셔박아져、육체를 절정과 발광을 반복시켜 강제적으로 활성화시킨다……
 			PRINTFORMW
 			RESETCOLOR
 			CALL EROTIC_MOVE("媚毒汚染",조교대상,-1,500)
@@ -214,9 +219,10 @@ ELSEIF 종류 == 손패起動
 			CALL FULLRESET
 			효과条件성별 = 牝性
 			CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
-			조교대상 = RESULT:1
-			CALL CARD_EROTICS(조교대상)
+			選択カード_ID = RESULT:1
+			CALL CARD_EROTICS(選択カード_ID)
 			IF RESULT != -1
+				조교대상 = RESULT
 				PRINTFORML
 				PRINTFORML %CALLNAME:조교대상%는 광서의 기계에게 붙잡혀、미독을 만들기 위할 뿐인 구멍으로 사용되고 버려져버린다……
 				PRINTFORMW

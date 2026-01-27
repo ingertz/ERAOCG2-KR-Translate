@@ -1,0 +1,172 @@
+@CARDNAME_72186,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 둠즈 커맨드『Ａ.Ｄ.Ｒ.Ａ.Ｓ.Ｔ.Ｅ.Ｉ.Ａ.』
+	CASE "略称"
+		RESULTS = 둠즈 커맨드
+	CASE "カテゴリ"
+		RESULTS:0 = 둠즈
+ENDSELECT
+
+
+@CARD_72186(参照先)
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 装備마법
+	CASE "추가日"
+		RETURN 250124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72186(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：装備モンスターは１ターンに１度だけ戦闘では破壊されない。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL 装備モンスターを破壊し、
+PRINTL 破壊したモンスター以外の자신の손패・묘지・제외状態の「둠즈」モンスター１体を守備표시で특수소환する。
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：このカードが묘지に存在する場合に발동できる。
+PRINTL このカードを자신フィールドの表側표시モンスター１体を대상として발동できる。
+PRINTL その後、자신は装備モンスターのレベル・ランク×１００ダメージを受ける。
+
+
+@CARDCAN_72186(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 装備先
+#DIMS DYNAMIC 装備者
+#DIM DYNAMIC 条件달성, 3
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備者 = %RESULTS%
+装備先 = RESULT
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72186)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == 지속효과
+	SIF 装備先 == 5
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,72186)
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲덱 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 둠즈
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+;装備処理
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,72186)
+		RETURN 0
+	CALL CARD_CONT_M(듀얼리스트,종류,"손패",場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72186(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 装備者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備先
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC レベル修正
+
+
+CALL 装備판정(듀얼리스트,場所,ゾーン)
+装備先 = RESULT	
+装備者 = %RESULTS%
+
+
+IF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"装備",場所,"一破")
+ELSEIF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72186,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(装備者,"필드",装備先,破壊行き)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲덱 = 1
+			효과範囲제외 = 1
+			효과条件カテゴリ = 둠즈
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所,"守備표시")
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72186)
+	IF RESULT == 0
+		;손패から발동後、마법トラップゾーンにカード이동
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72186,3)
+	IF RESULT == 0
+		;손패から발동後、마법トラップゾーンにカード이동
+		CALL FULLRESET
+		효과範囲필드 = 1
+		CALLFORM CARD_EQUIP_ADV(듀얼리스트,場所,ゾーン)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
+			レベル修正 = RESULT
+		CALL LIFE_CHANGE(듀얼리스트,"減少","효과",レベル修正 * 100)
+		ENDIF
+	ENDIF
+ENDIF

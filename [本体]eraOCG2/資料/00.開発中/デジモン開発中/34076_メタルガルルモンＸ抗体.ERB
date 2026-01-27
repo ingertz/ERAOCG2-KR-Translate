@@ -1,0 +1,191 @@
+@CARDNAME_34076,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = メタルガルルモンＸ抗体
+	CASE "略称"
+		RESULTS = ＭガルルモンＸ
+	CASE "カテゴリ"
+		RESULTS:0 = デジモン
+		RESULTS:1 = Ｘ抗体
+	CASE "出典作品"
+		RESULTS:0 = デジモン
+ENDSELECT
+
+
+@CARD_34076(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "外部者"
+		RETURN 1
+	CASE "種類"
+		RETURN エクシーズ
+	CASE "属性"
+		RETURN 水属性
+	CASE "種族"
+		RESULT:1 = サイバース族
+		RETURN 獣族
+	CASE "レベル"
+		RETURN 9
+	CASE "攻撃力"
+		RETURN 3200
+	CASE "守備力"
+		RETURN 2600
+	CASE "レア度"
+		RETURN ULR
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_34076(決闘者,召喚カード,EX参照)
+#DIMS DYNAMIC 決闘者
+#DIM DYNAMIC 召喚カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件種族 = 獣族
+素材条件レベル = 9
+
+IF EX参照 == 1
+	CALL XYZCAN(決闘者,召喚カード,34076) 
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_34076(種類)
+#DIM DYNAMIC 種類
+
+PRINTL 獣族レベル９モンスター×３
+PRINTL デジモンカードはサイバース族としても扱う。
+PRINTL 自分は「メタルガルルモンＸ抗体」を１ターンに１度しか特殊召喚できない。
+CALLFORM CARD_ABLE(0,EXデッキ起動)
+PRINTL このカードは自分の墓地・除外状態から獣族の「デジモン」４種類をデッキに戻してEXデッキから特殊召喚できる。
+PRINTL この方法で特殊召喚したこのカードのＸ素材は２つ増える。
+CALLFORM CARD_ABLE(0,発動強制誘発)
+PRINTL ①：このカードがモンスターゾーンに存在する限り、
+PRINTL 自分・相手がカードの効果を発動する度に相手に５００ダメージを与える。
+CALLFORM CARD_ABLE(0,戦場起動,フリー誘発)
+PRINTL ②：自分・相手ターン、このカードのＸ素材を１つ取り除き、フィールドのカード１枚を対象として発動できる。
+PRINTL そのカードはこのターン、完全鉄壁（戦闘、破壊、対象耐性）を得て、効果は無効化される。
+
+
+@CARDCAN_34076(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件達成
+
+
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,34076)
+SIF RESULT == 1
+	RETURN 0
+
+IF 種類 == EXデッキ起動
+	SIF 発動済_1(決闘者,34076)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL CARD_EX_CHECK(決闘者,34076)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	効果範囲墓地 = 1
+	効果範囲除外 = 1
+	効果条件種族 = 獣族
+	効果条件固名前起動 = 1
+	効果条件CNT = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT < 4
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 発動強制誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_START_DATA_2(決闘者,2)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	SIF ゾーン != "戦場"
+		RETURN 0
+	SIF GETVAR(@"%決闘者%_MZ_Ｘ:場所") <= -1
+		RETURN 0
+	SIF 発動済_3(決闘者,34076)
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_34076(決闘者,種類,ゾーン,場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 装備魔法数
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 判定
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == EXデッキ起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34076)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲墓地 = 1
+		効果範囲除外 = 1
+		効果条件種族 = 獣族
+		効果条件固名前選択 = 1
+		効果条件複数 = 4
+		CALL FULLRESET
+		IF RESULT == 1
+			CALL FULLRESET
+			効果追加種類 = 効追Ｘ素 + 2
+			CALL CARD_SP_SUMMON(決闘者,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 発動強制誘発
+	CALL LIFE_CHANGE(決闘者,"減少","効果",500,1)
+ELSEIF 種類 == 戦場起動 || 種類 == フリー誘発
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,34076,0,X消費1)
+	IF RESULT == 0
+		CALL FULLRESET
+		効果範囲戦場 = 1
+		効果範囲魔罠 = 1
+		効果範囲相手戦場 = 1
+		効果範囲相手魔罠 = 1
+		CALL CARD_CHOOSE_ADV(決闘者,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_SELECT(決闘者,選択カード)
+			SIF 参照先（CS） == "戦場"
+			CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"無効",1)
+			CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"戦耐",1)
+			CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"破耐",1)
+			CALL SET_FIELD_INFO(対象者（CS）,参照先（CS）,選択カード（CS）,"対耐",1)
+		ENDIF
+	ENDIF
+ENDIF
+

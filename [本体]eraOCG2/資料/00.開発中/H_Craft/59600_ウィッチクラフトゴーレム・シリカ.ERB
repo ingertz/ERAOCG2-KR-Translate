@@ -1,0 +1,226 @@
+﻿@CARDNAME_59600, 参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = ウィッチクラフトゴーレム・シリカ
+	CASE "略称"
+		RESULTS = WCG シリカ
+	CASE "カテゴリ"
+		RESULTS:0 = ウィッチクラフト
+		RESULTS:1 = ジェムナイト
+		RESULTS:2 = ゲームオリジナル
+ENDSELECT
+
+@CARD_59600(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "種類"
+		RETURN 効果モン
+	CASE "属性"
+		RETURN 光属性
+	CASE "種族"
+		RETURN 元素霊族
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 800
+	CASE "守備力"
+		RETURN 1500
+	CASE "分割"
+		RETURN ユニオン
+	CASE "性別"
+		RETURN 牝性
+	;CASE "生産不可"
+	;	RETURN 1
+	CASE "追加日"
+		RETURN 251231
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_59600(種類)
+#DIM DYNAMIC 種類
+
+PRINTL このカード名の①②の効果はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,手札起動)
+PRINTL ①：手札のこのカードを相手に見せて発動できる。相手プレイヤーは神属性以外の６つの属性から１つの属性を宣言する。
+PRINTL 「ウィッチクラフトゴーレム・シリカ」以外の宣言された属性の「ウィッチクラフト」・「ジェムナイト」モンスター１体、
+PRINTL または宣言された属性の力を持つ「ジェムナイト」モンスター１体を自分の手札・デッキから特殊召喚し、手札のこのカードを装備する。
+PRINTL 特殊召喚できなかった場合、自分は１０００ＬＰを失い、このカードを墓地へ送る。
+CALLFORM CARD_ABLE(2,戦場起動,魔罠起動)
+PRINTL ②：このカードがフィールドに存在する場合、自分メインフェイズに発動できる。
+PRINTL 自分フィールドのモンスターカードを融合素材とし、融合モンスター１体を融合召喚する。
+
+;「ジェムナイト・フュージョン」の融合の力を秘めたゴーレム。相手依存ながら手札効果でテーマモンスターのリクルートと、
+;融合召喚までを単体で行うことができる。他の機能は持たないが、融合召喚するという機能だけ見ればとてつもなく優秀。
+;効果を十二分に発揮するためには、全ての属性のテーマモンスターをデッキに入れておく必要があるので、本格的なデュエルにはあまり向いてないが、
+;とりあえずテーマのモンスターを一通り入れておくかーぐらいのデッキの組み方を肯定してくれる優しさを備えている。
+;「ウィッチクラフト」は６属性に担当が揃っているが、「ジェムナイト」は炎、水、風の３属性が足りていないので、それは以下のモンスターが担当している。
+;炎属性：ジェムナイト・ガネット　水属性：ジェムナイト・サフィア　風属性：ジェムナイト・ルマリン
+
+;このカードの①の効果は、「ウィッチクラフト」フィールド魔法の案をオリジナルで創作していた頃に考えていた時期のものを流用している。
+;その後、eraOCG2に合わせたものとして「ウィッチクラフト・パパ活」なるE.R.Aカードで、相手プレイヤーに指名した属性の子を斡旋（リクルート）する
+;カードというものも考えていたが、今回、割と綺麗めな方向のオリジナルのウィッチクラフトゴーレムのモンスターカードとして着地する運びとなった。
+;本来の構想に戻った感じであるが、やはり属性を相手側に選ばせるという要素は、デッキ構築を純構築に寄せさせる動機にもなり、良いバランスと思われる。
+
+;CPUは、以下の確率で宣言する仕様。当然ではあるが、WCでフィールドに出力して強い属性は選ばれにくい。ジェムナイトは地属性の大当たりが若干出やすい。
+;光属性：5%　闇属性:10%　風属性：15%　炎属性：20%　地属性：25%　水属性：25%
+
+
+@CARDCAN_59600(決闘者, 種類, ゾーン, 場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 調教対象 = -1
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(決闘者,種類,ゾーン,場所,59600)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 種類 == 手札起動
+	SIF 発動済_1(決闘者,59600)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL FULLRESET
+	効果範囲手札 = 1
+	効果範囲デッキ = 1
+	効果条件カテゴリ:0 = ウィッチクラフト
+	効果条件カテゴリ:1 = ジェムナイト
+	効果条件召喚可 = 1
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 0
+ELSEIF 種類 == 戦場起動 || 種類 == 魔罠起動
+	SIF 発動済_2(決闘者,59600)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 決闘者
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲戦場 = 1
+	素材範囲魔罠 = 1
+	;素材範囲手札 = 1
+	CALL FULLRESET
+	効果範囲EXデッキ = 1
+	効果条件種類 = 融合
+	効果条件召喚可 = 2
+	CALL CARD_CHECK_ADV(決闘者,種類,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_59600(決闘者, 種類, ゾーン, 場所)
+#DIMS DYNAMIC 決闘者
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 種類
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択属性
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+
+CALL 対面者判定(決闘者)
+対面者 = %RESULTS%
+
+IF 種類 == 手札起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,59600,1)
+	IF RESULT == 0
+		;属性の選択
+		IF 決闘者 == "相手"
+			CUSTOMDRAWLINE -
+			PRINTFORML 属性を１つ選択してください。
+			CUSTOMDRAWLINE -
+			PRINTL [1] - 光属性
+			PRINTL [2] - 闇属性
+			PRINTL [3] - 地属性
+			PRINTL [4] - 水属性
+			PRINTL [5] - 炎属性
+			PRINTL [6] - 風属性
+			BINPUT
+			選択属性 = RESULT
+		ELSE
+			;CPUが選ぶ場合はランダム（光属性：5%　闇属性:10%　風属性：15%　炎属性：20%　地属性：25%　水属性：25%）
+			SELECTCASE RAND:20
+				CASE 0
+					選択属性 = 光属性
+				CASE 1 TO 2
+					選択属性 = 闇属性
+				CASE 3 TO 5
+					選択属性 = 風属性
+				CASE 6 TO 9
+					選択属性 = 炎属性
+				CASE 10 TO 14
+					選択属性 = 地属性
+				CASEELSE
+					選択属性 = 水属性
+			ENDSELECT
+		ENDIF
+		
+		CALL FULLRESET
+		効果範囲手札 = 1
+		効果範囲デッキ = 1
+		効果条件属性 = 選択属性
+		効果条件カテゴリ:0 = ウィッチクラフト
+		効果条件カテゴリ:1 = ジェムナイト
+		効果条件固名前 = ウィッチクラフトゴーレム・シリカ
+		SIF 選択属性 == 炎属性
+			効果条件スーパー名前 = ジェムナイト・ガネット
+		SIF 選択属性 == 水属性
+			効果条件スーパー名前 = ジェムナイト・サフィア
+		SIF 選択属性 == 風属性
+			効果条件スーパー名前 = ジェムナイト・ルマリン
+		CALL CARD_SP_SUMMON_ADV(決闘者,ゾーン,場所)
+		IF RESULT
+			;このカードを装備する処理
+			CALL FULLRESET
+			効果範囲戦場 = 1
+			効果条件固定 = カード召喚先
+			CALLFORM CARD_EQUIP_ADV(決闘者,場所,ゾーン)
+		ELSE
+			;召喚できなかった場合の処理
+			PRINTL 宣言された属性のモンスターを特殊召喚する事ができませんでした。
+			CALL LIFE_CHANGE(決闘者,"減少","コスト",1000)
+			CALL CARD_DISPOSE(決闘者,ゾーン,場所,墓地行き)
+		ENDIF
+	ENDIF
+ELSEIF 種類 == 戦場起動 || 種類 == 魔罠起動
+	CALL CARD_CHOICE(決闘者,種類,ゾーン,場所,59600,2)
+	IF RESULT == 0
+		CALL RESETAREA_MAT
+		素材範囲戦場 = 1
+		素材範囲魔罠 = 1
+		;素材範囲手札 = 1
+		CALL FULLRESET
+		効果条件種類 = 融合
+		効果条件召喚可 = 2
+		CALL CARD_CHOOSE_BASIC(決闘者,"EXデッキ",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%決闘者%_EXデッキ:{選択カード}")}(決闘者,選択カード)
+			CALL FUSSUMMON(決闘者, 選択カード)
+		ENDIF
+	ENDIF
+ENDIF

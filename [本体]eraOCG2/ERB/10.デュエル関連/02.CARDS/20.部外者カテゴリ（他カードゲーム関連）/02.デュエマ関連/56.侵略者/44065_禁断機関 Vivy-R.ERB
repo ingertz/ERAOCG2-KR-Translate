@@ -1,0 +1,240 @@
+@CARDNAME_44065,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 금단기관 ViVy-R
+	CASE "略称"
+		RESULTS = 금단기관ViVy-R
+	CASE "カテゴリ"
+		RESULTS:0 = 금단
+	CASE "出典作品"
+		RESULTS:0 = DUEL MASTERS
+ENDSELECT
+
+
+@CARD_44065(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 기계족
+	CASE "レベル"
+		RETURN 12
+	CASE "攻撃力"
+		RETURN 3450
+	CASE "守備力"
+		RETURN 1200
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 4065
+	CASE "추가日"
+		RETURN 260122
+ENDSELECT
+RETURN 0
+
+@CARDSUMMON_44065(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 5
+素材条件レベル = 12
+素材条件속성 = 물속성
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,44065) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_44065(종류)
+#DIM DYNAMIC 종류
+
+PRINTL レベル１２물속성モンスター×５
+CALLFORM CARD_ABLE(1,EX덱起動)
+PRINTL  「금단기관 ViVy-R」は１ターンに１度、
+PRINTL 자신の묘지に물속성モンスターが１２体以上ある場合に、자신フィールドの물속성モンスター１体の上に重ねてＸ소환する事ができる。
+CALLFORM CARD_ABLE(0,EX소환時)
+PRINTL ①：このカードがＸ소환に成功した場合に발동できる。
+PRINTL お互いのプレイヤーは손패・묘지・제외状態のカードを全て덱に戻してシャッフルし、덱から５枚ドローする。
+PRINTL この효과の발동後、자신はターン終了時まで기계족モンスターしか특수소환できない。
+CALLFORM CARD_ABLE(0,효과後強制誘発)
+PRINTL ②：상대ターンに상대が효과を발동するか、モンスターを소환・특수소환する度に발동する。
+PRINTL このカードのＸ素材を１つ増やす。
+CALLFORM CARD_ABLE(0,他효과起動)
+PRINTL ③：このカードのＸ素材が１２個になった場合に、このカードのＸ素材をすべて取り除いて발동できる。
+PRINTL このターンのエンドフェイズになる。
+
+
+@CARDCAN_44065(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,44065)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,44065)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,44065)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件속성 = 물속성
+	효과条件重ねてＸ = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 물속성
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 12
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == EX소환時
+	RETURN 1
+ELSEIF 종류 == 효과後強制誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",1)
+	IF RESULT != 1
+		CALL FULLRESET
+		CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般",1)
+		SIF RESULT != 1
+			RETURN 0
+	ENDIF
+	RETURN 1
+ELSEIF 종류 == 他효과起動
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_44065(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM 選択カード
+#DIM DYNAMIC リピート数
+#DIM DYNAMIC 특수소환数
+#DIM DYNAMIC X素材数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44065,1)
+	IF RESULT == 0
+		CALL RESETCONDITION_MAT
+		必要素材数 = 1
+		素材条件속성 = 물속성
+		重ねてＸ = 1
+		TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+	ENDIF
+
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44065)
+	IF RESULT == 0
+		CALL URARA_CHANCE(듀얼리스트,処理中_효과ID,"雑多")
+		IF RESULT == 0
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%듀얼리스트%_손패:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(듀얼리스트,"손패",カウンタ,덱行き)
+			NEXT
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%듀얼리스트%_묘지:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(듀얼리스트,"묘지",カウンタ,덱行き)
+			NEXT
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%듀얼리스트%_제외:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(듀얼리스트,"제외",カウンタ,덱行き)
+			NEXT
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%対面者%_손패:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(対面者,"손패",カウンタ,덱行き)
+			NEXT
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%対面者%_묘지:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(対面者,"묘지",カウンタ,덱行き)
+			NEXT
+			FOR カウンタ,0,紙束最大値
+				SIF GETVAR(@"%対面者%_제외:カウンタ") == -1
+					CONTINUE
+				CALL CARD_DISPOSE(対面者,"제외",カウンタ,덱行き)
+			NEXT
+			CALL SHUFFLE(듀얼리스트)
+			CALL SHUFFLE(対面者)
+			CALL CARDDRAW_BASIC(듀얼리스트,5,2)
+			CALL CARDDRAW_BASIC(対面者,5,2)
+			SS소환可能종족 = 기계족
+			CALL CARD_SS_RESTRICTION(듀얼리스트)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後強制誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44065)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"Ｘ",1)
+		X素材数 = GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") + 1
+		PRINTFORML 금단기관 ViVy-RのＸ素材が{X素材数}になった。
+		IF X素材数 == 12
+			CALLFORM CARD_STANBY(44065,듀얼리스트,他효과起動,"필드",場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 他효과起動
+	カウンタ = GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") + 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,44065,0,カウンタ)
+	IF RESULT == 0
+		スタンバイフェイズ = 0
+		メインフェイズ = 0
+		バトルフェイズ = 0
+		メインフェイズ２ = 0
+		メインフェイズ移行 = 0
+		バトルフェイズ移行 = 0
+		メインフェイズ２移行 = 0
+		상대ターン終了 = 1
+		SETCOLOR C_YELLOW
+		PRINTFORMW
+		PRINTFORMW 금단기관 ViVy-Rの효과によりエンドフェイズになった
+		RESETCOLOR
+	ENDIF
+ENDIF

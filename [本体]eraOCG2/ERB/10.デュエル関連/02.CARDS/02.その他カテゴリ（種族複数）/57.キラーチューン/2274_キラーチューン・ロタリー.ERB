@@ -1,0 +1,212 @@
+﻿@CARDNAME_2274,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 킬러튠 로터리
+	CASE "略称"
+		RESULTS = ＫＴ 로터리
+	CASE "カテゴリ"
+		RESULTS:0 = 킬러튠
+ENDSELECT
+
+
+@CARD_2274(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 사이버스족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 100
+	CASE "守備力"
+		RETURN 800
+	CASE "성별"
+		RETURN 牝性
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_2274(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：손패のこのカードと손패の튜너１体を상대に見せて발동できる。
+PRINTL 튜너１体の소환を行う。
+CALLFORM CARD_ABLE(2,S素材時효과)
+PRINTL ②：このカードがＳ素材として묘지へ送られた場合、以下の효과から１つを選択して발동できる。
+PRINTL ●상대の손패を全て確認する。
+PRINTL 　その後、덱から「킬러튠」마법・함정カード１枚を손패に加えることができる。
+PRINTL ●상대の묘지からカード１枚を덱の一番下に戻す。
+CALLFORM CARD_ABLE(10,필드起動)
+PRINTL ③：１ターンに１度、자신メインフェイズに발동できる。
+PRINTL 손패の튜너１体とフィールドのこのカードをＳ素材として묘지へ送り、
+PRINTL ＥＸ덱からＳモンスター１体をＳ소환する。
+PRINTL この효과は、このカードの효과が無効になっているか발동できない状態でも발동でき、
+PRINTL 상대はこの효과に対してカードの효과を발동できない。
+
+
+@CARDCAN_2274(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	;裏だったらダメ
+	SIF GETVAR(@"%듀얼리스트%_MZ_表:場所") == 3
+		RETURN 0
+	;素材불가だったらダメ
+	SIF GETVAR(@"%듀얼리스트%_MZ_不材:場所") >= 1
+		RETURN 0
+	SIF 효과발동済(듀얼리스트,場所,ゾーン)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL KILLERTUNE_CHECK(듀얼리스트,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,2274)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,2274)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件튜너 = 1
+	SIF モンスター数(듀얼리스트) >= 5
+		CALLFORM 효과条件レベル_ADV(5,"以上")
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == S素材時효과
+	SIF 발동済_2(듀얼리스트,2274)
+		RETURN 0
+	SIF 손패数(対面者) == 0 && 묘지数(対面者) == 0
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_2274(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC EXカードID,50
+#DIM DYNAMIC 必要レベル
+#DIM DYNAMIC 발동불가,2
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2274,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과条件튜너 = 1
+		효과条件他所 = 1
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+		IF RESULT != 9999
+			CALL FULLRESET
+			효과条件튜너 = 1
+			SIF モンスター数(듀얼리스트) >= 5
+				CALLFORM 효과条件レベル_ADV(5,"以上")
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"손패",ゾーン,場所)
+			SIF RESULT != 9999
+				CALL CARD_SUMMON_SHORI(듀얼리스트,選択カード,"攻撃표시",5)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == S素材時효과
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,2274,2)
+	IF RESULT == 0
+		IF 손패数(対面者) != 0 && 묘지数(対面者) != 0
+			CALL YN_CHOICE(듀얼리스트,"●상대の손패を確認する","●상대の묘지のカードを덱に戻す")
+		ELSEIF 손패数(対面者) != 0
+			RESULT = 0
+		ELSEIF 묘지数(対面者) != 0
+			RESULT = 1
+		ENDIF
+
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲상대손패 = 1
+			효과条件任意 = 1
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 킬러튠
+			효과条件종류 = 마함全般
+			효과条件任意 = 1
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+
+		ELSEIF RESULT == 1
+			CALL FULLRESET
+			효과範囲상대묘지 = 1
+			효과条件行先플래그 = 덱行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	;悪いことします
+	CALL CARD_CHOICE(듀얼리스트,EX덱起動,ゾーン,場所,2274,10)
+	IF RESULT == 0
+		CALL KILLERTUNE_CHECK(듀얼리스트,場所)
+		IF RESULT == 1
+			FOR カウンタ,0,50
+				EXカードID:カウンタ = RESULT:(カウンタ+1)
+			NEXT
+
+			CALL FULLRESET
+			FOR カウンタ,0,50
+				효과条件ID:カウンタ = EXカードID:カウンタ
+			NEXT
+			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+			IF RESULT != 9999
+				選択カード = RESULT
+				CALL KILLERTUNE_SYNSUMMON(듀얼리스트,ゾーン,場所,選択カード)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

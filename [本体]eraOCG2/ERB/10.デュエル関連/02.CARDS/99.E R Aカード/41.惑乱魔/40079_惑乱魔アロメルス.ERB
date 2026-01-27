@@ -1,0 +1,458 @@
+﻿@CARDNAME_40079,参照先
+;ココで지정卡片の名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혹란마 알로메루스
+	CASE "略称"
+		RESULTS = 란 알로메루스
+	CASE "カテゴリ"
+		RESULTS:0 = 혹란마
+		RESULTS:1 = E.R.A
+	CASE "検索カテゴリ"
+		RESULTS:0 = 꿀구멍
+ENDSELECT
+
+
+@CARD_40079(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 곤충족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1100
+	CASE "守備力"
+		RETURN 1700
+	CASE "성별"
+		RETURN 牝性
+	CASE "連動ID"
+		RETURN 1377
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_40079(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 5
+素材条件レベル = 4
+素材条件カテゴリ:0 = 충혹마
+素材条件カテゴリ:1 = 혹란마
+素材条件数自由 = 1
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,40079) 
+	RETURN RESULT
+ENDIF
+
+
+
+@CARD_EXPLANATION_40079(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+PRINTL 레벨４인 "충혹마" 몬스터 또는 "혹란마" 몬스터 ×２장 이상
+CALL CARD_ABLE(1,EX덱起動)
+PRINTL 상대 필드에 벌레 문양을 4 종류 이상 가진 몬스터가 존재하는 경우、
+PRINTL "혹란마 알로메루스"는 １턴에 １번、자신 필드의 "혹란마" 몬스터 위에 겹쳐서 엑시즈 소환할 수 있다。
+PRINTL 이 카드명의 ①③의 효과는 １턴에 １번、어느쪽인가 １개밖에 사용할 수 없다。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ①：자신 / 상대 턴에、상대 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 이 카드를 릴리스하고、그 카드의 컨트롤을 얻는다。
+PRINTL 대상 몬스터에게 4종류 이상의 벌레 문양이 새겨져있는 경우、또는 이 카드의 벌레 문양이 새겨져 있는 경우、
+PRINTL 컨트롤을 얻은 몬스터는 "혹란마" 몬스터로서 취급한다、그 이외의 경우、엔드 페이즈에 원래 주인의 패로 되돌아간다。
+CALLFORM CARD_ABLE(3,효과後誘発)
+PRINTL ②：상대 필드에 몬스터가 소환 / 특수 소환된 경우、이 카드의 엑시즈 소재를 １개 제거하고 발동할 수 있다。
+PRINTL 그 몬스터에게 이 카드의 벌레 문양을 새긴다。
+CALLFORM CARD_ABLE(4,묘지起動)
+PRINTL ③：이 카드가 묘지에 존재하고、자신 필드의 앞면 표시 몬스터 １장을 대상으로 하고 발동할 수 있다。
+PRINTL 이 카드를 특수 소환한다。대상 몬스터에게 벌레 문양이 새겨져 있는 경우、그 카드를 "소멸"하고、
+PRINTL 그 몬스터에게 새겨져 있는 벌레 문양 종류 수만큼 엑시즈 소재를 얻고、공격력은 턴 종료 시까지 그 수×４００만큼 상승한다。
+CALL TEXT_DECORATION("ROGUE")
+
+
+
+@CARDCAN_40079(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要的卡
+#DIM DYNAMIC 蟲紋持有数
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,40079)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == EX덱起動
+	SIF 발동済_1(듀얼리스트,40079)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,40079)
+	SIF RESULT == 1
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件カテゴリ = 혹란마
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	FOR カウンタ,0,5
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_リ数:カウンタ") >= 10
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_表:カウンタ") == 3
+			CONTINUE
+
+		CALL TRAPSEX_CATEGORY_QUANTITY(対面者,カウンタ)
+		SIF RESULT >= 4
+			RETURN 1
+	NEXT
+
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	SIF 발동済_2(듀얼리스트,40079)
+		RETURN 0
+	SIF 발동済_4(듀얼리스트,40079)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") < -1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"소환全般",1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,40079)
+		RETURN 0
+	SIF 발동済_4(듀얼리스트,40079)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF モンスター数(듀얼리스트) >= 5
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+    RETURN 1
+ENDIF
+
+
+@CARDEFFECT_40079(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 성별판정
+#DIM DYNAMIC X素材数
+#DIM DYNAMIC 蟲紋종류
+#DIM DYNAMIC 效果先
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 条件达成 = 0
+#DIM DYNAMIC 蟲紋
+
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40079,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		CALL RESETCONDITION_MAT
+		必要素材数 = 1
+		素材条件カテゴリ = 혹란마
+		重ねてＸ = 1
+		TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+	ENDIF
+	
+ELSEIF 종류 == 필드起動 || 종류 == フリー誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40079,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
+		CALL FULLRESET
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"상대필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			조교대상 = GETVAR(@"%対面者%_필드:選択カード")
+
+			蟲紋 = GETVAR(@"%対面者%_MZ_蟲紋Ｃ:選択カード")
+			SIF GETBIT(蟲紋, 13) == 1
+				条件达成 = 1
+
+			CALL TRAPSEX_CATEGORY_QUANTITY(対面者,選択カード)
+			蟲紋종류 = RESULT
+			SIF 蟲紋종류 >= 4
+				条件达成 = 1
+
+			IF 条件达成 == 1
+				CALL FULLRESET
+				효과추가カテ = 혹란마
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"強奪")
+
+				CALL SEXTEXT_40079_1_2(듀얼리스트,蟲紋종류,조교대상,条件达成)
+			ELSE
+				CALL FULLRESET
+				효과추가종류 = 3
+				CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",選択カード,"強奪")
+
+				CALL SEXTEXT_40079_1_2(듀얼리스트,蟲紋종류,조교대상,条件达成)
+			ENDIF
+		ENDIF
+    ENDIF
+
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40079,3,X消費1)
+	IF RESULT == 0
+		選択カード = FINAL_SUMMON_TARGET(듀얼리스트,1)
+		조교대상 = GETVAR(@"%対面者%_필드:選択カード")
+		CALL FULLRESET	
+		;与赋予蟲紋相关的效果
+		CALL TRAPSEX_GIVE_FIXED(듀얼리스트,ゾーン,종류,場所,選択カード,13)
+		CALL SEXTEXT_40079_2_1(듀얼리스트,조교대상)
+	ENDIF
+	
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,40079,4)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件표시 = 表側표시
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"필드",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL TRAPSEX_CATEGORY_QUANTITY(듀얼리스트,選択カード)
+			蟲紋종류 = RESULT
+			조교대상 = GETVAR(@"%듀얼리스트%_필드:選択カード")
+			성별판정 = GETVAR(@"%듀얼리스트%_MZ_性:選択カード")
+			攻撃力修正 = 蟲紋종류 * 400
+
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+			效果先 = 最終소환場所
+			IF 效果先 != 5 && 蟲紋종류 >= 1
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",效果先,"Ｘ",蟲紋종류)
+				CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード,소멸行き)
+				CALL SET_FIELD_INFO(듀얼리스트,"필드",效果先,"一攻",攻撃力修正)
+				CALL SEXTEXT_40079_3_1(듀얼리스트,蟲紋종류,조교대상,성별판정)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+
+; ;ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+; @CARDNAME_140079,参照先
+; ;ココで지정卡片の名前、略称を返す予定
+; #DIMS DYNAMIC 参照先
+
+; VARSET RESULT
+; VARSET RESULTS
+
+; SELECTCASE 参照先
+; 	CASE "名前"
+; 		RESULTS = 堕落的劝诱
+; 	CASE "略称"
+; 		RESULTS = 堕落的劝诱
+; 	CASE "カテゴリ"
+; 		RESULTS = E.R.A
+; ENDSELECT
+
+
+; @CARD_140079(参照先)
+
+; #DIMS DYNAMIC 参照先
+; VARSET RESULT
+; VARSET RESULTS
+
+; SELECTCASE 参照先
+; 	CASE "종류"
+; 		RETURN 通常마법
+; ENDSELECT
+
+; RETURN 0
+
+; @CARD_EXPLANATION_140079(종류)
+; #DIM DYNAMIC 종류
+
+; CALL TEXT_DECORATION("ROGUE")
+; PRINTL 这个卡名的②的效果1回合只能使用1次。
+; CALLFORM CARD_ABLE(1,마함起動,손패起動)
+; PRINTL ①：给自己放置1个蟲紋指示物，从游戏外将2张「堕落的劝诱」加入自己卡组。
+; PRINTL 那之后自己从卡组抽1张。这个效果发动后，这张卡不送去묘지直接“소멸”。
+; CALLFORM CARD_ABLE(2,ターン終了時強制)
+; PRINTL ②：这张卡在손패•묘지存在，自己回合的结束阶段发动。
+; PRINTL 自己失去持有的蟲紋指示物×100点的基本分，这张卡“소멸”。
+; CALL TEXT_DECORATION("ROGUE")
+
+; @CARDCAN_140079(듀얼리스트,종류,ゾーン,場所)
+; #DIMS DYNAMIC 듀얼리스트
+; #DIMS DYNAMIC ゾーン
+; #DIM DYNAMIC 종류
+; #DIM DYNAMIC 場所
+; #DIMS DYNAMIC 対面者
+
+; CALL 対面者판정(듀얼리스트)
+; 対面者 = %RESULTS%
+
+; CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,140079)
+; SIF RESULT == 1
+; 	RETURN 0
+
+; IF 종류 == 마함起動 || 종류 == 손패起動
+; 	IF ゾーン == "손패"
+; 		SIF ターンプレイヤー != 듀얼리스트
+; 			RETURN 0
+; 		SIF メインフェイズ != 1
+; 			RETURN 0
+; 	ELSEIF ゾーン == "마함"
+; 		SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+; 			RETURN 0
+; 		SIF ターンプレイヤー != 듀얼리스트
+; 			RETURN 0
+; 		SIF メインフェイズ != 1
+; 			RETURN 0
+; 	ELSE
+; 		RETURN 0
+; 	ENDIF
+; 	RETURN 1
+
+; ELSEIF 종류 == ターン終了時強制
+; 	SIF 발동済_2(듀얼리스트,140079)
+; 		RETURN 0
+; 	SIF !GROUPMATCH(ゾーン,"손패","묘지")
+; 		RETURN 0
+; 	SIF ターンプレイヤー != 듀얼리스트
+; 		RETURN 0
+; 	RETURN 1
+; ENDIF
+
+; @CARDEFFECT_140079(듀얼리스트,종류,ゾーン,場所)
+; #DIMS DYNAMIC 듀얼리스트
+; #DIMS DYNAMIC ゾーン
+; #DIM DYNAMIC 종류
+; #DIM DYNAMIC 場所
+; #DIMS DYNAMIC 対面者
+; #DIM DYNAMIC 조교대상
+; #DIM DYNAMIC 蟲紋持有数
+; #DIM DYNAMIC 失去基本分
+; #DIM DYNAMIC 力竭确定
+; #DIM DYNAMIC 色色成瘾
+
+; CALL 対面者판정(듀얼리스트)
+; 対面者 = %RESULTS%
+
+; IF 종류 == 마함起動 || 종류 == 손패起動
+; 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,140079,1)
+; 	IF RESULT == 0
+; 		CALL SET_PLAYER_INFO(듀얼리스트,"纹Ｃ",1,0,1)
+; 		蟲紋持有数 = GETVAR(@"%듀얼리스트%_纹Ｃ")
+; 		PRINTFORMW 当前持有的蟲紋指示物数量为：{蟲紋持有数}
+; 		REPEAT 2
+; 			CALL CARD_GENERATE_DECK(듀얼리스트,140079)
+; 		REND
+; 		CALL SHUFFLE(듀얼리스트)
+
+; 		IF 蟲紋持有数 > 14
+; 			CALL FULLRESET
+; 			효과範囲덱 = 1
+; 			효과条件名前 = 堕落的劝诱
+; 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+; 			IF RESULT == 1
+; 				SELECTCASE RAND:3
+; 					CASE 0
+; 						CALL CARDDRAW_BASIC(듀얼리스트,1)
+; 					CASE 1
+; 						CALL FULLRESET
+; 						효과範囲덱 = 1
+; 						효과条件名前 = 堕落的劝诱
+; 						CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+; 						色色成瘾 = 1
+; 					CASE 2
+; 						CALL CARDDRAW_BASIC(듀얼리스트,1)
+; 				ENDSELECT
+; 			ELSE
+; 				CALL CARDDRAW_BASIC(듀얼리스트,1)
+; 			ENDIF
+; 		ELSEIF 蟲紋持有数 > 7 && 蟲紋持有数 <= 14
+; 			CALL CARDDRAW_BASIC(듀얼리스트,1)
+; 		ELSEIF 蟲紋持有数 <= 7
+; 			CALL CARDDRAW_BASIC(듀얼리스트,1)
+; 		ENDIF
+
+; 		CALL SEXTEXT_140079_1_1(듀얼리스트,蟲紋持有数,色色成瘾)
+; 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+; 	ENDIF
+
+; ELSEIF 종류 == ターン終了時強制
+; 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,140079,2)
+; 	IF RESULT == 0
+; 		蟲紋持有数 = GETVAR(@"%듀얼리스트%_纹Ｃ")
+; 		IF 蟲紋持有数 >= 1
+; 			失去基本分 = 蟲紋持有数 * 100
+; 			SIF GETVAR(@"ライフ_%듀얼리스트%") <= 失去基本分
+; 				力竭确定 = 1
+; 			CALL SEXTEXT_140079_2_1(듀얼리스트,力竭确定)
+; 			CALL LIFE_CHANGE(듀얼리스트,"减少","효과",失去基本分)
+; 		ELSEIF 蟲紋持有数 == 0
+; 			CALL SEXTEXT_140079_2_2(듀얼리스트)
+; 		ENDIF
+; 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,소멸行き)
+; 	ENDIF
+; ENDIF

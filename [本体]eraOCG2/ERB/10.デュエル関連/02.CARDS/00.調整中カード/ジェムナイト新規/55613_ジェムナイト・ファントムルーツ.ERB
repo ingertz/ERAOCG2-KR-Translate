@@ -1,0 +1,168 @@
+﻿@CARDNAME_55613,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 젬나이트 팬텀루츠
+	CASE "略称"
+		RESULTS = GemK PQ
+	CASE "カテゴリ"
+		RESULTS:0 = 젬나이트
+ENDSELECT
+
+
+@CARD_55613(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 땅속성
+	CASE "종족"
+		RETURN 원소정령족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1450
+	CASE "守備力"
+		RETURN 1450
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 250107
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_55613(종류)
+#DIM DYNAMIC 종류
+
+
+PRINTL 「젬나이트モンスター」モンスター２体
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,EX소환時)
+PRINTL ①：このカードがL소환した場合に발동できる。
+PRINTL 덱から「젬나이트」カード１枚を손패に加える。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：１０００LPを払って발동できる。
+PRINTL 자신の묘지・제외状態のモンスターを융합素材として덱に戻し、
+PRINTL 「젬나이트」융합モンスター１体を융합소환する。
+PRINTL この효과で특수소환したモンスターはこのターン直接攻撃できない。
+PRINTL 
+
+
+
+
+@CARDSUMMON_55613(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+素材条件カテゴリ = 젬나이트
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,55613) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_55613(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,55613)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == EX소환時
+	SIF 발동済_1(듀얼리스트,55613)
+		RETURN 0
+
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 젬나이트
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,55613)
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 1000
+		RETURN 0
+
+	CALL RESETAREA_MAT
+	素材範囲묘지 = 1
+	素材範囲제외 = 1
+	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
+	효과条件カテゴリ = 젬나이트
+	효과条件소환可 = 1	
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_55613(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+IF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55613,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 젬나이트
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,55613,2)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",1000)
+		CALL FULLRESET
+		CALL RESETAREA_MAT
+		素材範囲묘지 = 1
+		素材範囲제외 = 1
+		CALL FULLRESET
+		효과条件종류 = 융합
+		효과条件カテゴリ = 젬나이트
+		효과条件소환可 = 1	
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+			CALL FUSSUMMON(듀얼리스트, 選択カード,덱行き)
+			EX소환可能종류 = 융합
+			CALL CARD_EX_RESTRICTION(듀얼리스트)
+			CALL SET_FIELD_INFO(듀얼리스트,"필드",カード소환先,"直無",1)
+		ENDIF
+	ENDIF
+ENDIF
+
+
+
+

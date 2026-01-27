@@ -50,12 +50,12 @@ CALL TEXT_DECORATION("ROGUE")
 PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
 CALL CARD_ABLE(1,소환時,특수소환時)
 PRINTL ①: 이 카드가 일반 일반 소환 / 특수 소환에 성공했을 때 발동할 수 있다.
-PRINTL 덱에서 "함정 속으로" 몬스터를 특수 소환한다.
+PRINTL 덱에서 "충혹마" 몬스터를 특수 소환한다.
 CALLFORM CARD_ABLE(2,필드起動)
 PRINTL ②: 자신 메인 페이즈에 패를 1장 버리는 것으로 발동할 수 있다.
 PRINTL 덱에서 "충혹마" 카드를 묘지로 보낸다.
-CALLFORM CARD_ABLE(0,지속효과,攻守変動)
-PRINTL ③：이 카드는 함정 내성을 가진다. 자신 필드의 “모이스처 홀-카즈라”를 제외한 “충혹마” 몬스터의 공격력을 300 올린다.
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：이 카드는 함정 내성을 갖는다.
 CALL TEXT_DECORATION("ROGUE")
 
 @CARDSUMMON_AA_39570
@@ -73,7 +73,7 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,39570)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 지속효과 || 종류 == 攻守変動
+IF 종류 == 지속효과
 	SIF ゾーン != "필드"
 		RETURN 0
 	RETURN 1
@@ -87,8 +87,7 @@ ELSEIF 종류 == 攻撃時誘発
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0	
-	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
 		RETURN 0
 	SIF バトルフェイズ != 1
 		RETURN 0
@@ -117,7 +116,7 @@ ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
-	효과条件カテゴリ = 함정 속으로
+	효과条件カテゴリ = 충혹마
 	효과条件종류 = モン全般
 	효과条件소환可 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
@@ -133,11 +132,7 @@ ELSEIF 종류 == 필드起動
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
-	CALL FULLRESET
-	효과範囲손패 = 1
-	효과条件他所 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
+	SIF 손패数(듀얼리스트) == 0
 		RETURN 0
 	CALL FULLRESET
 	효과範囲덱 = 1
@@ -159,6 +154,10 @@ ELSEIF 종류 == ターン終了時強制
     SIF RESULT < 2
 		RETURN 0
 	RETURN 1
+ELSEIF 종류 == リアクション효과
+	SIF ゾーン != "마함"
+		RETURN 0
+	RETURN 1
 ENDIF
 
 @CARDEFFECT_39570(듀얼리스트,종류,ゾーン,場所)
@@ -173,23 +172,20 @@ ENDIF
 #DIM DYNAMIC 효과先
 #DIM DYNAMIC 조교대상
 
+#DIM DYNAMIC 조교대상캐릭터ID
 
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
 IF 종류 == 지속효과
 	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"함정耐")
-ELSEIF 종류 == 攻守変動
-	CALL FULLRESET
-	효과条件カテゴリ = 충혹마
-	효과条件固名前 = 모이스처 홀－카즈라
-	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,300)
 ELSEIF 종류 == 소환時 || 종류 == 특수소환時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39570,1)
 	IF RESULT == 0
+		PRINTFORML 카즈라는 덱에서 동료를 불렀다！
 		효과範囲덱 = 1
 		효과条件종류 = モン全般
-		효과条件カテゴリ = 함정 속으로
+		효과条件カテゴリ = 충혹마
 		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ELSEIF 종류 == 필드起動
@@ -216,22 +212,32 @@ ELSEIF 종류 == ターン終了時強制
 			조교대상 = RESULT
 			SIF 조교대상 == NO_TO_CHARANUM(1373)
 				CONTINUE
+			PRINTL
 			SETCOLOR C_PINK 
-			PRINTFORMW 카즈라는 %NAME:조교대상%에게 꿀을 빨리고 있다...
+			PRINTFORMW 카즈라는 %NAME:조교대상%と%TEXTR("イチャイチャしながら/じゃれあいながら/指を絡ませながら/키스で/ちゅっちゅと唇を合わせて/ちゅっちゅと舌を絡ませて")%蜜を分けあっている……。
 			RESETCOLOR
-			CALL EROTIC_MOVE("全身애무",NO_TO_CHARANUM(1373),조교대상,50)
+;			CALL EROTIC_MOVE("딥키스",NO_TO_CHARANUM(1373),조교대상,50)
 		ENDIF
 	NEXT
 ELSEIF 종류 == 攻撃時誘発
 	;シトリス묘지효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39570)
 	IF RESULT == 0
-		PRINTFORMW 카즈라는 시트리스의 큰 구멍으로 유도했다...
 		;通常마법汎用処理
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		戦闘カード = 戦闘場所(듀얼리스트,1)
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:戦闘カード")
 		CALL FULLRESET
 		효과추가종류 = 6
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;ウツボカズラなので浴びせるのは液体のイメージ
+			PRINTFORML 攻撃の瞬間、カズーラは%NAME:조교대상%に濃厚な媚毒を浴びせかけた！
+			PRINTFORMW %TEXTR("躱そうとして体勢を崩した/回避に気を取られた/突然のことに怯んだ")%%NAME:조교대상%はシトリスの大穴を踏み抜き、動きを封じられてしまった！
+		ELSE
+			PRINTFORMW 카즈라는 시트리스의 큰 구멍으로 유도했다...
+		ENDIF
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",戦闘カード,"永攻DOWN")
 	ENDIF
 
@@ -239,11 +245,37 @@ ELSEIF 종류 == 효과後誘発
 	;フレシア묘지효과
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,39570)
 	IF RESULT == 0
-		PRINTFORMW 카즈라는 플레시아의 큰 구멍으로 유도했다…
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		효과先 = FINAL_SUMMON_TARGET(듀얼리스트,1)
 		CALL FULLRESET
+		조교대상캐릭터ID = GETVAR(@"%対面者%_필드:효과先")
+		CALL CARD_EROTICS(조교대상캐릭터ID)
+		조교대상 = RESULT
+		IF 조교대상 != -1
+		;フレシアはモチーフがラフレシア。
+		;ラフレシアが小虫に送粉を手伝わせるために腐臭を漂わせるように、フレシアは人を誘うために甘くいい香りをさせている……はず！
+			PRINTFORML 立ちこめる甘く濃厚な媚香に%CALLNAME:조교대상%が気を取られた隙をついて、
+			PRINTFORMW カズーラは%CALLNAME:조교대상%をフレシアが待ち構える大穴に引きずり込んだ！
+			CALL PREDATION_RAFFLESIA(듀얼리스트,종류,ゾーン,場所,조교대상)
+		ELSE
+			PRINTFORMW 카즈라는 플레시아의 큰 구멍으로 유도했다…
+		ENDIF
+		CALL FULLRESET
 		CALL CARD_REMOVAL_BASIC(듀얼리스트,"自動処理",효과先,"묘지")
+	ENDIF
+ELSEIF 종류 == リアクション효과
+	SETCOLOR C_PINK
+	PRINTFORML 
+	PRINTFORMW ”穴”として설치されたカズーラは%CALLNAME:MASTER%に%TEXTR("潤んだ/とろとろの")%穴を向けて誘惑している…
+	PRINTFORMW 誘惑に堪えきれず、%CALLNAME:MASTER%はカズーラの穴に욕망のまま情欲をぶつけた…
+	RESETCOLOR
+	CALL EROTIC_MOVE("충혹마의 착정",NO_TO_CHARANUM(1373),MASTER,100)
+	IF RESULT:2 >= 1
+		SETCOLOR C_PINK
+		PRINTFORML 
+		PRINTFORMW カズーラは%CALLNAME:MASTER%から搾り取った精気を巣穴に溜め込んだ…
+		RESETCOLOR
+		CALL CARD_GENERATE_GY(듀얼리스트,99823)
 	ENDIF
 ENDIF
 

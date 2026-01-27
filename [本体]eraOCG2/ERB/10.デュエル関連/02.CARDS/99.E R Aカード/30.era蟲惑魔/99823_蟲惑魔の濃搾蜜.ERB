@@ -1,0 +1,167 @@
+﻿@CARDNAME_99823,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 트랩트릭 스퀴즈허니
+	CASE "略称"
+		RESULTS = 충혹마의 농착꿀
+	CASE "カテゴリ"
+		RESULTS:0 = 충혹마
+		RESULTS:1 = E.R.A
+ENDSELECT
+
+
+@CARD_99823(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常함정
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_99823(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("ROGUE")
+CALL CARD_ABLE(1,마함起動)
+PRINTL ①：자신の마법＆トラップゾーンに「충혹마」モンスターが存在する時に발동できる。
+PRINTL 자신の마법＆トラップゾーンの「충혹마」モンスターに성교を行い、精気を注ぎ込んだ数だけドローする。
+CALL CARD_ABLE(2,지속효과)
+PRINTL ②：このカードが묘지にある間、자신フィールド上の「충혹마」モンスターの攻撃力・守備力は１００アップする。
+CALL CARD_ABLE(3,발동誘発)
+PRINTL ③：자신フィールド上に「충혹마」モンスターが５体以上存在する時に상대が마법・함정カードを발동した時に발동できる。
+PRINTL 묘지からこのカードを제외することで、その발동を無効にして破壊する。
+CALL TEXT_DECORATION("ROGUE")
+
+@CARDCAN_99823(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,99823)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") == 3
+			RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 충혹마
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "묘지"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲마함 = 1
+	효과条件カテゴリ = 충혹마
+	효과条件종류 = モン全般
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 5
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+
+@CARDEFFECT_99823(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 조교대상
+#DIM DYNAMIC 효과先
+#DIM DYNAMIC ドロー枚数
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99823,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		ドロー枚数 = 0
+		CALL FULLRESET
+		FOR カウンタ,0,5
+			SIF GETVAR(@"%듀얼리스트%_마함:カウンタ") == -1
+				CONTINUE
+			TRYCALLFORM CARDNAME_{GETVAR(@"%듀얼리스트%_마함:カウンタ")}, "カテゴリ"
+				SIF !MATCH(RESULTS, "충혹마")
+					CONTINUE
+			CALL CARD_EROTICS_FIELD(듀얼리스트,"마함",カウンタ)
+			IF RESULT != -1
+				조교대상 = RESULT
+				IF GETBIT(TALENT:MASTER:성별,1)
+					CALL EROTIC_MOVE("기승위",조교대상,MASTER,200)
+				ELSE
+					CALL EROTIC_MOVE("딥키스",조교대상,MASTER,300)
+					;ちんこないかわり。
+				ENDIF
+				IF RESULT:2 >= 1
+					SETCOLOR C_PINK
+					PRINTFORML 
+					PRINTFORMW 절정した%CALLNAME:MASTER%は穴として설치された%NAME:조교대상%に精気を注ぎ込んだ…
+					RESETCOLOR
+					ドロー枚数 += 1
+				ENDIF
+			ENDIF
+		NEXT
+
+		IF ドロー枚数 >= 1
+			CALL CARDDRAW_BASIC(듀얼리스트,ドロー枚数)
+		ELSE
+			PRINTFORML 
+			PRINTFORMW %CALLNAME:MASTER%は精気を注ぎ込むことが出来なかった…
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과条件カテゴリ = 충혹마
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,100,100)
+ELSEIF 종류 == 발동誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,99823,3)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		CALL CARD_REMOVAL_BASIC(듀얼리스트,"발동無効",場所,"묘지")
+
+		SETCOLOR C_PINK 
+		PRINTFORMW 충혹마の巣に溜め込まれたエナジーが상대の발동した효과を無効化した！
+		RESETCOLOR
+	ENDIF
+ENDIF

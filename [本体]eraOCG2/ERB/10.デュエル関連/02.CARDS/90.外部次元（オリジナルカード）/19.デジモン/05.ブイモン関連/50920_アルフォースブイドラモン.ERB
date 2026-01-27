@@ -1,0 +1,236 @@
+﻿@CARDNAME_50920,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 알포스브이드라몬
+	CASE "略称"
+		RESULTS = ＵＦＶ드라몬
+	CASE "カテゴリ"
+		RESULTS:0 = 디지몬
+	CASE "出典作品"
+		RESULTS:0 = 디지몬
+ENDSELECT
+
+
+@CARD_50920(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "외부자"
+		RETURN 1
+	CASE "종류"
+		RETURN 엑시즈
+	CASE "속성"
+		RETURN 바람속성
+	CASE "종족"
+		RESULT:1 = 사이버스족
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 10
+	CASE "攻撃力"
+		RETURN 3300
+	CASE "守備力"
+		RETURN 2500
+	CASE "レア度"
+		RETURN ULR
+	CASE "추가日"
+		RETURN 260117
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50920(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+#DIM DYNAMIC カウンタ
+
+CALL RESETCONDITION_MAT
+必要素材数 = 3
+素材条件レベル = 8
+素材条件속성 = 바람속성
+素材条件カテゴリ = 디지몬
+
+IF EX参照 == 1
+	CALL XYZCAN(듀얼리스트,소환カード,50920)
+	RETURN RESULT
+ENDIF
+
+@CARD_EXPLANATION_50920(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 바람속성・レベル８「디지몬」×３
+PRINTL 디지몬カードは사이버스족としても扱う。
+PRINTL このカードは자신の손패２枚を묘지へ送り、
+PRINTL 자신フィールドのレベル８・드래곤족・바람속성の「디지몬」１体の上に重ねてＸ소환できる。
+PRINTL 上記の효과で특수소환したこのカードのＸ素材は２つ増える。
+PRINTL このカード名の②③の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ①：モンスターゾーンのこのカードは戦闘耐性・마법耐性を持つ。
+CALLFORM CARD_ABLE(2,필드起動)
+PRINTL ②：자신メインフェイズに발동できる。
+PRINTL このカードのＸ素材を全て取り除き、
+PRINTL その数まで자신の묘지から바람속성の「디지몬」を손패に戻し（同名カードは１枚まで）、
+PRINTL 戻した数ー１枚だけ손패を選んで捨てる。
+CALLFORM CARD_ABLE(3,발동誘発)
+PRINTL ③：상대がモンスター효과を발동した時に발동できる。
+PRINTL 자신は１枚ドローし、상대フィールドのカードを１枚まで손패に戻す。
+
+
+@CARDCAN_50920(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC 발동불가,2
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50920)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == EX덱起動
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_EX_CHECK(듀얼리스트,50920)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT < 2
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件レベル = 8
+	효과条件종족 = 드래곤족
+	효과条件속성 = 바람속성
+	효과条件カテゴリ = 디지몬
+	효과条件重ねてＸ = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 필드起動
+	SIF 발동済_2(듀얼리스트,50920)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") < 0
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件속성 = 바람속성
+	효과条件カテゴリ = 디지몬
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 발동誘発
+	SIF 발동済_3(듀얼리스트,50920)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件종류 = モン全般
+	CALL CARD_CHECK_START_DATA(듀얼리스트,1)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_50920(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 素材数
+#DIM DYNAMIC 발동불가,2
+
+
+IF 종류 == EX덱起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50920)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과条件複数 = 2
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL RESETCONDITION_MAT
+			必要素材数 = 1
+			효과条件レベル = 8
+			효과条件종족 = 드래곤족
+			효과条件속성 = 바람속성
+			효과条件カテゴリ = 디지몬
+			효과条件종류 = レベル持ち
+			효과추가종류 = 効追Ｘ素 + 2
+			重ねてＸ = 1
+			TRYCALLFORM XYZSUMMON(듀얼리스트,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL FULLRESET
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"魔耐")
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50920,2)
+	IF RESULT == 0
+		素材数 = GETVAR(@"%듀얼리스트%_MZ_Ｘ:場所") + 1
+		CALL SET_FIELD_INFO(듀얼리스트,"필드",場所,"Ｘ",-素材数)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件속성 = 바람속성
+		효과条件カテゴリ = 디지몬
+		효과条件複数 = 100 - 素材数
+		효과条件固名前選択 = 1
+		효과条件任意 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과条件複数 = 素材数 - 1
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 발동誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50920,3)
+	IF RESULT == 0
+		CALL CARDDRAW_BASIC(듀얼리스트,1)
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과範囲상대마함 = 1
+		효과条件任意 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"손패")
+	ENDIF
+ENDIF
+

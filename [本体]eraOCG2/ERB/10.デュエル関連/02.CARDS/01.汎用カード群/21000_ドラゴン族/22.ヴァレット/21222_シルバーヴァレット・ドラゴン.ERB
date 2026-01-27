@@ -7,11 +7,11 @@ VARSET RESULTS
 
 SELECTCASE 参照先
 	CASE "名前"
-RESULTS = 실버바렛 드래곤
+		RESULTS = 실버바렛 드래곤
 	CASE "略称"
-RESULTS = 실버Ｂ
+		RESULTS = 실버Ｂ
 	CASE "カテゴリ"
-RESULTS:0 = 바렛
+		RESULTS:0 = 바렛
 ENDSELECT
 
 
@@ -43,7 +43,7 @@ RETURN 0
 #DIM DYNAMIC 종류
 
 PRINTL 이 카드명의 ①②의 효과는 각각 1턴에 1번밖에 사용할 수 없다.
-CALLFORM CARD_ABLE(1,효과後誘発)
+CALLFORM CARD_ABLE(1,발동誘発)
 PRINTL ①: 링크 몬스터의 효과가 발동했을 때 발동할 수 있다.
 PRINTL 이 카드를 파괴한다.
 PRINTL 그 후, 상대의 엑스트라 덱을 확인하고, 그 중 1장을 제외한다.
@@ -62,14 +62,14 @@ SIF RESULT == 1
 	RETURN 0
 
 
-IF 종류 == 효과後誘発
+IF 종류 == 발동誘発
 	SIF 발동済_1(듀얼리스트,21222)
 		RETURN 0
 	SIF ゾーン != "필드"
 		RETURN 0
 	CALL FULLRESET
 	효과条件종류 = 링크
-	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"효과발동",2)
+	CALL CARD_CHECK_START_DATA(듀얼리스트,2)
 	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
@@ -78,14 +78,6 @@ ELSEIF 종류 == 戦闘→묘지 || 종류 == 破壊→묘지
 	SIF 발동済_2(듀얼리스트,21222)
 		RETURN 0
 	SIF ゾーン != "묘지"
-		RETURN 0
-	CALL FULLRESET
-	효과範囲덱 = 1
-	효과条件カテゴリ = 바렛
-	효과条件固名前 = 실버바렛 드래곤
-	효과条件소환可 = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
 		RETURN 0
 	RETURN 1
 
@@ -114,13 +106,14 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 효과後誘発
+IF 종류 == 발동誘発
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,21222,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
 		CALL FULLRESET
 		효과範囲상대EX덱 = 1
 		효과条件行先플래그 = 제외行き
+		효과条件任意 = 1
 		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 

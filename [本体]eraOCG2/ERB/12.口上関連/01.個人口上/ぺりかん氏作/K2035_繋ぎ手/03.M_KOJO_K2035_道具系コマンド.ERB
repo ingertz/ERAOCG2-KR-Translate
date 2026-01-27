@@ -56,6 +56,8 @@ IF LOCAL
 				PRINTFORMW 민감한 곳에 계속 닿는 자극에、%CALLNAME:TARGET%는 몸을 뒤로 젖히고 있다
 			CASE 1
 				PRINTFORMW 「히양❤ 가버려서❤ 이상한、소리❤ 가 나와……❤」
+			CASE 2
+				PRINTFORMW 「ダメ、です……っ❤　こんなの、立ってられません……っ❤」
 		ENDSELECT
 	ENDIF
 
@@ -99,11 +101,18 @@ IF LOCAL
 		호감도修正 += 0
 	SELECTCASE RAND:호감도修正 + 1
 		CASE 1
-			PRINTFORMW 「절、절대로 사용법이 틀렸어요오오……！」
+			IF TALENT:TARGET:연모
+				PRINTFORMW 「えへへっ❤　%CALLNAME:MASTER%さんが仰ることに、間違いなんてないですよねっ❤　……どーぞっ❤」
+				PRINTFORMW 「お゛おっ❤　クリトリス、イジメられてるぅ❤　あ゛ーっ❤　あ゛ーっ❤」
+			ELSE
+				PRINTFORMW 「절、절대로 사용법이 틀렸어요오오……！」
+			ENDIF
 		CASE 2
 			PRINTFORMW 「……윽……이、이런 도구에、굴복하고 싶지…… 않은데……❤」
 		CASE 3
-			PRINTFORMW 클리토리스에 대한 자극으로、%CALLNAME:TARGET%은 이제 대답할 여유조차 없는 듯하다
+			SIF TALENT:TARGET:연모
+			PRINTFORML 「……こちらがわたしの弱点です……❤　どうぞ、%CALLNAME:MASTER%さんの手でトドメを差して──お゛っ❤」
+			PRINTFORMDW 클리토리스에 대한 자극으로、%CALLNAME:TARGET%은 이제 대답할 여유조차 없는 듯하다
 	ENDSELECT
 ENDIF
 RETURN 1
@@ -136,8 +145,12 @@ IF LOCAL
 	;基本セット
 	;装着
 	IF TEQUIP:클리캡
-		PRINTFORMW 「자비를、자비를 베풀어 주세요……」
-		PRINTFORMW 「아픔이라면 아직 견딜 수 있습니다。클리토리스만은 제발、제발── 아아아앙！？」
+		IF TALENT:TARGET:연모
+			PRINTFORMW 「また、わたし……❤　クリトリスを、イジメられちゃうんですね……❤」
+		ELSE
+			PRINTFORMW 「자비를、자비를 베풀어 주세요……」
+			PRINTFORMW 「아픔이라면 아직 견딜 수 있습니다。클리토리스만은 제발、제발── 아아아앙！？」
+		ENDIF
 	;解除
 	ELSE
 		PRINTFORMW 「하휴ー우、하휴ー우、끄、끝났나요……？」
@@ -156,7 +169,7 @@ RETURN RESULT
 @M_KOJO_MESSAGE_COM_K2035_43_1
 ;-------------------------------------------------
 ;記入チェック（=0, 非표시、1, 표시）
-LOCAL = 0
+LOCAL = 1
 ;-------------------------------------------------
 IF LOCAL
 	;-------------------------------------------------
@@ -164,10 +177,11 @@ IF LOCAL
 	;-------------------------------------------------
 	;初めて
 	;記入チェック
-	LOCAL:1 = 0
+	LOCAL:1 = 1
 	;-------------------------------------------------
 	IF LOCAL:1 && FIRSTTIME(SELECTCOM)
-		PRINTFORMW 
+		PRINTFORMW 「こ、れは……？　お、おちんちんに使う道具、ですか？　わ、わたしには必要ないですので──あ゛っ！？」
+		PRINTFORMW 「や、やめ、ハメないで……っ！？　な、なにっ！？　なんですかこの刺激っ！？　ま、まってっ！　%CALLNAME:MASTER%さん、まってぇ……っ！」
 		RETURN 1
 	ENDIF
 	;基本セット
@@ -175,17 +189,22 @@ IF LOCAL
 	IF TEQUIP:오나홀
 		;연모
 		IF TALENT:연모
-			PRINTFORMW 
+			PRINTFORMW 「%CALLNAME:MASTER%さんでもコレでイッちゃうんですよねっ❤　だったらオンナのコのわたしが耐えられるわけないじゃないですかっ❤」
+			PRINTFORMW 「……あっ❤」
 			RETURN 1
 
 		;それ以外
 		ELSE
-			PRINTFORMW 
+			PRINTFORMW 「ひっ！？　や、やだ、やめて……っ！？」
 			RETURN 1
 		ENDIF
 	;解除
 	ELSE
-		PRINTFORMW
+		IF TALENT:TARGET:연모
+			PRINTFORMW 「えへへ……❤　たいせつな、子種を……むだうち、しちゃいました……❤」
+		ELSE
+			PRINTFORMW 「うう……わたし、わたしは女の子ですっ！　こんなの、おかしいです……っ」
+		ENDIF
 	ENDIF
 ENDIF
 RETURN 1
@@ -226,10 +245,18 @@ IF LOCAL
 	;基本セット
 	;装着
 	IF TEQUIP:바이브
-		PRINTFORMW 「아앙、아아앙……%CALLNAME:MASTER% 씨는、이런 도구에 물게 한 채로 해도 좋습니까、앗……？」
+		IF TALENT:TARGET:연모
+			PRINTFORMW 「ふふっ❤　……おわったらちゃんとご褒美、くださいねっ❤」
+		ELSE
+			PRINTFORMW 「아앙、아아앙……%CALLNAME:MASTER% 씨는、이런 도구에 물게 한 채로 해도 좋습니까、앗……？」
+		ENDIF
 	;解除
 	ELSE
-		PRINTFORMW 「드디어、빼주셨어……」
+		IF TALENT:TARGET:연모
+			PRINTFORML 「もう、充分ほぐれちゃいました……❤」
+		ELSE
+			PRINTFORML 「드디어、빼주셨어……」
+		ENDIF
 		PRINTFORMW 「다음은、당신 것이 좋겠네……♪」
 	ENDIF
 ENDIF
@@ -265,10 +292,20 @@ IF LOCAL
 	;基本セット
 	;装着
 	IF TEQUIP:애널바이브
-		PRINTFORMW 「저기、그러니까、엉덩이라는 건 어디까지나 배설을 위한 것이어서…… 듣고 있나요！？」
+		IF TALENT:TARGET:연모
+			PRINTFORML 「えへへ……❤　ほんとはおしりでなんて、『かみさま』の教えにはないのですよっ❤」
+			PRINTFORMW 「……でも、%CALLNAME:MASTER%さんは『トクベツ』ですから……❤　きっと『かみさま』にもお許しいただけますっ❤」
+		ELSE	
+			PRINTFORMW 「저기、그러니까、엉덩이라는 건 어디까지나 배설을 위한 것이어서…… 듣고 있나요！？」
+		ENDIF
 	;解除
 	ELSE
-		PRINTFORMW 「으아…… 드디어、이물감이 사라졌어요」
+	IF TALENT:TARGET:연모
+			PRINTFORML 「……ああ❤　もしもわたしのおしりが拡がったまま、戻らなかったらどうしましょう……❤」
+			PRINTFORMW 「……そんなわたしでも愛してくれますか、%CALLNAME:MASTER%さん……❤」
+		ELSE
+			PRINTFORMW 「으아…… 드디어、이물감이 사라졌어요」
+		ENDIF
 	ENDIF
 ENDIF
 RETURN 1
@@ -301,10 +338,19 @@ IF LOCAL
 	;基本セット
 	;装着
 	IF TEQUIP:애널비즈
-		PRINTFORMW 「저기、정말로 엉덩이로 놀려고 하는 건、좋지 않다고 생각해요……」
+		IF TALENT:TARGET:연모
+			PRINTFORML 「……わたしのおしり、비즈でちゃんと飾り付けてくださいねっ❤」
+			PRINTFORMW 「……んあっ……❤　んあああっ❤　……えへへ、ちゃんと、飲み込めましたかねっ❤」
+		ELSE
+			PRINTFORMW 「저기、정말로 엉덩이로 놀려고 하는 건、좋지 않다고 생각해요……」
+		ENDIF
 	;解除
 	ELSE
-		PRINTFORMW 「앗、하앗、이、이제 만족하셨나요？　……다음에는 안 할거죠……？」
+		IF TALENT:TARGET:연모
+			PRINTFORMW 「……次も、また……❤　……お願いできますか❤」
+		ELSE
+			PRINTFORMW 「앗、하앗、이、이제 만족하셨나요？　……다음에는 안 할거죠……？」
+		ENDIF
 	ENDIF
 ENDIF
 RETURN 1
@@ -338,10 +384,17 @@ IF LOCAL
 	;基本セット
 	;装着
 	IF TEQUIP:니플캡
-		PRINTFORMW 「으응、유두가、찌릿찌릿합니다……」
+		PRINTFORMW 「으응、유두가、찌릿찌릿합니다……
+		SIF TALENT:TARGET:연모
+		PRINTFORM っ❤
+		PRINTFORMW 」
 	;解除
 	ELSE
-		PRINTFORMW 「……후우、드디어、풀려났어……」
+		IF TALENT:TARGET:연모
+			PRINTFORMW 「……ちくびが、疼いて……❤　とまら、ないんです……❤　……イジって、くれますよね……っ❤」
+		ELSE
+			PRINTFORMW 「……후우、드디어、풀려났어……」
+		ENDIF
 	ENDIF
 ENDIF
 RETURN 1
@@ -471,7 +524,12 @@ IF LOCAL
 	;基本セット
 	;装着
 	IF TEQUIP:MASTER:콘돔
-		PRINTFORMW 「……아니요、불평은 하지 않겠습니다。그것이 %CALLNAME:MASTER% 씨의 선택이라면」
+		IF TALENT:TARGET:연모
+			PRINTFORMW 「……いやです……ほんとは、ゴムなんてしてほしくないです……」
+			PRINTFORMW 「……いえ、%CALLNAME:MASTER%さんに逆らう気はありません。……どうぞ」
+		ELSE
+			PRINTFORMW 「……아니요、불평은 하지 않겠습니다。그것이 %CALLNAME:MASTER% 씨의 선택이라면」
+		ENDIF
 	;解除
 	ELSE
 		PRINTFORMW 「……다음에는 질 안에、부탁합니다」
@@ -552,12 +610,21 @@ IF LOCAL
 	;基本セット
 	;装着
 	IF TEQUIP:딜도
-		PRINTFORMW 「딱딱해…… 커다레…… 차가워……」
-		PRINTFORMW 「이런 거、넣는 것보다……%CALLNAME:MASTER%씨의 것이、훨씬 낫습니다……」
+		IF TALENT:MASTER:성별 == 0
+			PRINTFORMW 「%CALLNAME:MASTER%さんに……っ、おちんちんがあったら、いいのに……っ」
+			PRINTFORMW 「だいじょうぶ、です……っ。ないものねだりは……よくない、ですから……っ、これで、ガマン……できます……っ」
+		ELSE
+			PRINTFORMW 「딱딱해…… 커다레…… 차가워……」
+			PRINTFORMW 「이런 거、넣는 것보다……%CALLNAME:MASTER%씨의 것이、훨씬 낫습니다……」
+		ENDIF
 	;解除
 	ELSE
-		PRINTFORML 「하아……읏、하아……읏、하ー……앗……、끄、끝났、습니까……」
-		PRINTFORMW 「안쪽이 뜨겁지만、차가워서……。다음은、%CALLNAME:MASTER%님의 것으로、채워、주세요……」
+		IF TALENT:MASTER:성별 == 0
+			PRINTFORMW 「やっぱり、わたしのカラダ……子供、ですね……とっても、キツかった、ですから……」
+		ELSE
+			PRINTFORML 「하아……읏、하아……읏、하ー……앗……、끄、끝났、습니까……」
+			PRINTFORMW 「안쪽이 뜨겁지만、차가워서……。다음은、%CALLNAME:MASTER%님의 것으로、채워、주세요……」
+		ENDIF
 	ENDIF
 ENDIF
 RETURN 1

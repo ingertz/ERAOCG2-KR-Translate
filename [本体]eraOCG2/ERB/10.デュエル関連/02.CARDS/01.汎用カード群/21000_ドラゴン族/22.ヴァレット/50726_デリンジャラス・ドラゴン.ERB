@@ -1,0 +1,155 @@
+﻿@CARDNAME_50726,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데린저러스 드래곤
+	CASE "略称"
+		RESULTS = 데린저러스 Ｄ
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+	CASE "検索用カテゴリ"
+		RESULTS = 바렛
+ENDSELECT
+
+
+@CARD_50726(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 링크
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 드래곤족
+	CASE "レベル"
+		RETURN 2
+	CASE "攻撃力"
+		RETURN 1600
+	CASE "守備力"
+		RETURN 800
+	CASE "추가日"
+		RETURN 260119
+ENDSELECT
+
+RETURN 0
+
+@CARDSUMMON_50726(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+;素材条件
+
+CALL RESETCONDITION_MAT
+必要링크数 = 2
+素材条件종족 = 드래곤족
+素材条件속성 = 어둠속성
+
+IF EX参照 == 1
+	CALL LINCAN(듀얼리스트,소환カード,50726) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_50726(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 드래곤족・어둠속성モンスター２体
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,ターン終了時)
+PRINTL ①：상대エンドフェイズに、상대フィールドの攻撃표시モンスター１体を대상として발동できる。
+PRINTL そのモンスターを破壊し、その元々の攻撃力分のダメージを상대に与える。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：자신フィールドに「바렛」モンスターが특수소환された場合に발동できる。
+PRINTL 묘지のこのカードを특수소환する。
+PRINTL この효과で특수소환したこのカードは、フィールドから離れた場合に제외される。
+
+
+@CARDCAN_50726(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 必要カード
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,50726)
+SIF RESULT == 1
+	RETURN 0
+
+
+IF 종류 == ターン終了時
+	SIF 발동済_1(듀얼리스트,50726)
+		RETURN 0
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF ターンプレイヤー == 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件표시 = 攻撃표시
+	효과条件除去種 = 묘지
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 효과後誘発
+	SIF 발동済_2(듀얼리스트,50726)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,50726,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과条件カテゴリ = 바렛
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환")
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_50726(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 対面者
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+IF 종류 == ターン終了時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50726,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과条件표시 = 攻撃표시
+		효과추가종류 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"묘지")
+	ENDIF
+
+ELSEIF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,50726,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件名前 = 데린저러스 드래곤
+		효과추가종류 = 効追除処
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF
+
