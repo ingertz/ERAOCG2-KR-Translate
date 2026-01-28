@@ -14,6 +14,7 @@ SELECTCASE 参照先
 		RESULTS:0 = 기어 크로니클
 		RESULTS:1 = 크로노제트
 		RESULTS:5 = 십이지각수
+		RESULTS:6 = 다크 스테이츠
 	CASE "出典作品"
 		RESULTS:0 = 뱅가드
 ENDSELECT
@@ -47,7 +48,8 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "レア度"
 		RETURN ULR
-
+	CASE "추가日"
+		RETURN 251224
 ENDSELECT
 
 RETURN 0
@@ -80,7 +82,7 @@ PRINTL 이 카드를 EX덱으로 되돌리고, 아래에 겹쳐져 있던 몬스
 PRINTL 그 후, 자신은 2장 드로우한다.
 CALLFORM CARD_ABLE(2,제외時)
 PRINTL ②: 이 카드가 제외된 경우에 발동할 수 있다.
-PRINTL 자신 필드의 몬스터 1장을 타임 리프시킨다。
+PRINTL 자신 필드의 몬스터 1장을 패에 넣는다。
 CALL PRINT_VTIMELEEPTEXT
 
 
@@ -166,11 +168,8 @@ ELSEIF 종류 == 攻撃後誘発
 ELSEIF 종류 == 제외時
 	SIF 발동済_2(듀얼리스트,52082)
 		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
-		RETURN 0
 	CALL FULLRESET
-	효과範囲필드 = 1
-	효과条件종류 = モン全般
+	효과範囲제외 = 1
 	CALL CARD_CHECK_ADV(듀얼리스트)
 	SIF RESULT != 1
 		RETURN 0
@@ -260,31 +259,8 @@ ELSEIF 종류 == 제외時
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,52082,2)
 	IF RESULT == 0
 		CALL FULLRESET
-		효과範囲필드 = 1
-		효과条件종류 = モン全般
-		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-		選択カード = RESULT
-		IF 選択カード != 9999
-			選択レベル = GETVAR(@"%듀얼리스트%_MZ_星:選択カード") + 2
-			CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード,제외行き,1)
-			CALL FULLRESET
-			효과範囲덱 = 1
-			효과条件カテゴリ = 기어 크로니클
-			효과条件レベル = 選択レベル
-			효과条件종류 = モン全般
-			효과条件소환可 = 1
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			IF RESULT == 1
-				CALL FULLRESET
-				효과範囲덱 = 1
-				효과条件カテゴリ = 기어 크로니클
-				효과条件任意 = 1
-				효과条件レベル = 選択レベル
-				효과条件종류 = モン全般
-				효과추가종류 = 10 + 덱行き
-				CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)	
-			ENDIF
-		ENDIF
+		효과範囲제외 = 1
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 	ENDIF
 ENDIF
 

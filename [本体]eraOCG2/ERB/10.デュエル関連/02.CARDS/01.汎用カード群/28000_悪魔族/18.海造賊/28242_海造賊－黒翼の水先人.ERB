@@ -1,0 +1,142 @@
+﻿@CARDNAME_28242,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 플런드롤－검은날개 수선인
+	CASE "略称"
+		RESULTS = 검은날개 수선인
+	CASE "カテゴリ"
+		RESULTS:0 = 플런드롤
+ENDSELECT
+
+
+@CARD_28242(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 물속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 4
+	CASE "攻撃力"
+		RETURN 1000
+	CASE "守備力"
+		RETURN 1000
+	CASE "성별"
+		RETURN 雄性
+	CASE "추가日"
+		RETURN 260112
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_28242(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：「플런드롤－검은날개 수선인」以外の자신の묘지の「플런드롤」モンスター１体を대상として발동できる。
+PRINTL 대상のモンスターを손패に加え、このカードを손패から특수소환する。
+PRINTL このターン、자신は「플런드롤」モンスターしかＥＸ덱から특수소환できない。
+CALLFORM CARD_ABLE(2,필드→묘지,손패→묘지)
+PRINTL ②：このカードが손패・フィールドから묘지へ送られた場合、
+PRINTL 자신の마법＆함정ゾーンの「플런드롤」モンスターカード１枚を대상として발동できる。
+PRINTL そのカードを守備표시で특수소환する。
+
+
+@CARDSUMMON_AA_28242
+
+
+@CARDCAN_28242(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,28242)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,28242)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,28242,ゾーン)
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件カテゴリ = 플런드롤
+	효과条件종류 = モン全般
+	효과条件固名前 = 플런드롤－검은날개 수선인
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지
+	SIF 발동済_2(듀얼리스트,28242)
+		RETURN 0
+	SIF ゾーン == "제외"
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 플런드롤
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_28242(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28242,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件カテゴリ = 플런드롤
+		효과条件종류 = モン全般
+		효과条件固名前 = 플런드롤－검은날개 수선인
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+			CALL CARD_EX_RESTRICTION(듀얼리스트,"플런드롤")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 필드→묘지 || 종류 == 손패→묘지
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,28242,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 플런드롤
+		CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+ENDIF

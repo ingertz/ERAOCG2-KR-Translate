@@ -1,0 +1,198 @@
+﻿@CARDNAME_54042,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데스 레지나 데몬
+	CASE "略称"
+		RESULTS = Ｄ레지나Ｄ
+	CASE "カテゴリ"
+		RESULTS:0 = 데몬
+ENDSELECT
+
+
+@CARD_54042(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 의식
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 악마족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2100
+	CASE "守備力"
+		RETURN 2900
+	CASE "성별"
+		RETURN 牝性
+	CASE "分割"
+		RETURN 펜듈럼
+	CASE "특수불가"
+		RETURN 1
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+RETURN 0
+
+
+@CARDSUMMON_54042(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要レベル数 = 7
+
+IF EX参照 == 1
+	CALL RITCAN(듀얼리스트,소환カード,54042) 
+	RETURN RESULT
+ENDIF
+
+
+@CARD_EXPLANATION_54042(종류)
+#DIM DYNAMIC 종류
+
+CALL TEXT_DECORATION("GISK_P_MAGIC")
+PRINTL このカード名のＰ효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動)
+PRINTL ①：자신の묘지・제외状態の「데몬」마법・함정カード１枚を대상として발동できる。
+PRINTL このカードを破壊し、대상のカードを손패に加える。
+CALL TEXT_DECORATION("GISK_P_MAGIC_2")
+
+PRINTL 「쓰론 오브 데몬즈」により降臨。
+PRINTL このカードは의식소환でしか특수소환できない。
+PRINTL このカード名の①のモンスター효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(2,EX소환時)
+PRINTL ①：このカードが의식소환した場合に발동できる。
+PRINTL 상대フィールドの마법・함정カードを全て破壊する。
+PRINTL このカードがＥＸ덱から의식소환されている場合、さらに상대の묘지の마법・함정カードを全て제외できる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ②：ＥＸ덱から특수소환されたこのカードは상대モンスターの효과を受けない。
+
+
+@CARDCAN_54042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,54042)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動
+	SIF 발동済_1(듀얼리스트,54042)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과範囲제외 = 1
+	효과条件カテゴリ = 데몬
+	효과条件종류 = 마함全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+;-------------------------------------ここからモンスター-----------------------------------
+
+ELSEIF 종류 == EX소환時
+	SIF 발동済_2(듀얼리스트,54042)
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種EX덱
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대마함 = 1
+	효과条件除去種 = 破壊
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種EX덱
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_54042(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC 対面者 
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 攻撃力修正
+#DIM DYNAMIC 選択カード
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	;カード발동＆設置まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54042)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+
+ELSEIF 종류 == 마함起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54042,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,破壊行き)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과範囲제외 = 1
+		효과条件カテゴリ = 데몬
+		효과条件종류 = 마함全般
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+	ENDIF
+
+;-------------------------------------ここからモンスター-----------------------------------
+
+ELSEIF 종류 == EX소환時
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,54042,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대마함 = 1
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"묘지")
+
+		SIF GETVAR(@"%듀얼리스트%_MZ_召種:場所") != 召種EX덱
+			RETURN 0
+		SIF 듀얼리스트 == "자신"
+			PRINTL 묘지の마법・함정カードを제외しますか？
+		CALL YN_CHOICE(듀얼리스트)
+		SIF RESULT == いいえ
+			RETURN 0
+		CALL FULLRESET
+		효과範囲상대묘지 = 1
+		효과条件종류 = 마함全般
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"全体除去",場所,"제외")
+	ENDIF
+
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"モ耐")
+ENDIF

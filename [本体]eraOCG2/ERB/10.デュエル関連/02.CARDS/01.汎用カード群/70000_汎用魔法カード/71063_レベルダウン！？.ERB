@@ -1,0 +1,143 @@
+﻿@CARDNAME_71063,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 레벨 다운！？
+	CASE "略称"
+		RESULTS = 레벨 다운！？
+	CASE "カテゴリ"
+		RESULTS:0 = Lv
+ENDSELECT
+
+
+@CARD_71063(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_71063(종류)
+#DIM DYNAMIC 종류
+
+CALLFORM CARD_ABLE(0,마함起動,손패起動,フリー誘発)
+PRINTL ①：자신のフィールド・묘지の、成長した「Ｌｖ」モンスター１体を대상として발동できる。
+PRINTL そのモンスターの成長前のカードを１枚、ゲーム外から손패に加える。
+PRINTL その後、자신フィールドに「Ｌｖ」モンスターが存在しない場合、以下の효과を適用できる。
+PRINTL ●손패から「Ｌｖ」モンスター１体を특수소환する。
+CALLFORM CARD_ABLE(0,묘지起動)
+PRINTL ②：자신・상대ターンに묘지のこのカードを제외し、자신の묘지の「Ｌｖ」カード３枚を대상として발동できる。
+PRINTL そのカードを덱に加え、자신は덱から１枚ドローする。
+PRINTL 
+
+@CARDCAN_71063(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 取込カードID
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71063)
+SIF RESULT == 1
+	RETURN 0
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과範囲묘지 = 1
+	효과条件カテゴリ = Lv
+	CALLFORM 효과条件レベル_ADV(5,"以上")
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	CALL FULLRESET
+	효과範囲묘지= 1
+	효과条件カテゴリ = Lv
+	효과条件他所 = 1
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT <= 2
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL CARD_DRAW_CHECK
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_71063(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM 소환カード
+#DIM DYNAMIC 取込カードID
+#DIM DYNAMIC 選択カード
+#DIMS DYNAMIC 取込カード名称
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 書換先カードID
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71063)
+	IF RESULT == 0
+		;通常마법汎用발동後묘지送り処理
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲묘지 = 1
+		효과条件カテゴリ = Lv
+		CALLFORM 효과条件レベル_ADV(5,"以上")
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		選択カード_ID = RESULT:99
+		IF 選択カード != 9999
+			IF 選択カード_ID > 100000
+				書換先カードID = 選択カード_ID - 100000
+				CALL CARD_GENERATE_HAND(듀얼리스트,書換先カードID)
+
+				CALL FULLRESET
+				효과範囲필드 = 1
+				효과条件カテゴリ = Lv
+				효과条件표시 = 表側표시
+				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+				IF RESULT != 1
+					CALL FULLRESET
+					효과範囲손패 = 1
+					효과条件カテゴリ = Lv
+					효과条件종류 = モン全般
+					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71063)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所) 
+		CALL FULLRESET
+		효과条件カテゴリ = Lv
+		효과条件複数 = 3
+		효과条件行先플래그 = 2
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"묘지",ゾーン,場所)
+		IF RESULT == 1
+			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		ENDIF
+	ENDIF
+ENDIF

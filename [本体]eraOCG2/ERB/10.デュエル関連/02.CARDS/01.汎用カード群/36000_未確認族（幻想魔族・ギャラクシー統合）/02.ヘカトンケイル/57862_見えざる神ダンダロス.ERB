@@ -1,0 +1,154 @@
+﻿@CARDNAME_57862,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 헤카톤케일 단달로스
+	CASE "略称"
+		RESULTS = 단달로스
+	CASE "カテゴリ"
+		RESULTS:0 = 헤카톤케일
+ENDSELECT
+
+
+@CARD_57862(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 융합
+	CASE "속성"
+		RETURN 빛속성
+	CASE "종족"
+		RETURN 미확인족
+	CASE "レベル"
+		RETURN 7
+	CASE "攻撃力"
+		RETURN 2900
+	CASE "守備力"
+		RETURN 3000
+	CASE "성별"
+		RETURN 雄性
+	CASE "レア度"
+		RETURN 0
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+
+@CARD_EXPLANATION_57862(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 「헤카톤케일」モンスター×２
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない
+CALLFORM CARD_ABLE(1,필드起動)
+PRINTL ①：자신メインフェイズに발동できる。
+PRINTL 상대フィールドのモンスター１体のコントロールを得る。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL このカードがモンスターゾーンに存在する限り、
+PRINTL 자신の「헤카톤케일」융합モンスター及び元々の持ち主が상대である자신のモンスターは直接攻撃できる。
+CALLFORM CARD_ABLE(0,지속효과)
+PRINTL ③：このカードがモンスターと戦闘を行う場合、その２体はその戦闘では破壊されない。
+
+
+@CARDSUMMON_57862(듀얼리스트,소환カード,EX参照)
+#DIMS DYNAMIC 듀얼리스트
+#DIM DYNAMIC 소환カード
+#DIM DYNAMIC EX参照
+
+CALL RESETCONDITION_MAT
+必要素材数 = 2
+
+IF ALT条件 == 0
+	素材条件カテゴリ = 헤카톤케일
+ELSEIF ALT条件 == 1
+ENDIF
+
+IF EX参照 == 1
+	CALL FUSCAN(듀얼리스트,소환カード,57862) 
+	RETURN RESULT
+ENDIF
+
+
+@CARDCAN_57862(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,57862)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 필드起動
+	SIF 발동済_1(듀얼리스트,57862)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲상대필드 = 1
+	효과条件除去種 = 強奪
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과
+	SIF ゾーン != "필드"
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트,1) == 5
+		RETURN 0
+	SIF 戦闘場所(듀얼리스트) != 場所
+		RETURN 0
+	RETURN 1
+
+ENDIF
+
+@CARDEFFECT_57862(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 戦闘カード
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC 条件달성
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 필드起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,57862,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲상대필드 = 1
+		효과추가종류 = 効追接触 ;隠し仕様
+		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"強奪")
+	ENDIF
+ELSEIF 종류 == 지속효과
+	CALL STATCHANGE_EFFECT(듀얼리스트,"自身",場所,"戦耐")
+	CALL STATCHANGE_EFFECT(対面者,"自身",戦闘場所(듀얼리스트,1),"戦耐")
+	CALL FULLRESET
+	효과条件カテゴリ = 헤카톤케일
+	효과条件종류 = 융합
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"直攻")
+	CALL FULLRESET
+	효과条件所有 = 2
+	CALL STATCHANGE_EFFECT(듀얼리스트,"필드",場所,"直攻")
+ENDIF

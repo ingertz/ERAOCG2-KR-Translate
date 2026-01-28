@@ -1,0 +1,204 @@
+﻿@CARDNAME_1768,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 혈수룡희 드라셀레아
+	CASE "略称"
+		RESULTS = 드라셀레아
+	CASE "カテゴリ"
+		RESULTS:0 = 없음
+ENDSELECT
+
+
+@CARD_1768(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 효과モン
+	CASE "속성"
+		RETURN 어둠속성
+	CASE "종족"
+		RETURN 식물족
+	CASE "レベル"
+		RETURN 1
+	CASE "攻撃力"
+		RETURN 0
+	CASE "守備力"
+		RETURN 0
+	CASE "튜너"
+		RETURN 1
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_1768(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①②の효과はそれぞれ１ターンに１度しか使用できず、
+PRINTL この효과を발동するターン、자신は드래곤족・식물족モンスターしか특수소환できない。
+CALLFORM CARD_ABLE(1,손패起動)
+PRINTL ①：손패のこのカードを상대に見せて발동できる。
+PRINTL 「혈수룡희 드라셀레아」を除く、レベル４以下の식물족モンスター１体を덱から묘지へ送り、
+PRINTL このカードを손패から특수소환する。
+PRINTL この효과で특수소환したこのカードのレベルは、묘지へ送ったモンスターと同じになる。
+CALLFORM CARD_ABLE(2,묘지起動)
+PRINTL ②：자신の묘지からこのカードと식물족モンスター１体を제외して발동できる。
+PRINTL 자신の손패・묘지から드래곤족モンスター１体を특수소환する。
+
+
+
+@CARDCAN_1768(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,1768)
+SIF RESULT == 1
+	RETURN 0
+
+CALL FULLRESET
+효과条件종족:0 = 마법사족
+효과条件종족:1 = 언데드족
+효과条件종족:2 = 전사족
+효과条件종족:3 = 기계족
+효과条件종족:4 = 야수족
+효과条件종족:5 = 비행야수족
+효과条件종족:6 = 비늘야수족
+효과条件종족:7 = 악마족
+효과条件종족:8 = 천사족
+효과条件종족:9 = 곤충족
+효과条件종족:10 = 원소정령족
+효과条件종족:11 = 사이킥족
+효과条件종족:12 = 사이버스족
+효과条件종족:13 = 바다생물족
+효과条件종족:14 = 미확인족
+효과条件종족:15 = 환신야수족
+CALL CARD_CHECK_FIN_DATA(듀얼리스트,"SS이력")
+SIF RESULT != 0
+	RETURN 0
+
+IF 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,1768)
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL CARD_SS_CHECK(듀얼리스트,1768,"손패")
+	SIF RESULT == 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件종족 = 식물족
+	효과条件종류 = モン全般
+	효과条件固名前 = 혈수룡희 드라셀레아
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,1768)
+		RETURN 0
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲묘지 = 1
+	효과条件종족 = 식물족
+	효과条件종류 = モン全般
+	효과条件他所 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲묘지 = 1
+	효과条件종족 = 드래곤족
+	효과条件종류 = モン全般
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+
+@CARDEFFECT_1768(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC レベル修正
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1768,1)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件종족 = 식물족
+		효과条件종류 = モン全般
+		효과条件固名前 = 혈수룡희 드라셀레아
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT == 1
+			選択カード_ID = RESULT:1
+			TRYCALLFORM CARD_{選択カード_ID}("レベル")
+			レベル修正 = RESULT
+			CALL FULLRESET
+			효과추가종류 = 140 + レベル修正
+			CALL CARD_SP_SUMMON(듀얼리스트,ゾーン,場所)
+		ENDIF
+		EX소환可能종족:0 = 드래곤족
+		EX소환可能종족:1 = 식물족
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,1768,2)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲묘지 = 1
+		효과条件종족 = 식물족
+		효과条件종류 = モン全般
+		효과条件行先플래그 = 제외行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲묘지 = 1
+			효과条件종족 = 드래곤족
+			효과条件종류 = モン全般
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+		CALL FULLRESET
+		EX소환可能종족:0 = 드래곤족
+		EX소환可能종족:1 = 식물족
+		CALL CARD_EX_RESTRICTION(듀얼리스트)
+	ENDIF
+ENDIF
+

@@ -1,0 +1,171 @@
+﻿@CARDNAME_72790,参照先
+;ココで지정カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 플런드롤－십야드
+	CASE "略称"
+		RESULTS = 플런드롤－십야드
+	CASE "カテゴリ"
+		RESULTS:0 = 플런드롤
+ENDSELECT
+
+
+@CARD_72790(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN フィールド
+	CASE "추가日"
+		RETURN 260112
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72790(종류)
+#DIM DYNAMIC 종류
+
+PRINTL 자신フィールドは「십야드」となる。
+PRINTL このカード名の②③の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(0,攻守変動)
+PRINTL ①：자신フィールドの「플런드롤」モンスターの攻撃力は、자신の마법＆함정ゾーンの「플런드롤」カードの数×５００アップする。
+CALLFORM CARD_ABLE(2,마함起動)
+PRINTL ②：손패を１枚捨てて발동できる。
+PRINTL 덱から「플런드롤－십야드」以外の「플런드롤」カード１枚を손패に加える。
+CALLFORM CARD_ABLE(3,묘지起動)
+PRINTL ③：자신の마법＆함정ゾーンの「플런드롤」カード１枚を대상として발동できる。
+PRINTL 대상のカードを손패・ＥＸ덱に加え、묘지のこのカードを자신フィールドにセットする。
+
+
+@CARDCAN_72790(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 발동불가,2
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72790)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	SIF 발동済_2(듀얼리스트,72790)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF 손패数(듀얼리스트) < 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 플런드롤
+	효과条件固名前 = 플런드롤－십야드
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CONT_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_3(듀얼리스트,72790)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 플런드롤
+	효과条件표시 = 表側표시
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+
+ELSEIF 종류 == 지속효과 || 종류 == 攻守変動
+	SIF ゾーン != "마함"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_魔_表:場所") >= 2
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72790(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 攻撃力修正
+
+IF 종류 == 마함起動 && GETVAR(@"%듀얼리스트%_魔_表:場所") == 1
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72790,2)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲손패 = 1
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 플런드롤
+			효과条件固名前 = 플런드롤－십야드
+			CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 마함起動 || 종류 == 손패起動
+	;カード발동＆設置まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72790)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所,마함行き)
+	ENDIF
+
+ELSEIF 종류 == 묘지起動
+	;カード발동＆設置まで
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72790,3)
+	IF RESULT == 0
+		CALL FULLRESET
+		효과範囲마함 = 1
+		효과条件カテゴリ = 플런드롤
+		효과条件표시 = 表側표시
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과範囲묘지 = 1
+			효과条件名前 = 플런드롤－십야드
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"裏側표시")
+		ENDIF
+	ENDIF
+
+ELSEIF 종류 == 攻守変動
+	CALL FULLRESET
+	효과範囲마함 = 1
+	효과条件カテゴリ = 플런드롤
+	효과条件표시 = 表側표시
+	효과条件CNT = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	攻撃力修正 = RESULT * 500
+
+	CALL FULLRESET
+	효과条件カテゴリ = 플런드롤
+	CALL STATCHANGE_BASIC(듀얼리스트,"필드",場所,攻撃力修正)
+
+ELSEIF 종류 == 지속효과
+	CALL SET_FIELD_MAGIC_INFO(듀얼리스트,"십야드")
+ENDIF

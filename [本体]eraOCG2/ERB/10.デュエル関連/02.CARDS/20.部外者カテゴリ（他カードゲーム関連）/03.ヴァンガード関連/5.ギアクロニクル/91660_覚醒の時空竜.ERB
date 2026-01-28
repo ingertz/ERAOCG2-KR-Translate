@@ -12,6 +12,8 @@ SELECTCASE 参照先
 		RESULTS = 각성의 시공룡
 	CASE "カテゴリ"
 		RESULTS:0 = 기어 크로니클
+		RESULTS:5 = 십이지각수
+		RESULTS:6 = 다크 스테이츠
 	CASE "出典作品"
 		RESULTS:0 = 뱅가드
 ENDSELECT
@@ -28,6 +30,10 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "종류"
 		RETURN 通常함정
+	CASE "レア度"
+		RETURN RARE
+	CASE "추가日"
+		RETURN 251224
 ENDSELECT
 RETURN 0
 
@@ -36,14 +42,13 @@ RETURN 0
 
 PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 발동할 수 없다。
 CALL CARD_ABLE(1,마함起動 ,フリー誘発)
-PRINTL ①："기어 크로니클"몬스터를 포함하는 필드의 앞면 표시 몬스터 2장을 대상으로 하고 발동할 수 있다。
-PRINTL 그 몬스터를 패 / EX덱으로 되돌린다。
-PRINTL 그 후、되돌린 몬스터의 코스트의 합계 이하의 레벨을 가진 "기어 크로니클"몬스터 １장을 패 / 덱에서 특수 소환할 수 있다。
+PRINTL ①：자신 / 상대의 메인 페이즈에 발동할 수 있다。
+PRINTL 자신의 필드 / 묘지의 몬스터를 소재로 하고 제외하여、"기어 크로니클" 융합 몬스터 １장을 융합 소환한다。
+PRINTL 이 효과로 특수 소환한 몬스터는 엔드 페이즈에 원래 주인의 EX덱으로 되돌아간다。
 CALLFORM CARD_ABLE(2,묘지起動)
-PRINTL ②：자신 필드에 레벨８인 "기어 크로니클"몬스터가 존재하는 경우、
-PRINTL 자신 메인 페이즈에 묘지의 이 카드를 제외하고、패에서 몬스터 １장을 묘지로 보내고 발동할 수 있다。
-PRINTL 자신은 덱에서 １장 드로우하고、자신 필드의 레벨８인 "기어 크로니클"몬스터 １장은 자신의 턴 종료시까지 공격력이 １５００오른다。
-PRINTL （이 효과는 선공 １턴째에는 사용할 수 없다。）
+PRINTL ②：묘지의 이 카드를 제외하고 발동할 수 있다。
+PRINTL 자신 필드의 "기어 크로니클" 몬스터 １장을 소실시키고、
+PRINTL 상대 필드의 앞면 표시 카드 １장을 덱으로 되돌린다。
 
 @CARDCAN_91660(듀얼리스트,종류,ゾーン,場所)
 #DIMS DYNAMIC 듀얼리스트
@@ -58,7 +63,7 @@ CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,91660)
 SIF RESULT == 1
 	RETURN 0
 
-IF 종류 == 마함起動 || 종류 == フリー誘発
+IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
 	SIF ゾーン != "마함"
 		RETURN 0
 	SIF 발동済_1(듀얼리스트,91660)
@@ -66,51 +71,41 @@ IF 종류 == 마함起動 || 종류 == フリー誘発
 	CALL CARD_SET_ACT(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲필드 = 1
+	素材範囲묘지 = 1
 	CALL FULLRESET
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
 	효과条件カテゴリ = 기어 크로니클
-	효과条件종류 = モン全般
-	효과範囲필드 = 1
-	효과範囲상대필드 = 1
-	효과条件표시 = 表側표시
+	효과条件소환可 = 2
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과範囲상대필드 = 1
-	효과条件표시 = 表側표시
-	효과条件除去種 = 덱
-	효과条件CNT = 1
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT < 2
-		RETURN 0
 	RETURN 1
-ELSEIF 종류 == 묘지起動
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
+	SIF ゾーン != "묘지"
+		RETURN 0
 	SIF 발동済_2(듀얼리스트,91660)
-		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
 		RETURN 0
 	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
 		RETURN 0
-	SIF ターン数 <= 1
-		RETURN 0
 	CALL FULLRESET
 	효과範囲필드 = 1
-	효과条件レベル = 8
 	효과条件カテゴリ = 기어 크로니클
-	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
 	CALL FULLRESET
-	효과範囲손패 = 1
-	효과条件종류 = モン全般
+	효과範囲상대필드 = 1
+	효과範囲상대마함 = 1
+	효과条件표시 = 表側표시
+	효과条件除去種 = 덱
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
-	CALL CARD_DRAW_CHECK
 	RETURN 1
 ENDIF
 
@@ -133,74 +128,43 @@ ENDIF
 CALL 対面者판정(듀얼리스트)
 対面者 = %RESULTS%
 
-IF 종류 == 마함起動 || 종류 == フリー誘発
+IF 종류 == 마함起動 || (종류 == フリー誘発 && ゾーン == "마함")
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91660,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 
+		CALL RESETAREA_MAT
+		素材範囲필드 = 1
+		素材範囲묘지 = 1
 		CALL FULLRESET
+		효과条件종류 = 융합
 		효과条件カテゴリ = 기어 크로니클
-		효과条件종류 = モン全般
-		효과範囲필드 = 1
-		효과範囲상대필드 = 1
-		효과条件行先플래그 = 덱行き
-		CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")
-		IF RESULT == 1
-			選択カード_ID = RESULT:2
-			TRYCALLFORM CARD_{選択カード_ID}("レベル")
-			選択レベル = RESULT
-
-			CALL FULLRESET
-			효과範囲필드 = 1
-			효과範囲상대필드 = 1
-			효과条件표시 = 表側표시
-			효과条件行先플래그 = 破壊行き
-			효과条件複数 = 2
-			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")
-			IF RESULT == 1
-				選択カード_ID = RESULT:2
-				TRYCALLFORM CARD_{選択カード_ID}("レベル")
-				選択レベル += RESULT
-
-				CALL FULLRESET
-				효과範囲손패 = 1
-				효과範囲덱 = 1
-				효과条件カテゴリ = 기어 크로니클
-				효과条件종류 = モン全般
-				CALL 효과条件レベル_ADV(選択レベル, "以下")
-				효과条件소환可 = 1
-				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-				IF RESULT == 1
-					CALL FULLRESET
-					효과範囲손패 = 1
-					효과範囲덱 = 1
-					효과条件カテゴリ = 기어 크로니클
-					효과条件종류 = モン全般
-					CALL 효과条件レベル_ADV(選択レベル, "以下")
-					CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
-				ENDIF	
-			ENDIF
+		효과条件소환可 = 2
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+			효과追加종류 = 効追終山
+			CALL FUSSUMMON(듀얼리스트, 選択カード,제외行き)
 		ENDIF
 	ENDIF		
-ELSEIF 종류 == 묘지起動
+ELSEIF 종류 == 묘지起動 || (종류 == フリー誘発 && ゾーン == "묘지")
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,91660,2)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		CALL FULLRESET
-		효과範囲손패 = 1
-		효과条件종류 = モン全般
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			CALL CARDDRAW_BASIC(듀얼리스트,1)
+		효과範囲필드 = 1
+		효과条件カテゴリ = 기어 크로니클
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			CALL CARD_DISPOSE(듀얼리스트,"필드",選択カード,제외行き,1)
 			CALL FULLRESET
-			효과条件レベル = 8
-			효과条件カテゴリ = 기어 크로니클
-			효과条件종류 = モン全般
-			CALL CARD_CHOOSE_BASIC(듀얼리스트, "필드",ゾーン,場所)
-			選択カード = RESULT
-			IF 選択カード != 9999
-				CALL SET_FIELD_INFO(듀얼리스트,"필드",選択カード,"一攻",1500)
-			ENDIF
+			효과範囲상대필드 = 1
+			효과範囲상대마함 = 1
+			효과条件표시 = 表側표시
+			효과条件任意 = 1
+			CALL CARD_REMOVAL_ADV(듀얼리스트,"単体除去",場所,"덱")
 		ENDIF
 	ENDIF
 ENDIF

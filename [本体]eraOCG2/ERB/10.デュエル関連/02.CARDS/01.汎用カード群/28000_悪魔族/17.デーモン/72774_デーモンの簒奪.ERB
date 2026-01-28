@@ -1,0 +1,165 @@
+﻿@CARDNAME_72774,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 데몬의 찬탈
+	CASE "略称"
+		RESULTS = 데몬의 찬탈
+	CASE "カテゴリ"
+		RESULTS:0 = 데몬
+ENDSELECT
+
+
+@CARD_72774(参照先)
+;名前専用
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 速攻마법
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_72774(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できない。
+CALLFORM CARD_ABLE(1,마함起動 ,손패起動 ,フリー誘発)
+PRINTL ①：以下の효과から１つを選択して발동できる。
+PRINTL ●자신の덱・묘지から「데몬」함정カード１枚を자신フィールドにセットする。
+PRINTL 　この효과でセットしたカードはセットしたターンでも발동できる。
+PRINTL ●レベルの合計が의식소환するモンスターのレベル以上になるように、
+PRINTL 　자신の손패・フィールドのモンスターをリリースし、자신の손패・ＥＸ덱から「데몬」의식モンスター１体を의식소환する。
+
+@CARDCAN_72774(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 발동불가,2
+#DIM DYNAMIC カウンタ
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,72774)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	SIF 발동済_1(듀얼리스트,72774)
+		RETURN 0
+
+	SIF 마함数(듀얼리스트) >= 5
+		발동불가:0 = 1
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 데몬
+	효과条件종류 = 함정全般
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:0 = 1
+
+	CALL RESETAREA_MAT
+	素材範囲손패 = 1
+	素材範囲필드 = 1
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과範囲EX덱 = 1
+	효과条件종류 = 의식
+	효과条件カテゴリ = 데몬
+	효과条件소환可 = 2
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		발동불가:1 = 1
+	
+	SIF 발동불가:0 == 1 && 발동불가:1 == 1
+		RETURN 0
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_72774(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 발동불가,2
+
+IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
+	;カード발동確認
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,72774,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		SIF 마함数(듀얼리스트) >= 5
+			발동불가:0 = 1
+		CALL FULLRESET
+		효과範囲덱 = 1
+		효과条件カテゴリ = 데몬
+		효과条件종류 = 함정全般
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:0 = 1
+
+		CALL RESETAREA_MAT
+		素材範囲손패 = 1
+		素材範囲필드 = 1
+		CALL FULLRESET
+		효과範囲손패 = 1
+		효과範囲EX덱 = 1
+		효과条件종류 = 의식
+		효과条件カテゴリ = 데몬
+		효과条件소환可 = 2
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			발동불가:1 = 1
+		
+		IF 발동불가:0 != 1 && 발동불가:1 != 1
+			CALL YN_CHOICE(듀얼리스트,"●「데몬」함정をセットする","●「데몬」의식モンスターを의식소환する")
+		ELSEIF 발동불가:0 != 1
+			RESULT = 0
+		ELSEIF 발동불가:1 != 1
+			RESULT = 1
+		ENDIF
+
+		IF RESULT == 0
+			CALL FULLRESET
+			효과範囲덱 = 1
+			효과条件カテゴリ = 데몬
+			효과条件종류 = 함정全般
+			CALL CARD_SET_ADV(듀얼리스트,ゾーン,場所,"使化裏側표시")
+
+		ELSEIF RESULT == 1
+			CALL RESETAREA_MAT
+			素材範囲손패 = 1
+			素材範囲필드 = 1
+			CALL FULLRESET
+			효과範囲손패 = 1
+			효과範囲EX덱 = 1
+			효과条件종류 = 의식
+			효과条件カテゴリ = 데몬
+			효과条件소환可 = 2
+			CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT != 9999
+				CALL CARD_SELECT(듀얼리스트,RESULT)
+				選択カード = RESULT
+				CALL RESETAREA_MAT
+				TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_%参照先（CS）%:選択カード")}(듀얼리스트,選択カード)
+				素材範囲필드 = 1
+				素材範囲손패 = 1
+				TRYCALLFORM RITSUMMON(듀얼리스트, 選択カード,参照先（CS）)
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

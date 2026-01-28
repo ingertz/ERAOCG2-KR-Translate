@@ -1,0 +1,331 @@
+﻿@CARDNAME_71014,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 초일융합
+	CASE "略称"
+		RESULTS = 초일융합
+	CASE "カテゴリ"
+		RESULTS:0 = 융합
+ENDSELECT
+
+
+@CARD_71014(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+RETURN 0
+
+@CARD_EXPLANATION_71014(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名のカードは１ターンに１枚しか발동できず、
+PRINTL このカードの발동に対してカードの효과は발동できない。
+CALLFORM CARD_ABLE(0,마함起動,손패起動)
+PRINTL ①：２０００ＬＰを払い、フィールドの효과モンスター１体を대상として발동できる。
+PRINTL そのモンスターとはレベルが異なり、종족・속성が同じモンスター１体をEX덱から효과を無効にして특수소환する。
+PRINTL その後、この효과で특수소환したモンスターを１体目、대상のモンスターを２体目の융합素材とし、
+PRINTL 융합モンスター１体を융합소환できる。
+PRINTL 융합소환しなかった場合、この효과で특수소환したモンスターを묘지へ送る。
+
+
+@CARDCAN_71014(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC 条件달성
+#DIM DYNAMIC カードID
+#DIM DYNAMIC チェック
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,71014)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,71014)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"ライフ_%듀얼리스트%") <= 2000
+		RETURN 0
+	FOR カウンタ,0,5
+		VARSET カードID
+		SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+			CONTINUE
+		カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+		TRYCALLFORM CARD_{カードID}("レベル")
+		SIF RESULT == 0
+			CONTINUE
+		チェック = RESULT
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		CALLFORM 효과条件レベル_ADV(チェック,"以外")
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		VARSET チェック
+		TRYCALLFORM CARD_{カードID}("종족")
+		SIF RESULT == 0
+			CONTINUE
+		チェック = RESULT
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종족 = チェック
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		VARSET チェック
+		TRYCALLFORM CARD_{カードID}("속성")
+		SIF RESULT == 0
+			CONTINUE
+		チェック = RESULT
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종족 = チェック
+		효과条件소환可 = 1
+		효과条件特不無視 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		条件달성 ++
+	NEXT
+	FOR カウンタ,0,5
+		VARSET カードID
+		SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+			CONTINUE
+		SIF GETVAR(@"%対面者%_MZ_表:カウンタ") == 3
+			CONTINUE
+		カードID = GETVAR(@"%対面者%_필드:カウンタ")
+		TRYCALLFORM CARD_{カードID}("レベル")
+		SIF RESULT == 0
+			CONTINUE
+		チェック = RESULT
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		CALLFORM 효과条件レベル_ADV(チェック,"以外")
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		VARSET チェック
+		TRYCALLFORM CARD_{カードID}("종족")
+		SIF RESULT == 0
+			CONTINUE
+		チェック = RESULT
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件종족 = チェック
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		VARSET チェック
+		TRYCALLFORM CARD_{カードID}("속성")
+		SIF RESULT == 0
+			CONTINUE
+		チェック = RESULT
+		CALL FULLRESET
+		효과範囲EX덱 = 1
+		효과条件속성 = チェック
+		효과条件소환可 = 1
+		효과条件特不無視 = 1
+		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+		SIF RESULT != 1
+			CONTINUE
+		条件달성 ++
+	NEXT
+	SIF 条件달성 == 0
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == チェーン可否
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_71014(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC カウンタ
+#DIM DYNAMIC カウンタB
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 選択カードB
+#DIM DYNAMIC 選択カード_ID
+#DIM DYNAMIC 융합소환カード
+#DIM DYNAMIC カードID
+#DIM DYNAMIC 条件달성カードID,10
+#DIM DYNAMIC 選択カード_レベル
+#DIM DYNAMIC 選択カード_속성
+#DIM DYNAMIC 選択カード_종족
+#DIM DYNAMIC チェック
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71014,1)
+	IF RESULT == 0
+		CALL LIFE_CHANGE(듀얼리스트,"減少","コスト",2000)
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		FOR カウンタ,0,5
+			VARSET カードID
+			SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+				CONTINUE
+			SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+				CONTINUE
+			カードID = GETVAR(@"%듀얼리스트%_필드:カウンタ")
+			TRYCALLFORM CARD_{カードID}("レベル")
+			SIF RESULT == 0
+				CONTINUE
+			チェック = RESULT
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			CALLFORM 효과条件レベル_ADV(チェック,"以外")
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			VARSET チェック
+			TRYCALLFORM CARD_{カードID}("종족")
+			SIF RESULT == 0
+				CONTINUE
+			チェック = RESULT
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件종족 = チェック
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			VARSET チェック
+			TRYCALLFORM CARD_{カードID}("속성")
+			SIF RESULT == 0
+				CONTINUE
+			チェック = RESULT
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件속성 = チェック
+			효과条件소환可 = 1
+			효과条件特不無視 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			条件달성カードID:カウンタB = カードID
+			カウンタB ++
+		NEXT
+		FOR カウンタ,0,5
+			VARSET カードID
+			SIF GETVAR(@"%対面者%_필드:カウンタ") == -1
+				CONTINUE
+			SIF GETVAR(@"%対面者%_MZ_表:カウンタ") == 3
+				CONTINUE
+			カードID = GETVAR(@"%対面者%_필드:カウンタ")
+			TRYCALLFORM CARD_{カードID}("レベル")
+			SIF RESULT == 0
+				CONTINUE
+			チェック = RESULT
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			CALLFORM 효과条件レベル_ADV(チェック,"以外")
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			VARSET チェック
+			TRYCALLFORM CARD_{カードID}("종족")
+			SIF RESULT == 0
+				CONTINUE
+			チェック = RESULT
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件종족 = チェック
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			VARSET チェック
+			TRYCALLFORM CARD_{カードID}("속성")
+			SIF RESULT == 0
+				CONTINUE
+			チェック = RESULT
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			효과条件종족 = チェック
+			효과条件소환可 = 1
+			효과条件特不無視 = 1
+			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+			SIF RESULT != 1
+				CONTINUE
+			条件달성カードID:カウンタB = カードID
+			カウンタB ++
+		NEXT
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과範囲상대필드 = 1
+		FOR カウンタ,0,カウンタB + 1
+			효과条件ID:カウンタ = 条件달성カードID:カウンタ
+		NEXT
+		CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
+		IF RESULT != 9999
+			選択カード = RESULT
+			選択カード_ID = RESULT:99
+			TRYCALLFORM CARD_{カードID}("レベル")
+			選択カード_レベル = RESULT
+			TRYCALLFORM CARD_{カードID}("속성")
+			選択カード_속성 = RESULT
+			TRYCALLFORM CARD_{カードID}("종족")
+			選択カード_종족 = RESULT
+			CALL FULLRESET
+			효과範囲EX덱 = 1
+			CALLFORM 효과条件レベル_ADV(選択カード_レベル,"以外")
+			효과条件속성 = 選択カード_속성
+			효과条件종족 = 選択カード_종족
+			효과条件特不無視 = 1
+			CALL CARD_SP_SUMMON_ADV(듀얼리스트,ゾーン,場所)
+			IF RESULT == 1
+				選択カードB = カード소환先
+				CALL RESETAREA_MAT
+				素材範囲필드 = 1
+				素材範囲상대필드 = 1
+				CALL FULLRESET
+				효과条件종류 = 융합
+				효과条件소환可 = 2
+				효과条件任意 = 1
+				強制素材場所 = 指定場所(選択カードB,"필드")
+				CALL CARD_SELECT(듀얼리스트,選択カード)
+				IF 대상者（CS） == "자신"
+					強制素材場所２ = 指定場所(選択カード,"필드")
+				ELSE
+					強制素材場所２ = 指定場所(選択カード,"상대필드")
+				ENDIF
+				CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+				융합소환カード = RESULT
+				IF 융합소환カード != 9999
+					TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{융합소환カード}")}(듀얼리스트,융합소환カード)
+					CALL FUSSUMMON(듀얼리스트,융합소환カード)
+				ELSE
+					CALL CARD_DISPOSE(듀얼리스트,"필드",選択カードB)
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF

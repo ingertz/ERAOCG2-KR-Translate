@@ -1,0 +1,137 @@
+﻿@CARDNAME_73253,参照先
+;ココで指定カードの名前、略称を返す予定
+#DIMS DYNAMIC 参照先
+
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "名前"
+		RESULTS = 프레데터 프리미티브
+	CASE "略称"
+		RESULTS = 포식원생
+	CASE "カテゴリ"
+		RESULTS:0 = 프레데터 플랜츠
+ENDSELECT
+
+
+@CARD_73253(参照先)
+
+#DIMS DYNAMIC 参照先
+VARSET RESULT
+VARSET RESULTS
+
+SELECTCASE 参照先
+	CASE "종류"
+		RETURN 通常마법
+	CASE "추가日"
+		RETURN 260124
+ENDSELECT
+
+RETURN 0
+
+@CARD_EXPLANATION_73253(종류)
+#DIM DYNAMIC 종류
+
+PRINTL このカード名の①の효과は１ターンに１度しか使用できない。
+CALLFORM CARD_ABLE(1,마함起動,손패起動)
+PRINTL ①：덱から「프레데터 프리미티브」以外の「프레데터 플랜츠」カード１枚を묘지へ送る。
+PRINTL その後、덱から「융합」마법カード１枚を손패に加える。
+PRINTL このカードの발동後、ターン終了時まで자신は드래곤족・식물족モンスターしか특수소환できない。
+CALLFORM CARD_ABLE(2,효과後誘発)
+PRINTL ②：상대フィールドにモンスターが특수소환された場合に발동できる。
+PRINTL 묘지のこのカードを제외し、자신フィールドの융합モンスター１体を破壊する。
+
+
+@CARDCAN_73253(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIMS DYNAMIC 対面者
+
+CALL 対面者판정(듀얼리스트)
+対面者 = %RESULTS%
+
+CALL CARD_NEGATE(듀얼리스트,종류,ゾーン,場所,73253)
+SIF RESULT == 1
+	RETURN 0
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	SIF 발동済_1(듀얼리스트,73253)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	CALL FULLRESET
+	효과範囲손패 = 1
+	효과条件カテゴリ = 프레데터 플랜츠
+	효과条件소환可 = 1
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲덱 = 1
+	효과条件カテゴリ = 프레데터 플랜츠
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 효과後誘発
+	SIF ゾーン != "묘지"
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL FULLRESET
+	CALL CARD_CHECK_FIN_DATA(듀얼리스트,"특수소환",1)
+	SIF RESULT != 1
+		RETURN 0
+	CALL FULLRESET
+	효과範囲필드 = 1
+	효과条件종류 = 융합
+	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
+	SIF RESULT != 1
+		RETURN 0
+	;베놈융합モンスターが無いと발동しないようにルーチン設定
+	RETURN 1
+ENDIF
+
+@CARDEFFECT_73253(듀얼리스트,종류,ゾーン,場所)
+#DIMS DYNAMIC 듀얼리스트
+#DIMS DYNAMIC ゾーン
+#DIM DYNAMIC 종류
+#DIM DYNAMIC 場所
+#DIM DYNAMIC 選択カード
+#DIM DYNAMIC 条件달성
+
+IF 종류 == 마함起動 || 종류 == 손패起動
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73253,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과条件固名前 = 프레데터 프리미티브
+		효과条件カテゴリ = 프레데터 플랜츠
+		CALL CARD_ADD_GY_BASIC(듀얼리스트,"덱",ゾーン,場所)
+		IF RESULT == 1
+			CALL FULLRESET
+			효과条件カテゴリ = 융합
+			효과条件종류 = 마법全般
+			CALL CARD_ADD_BASIC(듀얼리스트,"덱",ゾーン,場所)
+			EX소환可能종족:0 = 드래곤족
+			EX소환可能종족:1 = 식물족
+			CALL CARD_EX_RESTRICTION(듀얼리스트)
+		ENDIF
+	ENDIF
+ELSEIF 종류 == 효과後誘発
+	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,73253,1)
+	IF RESULT == 0
+		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL FULLRESET
+		효과範囲필드 = 1
+		효과条件종류 = 융합
+		효과条件行先플래그 = 破壊行き
+		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		;베놈융합モンスターを優先するようにルーチン設定
+	ENDIF
+ENDIF

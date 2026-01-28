@@ -13,6 +13,7 @@ SELECTCASE 参照先
 	CASE "カテゴリ"
 		RESULTS:0 = 기어 크로니클
 		RESULTS:5 = 십이지각수
+		RESULTS:6 = 다크 스테이츠
 	CASE "出典作品"
 		RESULTS:0 = 뱅가드
 ENDSELECT
@@ -29,6 +30,10 @@ SELECTCASE 参照先
 		RETURN 1
 	CASE "종류"
 		RETURN 通常마법
+	CASE "レア度"
+		RETURN RARE
+	CASE "추가日"
+		RETURN 251224
 ENDSELECT
 
 RETURN 0
@@ -36,14 +41,14 @@ RETURN 0
 @CARD_EXPLANATION_71662(종류)
 #DIM DYNAMIC 종류
 
-PRINTL 이 카드명의 ①②의 효과는 １턴에 １번、어느쪽인가 １개밖에 사용할 수 없다。
+PRINTL 이 카드명의 ①②의 효과는 각각 １턴에 １번밖에 사용할 수 없다。
 CALLFORM CARD_ABLE(1,마함起動,손패起動)
-PRINTL ①：자신의 필드（앞면 표시） / 묘지 / 제외 상태인 몬스터 １장을 대상으로 하고 발동할 수 있다。
-PRINTL 그 몬스터를 원래 주인의 덱으로 되돌린다。
-PRINTL 그 후、덱에서 그 몬스터의 코스트＋２의 레벨을 가진 "기어 크로니클" 몬스터 １장을 골라、패에 넣거나 특수 소환한다。
+PRINTL ①：덱에서 어둠속성 / 기계족 몬스터 １장을 패에 넣는다。
+PRINTL 그 후、자신의 패를 １장 골라서 제외한다。
 CALLFORM CARD_ABLE(2,묘지起動)
-PRINTL ②：묘지의 이 카드를 제외하고、자신의 제외 상태인 "기어 크로니클" 초차원 몬스터 １장을 대상으로 하고 발동할 수 있다。
-PRINTL 덱에서 어둠속성 / 기계족 / 레벨２몬스터 １장을 패에 넣는다。그 후、대상의 몬스터를 EX덱으로 되돌린다。
+PRINTL ②：묘지의 이 카드를 제외하고 발동할 수 있다。
+PRINTL 자신의 패 / 필드의 몬스터를 융합 소재로서、융합 몬스터 １장을 융합 소환한다。
+PRINTL 이 효과로 특수 소환한 몬스터는 엔드 페이즈에 원래 주인의 EX덱으로 되돌아간다。
 
 
 @CARDCAN_71662(듀얼리스트,종류,ゾーン,場所)
@@ -61,29 +66,6 @@ SIF RESULT == 1
 IF 종류 == 마함起動 || 종류 == 손패起動
 	SIF 발동済_1(듀얼리스트,71662)
 		RETURN 0
-	SIF 발동済_2(듀얼리스트,71662)
-		RETURN 0
-	SIF メインフェイズ != 1
-		RETURN 0
-	SIF ターンプレイヤー != 듀얼리스트
-		RETURN 0
-	CALL FULLRESET
-	효과範囲필드 = 1
-	효과範囲묘지 = 1
-	효과範囲제외 = 1
-	효과条件표시 = 表側표시
-	효과条件종류 = モン全般
-	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-	SIF RESULT != 1
-		RETURN 0
-	RETURN 1
-ELSEIF 종류 == 묘지起動
-	SIF 발동済_1(듀얼리스트,71662)
-		RETURN 0
-	SIF 발동済_2(듀얼리스트,71662)
-		RETURN 0
-	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
-		RETURN 0
 	SIF メインフェイズ != 1
 		RETURN 0
 	SIF ターンプレイヤー != 듀얼리스트
@@ -92,14 +74,27 @@ ELSEIF 종류 == 묘지起動
 	효과範囲덱 = 1
 	효과条件속성 = 어둠속성
 	효과条件종족 = 기계족
-	효과条件レベル = 2
+	효과条件종류 = モン全般
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
+	RETURN 1
+ELSEIF 종류 == 묘지起動
+	SIF 발동済_2(듀얼리스트,71662)
+		RETURN 0
+	SIF メインフェイズ != 1
+		RETURN 0
+	SIF ターンプレイヤー != 듀얼리스트
+		RETURN 0
+	SIF GETVAR(@"%듀얼리스트%_제외NG置換") >= 1
+		RETURN 0
+	CALL RESETAREA_MAT
+	素材範囲손패 = 1
+	素材範囲필드 = 1
 	CALL FULLRESET
-	효과範囲제외 = 1
-	효과条件カテゴリ:0 = 기어 크로니클
-	효과条件종류 = 초차원
+	효과範囲EX덱 = 1
+	효과条件종류 = 융합
+	효과条件소환可 = 2
 	CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
@@ -126,67 +121,37 @@ IF 종류 == 마함起動 || 종류 == 손패起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71662,1)
 	IF RESULT == 0
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+
 		CALL FULLRESET
-		효과範囲필드 = 1
-		효과範囲묘지 = 1
-		효과範囲제외 = 1
-		효과条件표시 = 表側표시
+		효과範囲덱 = 1
+		효과条件속성 = 어둠속성
+		효과条件종족 = 기계족
 		효과条件종류 = モン全般
-		효과条件行先플래그 = 덱行き
-		CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
 		IF RESULT == 1
-			TRYCALLFORM CARD_{RESULT:1}("レベル")
-			選択レベル = RESULT + 2
 			CALL FULLRESET
-			효과範囲덱 = 1
-			효과条件カテゴリ = 기어 크로니클
-			효과条件レベル = 選択レベル
-			효과条件종류 = モン全般
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			IF RESULT == 1
-				CALL FULLRESET
-				효과範囲덱 = 1
-				효과条件カテゴリ = 기어 크로니클
-				효과条件レベル = 選択レベル
-				효과条件종류 = モン全般
-				CALL CARD_CHOOSE_ADV(듀얼리스트,ゾーン,場所)
-				IF RESULT != 9999
-					選択カード_ID = RESULT:99
-					CALL CARD_SELECT(듀얼리스트,RESULT)
-					選択カード = RESULT
-					CALL CARD_SS_CHECK(듀얼리스트,選択カード_ID,参照先（CS）)
-					IF RESULT != 1
-						CALL YN_CHOICE(듀얼리스트,"특수 소환한다","패에 넣는다")
-					ELSE
-						RESULT = 1
-					ENDIF
-					IF RESULT == 0
-						CALL FULLRESET
-						CALL CARD_SP_SUMMON(듀얼리스트,参照先（CS）,選択カード)
-					ELSEIF RESULT == 1
-						CALL CARD_DISPOSE(듀얼리스트,参照先（CS）,選択カード,손패行き)
-					ENDIF
-				ENDIF
-			ENDIF
+			효과範囲손패 = 1
+			효과条件行先플래그 = 제외行き
+			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
 		ENDIF
 	ENDIF
 ELSEIF 종류 == 묘지起動
 	CALL CARD_CHOICE(듀얼리스트,종류,ゾーン,場所,71662,2)
 	IF RESULT == 0
+		;마법カードを묘지送り
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
+		CALL RESETAREA_MAT
+		素材範囲필드 = 1
+		素材範囲손패 = 1
 		CALL FULLRESET
-		효과範囲덱 = 1
-		효과条件속성 = 어둠속성
-		효과条件종족 = 기계족
-		효과条件レベル = 2
-		CALL CARD_ADD_ADV(듀얼리스트,ゾーン,場所)
-		IF RESULT == 1
-			CALL FULLRESET
-			효과範囲제외 = 1
-			효과条件カテゴリ:0 = 기어 크로니클
-			효과条件종류 = 초차원
-			효과条件行先플래그 = 덱行き
-			CALL CARD_ADD_GY_ADV(듀얼리스트,ゾーン,場所)
+		효과条件종류 = 융합
+		효과条件소환可 = 2
+		CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
+		選択カード = RESULT
+		IF 選択カード != 9999
+			TRYCALLFORM CARDSUMMON_{GETVAR(@"%듀얼리스트%_EX덱:{選択カード}")}(듀얼리스트,選択カード)
+			효과追加종류 = 効追終山
+			CALL FUSSUMMON(듀얼리스트,選択カード)
 		ENDIF
 	ENDIF
 ENDIF

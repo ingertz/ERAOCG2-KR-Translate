@@ -41,8 +41,8 @@ CALLFORM CARD_ABLE(1,마함起動,손패起動)
 PRINTL ●자신 필드에 "헤카톤케일" 몬스터가 존재하는 경우、
 PRINTL 상대 필드의 마법 / 함정 카드 １장을 패에 넣는다。
 CALLFORM CARD_ABLE(2,마함起動,손패起動)
-PRINTL ●자신 필드의 원래 주인이 상대인 몬스터 전부를 "헤카톤케일" 몬스터로서 취급한다。
-PRINTL 그 후、자신의 필드 / 묘지의 몬스터를 융합소재로 하고 제외하고、
+PRINTL ●자신 필드 / 묘지의 모든 몬스터를 이 효과의 처리중에만 "헤카톤케일" 몬스터로서 취급한다。
+PRINTL 그 후、자신의 필드 / 묘지의 몬스터를 융합 소재로 제외하고、
 PRINTL "헤카톤케일" 융합몬스터 １장을 융합 소환한다。
 
 
@@ -70,6 +70,8 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 	CALL CARD_QUICK_M(듀얼리스트,종류,ゾーン,場所)
 	SIF RESULT != 1
 		RETURN 0
+	SIF 발동済_1(듀얼리스트,73581) && 발동済_2(듀얼리스트,73581)
+		RETURN 0
 	IF 발동済_1(듀얼리스트,73581) == 0
 		CALL FULLRESET
 		효과範囲필드 = 1
@@ -85,21 +87,20 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		ENDIF
 	ENDIF
 	IF 발동済_2(듀얼리스트,73581) == 0 && GETVAR(@"%듀얼리스트%_제외NG置換") == 0
+		ALT条件 = 1
+		CALL RESETAREA_MAT
+		素材範囲필드 = 1
+		素材範囲묘지 = 1
 		CALL FULLRESET
 		효과範囲EX덱 = 1
 		효과条件종류 = 융합
 		효과条件カテゴリ = 헤카톤케일
+		효과条件소환可 = 2
 		CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 		IF RESULT == 1
-			CALL FULLRESET
-			효과範囲손패 = 1
-			효과範囲필드 = 1
-			효과条件종류 = モン全般
-			효과条件CNT = 1
-			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-			SIF RESULT >= 2
-				条件달성++
+			条件달성++
 		ENDIF
+		VARSET ALT条件
 	ENDIF
 	SIF 条件달성 == 0
 		RETURN 0
@@ -142,21 +143,20 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 			ENDIF
 		ENDIF
 		IF 발동済_2(듀얼리스트,73581) == 0 && GETVAR(@"%듀얼리스트%_제외NG置換") == 0
+			ALT条件 = 1
+			CALL RESETAREA_MAT
+			素材範囲필드 = 1
+			素材範囲묘지 = 1
 			CALL FULLRESET
 			효과範囲EX덱 = 1
 			효과条件종류 = 융합
 			효과条件カテゴリ = 헤카톤케일
+			효과条件소환可 = 2
 			CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
 			IF RESULT == 1
-				CALL FULLRESET
-				효과範囲손패 = 1
-				효과範囲필드 = 1
-				효과条件종류 = モン全般
-				효과条件CNT = 1
-				CALL CARD_CHECK_ADV(듀얼리스트,종류,ゾーン,場所)
-				SIF RESULT >= 2
-					条件달성2 = 1
+					条件달성2++
 			ENDIF
+			VARSET ALT条件
 		ENDIF
 		CALL CARD_DISPOSE(듀얼리스트,ゾーン,場所)
 		IF 条件달성1 == 1 && 条件달성2 == 1
@@ -179,31 +179,32 @@ IF 종류 == 마함起動 || 종류 == 손패起動 || 종류 == フリー誘発
 		ELSEIF RESULT == 2
 			CALL CARD_EFFECT_USE(듀얼리스트,73581,2)
 			;자신 필드의 元々の持ち主が상대であるモンスター全てを「헤카톤케일」モンスター로서 취급한다。
-			FOR カウンタ,0,5
-				SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
-					CONTINUE
-				SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
-					CONTINUE
-				IF 듀얼리스트 == "자신"
-					SIF GETVAR(@"%듀얼리스트%_MZ_所有:カウンタ") == 1
-						CONTINUE
-				ELSEIF 듀얼리스트 == "상대"
-					SIF GETVAR(@"%듀얼리스트%_MZ_所有:カウンタ") == 2
-						CONTINUE
-				ENDIF
-				IF GETVARS(@"%듀얼리스트%_MZ_追カテ:カウンタ") == ""
-					CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カウンタ,"헤카톤케일")
-				ELSE
-					SETVAR @"%듀얼리스트%_MZ_追カテ2:カウンタ", "헤카톤케일"
-				ENDIF
-			NEXT
+			; FOR カウンタ,0,5
+			; 	SIF GETVAR(@"%듀얼리스트%_필드:カウンタ") == -1
+			; 		CONTINUE
+			; 	SIF GETVAR(@"%듀얼리스트%_MZ_表:カウンタ") == 3
+			; 		CONTINUE
+			; 	IF 듀얼리스트 == "자신"
+			; 		SIF GETVAR(@"%듀얼리스트%_MZ_所有:カウンタ") == 1
+			; 			CONTINUE
+			; 	ELSEIF 듀얼리스트 == "상대"
+			; 		SIF GETVAR(@"%듀얼리스트%_MZ_所有:カウンタ") == 2
+			; 			CONTINUE
+			; 	ENDIF
+			; 	IF GETVARS(@"%듀얼리스트%_MZ_追カテ:カウンタ") == ""
+			; 		CALL CARD_SET_CATEGORY(듀얼리스트,"필드",カウンタ,"헤카톤케일")
+			; 	ELSEIF GETVARS(@"%듀얼리스트%_MZ_追カテ2:カウンタ") == ""
+			; 		SETVAR @"%듀얼리스트%_MZ_追カテ2:カウンタ", "헤카톤케일"
+			; 	ENDIF
+			; NEXT
+			ALT条件 = 1
 			CALL RESETAREA_MAT
 			素材範囲필드 = 1
 			素材範囲묘지 = 1
 			CALL FULLRESET
 			효과条件종류 = 융합
 			효과条件カテゴリ = 헤카톤케일
-			효과条件소환可 = 1
+			효과条件소환可 = 2
 			CALL CARD_CHOOSE_BASIC(듀얼리스트,"EX덱",ゾーン,場所)
 			選択カード = RESULT
 			IF 選択カード != 9999
