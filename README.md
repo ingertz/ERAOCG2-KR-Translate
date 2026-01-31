@@ -8,3 +8,6 @@ ERAOCG2 Korean tranlsate
 [비공식화상팩](https://drive.google.com/file/d/1HP3Eu3nG5f40AcHiJVQZK6DCXv5sgKHe/view?usp=drive_link)
 1월 28일 업데이트
 개인용으로만 써야합니다.
+
+[gitgud](https://gitgud.io/ingers/ERAOCG2-KR-Translate)
+gitgud으로 이사갔습니다.
